@@ -20,7 +20,9 @@ import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumViewModel
 import io.eugenethedev.taigamobile.ui.screens.settings.SettingsViewModel
 import io.eugenethedev.taigamobile.ui.screens.sprint.SprintViewModel
 import io.eugenethedev.taigamobile.ui.screens.team.TeamViewModel
-import io.eugenethedev.taigamobile.ui.screens.wiki.WikiViewModel
+import io.eugenethedev.taigamobile.ui.screens.wiki.createpage.WikiCreatePageViewModel
+import io.eugenethedev.taigamobile.ui.screens.wiki.list.WikiListViewModel
+import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageViewModel
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -155,10 +157,22 @@ abstract class BaseViewModelTest {
             profileViewModel.session = mockSession
         }
 
-        override fun inject(wikiViewModel: WikiViewModel) {
-            wikiViewModel.wikiRepository = mockWikiRepository
-            wikiViewModel.userRepository = mockUsersRepository
-            wikiViewModel.session = mockSession
+        override fun inject(wikiSelectorViewModel: WikiListViewModel) {
+            TODO("Not yet implemented")
         }
+
+        override fun inject(wikiPageViewModel: WikiPageViewModel) {
+            TODO("Not yet implemented")
+        }
+
+        override fun inject(wikiCreatePageViewModel: WikiCreatePageViewModel) {
+            TODO("Not yet implemented")
+        }
+
+//        override fun inject(wikiViewModel: WikiViewModel) {
+//            wikiViewModel.wikiRepository = mockWikiRepository
+//            wikiViewModel.userRepository = mockUsersRepository
+//            wikiViewModel.session = mockSession
+//        }
     }
 }
