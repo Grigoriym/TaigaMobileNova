@@ -10,15 +10,15 @@ plugins {
 val composeVersion = "1.1.1"
 
 android {
-    compileSdk = 31
+    compileSdk = 35
     buildToolsVersion = "30.0.3"
 
     namespace = "io.eugenethedev.taigamobile"
 
     defaultConfig {
         applicationId = namespace!!
-        minSdk = 21
-        targetSdk = 31
+        minSdk = 24
+        targetSdk = 35
         versionCode = 29
         versionName = "1.9"
         project.base.archivesName.set("TaigaMobile-$versionName")
@@ -26,35 +26,35 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-    signingConfigs {
-        getByName("debug") {
-            storeFile = file("./keystores/debug.keystore")
-            storePassword = "android"
-            keyAlias = "debug"
-            keyPassword = "android"
-        }
-
-        create("release") {
-            val properties = Properties().also {
-                it.load(file("./signing.properties").inputStream())
-            }
-            storeFile = file("./keystores/release.keystore")
-            storePassword = properties.getProperty("password")
-            keyAlias = properties.getProperty("alias")
-            keyPassword = properties.getProperty("password")
-        }
-    }
+//    signingConfigs {
+//        getByName("debug") {
+//            storeFile = file("./keystores/debug.keystore")
+//            storePassword = "android"
+//            keyAlias = "debug"
+//            keyPassword = "android"
+//        }
+//
+//        create("release") {
+//            val properties = Properties().also {
+//                it.load(file("./signing.properties").inputStream())
+//            }
+//            storeFile = file("./keystores/release.keystore")
+//            storePassword = properties.getProperty("password")
+//            keyAlias = properties.getProperty("alias")
+//            keyPassword = properties.getProperty("password")
+//        }
+//    }
 
 
     buildTypes {
         getByName("debug") {
-            signingConfig = signingConfigs.getByName("debug")
+//            signingConfig = signingConfigs.getByName("debug")
         }
 
         getByName("release") {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("release")
+//            signingConfig = signingConfigs.getByName("release")
         }
     }
 
