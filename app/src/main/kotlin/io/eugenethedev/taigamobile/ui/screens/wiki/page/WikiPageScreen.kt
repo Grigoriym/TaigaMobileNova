@@ -48,7 +48,7 @@ import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
 import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
-import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevation
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import java.io.InputStream
 import java.time.LocalDateTime
 
@@ -267,7 +267,7 @@ fun WikiAppBar(
             }
             DropdownMenu(
                 modifier = Modifier.background(
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(dialogTonalElevation)
+                    MaterialTheme.colorScheme.surfaceColorAtElevationInternal(dialogTonalElevation)
                 ),
                 expanded = isMenuExpanded,
                 onDismissRequest = { isMenuExpanded = false }

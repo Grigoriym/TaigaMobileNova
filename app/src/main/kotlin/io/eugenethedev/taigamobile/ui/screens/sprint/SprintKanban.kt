@@ -38,7 +38,7 @@ import io.eugenethedev.taigamobile.ui.theme.cardShadowElevation
 import io.eugenethedev.taigamobile.ui.theme.kanbanBoardTonalElevation
 import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
 import io.eugenethedev.taigamobile.ui.utils.clickableUnindicated
-import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevation
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import io.eugenethedev.taigamobile.ui.utils.toColor
 import java.time.LocalDateTime
 
@@ -58,7 +58,7 @@ fun SprintKanban(
     val cellWidth = 280.dp
     val userStoryHeadingWidth = cellWidth - 20.dp
     val minCellHeight = 80.dp
-    val backgroundCellColor = MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation)
+    val backgroundCellColor = MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
     val screenWidth = LocalContext.current.resources.configuration.screenWidthDp.dp
     val totalWidth = cellWidth * statuses.size + userStoryHeadingWidth + cellPadding * statuses.size
 

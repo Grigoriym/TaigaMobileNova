@@ -169,7 +169,7 @@ fun SprintScreenContent(
 
                 DropdownMenu(
                     modifier = Modifier.background(
-                        MaterialTheme.colorScheme.surfaceColorAtElevation(dialogTonalElevation)
+                        MaterialTheme.colorScheme.surfaceColorAtElevationInternal(dialogTonalElevation)
                     ),
                     expanded = isMenuExpanded,
                     onDismissRequest = { isMenuExpanded = false }

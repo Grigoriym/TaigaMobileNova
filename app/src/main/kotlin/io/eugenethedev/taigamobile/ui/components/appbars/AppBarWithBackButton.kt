@@ -10,6 +10,7 @@ import androidx.compose.ui.unit.dp
 import com.google.accompanist.insets.statusBarsPadding
 import io.eugenethedev.taigamobile.R
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppBarWithBackButton(
     modifier: Modifier = Modifier,

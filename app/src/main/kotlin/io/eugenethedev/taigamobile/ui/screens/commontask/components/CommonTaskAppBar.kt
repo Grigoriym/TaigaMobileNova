@@ -22,7 +22,7 @@ import io.eugenethedev.taigamobile.ui.components.editors.TextFieldWithHint
 import io.eugenethedev.taigamobile.ui.screens.commontask.EditActions
 import io.eugenethedev.taigamobile.ui.screens.commontask.NavigationActions
 import io.eugenethedev.taigamobile.ui.theme.dialogTonalElevation
-import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevation
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 
 @Composable
 fun CommonTaskAppBar(
@@ -110,7 +110,7 @@ fun CommonTaskAppBar(
 
                 DropdownMenu(
                     modifier = Modifier.background(
-                        MaterialTheme.colorScheme.surfaceColorAtElevation(dialogTonalElevation)
+                        MaterialTheme.colorScheme.surfaceColorAtElevationInternal(dialogTonalElevation)
                     ),
                     expanded = isMenuExpanded,
                     onDismissRequest = { isMenuExpanded = false }

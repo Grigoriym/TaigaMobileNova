@@ -15,7 +15,7 @@ import androidx.compose.ui.res.painterResource
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.ui.theme.dialogTonalElevation
 import io.eugenethedev.taigamobile.ui.utils.clickableUnindicated
-import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevation
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 
 /**
  * Dropdown selector with animated arrow
@@ -69,7 +69,7 @@ fun <T> DropdownSelector(
 
         DropdownMenu(
             modifier = Modifier.background(
-                MaterialTheme.colorScheme.surfaceColorAtElevation(dialogTonalElevation)
+                MaterialTheme.colorScheme.surfaceColorAtElevationInternal(dialogTonalElevation)
             ),
             expanded = isExpanded,
             onDismissRequest = {

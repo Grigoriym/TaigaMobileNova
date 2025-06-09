@@ -305,17 +305,19 @@ private fun SprintItem(
             }
         }
 
+        //TODO the only place I had to comment the code since the usage is internal and I couldn't find
+        // anything to change it
         buttonColors().let {
-            val containerColor by it.containerColor(!sprint.isClosed)
-            val contentColor by it.contentColor(!sprint.isClosed)
+//            val containerColor by it.containerColor(!sprint.isClosed)
+//            val contentColor by it.contentColor(!sprint.isClosed)
 
             Button(
                 onClick = { navigateToBoard(sprint) },
                 modifier = Modifier.weight(0.3f),
-                colors = buttonColors(
-                    containerColor = containerColor,
-                    contentColor = contentColor
-                )
+//                colors = buttonColors(
+//                    containerColor = containerColor,
+//                    contentColor = contentColor
+//                )
             ) {
                 Text(stringResource(R.string.taskboard))
             }
