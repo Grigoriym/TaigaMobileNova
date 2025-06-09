@@ -2,7 +2,6 @@ package io.eugenethedev.taigamobile.ui.components.appbars
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,20 +20,22 @@ fun AppBarWithBackButton(
     title: @Composable () -> Unit = {},
     actions: @Composable RowScope.() -> Unit = {},
     navigateBack: (() -> Unit)? = null
-) = TopAppBar(
-    title = title,
-    navigationIcon = navigateBack?.let {
-        {
-            IconButton(onClick = it) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_back),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(28.dp)
-                )
+) {
+    TopAppBar(
+        modifier = modifier,
+        title = title,
+        navigationIcon = navigateBack?.let {
+            {
+                IconButton(onClick = it) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_back),
+                        contentDescription = "Back button",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
-        }
-    } ?: {},
-    actions = actions,
-    modifier = modifier.statusBarsPadding()
-)
+        } ?: {},
+        actions = actions,
+    )
+}

@@ -12,6 +12,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
+import io.eugenethedev.taigamobile.core.nav.Routes
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
@@ -19,7 +20,6 @@ import io.eugenethedev.taigamobile.ui.components.TasksFiltersWithLazyList
 import io.eugenethedev.taigamobile.ui.components.appbars.ClickableAppBar
 import io.eugenethedev.taigamobile.ui.components.buttons.PlusButton
 import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
-import io.eugenethedev.taigamobile.ui.screens.main.Routes
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding

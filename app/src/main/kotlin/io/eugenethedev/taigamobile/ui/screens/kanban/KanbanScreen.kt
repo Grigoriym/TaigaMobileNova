@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import io.eugenethedev.taigamobile.core.nav.Routes
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.Status
@@ -19,7 +20,6 @@ import io.eugenethedev.taigamobile.domain.entities.Swimlane
 import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.components.appbars.ClickableAppBar
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
-import io.eugenethedev.taigamobile.ui.screens.main.Routes
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError

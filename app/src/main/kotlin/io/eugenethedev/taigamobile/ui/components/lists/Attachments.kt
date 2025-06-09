@@ -33,7 +33,7 @@ import io.eugenethedev.taigamobile.ui.components.dialogs.ConfirmActionDialog
 import io.eugenethedev.taigamobile.ui.components.loaders.DotsLoader
 import io.eugenethedev.taigamobile.ui.components.texts.SectionTitle
 import io.eugenethedev.taigamobile.ui.screens.commontask.EditAction
-import io.eugenethedev.taigamobile.ui.screens.main.LocalFilePicker
+import io.eugenethedev.taigamobile.ui.utils.LocalFilePicker
 import io.eugenethedev.taigamobile.ui.utils.activity
 import java.io.InputStream
 

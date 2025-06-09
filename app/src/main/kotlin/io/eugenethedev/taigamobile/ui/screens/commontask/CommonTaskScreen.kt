@@ -58,8 +58,8 @@ import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskWa
 import io.eugenethedev.taigamobile.ui.screens.commontask.components.CreateCommentBar
 import io.eugenethedev.taigamobile.ui.screens.commontask.components.SelectorEntry
 import io.eugenethedev.taigamobile.ui.screens.commontask.components.Selectors
-import io.eugenethedev.taigamobile.ui.screens.main.FilePicker
-import io.eugenethedev.taigamobile.ui.screens.main.LocalFilePicker
+import io.eugenethedev.taigamobile.ui.utils.FilePicker
+import io.eugenethedev.taigamobile.ui.utils.LocalFilePicker
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
