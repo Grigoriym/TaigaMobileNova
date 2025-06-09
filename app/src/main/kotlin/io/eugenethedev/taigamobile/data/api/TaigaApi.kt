@@ -1,10 +1,26 @@
 package io.eugenethedev.taigamobile.data.api
 
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.Attachment
+import io.eugenethedev.taigamobile.domain.entities.Comment
+import io.eugenethedev.taigamobile.domain.entities.Project
+import io.eugenethedev.taigamobile.domain.entities.Stats
+import io.eugenethedev.taigamobile.domain.entities.Swimlane
+import io.eugenethedev.taigamobile.domain.entities.User
+import io.eugenethedev.taigamobile.domain.entities.WikiLink
+import io.eugenethedev.taigamobile.domain.entities.WikiPage
 import io.eugenethedev.taigamobile.domain.paging.CommonPagingSource
 import okhttp3.MultipartBody
 import retrofit2.Response
-import retrofit2.http.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.GET
+import retrofit2.http.Header
+import retrofit2.http.Multipart
+import retrofit2.http.PATCH
+import retrofit2.http.POST
+import retrofit2.http.Part
+import retrofit2.http.Path
+import retrofit2.http.Query
 
 /**
  * All API endpoints

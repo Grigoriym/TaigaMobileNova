@@ -111,12 +111,12 @@ fun ProfileScreenContent(
                 Image(
                     painter = rememberAsyncImagePainter(
                         ImageRequest.Builder(LocalContext.current)
-                        .data(
-                            currentUser?.avatarUrl ?: R.drawable.default_avatar
-                        ).apply(fun ImageRequest.Builder.() {
-                        error(R.drawable.default_avatar)
-                        crossfade(true)
-                    }).build()
+                            .data(
+                                currentUser?.avatarUrl ?: R.drawable.default_avatar
+                            ).apply(fun ImageRequest.Builder.() {
+                                error(R.drawable.default_avatar)
+                                crossfade(true)
+                            }).build()
                     ),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,

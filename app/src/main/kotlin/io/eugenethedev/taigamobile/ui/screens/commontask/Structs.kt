@@ -5,7 +5,17 @@ package io.eugenethedev.taigamobile.ui.screens.commontask
  */
 
 import androidx.paging.compose.LazyPagingItems
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.Attachment
+import io.eugenethedev.taigamobile.domain.entities.Comment
+import io.eugenethedev.taigamobile.domain.entities.CommonTask
+import io.eugenethedev.taigamobile.domain.entities.CustomField
+import io.eugenethedev.taigamobile.domain.entities.CustomFieldValue
+import io.eugenethedev.taigamobile.domain.entities.EpicShortInfo
+import io.eugenethedev.taigamobile.domain.entities.Sprint
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.Swimlane
+import io.eugenethedev.taigamobile.domain.entities.Tag
+import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
 import java.io.InputStream
 import java.time.LocalDate

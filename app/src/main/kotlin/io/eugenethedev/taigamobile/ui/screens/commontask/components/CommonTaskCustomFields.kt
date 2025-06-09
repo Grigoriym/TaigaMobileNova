@@ -33,7 +33,14 @@ fun LazyListScope.CommonTaskCustomFields(
             customField = item,
             value = customFieldsValues[item.id],
             onValueChange = { onValueChange(item.id, it) },
-            onSaveClick = { editActions.editCustomField.select(Pair(item, customFieldsValues[item.id])) }
+            onSaveClick = {
+                editActions.editCustomField.select(
+                    Pair(
+                        item,
+                        customFieldsValues[item.id]
+                    )
+                )
+            }
         )
 
         if (index < customFields.lastIndex) {

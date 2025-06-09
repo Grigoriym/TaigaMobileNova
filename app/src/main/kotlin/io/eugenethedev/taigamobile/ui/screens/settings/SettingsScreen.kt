@@ -62,9 +62,9 @@ import io.eugenethedev.taigamobile.ui.components.dialogs.ConfirmActionDialog
 import io.eugenethedev.taigamobile.ui.screens.main.Routes
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.activity
 import io.eugenethedev.taigamobile.ui.utils.clickableUnindicated
-import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import timber.log.Timber
 
 @Composable

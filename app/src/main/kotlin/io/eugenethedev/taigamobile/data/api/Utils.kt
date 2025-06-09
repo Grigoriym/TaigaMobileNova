@@ -10,7 +10,7 @@ import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 // plural form
 @JvmInline
 value class CommonTaskPathPlural private constructor(val path: String) {
-    constructor(commonTaskType: CommonTaskType): this(
+    constructor(commonTaskType: CommonTaskType) : this(
         when (commonTaskType) {
             CommonTaskType.UserStory -> "userstories"
             CommonTaskType.Task -> "tasks"
@@ -23,7 +23,7 @@ value class CommonTaskPathPlural private constructor(val path: String) {
 // singular form
 @JvmInline
 value class CommonTaskPathSingular private constructor(val path: String) {
-    constructor(commonTaskType: CommonTaskType): this(
+    constructor(commonTaskType: CommonTaskType) : this(
         when (commonTaskType) {
             CommonTaskType.UserStory -> "userstory"
             CommonTaskType.Task -> "task"

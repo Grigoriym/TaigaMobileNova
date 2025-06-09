@@ -1,9 +1,22 @@
 package io.eugenethedev.taigamobile.ui.screens.sprint
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -13,12 +26,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.domain.entities.Sprint
-import io.eugenethedev.taigamobile.domain.entities.Status
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
-import io.eugenethedev.taigamobile.ui.utils.LoadingResult
-import io.eugenethedev.taigamobile.ui.utils.SuccessResult
+import io.eugenethedev.taigamobile.domain.entities.Sprint
+import io.eugenethedev.taigamobile.domain.entities.Status
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
 import io.eugenethedev.taigamobile.ui.components.dialogs.ConfirmActionDialog
 import io.eugenethedev.taigamobile.ui.components.dialogs.EditSprintDialog
@@ -26,7 +37,13 @@ import io.eugenethedev.taigamobile.ui.components.dialogs.LoadingDialog
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.dialogTonalElevation
-import io.eugenethedev.taigamobile.ui.utils.*
+import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SuccessResult
+import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
+import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -81,7 +98,13 @@ fun SprintScreen(
         deleteSprint = viewModel::deleteSprint,
         navigateBack = navController::popBackStack,
         navigateToTask = navController::navigateToTaskScreen,
-        navigateToCreateTask = { type, parentId -> navController.navigateToCreateTaskScreen(type, parentId, sprintId) }
+        navigateToCreateTask = { type, parentId ->
+            navController.navigateToCreateTaskScreen(
+                type,
+                parentId,
+                sprintId
+            )
+        }
     )
 }
 
@@ -169,7 +192,9 @@ fun SprintScreenContent(
 
                 DropdownMenu(
                     modifier = Modifier.background(
-                        MaterialTheme.colorScheme.surfaceColorAtElevationInternal(dialogTonalElevation)
+                        MaterialTheme.colorScheme.surfaceColorAtElevationInternal(
+                            dialogTonalElevation
+                        )
                     ),
                     expanded = isMenuExpanded,
                     onDismissRequest = { isMenuExpanded = false }

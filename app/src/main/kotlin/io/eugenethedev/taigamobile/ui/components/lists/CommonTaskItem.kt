@@ -14,7 +14,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.CommonTask
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
+import io.eugenethedev.taigamobile.domain.entities.Project
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.StatusType
 import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
 import io.eugenethedev.taigamobile.ui.components.texts.CommonTaskTitle
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
@@ -85,8 +89,10 @@ fun CommonTaskItem(
         )
 
         Text(
-            text = commonTask.assignee?.fullName?.let { stringResource(R.string.assignee_pattern)
-                .format(it) } ?: stringResource(R.string.unassigned),
+            text = commonTask.assignee?.fullName?.let {
+                stringResource(R.string.assignee_pattern)
+                    .format(it)
+            } ?: stringResource(R.string.unassigned),
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodyMedium
         )

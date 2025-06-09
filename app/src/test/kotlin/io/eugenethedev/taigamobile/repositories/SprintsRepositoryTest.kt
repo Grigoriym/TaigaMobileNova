@@ -35,7 +35,8 @@ class SprintsRepositoryTest : BaseRepositoryTest() {
 
     @Test
     fun `test get sprints`() = runBlocking {
-        val sprints = sprintsRepository.getSprints(1) + sprintsRepository.getSprints(1, isClosed = true)
+        val sprints =
+            sprintsRepository.getSprints(1) + sprintsRepository.getSprints(1, isClosed = true)
 
         assertEquals(
             expected = TestData.projects[0]
@@ -120,7 +121,7 @@ class SprintsRepositoryTest : BaseRepositoryTest() {
     fun `test edit sprint`() = runBlocking {
         val sprints = sprintsRepository.getSprints(1)
         sprints.map { it.id }.forEach { id ->
-            val title =  "editSprint$id"
+            val title = "editSprint$id"
             val start = LocalDate.of(2000 + id.toInt(), 1, 1)
             val end = LocalDate.of(3000 + id.toInt(), 1, 1)
 

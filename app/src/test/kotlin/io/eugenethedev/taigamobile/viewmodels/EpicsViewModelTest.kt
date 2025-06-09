@@ -10,7 +10,9 @@ import io.eugenethedev.taigamobile.viewmodels.utils.notFoundException
 import io.eugenethedev.taigamobile.viewmodels.utils.testLazyPagingItems
 import io.mockk.coEvery
 import kotlinx.coroutines.runBlocking
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertIs
 
 class EpicsViewModelTest : BaseViewModelTest() {
     private lateinit var viewModel: EpicsViewModel
@@ -38,8 +40,18 @@ class EpicsViewModelTest : BaseViewModelTest() {
     @Test
     fun `test epics list with filters`(): Unit = runBlocking {
         val query = "query"
-        testLazyPagingItems(viewModel.epics) { mockTaskRepository.getEpics(any(), eq(FiltersData())) }
+        testLazyPagingItems(viewModel.epics) {
+            mockTaskRepository.getEpics(
+                any(),
+                eq(FiltersData())
+            )
+        }
         viewModel.selectFilters(FiltersData(query = query))
-        testLazyPagingItems(viewModel.epics) { mockTaskRepository.getEpics(any(), eq(FiltersData(query = query))) }
+        testLazyPagingItems(viewModel.epics) {
+            mockTaskRepository.getEpics(
+                any(),
+                eq(FiltersData(query = query))
+            )
+        }
     }
 }

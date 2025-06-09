@@ -29,7 +29,10 @@ class TaigaApp : Application() {
         }
 
         try {
-            fileLoggingTree = FileLoggingTree(applicationContext.getExternalFilesDir("logs")!!.absolutePath, minLoggingPriority)
+            fileLoggingTree = FileLoggingTree(
+                applicationContext.getExternalFilesDir("logs")!!.absolutePath,
+                minLoggingPriority
+            )
             Timber.plant(fileLoggingTree!!)
         } catch (e: NullPointerException) {
             Timber.w("Cannot setup FileLoggingTree, skipping")

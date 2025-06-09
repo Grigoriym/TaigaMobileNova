@@ -27,7 +27,8 @@ fun ContainerBox(
     onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit = {}
 ) = Box(
-    modifier = Modifier.fillMaxWidth()
+    modifier = Modifier
+        .fillMaxWidth()
         .clickable(
             indication = ripple(),
             onClick = onClick ?: {},

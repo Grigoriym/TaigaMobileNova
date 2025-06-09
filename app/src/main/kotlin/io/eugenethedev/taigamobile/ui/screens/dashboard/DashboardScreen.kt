@@ -34,8 +34,8 @@ import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
-import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 
 @Composable
 fun DashboardScreen(

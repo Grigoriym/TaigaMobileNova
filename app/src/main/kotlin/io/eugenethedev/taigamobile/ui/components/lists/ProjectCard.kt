@@ -68,11 +68,11 @@ fun ProjectCard(
             Image(
                 painter = rememberAsyncImagePainter(
                     ImageRequest.Builder(LocalContext.current).data(
-                    project.avatarUrl ?: R.drawable.default_avatar
-                ).apply(fun ImageRequest.Builder.() {
-                    error(R.drawable.default_avatar)
-                    crossfade(true)
-                }).build()
+                        project.avatarUrl ?: R.drawable.default_avatar
+                    ).apply(fun ImageRequest.Builder.() {
+                        error(R.drawable.default_avatar)
+                        crossfade(true)
+                    }).build()
                 ),
                 contentDescription = null,
                 modifier = Modifier.size(46.dp)

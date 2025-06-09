@@ -6,13 +6,27 @@ import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import io.eugenethedev.taigamobile.BuildConfig
-import io.eugenethedev.taigamobile.data.api.*
+import io.eugenethedev.taigamobile.data.api.RefreshTokenRequest
+import io.eugenethedev.taigamobile.data.api.RefreshTokenRequestJsonAdapter
+import io.eugenethedev.taigamobile.data.api.RefreshTokenResponseJsonAdapter
+import io.eugenethedev.taigamobile.data.api.TaigaApi
+import io.eugenethedev.taigamobile.data.repositories.AuthRepository
+import io.eugenethedev.taigamobile.data.repositories.ProjectsRepository
+import io.eugenethedev.taigamobile.data.repositories.SprintsRepository
+import io.eugenethedev.taigamobile.data.repositories.TasksRepository
+import io.eugenethedev.taigamobile.data.repositories.UsersRepository
+import io.eugenethedev.taigamobile.data.repositories.WikiRepository
+import io.eugenethedev.taigamobile.domain.repositories.IAuthRepository
+import io.eugenethedev.taigamobile.domain.repositories.IProjectsRepository
+import io.eugenethedev.taigamobile.domain.repositories.ISprintsRepository
+import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
+import io.eugenethedev.taigamobile.domain.repositories.IUsersRepository
+import io.eugenethedev.taigamobile.domain.repositories.IWikiRepository
 import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.state.Settings
-import io.eugenethedev.taigamobile.data.repositories.*
-import io.eugenethedev.taigamobile.domain.repositories.*
-import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -66,37 +80,44 @@ class DataModule {
             .addConverterFactory(MoshiConverterFactory.create(moshi).withNullSerialization())
             .client(
                 okHttpBuilder.authenticator { _, response ->
-                        response.request.header("Authorization")?.let {
-                            try {
-                                // prevent multiple refresh requests from different threads
-                                synchronized(session) {
-                                    // refresh token only if it was not refreshed in another thread
-                                    if (it.replace("Bearer ", "") == session.token.value) {
-                                        val body = RefreshTokenRequestJsonAdapter(moshi)
-                                            .toJson(RefreshTokenRequest(session.refreshToken.value))
+                    response.request.header("Authorization")?.let {
+                        try {
+                            // prevent multiple refresh requests from different threads
+                            synchronized(session) {
+                                // refresh token only if it was not refreshed in another thread
+                                if (it.replace("Bearer ", "") == session.token.value) {
+                                    val body = RefreshTokenRequestJsonAdapter(moshi)
+                                        .toJson(RefreshTokenRequest(session.refreshToken.value))
 
-                                        val request = Request.Builder()
-                                            .url("$baseUrlPlaceholder/${TaigaApi.REFRESH_ENDPOINT}")
-                                            .post(body.toRequestBody("application/json".toMediaType()))
-                                            .build()
+                                    val request = Request.Builder()
+                                        .url("$baseUrlPlaceholder/${TaigaApi.REFRESH_ENDPOINT}")
+                                        .post(body.toRequestBody("application/json".toMediaType()))
+                                        .build()
 
-                                        val refreshResponse = RefreshTokenResponseJsonAdapter(moshi)
-                                            .fromJson(tokenClient.newCall(request).execute().body?.string().orEmpty()) ?: throw IllegalStateException("Cannot parse RefreshResponse")
+                                    val refreshResponse = RefreshTokenResponseJsonAdapter(moshi)
+                                        .fromJson(
+                                            tokenClient.newCall(request).execute().body?.string()
+                                                .orEmpty()
+                                        )
+                                        ?: throw IllegalStateException("Cannot parse RefreshResponse")
 
-                                        session.changeAuthCredentials(refreshResponse.auth_token, refreshResponse.refresh)
-                                    }
+                                    session.changeAuthCredentials(
+                                        refreshResponse.auth_token,
+                                        refreshResponse.refresh
+                                    )
                                 }
-
-                                response.request.newBuilder()
-                                    .header("Authorization", "Bearer ${session.token.value}")
-                                    .build()
-                            } catch (e: Exception) {
-                                Timber.w(e)
-                                session.changeAuthCredentials("", "")
-                                null
                             }
+
+                            response.request.newBuilder()
+                                .header("Authorization", "Bearer ${session.token.value}")
+                                .build()
+                        } catch (e: Exception) {
+                            Timber.w(e)
+                            session.changeAuthCredentials("", "")
+                            null
                         }
                     }
+                }
                     .build()
             )
             .build()

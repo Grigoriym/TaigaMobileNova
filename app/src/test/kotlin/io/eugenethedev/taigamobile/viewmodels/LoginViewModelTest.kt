@@ -5,7 +5,7 @@ import io.eugenethedev.taigamobile.ui.screens.login.LoginViewModel
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.viewmodels.utils.accessDeniedException
-import io.mockk.*
+import io.mockk.coEvery
 import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -23,7 +23,14 @@ class LoginViewModelTest : BaseViewModelTest() {
     fun `test login`(): Unit = runBlocking {
         val password = "password"
 
-        coEvery { mockAuthRepository.auth(any(), any(), neq(password), any()) } throws accessDeniedException
+        coEvery {
+            mockAuthRepository.auth(
+                any(),
+                any(),
+                neq(password),
+                any()
+            )
+        } throws accessDeniedException
 
         viewModel.login("", AuthType.Normal, "", password)
         assertIs<SuccessResult<Unit>>(viewModel.loginResult.value)

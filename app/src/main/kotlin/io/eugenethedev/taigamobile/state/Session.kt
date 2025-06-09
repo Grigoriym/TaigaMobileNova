@@ -8,7 +8,14 @@ import io.eugenethedev.taigamobile.domain.entities.FiltersDataJsonAdapter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 /**
@@ -16,10 +23,12 @@ import kotlinx.coroutines.launch
  */
 class Session(context: Context, moshi: Moshi) {
 
-    private val sharedPreferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val sharedPreferences =
+        context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
-    private val _refreshToken = MutableStateFlow(sharedPreferences.getString(REFRESH_TOKEN_KEY, "").orEmpty())
+    private val _refreshToken =
+        MutableStateFlow(sharedPreferences.getString(REFRESH_TOKEN_KEY, "").orEmpty())
     private val _token = MutableStateFlow(sharedPreferences.getString(TOKEN_KEY, "").orEmpty())
 
     val refreshToken: StateFlow<String> = _refreshToken
@@ -49,7 +58,8 @@ class Session(context: Context, moshi: Moshi) {
     }
 
     private val _currentProjectId = MutableStateFlow(sharedPreferences.getLong(PROJECT_ID_KEY, -1))
-    private val _currentProjectName = MutableStateFlow(sharedPreferences.getString(PROJECT_NAME_KEY, "").orEmpty())
+    private val _currentProjectName =
+        MutableStateFlow(sharedPreferences.getString(PROJECT_NAME_KEY, "").orEmpty())
 
     val currentProjectId: StateFlow<Long> = _currentProjectId
     val currentProjectName: StateFlow<String> = _currentProjectName
@@ -65,18 +75,30 @@ class Session(context: Context, moshi: Moshi) {
         resetFilters()
     }
 
-    private fun checkLogged(token: String, refresh: String) = listOf(token, refresh).all { it.isNotEmpty() }
+    private fun checkLogged(token: String, refresh: String) =
+        listOf(token, refresh).all { it.isNotEmpty() }
+
     val isLogged = combine(token, refreshToken, ::checkLogged)
-        .stateIn(scope, SharingStarted.Eagerly, initialValue = checkLogged(token.value, refreshToken.value))
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            initialValue = checkLogged(token.value, refreshToken.value)
+        )
 
     private fun checkProjectSelected(id: Long) = id >= 0
     val isProjectSelected = currentProjectId.map(::checkProjectSelected)
-        .stateIn(scope, SharingStarted.Eagerly, initialValue = checkProjectSelected(currentProjectId.value))
+        .stateIn(
+            scope,
+            SharingStarted.Eagerly,
+            initialValue = checkProjectSelected(currentProjectId.value)
+        )
 
 
     // Filters
     private val filtersJsonAdapter = FiltersDataJsonAdapter(moshi)
-    private fun getFiltersOrEmpty(key: String) = sharedPreferences.getString(key, null)?.takeIf { it.isNotBlank() }?.let { filtersJsonAdapter.fromJson(it) } ?: FiltersData()
+    private fun getFiltersOrEmpty(key: String) =
+        sharedPreferences.getString(key, null)?.takeIf { it.isNotBlank() }
+            ?.let { filtersJsonAdapter.fromJson(it) } ?: FiltersData()
 
     private val _scrumFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_SCRUM))
     val scrumFilters: StateFlow<FiltersData> = _scrumFilters
@@ -145,6 +167,7 @@ class Session(context: Context, moshi: Moshi) {
  * An empty class which describes basic event without any data (for the sake of update only)
  */
 class Event
+
 @Suppress("FunctionName")
 fun EventFlow() = MutableSharedFlow<Event>()
 

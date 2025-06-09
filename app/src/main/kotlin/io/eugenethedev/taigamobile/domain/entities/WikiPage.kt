@@ -15,7 +15,7 @@ data class WikiPage(
     @Json(name = "last_modifier") val lastModifier: Long,
     @Json(name = "modified_date") val modifiedDate: LocalDateTime,
     @Json(name = "total_watchers") val totalWatchers: Long,
-    @Json(name = "slug")val slug: String
+    @Json(name = "slug") val slug: String
 )
 
 @JsonClass(generateAdapter = true)

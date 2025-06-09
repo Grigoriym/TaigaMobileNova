@@ -1,6 +1,7 @@
 package io.eugenethedev.taigamobile.ui.screens.createtask
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -12,13 +13,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
-import io.eugenethedev.taigamobile.ui.utils.LoadingResult
-import io.eugenethedev.taigamobile.ui.utils.SuccessResult
-import io.eugenethedev.taigamobile.ui.components.editors.Editor
 import io.eugenethedev.taigamobile.ui.components.dialogs.LoadingDialog
+import io.eugenethedev.taigamobile.ui.components.editors.Editor
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
-import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
+import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SuccessResult
+import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 
 @Composable
 fun CreateTaskScreen(
@@ -52,7 +53,17 @@ fun CreateTaskScreen(
             }
         ),
         isLoading = creationResult is LoadingResult,
-        createTask = { title, description -> viewModel.createTask(commonTaskType, title, description, parentId, sprintId, statusId, swimlaneId) },
+        createTask = { title, description ->
+            viewModel.createTask(
+                commonTaskType,
+                title,
+                description,
+                parentId,
+                sprintId,
+                statusId,
+                swimlaneId
+            )
+        },
         navigateBack = navController::popBackStack
     )
 }

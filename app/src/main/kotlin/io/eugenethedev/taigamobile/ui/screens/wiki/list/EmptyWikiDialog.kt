@@ -25,7 +25,7 @@ import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 fun EmptyWikiDialog(
     createNewPage: () -> Unit = {},
     isButtonAvailable: Boolean = true
-) = Box (
+) = Box(
     modifier = Modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.surface)

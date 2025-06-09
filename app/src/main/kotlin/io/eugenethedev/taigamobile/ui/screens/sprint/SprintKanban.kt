@@ -424,11 +424,11 @@ private fun TaskItem(
             Image(
                 painter = rememberAsyncImagePainter(
                     ImageRequest.Builder(LocalContext.current).data(
-                    data = it.avatarUrl ?: R.drawable.default_avatar
-                ).apply(block = fun ImageRequest.Builder.() {
-                    error(R.drawable.default_avatar)
-                    crossfade(true)
-                }).build()
+                        data = it.avatarUrl ?: R.drawable.default_avatar
+                    ).apply(block = fun ImageRequest.Builder.() {
+                        error(R.drawable.default_avatar)
+                        crossfade(true)
+                    }).build()
                 ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,

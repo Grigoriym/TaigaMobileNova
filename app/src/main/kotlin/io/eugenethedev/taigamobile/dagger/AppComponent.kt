@@ -3,23 +3,23 @@ package io.eugenethedev.taigamobile.dagger
 import android.content.Context
 import dagger.BindsInstance
 import dagger.Component
-import io.eugenethedev.taigamobile.ui.screens.login.LoginViewModel
-import io.eugenethedev.taigamobile.ui.screens.main.MainViewModel
-import io.eugenethedev.taigamobile.ui.screens.projectselector.ProjectSelectorViewModel
-import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumViewModel
-import io.eugenethedev.taigamobile.ui.screens.sprint.SprintViewModel
 import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskViewModel
 import io.eugenethedev.taigamobile.ui.screens.createtask.CreateTaskViewModel
 import io.eugenethedev.taigamobile.ui.screens.dashboard.DashboardViewModel
 import io.eugenethedev.taigamobile.ui.screens.epics.EpicsViewModel
 import io.eugenethedev.taigamobile.ui.screens.issues.IssuesViewModel
 import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanViewModel
+import io.eugenethedev.taigamobile.ui.screens.login.LoginViewModel
+import io.eugenethedev.taigamobile.ui.screens.main.MainViewModel
 import io.eugenethedev.taigamobile.ui.screens.profile.ProfileViewModel
+import io.eugenethedev.taigamobile.ui.screens.projectselector.ProjectSelectorViewModel
+import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumViewModel
 import io.eugenethedev.taigamobile.ui.screens.settings.SettingsViewModel
+import io.eugenethedev.taigamobile.ui.screens.sprint.SprintViewModel
 import io.eugenethedev.taigamobile.ui.screens.team.TeamViewModel
 import io.eugenethedev.taigamobile.ui.screens.wiki.createpage.WikiCreatePageViewModel
-import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageViewModel
 import io.eugenethedev.taigamobile.ui.screens.wiki.list.WikiListViewModel
+import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageViewModel
 import javax.inject.Singleton
 
 @Singleton
@@ -28,7 +28,8 @@ interface AppComponent {
 
     @Component.Builder
     interface Builder {
-        @BindsInstance fun context(context: Context): Builder
+        @BindsInstance
+        fun context(context: Context): Builder
         fun build(): AppComponent
     }
 

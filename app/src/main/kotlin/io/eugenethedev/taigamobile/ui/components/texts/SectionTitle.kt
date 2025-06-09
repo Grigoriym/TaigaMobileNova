@@ -56,7 +56,8 @@ fun SectionTitle(
 
     onAddClick?.let {
         Box(
-            modifier = Modifier.fillMaxHeight()
+            modifier = Modifier
+                .fillMaxHeight()
                 .aspectRatio(1f)
                 .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
                 .clip(MaterialTheme.shapes.small)

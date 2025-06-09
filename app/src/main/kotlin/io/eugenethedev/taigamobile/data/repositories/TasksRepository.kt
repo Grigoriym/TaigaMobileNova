@@ -1,10 +1,38 @@
 package io.eugenethedev.taigamobile.data.repositories
 
-import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.dagger.toLocalDate
-import io.eugenethedev.taigamobile.data.api.*
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.data.api.CommonTaskPathPlural
+import io.eugenethedev.taigamobile.data.api.CommonTaskPathSingular
+import io.eugenethedev.taigamobile.data.api.CommonTaskResponse
+import io.eugenethedev.taigamobile.data.api.CreateCommentRequest
+import io.eugenethedev.taigamobile.data.api.CreateCommonTaskRequest
+import io.eugenethedev.taigamobile.data.api.CreateIssueRequest
+import io.eugenethedev.taigamobile.data.api.CreateTaskRequest
+import io.eugenethedev.taigamobile.data.api.CreateUserStoryRequest
+import io.eugenethedev.taigamobile.data.api.EditCommonTaskRequest
+import io.eugenethedev.taigamobile.data.api.EditCustomAttributesValuesRequest
+import io.eugenethedev.taigamobile.data.api.LinkToEpicRequest
+import io.eugenethedev.taigamobile.data.api.PromoteToUserStoryRequest
+import io.eugenethedev.taigamobile.data.api.TaigaApi
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
+import io.eugenethedev.taigamobile.domain.entities.CustomField
+import io.eugenethedev.taigamobile.domain.entities.CustomFieldType
+import io.eugenethedev.taigamobile.domain.entities.CustomFieldValue
+import io.eugenethedev.taigamobile.domain.entities.CustomFields
+import io.eugenethedev.taigamobile.domain.entities.EpicsFilter
+import io.eugenethedev.taigamobile.domain.entities.Filter
+import io.eugenethedev.taigamobile.domain.entities.FiltersData
+import io.eugenethedev.taigamobile.domain.entities.RolesFilter
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.StatusType
+import io.eugenethedev.taigamobile.domain.entities.StatusesFilter
+import io.eugenethedev.taigamobile.domain.entities.Swimlane
+import io.eugenethedev.taigamobile.domain.entities.Tag
+import io.eugenethedev.taigamobile.domain.entities.TagsFilter
+import io.eugenethedev.taigamobile.domain.entities.UsersFilter
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
+import io.eugenethedev.taigamobile.state.Session
 import kotlinx.coroutines.async
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -27,7 +55,10 @@ class TasksRepository @Inject constructor(
         type = statusType
     )
 
-    override suspend fun getFiltersData(commonTaskType: CommonTaskType, isCommonTaskFromBacklog: Boolean) = withIO {
+    override suspend fun getFiltersData(
+        commonTaskType: CommonTaskType,
+        isCommonTaskFromBacklog: Boolean
+    ) = withIO {
         taigaApi.getCommonTaskFiltersData(
             taskPath = CommonTaskPathPlural(commonTaskType),
             project = currentProjectId,
@@ -112,7 +143,11 @@ class TasksRepository @Inject constructor(
         }
 
         val stories = async {
-            taigaApi.getUserStories(assignedId = currentUserId, isClosed = false, isDashboard = true)
+            taigaApi.getUserStories(
+                assignedId = currentUserId,
+                isClosed = false,
+                isDashboard = true
+            )
                 .map { it.toCommonTask(CommonTaskType.UserStory) }
         }
 
@@ -157,32 +192,33 @@ class TasksRepository @Inject constructor(
         getFiltersData(commonTaskType).statuses.map { it.toStatus(StatusType.Status) }
     }
 
-    override suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType) = withIO {
-        if (commonTaskType != CommonTaskType.Issue && statusType != StatusType.Status) {
-            throw UnsupportedOperationException("Cannot get $statusType for $commonTaskType")
-        }
+    override suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType) =
+        withIO {
+            if (commonTaskType != CommonTaskType.Issue && statusType != StatusType.Status) {
+                throw UnsupportedOperationException("Cannot get $statusType for $commonTaskType")
+            }
 
-        getFiltersData(commonTaskType).let {
-            when (statusType) {
-                StatusType.Status -> it.statuses.map { it.toStatus(statusType) }
-                StatusType.Type -> it.types.map { it.toStatus(statusType) }
-                StatusType.Severity -> it.severities.map { it.toStatus(statusType) }
-                StatusType.Priority -> it.priorities.map { it.toStatus(statusType) }
+            getFiltersData(commonTaskType).let {
+                when (statusType) {
+                    StatusType.Status -> it.statuses.map { it.toStatus(statusType) }
+                    StatusType.Type -> it.types.map { it.toStatus(statusType) }
+                    StatusType.Severity -> it.severities.map { it.toStatus(statusType) }
+                    StatusType.Priority -> it.priorities.map { it.toStatus(statusType) }
+                }
             }
         }
-    }
 
     override suspend fun getEpics(page: Int, filters: FiltersData) = withIO {
         handle404 {
             taigaApi.getEpics(
-                    page = page,
-                    project = currentProjectId,
-                    query = filters.query,
-                    assignedIds = filters.assignees.commaString(),
-                    ownerIds = filters.createdBy.commaString(),
-                    statuses = filters.statuses.commaString(),
-                    tags = filters.tags.tagsCommaString()
-                )
+                page = page,
+                project = currentProjectId,
+                query = filters.query,
+                assignedIds = filters.assignees.commaString(),
+                ownerIds = filters.createdBy.commaString(),
+                statuses = filters.statuses.commaString(),
+                tags = filters.tags.tagsCommaString()
+            )
                 .map { it.toCommonTask(CommonTaskType.Epic) }
         }
     }
@@ -205,17 +241,17 @@ class TasksRepository @Inject constructor(
     override suspend fun getBacklogUserStories(page: Int, filters: FiltersData) = withIO {
         handle404 {
             taigaApi.getUserStories(
-                    project = currentProjectId,
-                    sprint = "null",
-                    page = page,
-                    query = filters.query,
-                    assignedIds = filters.assignees.commaString(),
-                    ownerIds = filters.createdBy.commaString(),
-                    roles = filters.roles.commaString(),
-                    statuses = filters.statuses.commaString(),
-                    epics = filters.epics.commaString(),
-                    tags = filters.tags.tagsCommaString()
-                )
+                project = currentProjectId,
+                sprint = "null",
+                page = page,
+                query = filters.query,
+                assignedIds = filters.assignees.commaString(),
+                ownerIds = filters.createdBy.commaString(),
+                roles = filters.roles.commaString(),
+                statuses = filters.statuses.commaString(),
+                epics = filters.epics.commaString(),
+                tags = filters.tags.tagsCommaString()
+            )
                 .map { it.toCommonTask(CommonTaskType.UserStory) }
         }
     }
@@ -236,18 +272,18 @@ class TasksRepository @Inject constructor(
     override suspend fun getIssues(page: Int, filters: FiltersData) = withIO {
         handle404 {
             taigaApi.getIssues(
-                    page = page,
-                    project = currentProjectId,
-                    query = filters.query,
-                    assignedIds = filters.assignees.commaString(),
-                    ownerIds = filters.createdBy.commaString(),
-                    priorities = filters.priorities.commaString(),
-                    severities = filters.severities.commaString(),
-                    types = filters.types.commaString(),
-                    statuses = filters.statuses.commaString(),
-                    roles = filters.roles.commaString(),
-                    tags = filters.tags.tagsCommaString()
-                )
+                page = page,
+                project = currentProjectId,
+                query = filters.query,
+                assignedIds = filters.assignees.commaString(),
+                ownerIds = filters.createdBy.commaString(),
+                priorities = filters.priorities.commaString(),
+                severities = filters.severities.commaString(),
+                types = filters.types.commaString(),
+                statuses = filters.statuses.commaString(),
+                roles = filters.roles.commaString(),
+                tags = filters.tags.tagsCommaString()
+            )
                 .map { it.toCommonTask(CommonTaskType.Issue) }
         }
     }
@@ -256,8 +292,9 @@ class TasksRepository @Inject constructor(
         .joinToString(separator = ",")
         .takeIf { it.isNotEmpty() }
 
-    private fun List<TagsFilter>.tagsCommaString() = joinToString(separator = ",") { it.name.replace(" ", "+") }
-        .takeIf { it.isNotEmpty() }
+    private fun List<TagsFilter>.tagsCommaString() =
+        joinToString(separator = ",") { it.name.replace(" ", "+") }
+            .takeIf { it.isNotEmpty() }
 
     override suspend fun getCommonTask(commonTaskId: Long, type: CommonTaskType) = withIO {
         val filters = async { getFiltersData(type) }
@@ -278,11 +315,16 @@ class TasksRepository @Inject constructor(
     }
 
     override suspend fun getAttachments(commonTaskId: Long, type: CommonTaskType) = withIO {
-        taigaApi.getCommonTaskAttachments(CommonTaskPathPlural(type), commonTaskId, currentProjectId)
+        taigaApi.getCommonTaskAttachments(
+            CommonTaskPathPlural(type),
+            commonTaskId,
+            currentProjectId
+        )
     }
 
     override suspend fun getCustomFields(commonTaskId: Long, type: CommonTaskType) = withIO {
-        val attributes = async { taigaApi.getCustomAttributes(CommonTaskPathSingular(type), currentProjectId) }
+        val attributes =
+            async { taigaApi.getCustomAttributes(CommonTaskPathSingular(type), currentProjectId) }
         val values = taigaApi.getCustomAttributesValues(CommonTaskPathPlural(type), commonTaskId)
 
         CustomFields(
@@ -297,7 +339,9 @@ class TasksRepository @Inject constructor(
                         value = values.attributes_values[it.id]?.let { value ->
                             CustomFieldValue(
                                 when (it.type) {
-                                    CustomFieldType.Date -> (value as? String)?.takeIf { it.isNotEmpty() }?.toLocalDate()
+                                    CustomFieldType.Date -> (value as? String)?.takeIf { it.isNotEmpty() }
+                                        ?.toLocalDate()
+
                                     CustomFieldType.Checkbox -> value as? Boolean
                                     else -> value
                                 } ?: return@let null
@@ -305,7 +349,7 @@ class TasksRepository @Inject constructor(
                         },
                         options = it.extra.orEmpty()
                     )
-            }
+                }
         )
     }
 
@@ -317,7 +361,8 @@ class TasksRepository @Inject constructor(
         taigaApi.getSwimlanes(currentProjectId)
     }
 
-    private fun transformTaskTypeForCopyLink(commonTaskType: CommonTaskType) = when (commonTaskType) {
+    private fun transformTaskTypeForCopyLink(commonTaskType: CommonTaskType) =
+        when (commonTaskType) {
             CommonTaskType.UserStory -> PATH_TO_USERSTORY
             CommonTaskType.Task -> PATH_TO_TASK
             CommonTaskType.Epic -> PATH_TO_EPIC
@@ -340,10 +385,11 @@ class TasksRepository @Inject constructor(
             ),
             taskType = commonTaskType,
             createdDateTime = created_date,
-            sprint =  if (loadSprint) milestone?.let { taigaApi.getSprint(it).toSprint() } else null,
+            sprint = if (loadSprint) milestone?.let { taigaApi.getSprint(it).toSprint() } else null,
             assignedIds = assigned_users ?: listOfNotNull(assigned_to),
             watcherIds = watchers.orEmpty(),
-            creatorId = owner ?: throw IllegalArgumentException("CommonTaskResponse requires not null 'owner' field"),
+            creatorId = owner
+                ?: throw IllegalArgumentException("CommonTaskResponse requires not null 'owner' field"),
             ref = ref,
             title = subject,
             isClosed = is_closed,
@@ -357,10 +403,17 @@ class TasksRepository @Inject constructor(
             userStoryShortInfo = user_story_extra_info,
             version = version,
             color = color,
-            type = type?.let { id -> filters.types.find { it.id == id } }?.toStatus(StatusType.Type),
-            severity = severity?.let { id -> filters.severities.find { it.id == id } }?.toStatus(StatusType.Severity),
-            priority = priority?.let { id -> filters.priorities.find { it.id == id } }?.toStatus(StatusType.Priority),
-            url =  "${session.server.value}/project/${project_extra_info.slug}/${transformTaskTypeForCopyLink(commonTaskType)}/$ref",
+            type = type?.let { id -> filters.types.find { it.id == id } }
+                ?.toStatus(StatusType.Type),
+            severity = severity?.let { id -> filters.severities.find { it.id == id } }
+                ?.toStatus(StatusType.Severity),
+            priority = priority?.let { id -> filters.priorities.find { it.id == id } }
+                ?.toStatus(StatusType.Priority),
+            url = "${session.server.value}/project/${project_extra_info.slug}/${
+                transformTaskTypeForCopyLink(
+                    commonTaskType
+                )
+            }/$ref",
             blockedNote = blocked_note.takeIf { is_blocked }
         )
     }
@@ -395,7 +448,10 @@ class TasksRepository @Inject constructor(
         version = version
     )
 
-    private suspend fun editCommonTask(commonTask: CommonTaskExtended, request: EditCommonTaskRequest) {
+    private suspend fun editCommonTask(
+        commonTask: CommonTaskExtended,
+        request: EditCommonTaskRequest
+    ) {
         taigaApi.editCommonTask(CommonTaskPathPlural(commonTask.taskType), commonTask.id, request)
     }
 
@@ -428,21 +484,23 @@ class TasksRepository @Inject constructor(
         editCommonTask(commonTask, commonTask.toEditRequest().copy(milestone = sprintId))
     }
 
-    override suspend fun editAssignees(commonTask: CommonTaskExtended, assignees: List<Long>) = withIO {
-        val request = commonTask.toEditRequest().let {
-            if (commonTask.taskType == CommonTaskType.UserStory) {
-                it.copy(assigned_to = assignees.firstOrNull(), assigned_users = assignees)
-            } else {
-                it.copy(assigned_to = assignees.lastOrNull())
+    override suspend fun editAssignees(commonTask: CommonTaskExtended, assignees: List<Long>) =
+        withIO {
+            val request = commonTask.toEditRequest().let {
+                if (commonTask.taskType == CommonTaskType.UserStory) {
+                    it.copy(assigned_to = assignees.firstOrNull(), assigned_users = assignees)
+                } else {
+                    it.copy(assigned_to = assignees.lastOrNull())
+                }
             }
+
+            editCommonTask(commonTask, request)
         }
 
-        editCommonTask(commonTask, request)
-    }
-
-    override suspend fun editWatchers(commonTask: CommonTaskExtended, watchers: List<Long>) = withIO {
-        editCommonTask(commonTask, commonTask.toEditRequest().copy(watchers = watchers))
-    }
+    override suspend fun editWatchers(commonTask: CommonTaskExtended, watchers: List<Long>) =
+        withIO {
+            editCommonTask(commonTask, commonTask.toEditRequest().copy(watchers = watchers))
+        }
 
     override suspend fun editDueDate(commonTask: CommonTaskExtended, date: LocalDate?) = withIO {
         editCommonTask(commonTask, commonTask.toEditRequest().copy(due_date = date))
@@ -453,20 +511,24 @@ class TasksRepository @Inject constructor(
         title: String,
         description: String,
     ) = withIO {
-        editCommonTask(commonTask, commonTask.toEditRequest().copy(subject = title, description = description))
+        editCommonTask(
+            commonTask,
+            commonTask.toEditRequest().copy(subject = title, description = description)
+        )
     }
 
     override suspend fun editTags(commonTask: CommonTaskExtended, tags: List<Tag>) = withIO {
         editCommonTask(commonTask, commonTask.toEditRequest().copy(tags = tags.map { it.toList() }))
     }
 
-    override suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?) = withIO {
-        if (commonTask.taskType != CommonTaskType.UserStory) {
-            throw UnsupportedOperationException("Cannot change swimlane for ${commonTask.taskType}")
-        }
+    override suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?) =
+        withIO {
+            if (commonTask.taskType != CommonTaskType.UserStory) {
+                throw UnsupportedOperationException("Cannot change swimlane for ${commonTask.taskType}")
+            }
 
-        editCommonTask(commonTask, commonTask.toEditRequest().copy(swimlane = swimlaneId))
-    }
+            editCommonTask(commonTask, commonTask.toEditRequest().copy(swimlane = swimlaneId))
+        }
 
     override suspend fun editEpicColor(commonTask: CommonTaskExtended, color: String) = withIO {
         if (commonTask.taskType != CommonTaskType.Epic) {
@@ -476,12 +538,14 @@ class TasksRepository @Inject constructor(
         editCommonTask(commonTask, commonTask.toEditRequest().copy(color = color))
     }
 
-    override suspend fun editBlocked(commonTask: CommonTaskExtended, blockedNote: String?) = withIO {
-        editCommonTask(
-            commonTask,
-            commonTask.toEditRequest().copy(is_blocked = blockedNote != null, blocked_note = blockedNote.orEmpty())
-        )
-    }
+    override suspend fun editBlocked(commonTask: CommonTaskExtended, blockedNote: String?) =
+        withIO {
+            editCommonTask(
+                commonTask,
+                commonTask.toEditRequest()
+                    .copy(is_blocked = blockedNote != null, blocked_note = blockedNote.orEmpty())
+            )
+        }
 
     // edit other related parts
 
@@ -534,30 +598,59 @@ class TasksRepository @Inject constructor(
     ) = withIO {
         when (commonTaskType) {
             CommonTaskType.Task -> taigaApi.createTask(
-                createTaskRequest = CreateTaskRequest(currentProjectId, title, description, sprintId, parentId)
+                createTaskRequest = CreateTaskRequest(
+                    currentProjectId,
+                    title,
+                    description,
+                    sprintId,
+                    parentId
+                )
             )
+
             CommonTaskType.Issue -> taigaApi.createIssue(
-                createIssueRequest = CreateIssueRequest(currentProjectId, title, description, sprintId)
+                createIssueRequest = CreateIssueRequest(
+                    currentProjectId,
+                    title,
+                    description,
+                    sprintId
+                )
             )
+
             CommonTaskType.UserStory -> taigaApi.createUserstory(
-                createUserStoryRequest = CreateUserStoryRequest(currentProjectId, title, description, statusId, swimlaneId)
+                createUserStoryRequest = CreateUserStoryRequest(
+                    currentProjectId,
+                    title,
+                    description,
+                    statusId,
+                    swimlaneId
+                )
             )
+
             else -> taigaApi.createCommonTask(
                 taskPath = CommonTaskPathPlural(commonTaskType),
-                createRequest = CreateCommonTaskRequest(currentProjectId, title, description, statusId)
+                createRequest = CreateCommonTaskRequest(
+                    currentProjectId,
+                    title,
+                    description,
+                    statusId
+                )
             )
         }.toCommonTask(commonTaskType)
     }
 
-    override suspend fun deleteCommonTask(commonTaskType: CommonTaskType, commonTaskId: Long) = withIO {
-        taigaApi.deleteCommonTask(
-            taskPath = CommonTaskPathPlural(commonTaskType),
-            id = commonTaskId
-        )
-        return@withIO
-    }
+    override suspend fun deleteCommonTask(commonTaskType: CommonTaskType, commonTaskId: Long) =
+        withIO {
+            taigaApi.deleteCommonTask(
+                taskPath = CommonTaskPathPlural(commonTaskType),
+                id = commonTaskId
+            )
+            return@withIO
+        }
 
-    override suspend fun promoteCommonTaskToUserStory(commonTaskId: Long, commonTaskType: CommonTaskType) = withIO {
+    override suspend fun promoteCommonTaskToUserStory(
+        commonTaskId: Long,
+        commonTaskType: CommonTaskType
+    ) = withIO {
         if (commonTaskType in listOf(CommonTaskType.Epic, CommonTaskType.UserStory)) {
             throw UnsupportedOperationException("Cannot promote to user story $commonTaskType")
         }
@@ -567,10 +660,18 @@ class TasksRepository @Inject constructor(
             taskId = commonTaskId,
             promoteToUserStoryRequest = PromoteToUserStoryRequest(currentProjectId)
         ).first()
-         .let { taigaApi.getUserStoryByRef(currentProjectId, it).toCommonTask(CommonTaskType.UserStory) }
+            .let {
+                taigaApi.getUserStoryByRef(currentProjectId, it)
+                    .toCommonTask(CommonTaskType.UserStory)
+            }
     }
 
-    override suspend fun addAttachment(commonTaskId: Long, commonTaskType: CommonTaskType, fileName: String, inputStream: InputStream) = withIO {
+    override suspend fun addAttachment(
+        commonTaskId: Long,
+        commonTaskType: CommonTaskType,
+        fileName: String,
+        inputStream: InputStream
+    ) = withIO {
         val file = MultipartBody.Part.createFormData(
             name = "attached_file",
             filename = fileName,
@@ -589,13 +690,14 @@ class TasksRepository @Inject constructor(
         }
     }
 
-    override suspend fun deleteAttachment(commonTaskType: CommonTaskType, attachmentId: Long) = withIO {
-        taigaApi.deleteCommonTaskAttachment(
-            taskPath = CommonTaskPathPlural(commonTaskType),
-            attachmentId = attachmentId
-        )
-        return@withIO
-    }
+    override suspend fun deleteAttachment(commonTaskType: CommonTaskType, attachmentId: Long) =
+        withIO {
+            taigaApi.deleteCommonTaskAttachment(
+                taskPath = CommonTaskPathPlural(commonTaskType),
+                attachmentId = attachmentId
+            )
+            return@withIO
+        }
 
     override suspend fun editCustomFields(
         commonTaskType: CommonTaskType,
@@ -606,7 +708,10 @@ class TasksRepository @Inject constructor(
         taigaApi.editCustomAttributesValues(
             taskPath = CommonTaskPathPlural(commonTaskType),
             taskId = commonTaskId,
-            editRequest = EditCustomAttributesValuesRequest(fields.mapValues { it.value?.value }, version)
+            editRequest = EditCustomAttributesValuesRequest(
+                fields.mapValues { it.value?.value },
+                version
+            )
         )
     }
 

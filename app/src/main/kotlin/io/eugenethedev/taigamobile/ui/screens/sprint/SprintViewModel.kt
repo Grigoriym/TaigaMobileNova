@@ -26,9 +26,12 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 class SprintViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject lateinit var tasksRepository: ITasksRepository
-    @Inject lateinit var sprintsRepository: ISprintsRepository
-    @Inject lateinit var session: Session
+    @Inject
+    lateinit var tasksRepository: ITasksRepository
+    @Inject
+    lateinit var sprintsRepository: ISprintsRepository
+    @Inject
+    lateinit var session: Session
 
     private var sprintId: Long = -1
 
@@ -56,7 +59,11 @@ class SprintViewModel(appComponent: AppComponent = TaigaApp.appComponent) : View
             sprintsRepository.getSprint(sprintId).also {
                 joinAll(
                     launch {
-                        statuses.loadOrError(showLoading = false) { tasksRepository.getStatuses(CommonTaskType.Task) }
+                        statuses.loadOrError(showLoading = false) {
+                            tasksRepository.getStatuses(
+                                CommonTaskType.Task
+                            )
+                        }
                     },
                     launch {
                         storiesWithTasks.loadOrError(showLoading = false) {
@@ -68,10 +75,18 @@ class SprintViewModel(appComponent: AppComponent = TaigaApp.appComponent) : View
                         }
                     },
                     launch {
-                        issues.loadOrError(showLoading = false) { sprintsRepository.getSprintIssues(sprintId) }
+                        issues.loadOrError(showLoading = false) {
+                            sprintsRepository.getSprintIssues(
+                                sprintId
+                            )
+                        }
                     },
                     launch {
-                        storylessTasks.loadOrError(showLoading = false) { sprintsRepository.getSprintTasks(sprintId) }
+                        storylessTasks.loadOrError(showLoading = false) {
+                            sprintsRepository.getSprintTasks(
+                                sprintId
+                            )
+                        }
                     }
                 )
             }

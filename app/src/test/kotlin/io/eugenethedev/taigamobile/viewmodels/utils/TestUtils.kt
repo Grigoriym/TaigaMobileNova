@@ -41,7 +41,10 @@ fun <T : Any> testLazyPagingItems(
 
     coEvery(stubBlock) answers {
         pageArg().let {
-            pages.subList((it - 1) * CommonPagingSource.PAGE_SIZE, min(it * CommonPagingSource.PAGE_SIZE, pages.size))
+            pages.subList(
+                (it - 1) * CommonPagingSource.PAGE_SIZE,
+                min(it * CommonPagingSource.PAGE_SIZE, pages.size)
+            )
         }
     }
     items.refresh()

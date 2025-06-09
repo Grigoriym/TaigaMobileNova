@@ -19,7 +19,8 @@ fun Badge(
     text: String,
     isActive: Boolean = true
 ) {
-    val color = if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inverseOnSurface
+    val color =
+        if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inverseOnSurface
     Surface(
         shape = MaterialTheme.shapes.extraSmall,
         color = color,

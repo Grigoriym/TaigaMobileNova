@@ -23,7 +23,6 @@ data class User(
 }
 
 
-
 data class TeamMember(
     val id: Long,
     val avatarUrl: String?,

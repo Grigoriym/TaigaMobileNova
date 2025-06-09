@@ -2,13 +2,21 @@ package io.eugenethedev.taigamobile.ui.components.editors
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -59,7 +67,12 @@ fun TextFieldWithHint(
             .padding(horizontal = horizontalPadding, vertical = verticalPadding)
             .let {
                 if (hasBorder) {
-                    it.border(width = 1.dp, color = outlineColor, shape = MaterialTheme.shapes.large)
+                    it
+                        .border(
+                            width = 1.dp,
+                            color = outlineColor,
+                            shape = MaterialTheme.shapes.large
+                        )
                         .padding(horizontal = 16.dp, vertical = 10.dp)
                 } else {
                     it
@@ -77,7 +90,8 @@ fun TextFieldWithHint(
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier
+                .fillMaxWidth()
                 .focusRequester(focusRequester)
                 .onFocusChanged {
                     onFocusChange(it.isFocused)

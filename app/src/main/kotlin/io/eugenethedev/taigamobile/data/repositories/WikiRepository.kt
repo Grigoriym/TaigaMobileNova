@@ -53,7 +53,11 @@ class WikiRepository @Inject constructor(
         )
     }
 
-    override suspend fun addPageAttachment(pageId: Long, fileName: String, inputStream: InputStream) = withIO {
+    override suspend fun addPageAttachment(
+        pageId: Long,
+        fileName: String,
+        inputStream: InputStream
+    ) = withIO {
         val file = MultipartBody.Part.createFormData(
             name = "attached_file",
             filename = fileName,

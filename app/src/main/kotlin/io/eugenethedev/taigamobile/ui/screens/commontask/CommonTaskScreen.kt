@@ -63,11 +63,11 @@ import io.eugenethedev.taigamobile.ui.screens.main.LocalFilePicker
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
 import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
 import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
-import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import java.time.LocalDateTime
 
 @Composable

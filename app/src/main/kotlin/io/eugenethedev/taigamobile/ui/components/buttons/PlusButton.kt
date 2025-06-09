@@ -21,7 +21,8 @@ fun PlusButton(
     onClick: () -> Unit = {}
 ) = IconButton(
     onClick = onClick,
-    modifier = Modifier.padding(top = 2.dp)
+    modifier = Modifier
+        .padding(top = 2.dp)
         .size(32.dp)
         .clip(CircleShape)
 ) {

@@ -45,9 +45,9 @@ import io.eugenethedev.taigamobile.ui.screens.commontask.EditAction
 import io.eugenethedev.taigamobile.ui.theme.dialogTonalElevation
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
-import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import java.io.InputStream
 import java.time.LocalDateTime
@@ -78,8 +78,8 @@ fun WikiPageScreen(
     val lastModifierUser by viewModel.lastModifierUser.collectAsState()
 
     val isLoading = page is LoadingResult || link is LoadingResult ||
-        editWikiPageResult is LoadingResult || deleteWikiPageResult is LoadingResult ||
-        attachments is LoadingResult
+            editWikiPageResult is LoadingResult || deleteWikiPageResult is LoadingResult ||
+            attachments is LoadingResult
 
     deleteWikiPageResult.takeIf { it is SuccessResult }?.let {
         LaunchedEffect(Unit) {
