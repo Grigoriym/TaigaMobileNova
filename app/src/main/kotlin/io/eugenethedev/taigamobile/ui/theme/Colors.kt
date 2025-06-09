@@ -6,6 +6,9 @@ val taigaGreen = Color(0xFF25A28C)
 val taigaGreenDark = Color(0xFF00796D)
 val taigaGreenLight = Color(0xFF2CC0A6)
 
+@Suppress("TopLevelPropertyNaming")
+const val DarkBackgroundColorForPreview = 1777437L
+
 val taigaDarkBackground = Color(red = 27, green = 31, blue = 29)
 val taigaLightBackground = Color(red = 251, green = 255, blue = 253)
 

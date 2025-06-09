@@ -13,14 +13,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.ContentAlpha
 import androidx.compose.material.LocalContentAlpha
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -42,19 +42,19 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import io.eugenethedev.taigamobile.R
+import io.eugenethedev.taigamobile.core.nav.Routes
 import io.eugenethedev.taigamobile.domain.entities.AuthType
 import io.eugenethedev.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import io.eugenethedev.taigamobile.ui.screens.main.Routes
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
+import io.eugenethedev.taigamobile.ui.utils.ThemePreviews
 
 @Composable
 fun LoginScreen(
@@ -127,7 +127,6 @@ fun LoginScreenContent(
             .imePadding()
             .padding(bottom = 24.dp)
     ) {
-
         Image(
             painter = painterResource(R.drawable.ic_taiga_tree),
             contentDescription = null,
@@ -277,8 +276,9 @@ fun LoginTextField(
 ) {
     val focusManager = LocalFocusManager.current
 
-    val textStyle =
-        MaterialTheme.typography.titleMedium.merge(TextStyle(fontWeight = FontWeight.Normal))
+    val textStyle = MaterialTheme.typography.titleMedium.merge(
+        TextStyle(fontWeight = FontWeight.Normal)
+    )
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
@@ -294,26 +294,32 @@ fun LoginTextField(
         keyboardActions = KeyboardActions(onDone = { focusManager.clearFocus() }),
         isError = isError,
         shape = MaterialTheme.shapes.small,
-        colors = TextFieldDefaults.outlinedTextFieldColors(
-            textColor = androidx.compose.material3.LocalContentColor.current.copy(LocalContentAlpha.current),
+        colors = OutlinedTextFieldDefaults.colors(
+            unfocusedTextColor = androidx.compose.material3.LocalContentColor.current.copy(
+                LocalContentAlpha.current
+            ),
+            focusedTextColor = androidx.compose.material3.LocalContentColor.current.copy(
+                LocalContentAlpha.current
+            ),
             cursorColor = MaterialTheme.colorScheme.primary,
             errorCursorColor = MaterialTheme.colorScheme.error,
+            unfocusedContainerColor = MaterialTheme.colorScheme.background,
+            focusedContainerColor = MaterialTheme.colorScheme.background,
+            errorContainerColor = MaterialTheme.colorScheme.background,
             focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = ContentAlpha.high),
             unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled),
             errorBorderColor = MaterialTheme.colorScheme.error,
-            leadingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
-            trailingIconColor = MaterialTheme.colorScheme.onSurface.copy(alpha = TextFieldDefaults.IconOpacity),
             errorTrailingIconColor = MaterialTheme.colorScheme.error,
             focusedLabelColor = MaterialTheme.colorScheme.primary.copy(alpha = ContentAlpha.high),
             unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(ContentAlpha.medium),
             errorLabelColor = MaterialTheme.colorScheme.error,
-            placeholderColor = MaterialTheme.colorScheme.onSurface.copy(ContentAlpha.medium),
+            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(ContentAlpha.medium),
+            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(ContentAlpha.medium),
         )
     )
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
-@Composable
+@[Composable ThemePreviews]
 fun LoginScreenPreview() = TaigaMobileTheme {
     LoginScreenContent()
 }

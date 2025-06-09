@@ -1,4 +1,4 @@
-package io.eugenethedev.taigamobile.ui.screens.main
+package io.eugenethedev.taigamobile.ui.utils
 
 import androidx.compose.runtime.staticCompositionLocalOf
 import java.io.InputStream
