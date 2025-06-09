@@ -9,10 +9,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.CommonTask
+import io.eugenethedev.taigamobile.domain.entities.Sprint
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.Swimlane
+import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
-import io.eugenethedev.taigamobile.ui.components.lists.UserItem
 import io.eugenethedev.taigamobile.ui.components.editors.SelectorList
+import io.eugenethedev.taigamobile.ui.components.lists.UserItem
 import io.eugenethedev.taigamobile.ui.components.texts.CommonTaskTitle
 import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskViewModel
 import io.eugenethedev.taigamobile.ui.screens.commontask.EditAction
@@ -71,7 +75,7 @@ fun Selectors(
             }
         )
     }
-    
+
     // severity editor
     SelectorList(
         titleHintId = R.string.choose_severity,
@@ -89,7 +93,7 @@ fun Selectors(
             }
         )
     }
-    
+
     // priority editor
     SelectorList(
         titleHintId = R.string.choose_priority,
@@ -176,7 +180,7 @@ fun Selectors(
             }
         )
     }
-    
+
     // swimlane editor
     SelectorList(
         titleHintId = R.string.choose_swimlane,
@@ -195,7 +199,7 @@ fun Selectors(
     }
 }
 
-class SelectorEntry<TItem : Any> (
+class SelectorEntry<TItem : Any>(
     val edit: EditAction<TItem, *> = SimpleEditAction(),
     val isVisible: Boolean = false,
     val hide: () -> Unit = {}
@@ -274,12 +278,12 @@ private fun EpicItem(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
-   CommonTaskTitle(
-       ref = epic.ref,
-       title = epic.title,
-       indicatorColorsHex = epic.colors,
-       isInactive = epic.isClosed
-   )
+    CommonTaskTitle(
+        ref = epic.ref,
+        title = epic.title,
+        indicatorColorsHex = epic.colors,
+        isInactive = epic.isClosed
+    )
 }
 
 @Composable
@@ -295,6 +299,7 @@ private fun SwimlaneItem(
     Text(
         text = swimlaneNullable?.name ?: stringResource(R.string.unclassifed),
         style = MaterialTheme.typography.bodyLarge,
-        color = swimlaneNullable?.let { MaterialTheme.colorScheme.onSurface } ?: MaterialTheme.colorScheme.primary
+        color = swimlaneNullable?.let { MaterialTheme.colorScheme.onSurface }
+            ?: MaterialTheme.colorScheme.primary
     )
 }

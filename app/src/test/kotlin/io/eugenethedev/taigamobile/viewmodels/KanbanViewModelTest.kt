@@ -1,6 +1,10 @@
 package io.eugenethedev.taigamobile.viewmodels
 
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.Swimlane
+import io.eugenethedev.taigamobile.domain.entities.TeamMember
+import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanViewModel
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult

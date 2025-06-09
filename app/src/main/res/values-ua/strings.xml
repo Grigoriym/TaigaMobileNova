@@ -72,7 +72,7 @@
     <string name="userstory">Історія користувача</string>
     <string name="task">Завдання</string>
     <string name="issue">Проблема</string>
-    
+
     <string name="no_sprint">Без спринта</string>
     <string name="link_to_epic">Зв\'язати з епіком</string>
     <string name="add_tag">Додати тег</string>

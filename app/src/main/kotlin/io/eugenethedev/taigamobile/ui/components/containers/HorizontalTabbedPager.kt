@@ -4,48 +4,59 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.material.*
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerScope
+import androidx.compose.foundation.pager.PagerState
+import androidx.compose.material.ScrollableTabRow
+import androidx.compose.material.Tab
+import androidx.compose.material.TabPosition
+import androidx.compose.material.TabRow
+import androidx.compose.material.TabRowDefaults
+import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.pager.*
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import kotlinx.coroutines.launch
 
 /**
  * Swipeable tabs
  */
-
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun HorizontalTabbedPager(
     tabs: Array<out Tab>,
     modifier: Modifier = Modifier,
-    pagerState: PagerState = rememberPagerState(),
+    pagerState: PagerState,
     scrollable: Boolean = true,
     edgePadding: Dp = mainHorizontalScreenPadding,
     content: @Composable PagerScope.(page: Int) -> Unit
 ) = Column(modifier = modifier) {
     val coroutineScope = rememberCoroutineScope()
+    val selectedTabIndex by remember { derivedStateOf { pagerState.currentPage } }
 
     val indicator: @Composable (tabPositions: List<TabPosition>) -> Unit = { tabPositions ->
         TabRowDefaults.Indicator(
-            Modifier.pagerTabIndicatorOffset(pagerState, tabPositions)
+            modifier = Modifier.tabIndicatorOffset(currentTabPosition = tabPositions[selectedTabIndex])
         )
     }
 
     val tabsRow: @Composable () -> Unit = {
         tabs.forEachIndexed { index, tab ->
-            val selected = pagerState.run { targetPage.takeIf { it != currentPage } ?: currentPage == index }
+            val selected = selectedTabIndex == index
             Tab(
                 selected = selected,
                 onClick = {
-                    coroutineScope.launch { pagerState.animateScrollToPage(index) }
+                    coroutineScope.launch {
+                        pagerState.animateScrollToPage(index)
+                    }
                 },
                 text = {
                     Text(
@@ -59,8 +70,8 @@ fun HorizontalTabbedPager(
 
     if (scrollable) {
         ScrollableTabRow(
-            selectedTabIndex = pagerState.currentPage,
             modifier = Modifier.fillMaxWidth(),
+            selectedTabIndex = selectedTabIndex,
             contentColor = MaterialTheme.colorScheme.primary,
             backgroundColor = MaterialTheme.colorScheme.surface,
             indicator = indicator,
@@ -70,8 +81,8 @@ fun HorizontalTabbedPager(
         )
     } else {
         TabRow(
-            selectedTabIndex = pagerState.currentPage,
             modifier = Modifier.fillMaxWidth(),
+            selectedTabIndex = selectedTabIndex,
             contentColor = MaterialTheme.colorScheme.primary,
             backgroundColor = MaterialTheme.colorScheme.surface,
             indicator = indicator,
@@ -84,8 +95,7 @@ fun HorizontalTabbedPager(
 
     HorizontalPager(
         state = pagerState,
-        content = content,
-        count = tabs.size
+        pageContent = content,
     )
 }
 

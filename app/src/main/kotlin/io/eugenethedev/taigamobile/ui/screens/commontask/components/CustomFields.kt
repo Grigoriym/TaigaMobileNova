@@ -5,11 +5,30 @@ import android.net.Uri
 import android.util.Patterns
 import androidx.annotation.StringRes
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,8 +64,8 @@ fun CustomField(
     onSaveClick: () -> Unit
 ) = Column {
     Text(
-       text = customField.name,
-       style = MaterialTheme.typography.titleMedium
+        text = customField.name,
+        style = MaterialTheme.typography.titleMedium
     )
 
     customField.description?.let {
@@ -65,7 +84,8 @@ fun CustomField(
     var buttonsAlignment = Alignment.CenterVertically
 
     var fieldState by remember { mutableStateOf(FieldState.Default) }
-    val indicationColor = if (value == customField.value) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary
+    val indicationColor =
+        if (value == customField.value) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary
     val borderColor = when (fieldState) {
         FieldState.Focused -> MaterialTheme.colorScheme.primary
         FieldState.Error -> MaterialTheme.colorScheme.error
@@ -134,7 +154,8 @@ fun CustomField(
                 )
 
                 CustomFieldType.Dropdown -> CustomFieldDropdown(
-                    options = customField.options ?: throw IllegalStateException("Dropdown custom field without options"),
+                    options = customField.options
+                        ?: throw IllegalStateException("Dropdown custom field without options"),
                     borderColor = borderColor,
                     value = value,
                     onValueChange = onValueChange,
@@ -225,7 +246,13 @@ private fun CustomFieldText(
     onValueChange: (CustomFieldValue?) -> Unit,
     changeFieldState: (FieldState) -> Unit
 ) {
-    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(value?.stringValue.orEmpty())) }
+    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(
+                value?.stringValue.orEmpty()
+            )
+        )
+    }
 
     TextValue(
         hintId = R.string.custom_field_text,
@@ -266,7 +293,13 @@ private fun CustomFieldRichText(
     changeFieldState: (FieldState) -> Unit,
     focusRequester: FocusRequester
 ) {
-    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(value?.stringValue.orEmpty())) }
+    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(
+                value?.stringValue.orEmpty()
+            )
+        )
+    }
 
     if (fieldState == FieldState.Focused) {
         TextValue(
@@ -294,9 +327,16 @@ private fun CustomFieldNumber(
     changeFieldState: (FieldState) -> Unit
 ) {
     // do not display trailing zeros, like 1.0
-    fun Double?.prettyDisplay() = this?.let { if (floor(it) != it) toString() else "%.0f".format(it) }.orEmpty()
+    fun Double?.prettyDisplay() =
+        this?.let { if (floor(it) != it) toString() else "%.0f".format(it) }.orEmpty()
 
-    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(value?.doubleValue.prettyDisplay())) }
+    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(
+                value?.doubleValue.prettyDisplay()
+            )
+        )
+    }
 
     TextValue(
         hintId = R.string.custom_field_number,
@@ -331,7 +371,13 @@ private fun CustomFieldUrl(
     onValueChange: (CustomFieldValue?) -> Unit,
     changeFieldState: (FieldState) -> Unit
 ) {
-    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(value?.stringValue.orEmpty())) }
+    var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(
+                value?.stringValue.orEmpty()
+            )
+        )
+    }
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -349,8 +395,8 @@ private fun CustomFieldUrl(
                             changeFieldState(FieldState.Focused)
                             onValueChange(CustomFieldValue(it))
                         } ?: run {
-                            changeFieldState(FieldState.Error)
-                        }
+                        changeFieldState(FieldState.Error)
+                    }
                 },
                 onFocusChange = {
                     text = TextFieldValue(value?.stringValue.orEmpty())
@@ -481,7 +527,7 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
                 description = "Description",
                 value = CustomFieldValue("Sample value"),
 
-            ),
+                ),
             value = value1,
             onValueChange = { value1 = it },
             onSaveClick = { }
@@ -499,7 +545,7 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
                 description = "Description",
                 value = CustomFieldValue("Sample value"),
 
-            ),
+                ),
             value = value2,
             onValueChange = { value2 = it },
             onSaveClick = { }
@@ -517,7 +563,7 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
                 description = "Description",
                 value = CustomFieldValue("__Sample__ `value`"),
 
-            ),
+                ),
             value = value3,
             onValueChange = { value3 = it },
             onSaveClick = { }
@@ -560,7 +606,17 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
 
         Spacer(Modifier.height(8.dp))
 
-        var value6 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue(LocalDate.of(1970, 1, 1))) }
+        var value6 by remember {
+            mutableStateOf<CustomFieldValue?>(
+                CustomFieldValue(
+                    LocalDate.of(
+                        1970,
+                        1,
+                        1
+                    )
+                )
+            )
+        }
 
         CustomField(
             customField = CustomField(

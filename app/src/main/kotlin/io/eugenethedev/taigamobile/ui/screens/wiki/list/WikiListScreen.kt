@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,8 +25,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.rememberPagerState
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.ui.components.appbars.ClickableAppBar
 import io.eugenethedev.taigamobile.ui.components.buttons.PlusButton
@@ -35,8 +34,8 @@ import io.eugenethedev.taigamobile.ui.components.containers.Tab
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
 import io.eugenethedev.taigamobile.ui.screens.main.Routes
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.navigateToWikiPageScreen
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
 
 @Composable
 fun WikiListScreen(
@@ -48,10 +47,10 @@ fun WikiListScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val wikiLinks by viewModel.wikiLinks.collectAsState()
-    wikiLinks.subscribeOnError(showMessage)
+    wikiLinks.SubscribeOnError(showMessage)
 
     val wikiPages by viewModel.wikiPages.collectAsState()
-    wikiPages.subscribeOnError(showMessage)
+    wikiPages.SubscribeOnError(showMessage)
 
     LaunchedEffect(Unit) {
         viewModel.onOpen()
@@ -61,7 +60,8 @@ fun WikiListScreen(
 
     WikiListScreenContent(
         projectName = projectName,
-        bookmarks = wikiLinks.data.orEmpty().filter { it.ref in wikiPagesSlug }.map { it.title to it.ref },
+        bookmarks = wikiLinks.data.orEmpty().filter { it.ref in wikiPagesSlug }
+            .map { it.title to it.ref },
         allPages = wikiPagesSlug,
         isLoading = wikiLinks is LoadingResult || wikiPages is LoadingResult,
         onTitleClick = { navController.navigate(Routes.projectsSelector) },
@@ -75,7 +75,6 @@ fun WikiListScreen(
     )
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun WikiListScreenContent(
     projectName: String,
@@ -115,18 +114,20 @@ fun WikiListScreenContent(
             createNewPage = navigateToCreatePage
         )
     }
+    val tabs = WikiTabs.entries.toTypedArray()
 
     HorizontalTabbedPager(
-        tabs = WikiTabs.values(),
         modifier = Modifier.fillMaxSize(),
-        pagerState = rememberPagerState()
+        tabs = tabs,
+        pagerState = rememberPagerState(pageCount = { tabs.size })
     ) { page ->
-        when (WikiTabs.values()[page]) {
+        when (WikiTabs.entries[page]) {
             WikiTabs.Bookmarks -> WikiSelectorList(
                 titles = bookmarks.map { it.first },
                 bookmarks = bookmarks,
                 onClick = navigateToPageBySlug
             )
+
             WikiTabs.AllWikiPages -> WikiSelectorList(
                 titles = allPages,
                 onClick = navigateToPageBySlug

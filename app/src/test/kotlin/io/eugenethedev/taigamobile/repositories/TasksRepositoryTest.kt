@@ -14,7 +14,12 @@ import io.eugenethedev.taigamobile.repositories.utils.getTestTasks
 import io.eugenethedev.taigamobile.testdata.TestData
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 
 class TasksRepositoryTest : BaseRepositoryTest() {
@@ -82,6 +87,7 @@ class TasksRepositoryTest : BaseRepositoryTest() {
                             tasksRepository.getCommonTask(it.id, it.taskType)
                         }
                 }
+
                 CommonTaskType.Issue -> {
                     dataForTest[CommonTaskType.Issue] = tasksRepository
                         .getIssues(1, FiltersData())
@@ -89,6 +95,7 @@ class TasksRepositoryTest : BaseRepositoryTest() {
                             tasksRepository.getCommonTask(it.id, it.taskType)
                         }
                 }
+
                 CommonTaskType.Task -> {
                     dataForTest[CommonTaskType.Task] = userStories
                         .flatMap { tasksRepository.getUserStoryTasks(it.id) }
@@ -96,6 +103,7 @@ class TasksRepositoryTest : BaseRepositoryTest() {
                             tasksRepository.getCommonTask(it.id, it.taskType)
                         }
                 }
+
                 CommonTaskType.UserStory -> {
                     dataForTest[CommonTaskType.UserStory] = userStories
                 }

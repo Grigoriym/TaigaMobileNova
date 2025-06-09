@@ -12,15 +12,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.domain.entities.*
-import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.Swimlane
+import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.components.appbars.ClickableAppBar
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
 import io.eugenethedev.taigamobile.ui.screens.main.Routes
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
+import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
 import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
 
 @Composable
 fun KanbanScreen(
@@ -35,16 +39,16 @@ fun KanbanScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val swimlanes by viewModel.swimlanes.collectAsState()
-    swimlanes.subscribeOnError(showMessage)
+    swimlanes.SubscribeOnError(showMessage)
 
     val statuses by viewModel.statuses.collectAsState()
-    statuses.subscribeOnError(showMessage)
+    statuses.SubscribeOnError(showMessage)
 
     val team by viewModel.team.collectAsState()
-    team.subscribeOnError(showMessage)
+    team.SubscribeOnError(showMessage)
 
     val stories by viewModel.stories.collectAsState()
-    stories.subscribeOnError(showMessage)
+    stories.SubscribeOnError(showMessage)
 
     val selectedSwimlane by viewModel.selectedSwimlane.collectAsState()
 
@@ -57,11 +61,21 @@ fun KanbanScreen(
         swimlanes = swimlanes.data.orEmpty(),
         selectSwimlane = viewModel::selectSwimlane,
         selectedSwimlane = selectedSwimlane,
-        navigateToStory = { id, ref -> navController.navigateToTaskScreen(id, CommonTaskType.UserStory, ref) },
+        navigateToStory = { id, ref ->
+            navController.navigateToTaskScreen(
+                id,
+                CommonTaskType.UserStory,
+                ref
+            )
+        },
         onTitleClick = { navController.navigate(Routes.projectsSelector) },
         navigateBack = navController::popBackStack,
         navigateToCreateTask = { statusId, swimlaneId ->
-            navController.navigateToCreateTaskScreen(CommonTaskType.UserStory, statusId = statusId, swimlaneId = swimlaneId)
+            navController.navigateToCreateTaskScreen(
+                CommonTaskType.UserStory,
+                statusId = statusId,
+                swimlaneId = swimlaneId
+            )
         }
     )
 }

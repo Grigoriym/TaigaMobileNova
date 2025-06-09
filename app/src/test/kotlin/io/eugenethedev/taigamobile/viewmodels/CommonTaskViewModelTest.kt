@@ -1,16 +1,38 @@
 package io.eugenethedev.taigamobile.viewmodels
 
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.Attachment
+import io.eugenethedev.taigamobile.domain.entities.Comment
+import io.eugenethedev.taigamobile.domain.entities.CommonTask
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
+import io.eugenethedev.taigamobile.domain.entities.CustomField
+import io.eugenethedev.taigamobile.domain.entities.CustomFieldValue
+import io.eugenethedev.taigamobile.domain.entities.CustomFields
+import io.eugenethedev.taigamobile.domain.entities.EpicShortInfo
+import io.eugenethedev.taigamobile.domain.entities.FiltersData
+import io.eugenethedev.taigamobile.domain.entities.Sprint
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.StatusType
+import io.eugenethedev.taigamobile.domain.entities.Swimlane
+import io.eugenethedev.taigamobile.domain.entities.Tag
+import io.eugenethedev.taigamobile.domain.entities.TeamMember
+import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskViewModel
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
-import io.eugenethedev.taigamobile.viewmodels.utils.*
+import io.eugenethedev.taigamobile.viewmodels.utils.accessDeniedException
+import io.eugenethedev.taigamobile.viewmodels.utils.assertResultEquals
+import io.eugenethedev.taigamobile.viewmodels.utils.notFoundException
+import io.eugenethedev.taigamobile.viewmodels.utils.testLazyPagingItems
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
 import java.io.InputStream
 import java.time.LocalDate
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertIs
 
 class CommonTaskViewModelTest : BaseViewModelTest() {
     private lateinit var viewModel: CommonTaskViewModel
@@ -105,7 +127,13 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         )
 
         initOnOpen()
-        coEvery { mockTaskRepository.editStatus(any(), neq(mockStatus.id), any()) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.editStatus(
+                any(),
+                neq(mockStatus.id),
+                any()
+            )
+        } throws accessDeniedException
 
         viewModel.editStatus(mockStatus)
         assertResultEquals(SuccessResult(mockStatus.type), viewModel.editStatusResult.value)
@@ -135,7 +163,12 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         )
 
         initOnOpen()
-        coEvery { mockTaskRepository.editSprint(any(), neq(mockSprint.id)) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.editSprint(
+                any(),
+                neq(mockSprint.id)
+            )
+        } throws accessDeniedException
 
         viewModel.editSprint(mockSprint)
         assertResultEquals(SuccessResult(Unit), viewModel.editSprintResult.value)
@@ -171,7 +204,12 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         )
 
         initOnOpen()
-        coEvery { mockTaskRepository.linkToEpic(neq(mockEpic.id), any()) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.linkToEpic(
+                neq(mockEpic.id),
+                any()
+            )
+        } throws accessDeniedException
 
         viewModel.linkToEpic(mockEpic)
         assertResultEquals(SuccessResult(Unit), viewModel.linkToEpicResult.value)
@@ -191,7 +229,12 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         )
 
         initOnOpen()
-        coEvery { mockTaskRepository.unlinkFromEpic(neq(mockEpic.id), any()) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.unlinkFromEpic(
+                neq(mockEpic.id),
+                any()
+            )
+        } throws accessDeniedException
 
         viewModel.unlinkFromEpic(mockEpic)
         assertResultEquals(SuccessResult(Unit), viewModel.linkToEpicResult.value)
@@ -284,7 +327,14 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         val comment = "comment"
 
         initOnOpen()
-        coEvery { mockTaskRepository.createComment(any(), any(), neq(comment), any()) } throws notFoundException
+        coEvery {
+            mockTaskRepository.createComment(
+                any(),
+                any(),
+                neq(comment),
+                any()
+            )
+        } throws notFoundException
 
         viewModel.createComment(comment)
         assertResultEquals(SuccessResult(mockListOfComments), viewModel.comments.value)
@@ -305,7 +355,13 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         )
 
         initOnOpen()
-        coEvery { mockTaskRepository.deleteComment(any(), any(), neq(mockComment.id)) } throws notFoundException
+        coEvery {
+            mockTaskRepository.deleteComment(
+                any(),
+                any(),
+                neq(mockComment.id)
+            )
+        } throws notFoundException
 
         viewModel.deleteComment(mockComment)
         assertResultEquals(SuccessResult(mockListOfComments), viewModel.comments.value)
@@ -325,7 +381,12 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         )
 
         initOnOpen()
-        coEvery { mockTaskRepository.deleteAttachment(any(), neq(mockAttachment.id)) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.deleteAttachment(
+                any(),
+                neq(mockAttachment.id)
+            )
+        } throws accessDeniedException
 
         viewModel.deleteAttachment(mockAttachment)
         assertResultEquals(SuccessResult(mockListOfAttachments), viewModel.attachments.value)
@@ -340,7 +401,14 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         val mockInputStream = mockk<InputStream>(relaxed = true)
 
         initOnOpen()
-        coEvery { mockTaskRepository.addAttachment(any(), any(), neq(fileName), any()) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.addAttachment(
+                any(),
+                any(),
+                neq(fileName),
+                any()
+            )
+        } throws accessDeniedException
 
         viewModel.addAttachment(fileName, mockInputStream)
         assertResultEquals(SuccessResult(mockListOfAttachments), viewModel.attachments.value)
@@ -355,7 +423,13 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         val description = "description"
 
         initOnOpen()
-        coEvery { mockTaskRepository.editCommonTaskBasicInfo(any(), neq(title), any()) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.editCommonTaskBasicInfo(
+                any(),
+                neq(title),
+                any()
+            )
+        } throws accessDeniedException
 
         viewModel.editBasicInfo(title, description)
         assertResultEquals(SuccessResult(Unit), viewModel.editBasicInfoResult.value)
@@ -382,11 +456,21 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
 
         initOnOpen()
 
-        coEvery { mockTaskRepository.promoteCommonTaskToUserStory(any(), any()) } returns mockCommonTask
+        coEvery {
+            mockTaskRepository.promoteCommonTaskToUserStory(
+                any(),
+                any()
+            )
+        } returns mockCommonTask
         viewModel.promoteToUserStory()
         assertResultEquals(SuccessResult(mockCommonTask), viewModel.promoteResult.value)
 
-        coEvery { mockTaskRepository.promoteCommonTaskToUserStory(any(), any()) } throws notFoundException
+        coEvery {
+            mockTaskRepository.promoteCommonTaskToUserStory(
+                any(),
+                any()
+            )
+        } throws notFoundException
         viewModel.promoteToUserStory()
         assertIs<ErrorResult<CommonTask>>(viewModel.promoteResult.value)
     }
@@ -400,7 +484,14 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         viewModel.editCustomField(mockCustomField, mockCustomFieldValue)
         assertResultEquals(SuccessResult(mockCustomFields), viewModel.customFields.value)
 
-        coEvery { mockTaskRepository.editCustomFields(any(), any(), any(), any()) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.editCustomFields(
+                any(),
+                any(),
+                any(),
+                any()
+            )
+        } throws accessDeniedException
         viewModel.editCustomField(mockCustomField, mockCustomFieldValue)
         assertIs<ErrorResult<CustomFields>>(viewModel.customFields.value)
     }
@@ -457,7 +548,12 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         viewModel.editSwimlane(mockSwimlane)
         assertResultEquals(SuccessResult(mockListOfSwimlanes), viewModel.swimlanes.value)
 
-        coEvery { mockTaskRepository.editUserStorySwimlane(any(), any()) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.editUserStorySwimlane(
+                any(),
+                any()
+            )
+        } throws accessDeniedException
         viewModel.editSwimlane(mockSwimlane)
         assertIs<ErrorResult<List<Swimlane>>>(viewModel.swimlanes.value)
     }
@@ -468,7 +564,12 @@ class CommonTaskViewModelTest : BaseViewModelTest() {
         val errorLocaleDate = LocalDate.of(3000, 1, 1)
 
         initOnOpen()
-        coEvery { mockTaskRepository.editDueDate(any(), neq(mockLocaleDate)) } throws accessDeniedException
+        coEvery {
+            mockTaskRepository.editDueDate(
+                any(),
+                neq(mockLocaleDate)
+            )
+        } throws accessDeniedException
 
         viewModel.editDueDate(mockLocaleDate)
         assertResultEquals(SuccessResult(Unit), viewModel.editDueDateResult.value)

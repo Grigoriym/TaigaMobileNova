@@ -33,7 +33,10 @@ class AuthRepositoryTest : BaseRepositoryTest() {
 
     @Test
     fun `test refresh auth token`() = runBlocking {
-        mockSession.changeAuthCredentials("wrong token", mockSession.refreshToken.value) // simulate token expiration (token is not valid anymore)
+        mockSession.changeAuthCredentials(
+            "wrong token",
+            mockSession.refreshToken.value
+        ) // simulate token expiration (token is not valid anymore)
         mockTaigaApi.getProject(activeUser.projects.keys.first()) // successful response (because refresh happens)
         return@runBlocking
     }

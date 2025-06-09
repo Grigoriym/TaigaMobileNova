@@ -48,7 +48,8 @@ fun ColorPicker(
     }
 
     Spacer(
-        Modifier.size(size)
+        Modifier
+            .size(size)
             .background(color = color, shape = MaterialTheme.shapes.small)
             .clickableUnindicated { dialogState.show() }
     )

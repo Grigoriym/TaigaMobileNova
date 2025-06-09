@@ -1,8 +1,25 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package io.eugenethedev.taigamobile.ui.screens.commontask
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -10,22 +27,47 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.accompanist.insets.navigationBarsWithImePadding
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.Attachment
+import io.eugenethedev.taigamobile.domain.entities.Comment
+import io.eugenethedev.taigamobile.domain.entities.CommonTask
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.CustomField
-import io.eugenethedev.taigamobile.ui.components.editors.Editor
-import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
-import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
+import io.eugenethedev.taigamobile.domain.entities.CustomFieldValue
+import io.eugenethedev.taigamobile.domain.entities.Project
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.StatusType
+import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.components.dialogs.LoadingDialog
+import io.eugenethedev.taigamobile.ui.components.editors.Editor
 import io.eugenethedev.taigamobile.ui.components.lists.Attachments
 import io.eugenethedev.taigamobile.ui.components.lists.Description
-import io.eugenethedev.taigamobile.ui.screens.commontask.components.*
+import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
+import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskAppBar
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskAssignees
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskBelongsTo
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskComments
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskCreatedBy
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskCustomFields
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskDueDate
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskHeader
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskTags
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskWatchers
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.CreateCommentBar
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.SelectorEntry
+import io.eugenethedev.taigamobile.ui.screens.commontask.components.Selectors
 import io.eugenethedev.taigamobile.ui.screens.main.FilePicker
 import io.eugenethedev.taigamobile.ui.screens.main.LocalFilePicker
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
-import io.eugenethedev.taigamobile.ui.utils.*
+import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SuccessResult
+import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
+import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
+import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 import java.time.LocalDateTime
 
 @Composable
@@ -42,72 +84,72 @@ fun CommonTaskScreen(
     }
 
     val commonTask by viewModel.commonTask.collectAsState()
-    commonTask.subscribeOnError(showMessage)
+    commonTask.SubscribeOnError(showMessage)
 
     val creator by viewModel.creator.collectAsState()
-    creator.subscribeOnError(showMessage)
+    creator.SubscribeOnError(showMessage)
 
     val assignees by viewModel.assignees.collectAsState()
-    assignees.subscribeOnError(showMessage)
+    assignees.SubscribeOnError(showMessage)
 
     val watchers by viewModel.watchers.collectAsState()
-    watchers.subscribeOnError(showMessage)
+    watchers.SubscribeOnError(showMessage)
 
     val userStories by viewModel.userStories.collectAsState()
-    userStories.subscribeOnError(showMessage)
+    userStories.SubscribeOnError(showMessage)
 
     val tasks by viewModel.tasks.collectAsState()
-    tasks.subscribeOnError(showMessage)
+    tasks.SubscribeOnError(showMessage)
 
     val comments by viewModel.comments.collectAsState()
-    comments.subscribeOnError(showMessage)
+    comments.SubscribeOnError(showMessage)
 
     val editBasicInfoResult by viewModel.editBasicInfoResult.collectAsState()
-    editBasicInfoResult.subscribeOnError(showMessage)
+    editBasicInfoResult.SubscribeOnError(showMessage)
 
     val statuses by viewModel.statuses.collectAsState()
-    statuses.subscribeOnError(showMessage)
+    statuses.SubscribeOnError(showMessage)
     val editStatusResult by viewModel.editStatusResult.collectAsState()
-    editStatusResult.subscribeOnError(showMessage)
+    editStatusResult.SubscribeOnError(showMessage)
 
     val swimlanes by viewModel.swimlanes.collectAsState()
-    swimlanes.subscribeOnError(showMessage)
+    swimlanes.SubscribeOnError(showMessage)
 
     val sprints = viewModel.sprints
-    sprints.subscribeOnError(showMessage)
+    sprints.SubscribeOnError(showMessage)
     val editSprintResult by viewModel.editSprintResult.collectAsState()
-    editSprintResult.subscribeOnError(showMessage)
+    editSprintResult.SubscribeOnError(showMessage)
 
     val epics = viewModel.epics
-    epics.subscribeOnError(showMessage)
+    epics.SubscribeOnError(showMessage)
     val linkToEpicResult by viewModel.linkToEpicResult.collectAsState()
-    linkToEpicResult.subscribeOnError(showMessage)
+    linkToEpicResult.SubscribeOnError(showMessage)
 
     val team by viewModel.team.collectAsState()
-    team.subscribeOnError(showMessage)
+    team.SubscribeOnError(showMessage)
     val teamSearched by viewModel.teamSearched.collectAsState()
 
     val customFields by viewModel.customFields.collectAsState()
-    customFields.subscribeOnError(showMessage)
+    customFields.SubscribeOnError(showMessage)
 
     val attachments by viewModel.attachments.collectAsState()
-    attachments.subscribeOnError(showMessage)
+    attachments.SubscribeOnError(showMessage)
 
     val tags by viewModel.tags.collectAsState()
-    tags.subscribeOnError(showMessage)
+    tags.SubscribeOnError(showMessage)
     val tagsSearched by viewModel.tagsSearched.collectAsState()
 
     val editEpicColorResult by viewModel.editEpicColorResult.collectAsState()
-    editEpicColorResult.subscribeOnError(showMessage)
+    editEpicColorResult.SubscribeOnError(showMessage)
 
     val editBlockedResult by viewModel.editBlockedResult.collectAsState()
-    editBlockedResult.subscribeOnError(showMessage)
+    editBlockedResult.SubscribeOnError(showMessage)
 
     val editDueDateResult by viewModel.editDueDateResult.collectAsState()
-    editDueDateResult.subscribeOnError(showMessage)
+    editDueDateResult.SubscribeOnError(showMessage)
 
     val deleteResult by viewModel.deleteResult.collectAsState()
-    deleteResult.subscribeOnError(showMessage)
+    deleteResult.SubscribeOnError(showMessage)
     deleteResult.takeIf { it is SuccessResult }?.let {
         LaunchedEffect(Unit) {
             navController.popBackStack()
@@ -115,7 +157,7 @@ fun CommonTaskScreen(
     }
 
     val promoteResult by viewModel.promoteResult.collectAsState()
-    promoteResult.subscribeOnError(showMessage)
+    promoteResult.SubscribeOnError(showMessage)
     promoteResult.takeIf { it is SuccessResult }?.data?.let {
         LaunchedEffect(Unit) {
             navController.popBackStack()
@@ -235,7 +277,7 @@ fun CommonTaskScreen(
                 isLoading = editEpicColorResult is LoadingResult
             ),
             editAssign = EmptyEditAction(
-                select =  { viewModel.addAssignee() },
+                select = { viewModel.addAssignee() },
                 remove = { viewModel.removeAssignee() },
                 isLoading = assignees is LoadingResult,
             ),
@@ -252,7 +294,12 @@ fun CommonTaskScreen(
         ),
         navigationActions = NavigationActions(
             navigateBack = navController::popBackStack,
-            navigateToCreateTask = { navController.navigateToCreateTaskScreen(CommonTaskType.Task, commonTaskId) },
+            navigateToCreateTask = {
+                navController.navigateToCreateTaskScreen(
+                    CommonTaskType.Task,
+                    commonTaskId
+                )
+            },
             navigateToTask = navController::navigateToTaskScreen
         ),
         navigateToProfile = { userId ->
@@ -281,7 +328,7 @@ fun CommonTaskScreenContent(
     comments: List<Comment> = emptyList(),
     editActions: EditActions = EditActions(),
     navigationActions: NavigationActions = NavigationActions(),
-    navigateToProfile: (userId: Long) -> Unit = {_ ->},
+    navigateToProfile: (userId: Long) -> Unit = { _ -> },
     showMessage: (message: Int) -> Unit = {}
 ) = Box(Modifier.fillMaxSize()) {
     var isTaskEditorVisible by remember { mutableStateOf(false) }
@@ -424,7 +471,10 @@ fun CommonTaskScreenContent(
                         CommonTaskCustomFields(
                             customFields = customFields,
                             customFieldsValues = customFieldsValues,
-                            onValueChange = { itemId, value -> customFieldsValues = customFieldsValues - itemId + Pair(itemId, value) },
+                            onValueChange = { itemId, value ->
+                                customFieldsValues =
+                                    customFieldsValues - itemId + Pair(itemId, value)
+                            },
                             editActions = editActions
                         )
 
@@ -476,7 +526,8 @@ fun CommonTaskScreenContent(
                     item {
                         Spacer(
                             Modifier
-                                .navigationBarsWithImePadding()
+                                .navigationBarsPadding()
+                                .imePadding()
                                 .height(72.dp)
                         )
                     }
@@ -550,7 +601,8 @@ fun CommonTaskScreenContent(
         )
     }
 
-    if (editActions.run { listOf(editBasicInfo, promoteTask, deleteTask, editBlocked) }.any { it.isLoading }) {
+    if (editActions.run { listOf(editBasicInfo, promoteTask, deleteTask, editBlocked) }
+            .any { it.isLoading }) {
         LoadingDialog()
     }
 }
@@ -564,7 +616,7 @@ fun CommonTaskScreenPreview() = TaigaMobileTheme {
         CommonTaskScreenContent(
             commonTaskType = CommonTaskType.UserStory,
             toolbarTitle = "Userstory #99",
-            toolbarSubtitle =  "Project #228",
+            toolbarSubtitle = "Project #228",
             commonTask = null, // TODO left it null for now since I do not really use this preview
             creator = User(
                 _id = 0L,

@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.DropdownMenu
@@ -30,25 +31,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.accompanist.insets.imePadding
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Attachment
 import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
 import io.eugenethedev.taigamobile.ui.components.dialogs.ConfirmActionDialog
 import io.eugenethedev.taigamobile.ui.components.editors.Editor
+import io.eugenethedev.taigamobile.ui.components.lists.Attachments
+import io.eugenethedev.taigamobile.ui.components.lists.Description
 import io.eugenethedev.taigamobile.ui.components.lists.UserItem
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
 import io.eugenethedev.taigamobile.ui.screens.commontask.EditAction
-import io.eugenethedev.taigamobile.ui.components.lists.Attachments
-import io.eugenethedev.taigamobile.ui.components.lists.Description
 import io.eugenethedev.taigamobile.ui.theme.dialogTonalElevation
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
-import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevation
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import java.io.InputStream
 import java.time.LocalDateTime
 
@@ -61,25 +61,25 @@ fun WikiPageScreen(
     val viewModel: WikiPageViewModel = viewModel()
 
     val page by viewModel.page.collectAsState()
-    page.subscribeOnError(showMessage)
+    page.SubscribeOnError(showMessage)
 
     val link by viewModel.link.collectAsState()
-    link.subscribeOnError(showMessage)
+    link.SubscribeOnError(showMessage)
 
     val editWikiPageResult by viewModel.editWikiPageResult.collectAsState()
-    editWikiPageResult.subscribeOnError(showMessage)
+    editWikiPageResult.SubscribeOnError(showMessage)
 
     val deleteWikiPageResult by viewModel.deleteWikiPageResult.collectAsState()
-    deleteWikiPageResult.subscribeOnError(showMessage)
+    deleteWikiPageResult.SubscribeOnError(showMessage)
 
     val attachments by viewModel.attachments.collectAsState()
-    attachments.subscribeOnError(showMessage)
+    attachments.SubscribeOnError(showMessage)
 
     val lastModifierUser by viewModel.lastModifierUser.collectAsState()
 
     val isLoading = page is LoadingResult || link is LoadingResult ||
-        editWikiPageResult is LoadingResult || deleteWikiPageResult is LoadingResult ||
-        attachments is LoadingResult
+            editWikiPageResult is LoadingResult || deleteWikiPageResult is LoadingResult ||
+            attachments is LoadingResult
 
     deleteWikiPageResult.takeIf { it is SuccessResult }?.let {
         LaunchedEffect(Unit) {
@@ -267,7 +267,7 @@ fun WikiAppBar(
             }
             DropdownMenu(
                 modifier = Modifier.background(
-                    MaterialTheme.colorScheme.surfaceColorAtElevation(dialogTonalElevation)
+                    MaterialTheme.colorScheme.surfaceColorAtElevationInternal(dialogTonalElevation)
                 ),
                 expanded = isMenuExpanded,
                 onDismissRequest = { isMenuExpanded = false }

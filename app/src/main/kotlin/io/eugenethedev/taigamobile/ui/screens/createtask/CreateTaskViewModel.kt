@@ -15,8 +15,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class CreateTaskViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject lateinit var tasksRepository: ITasksRepository
-    @Inject lateinit var session: Session
+    @Inject
+    lateinit var tasksRepository: ITasksRepository
+    @Inject
+    lateinit var session: Session
 
     init {
         appComponent.inject(this)
@@ -34,7 +36,15 @@ class CreateTaskViewModel(appComponent: AppComponent = TaigaApp.appComponent) : 
         swimlaneId: Long? = null
     ) = viewModelScope.launch {
         creationResult.loadOrError(preserveValue = false) {
-            tasksRepository.createCommonTask(commonTaskType, title, description, parentId, sprintId, statusId, swimlaneId).also {
+            tasksRepository.createCommonTask(
+                commonTaskType,
+                title,
+                description,
+                parentId,
+                sprintId,
+                statusId,
+                swimlaneId
+            ).also {
                 session.taskEdit.postUpdate()
             }
         }

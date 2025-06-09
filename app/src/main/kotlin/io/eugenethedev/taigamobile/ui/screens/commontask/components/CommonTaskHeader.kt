@@ -1,7 +1,18 @@
+@file:OptIn(ExperimentalLayoutApi::class)
+
 package io.eugenethedev.taigamobile.ui.screens.commontask.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -13,8 +24,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
-import com.google.accompanist.flowlayout.FlowRow
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
@@ -42,7 +51,8 @@ fun LazyListScope.CommonTaskHeader(
 
         commonTask.blockedNote?.trim()?.let {
             Column(
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
                     .background(taigaRed, MaterialTheme.shapes.medium)
                     .padding(8.dp)
             ) {
@@ -74,9 +84,10 @@ fun LazyListScope.CommonTaskHeader(
         }
 
         FlowRow(
-            crossAxisAlignment = FlowCrossAxisAlignment.Center,
-            crossAxisSpacing = badgesPadding,
-            mainAxisSpacing = badgesPadding
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(badgesPadding),
+            verticalArrangement = Arrangement.spacedBy(badgesPadding),
+//            crossAxisAlignment = FlowCrossAxisAlignment.Center,
         ) {
             // epic color
             if (commonTask.taskType == CommonTaskType.Epic) {

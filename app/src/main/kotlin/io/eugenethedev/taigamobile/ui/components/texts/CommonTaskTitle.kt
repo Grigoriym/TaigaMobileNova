@@ -1,6 +1,11 @@
 package io.eugenethedev.taigamobile.ui.components.texts
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,7 +17,6 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.flowlayout.FlowRow
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Tag
 import io.eugenethedev.taigamobile.ui.components.Chip
@@ -24,6 +28,7 @@ import io.eugenethedev.taigamobile.ui.utils.toColor
 /**
  * Text with colored dots (indicators) at the end and tags
  */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun CommonTaskTitle(
     ref: Int,
@@ -39,7 +44,12 @@ fun CommonTaskTitle(
 
     Text(
         text = buildAnnotatedString {
-            if (isInactive) pushStyle(SpanStyle(color = MaterialTheme.colorScheme.outline, textDecoration = TextDecoration.LineThrough))
+            if (isInactive) pushStyle(
+                SpanStyle(
+                    color = MaterialTheme.colorScheme.outline,
+                    textDecoration = TextDecoration.LineThrough
+                )
+            )
             append(stringResource(R.string.title_with_ref_pattern).format(ref, title))
             if (isInactive) pop()
 
@@ -59,8 +69,8 @@ fun CommonTaskTitle(
         Spacer(Modifier.height(space))
 
         FlowRow(
-            mainAxisSpacing = space,
-            crossAxisSpacing = space
+            horizontalArrangement = Arrangement.spacedBy(space),
+            verticalArrangement = Arrangement.spacedBy(space),
         ) {
             tags.forEach {
                 val bgColor = it.color.toColor()

@@ -18,5 +18,6 @@ class LoadingResult<T>(data: T? = null) : Result<T>(data = data)
 class NothingResult<T> : Result<T>()
 
 typealias MutableResultFlow<T> = MutableStateFlow<Result<T>>
+
 fun <T> MutableResultFlow(value: Result<T> = NothingResult()) = MutableStateFlow(value)
 typealias ResultFlow<T> = StateFlow<Result<T>>

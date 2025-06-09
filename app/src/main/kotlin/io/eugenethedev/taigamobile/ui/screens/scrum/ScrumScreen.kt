@@ -1,12 +1,31 @@
 package io.eugenethedev.taigamobile.ui.screens.scrum
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults.buttonColors
-import androidx.compose.runtime.*
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -16,18 +35,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.items
-import com.google.accompanist.insets.navigationBarsHeight
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.rememberPagerState
-import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.domain.entities.Sprint
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
+import io.eugenethedev.taigamobile.domain.entities.Sprint
 import io.eugenethedev.taigamobile.ui.components.TasksFiltersWithLazyList
-import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.components.appbars.ClickableAppBar
 import io.eugenethedev.taigamobile.ui.components.buttons.PlusButton
 import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
@@ -39,9 +54,15 @@ import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
 import io.eugenethedev.taigamobile.ui.components.loaders.DotsLoader
 import io.eugenethedev.taigamobile.ui.components.texts.NothingToSeeHereText
 import io.eugenethedev.taigamobile.ui.screens.main.Routes
+import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
-import io.eugenethedev.taigamobile.ui.utils.*
+import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
+import io.eugenethedev.taigamobile.ui.utils.navigateToSprint
+import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -60,21 +81,21 @@ fun ScrumScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val stories = viewModel.stories
-    stories.subscribeOnError {
+    stories.SubscribeOnError {
         showMessage(R.string.common_error_message)
     }
 
     val openSprints = viewModel.openSprints
-    openSprints.subscribeOnError(showMessage)
+    openSprints.SubscribeOnError(showMessage)
 
     val closedSprints = viewModel.closedSprints
-    closedSprints.subscribeOnError(showMessage)
+    closedSprints.SubscribeOnError(showMessage)
 
     val createSprintResult by viewModel.createSprintResult.collectAsState()
-    createSprintResult.subscribeOnError(showMessage)
+    createSprintResult.SubscribeOnError(showMessage)
 
     val filters by viewModel.filters.collectAsState()
-    filters.subscribeOnError(showMessage)
+    filters.SubscribeOnError(showMessage)
 
     val activeFilters by viewModel.activeFilters.collectAsState()
 
@@ -97,7 +118,6 @@ fun ScrumScreen(
     )
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ScrumScreenContent(
     projectName: String,
@@ -117,7 +137,8 @@ fun ScrumScreenContent(
     modifier = Modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
-    val pagerState = rememberPagerState()
+    val tabs = Tabs.entries
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
     var isCreateSprintDialogVisible by remember { mutableStateOf(false) }
 
     ClickableAppBar(
@@ -126,7 +147,9 @@ fun ScrumScreenContent(
             PlusButton(
                 onClick = when (Tabs.values()[pagerState.currentPage]) {
                     Tabs.Backlog -> navigateToCreateTask
-                    Tabs.Sprints -> { { isCreateSprintDialogVisible = true } }
+                    Tabs.Sprints -> {
+                        { isCreateSprintDialogVisible = true }
+                    }
                 }
             )
         },
@@ -148,11 +171,11 @@ fun ScrumScreenContent(
     }
 
     HorizontalTabbedPager(
-        tabs = Tabs.values(),
         modifier = Modifier.fillMaxSize(),
+        tabs = tabs.toTypedArray(),
         pagerState = pagerState
     ) { page ->
-        when (Tabs.values()[page]) {
+        when (tabs[page]) {
             Tabs.Backlog -> BacklogTabContent(
                 stories = stories,
                 filters = filters,
@@ -160,6 +183,7 @@ fun ScrumScreenContent(
                 selectFilters = selectFilters,
                 navigateToTask = navigateToTask
             )
+
             Tabs.Sprints -> SprintsTabContent(
                 openSprints = openSprints,
                 closedSprints = closedSprints,
@@ -215,12 +239,19 @@ private fun SprintsTabContent(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(openSprints, key = { it.id }) {
-            if (it == null) return@items
-            SprintItem(
-                sprint = it,
-                navigateToBoard = navigateToBoard
-            )
+        items(
+            count = openSprints.itemCount,
+            key = openSprints.itemKey {
+                it.id
+            }
+        ) { index ->
+            val item = openSprints[index]
+            if (item != null) {
+                SprintItem(
+                    sprint = item,
+                    navigateToBoard = navigateToBoard
+                )
+            }
         }
 
         item {
@@ -236,12 +267,20 @@ private fun SprintsTabContent(
         }
 
         if (isClosedSprintsVisible) {
-            items(closedSprints, key = { it.id }) {
-                if (it == null) return@items
-                SprintItem(
-                    sprint = it,
-                    navigateToBoard = navigateToBoard
-                )
+            items(
+                count = closedSprints.itemCount,
+                key = closedSprints.itemKey {
+                    it.id
+                },
+                contentType = closedSprints.itemContentType()
+            ) { index ->
+                val item = closedSprints[index]
+                if (item != null) {
+                    SprintItem(
+                        sprint = item,
+                        navigateToBoard = navigateToBoard
+                    )
+                }
             }
 
             item {
@@ -256,7 +295,7 @@ private fun SprintsTabContent(
                 NothingToSeeHereText()
             }
 
-            Spacer(Modifier.navigationBarsHeight(8.dp))
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 }
@@ -305,17 +344,19 @@ private fun SprintItem(
             }
         }
 
+        //TODO the only place I had to comment the code since the usage is internal and I couldn't find
+        // anything to change it
         buttonColors().let {
-            val containerColor by it.containerColor(!sprint.isClosed)
-            val contentColor by it.contentColor(!sprint.isClosed)
+//            val containerColor by it.containerColor(!sprint.isClosed)
+//            val contentColor by it.contentColor(!sprint.isClosed)
 
             Button(
                 onClick = { navigateToBoard(sprint) },
                 modifier = Modifier.weight(0.3f),
-                colors = buttonColors(
-                    containerColor = containerColor,
-                    contentColor = contentColor
-                )
+//                colors = buttonColors(
+//                    containerColor = containerColor,
+//                    contentColor = contentColor
+//                )
             ) {
                 Text(stringResource(R.string.taskboard))
             }

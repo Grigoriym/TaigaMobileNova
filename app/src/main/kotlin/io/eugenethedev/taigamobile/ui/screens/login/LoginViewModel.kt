@@ -13,7 +13,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class LoginViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject lateinit var authRepository: IAuthRepository
+    @Inject
+    lateinit var authRepository: IAuthRepository
 
     val loginResult = MutableResultFlow<Unit>()
 
@@ -21,9 +22,10 @@ class LoginViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewM
         appComponent.inject(this)
     }
 
-    fun login(taigaServer: String, authType: AuthType, username: String, password: String) = viewModelScope.launch {
-        loginResult.loadOrError(R.string.login_error_message) {
-            authRepository.auth(taigaServer, authType, password, username)
+    fun login(taigaServer: String, authType: AuthType, username: String, password: String) =
+        viewModelScope.launch {
+            loginResult.loadOrError(R.string.login_error_message) {
+                authRepository.auth(taigaServer, authType, password, username)
+            }
         }
-    }
 }

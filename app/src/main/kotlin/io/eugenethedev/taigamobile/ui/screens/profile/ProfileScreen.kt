@@ -6,10 +6,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -23,14 +26,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
-import com.google.accompanist.insets.navigationBarsHeight
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Project
 import io.eugenethedev.taigamobile.domain.entities.Stats
@@ -40,7 +44,7 @@ import io.eugenethedev.taigamobile.ui.components.lists.ProjectCard
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 
 @Composable
 fun ProfileScreen(
@@ -55,11 +59,11 @@ fun ProfileScreen(
     }
 
     val currentUser by viewModel.currentUser.collectAsState()
-    currentUser.subscribeOnError(showMessage)
+    currentUser.SubscribeOnError(showMessage)
     val currentUserStats by viewModel.currentUserStats.collectAsState()
-    currentUserStats.subscribeOnError(showMessage)
+    currentUserStats.SubscribeOnError(showMessage)
     val currentUserProjects by viewModel.currentUserProjects.collectAsState()
-    currentUserProjects.subscribeOnError(showMessage)
+    currentUserProjects.SubscribeOnError(showMessage)
     val currentProjectId by viewModel.currentProjectId.collectAsState()
 
     ProfileScreenContent(
@@ -105,12 +109,14 @@ fun ProfileScreenContent(
         ) {
             item {
                 Image(
-                    painter = rememberImagePainter(
-                        data = currentUser?.avatarUrl ?: R.drawable.default_avatar,
-                        builder = {
-                            error(R.drawable.default_avatar)
-                            crossfade(true)
-                        },
+                    painter = rememberAsyncImagePainter(
+                        ImageRequest.Builder(LocalContext.current)
+                            .data(
+                                currentUser?.avatarUrl ?: R.drawable.default_avatar
+                            ).apply(fun ImageRequest.Builder.() {
+                                error(R.drawable.default_avatar)
+                                crossfade(true)
+                            }).build()
                     ),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
@@ -157,12 +163,18 @@ fun ProfileScreenContent(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    ColumnTextData(currentUserStats?.totalNumProjects.toString(), stringResource(R.string.projects))
+                    ColumnTextData(
+                        currentUserStats?.totalNumProjects.toString(),
+                        stringResource(R.string.projects)
+                    )
                     ColumnTextData(
                         currentUserStats?.totalNumClosedUserStories.toString(),
                         stringResource(R.string.closed_user_story)
                     )
-                    ColumnTextData(currentUserStats?.totalNumContacts.toString(), stringResource(R.string.contacts))
+                    ColumnTextData(
+                        currentUserStats?.totalNumContacts.toString(),
+                        stringResource(R.string.contacts)
+                    )
                 }
 
                 Spacer(Modifier.height(24.dp))
@@ -184,7 +196,7 @@ fun ProfileScreenContent(
             }
 
             item {
-                Spacer(Modifier.navigationBarsHeight(8.dp))
+                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
         }
     }

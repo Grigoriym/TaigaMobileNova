@@ -1,11 +1,10 @@
 package io.eugenethedev.taigamobile.data.repositories
 
-import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.data.api.TaigaApi
 import io.eugenethedev.taigamobile.domain.entities.Stats
 import io.eugenethedev.taigamobile.domain.entities.TeamMember
-import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.domain.repositories.IUsersRepository
+import io.eugenethedev.taigamobile.state.Session
 import kotlinx.coroutines.async
 import javax.inject.Inject
 
@@ -19,7 +18,8 @@ class UsersRepository @Inject constructor(
 
     override suspend fun getUser(userId: Long) = withIO { taigaApi.getUser(userId) }
 
-    override suspend fun getUserStats(userId: Long): Stats = withIO { taigaApi.getUserStats(userId) }
+    override suspend fun getUserStats(userId: Long): Stats =
+        withIO { taigaApi.getUserStats(userId) }
 
     override suspend fun getTeam() = withIO {
         val team = async { taigaApi.getProject(currentProjectId).members }
@@ -27,7 +27,7 @@ class UsersRepository @Inject constructor(
             taigaApi.getMemberStats(currentProjectId).run {
                 // calculating total number of points for each id
                 (closed_bugs.toList() + closed_tasks.toList() + created_bugs.toList() +
-                    iocaine_tasks.toList() + wiki_changes.toList())
+                        iocaine_tasks.toList() + wiki_changes.toList())
                     .mapNotNull { p -> p.first.toLongOrNull()?.let { it to p.second } }
                     .groupBy { it.first }
                     .map { (k, v) -> k to v.sumOf { it.second } }

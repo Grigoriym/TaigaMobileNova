@@ -49,11 +49,16 @@ data class CommonTask(
 
 @JsonClass(generateAdapter = false)
 enum class DueDateStatus {
-    @Json(name = "not_set") NotSet,
-    @Json(name = "set") Set,
-    @Json(name = "due_soon") DueSoon,
-    @Json(name = "past_due") PastDue,
-    @Json(name = "no_longer_applicable") NoLongerApplicable
+    @Json(name = "not_set")
+    NotSet,
+    @Json(name = "set")
+    Set,
+    @Json(name = "due_soon")
+    DueSoon,
+    @Json(name = "past_due")
+    PastDue,
+    @Json(name = "no_longer_applicable")
+    NoLongerApplicable
 }
 
 data class CommonTaskExtended(

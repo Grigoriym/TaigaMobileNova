@@ -4,13 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.TaigaApp
 import io.eugenethedev.taigamobile.dagger.AppComponent
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
 import io.eugenethedev.taigamobile.domain.paging.CommonPagingSource
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
+import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.ui.utils.MutableResultFlow
 import io.eugenethedev.taigamobile.ui.utils.asLazyPagingItems
 import io.eugenethedev.taigamobile.ui.utils.loadOrError
@@ -22,8 +22,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class EpicsViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject lateinit var session: Session
-    @Inject lateinit var tasksRepository: ITasksRepository
+    @Inject
+    lateinit var session: Session
+    @Inject
+    lateinit var tasksRepository: ITasksRepository
 
     val projectName by lazy { session.currentProjectName }
 
@@ -46,6 +48,7 @@ class EpicsViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewM
 
     val filters = MutableResultFlow<FiltersData>()
     val activeFilters by lazy { session.epicsFilters }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val epics by lazy {
         activeFilters.flatMapLatest { filters ->

@@ -1,26 +1,26 @@
-import java.util.Properties
 import com.android.build.api.dsl.AndroidSourceSet
 
 plugins {
-    id("com.android.application")
-    kotlin("android")
-    kotlin("kapt")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.kotlin.android)
 }
-
-val composeVersion = "1.1.1"
 
 android {
     compileSdk = 35
-    buildToolsVersion = "30.0.3"
 
     namespace = "io.eugenethedev.taigamobile"
 
     defaultConfig {
         applicationId = namespace!!
+        testApplicationId = "${namespace!!}.tests"
         minSdk = 24
-        targetSdk = 35
+        targetSdk = 36
+
         versionCode = 29
-        versionName = "1.9"
+        versionName = "2.0"
+
         project.base.archivesName.set("TaigaMobile-$versionName")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -49,11 +49,15 @@ android {
     buildTypes {
         getByName("debug") {
 //            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".debug"
         }
 
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
 //            signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -73,136 +77,96 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
         isCoreLibraryDesugaringEnabled = true
     }
 
     kotlinOptions {
-        jvmTarget = "11"
+        jvmTarget = "17"
         freeCompilerArgs = listOf("-Xopt-in=kotlin.RequiresOptIn")
     }
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
-    composeOptions {
-        kotlinCompilerExtensionVersion = composeVersion
-    }
-
-    lint { 
+    lint {
         abortOnError = false
     }
 }
 
 dependencies {
-    // Enforce correct kotlin version for all dependencies
     implementation(enforcedPlatform(kotlin("bom")))
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:1.1.5")
+    coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     implementation(kotlin("reflect"))
 
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
-    implementation("com.google.android.material:material:1.6.0")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.viewmodel.compose)
+    implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.paging.compose)
+    implementation(libs.material)
 
-    // ============================================================================================
-    // CAREFUL WHEN UPDATING COMPOSE RELATED DEPENDENCIES - THEY CAN USE DIFFERENT COMPOSE VERSION!
-    // ============================================================================================
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.util)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.foundation.layout)
 
-    // Main Compose dependencies
-    implementation("androidx.compose.ui:ui:$composeVersion")
-    implementation("androidx.compose.material:material:$composeVersion")
-    // Material You
-    implementation("androidx.compose.material3:material3:1.0.0-alpha09")
-    implementation("androidx.compose.ui:ui-tooling:$composeVersion")
-    implementation("androidx.compose.animation:animation:$composeVersion")
-    // compose activity
-    implementation("androidx.activity:activity-compose:1.4.0")
-    // view model support
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1")
-    // compose constraint layout
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    debugImplementation(libs.androidx.compose.ui.testManifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 
-    // Accompanist
-    val accompanistVersion = "0.23.1"
-    implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-insets:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
+    implementation(libs.coil.compose)
 
-    // Coil
-    implementation("io.coil-kt:coil-compose:1.3.2")
-
-    // Navigation Component (with Compose)
-    implementation("androidx.navigation:navigation-compose:2.5.0-rc01")
-
-    // Paging (with Compose)
-    implementation("androidx.paging:paging-compose:1.0.0-alpha14")
-
-    // Coroutines
-    val coroutinesVersion = "1.6.2"
+    val coroutinesVersion = "1.10.2"
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
 
-    // Moshi
-    val moshiVersion = "1.13.0"
-    implementation("com.squareup.moshi:moshi:$moshiVersion")
-    kapt("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
+    implementation(libs.moshi)
+    ksp(libs.moshi.kotlin.codegen)
 
-    // Retrofit 2
-    val retrofitVersion = "2.9.0"
-    implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
-    implementation("com.squareup.retrofit2:converter-moshi:$retrofitVersion")
+    testImplementation(libs.gson)
 
-    // OkHttp
-    val okHttpVersion = "4.9.3"
-    implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
-    implementation("com.squareup.okhttp3:logging-interceptor:$okHttpVersion")
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.moshi)
 
-    // Dagger 2
-    val daggerVersion = "2.42"
-    implementation("com.google.dagger:dagger-android:$daggerVersion")
-    kapt("com.google.dagger:dagger-android-processor:$daggerVersion")
-    kapt("com.google.dagger:dagger-compiler:$daggerVersion")
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
 
-    // Timber
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation(libs.dagger)
+    ksp(libs.dagger.compiler)
 
-    // Markdown support (Markwon)
-    val markwonVersion = "4.6.2"
-    implementation("io.noties.markwon:core:$markwonVersion")
-    implementation("io.noties.markwon:image-coil:$markwonVersion")
+    implementation(libs.timber)
 
-    // Compose material dialogs (color picker)
-    implementation("io.github.vanpra.compose-material-dialogs:color:0.7.0")
+    implementation(libs.markwon.core)
+    implementation(libs.markwon.image.coil)
 
-    /**
-     * Test frameworks & dependencies
-     */
+    implementation(libs.vanpra.color)
+
     allTestsImplementation(kotlin("test-junit"))
 
-    // Robolectric (run android tests on local host)
-    testRuntimeOnly("org.robolectric:robolectric:4.8.1")
+    testRuntimeOnly("org.robolectric:robolectric:4.14.1")
 
-    allTestsImplementation("androidx.test:core-ktx:1.4.0")
-    allTestsImplementation("androidx.test:runner:1.4.0")
-    allTestsImplementation("androidx.test.ext:junit-ktx:1.1.3")
+    allTestsImplementation("androidx.test:core-ktx:1.6.1")
+    allTestsImplementation("androidx.test:runner:1.6.2")
+    allTestsImplementation("androidx.test.ext:junit-ktx:1.2.1")
 
-    // since we need to connect to test db instance
     val postgresDriverVersion = "42.3.6"
     testRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
     androidTestRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
 
-    // manual json parsing when filling test instance
-    implementation("com.google.code.gson:gson:2.9.0")
-
-    // MockK
-    testImplementation("io.mockk:mockk:1.12.4")
+    testImplementation("io.mockk:mockk:1.14.2")
 }
 
 fun DependencyHandler.allTestsImplementation(dependencyNotation: Any) {
@@ -222,4 +186,3 @@ tasks.withType<Test> {
     dependsOn("launchTestInstance")
     finalizedBy("stopTestInstance")
 }
-

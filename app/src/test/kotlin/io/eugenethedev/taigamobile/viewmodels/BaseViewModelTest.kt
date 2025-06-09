@@ -3,7 +3,12 @@ package io.eugenethedev.taigamobile.viewmodels
 import android.content.Context
 import io.eugenethedev.taigamobile.dagger.AppComponent
 import io.eugenethedev.taigamobile.dagger.DataModule
-import io.eugenethedev.taigamobile.domain.repositories.*
+import io.eugenethedev.taigamobile.domain.repositories.IAuthRepository
+import io.eugenethedev.taigamobile.domain.repositories.IProjectsRepository
+import io.eugenethedev.taigamobile.domain.repositories.ISprintsRepository
+import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
+import io.eugenethedev.taigamobile.domain.repositories.IUsersRepository
+import io.eugenethedev.taigamobile.domain.repositories.IWikiRepository
 import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.state.Settings
 import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskViewModel
@@ -23,7 +28,11 @@ import io.eugenethedev.taigamobile.ui.screens.team.TeamViewModel
 import io.eugenethedev.taigamobile.ui.screens.wiki.createpage.WikiCreatePageViewModel
 import io.eugenethedev.taigamobile.ui.screens.wiki.list.WikiListViewModel
 import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageViewModel
-import io.mockk.*
+import io.mockk.clearAllMocks
+import io.mockk.every
+import io.mockk.mockk
+import io.mockk.spyk
+import io.mockk.unmockkAll
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

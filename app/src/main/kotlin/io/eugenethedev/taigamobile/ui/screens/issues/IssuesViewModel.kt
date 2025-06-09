@@ -4,13 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.TaigaApp
 import io.eugenethedev.taigamobile.dagger.AppComponent
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
 import io.eugenethedev.taigamobile.domain.paging.CommonPagingSource
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
+import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.state.subscribeToAll
 import io.eugenethedev.taigamobile.ui.utils.MutableResultFlow
 import io.eugenethedev.taigamobile.ui.utils.asLazyPagingItems
@@ -23,8 +23,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class IssuesViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject lateinit var session: Session
-    @Inject lateinit var tasksRepository: ITasksRepository
+    @Inject
+    lateinit var session: Session
+    @Inject
+    lateinit var tasksRepository: ITasksRepository
 
     val projectName by lazy { session.currentProjectName }
 
@@ -33,7 +35,7 @@ class IssuesViewModel(appComponent: AppComponent = TaigaApp.appComponent) : View
     init {
         appComponent.inject(this)
     }
-    
+
     fun onOpen() {
         if (!shouldReload) return
         viewModelScope.launch {
@@ -47,6 +49,7 @@ class IssuesViewModel(appComponent: AppComponent = TaigaApp.appComponent) : View
 
     val filters = MutableResultFlow<FiltersData>()
     val activeFilters by lazy { session.issuesFilters }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val issues by lazy {
         activeFilters.flatMapLatest { filters ->
@@ -59,7 +62,7 @@ class IssuesViewModel(appComponent: AppComponent = TaigaApp.appComponent) : View
     fun selectFilters(filters: FiltersData) {
         session.changeIssuesFilters(filters)
     }
-    
+
     init {
         session.currentProjectId.onEach {
             shouldReload = true

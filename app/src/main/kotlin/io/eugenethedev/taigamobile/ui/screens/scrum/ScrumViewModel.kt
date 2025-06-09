@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.TaigaApp
 import io.eugenethedev.taigamobile.dagger.AppComponent
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
@@ -13,20 +12,26 @@ import io.eugenethedev.taigamobile.domain.entities.FiltersData
 import io.eugenethedev.taigamobile.domain.paging.CommonPagingSource
 import io.eugenethedev.taigamobile.domain.repositories.ISprintsRepository
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
+import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.ui.utils.MutableResultFlow
 import io.eugenethedev.taigamobile.ui.utils.NothingResult
 import io.eugenethedev.taigamobile.ui.utils.asLazyPagingItems
 import io.eugenethedev.taigamobile.ui.utils.loadOrError
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
 class ScrumViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject lateinit var tasksRepository: ITasksRepository
-    @Inject lateinit var sprintsRepository: ISprintsRepository
-    @Inject lateinit var session: Session
+    @Inject
+    lateinit var tasksRepository: ITasksRepository
+    @Inject
+    lateinit var sprintsRepository: ISprintsRepository
+    @Inject
+    lateinit var session: Session
 
     val projectName by lazy { session.currentProjectName }
 
@@ -57,6 +62,7 @@ class ScrumViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewM
 
     val filters = MutableResultFlow<FiltersData>()
     val activeFilters by lazy { session.scrumFilters }
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val stories by lazy {
         activeFilters.flatMapLatest { filters ->

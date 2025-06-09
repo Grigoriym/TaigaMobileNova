@@ -1,7 +1,12 @@
 package io.eugenethedev.taigamobile.data.api
 
 import com.squareup.moshi.JsonClass
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.CustomFieldType
+import io.eugenethedev.taigamobile.domain.entities.DueDateStatus
+import io.eugenethedev.taigamobile.domain.entities.EpicShortInfo
+import io.eugenethedev.taigamobile.domain.entities.Project
+import io.eugenethedev.taigamobile.domain.entities.User
+import io.eugenethedev.taigamobile.domain.entities.UserStoryShortInfo
 import java.time.LocalDate
 import java.time.LocalDateTime
 

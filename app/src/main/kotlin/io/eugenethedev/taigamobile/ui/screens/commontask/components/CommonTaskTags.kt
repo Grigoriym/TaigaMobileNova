@@ -1,13 +1,33 @@
 package io.eugenethedev.taigamobile.ui.screens.commontask.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,8 +36,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import com.google.accompanist.flowlayout.FlowCrossAxisAlignment
-import com.google.accompanist.flowlayout.FlowRow
 import com.vanpra.composematerialdialogs.color.ColorPalette
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
@@ -28,11 +46,12 @@ import io.eugenethedev.taigamobile.ui.components.editors.TextFieldWithHint
 import io.eugenethedev.taigamobile.ui.components.pickers.ColorPicker
 import io.eugenethedev.taigamobile.ui.screens.commontask.EditActions
 import io.eugenethedev.taigamobile.ui.theme.dialogTonalElevation
-import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevation
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import io.eugenethedev.taigamobile.ui.utils.textColor
 import io.eugenethedev.taigamobile.ui.utils.toColor
 import io.eugenethedev.taigamobile.ui.utils.toHex
 
+@ExperimentalLayoutApi
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskTags(
     commonTask: CommonTaskExtended,
@@ -40,9 +59,9 @@ fun LazyListScope.CommonTaskTags(
 ) {
     item {
         FlowRow(
-            crossAxisAlignment = FlowCrossAxisAlignment.Center,
-            mainAxisSpacing = 8.dp,
-            crossAxisSpacing = 8.dp
+//            crossAxisAlignment = FlowCrossAxisAlignment.Center,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             var isAddTagDialogVisible by remember { mutableStateOf(false) }
 
@@ -171,7 +190,7 @@ private fun AddTagDialog(
                         onValueChange = {
                             name = it
                             // if dropdown menu item has been chosen - do not show dropdown again
-                            if (tags.none { it.name == name.text}) {
+                            if (tags.none { it.name == name.text }) {
                                 isDropdownVisible = true
                                 onInputChange(it.text)
                             }
@@ -188,7 +207,11 @@ private fun AddTagDialog(
                             properties = PopupProperties(clippingEnabled = false),
                             modifier = Modifier
                                 .heightIn(max = 200.dp)
-                                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(dialogTonalElevation))
+                                .background(
+                                    MaterialTheme.colorScheme.surfaceColorAtElevationInternal(
+                                        dialogTonalElevation
+                                    )
+                                )
                         ) {
                             tags.forEach {
                                 DropdownMenuItem(

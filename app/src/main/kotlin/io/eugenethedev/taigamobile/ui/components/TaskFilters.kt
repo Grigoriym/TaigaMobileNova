@@ -4,8 +4,19 @@ import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.layout.*
+import androidx.compose.animation.core.rememberTransition
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
@@ -15,29 +26,42 @@ import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
-import androidx.compose.material3.*
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.google.accompanist.flowlayout.FlowRow
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.Filter
+import io.eugenethedev.taigamobile.domain.entities.FiltersData
+import io.eugenethedev.taigamobile.domain.entities.RolesFilter
+import io.eugenethedev.taigamobile.domain.entities.StatusesFilter
+import io.eugenethedev.taigamobile.domain.entities.TagsFilter
+import io.eugenethedev.taigamobile.domain.entities.UsersFilter
+import io.eugenethedev.taigamobile.domain.entities.hasData
 import io.eugenethedev.taigamobile.ui.components.badges.Badge
 import io.eugenethedev.taigamobile.ui.components.editors.TextFieldWithHint
 import io.eugenethedev.taigamobile.ui.components.editors.searchFieldHorizontalPadding
@@ -79,7 +103,10 @@ fun TasksFiltersWithLazyList(
  * Filters are placed in bottom sheet dialog as expandable options
  */
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+@OptIn(
+    ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 fun TaskFilters(
     selected: FiltersData,
@@ -91,7 +118,13 @@ fun TaskFilters(
 ) {
     // search field
 
-    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(selected.query)) }
+    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(
+                selected.query
+            )
+        )
+    }
 
     TextFieldWithHint(
         hintId = R.string.tasks_search_hint,
@@ -110,8 +143,15 @@ fun TaskFilters(
     val space = 6.dp
     val coroutineScope = rememberCoroutineScope()
 
+    val localDensity = LocalDensity.current
     // compose version of BottomSheetDialog (from Dialog and ModalBottomSheetLayout)
-    val bottomSheetState =  remember { ModalBottomSheetState(ModalBottomSheetValue.Expanded) } // fix to handle dialog closed state properly
+    val bottomSheetState =
+        remember {
+            ModalBottomSheetState(
+                initialValue = ModalBottomSheetValue.Expanded,
+                density = localDensity,
+            )
+        } // fix to handle dialog closed state properly
     var isVisible by remember { mutableStateOf(false) }
 
     FilledTonalButton(
@@ -180,7 +220,7 @@ fun TaskFilters(
                             Spacer(Modifier.height(space))
 
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                FlowRow(mainAxisSpacing = 4.dp) {
+                                FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                     selected.types.forEach {
                                         FilterChip(
                                             filter = it,
@@ -348,6 +388,7 @@ fun TaskFilters(
 private inline fun <T : Filter> List<T>.ifHasData(action: (List<T>) -> Unit) =
     takeIf { it.hasData() }?.let(action)
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun <T : Filter> Section(
     @StringRes titleId: Int,
@@ -366,9 +407,9 @@ private fun <T : Filter> Section(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.clickableUnindicated { isExpanded = !isExpanded }
     ) {
-        val arrowRotation by updateTransition(
+        val arrowRotation by rememberTransition(
             transitionState,
-            label = "arrow"
+            "arrow"
         ).animateFloat { if (it) 0f else -90f }
         Icon(
             painter = painterResource(R.drawable.ic_arrow_down),
@@ -387,8 +428,8 @@ private fun <T : Filter> Section(
     AnimatedVisibility(visible = isExpanded) {
         FlowRow(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 6.dp),
-            mainAxisSpacing = 4.dp,
-            crossAxisSpacing = 4.dp
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             filters.forEach {
                 FilterChip(

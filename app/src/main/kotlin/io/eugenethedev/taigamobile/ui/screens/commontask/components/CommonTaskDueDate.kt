@@ -1,7 +1,14 @@
 package io.eugenethedev.taigamobile.ui.screens.commontask.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -15,8 +22,10 @@ import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
 import io.eugenethedev.taigamobile.domain.entities.DueDateStatus
 import io.eugenethedev.taigamobile.ui.components.pickers.DatePicker
 import io.eugenethedev.taigamobile.ui.screens.commontask.EditActions
-import io.eugenethedev.taigamobile.ui.theme.*
-import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevation
+import io.eugenethedev.taigamobile.ui.theme.taigaGreenPositive
+import io.eugenethedev.taigamobile.ui.theme.taigaOrange
+import io.eugenethedev.taigamobile.ui.theme.taigaRed
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskDueDate(
@@ -24,8 +33,8 @@ fun LazyListScope.CommonTaskDueDate(
     editActions: EditActions
 ) {
     item {
-        val background = MaterialTheme.colorScheme.surfaceColorAtElevation(2.dp)
-        val defaultIconBackground = MaterialTheme.colorScheme.surfaceColorAtElevation(8.dp)
+        val background = MaterialTheme.colorScheme.surfaceColorAtElevationInternal(2.dp)
+        val defaultIconBackground = MaterialTheme.colorScheme.surfaceColorAtElevationInternal(8.dp)
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -51,7 +60,9 @@ fun LazyListScope.CommonTaskDueDate(
             ) {
                 if (editActions.editDueDate.isLoading) {
                     CircularProgressIndicator(
-                        modifier = Modifier.fillMaxSize().padding(2.dp),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(2.dp),
                         strokeWidth = 2.dp,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -59,7 +70,8 @@ fun LazyListScope.CommonTaskDueDate(
                     Icon(
                         painter = painterResource(R.drawable.ic_clock),
                         contentDescription = null,
-                        tint = commonTask.dueDate?.let { MaterialTheme.colorScheme.onSurface } ?: MaterialTheme.colorScheme.primary,
+                        tint = commonTask.dueDate?.let { MaterialTheme.colorScheme.onSurface }
+                            ?: MaterialTheme.colorScheme.primary,
                         modifier = Modifier.fillMaxSize()
                     )
                 }

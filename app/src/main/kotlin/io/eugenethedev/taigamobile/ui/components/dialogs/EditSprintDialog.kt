@@ -2,13 +2,23 @@ package io.eugenethedev.taigamobile.ui.components.dialogs
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -29,7 +39,13 @@ fun EditSprintDialog(
     onConfirm: (name: String, start: LocalDate, end: LocalDate) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var name by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue(initialName)) }
+    var name by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(
+            TextFieldValue(
+                initialName
+            )
+        )
+    }
     var start by remember { mutableStateOf(initialStart ?: LocalDate.now()) }
     var end by remember { mutableStateOf(initialEnd ?: LocalDate.now().plusDays(14)) }
 
@@ -66,7 +82,8 @@ fun EditSprintDialog(
             )
         },
         text = {
-            val pickerStyle = MaterialTheme.typography.titleMedium.merge(TextStyle(fontWeight = FontWeight.Normal))
+            val pickerStyle =
+                MaterialTheme.typography.titleMedium.merge(TextStyle(fontWeight = FontWeight.Normal))
             val pickerModifier = Modifier
                 .border(
                     width = 1.dp,
@@ -92,7 +109,8 @@ fun EditSprintDialog(
                     Modifier
                         .width(16.dp)
                         .height(1.5.dp)
-                        .background(MaterialTheme.colorScheme.onSurface))
+                        .background(MaterialTheme.colorScheme.onSurface)
+                )
 
                 DatePicker(
                     date = end,

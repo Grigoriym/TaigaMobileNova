@@ -1,7 +1,11 @@
 package io.eugenethedev.taigamobile.ui.screens.issues
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -12,14 +16,17 @@ import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
 import io.eugenethedev.taigamobile.ui.components.TasksFiltersWithLazyList
-import io.eugenethedev.taigamobile.ui.components.buttons.PlusButton
 import io.eugenethedev.taigamobile.ui.components.appbars.ClickableAppBar
+import io.eugenethedev.taigamobile.ui.components.buttons.PlusButton
 import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
 import io.eugenethedev.taigamobile.ui.screens.main.Routes
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
-import io.eugenethedev.taigamobile.ui.utils.*
+import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
+import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 
 @Composable
 fun IssuesScreen(
@@ -34,10 +41,10 @@ fun IssuesScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val issues = viewModel.issues
-    issues.subscribeOnError(showMessage)
+    issues.SubscribeOnError(showMessage)
 
     val filters by viewModel.filters.collectAsState()
-    filters.subscribeOnError(showMessage)
+    filters.SubscribeOnError(showMessage)
 
     val activeFilters by viewModel.activeFilters.collectAsState()
 

@@ -2,12 +2,16 @@ package io.eugenethedev.taigamobile.ui.screens.kanban
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.TaigaApp
 import io.eugenethedev.taigamobile.dagger.AppComponent
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.Swimlane
+import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
 import io.eugenethedev.taigamobile.domain.repositories.IUsersRepository
+import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.state.subscribeToAll
 import io.eugenethedev.taigamobile.ui.utils.MutableResultFlow
 import io.eugenethedev.taigamobile.ui.utils.NothingResult
@@ -18,9 +22,12 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 class KanbanViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject lateinit var tasksRepository: ITasksRepository
-    @Inject lateinit var usersRepository: IUsersRepository
-    @Inject lateinit var session: Session
+    @Inject
+    lateinit var tasksRepository: ITasksRepository
+    @Inject
+    lateinit var usersRepository: IUsersRepository
+    @Inject
+    lateinit var session: Session
 
     val projectName by lazy { session.currentProjectName }
 
@@ -41,10 +48,16 @@ class KanbanViewModel(appComponent: AppComponent = TaigaApp.appComponent) : View
         if (!shouldReload) return@launch
         joinAll(
             launch {
-                statuses.loadOrError(preserveValue = false) { tasksRepository.getStatuses(CommonTaskType.UserStory) }
+                statuses.loadOrError(preserveValue = false) {
+                    tasksRepository.getStatuses(
+                        CommonTaskType.UserStory
+                    )
+                }
             },
             launch {
-                team.loadOrError(preserveValue = false) { usersRepository.getTeam().map { it.toUser() } }
+                team.loadOrError(preserveValue = false) {
+                    usersRepository.getTeam().map { it.toUser() }
+                }
             },
             launch {
                 stories.loadOrError(preserveValue = false) { tasksRepository.getAllUserStories() }

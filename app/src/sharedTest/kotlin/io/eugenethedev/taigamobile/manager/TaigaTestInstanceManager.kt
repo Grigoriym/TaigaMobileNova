@@ -17,7 +17,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import java.net.ConnectException
 import java.sql.Connection
 import java.sql.DriverManager
-import java.util.*
+import java.util.Properties
 
 class TaigaTestInstanceManager(
     val host: String = "localhost",
@@ -28,7 +28,7 @@ class TaigaTestInstanceManager(
 
     private val gson = Gson()
     private val client = OkHttpClient.Builder()
-        .addInterceptor (
+        .addInterceptor(
             HttpLoggingInterceptor(::println)
                 .setLevel(HttpLoggingInterceptor.Level.BODY)
         )
@@ -47,10 +47,15 @@ class TaigaTestInstanceManager(
     }
 
     fun String.toJsonBody() = toRequestBody("application/json".toMediaType())
-    fun Request.Builder.withAuth(user: User) = header("Authorization", "Bearer ${_userToUserData[user]!!.accessToken}")
+    fun Request.Builder.withAuth(user: User) =
+        header("Authorization", "Bearer ${_userToUserData[user]!!.accessToken}")
+
     fun Request.execute() = client.newCall(this).execute()
-    fun Response.toJsonObject(): JsonObject = gson.fromJson(body?.string(), JsonElement::class.java).asJsonObject
-    fun Response.toJsonArray(): JsonArray = gson.fromJson(body?.string(), JsonElement::class.java).asJsonArray
+    fun Response.toJsonObject(): JsonObject =
+        gson.fromJson(body?.string(), JsonElement::class.java).asJsonObject
+
+    fun Response.toJsonArray(): JsonArray =
+        gson.fromJson(body?.string(), JsonElement::class.java).asJsonArray
 
     fun Response.successOrThrow() {
         if (!isSuccessful) throw IllegalStateException("Got response code $code")
@@ -71,7 +76,8 @@ class TaigaTestInstanceManager(
 
     fun Connection.getAllProdTables() = sequence<String> {
         createStatement()
-            .executeQuery("select * from information_schema.tables where table_schema = 'public' and table_name not like '%$_snapshotPostfix' and table_name not like '%django%'").let {
+            .executeQuery("select * from information_schema.tables where table_schema = 'public' and table_name not like '%$_snapshotPostfix' and table_name not like '%django%'")
+            .let {
                 while (it.next()) {
                     yield(it.getString("table_name"))
                 }
@@ -83,10 +89,11 @@ class TaigaTestInstanceManager(
             checkInstanceRunning()
 
             tx {
-                createStatement().executeQuery("select count(*) as cnt from users_user where email_token is not null").let {
-                    it.next()
-                    if (it.getLong("cnt") != 0L) throw IllegalStateException("Taiga instance is already initialized. You need to .clear() it first")
-                }
+                createStatement().executeQuery("select count(*) as cnt from users_user where email_token is not null")
+                    .let {
+                        it.next()
+                        if (it.getLong("cnt") != 0L) throw IllegalStateException("Taiga instance is already initialized. You need to .clear() it first")
+                    }
             }
 
             initData()
@@ -133,7 +140,8 @@ class TaigaTestInstanceManager(
     /**
      * Some util functions
      */
-    fun getClosedStatusId(commonTaskType: CommonTaskType, projectId: Long, user: User) = Request.Builder()
+    fun getClosedStatusId(commonTaskType: CommonTaskType, projectId: Long, user: User) =
+        Request.Builder()
             .apiEndpoint("${CommonTaskPathSingular(commonTaskType).path}-statuses?project=$projectId")
             .get()
             .withAuth(user)

@@ -1,17 +1,36 @@
 package io.eugenethedev.taigamobile.ui.screens.sprint
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -26,10 +45,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
-import com.google.accompanist.insets.navigationBarsHeight
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.domain.entities.*
+import io.eugenethedev.taigamobile.domain.entities.CommonTask
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
+import io.eugenethedev.taigamobile.domain.entities.Project
+import io.eugenethedev.taigamobile.domain.entities.Status
+import io.eugenethedev.taigamobile.domain.entities.StatusType
+import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.components.buttons.PlusButton
 import io.eugenethedev.taigamobile.ui.components.lists.CommonTaskItem
 import io.eugenethedev.taigamobile.ui.components.texts.CommonTaskTitle
@@ -38,7 +62,7 @@ import io.eugenethedev.taigamobile.ui.theme.cardShadowElevation
 import io.eugenethedev.taigamobile.ui.theme.kanbanBoardTonalElevation
 import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
 import io.eugenethedev.taigamobile.ui.utils.clickableUnindicated
-import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevation
+import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import io.eugenethedev.taigamobile.ui.utils.toColor
 import java.time.LocalDateTime
 
@@ -58,7 +82,8 @@ fun SprintKanban(
     val cellWidth = 280.dp
     val userStoryHeadingWidth = cellWidth - 20.dp
     val minCellHeight = 80.dp
-    val backgroundCellColor = MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation)
+    val backgroundCellColor =
+        MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
     val screenWidth = LocalContext.current.resources.configuration.screenWidthDp.dp
     val totalWidth = cellWidth * statuses.size + userStoryHeadingWidth + cellPadding * statuses.size
 
@@ -154,7 +179,8 @@ fun SprintKanban(
 
         item {
             Spacer(
-                Modifier.height(4.dp)
+                Modifier
+                    .height(4.dp)
                     .padding(start = cellPadding)
                     .width(totalWidth)
                     .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.5f))
@@ -174,7 +200,8 @@ fun SprintKanban(
         items(issues) {
             Row(Modifier.width(totalWidth)) {
                 Row(
-                    Modifier.width(screenWidth)
+                    Modifier
+                        .width(screenWidth)
                         .padding(vertical = 4.dp)
                         .background(backgroundCellColor)
                 ) {
@@ -187,7 +214,7 @@ fun SprintKanban(
         }
 
         item {
-            Spacer(Modifier.navigationBarsHeight(8.dp))
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
         }
     }
 }
@@ -272,7 +299,9 @@ private fun UserStoryItem(
     horizontalArrangement = Arrangement.SpaceBetween
 ) {
     Column(
-        modifier = Modifier.fillMaxWidth().weight(0.8f, fill = false)
+        modifier = Modifier
+            .fillMaxWidth()
+            .weight(0.8f, fill = false)
     ) {
         CommonTaskTitle(
             ref = userStory.ref,
@@ -281,7 +310,8 @@ private fun UserStoryItem(
             isInactive = userStory.isClosed,
             tags = userStory.tags,
             isBlocked = userStory.blockedNote != null,
-            modifier = Modifier.padding(top = 4.dp)
+            modifier = Modifier
+                .padding(top = 4.dp)
                 .clickableUnindicated(onClick = onUserStoryClick)
         )
 
@@ -354,16 +384,19 @@ private fun TaskItem(
     task: CommonTask,
     onTaskClick: () -> Unit
 ) = Surface(
-    modifier = Modifier.fillMaxWidth().padding(4.dp),
+    modifier = Modifier
+        .fillMaxWidth()
+        .padding(4.dp),
     shape = MaterialTheme.shapes.small,
     shadowElevation = cardShadowElevation
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier
+            .fillMaxWidth()
             .clickable(
                 onClick = onTaskClick,
-                indication = rememberRipple(),
+                indication = ripple(),
                 interactionSource = remember { MutableInteractionSource() }
             )
             .padding(12.dp)
@@ -389,16 +422,18 @@ private fun TaskItem(
 
         task.assignee?.let {
             Image(
-                painter = rememberImagePainter(
-                    data = it.avatarUrl ?: R.drawable.default_avatar,
-                    builder = {
+                painter = rememberAsyncImagePainter(
+                    ImageRequest.Builder(LocalContext.current).data(
+                        data = it.avatarUrl ?: R.drawable.default_avatar
+                    ).apply(block = fun ImageRequest.Builder.() {
                         error(R.drawable.default_avatar)
                         crossfade(true)
-                    }
+                    }).build()
                 ),
                 contentDescription = null,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier
+                    .size(32.dp)
                     .clip(CircleShape)
                     .weight(0.2f, fill = false)
             )

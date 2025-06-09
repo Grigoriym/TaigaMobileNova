@@ -1,19 +1,32 @@
 package io.eugenethedev.taigamobile.ui.components.editors
 
 import androidx.annotation.StringRes
-import androidx.compose.animation.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.navigationBars
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -21,8 +34,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemsIndexed as itemsIndexedLazy
-import com.google.accompanist.insets.navigationBarsHeight
+import androidx.paging.compose.itemContentType
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
 import io.eugenethedev.taigamobile.ui.components.loaders.DotsLoader
 import io.eugenethedev.taigamobile.ui.utils.onBackPressed
@@ -36,7 +48,7 @@ fun <T : Any> SelectorList(
     @StringRes titleHintId: Int,
     items: List<T> = emptyList(),
     itemsLazy: LazyPagingItems<T>? = null,
-    key: ((index: Int, item: T) -> Any)? = null, // used to preserve position with lazy items
+    key: ((index: Int) -> Any)? = null, // used to preserve position with lazy items
     isVisible: Boolean = false,
     isItemsLoading: Boolean = false,
     isSearchable: Boolean = true,
@@ -47,8 +59,14 @@ fun <T : Any> SelectorList(
 ) = AnimatedVisibility(
     visibleState = remember { MutableTransitionState(false) }
         .apply { targetState = isVisible },
-    enter = slideInVertically(initialOffsetY = { it }, animationSpec = tween(animationDurationMillis)),
-    exit = slideOutVertically(targetOffsetY = { it }, animationSpec = tween(animationDurationMillis))
+    enter = slideInVertically(
+        initialOffsetY = { it },
+        animationSpec = tween(animationDurationMillis)
+    ),
+    exit = slideOutVertically(
+        targetOffsetY = { it },
+        animationSpec = tween(animationDurationMillis)
+    )
 ) {
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
 
@@ -60,7 +78,7 @@ fun <T : Any> SelectorList(
 
     val lastIndex = itemsLazy?.itemCount?.minus(1) ?: items.lastIndex
 
-    val listItemContent: @Composable LazyItemScope.(Int, T?) -> Unit = lambda@ { index, item ->
+    val listItemContent: @Composable LazyItemScope.(Int, T?) -> Unit = lambda@{ index, item ->
         if (item == null) return@lambda
 
         itemContent(item)
@@ -74,7 +92,9 @@ fun <T : Any> SelectorList(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -101,19 +121,22 @@ fun <T : Any> SelectorList(
         )
 
         LazyColumn {
-            itemsLazy?.let {
-                itemsIndexedLazy(
-                    items = it,
+            itemsLazy?.let { item ->
+                items(
+                    count = item.itemCount,
                     key = key,
-                    itemContent = listItemContent
-                )
+                    contentType = item.itemContentType()
+                ) { index ->
+                    val item = item[index]
+                    listItemContent(index, item)
+                }
             } ?: itemsIndexed(items, itemContent = listItemContent)
 
             item {
                 if (isLoading) {
                     DotsLoader()
                 }
-                Spacer(Modifier.navigationBarsHeight(8.dp))
+                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
         }
     }

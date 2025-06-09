@@ -95,7 +95,11 @@ interface Creations {
         }
     }
 
-    private fun TaigaTestInstanceManager.watchTask(taskType: CommonTaskType, taskId: Long, user: User) {
+    private fun TaigaTestInstanceManager.watchTask(
+        taskType: CommonTaskType,
+        taskId: Long,
+        user: User
+    ) {
         Request.Builder()
             .apiEndpoint("${CommonTaskPathPlural(taskType).path}/$taskId/watch")
             .post("".toJsonBody())
@@ -146,11 +150,17 @@ interface Creations {
                             "user_story": $userStoryId,
                             "assigned_to": ${_userToUserData[it.assignedTo]?.id}
                             ${
-                                if (it.isClosed)
-                                    """, "status": ${getClosedStatusId(CommonTaskType.Task, projectId, it.creator)}"""
-                                else
-                                    ""
-                            }
+                        if (it.isClosed)
+                            """, "status": ${
+                                getClosedStatusId(
+                                    CommonTaskType.Task,
+                                    projectId,
+                                    it.creator
+                                )
+                            }"""
+                        else
+                            ""
+                    }
                         }
                     """.trimIndent().toJsonBody()
                 )
@@ -371,11 +381,17 @@ interface Creations {
                                 "description": "${it.description}",
                                 "assigned_to": ${_userToUserData[it.assignedTo]?.id}
                                 ${
-                                    if (it.isClosed)
-                                        """, "status": ${getClosedStatusId(CommonTaskType.Epic, data.id, it.creator)}"""
-                                    else
-                                        ""
-                                }
+                            if (it.isClosed)
+                                """, "status": ${
+                                    getClosedStatusId(
+                                        CommonTaskType.Epic,
+                                        data.id,
+                                        it.creator
+                                    )
+                                }"""
+                            else
+                                ""
+                        }
                             }
                         """.trimIndent().toJsonBody()
                     )
@@ -420,11 +436,17 @@ interface Creations {
                                 "assigned_to": ${_userToUserData[it.assignedTo]?.id},
                                 "milestone": ${data.sprintToId[it.sprint]}
                                 ${
-                                    if (it.isClosed)
-                                        """, "status": ${getClosedStatusId(CommonTaskType.UserStory, data.id, it.creator)}"""
-                                    else
-                                        ""
-                                }
+                            if (it.isClosed)
+                                """, "status": ${
+                                    getClosedStatusId(
+                                        CommonTaskType.UserStory,
+                                        data.id,
+                                        it.creator
+                                    )
+                                }"""
+                            else
+                                ""
+                        }
                             }
                         """.trimIndent().toJsonBody()
                     )
@@ -487,11 +509,17 @@ interface Creations {
                                 "assigned_to": ${_userToUserData[it.assignedTo]?.id},
                                 "milestone": ${data.sprintToId[it.sprint]}
                                 ${
-                                    if (it.isClosed)
-                                        """, "status": ${getClosedStatusId(CommonTaskType.Issue, data.id, it.creator)}"""
-                                    else
-                                        ""
-                                }
+                            if (it.isClosed)
+                                """, "status": ${
+                                    getClosedStatusId(
+                                        CommonTaskType.Issue,
+                                        data.id,
+                                        it.creator
+                                    )
+                                }"""
+                            else
+                                ""
+                        }
                             }
                         """.trimIndent().toJsonBody()
                     )

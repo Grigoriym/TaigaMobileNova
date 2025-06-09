@@ -1,9 +1,21 @@
 package io.eugenethedev.taigamobile.ui.screens.projectselector
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -16,11 +28,11 @@ import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Project
+import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
 import io.eugenethedev.taigamobile.ui.components.editors.SelectorList
 import io.eugenethedev.taigamobile.ui.components.editors.SelectorListConstants
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
-import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -36,7 +48,7 @@ fun ProjectSelectorScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val projects = viewModel.projects
-    projects.subscribeOnError(showMessage)
+    projects.SubscribeOnError(showMessage)
 
     val currentProjectId by viewModel.currentProjectId.collectAsState()
 
@@ -72,7 +84,7 @@ fun ProjectSelectorScreenContent(
     selectorAnimationDuration: Int = SelectorListConstants.defaultAnimDurationMillis,
     navigateBack: () -> Unit = {},
     searchProjects: (String) -> Unit = {},
-    selectProject: (Project) -> Unit  = {}
+    selectProject: (Project) -> Unit = {}
 ) = Box(
     Modifier.fillMaxSize(),
     contentAlignment = Alignment.TopStart

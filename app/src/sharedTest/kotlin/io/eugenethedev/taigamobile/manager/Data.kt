@@ -1,6 +1,11 @@
 package io.eugenethedev.taigamobile.manager
 
-import io.eugenethedev.taigamobile.testdata.*
+import io.eugenethedev.taigamobile.testdata.Epic
+import io.eugenethedev.taigamobile.testdata.Issue
+import io.eugenethedev.taigamobile.testdata.Project
+import io.eugenethedev.taigamobile.testdata.Sprint
+import io.eugenethedev.taigamobile.testdata.User
+import io.eugenethedev.taigamobile.testdata.UserStory
 
 class UserData(
     val id: Long,

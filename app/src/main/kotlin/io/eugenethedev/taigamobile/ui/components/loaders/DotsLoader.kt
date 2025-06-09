@@ -1,8 +1,18 @@
 package io.eugenethedev.taigamobile.ui.components.loaders
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.keyframes
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -30,8 +40,8 @@ fun DotsLoader() {
         animationSpec = infiniteRepeatable(
             animation = keyframes {
                 durationMillis = delayUnit * 4
-                0f at delay with LinearEasing
-                1f at delay + delayUnit with LinearEasing
+                0f at delay using LinearEasing
+                1f at delay + delayUnit using LinearEasing
                 0f at delay + delayUnit * 2
             }
         )
@@ -44,7 +54,9 @@ fun DotsLoader() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
-        modifier = Modifier.fillMaxWidth().padding(4.dp)
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(4.dp)
     ) {
         val spaceSize = 2.dp
 
@@ -60,7 +72,8 @@ fun DotsLoader() {
 private fun Dot(
     scale: Float
 ) = Spacer(
-    Modifier.size(12.dp)
+    Modifier
+        .size(12.dp)
         .scale(scale)
         .background(
             color = MaterialTheme.colorScheme.primary,

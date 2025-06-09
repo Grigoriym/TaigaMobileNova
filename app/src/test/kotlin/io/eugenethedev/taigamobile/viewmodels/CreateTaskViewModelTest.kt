@@ -10,7 +10,9 @@ import io.eugenethedev.taigamobile.viewmodels.utils.assertResultEquals
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.runBlocking
-import kotlin.test.*
+import kotlin.test.BeforeTest
+import kotlin.test.Test
+import kotlin.test.assertIs
 
 class CreateTaskViewModelTest : BaseViewModelTest() {
     private lateinit var viewModel: CreateTaskViewModel

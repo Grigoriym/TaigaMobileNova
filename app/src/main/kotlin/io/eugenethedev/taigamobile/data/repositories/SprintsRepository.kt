@@ -1,11 +1,11 @@
 package io.eugenethedev.taigamobile.data.repositories
 
-import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.data.api.CreateSprintRequest
 import io.eugenethedev.taigamobile.data.api.EditSprintRequest
 import io.eugenethedev.taigamobile.data.api.TaigaApi
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.repositories.ISprintsRepository
+import io.eugenethedev.taigamobile.state.Session
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -14,7 +14,7 @@ class SprintsRepository @Inject constructor(
     private val session: Session
 ) : ISprintsRepository {
     private val currentProjectId get() = session.currentProjectId.value
-    
+
     override suspend fun getSprintUserStories(sprintId: Long) = withIO {
         taigaApi.getUserStories(project = currentProjectId, sprint = sprintId)
             .map { it.toCommonTask(CommonTaskType.UserStory) }

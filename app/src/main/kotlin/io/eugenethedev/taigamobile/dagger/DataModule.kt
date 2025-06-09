@@ -2,17 +2,18 @@ package io.eugenethedev.taigamobile.dagger
 
 import android.content.Context
 import com.squareup.moshi.Moshi
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import io.eugenethedev.taigamobile.BuildConfig
-import io.eugenethedev.taigamobile.data.api.*
+import io.eugenethedev.taigamobile.data.api.RefreshTokenRequest
+import io.eugenethedev.taigamobile.data.api.RefreshTokenRequestJsonAdapter
+import io.eugenethedev.taigamobile.data.api.RefreshTokenResponseJsonAdapter
+import io.eugenethedev.taigamobile.data.api.TaigaApi
 import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.state.Settings
-import io.eugenethedev.taigamobile.data.repositories.*
-import io.eugenethedev.taigamobile.domain.repositories.*
-import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -21,7 +22,7 @@ import timber.log.Timber
 import javax.inject.Singleton
 
 @Module
-class DataModule {
+object DataModule {
 
     @Singleton
     @Provides
@@ -66,37 +67,44 @@ class DataModule {
             .addConverterFactory(MoshiConverterFactory.create(moshi).withNullSerialization())
             .client(
                 okHttpBuilder.authenticator { _, response ->
-                        response.request.header("Authorization")?.let {
-                            try {
-                                // prevent multiple refresh requests from different threads
-                                synchronized(session) {
-                                    // refresh token only if it was not refreshed in another thread
-                                    if (it.replace("Bearer ", "") == session.token.value) {
-                                        val body = RefreshTokenRequestJsonAdapter(moshi)
-                                            .toJson(RefreshTokenRequest(session.refreshToken.value))
+                    response.request.header("Authorization")?.let {
+                        try {
+                            // prevent multiple refresh requests from different threads
+                            synchronized(session) {
+                                // refresh token only if it was not refreshed in another thread
+                                if (it.replace("Bearer ", "") == session.token.value) {
+                                    val body = RefreshTokenRequestJsonAdapter(moshi)
+                                        .toJson(RefreshTokenRequest(session.refreshToken.value))
 
-                                        val request = Request.Builder()
-                                            .url("$baseUrlPlaceholder/${TaigaApi.REFRESH_ENDPOINT}")
-                                            .post(body.toRequestBody("application/json".toMediaType()))
-                                            .build()
+                                    val request = Request.Builder()
+                                        .url("$baseUrlPlaceholder/${TaigaApi.REFRESH_ENDPOINT}")
+                                        .post(body.toRequestBody("application/json".toMediaType()))
+                                        .build()
 
-                                        val refreshResponse = RefreshTokenResponseJsonAdapter(moshi)
-                                            .fromJson(tokenClient.newCall(request).execute().body?.string().orEmpty()) ?: throw IllegalStateException("Cannot parse RefreshResponse")
+                                    val refreshResponse = RefreshTokenResponseJsonAdapter(moshi)
+                                        .fromJson(
+                                            tokenClient.newCall(request).execute().body?.string()
+                                                .orEmpty()
+                                        )
+                                        ?: throw IllegalStateException("Cannot parse RefreshResponse")
 
-                                        session.changeAuthCredentials(refreshResponse.auth_token, refreshResponse.refresh)
-                                    }
+                                    session.changeAuthCredentials(
+                                        refreshResponse.auth_token,
+                                        refreshResponse.refresh
+                                    )
                                 }
-
-                                response.request.newBuilder()
-                                    .header("Authorization", "Bearer ${session.token.value}")
-                                    .build()
-                            } catch (e: Exception) {
-                                Timber.w(e)
-                                session.changeAuthCredentials("", "")
-                                null
                             }
+
+                            response.request.newBuilder()
+                                .header("Authorization", "Bearer ${session.token.value}")
+                                .build()
+                        } catch (e: Exception) {
+                            Timber.w(e)
+                            session.changeAuthCredentials("", "")
+                            null
                         }
                     }
+                }
                     .build()
             )
             .build()
@@ -116,31 +124,4 @@ class DataModule {
     @Provides
     @Singleton
     fun provideSettings(context: Context) = Settings(context)
-}
-
-@Module
-abstract class RepositoriesModule {
-    @Singleton
-    @Binds
-    abstract fun bindIAuthRepository(authRepository: AuthRepository): IAuthRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindIProjectsRepository(searchRepository: ProjectsRepository): IProjectsRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindIStoriesRepository(storiesRepository: TasksRepository): ITasksRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindIUsersRepository(usersRepository: UsersRepository): IUsersRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindISprintsRepository(sprintsRepository: SprintsRepository): ISprintsRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindIWikiRepository(wikiRepository: WikiRepository): IWikiRepository
 }
