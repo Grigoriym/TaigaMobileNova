@@ -94,15 +94,14 @@ android {
 }
 
 dependencies {
-    // Enforce correct kotlin version for all dependencies
     implementation(enforcedPlatform(kotlin("bom")))
 
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.5")
+    coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     implementation(kotlin("reflect"))
 
-    implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.appcompat:appcompat:1.4.1")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
     implementation("com.google.android.material:material:1.6.0")
 
     implementation(platform(libs.androidx.compose.bom))
@@ -111,9 +110,10 @@ dependencies {
     implementation("androidx.compose.material3:material3:1.0.0-alpha09")
     implementation("androidx.compose.ui:ui-tooling:$composeVersion")
     implementation("androidx.compose.animation:animation:$composeVersion")
-    implementation("androidx.activity:activity-compose:1.4.0")
+    implementation(libs.androidx.activity.compose)
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1")
     implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
+    implementation(libs.androidx.navigation.compose)
 
     val accompanistVersion = "0.23.1"
     implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
@@ -123,8 +123,6 @@ dependencies {
     implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
 
     implementation("io.coil-kt:coil-compose:1.3.2")
-
-    implementation("androidx.navigation:navigation-compose:2.5.0-rc01")
 
     implementation("androidx.paging:paging-compose:1.0.0-alpha14")
 
@@ -150,7 +148,7 @@ dependencies {
     ksp("com.google.dagger:dagger-android-processor:$daggerVersion")
     ksp("com.google.dagger:dagger-compiler:$daggerVersion")
 
-    implementation("com.jakewharton.timber:timber:5.0.1")
+    implementation(libs.timber)
 
     val markwonVersion = "4.6.2"
     implementation("io.noties.markwon:core:$markwonVersion")
