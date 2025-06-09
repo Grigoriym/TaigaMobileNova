@@ -1,11 +1,19 @@
 package io.eugenethedev.taigamobile.ui.screens.dashboard
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -13,18 +21,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.google.accompanist.pager.ExperimentalPagerApi
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.Project
-import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
 import io.eugenethedev.taigamobile.ui.components.containers.HorizontalTabbedPager
 import io.eugenethedev.taigamobile.ui.components.containers.Tab
-import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
 import io.eugenethedev.taigamobile.ui.components.lists.ProjectCard
 import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
-import io.eugenethedev.taigamobile.ui.theme.*
+import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
+import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
+import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
+import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
 
@@ -63,7 +72,6 @@ fun DashboardScreen(
     )
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun DashboardScreenContent(
     isLoading: Boolean = false,
@@ -88,18 +96,21 @@ fun DashboardScreenContent(
         }
     } else {
         HorizontalTabbedPager(
-            tabs = Tabs.values(),
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier.fillMaxSize(),
+            tabs = Tabs.entries.toTypedArray(),
+            pagerState = rememberPagerState(pageCount = { Tabs.entries.size }),
         ) { page ->
-            when (Tabs.values()[page]) {
+            when (Tabs.entries[page]) {
                 Tabs.WorkingOn -> TabContent(
                     commonTasks = workingOn,
                     navigateToTask = navigateToTask
                 )
+
                 Tabs.Watching -> TabContent(
                     commonTasks = watching,
                     navigateToTask = navigateToTask
                 )
+
                 Tabs.MyProjects -> MyProjects(
                     myProjects = myProjects,
                     currentProjectId = currentProjectId,

@@ -13,12 +13,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
@@ -31,6 +31,7 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
@@ -64,7 +65,7 @@ fun ClickableBadge(
     )
 
     CompositionLocalProvider(
-        LocalMinimumInteractiveComponentEnforcement provides false
+        LocalMinimumInteractiveComponentSize provides Dp.Unspecified
     ) {
         Surface(
             shape = MaterialTheme.shapes.large,
@@ -74,7 +75,7 @@ fun ClickableBadge(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .clickable(
-                        indication = rememberRipple(),
+                        indication = ripple(),
                         onClick = onClick,
                         interactionSource = remember { MutableInteractionSource() }
                     )

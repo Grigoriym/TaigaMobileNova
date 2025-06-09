@@ -7,8 +7,6 @@ plugins {
     alias(libs.plugins.kotlin.android)
 }
 
-val composeVersion = "1.1.1"
-
 android {
     compileSdk = 35
 
@@ -19,8 +17,10 @@ android {
         testApplicationId = "${namespace!!}.tests"
         minSdk = 24
         targetSdk = 36
+
         versionCode = 29
-        versionName = "1.9"
+        versionName = "2.0"
+
         project.base.archivesName.set("TaigaMobile-$versionName")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -49,6 +49,7 @@ android {
     buildTypes {
         getByName("debug") {
 //            signingConfig = signingConfigs.getByName("debug")
+            applicationIdSuffix = ".debug"
         }
 
         getByName("release") {
@@ -110,7 +111,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.paging.compose)
-    implementation("com.google.android.material:material:1.12.0")
+    implementation(libs.material)
 
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.compose.ui)
@@ -125,19 +126,17 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.testManifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
 
-    val accompanistVersion = "0.23.1"
-    implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
-
     implementation(libs.coil.compose)
 
-    val coroutinesVersion = "1.6.2"
+    val coroutinesVersion = "1.10.2"
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
 
     implementation(libs.moshi)
     ksp(libs.moshi.kotlin.codegen)
+
+    implementation("com.google.code.gson:gson:2.9.0")
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi)
@@ -167,8 +166,6 @@ dependencies {
     val postgresDriverVersion = "42.3.6"
     testRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
     androidTestRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
-
-    implementation("com.google.code.gson:gson:2.9.0")
 
     testImplementation("io.mockk:mockk:1.12.4")
 }

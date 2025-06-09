@@ -14,7 +14,6 @@ class TaigaApp : Application() {
     private var fileLoggingTree: FileLoggingTree? = null
     val currentLogFile get() = fileLoggingTree?.currentFile
 
-
     override fun onCreate() {
         super.onCreate()
         appComponent = DaggerAppComponent.builder()

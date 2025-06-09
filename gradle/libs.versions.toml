@@ -1,6 +1,6 @@
 [versions]
 #compose-bom = "2025.05.01"
-compose-bom = "2024.01.00"
+compose-bom = "2024.10.01"
 
 agp = "8.10.0"
 androidTools = "31.10.0"
@@ -16,13 +16,12 @@ dagger = "2.56.2"
 
 core-ktx = "1.16.0"
 appcompat = "1.7.1"
+material = "1.12.0"
 navigation = "2.9.0"
 activity-compose = "1.10.1"
 lifecycle = "2.9.0"
 constraintLayout = "1.1.1"
 paging = "1.0.0-alpha20"
-
-accompanist = "0.23.1"
 
 timber = "5.0.1"
 coil = "2.7.0"
@@ -63,6 +62,7 @@ androidx-compose-material-icons-extended = { module = "androidx.compose.material
 
 coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 
+material = { module = "com.google.android.material:material", version.ref = "material" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }

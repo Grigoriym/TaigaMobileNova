@@ -22,11 +22,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalRippleConfiguration
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Snackbar
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.rememberScaffoldState
-import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -81,8 +83,8 @@ import io.eugenethedev.taigamobile.ui.screens.team.TeamScreen
 import io.eugenethedev.taigamobile.ui.screens.wiki.createpage.WikiCreatePageScreen
 import io.eugenethedev.taigamobile.ui.screens.wiki.list.WikiListScreen
 import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageScreen
-import io.eugenethedev.taigamobile.ui.theme.TaigaMobileRippleTheme
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
+import io.eugenethedev.taigamobile.ui.theme.taigaMobileRippleTheme
 import kotlinx.coroutines.launch
 import java.io.InputStream
 
@@ -107,6 +109,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    @OptIn(ExperimentalMaterialApi::class, ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
@@ -141,7 +144,7 @@ class MainActivity : AppCompatActivity() {
             TaigaMobileTheme(darkTheme) {
                 CompositionLocalProvider(
                     LocalFilePicker provides filePicker,
-                    LocalRippleTheme provides TaigaMobileRippleTheme
+                    LocalRippleConfiguration provides taigaMobileRippleTheme()
                 ) {
 
                     // use Scaffold from material2, because material3 Scaffold lacks some functionality

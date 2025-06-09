@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.FilledTonalButton
@@ -35,8 +36,6 @@ import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.items
-import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.rememberPagerState
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
@@ -118,7 +117,6 @@ fun ScrumScreen(
     )
 }
 
-@OptIn(ExperimentalPagerApi::class)
 @Composable
 fun ScrumScreenContent(
     projectName: String,
@@ -138,7 +136,8 @@ fun ScrumScreenContent(
     modifier = Modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
-    val pagerState = rememberPagerState()
+    val tabs = Tabs.entries
+    val pagerState = rememberPagerState(pageCount = { tabs.size })
     var isCreateSprintDialogVisible by remember { mutableStateOf(false) }
 
     ClickableAppBar(
@@ -171,11 +170,11 @@ fun ScrumScreenContent(
     }
 
     HorizontalTabbedPager(
-        tabs = Tabs.values(),
         modifier = Modifier.fillMaxSize(),
+        tabs = tabs.toTypedArray(),
         pagerState = pagerState
     ) { page ->
-        when (Tabs.values()[page]) {
+        when (tabs[page]) {
             Tabs.Backlog -> BacklogTabContent(
                 stories = stories,
                 filters = filters,
