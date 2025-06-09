@@ -102,18 +102,24 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
-    implementation("com.google.android.material:material:1.6.0")
+    implementation(libs.androidx.viewmodel.compose)
+    implementation(libs.androidx.constraintlayout.compose)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.paging.compose)
+    implementation("com.google.android.material:material:1.12.0")
 
     implementation(platform(libs.androidx.compose.bom))
-    implementation("androidx.compose.ui:ui:$composeVersion")
-    implementation("androidx.compose.material:material:$composeVersion")
-    implementation("androidx.compose.material3:material3:1.0.0-alpha09")
-    implementation("androidx.compose.ui:ui-tooling:$composeVersion")
-    implementation("androidx.compose.animation:animation:$composeVersion")
-    implementation(libs.androidx.activity.compose)
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1")
-    implementation("androidx.constraintlayout:constraintlayout-compose:1.0.1")
-    implementation(libs.androidx.navigation.compose)
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.util)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.material)
+    implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.compose.animation)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+
+    debugImplementation(libs.androidx.compose.ui.testManifest)
+    debugImplementation(libs.androidx.compose.ui.tooling)
 
     val accompanistVersion = "0.23.1"
     implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
@@ -122,9 +128,7 @@ dependencies {
     implementation("com.google.accompanist:accompanist-insets:$accompanistVersion")
     implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
 
-    implementation("io.coil-kt:coil-compose:1.3.2")
-
-    implementation("androidx.paging:paging-compose:1.0.0-alpha14")
+    implementation(libs.coil.compose)
 
     val coroutinesVersion = "1.6.2"
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
@@ -143,10 +147,11 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
     implementation("com.squareup.okhttp3:logging-interceptor:$okHttpVersion")
 
-    val daggerVersion = "2.56.2"
-    implementation("com.google.dagger:dagger-android:$daggerVersion")
-    ksp("com.google.dagger:dagger-android-processor:$daggerVersion")
-    ksp("com.google.dagger:dagger-compiler:$daggerVersion")
+    implementation(libs.dagger)
+    ksp(libs.dagger.compiler)
+
+    implementation(libs.dagger.android)
+    ksp(libs.dagger.android.processor)
 
     implementation(libs.timber)
 

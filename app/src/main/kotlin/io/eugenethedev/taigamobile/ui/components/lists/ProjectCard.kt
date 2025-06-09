@@ -24,11 +24,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Project
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
@@ -64,12 +66,13 @@ fun ProjectCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = rememberImagePainter(
-                    data = project.avatarUrl ?: R.drawable.default_avatar,
-                    builder = {
-                        error(R.drawable.default_avatar)
-                        crossfade(true)
-                    },
+                painter = rememberAsyncImagePainter(
+                    ImageRequest.Builder(LocalContext.current).data(
+                    project.avatarUrl ?: R.drawable.default_avatar
+                ).apply(fun ImageRequest.Builder.() {
+                    error(R.drawable.default_avatar)
+                    crossfade(true)
+                }).build()
                 ),
                 contentDescription = null,
                 modifier = Modifier.size(46.dp)

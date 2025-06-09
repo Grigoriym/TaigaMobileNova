@@ -6,7 +6,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.ripple.rememberRipple
-import androidx.compose.material3.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.LocalMinimumInteractiveComponentEnforcement
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
@@ -30,7 +34,7 @@ fun Chip(
     content: @Composable () -> Unit
 ) {
     CompositionLocalProvider(
-        LocalMinimumTouchTargetEnforcement.provides(onClick != null)
+        LocalMinimumInteractiveComponentEnforcement.provides(onClick != null)
     ) {
         Surface(
             modifier = modifier,
@@ -40,12 +44,14 @@ fun Chip(
             shadowElevation = 1.dp
         ) {
             Box(
-                modifier = Modifier.clickable(
-                    indication = rememberRipple(),
-                    onClick = onClick ?: {},
-                    enabled = onClick != null,
-                    interactionSource = remember { MutableInteractionSource() }
-                ).padding(vertical = 4.dp, horizontal = 10.dp)
+                modifier = Modifier
+                    .clickable(
+                        indication = rememberRipple(),
+                        onClick = onClick ?: {},
+                        enabled = onClick != null,
+                        interactionSource = remember { MutableInteractionSource() }
+                    )
+                    .padding(vertical = 4.dp, horizontal = 10.dp)
             ) {
                 content()
             }

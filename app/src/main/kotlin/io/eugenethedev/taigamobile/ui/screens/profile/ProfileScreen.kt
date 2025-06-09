@@ -23,13 +23,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import com.google.accompanist.insets.navigationBarsHeight
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Project
@@ -105,12 +107,14 @@ fun ProfileScreenContent(
         ) {
             item {
                 Image(
-                    painter = rememberImagePainter(
-                        data = currentUser?.avatarUrl ?: R.drawable.default_avatar,
-                        builder = {
-                            error(R.drawable.default_avatar)
-                            crossfade(true)
-                        },
+                    painter = rememberAsyncImagePainter(
+                        ImageRequest.Builder(LocalContext.current)
+                        .data(
+                            currentUser?.avatarUrl ?: R.drawable.default_avatar
+                        ).apply(fun ImageRequest.Builder.() {
+                        error(R.drawable.default_avatar)
+                        crossfade(true)
+                    }).build()
                     ),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
@@ -157,12 +161,18 @@ fun ProfileScreenContent(
                     horizontalArrangement = Arrangement.SpaceEvenly,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    ColumnTextData(currentUserStats?.totalNumProjects.toString(), stringResource(R.string.projects))
+                    ColumnTextData(
+                        currentUserStats?.totalNumProjects.toString(),
+                        stringResource(R.string.projects)
+                    )
                     ColumnTextData(
                         currentUserStats?.totalNumClosedUserStories.toString(),
                         stringResource(R.string.closed_user_story)
                     )
-                    ColumnTextData(currentUserStats?.totalNumContacts.toString(), stringResource(R.string.contacts))
+                    ColumnTextData(
+                        currentUserStats?.totalNumContacts.toString(),
+                        stringResource(R.string.contacts)
+                    )
                 }
 
                 Spacer(Modifier.height(24.dp))
