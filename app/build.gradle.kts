@@ -186,4 +186,3 @@ tasks.withType<Test> {
     dependsOn("launchTestInstance")
     finalizedBy("stopTestInstance")
 }
-

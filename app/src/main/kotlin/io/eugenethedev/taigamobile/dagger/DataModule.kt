@@ -2,7 +2,6 @@ package io.eugenethedev.taigamobile.dagger
 
 import android.content.Context
 import com.squareup.moshi.Moshi
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import io.eugenethedev.taigamobile.BuildConfig
@@ -10,18 +9,6 @@ import io.eugenethedev.taigamobile.data.api.RefreshTokenRequest
 import io.eugenethedev.taigamobile.data.api.RefreshTokenRequestJsonAdapter
 import io.eugenethedev.taigamobile.data.api.RefreshTokenResponseJsonAdapter
 import io.eugenethedev.taigamobile.data.api.TaigaApi
-import io.eugenethedev.taigamobile.data.repositories.AuthRepository
-import io.eugenethedev.taigamobile.data.repositories.ProjectsRepository
-import io.eugenethedev.taigamobile.data.repositories.SprintsRepository
-import io.eugenethedev.taigamobile.data.repositories.TasksRepository
-import io.eugenethedev.taigamobile.data.repositories.UsersRepository
-import io.eugenethedev.taigamobile.data.repositories.WikiRepository
-import io.eugenethedev.taigamobile.domain.repositories.IAuthRepository
-import io.eugenethedev.taigamobile.domain.repositories.IProjectsRepository
-import io.eugenethedev.taigamobile.domain.repositories.ISprintsRepository
-import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
-import io.eugenethedev.taigamobile.domain.repositories.IUsersRepository
-import io.eugenethedev.taigamobile.domain.repositories.IWikiRepository
 import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.state.Settings
 import okhttp3.MediaType.Companion.toMediaType
@@ -35,7 +22,7 @@ import timber.log.Timber
 import javax.inject.Singleton
 
 @Module
-class DataModule {
+object DataModule {
 
     @Singleton
     @Provides
@@ -137,31 +124,4 @@ class DataModule {
     @Provides
     @Singleton
     fun provideSettings(context: Context) = Settings(context)
-}
-
-@Module
-abstract class RepositoriesModule {
-    @Singleton
-    @Binds
-    abstract fun bindIAuthRepository(authRepository: AuthRepository): IAuthRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindIProjectsRepository(searchRepository: ProjectsRepository): IProjectsRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindIStoriesRepository(storiesRepository: TasksRepository): ITasksRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindIUsersRepository(usersRepository: UsersRepository): IUsersRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindISprintsRepository(sprintsRepository: SprintsRepository): ISprintsRepository
-
-    @Singleton
-    @Binds
-    abstract fun bindIWikiRepository(wikiRepository: WikiRepository): IWikiRepository
 }

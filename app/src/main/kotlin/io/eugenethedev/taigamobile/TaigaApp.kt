@@ -10,17 +10,15 @@ import timber.log.Timber
 
 class TaigaApp : Application() {
 
-    // logging
     private var fileLoggingTree: FileLoggingTree? = null
     val currentLogFile get() = fileLoggingTree?.currentFile
 
     override fun onCreate() {
         super.onCreate()
-        appComponent = DaggerAppComponent.builder()
-            .context(this)
-            .build()
+        appComponent = DaggerAppComponent
+            .factory()
+            .create(this)
 
-        // logging configs
         val minLoggingPriority = if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
             Log.DEBUG
