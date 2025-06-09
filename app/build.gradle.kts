@@ -53,7 +53,10 @@ android {
 
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
 //            signingConfig = signingConfigs.getByName("release")
         }
     }
@@ -88,7 +91,7 @@ android {
         buildConfig = true
     }
 
-    lint { 
+    lint {
         abortOnError = false
     }
 }
@@ -117,6 +120,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.foundation.layout)
 
     debugImplementation(libs.androidx.compose.ui.testManifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
@@ -124,9 +128,6 @@ dependencies {
     val accompanistVersion = "0.23.1"
     implementation("com.google.accompanist:accompanist-pager:$accompanistVersion")
     implementation("com.google.accompanist:accompanist-pager-indicators:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-systemuicontroller:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-insets:$accompanistVersion")
-    implementation("com.google.accompanist:accompanist-flowlayout:$accompanistVersion")
 
     implementation(libs.coil.compose)
 
@@ -135,23 +136,17 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
 
-    val moshiVersion = "1.15.2"
-    implementation("com.squareup.moshi:moshi:$moshiVersion")
-    ksp("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
+    implementation(libs.moshi)
+    ksp(libs.moshi.kotlin.codegen)
 
-    val retrofitVersion = "2.9.0"
-    implementation("com.squareup.retrofit2:retrofit:$retrofitVersion")
-    implementation("com.squareup.retrofit2:converter-moshi:$retrofitVersion")
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.moshi)
 
-    val okHttpVersion = "4.9.3"
-    implementation("com.squareup.okhttp3:okhttp:$okHttpVersion")
-    implementation("com.squareup.okhttp3:logging-interceptor:$okHttpVersion")
+    implementation(libs.okhttp)
+    implementation(libs.okhttp.logging.interceptor)
 
     implementation(libs.dagger)
     ksp(libs.dagger.compiler)
-
-    implementation(libs.dagger.android)
-    ksp(libs.dagger.android.processor)
 
     implementation(libs.timber)
 

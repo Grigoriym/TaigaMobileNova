@@ -1,23 +1,35 @@
 package io.eugenethedev.taigamobile.ui.components.lists
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
-import coil.compose.rememberImagePainter
+import coil.compose.rememberAsyncImagePainter
+import coil.request.ImageRequest
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.components.dialogs.ConfirmActionDialog
@@ -44,12 +56,13 @@ fun UserItem(
     val imageSize = if (dateTime != null) 46.dp else 40.dp
 
     Image(
-        painter = rememberImagePainter(
-            data = user.avatarUrl ?: R.drawable.default_avatar,
-            builder = {
+        painter = rememberAsyncImagePainter(
+            ImageRequest.Builder(LocalContext.current)
+            .data(user.avatarUrl ?: R.drawable.default_avatar).apply(
+            fun ImageRequest.Builder.() {
                 error(R.drawable.default_avatar)
                 crossfade(true)
-            }
+            }).build()
         ),
         contentDescription = null,
         contentScale = ContentScale.Crop,

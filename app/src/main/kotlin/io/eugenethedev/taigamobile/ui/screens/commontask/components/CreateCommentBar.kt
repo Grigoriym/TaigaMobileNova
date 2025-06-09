@@ -5,6 +5,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -28,7 +30,6 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.navigationBarsWithImePadding
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.ui.components.editors.TextFieldWithHint
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
@@ -52,7 +53,8 @@ fun CreateCommentBar(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .padding(vertical = 8.dp, horizontal = mainHorizontalScreenPadding)
-            .navigationBarsWithImePadding(),
+            .navigationBarsPadding()
+            .imePadding(),
     ) {
         Box(
             modifier = Modifier

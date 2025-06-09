@@ -2,6 +2,7 @@ package io.eugenethedev.taigamobile.ui.components.appbars
 
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -11,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.insets.statusBarsPadding
 import io.eugenethedev.taigamobile.R
 
 @OptIn(ExperimentalMaterial3Api::class)

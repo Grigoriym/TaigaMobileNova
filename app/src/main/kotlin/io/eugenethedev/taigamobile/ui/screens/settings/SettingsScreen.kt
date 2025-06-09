@@ -11,11 +11,14 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -48,7 +51,6 @@ import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.google.accompanist.insets.navigationBarsHeight
 import io.eugenethedev.taigamobile.BuildConfig
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.TaigaApp
@@ -126,11 +128,11 @@ fun SettingsScreenContent(
     Image(
         painter = rememberAsyncImagePainter(
             ImageRequest.Builder(LocalContext.current)
-            .data(data = avatarUrl ?: R.drawable.default_avatar).apply(
-            block = fun ImageRequest.Builder.() {
-                error(R.drawable.default_avatar)
-                crossfade(true)
-            }).build()
+                .data(data = avatarUrl ?: R.drawable.default_avatar).apply(
+                    block = fun ImageRequest.Builder.() {
+                        error(R.drawable.default_avatar)
+                        crossfade(true)
+                    }).build()
         ),
         contentDescription = null,
         contentScale = ContentScale.Crop,
@@ -336,7 +338,7 @@ fun SettingsScreenContent(
             }
         )
 
-        Spacer(Modifier.navigationBarsHeight())
+        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
     }
 }
 

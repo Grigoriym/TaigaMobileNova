@@ -3,58 +3,84 @@ package io.eugenethedev.taigamobile.ui.screens.main
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.provider.OpenableColumns
+import androidx.activity.SystemBarStyle
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.ScaffoldState
 import androidx.compose.material.Snackbar
 import androidx.compose.material.SnackbarHost
 import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material.ripple.LocalRippleTheme
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.contentColorFor
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.core.view.WindowCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.*
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
-import androidx.navigation.compose.*
-import com.google.accompanist.insets.*
-import com.google.accompanist.systemuicontroller.rememberSystemUiController
+import androidx.navigation.NavHostController
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.state.ThemeSetting
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
-import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
+import io.eugenethedev.taigamobile.state.ThemeSetting
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
-import io.eugenethedev.taigamobile.ui.screens.login.LoginScreen
-import io.eugenethedev.taigamobile.ui.screens.projectselector.ProjectSelectorScreen
-import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumScreen
-import io.eugenethedev.taigamobile.ui.screens.sprint.SprintScreen
+import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
 import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskScreen
 import io.eugenethedev.taigamobile.ui.screens.createtask.CreateTaskScreen
 import io.eugenethedev.taigamobile.ui.screens.dashboard.DashboardScreen
 import io.eugenethedev.taigamobile.ui.screens.epics.EpicsScreen
 import io.eugenethedev.taigamobile.ui.screens.issues.IssuesScreen
 import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanScreen
+import io.eugenethedev.taigamobile.ui.screens.login.LoginScreen
 import io.eugenethedev.taigamobile.ui.screens.profile.ProfileScreen
+import io.eugenethedev.taigamobile.ui.screens.projectselector.ProjectSelectorScreen
+import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumScreen
 import io.eugenethedev.taigamobile.ui.screens.settings.SettingsScreen
+import io.eugenethedev.taigamobile.ui.screens.sprint.SprintScreen
 import io.eugenethedev.taigamobile.ui.screens.team.TeamScreen
 import io.eugenethedev.taigamobile.ui.screens.wiki.createpage.WikiCreatePageScreen
-import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageScreen
 import io.eugenethedev.taigamobile.ui.screens.wiki.list.WikiListScreen
+import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageScreen
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileRippleTheme
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import kotlinx.coroutines.launch
@@ -82,13 +108,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
-        WindowCompat.setDecorFitsSystemWindows(window, false)
         setContent {
             val scaffoldState = rememberScaffoldState()
             val navController = rememberNavController()
-            val systemUiController = rememberSystemUiController()
 
             val viewModel: MainViewModel = viewModel()
             val theme by viewModel.theme.collectAsState()
@@ -99,94 +124,97 @@ class MainActivity : AppCompatActivity() {
                 ThemeSetting.System -> isSystemInDarkTheme()
             }
 
+            DisposableEffect(darkTheme) {
+                enableEdgeToEdge(
+                    statusBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.TRANSPARENT,
+                        android.graphics.Color.TRANSPARENT,
+                    ) { darkTheme },
+                    navigationBarStyle = SystemBarStyle.auto(
+                        android.graphics.Color.argb(0xe6, 0xFF, 0xFF, 0xFF),
+                        android.graphics.Color.argb(0x80, 0x1b, 0x1b, 0x1b),
+                    ) { darkTheme },
+                )
+                onDispose {}
+            }
+
             TaigaMobileTheme(darkTheme) {
-                ProvideWindowInsets(windowInsetsAnimationsEnabled = true) {
-                    systemUiController.let {
-                        it.setStatusBarColor(
-                            Color.Transparent,
-                            darkIcons = !darkTheme
-                        )
-                        it.setNavigationBarColor(
-                            Color.Transparent,
-                            darkIcons = !darkTheme
-                        )
-                    }
+                CompositionLocalProvider(
+                    LocalFilePicker provides filePicker,
+                    LocalRippleTheme provides TaigaMobileRippleTheme
+                ) {
 
-                    CompositionLocalProvider(
-                        LocalFilePicker provides filePicker,
-                        LocalRippleTheme provides TaigaMobileRippleTheme
-                    ) {
-
-                        // use Scaffold from material2, because material3 Scaffold lacks some functionality
-                        androidx.compose.material.Scaffold(
-                            scaffoldState = scaffoldState,
-                            snackbarHost = {
-                                SnackbarHost(
-                                    hostState = it,
-                                    modifier = Modifier.navigationBarsPadding()
-                                ) {
-                                    Snackbar(
-                                        snackbarData = it,
-                                        backgroundColor = MaterialTheme.colorScheme.surface,
-                                        contentColor = contentColorFor(MaterialTheme.colorScheme.surface),
-                                        shape = MaterialTheme.shapes.small
-                                    )
-                                }
-                            },
-                            bottomBar = {
-                                val items = Screens.values()
-                                val routes = items.map { it.route }
-                                val navBackStackEntry by navController.currentBackStackEntryAsState()
-                                val currentRoute =
-                                    navBackStackEntry?.destination?.hierarchy?.first()?.route
-
-                                // hide bottom bar for other screens
-                                if (currentRoute !in routes) return@Scaffold
-
-                                NavigationBar(
-                                    modifier = Modifier.navigationBarsHeight(70.dp)
-                                ) {
-                                    items.forEach { screen ->
-                                        NavigationBarItem(
-                                            modifier = Modifier.navigationBarsPadding()
-                                                .clip(CircleShape),
-                                            icon = {
-                                                Icon(
-                                                    painter = painterResource(screen.iconId),
-                                                    contentDescription = null,
-                                                    modifier = Modifier.size(22.dp)
-                                                )
-                                            },
-                                            label = { Text(stringResource(screen.resourceId)) },
-                                            selected = currentRoute == screen.route,
-                                            onClick = {
-                                                if (screen.route != currentRoute) {
-                                                    navController.navigate(screen.route) {
-                                                        popUpTo(navController.graph.findStartDestination().id) { }
-                                                    }
-                                                }
-                                            }
-                                        )
-                                    }
-                                }
-                            },
-                            content = {
-                                MainScreen(
-                                    viewModel = viewModel,
-                                    scaffoldState = scaffoldState,
-                                    paddingValues = it,
-                                    navController = navController
+                    // use Scaffold from material2, because material3 Scaffold lacks some functionality
+                    androidx.compose.material.Scaffold(
+                        scaffoldState = scaffoldState,
+                        snackbarHost = {
+                            SnackbarHost(
+                                hostState = it,
+                                modifier = Modifier.navigationBarsPadding()
+                            ) {
+                                Snackbar(
+                                    snackbarData = it,
+                                    backgroundColor = MaterialTheme.colorScheme.surface,
+                                    contentColor = contentColorFor(MaterialTheme.colorScheme.surface),
+                                    shape = MaterialTheme.shapes.small
                                 )
                             }
-                        )
-                    }
+                        },
+                        bottomBar = {
+                            val items = Screens.entries.toTypedArray()
+                            val routes = items.map { it.route }
+                            val navBackStackEntry by navController.currentBackStackEntryAsState()
+                            val currentRoute =
+                                navBackStackEntry?.destination?.hierarchy?.first()?.route
+
+                            // hide bottom bar for other screens
+                            if (currentRoute !in routes) return@Scaffold
+
+                            NavigationBar {
+                                items.forEach { screen ->
+                                    NavigationBarItem(
+                                        modifier = Modifier
+                                            .clip(CircleShape),
+                                        icon = {
+                                            Icon(
+                                                painter = painterResource(screen.iconId),
+                                                contentDescription = null,
+                                                modifier = Modifier.size(22.dp)
+                                            )
+                                        },
+                                        label = { Text(stringResource(screen.resourceId)) },
+                                        selected = currentRoute == screen.route,
+                                        onClick = {
+                                            if (screen.route != currentRoute) {
+                                                navController.navigate(screen.route) {
+                                                    popUpTo(navController.graph.findStartDestination().id) { }
+                                                }
+                                            }
+                                        }
+                                    )
+                                }
+                            }
+                        },
+                        content = {
+                            MainScreen(
+                                viewModel = viewModel,
+                                scaffoldState = scaffoldState,
+                                paddingValues = it,
+                                navController = navController
+                            )
+                        }
+                    )
                 }
             }
         }
     }
 }
 
-enum class Screens(val route: String, @StringRes val resourceId: Int, @DrawableRes val iconId: Int) {
+enum class Screens(
+    val route: String,
+    @StringRes val resourceId: Int,
+    @DrawableRes val iconId: Int
+) {
     Dashboard(Routes.dashboard, R.string.dashboard_short, R.drawable.ic_dashboard),
     Scrum(Routes.scrum, R.string.scrum, R.drawable.ic_scrum),
     Epics(Routes.epics, R.string.epics, R.drawable.ic_epics),
@@ -247,7 +275,9 @@ fun MainScreen(
     val isProjectSelected by viewModel.isProjectSelected.collectAsState()
 
     Surface(
-        modifier = Modifier.fillMaxSize().padding(paddingValues),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(paddingValues),
         color = MaterialTheme.colorScheme.background
     ) {
         NavHost(
@@ -394,14 +424,19 @@ fun MainScreen(
                 CommonTaskScreen(
                     navController = navController,
                     commonTaskId = it.arguments!!.getLong(Routes.Arguments.commonTaskId),
-                    commonTaskType = CommonTaskType.valueOf(it.arguments!!.getString(Routes.Arguments.commonTaskType, "")),
+                    commonTaskType = CommonTaskType.valueOf(
+                        it.arguments!!.getString(
+                            Routes.Arguments.commonTaskType,
+                            ""
+                        )
+                    ),
                     ref = it.arguments!!.getInt(Routes.Arguments.ref),
                     showMessage = showMessage
                 )
             }
 
             composable(
-                Routes.Arguments.run {"${Routes.createTask}/{$commonTaskType}?$parentId={$parentId}&$sprintId={$sprintId}&$statusId={$statusId}&$swimlaneId={$swimlaneId}" },
+                Routes.Arguments.run { "${Routes.createTask}/{$commonTaskType}?$parentId={$parentId}&$sprintId={$sprintId}&$statusId={$statusId}&$swimlaneId={$swimlaneId}" },
                 arguments = listOf(
                     navArgument(Routes.Arguments.commonTaskType) { type = NavType.StringType },
                     navArgument(Routes.Arguments.parentId) {
@@ -424,11 +459,17 @@ fun MainScreen(
             ) {
                 CreateTaskScreen(
                     navController = navController,
-                    commonTaskType = CommonTaskType.valueOf(it.arguments!!.getString(Routes.Arguments.commonTaskType, "")),
+                    commonTaskType = CommonTaskType.valueOf(
+                        it.arguments!!.getString(
+                            Routes.Arguments.commonTaskType,
+                            ""
+                        )
+                    ),
                     parentId = it.arguments!!.getLong(Routes.Arguments.parentId).takeIf { it >= 0 },
                     sprintId = it.arguments!!.getLong(Routes.Arguments.sprintId).takeIf { it >= 0 },
                     statusId = it.arguments!!.getLong(Routes.Arguments.statusId).takeIf { it >= 0 },
-                    swimlaneId = it.arguments!!.getLong(Routes.Arguments.swimlaneId).takeIf { it >= 0 },
+                    swimlaneId = it.arguments!!.getLong(Routes.Arguments.swimlaneId)
+                        .takeIf { it >= 0 },
                     showMessage = showMessage
                 )
             }

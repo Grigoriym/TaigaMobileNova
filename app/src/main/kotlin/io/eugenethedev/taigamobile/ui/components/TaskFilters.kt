@@ -5,7 +5,10 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.rememberTransition
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,11 +51,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.google.accompanist.flowlayout.FlowRow
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Filter
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
@@ -102,7 +103,10 @@ fun TasksFiltersWithLazyList(
  * Filters are placed in bottom sheet dialog as expandable options
  */
 
-@OptIn(ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class)
+@OptIn(
+    ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class,
+    ExperimentalLayoutApi::class
+)
 @Composable
 fun TaskFilters(
     selected: FiltersData,
@@ -216,7 +220,7 @@ fun TaskFilters(
                             Spacer(Modifier.height(space))
 
                             Column(modifier = Modifier.fillMaxWidth()) {
-                                FlowRow(mainAxisSpacing = 4.dp) {
+                                FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                                     selected.types.forEach {
                                         FilterChip(
                                             filter = it,
@@ -384,6 +388,7 @@ fun TaskFilters(
 private inline fun <T : Filter> List<T>.ifHasData(action: (List<T>) -> Unit) =
     takeIf { it.hasData() }?.let(action)
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun <T : Filter> Section(
     @StringRes titleId: Int,
@@ -423,8 +428,8 @@ private fun <T : Filter> Section(
     AnimatedVisibility(visible = isExpanded) {
         FlowRow(
             modifier = Modifier.padding(vertical = 2.dp, horizontal = 6.dp),
-            mainAxisSpacing = 4.dp,
-            crossAxisSpacing = 4.dp
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             filters.forEach {
                 FilterChip(
