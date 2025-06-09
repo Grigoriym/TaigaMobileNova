@@ -47,7 +47,7 @@ import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 
 @Composable
 fun TeamScreen(
@@ -62,7 +62,7 @@ fun TeamScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val team by viewModel.team.collectAsState()
-    team.subscribeOnError(showMessage)
+    team.SubscribeOnError(showMessage)
 
     TeamScreenContent(
         projectName = projectName,

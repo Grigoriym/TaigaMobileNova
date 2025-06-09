@@ -34,10 +34,10 @@ fun IssuesScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val issues = viewModel.issues
-    issues.subscribeOnError(showMessage)
+    issues.SubscribeOnError(showMessage)
 
     val filters by viewModel.filters.collectAsState()
-    filters.subscribeOnError(showMessage)
+    filters.SubscribeOnError(showMessage)
 
     val activeFilters by viewModel.activeFilters.collectAsState()
 

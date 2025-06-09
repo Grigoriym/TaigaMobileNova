@@ -69,18 +69,18 @@ fun Modifier.clickableUnindicated(
     )
 }
 
-
 // Error functions
 @Composable
-inline fun Result<*>.subscribeOnError(crossinline onError: (message: Int) -> Unit) = (this as? ErrorResult)?.message?.let {
-    LaunchedEffect(this) {
-        onError(it)
+inline fun Result<*>.SubscribeOnError(crossinline onError: (message: Int) -> Unit) =
+    (this as? ErrorResult)?.message?.let {
+        LaunchedEffect(this) {
+            onError(it)
+        }
     }
-}
 
 @SuppressLint("ComposableNaming")
 @Composable
-inline fun <T : Any> LazyPagingItems<T>.subscribeOnError(crossinline onError: (message: Int) -> Unit) {
+inline fun <T : Any> LazyPagingItems<T>.SubscribeOnError(crossinline onError: (message: Int) -> Unit) {
     if (loadState.run { listOf(refresh, prepend, append) }.any { it is LoadState.Error }) {
         LaunchedEffect(this) {
             onError(R.string.common_error_message)
@@ -89,11 +89,12 @@ inline fun <T : Any> LazyPagingItems<T>.subscribeOnError(crossinline onError: (m
 }
 
 
-val Context.activity: AppCompatActivity get() = when (this) {
-    is AppCompatActivity -> this
-    is ContextWrapper -> baseContext.activity
-    else -> throw IllegalStateException("Context is not an Activity")
-}
+val Context.activity: AppCompatActivity
+    get() = when (this) {
+        is AppCompatActivity -> this
+        is ContextWrapper -> baseContext.activity
+        else -> throw IllegalStateException("Context is not an Activity")
+    }
 
 // Color functions
 
@@ -105,8 +106,10 @@ fun String.toColor(): Color = try {
 }
 
 fun Color.toHex() = "#%08X".format(toArgb()).replace("#FF", "#")
+
 // calculate optimal text color for colored background background
 fun Color.textColor() = if (luminance() < 0.5) Color.White else Color.Black
+
 // copy from library, because it is internal in library
 fun ColorScheme.surfaceColorAtElevationInternal(elevation: Dp): Color {
     if (elevation == 0.dp) return surface

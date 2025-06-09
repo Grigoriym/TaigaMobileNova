@@ -18,7 +18,7 @@ import io.eugenethedev.taigamobile.ui.components.editors.Editor
 import io.eugenethedev.taigamobile.ui.components.dialogs.LoadingDialog
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 
 @Composable
 fun CreateTaskScreen(
@@ -33,7 +33,7 @@ fun CreateTaskScreen(
     val viewModel: CreateTaskViewModel = viewModel()
 
     val creationResult by viewModel.creationResult.collectAsState()
-    creationResult.subscribeOnError(showMessage)
+    creationResult.SubscribeOnError(showMessage)
 
     creationResult.takeIf { it is SuccessResult }?.data?.let {
         LaunchedEffect(Unit) {

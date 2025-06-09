@@ -16,7 +16,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.itemsIndexed as itemsIndexedLazy
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.ui.components.loaders.DotsLoader
 import io.eugenethedev.taigamobile.ui.components.texts.SectionTitle
@@ -44,7 +45,7 @@ fun LazyListScope.SimpleTasksListWithTitle(
 
     val lastIndex = commonTasksLazy?.itemCount?.minus(1) ?: commonTasks.lastIndex
 
-    val itemContent: @Composable LazyItemScope.(Int, CommonTask?) -> Unit = lambda@ { index, item ->
+    val itemContent: @Composable LazyItemScope.(Int, CommonTask?) -> Unit = lambda@{ index, item ->
         if (item == null) return@lambda
 
         CommonTaskItem(
@@ -77,11 +78,13 @@ fun LazyListScope.SimpleTasksListWithTitle(
     }
 
     commonTasksLazy?.let {
-            itemsIndexedLazy(
-                items = it,
-                key = { _, item -> item.id + keysHash },
-                itemContent = itemContent
-            )
+        items(
+            count = it.itemCount,
+            key = it.itemKey { item -> item.id + keysHash },
+            contentType = it.itemContentType()
+        ) { index ->
+            itemContent(index, it[index])
+        }
     } ?: itemsIndexed(commonTasks, itemContent = itemContent)
 
     item {

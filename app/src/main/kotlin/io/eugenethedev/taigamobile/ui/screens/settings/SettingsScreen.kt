@@ -64,7 +64,7 @@ import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.activity
 import io.eugenethedev.taigamobile.ui.utils.clickableUnindicated
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import timber.log.Timber
 
 @Composable
@@ -80,7 +80,7 @@ fun SettingsScreen(
     val serverUrl by viewModel.serverUrl.collectAsState()
 
     val user by viewModel.user.collectAsState()
-    user.subscribeOnError(showMessage)
+    user.SubscribeOnError(showMessage)
 
     val themeSetting by viewModel.themeSetting.collectAsState()
 

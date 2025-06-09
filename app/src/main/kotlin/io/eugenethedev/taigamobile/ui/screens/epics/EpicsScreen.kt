@@ -34,10 +34,10 @@ fun EpicsScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val epics = viewModel.epics
-    epics.subscribeOnError(showMessage)
+    epics.SubscribeOnError(showMessage)
 
     val filters by viewModel.filters.collectAsState()
-    filters.subscribeOnError(showMessage)
+    filters.SubscribeOnError(showMessage)
 
     val activeFilters by viewModel.activeFilters.collectAsState()
 

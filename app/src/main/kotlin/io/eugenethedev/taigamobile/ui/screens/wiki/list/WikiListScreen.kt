@@ -35,7 +35,7 @@ import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
 import io.eugenethedev.taigamobile.ui.screens.main.Routes
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToWikiPageScreen
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 
 @Composable
 fun WikiListScreen(
@@ -47,10 +47,10 @@ fun WikiListScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val wikiLinks by viewModel.wikiLinks.collectAsState()
-    wikiLinks.subscribeOnError(showMessage)
+    wikiLinks.SubscribeOnError(showMessage)
 
     val wikiPages by viewModel.wikiPages.collectAsState()
-    wikiPages.subscribeOnError(showMessage)
+    wikiPages.SubscribeOnError(showMessage)
 
     LaunchedEffect(Unit) {
         viewModel.onOpen()

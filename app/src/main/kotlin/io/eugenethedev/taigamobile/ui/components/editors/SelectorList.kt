@@ -34,10 +34,10 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.itemContentType
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
 import io.eugenethedev.taigamobile.ui.components.loaders.DotsLoader
 import io.eugenethedev.taigamobile.ui.utils.onBackPressed
-import androidx.paging.compose.itemsIndexed as itemsIndexedLazy
 
 /**
  * Selector list, which expands from bottom to top.
@@ -48,7 +48,7 @@ fun <T : Any> SelectorList(
     @StringRes titleHintId: Int,
     items: List<T> = emptyList(),
     itemsLazy: LazyPagingItems<T>? = null,
-    key: ((index: Int, item: T) -> Any)? = null, // used to preserve position with lazy items
+    key: ((index: Int) -> Any)? = null, // used to preserve position with lazy items
     isVisible: Boolean = false,
     isItemsLoading: Boolean = false,
     isSearchable: Boolean = true,
@@ -121,12 +121,15 @@ fun <T : Any> SelectorList(
         )
 
         LazyColumn {
-            itemsLazy?.let {
-                itemsIndexedLazy(
-                    items = it,
+            itemsLazy?.let { item ->
+                items(
+                    count = item.itemCount,
                     key = key,
-                    itemContent = listItemContent
-                )
+                    contentType = item.itemContentType()
+                ) { index ->
+                    val item = item[index]
+                    listItemContent(index, item)
+                }
             } ?: itemsIndexed(items, itemContent = listItemContent)
 
             item {

@@ -35,7 +35,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import androidx.paging.compose.items
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import io.eugenethedev.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
@@ -58,10 +59,10 @@ import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
 import io.eugenethedev.taigamobile.ui.utils.navigateToSprint
 import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -80,21 +81,21 @@ fun ScrumScreen(
     val projectName by viewModel.projectName.collectAsState()
 
     val stories = viewModel.stories
-    stories.subscribeOnError {
+    stories.SubscribeOnError {
         showMessage(R.string.common_error_message)
     }
 
     val openSprints = viewModel.openSprints
-    openSprints.subscribeOnError(showMessage)
+    openSprints.SubscribeOnError(showMessage)
 
     val closedSprints = viewModel.closedSprints
-    closedSprints.subscribeOnError(showMessage)
+    closedSprints.SubscribeOnError(showMessage)
 
     val createSprintResult by viewModel.createSprintResult.collectAsState()
-    createSprintResult.subscribeOnError(showMessage)
+    createSprintResult.SubscribeOnError(showMessage)
 
     val filters by viewModel.filters.collectAsState()
-    filters.subscribeOnError(showMessage)
+    filters.SubscribeOnError(showMessage)
 
     val activeFilters by viewModel.activeFilters.collectAsState()
 
@@ -238,12 +239,19 @@ private fun SprintsTabContent(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        items(openSprints, key = { it.id }) {
-            if (it == null) return@items
-            SprintItem(
-                sprint = it,
-                navigateToBoard = navigateToBoard
-            )
+        items(
+            count = openSprints.itemCount,
+            key = openSprints.itemKey {
+                it.id
+            }
+        ) { index ->
+            val item = openSprints[index]
+            if (item != null) {
+                SprintItem(
+                    sprint = item,
+                    navigateToBoard = navigateToBoard
+                )
+            }
         }
 
         item {
@@ -259,12 +267,20 @@ private fun SprintsTabContent(
         }
 
         if (isClosedSprintsVisible) {
-            items(closedSprints, key = { it.id }) {
-                if (it == null) return@items
-                SprintItem(
-                    sprint = it,
-                    navigateToBoard = navigateToBoard
-                )
+            items(
+                count = closedSprints.itemCount,
+                key = closedSprints.itemKey {
+                    it.id
+                },
+                contentType = closedSprints.itemContentType()
+            ) { index ->
+                val item = closedSprints[index]
+                if (item != null) {
+                    SprintItem(
+                        sprint = item,
+                        navigateToBoard = navigateToBoard
+                    )
+                }
             }
 
             item {

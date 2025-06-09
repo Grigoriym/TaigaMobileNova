@@ -136,7 +136,7 @@ dependencies {
     implementation(libs.moshi)
     ksp(libs.moshi.kotlin.codegen)
 
-    implementation("com.google.code.gson:gson:2.9.0")
+    testImplementation(libs.gson)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi)
@@ -149,25 +149,24 @@ dependencies {
 
     implementation(libs.timber)
 
-    val markwonVersion = "4.6.2"
-    implementation("io.noties.markwon:core:$markwonVersion")
-    implementation("io.noties.markwon:image-coil:$markwonVersion")
+    implementation(libs.markwon.core)
+    implementation(libs.markwon.image.coil)
 
-    implementation("io.github.vanpra.compose-material-dialogs:color:0.7.0")
+    implementation(libs.vanpra.color)
 
     allTestsImplementation(kotlin("test-junit"))
 
-    testRuntimeOnly("org.robolectric:robolectric:4.8.1")
+    testRuntimeOnly("org.robolectric:robolectric:4.14.1")
 
-    allTestsImplementation("androidx.test:core-ktx:1.4.0")
-    allTestsImplementation("androidx.test:runner:1.4.0")
-    allTestsImplementation("androidx.test.ext:junit-ktx:1.1.3")
+    allTestsImplementation("androidx.test:core-ktx:1.6.1")
+    allTestsImplementation("androidx.test:runner:1.6.2")
+    allTestsImplementation("androidx.test.ext:junit-ktx:1.2.1")
 
     val postgresDriverVersion = "42.3.6"
     testRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
     androidTestRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
 
-    testImplementation("io.mockk:mockk:1.12.4")
+    testImplementation("io.mockk:mockk:1.14.2")
 }
 
 fun DependencyHandler.allTestsImplementation(dependencyNotation: Any) {

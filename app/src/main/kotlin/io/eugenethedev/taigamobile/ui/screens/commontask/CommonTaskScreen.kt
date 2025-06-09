@@ -67,7 +67,7 @@ import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
 import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
 import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import java.time.LocalDateTime
 
 @Composable
@@ -84,72 +84,72 @@ fun CommonTaskScreen(
     }
 
     val commonTask by viewModel.commonTask.collectAsState()
-    commonTask.subscribeOnError(showMessage)
+    commonTask.SubscribeOnError(showMessage)
 
     val creator by viewModel.creator.collectAsState()
-    creator.subscribeOnError(showMessage)
+    creator.SubscribeOnError(showMessage)
 
     val assignees by viewModel.assignees.collectAsState()
-    assignees.subscribeOnError(showMessage)
+    assignees.SubscribeOnError(showMessage)
 
     val watchers by viewModel.watchers.collectAsState()
-    watchers.subscribeOnError(showMessage)
+    watchers.SubscribeOnError(showMessage)
 
     val userStories by viewModel.userStories.collectAsState()
-    userStories.subscribeOnError(showMessage)
+    userStories.SubscribeOnError(showMessage)
 
     val tasks by viewModel.tasks.collectAsState()
-    tasks.subscribeOnError(showMessage)
+    tasks.SubscribeOnError(showMessage)
 
     val comments by viewModel.comments.collectAsState()
-    comments.subscribeOnError(showMessage)
+    comments.SubscribeOnError(showMessage)
 
     val editBasicInfoResult by viewModel.editBasicInfoResult.collectAsState()
-    editBasicInfoResult.subscribeOnError(showMessage)
+    editBasicInfoResult.SubscribeOnError(showMessage)
 
     val statuses by viewModel.statuses.collectAsState()
-    statuses.subscribeOnError(showMessage)
+    statuses.SubscribeOnError(showMessage)
     val editStatusResult by viewModel.editStatusResult.collectAsState()
-    editStatusResult.subscribeOnError(showMessage)
+    editStatusResult.SubscribeOnError(showMessage)
 
     val swimlanes by viewModel.swimlanes.collectAsState()
-    swimlanes.subscribeOnError(showMessage)
+    swimlanes.SubscribeOnError(showMessage)
 
     val sprints = viewModel.sprints
-    sprints.subscribeOnError(showMessage)
+    sprints.SubscribeOnError(showMessage)
     val editSprintResult by viewModel.editSprintResult.collectAsState()
-    editSprintResult.subscribeOnError(showMessage)
+    editSprintResult.SubscribeOnError(showMessage)
 
     val epics = viewModel.epics
-    epics.subscribeOnError(showMessage)
+    epics.SubscribeOnError(showMessage)
     val linkToEpicResult by viewModel.linkToEpicResult.collectAsState()
-    linkToEpicResult.subscribeOnError(showMessage)
+    linkToEpicResult.SubscribeOnError(showMessage)
 
     val team by viewModel.team.collectAsState()
-    team.subscribeOnError(showMessage)
+    team.SubscribeOnError(showMessage)
     val teamSearched by viewModel.teamSearched.collectAsState()
 
     val customFields by viewModel.customFields.collectAsState()
-    customFields.subscribeOnError(showMessage)
+    customFields.SubscribeOnError(showMessage)
 
     val attachments by viewModel.attachments.collectAsState()
-    attachments.subscribeOnError(showMessage)
+    attachments.SubscribeOnError(showMessage)
 
     val tags by viewModel.tags.collectAsState()
-    tags.subscribeOnError(showMessage)
+    tags.SubscribeOnError(showMessage)
     val tagsSearched by viewModel.tagsSearched.collectAsState()
 
     val editEpicColorResult by viewModel.editEpicColorResult.collectAsState()
-    editEpicColorResult.subscribeOnError(showMessage)
+    editEpicColorResult.SubscribeOnError(showMessage)
 
     val editBlockedResult by viewModel.editBlockedResult.collectAsState()
-    editBlockedResult.subscribeOnError(showMessage)
+    editBlockedResult.SubscribeOnError(showMessage)
 
     val editDueDateResult by viewModel.editDueDateResult.collectAsState()
-    editDueDateResult.subscribeOnError(showMessage)
+    editDueDateResult.SubscribeOnError(showMessage)
 
     val deleteResult by viewModel.deleteResult.collectAsState()
-    deleteResult.subscribeOnError(showMessage)
+    deleteResult.SubscribeOnError(showMessage)
     deleteResult.takeIf { it is SuccessResult }?.let {
         LaunchedEffect(Unit) {
             navController.popBackStack()
@@ -157,7 +157,7 @@ fun CommonTaskScreen(
     }
 
     val promoteResult by viewModel.promoteResult.collectAsState()
-    promoteResult.subscribeOnError(showMessage)
+    promoteResult.SubscribeOnError(showMessage)
     promoteResult.takeIf { it is SuccessResult }?.data?.let {
         LaunchedEffect(Unit) {
             navController.popBackStack()

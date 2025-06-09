@@ -20,7 +20,7 @@ import io.eugenethedev.taigamobile.ui.components.editors.SelectorList
 import io.eugenethedev.taigamobile.ui.components.editors.SelectorListConstants
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
-import io.eugenethedev.taigamobile.ui.utils.subscribeOnError
+import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -36,7 +36,7 @@ fun ProjectSelectorScreen(
     val coroutineScope = rememberCoroutineScope()
 
     val projects = viewModel.projects
-    projects.subscribeOnError(showMessage)
+    projects.SubscribeOnError(showMessage)
 
     val currentProjectId by viewModel.currentProjectId.collectAsState()
 
