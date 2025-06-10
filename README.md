@@ -1,7 +1,7 @@
-# ~~⚠️ Archived ⚠️~~
-~~This repository has been archived and is no longer maintained.~~
+The previous author archived the project. Let's see what I can do about it. As of now I updated the project for it to be launched and built.
 
-So the previous author archived it. Let's see what I can do about it.
+# Taiga Mobile Next
+I believe "Next" should be renamed, since as it turned out Taiga team had/has something connectened to the "Next" word.
 
 # TaigaMobile
 
