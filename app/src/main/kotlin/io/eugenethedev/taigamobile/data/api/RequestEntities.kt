@@ -1,5 +1,6 @@
 package io.eugenethedev.taigamobile.data.api
 
+import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.time.LocalDate
 
@@ -24,15 +25,15 @@ data class EditCommonTaskRequest(
     val severity: Long?,
     val priority: Long?,
     val milestone: Long?,
-    val assigned_to: Long?,
-    val assigned_users: List<Long>,
+    @Json(name = "assigned_to") val assignedTo: Long?,
+    @Json(name = "assigned_users") val assignedUsers: List<Long>,
     val watchers: List<Long>,
     val swimlane: Long?,
-    val due_date: LocalDate?,
+    @Json(name = "due_date") val dueDate: LocalDate?,
     val color: String?,
     val tags: List<List<String>>,
-    val blocked_note: String,
-    val is_blocked: Boolean,
+    @Json(name = "blocked_note") val blockedNote: String,
+    @Json(name = "is_blocked") val isBlocked: Boolean,
     val version: Int
 )
 

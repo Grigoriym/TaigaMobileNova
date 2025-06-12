@@ -1,9 +1,8 @@
 package io.eugenethedev.taigamobile.viewmodels
 
 import android.content.Context
-import io.eugenethedev.taigamobile.dagger.AppComponent
-import io.eugenethedev.taigamobile.dagger.DataModule
-import io.eugenethedev.taigamobile.domain.repositories.IAuthRepository
+import io.eugenethedev.taigamobile.di.AppComponent
+import io.eugenethedev.taigamobile.login.domain.IAuthRepository
 import io.eugenethedev.taigamobile.domain.repositories.IProjectsRepository
 import io.eugenethedev.taigamobile.domain.repositories.ISprintsRepository
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
@@ -13,14 +12,14 @@ import io.eugenethedev.taigamobile.state.Session
 import io.eugenethedev.taigamobile.state.Settings
 import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskViewModel
 import io.eugenethedev.taigamobile.ui.screens.createtask.CreateTaskViewModel
-import io.eugenethedev.taigamobile.ui.screens.dashboard.DashboardViewModel
+import io.eugenethedev.taigamobile.dashboard.DashboardViewModel
 import io.eugenethedev.taigamobile.ui.screens.epics.EpicsViewModel
 import io.eugenethedev.taigamobile.ui.screens.issues.IssuesViewModel
 import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanViewModel
-import io.eugenethedev.taigamobile.ui.screens.login.LoginViewModel
-import io.eugenethedev.taigamobile.ui.screens.main.MainViewModel
+import io.eugenethedev.taigamobile.login.ui.LoginViewModel
+import io.eugenethedev.taigamobile.main.MainViewModel
 import io.eugenethedev.taigamobile.ui.screens.profile.ProfileViewModel
-import io.eugenethedev.taigamobile.ui.screens.projectselector.ProjectSelectorViewModel
+import io.eugenethedev.taigamobile.projectselector.ProjectSelectorViewModel
 import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumViewModel
 import io.eugenethedev.taigamobile.ui.screens.settings.SettingsViewModel
 import io.eugenethedev.taigamobile.ui.screens.sprint.SprintViewModel

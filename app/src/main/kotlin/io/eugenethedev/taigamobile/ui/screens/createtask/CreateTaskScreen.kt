@@ -9,9 +9,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.ui.components.dialogs.LoadingDialog
 import io.eugenethedev.taigamobile.ui.components.editors.Editor
@@ -23,6 +23,7 @@ import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 
 @Composable
 fun CreateTaskScreen(
+    viewModel: CreateTaskViewModel = hiltViewModel(),
     navController: NavController,
     commonTaskType: CommonTaskType,
     parentId: Long? = null,
@@ -31,8 +32,6 @@ fun CreateTaskScreen(
     swimlaneId: Long? = null,
     showMessage: (message: Int) -> Unit = {},
 ) {
-    val viewModel: CreateTaskViewModel = viewModel()
-
     val creationResult by viewModel.creationResult.collectAsState()
     creationResult.SubscribeOnError(showMessage)
 

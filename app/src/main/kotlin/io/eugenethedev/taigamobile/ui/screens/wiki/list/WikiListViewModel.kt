@@ -2,8 +2,7 @@ package io.eugenethedev.taigamobile.ui.screens.wiki.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.eugenethedev.taigamobile.domain.entities.WikiLink
 import io.eugenethedev.taigamobile.domain.entities.WikiPage
 import io.eugenethedev.taigamobile.domain.repositories.IWikiRepository
@@ -13,22 +12,16 @@ import io.eugenethedev.taigamobile.ui.utils.loadOrError
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class WikiListViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-
-    @Inject
-    lateinit var session: Session
-
-    @Inject
-    lateinit var wikiRepository: IWikiRepository
+@HiltViewModel
+class WikiListViewModel @Inject constructor(
+    private val session: Session,
+    private val wikiRepository: IWikiRepository
+) : ViewModel() {
 
     val projectName by lazy { session.currentProjectName }
 
     val wikiPages = MutableResultFlow<List<WikiPage>>()
     val wikiLinks = MutableResultFlow<List<WikiLink>>()
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun onOpen() {
         getWikiPage()

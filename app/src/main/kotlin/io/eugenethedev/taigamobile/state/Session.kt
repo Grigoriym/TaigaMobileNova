@@ -3,8 +3,11 @@ package io.eugenethedev.taigamobile.state
 import android.content.Context
 import androidx.core.content.edit
 import com.squareup.moshi.Moshi
+import dagger.hilt.android.qualifiers.ApplicationContext
+import io.eugenethedev.taigamobile.data.api.TaigaApi
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
 import io.eugenethedev.taigamobile.domain.entities.FiltersDataJsonAdapter
+import io.eugenethedev.taigamobile.login.data.NetworkConstants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -13,15 +16,22 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import javax.inject.Inject
+import javax.inject.Singleton
 
 /**
  * Global app state
  */
-class Session(context: Context, moshi: Moshi) {
+@Singleton
+class Session @Inject constructor(
+    @ApplicationContext private val context: Context,
+    moshi: Moshi
+) {
 
     private val sharedPreferences =
         context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
@@ -43,8 +53,17 @@ class Session(context: Context, moshi: Moshi) {
         _refreshToken.value = refreshToken
     }
 
-    private val _server = MutableStateFlow(sharedPreferences.getString(SERVER_KEY, "").orEmpty())
-    val server: StateFlow<String> = _server
+    private val _server = MutableStateFlow(
+        sharedPreferences.getString(SERVER_KEY, NetworkConstants.DEFAULT_HOST).orEmpty()
+    )
+
+    val serverFlow: StateFlow<String> = _server.asStateFlow()
+    val server: String
+        get() = sharedPreferences.getString(SERVER_KEY, NetworkConstants.DEFAULT_HOST).orEmpty()
+
+    val baseUrl: String
+        get() = "${server}/${TaigaApi.API_PREFIX}/"
+
     fun changeServer(value: String) {
         sharedPreferences.edit { putString(SERVER_KEY, value) }
         _server.value = value

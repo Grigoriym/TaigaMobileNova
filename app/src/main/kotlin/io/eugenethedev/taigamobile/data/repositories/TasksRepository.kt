@@ -1,6 +1,6 @@
 package io.eugenethedev.taigamobile.data.repositories
 
-import io.eugenethedev.taigamobile.dagger.toLocalDate
+import io.eugenethedev.taigamobile.di.toLocalDate
 import io.eugenethedev.taigamobile.data.api.CommonTaskPathPlural
 import io.eugenethedev.taigamobile.data.api.CommonTaskPathSingular
 import io.eugenethedev.taigamobile.data.api.CommonTaskResponse
@@ -409,7 +409,7 @@ class TasksRepository @Inject constructor(
                 ?.toStatus(StatusType.Severity),
             priority = priority?.let { id -> filters.priorities.find { it.id == id } }
                 ?.toStatus(StatusType.Priority),
-            url = "${session.server.value}/project/${project_extra_info.slug}/${
+            url = "${session.server}/project/${project_extra_info.slug}/${
                 transformTaskTypeForCopyLink(
                     commonTaskType
                 )
@@ -436,15 +436,15 @@ class TasksRepository @Inject constructor(
         severity = severity?.id,
         priority = priority?.id,
         milestone = sprint?.id,
-        assigned_to = assignedIds.firstOrNull(),
-        assigned_users = assignedIds,
+        assignedTo = assignedIds.firstOrNull(),
+        assignedUsers = assignedIds,
         watchers = watcherIds,
         swimlane = swimlane?.id,
-        due_date = dueDate,
+        dueDate = dueDate,
         color = color,
         tags = tags.map { it.toList() },
-        blocked_note = blockedNote.orEmpty(),
-        is_blocked = blockedNote != null,
+        blockedNote = blockedNote.orEmpty(),
+        isBlocked = blockedNote != null,
         version = version
     )
 
@@ -488,9 +488,9 @@ class TasksRepository @Inject constructor(
         withIO {
             val request = commonTask.toEditRequest().let {
                 if (commonTask.taskType == CommonTaskType.UserStory) {
-                    it.copy(assigned_to = assignees.firstOrNull(), assigned_users = assignees)
+                    it.copy(assignedTo = assignees.firstOrNull(), assignedUsers = assignees)
                 } else {
-                    it.copy(assigned_to = assignees.lastOrNull())
+                    it.copy(assignedTo = assignees.lastOrNull())
                 }
             }
 
@@ -503,7 +503,7 @@ class TasksRepository @Inject constructor(
         }
 
     override suspend fun editDueDate(commonTask: CommonTaskExtended, date: LocalDate?) = withIO {
-        editCommonTask(commonTask, commonTask.toEditRequest().copy(due_date = date))
+        editCommonTask(commonTask, commonTask.toEditRequest().copy(dueDate = date))
     }
 
     override suspend fun editCommonTaskBasicInfo(
@@ -543,7 +543,7 @@ class TasksRepository @Inject constructor(
             editCommonTask(
                 commonTask,
                 commonTask.toEditRequest()
-                    .copy(is_blocked = blockedNote != null, blocked_note = blockedNote.orEmpty())
+                    .copy(isBlocked = blockedNote != null, blockedNote = blockedNote.orEmpty())
             )
         }
 

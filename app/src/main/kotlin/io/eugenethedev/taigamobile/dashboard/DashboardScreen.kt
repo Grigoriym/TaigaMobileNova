@@ -1,4 +1,4 @@
-package io.eugenethedev.taigamobile.ui.screens.dashboard
+package io.eugenethedev.taigamobile.dashboard
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
@@ -19,9 +19,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.Project
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
@@ -39,10 +39,10 @@ import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 
 @Composable
 fun DashboardScreen(
+    viewModel: DashboardViewModel = hiltViewModel(),
     navController: NavController,
     showMessage: (message: Int) -> Unit = {},
 ) {
-    val viewModel: DashboardViewModel = viewModel()
     LaunchedEffect(Unit) {
         viewModel.onOpen()
     }

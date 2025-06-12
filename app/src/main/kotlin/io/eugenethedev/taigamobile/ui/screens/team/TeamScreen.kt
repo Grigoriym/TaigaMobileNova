@@ -32,13 +32,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.core.nav.Routes
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.TeamMember
 import io.eugenethedev.taigamobile.ui.components.appbars.ClickableAppBar
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
@@ -51,10 +50,12 @@ import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
 
 @Composable
 fun TeamScreen(
+    viewModel: TeamViewModel = hiltViewModel(),
     navController: NavController,
-    showMessage: (message: Int) -> Unit = {},
+    showMessage: (message: Int) -> Unit,
+    goToProjectSelector: () -> Unit,
+    goBck: () -> Unit
 ) {
-    val viewModel: TeamViewModel = viewModel()
     LaunchedEffect(Unit) {
         viewModel.onOpen()
     }
@@ -68,8 +69,8 @@ fun TeamScreen(
         projectName = projectName,
         team = team.data.orEmpty(),
         isLoading = team is LoadingResult,
-        onTitleClick = { navController.navigate(Routes.projectsSelector) },
-        navigateBack = navController::popBackStack,
+        onTitleClick = goToProjectSelector,
+        navigateBack = goBck,
         onUserItemClick = { userId ->
             navController.navigateToProfileScreen(userId)
         }

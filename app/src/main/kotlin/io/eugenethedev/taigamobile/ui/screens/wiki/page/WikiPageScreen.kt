@@ -29,9 +29,9 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Attachment
 import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
@@ -54,12 +54,11 @@ import java.time.LocalDateTime
 
 @Composable
 fun WikiPageScreen(
+    viewModel: WikiPageViewModel = hiltViewModel(),
     slug: String,
     navController: NavController,
     showMessage: (message: Int) -> Unit = {},
 ) {
-    val viewModel: WikiPageViewModel = viewModel()
-
     val page by viewModel.page.collectAsState()
     page.SubscribeOnError(showMessage)
 

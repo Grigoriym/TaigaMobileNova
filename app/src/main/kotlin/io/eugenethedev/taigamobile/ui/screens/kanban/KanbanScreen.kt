@@ -10,7 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import io.eugenethedev.taigamobile.core.nav.Routes
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
@@ -28,10 +28,11 @@ import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 
 @Composable
 fun KanbanScreen(
+    viewModel: KanbanViewModel = hiltViewModel(),
     navController: NavController,
-    showMessage: (message: Int) -> Unit = {}
+    showMessage: (message: Int) -> Unit,
+    goToProjectSelector: () -> Unit
 ) {
-    val viewModel: KanbanViewModel = viewModel()
     LaunchedEffect(Unit) {
         viewModel.onOpen()
     }
@@ -68,7 +69,7 @@ fun KanbanScreen(
                 ref
             )
         },
-        onTitleClick = { navController.navigate(Routes.projectsSelector) },
+        onTitleClick = goToProjectSelector,
         navigateBack = navController::popBackStack,
         navigateToCreateTask = { statusId, swimlaneId ->
             navController.navigateToCreateTaskScreen(

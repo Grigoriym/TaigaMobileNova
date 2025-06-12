@@ -9,8 +9,8 @@ import io.eugenethedev.taigamobile.domain.entities.FiltersData
 import io.eugenethedev.taigamobile.domain.repositories.ISprintsRepository
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
 import io.eugenethedev.taigamobile.domain.repositories.IUsersRepository
-import io.eugenethedev.taigamobile.repositories.utils.TestCommonTask
-import io.eugenethedev.taigamobile.repositories.utils.getTestTasks
+import com.grappim.taigamobile.Repositories.utils.TestCommonTask
+import com.grappim.taigamobile.Repositories.utils.getTestTasks
 import io.eugenethedev.taigamobile.testdata.TestData
 import kotlinx.coroutines.runBlocking
 import java.time.LocalDate

@@ -4,7 +4,7 @@ import androidx.annotation.StringRes
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.paging.compose.LazyPagingItems
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.launch
@@ -34,10 +34,12 @@ inline fun <T> MutableResultFlow<T>.loadOrError(
  * Convert Flow to instance of LazyPagingItems
  * TODO fix of https://issuetracker.google.com/issues/177245496
  */
+@Deprecated("should be removed because of complexity and reflection")
 @Suppress("UNCHECKED_CAST")
 fun <T : Any> Flow<PagingData<T>>.asLazyPagingItems(scope: CoroutineScope) =
     cachedIn(scope).let { flow ->
         // yep, working with instance of LazyPagingItems via reflection
+        // TODO then it needs to be removed remove this
         LazyPagingItems::class.constructors.toList().first().run {
             call(flow) as LazyPagingItems<T>
         }.also { items ->

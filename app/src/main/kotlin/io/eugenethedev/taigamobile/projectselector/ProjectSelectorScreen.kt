@@ -1,4 +1,4 @@
-package io.eugenethedev.taigamobile.ui.screens.projectselector
+package io.eugenethedev.taigamobile.projectselector
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -23,10 +23,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.LazyPagingItems
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Project
 import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
 import io.eugenethedev.taigamobile.ui.components.editors.SelectorList
@@ -38,10 +37,11 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun ProjectSelectorScreen(
-    navController: NavController,
-    showMessage: (message: Int) -> Unit = {},
+    viewModel: ProjectSelectorViewModel = hiltViewModel(),
+    showMessage: (message: Int) -> Unit,
+    onBack: () -> Unit,
+    onProjectSelected: (isFromLogin: Boolean) -> Unit,
 ) {
-    val viewModel: ProjectSelectorViewModel = viewModel()
     LaunchedEffect(Unit) {
         viewModel.onOpen()
     }
@@ -58,7 +58,7 @@ fun ProjectSelectorScreen(
     fun navigateBack() = coroutineScope.launch {
         isSelectorVisible = false
         delay(selectorAnimationDuration.toLong())
-        navController.popBackStack()
+        onBack()
     }
 
     ProjectSelectorScreenContent(
@@ -66,14 +66,14 @@ fun ProjectSelectorScreen(
         isVisible = isSelectorVisible,
         currentProjectId = currentProjectId,
         selectorAnimationDuration = selectorAnimationDuration,
-        navigateBack = ::navigateBack,
+        navigateBack = onBack,
         searchProjects = { viewModel.searchProjects(it) },
         selectProject = {
             viewModel.selectProject(it)
-            navigateBack()
+//            navigateBack()
+            onProjectSelected(viewModel.navDestination.isFromLogin)
         }
     )
-
 }
 
 @Composable

@@ -2,10 +2,14 @@ package io.eugenethedev.taigamobile.state
 
 import android.content.Context
 import androidx.core.content.edit
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class Settings(context: Context) {
+@Singleton
+class Settings @Inject constructor(@ApplicationContext private val context: Context) {
     private val sharedPreferences =
         context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 

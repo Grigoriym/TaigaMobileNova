@@ -10,7 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CustomField
 import io.eugenethedev.taigamobile.domain.entities.CustomFieldValue
 import io.eugenethedev.taigamobile.ui.components.loaders.DotsLoader

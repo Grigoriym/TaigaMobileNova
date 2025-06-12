@@ -1,5 +1,6 @@
 package io.eugenethedev.taigamobile.data.api
 
+import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import io.eugenethedev.taigamobile.domain.entities.CustomFieldType
 import io.eugenethedev.taigamobile.domain.entities.DueDateStatus
@@ -16,14 +17,14 @@ import java.time.LocalDateTime
 
 @JsonClass(generateAdapter = true)
 data class AuthResponse(
-    val auth_token: String,
+    @Json(name = "auth_token") val authToken: String,
     val refresh: String?,
     val id: Long
 )
 
 @JsonClass(generateAdapter = true)
 data class RefreshTokenResponse(
-    val auth_token: String,
+    @Json(name = "auth_token") val authToken: String,
     val refresh: String
 )
 

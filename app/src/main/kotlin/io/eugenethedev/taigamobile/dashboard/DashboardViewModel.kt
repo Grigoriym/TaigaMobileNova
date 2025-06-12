@@ -1,9 +1,8 @@
-package io.eugenethedev.taigamobile.ui.screens.dashboard
+package io.eugenethedev.taigamobile.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.Project
 import io.eugenethedev.taigamobile.domain.repositories.IProjectsRepository
@@ -18,13 +17,12 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class DashboardViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject
-    lateinit var tasksRepository: ITasksRepository
-    @Inject
-    lateinit var projectsRepository: IProjectsRepository
-    @Inject
-    lateinit var session: Session
+@HiltViewModel
+class DashboardViewModel @Inject constructor(
+    private val tasksRepository: ITasksRepository,
+    private val projectsRepository: IProjectsRepository,
+    private val session: Session
+) : ViewModel() {
 
     val workingOn = MutableResultFlow<List<CommonTask>>()
     val watching = MutableResultFlow<List<CommonTask>>()
@@ -33,10 +31,6 @@ class DashboardViewModel(appComponent: AppComponent = TaigaApp.appComponent) : V
     val currentProjectId by lazy { session.currentProjectId }
 
     private var shouldReload = true
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun onOpen() = viewModelScope.launch {
         if (!shouldReload) return@launch

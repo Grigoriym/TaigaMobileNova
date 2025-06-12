@@ -1,8 +1,8 @@
 package io.eugenethedev.taigamobile.repositories
 
-import io.eugenethedev.taigamobile.data.repositories.AuthRepository
+import io.eugenethedev.taigamobile.login.data.AuthRepository
 import io.eugenethedev.taigamobile.domain.entities.AuthType
-import io.eugenethedev.taigamobile.domain.repositories.IAuthRepository
+import io.eugenethedev.taigamobile.login.domain.IAuthRepository
 import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -19,14 +19,14 @@ class AuthRepositoryTest : BaseRepositoryTest() {
 
     @Test
     fun `test basic auth`() = runBlocking {
-        val serverUrl = mockSession.server.value
+        val serverUrl = mockSession.serverFlow.value
         mockSession.reset()
 
         assertFalse(mockSession.isLogged.value)
 
         with(activeUser) {
-            authRepository.auth(serverUrl, AuthType.Normal, user.password, user.username)
-            assertEquals(serverUrl, mockSession.server.value)
+            authRepository.auth(serverUrl, AuthType.NORMAL, user.password, user.username)
+            assertEquals(serverUrl, mockSession.serverFlow.value)
             assertEquals(data.id, mockSession.currentUserId.value)
         }
     }

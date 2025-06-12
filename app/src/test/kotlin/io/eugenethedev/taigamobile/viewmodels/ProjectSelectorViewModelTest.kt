@@ -1,7 +1,7 @@
 package io.eugenethedev.taigamobile.viewmodels
 
 import io.eugenethedev.taigamobile.domain.entities.Project
-import io.eugenethedev.taigamobile.ui.screens.projectselector.ProjectSelectorViewModel
+import io.eugenethedev.taigamobile.projectselector.ProjectSelectorViewModel
 import io.eugenethedev.taigamobile.viewmodels.utils.testLazyPagingItems
 import io.mockk.coVerify
 import io.mockk.mockk

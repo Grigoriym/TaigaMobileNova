@@ -2,8 +2,7 @@ package io.eugenethedev.taigamobile.ui.screens.kanban
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.Status
@@ -21,13 +20,12 @@ import kotlinx.coroutines.joinAll
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class KanbanViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject
-    lateinit var tasksRepository: ITasksRepository
-    @Inject
-    lateinit var usersRepository: IUsersRepository
-    @Inject
-    lateinit var session: Session
+@HiltViewModel
+class KanbanViewModel @Inject constructor(
+    private val tasksRepository: ITasksRepository,
+    private val usersRepository: IUsersRepository,
+    private val session: Session
+) : ViewModel() {
 
     val projectName by lazy { session.currentProjectName }
 
@@ -39,10 +37,6 @@ class KanbanViewModel(appComponent: AppComponent = TaigaApp.appComponent) : View
     val selectedSwimlane = MutableStateFlow<Swimlane?>(null)
 
     private var shouldReload = true
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun onOpen() = viewModelScope.launch {
         if (!shouldReload) return@launch
