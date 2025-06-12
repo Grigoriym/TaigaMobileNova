@@ -1,11 +1,12 @@
-package io.eugenethedev.taigamobile.ui.screens.projectselector
+package io.eugenethedev.taigamobile.projectselector
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.eugenethedev.taigamobile.domain.entities.Project
 import io.eugenethedev.taigamobile.domain.paging.CommonPagingSource
 import io.eugenethedev.taigamobile.domain.repositories.IProjectsRepository
@@ -16,17 +17,16 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import javax.inject.Inject
 
-class ProjectSelectorViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject
-    lateinit var projectsRepository: IProjectsRepository
-    @Inject
-    lateinit var session: Session
+@HiltViewModel
+class ProjectSelectorViewModel @Inject constructor(
+    private val projectsRepository: IProjectsRepository,
+    private val session: Session,
+    savedStateHandle: SavedStateHandle
+) : ViewModel() {
+
+    val navDestination = savedStateHandle.toRoute<ProjectSelectorNavDestination>()
 
     val currentProjectId by lazy { session.currentProjectId }
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun onOpen() {
         projects.refresh()

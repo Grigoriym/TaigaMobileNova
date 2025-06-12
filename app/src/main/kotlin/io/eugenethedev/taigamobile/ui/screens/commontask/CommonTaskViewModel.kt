@@ -5,9 +5,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.insertHeaderItem
-import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Attachment
 import io.eugenethedev.taigamobile.domain.entities.Comment
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
@@ -50,15 +49,13 @@ import java.io.InputStream
 import java.time.LocalDate
 import javax.inject.Inject
 
-class CommonTaskViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject
-    lateinit var session: Session
-    @Inject
-    lateinit var tasksRepository: ITasksRepository
-    @Inject
-    lateinit var usersRepository: IUsersRepository
-    @Inject
-    lateinit var sprintsRepository: ISprintsRepository
+@HiltViewModel
+class CommonTaskViewModel @Inject constructor(
+    private val session: Session,
+    private val tasksRepository: ITasksRepository,
+    private val usersRepository: IUsersRepository,
+    private val sprintsRepository: ISprintsRepository
+) : ViewModel() {
 
     companion object {
         val SPRINT_HEADER = Sprint(-1, "HEADER", -1, LocalDate.MIN, LocalDate.MIN, 0, false)
@@ -91,10 +88,6 @@ class CommonTaskViewModel(appComponent: AppComponent = TaigaApp.appComponent) : 
         watchers.map { session.currentUserId.value in it.data?.map { it.id }.orEmpty() }
             .stateIn(viewModelScope, SharingStarted.Lazily, false)
     val projectName by lazy { session.currentProjectName }
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun onOpen(commonTaskId: Long, commonTaskType: CommonTaskType) {
         this.commonTaskId = commonTaskId

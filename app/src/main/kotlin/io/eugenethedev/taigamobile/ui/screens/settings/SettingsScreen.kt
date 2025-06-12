@@ -46,15 +46,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.core.content.FileProvider
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import io.eugenethedev.taigamobile.BuildConfig
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.BuildConfig
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.core.nav.Routes
 import io.eugenethedev.taigamobile.state.ThemeSetting
 import io.eugenethedev.taigamobile.ui.components.DropdownSelector
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
@@ -69,10 +68,11 @@ import timber.log.Timber
 
 @Composable
 fun SettingsScreen(
+    viewModel: SettingsViewModel = hiltViewModel(),
     navController: NavController,
-    showMessage: (message: Int) -> Unit = {}
+    showMessage: (message: Int) -> Unit,
+    onLogout: () -> Unit
 ) {
-    val viewModel: SettingsViewModel = viewModel()
     LaunchedEffect(Unit) {
         viewModel.onOpen()
     }
@@ -92,9 +92,10 @@ fun SettingsScreen(
         navigateBack = navController::popBackStack,
         logout = {
             viewModel.logout()
-            navController.navigate(Routes.login) {
-                popUpTo(Routes.settings) { inclusive = true }
-            }
+            onLogout()
+//            navController.navigate(Routes.login) {
+//                popUpTo(Routes.settings) { inclusive = true }
+//            }
         },
         themeSetting = themeSetting,
         switchTheme = viewModel::switchTheme

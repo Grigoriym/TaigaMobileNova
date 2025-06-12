@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import timber.log.Timber
 import kotlin.math.ln
 

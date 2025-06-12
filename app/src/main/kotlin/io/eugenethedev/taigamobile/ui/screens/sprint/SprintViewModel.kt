@@ -2,9 +2,8 @@ package io.eugenethedev.taigamobile.ui.screens.sprint
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.Sprint
@@ -25,13 +24,12 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
-class SprintViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject
-    lateinit var tasksRepository: ITasksRepository
-    @Inject
-    lateinit var sprintsRepository: ISprintsRepository
-    @Inject
-    lateinit var session: Session
+@HiltViewModel
+class SprintViewModel @Inject constructor(
+    private val tasksRepository: ITasksRepository,
+    private val sprintsRepository: ISprintsRepository,
+    private val session: Session
+) : ViewModel() {
 
     private var sprintId: Long = -1
 
@@ -42,10 +40,6 @@ class SprintViewModel(appComponent: AppComponent = TaigaApp.appComponent) : View
     val issues = MutableResultFlow<List<CommonTask>>()
 
     private var shouldReload = true
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun onOpen(sprintId: Long) {
         if (!shouldReload) return

@@ -15,7 +15,7 @@ import com.vanpra.composematerialdialogs.color.ColorPalette
 import com.vanpra.composematerialdialogs.color.colorChooser
 import com.vanpra.composematerialdialogs.rememberMaterialDialogState
 import com.vanpra.composematerialdialogs.title
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.ui.utils.clickableUnindicated
 
 /**

@@ -26,7 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 
 /**
  * Title with optional add button

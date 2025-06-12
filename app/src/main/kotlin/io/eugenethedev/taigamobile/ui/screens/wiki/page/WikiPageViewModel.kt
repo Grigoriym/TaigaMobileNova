@@ -2,9 +2,8 @@ package io.eugenethedev.taigamobile.ui.screens.wiki.page
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Attachment
 import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.domain.entities.WikiLink
@@ -19,13 +18,11 @@ import kotlinx.coroutines.launch
 import java.io.InputStream
 import javax.inject.Inject
 
-class WikiPageViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-
-    @Inject
-    lateinit var wikiRepository: IWikiRepository
-
-    @Inject
-    lateinit var userRepository: IUsersRepository
+@HiltViewModel
+class WikiPageViewModel @Inject constructor(
+    private val wikiRepository: IWikiRepository,
+    private val userRepository: IUsersRepository,
+) : ViewModel() {
 
     private lateinit var pageSlug: String
 
@@ -36,10 +33,6 @@ class WikiPageViewModel(appComponent: AppComponent = TaigaApp.appComponent) : Vi
     val deleteWikiPageResult = MutableResultFlow<Unit>()
 
     var lastModifierUser = MutableStateFlow<User?>(null)
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun onOpen(slug: String) {
         pageSlug = slug

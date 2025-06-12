@@ -2,8 +2,7 @@ package io.eugenethedev.taigamobile.ui.screens.wiki.createpage
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.eugenethedev.taigamobile.domain.entities.WikiPage
 import io.eugenethedev.taigamobile.domain.repositories.IWikiRepository
 import io.eugenethedev.taigamobile.ui.utils.MutableResultFlow
@@ -11,16 +10,12 @@ import io.eugenethedev.taigamobile.ui.utils.loadOrError
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class WikiCreatePageViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-
-    @Inject
-    lateinit var wikiRepository: IWikiRepository
+@HiltViewModel
+class WikiCreatePageViewModel @Inject constructor(
+    private val wikiRepository: IWikiRepository
+) : ViewModel() {
 
     val creationResult = MutableResultFlow<WikiPage>()
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun createWikiPage(title: String, content: String) = viewModelScope.launch {
         creationResult.loadOrError {

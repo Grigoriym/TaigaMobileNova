@@ -1,4 +1,4 @@
-package io.eugenethedev.taigamobile.ui.screens.main
+package io.eugenethedev.taigamobile.main
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -13,7 +13,8 @@ import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
+import dagger.hilt.android.AndroidEntryPoint
 import io.eugenethedev.taigamobile.state.ThemeSetting
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.taigaMobileRippleTheme
@@ -22,6 +23,7 @@ import io.eugenethedev.taigamobile.ui.utils.LocalFilePicker
 import java.io.InputStream
 
 @OptIn(ExperimentalMaterial3Api::class)
+@AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     @SuppressLint("Range")
@@ -48,7 +50,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            val viewModel: MainViewModel = viewModel()
+            val viewModel: MainViewModel = hiltViewModel()
             val theme by viewModel.theme.collectAsState()
 
             val darkTheme = when (theme) {

@@ -25,9 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.Attachment
 import io.eugenethedev.taigamobile.domain.entities.Comment
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
@@ -58,11 +58,11 @@ import io.eugenethedev.taigamobile.ui.screens.commontask.components.CommonTaskWa
 import io.eugenethedev.taigamobile.ui.screens.commontask.components.CreateCommentBar
 import io.eugenethedev.taigamobile.ui.screens.commontask.components.SelectorEntry
 import io.eugenethedev.taigamobile.ui.screens.commontask.components.Selectors
-import io.eugenethedev.taigamobile.ui.utils.FilePicker
-import io.eugenethedev.taigamobile.ui.utils.LocalFilePicker
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
+import io.eugenethedev.taigamobile.ui.utils.FilePicker
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
+import io.eugenethedev.taigamobile.ui.utils.LocalFilePicker
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
@@ -72,13 +72,13 @@ import java.time.LocalDateTime
 
 @Composable
 fun CommonTaskScreen(
+    viewModel: CommonTaskViewModel = hiltViewModel(),
     navController: NavController,
     commonTaskId: Long,
     commonTaskType: CommonTaskType,
     ref: Int,
     showMessage: (message: Int) -> Unit = {}
 ) {
-    val viewModel: CommonTaskViewModel = viewModel()
     LaunchedEffect(Unit) {
         viewModel.onOpen(commonTaskId, commonTaskType)
     }

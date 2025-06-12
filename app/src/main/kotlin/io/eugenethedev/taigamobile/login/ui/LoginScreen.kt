@@ -1,4 +1,4 @@
-package io.eugenethedev.taigamobile.ui.screens.login
+package io.eugenethedev.taigamobile.login.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
@@ -13,10 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ContentAlpha
-import androidx.compose.material.LocalContentAlpha
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -24,14 +23,10 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -44,75 +39,52 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.core.nav.Routes
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.R
+import io.eugenethedev.taigamobile.core.ui.NativeText
+import io.eugenethedev.taigamobile.core.ui.asString
+import io.eugenethedev.taigamobile.core.ui.collectSnackbarMessage
 import io.eugenethedev.taigamobile.domain.entities.AuthType
 import io.eugenethedev.taigamobile.ui.components.dialogs.ConfirmActionDialog
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
-import io.eugenethedev.taigamobile.ui.utils.ErrorResult
-import io.eugenethedev.taigamobile.ui.utils.LoadingResult
-import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.ui.utils.ThemePreviews
 
 @Composable
 fun LoginScreen(
-    navController: NavController,
-    showMessage: (message: Int) -> Unit = {},
+    viewModel: LoginViewModel = hiltViewModel(),
+    onShowSnackbar: (message: String) -> Unit,
+    onLoginSuccess: () -> Unit
 ) {
-    val viewModel: LoginViewModel = viewModel()
+    val context = LocalContext.current
+    val state by viewModel.loginState.collectAsStateWithLifecycle()
+    val snackbarMessage by viewModel.snackBarMessage.collectSnackbarMessage()
+    val isLoginSuccessful by viewModel.loginSuccessful.collectAsStateWithLifecycle(false)
 
-    val loginResult by viewModel.loginResult.collectAsState()
-    loginResult.also {
-        when (it) {
-            is ErrorResult -> showMessage(it.message!!)
-            is SuccessResult -> {
-                LaunchedEffect(Unit) {
-                    navController.navigate(Routes.dashboard) {
-                        popUpTo(Routes.login) { inclusive = true }
-                    }
-                }
-            }
-
-            else -> {}
+    LaunchedEffect(snackbarMessage) {
+        if (snackbarMessage !is NativeText.Empty) {
+            onShowSnackbar(snackbarMessage.asString(context))
+        }
+    }
+    LaunchedEffect(isLoginSuccessful) {
+        if (isLoginSuccessful) {
+            onLoginSuccess()
         }
     }
 
     LoginScreenContent(
-        login = viewModel::login,
-        isLoadingValue = loginResult is LoadingResult || loginResult is SuccessResult
+        state = state,
+        isLoadingValue = state.isLoading,
     )
 }
 
 @Composable
 fun LoginScreenContent(
-    login: (server: String, authType: AuthType, login: String, password: String) -> Unit = { _, _, _, _ -> },
+    state: LoginState,
     isLoadingValue: Boolean = false,
 ) = ConstraintLayout(
     modifier = Modifier.fillMaxSize(),
 ) {
-    val taigaGlobalHost = stringResource(R.string.global_taiga_host)
-    var taigaServerInput by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue(taigaGlobalHost)
-        )
-    }
-    var loginInput by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue()
-        )
-    }
-    var passwordInput by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue()
-        )
-    }
-
-    var isServerInputError by remember { mutableStateOf(false) }
-    var isLoginInputError by remember { mutableStateOf(false) }
-    var isPasswordInputError by remember { mutableStateOf(false) }
-
     val (logo, loginForm, button) = createRefs()
 
     Column(
@@ -142,7 +114,6 @@ fun LoginScreenContent(
     }
 
     Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
             .constrainAs(loginForm) {
                 start.linkTo(parent.start)
@@ -150,38 +121,30 @@ fun LoginScreenContent(
                 top.linkTo(parent.top)
                 bottom.linkTo(parent.bottom)
             }
-            .imePadding()
+            .imePadding(),
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         LoginTextField(
-            value = taigaServerInput,
+            value = state.server,
             labelId = R.string.login_taiga_server,
-            onValueChange = {
-                isServerInputError = false
-                taigaServerInput = it
-            },
-            isError = isServerInputError
+            onValueChange = state.onServerValueChange,
+            isError = state.isServerInputError
         )
 
         LoginTextField(
-            value = loginInput,
+            value = state.login,
             labelId = R.string.login_username,
-            onValueChange = {
-                isLoginInputError = false
-                loginInput = it
-            },
-            isError = isLoginInputError
+            onValueChange = state.onLoginValueChange,
+            isError = state.isLoginInputError
         )
 
         LoginTextField(
-            value = passwordInput,
+            value = state.password,
             labelId = R.string.login_password,
-            onValueChange = {
-                isPasswordInputError = false
-                passwordInput = it
-            },
+            onValueChange = state.onPasswordValueChange,
             visualTransformation = PasswordVisualTransformation(),
             keyboardType = KeyboardType.Password,
-            isError = isPasswordInputError
+            isError = state.isPasswordInputError
         )
     }
 
@@ -193,28 +156,12 @@ fun LoginScreenContent(
             top.linkTo(loginForm.bottom, 24.dp)
         }
     ) {
-        var authType = AuthType.Normal
-
-        val loginAction = {
-            login(
-                taigaServerInput.text.trim(),
-                authType,
-                loginInput.text.trim(),
-                passwordInput.text.trim()
-            )
-        }
-
-        var isAlertVisible by remember { mutableStateOf(false) }
-
-        if (isAlertVisible) {
+        if (state.isAlertVisible) {
             ConfirmActionDialog(
                 title = stringResource(R.string.login_alert_title),
                 text = stringResource(R.string.login_alert_text),
-                onConfirm = {
-                    isAlertVisible = false
-                    loginAction()
-                },
-                onDismiss = { isAlertVisible = false },
+                onConfirm = state.onActionDialogConfirm,
+                onDismiss = { state.setIsAlertVisible(false) },
                 iconId = R.drawable.ic_insecure
             )
         }
@@ -225,25 +172,9 @@ fun LoginScreenContent(
                 color = MaterialTheme.colorScheme.primary
             )
         } else {
-            val onClick = {
-                isServerInputError =
-                    !taigaServerInput.text.matches(Regex("""(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""))
-                isLoginInputError = loginInput.text.isBlank()
-                isPasswordInputError = passwordInput.text.isBlank()
-
-                if (!(isServerInputError || isLoginInputError || isPasswordInputError)) {
-                    if (taigaServerInput.text.startsWith("http://")) {
-                        isAlertVisible = true
-                    } else {
-                        loginAction()
-                    }
-                }
-            }
-
             Button(
                 onClick = {
-                    authType = AuthType.Normal
-                    onClick()
+                    state.onLoginContinue(AuthType.NORMAL)
                 },
                 contentPadding = PaddingValues(horizontal = 40.dp)
             ) {
@@ -254,14 +185,12 @@ fun LoginScreenContent(
 
             OutlinedButton(
                 onClick = {
-                    authType = AuthType.LDAP
-                    onClick()
+                    state.onLoginContinue(AuthType.LDAP)
                 }
             ) {
                 Text(stringResource(R.string.login_ldap))
             }
         }
-
     }
 }
 
@@ -295,31 +224,61 @@ fun LoginTextField(
         isError = isError,
         shape = MaterialTheme.shapes.small,
         colors = OutlinedTextFieldDefaults.colors(
-            unfocusedTextColor = androidx.compose.material3.LocalContentColor.current.copy(
-                LocalContentAlpha.current
-            ),
-            focusedTextColor = androidx.compose.material3.LocalContentColor.current.copy(
-                LocalContentAlpha.current
-            ),
+            unfocusedTextColor = LocalContentColor.current,
+            focusedTextColor = LocalContentColor.current,
             cursorColor = MaterialTheme.colorScheme.primary,
             errorCursorColor = MaterialTheme.colorScheme.error,
             unfocusedContainerColor = MaterialTheme.colorScheme.background,
             focusedContainerColor = MaterialTheme.colorScheme.background,
             errorContainerColor = MaterialTheme.colorScheme.background,
-            focusedBorderColor = MaterialTheme.colorScheme.primary.copy(alpha = ContentAlpha.high),
-            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = ContentAlpha.disabled),
+            focusedBorderColor = MaterialTheme.colorScheme.primary.copy(
+                alpha = MaterialTheme.colorScheme.onSurface.alpha
+            ),
+            unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = MaterialTheme.colorScheme.onSurface.copy(
+                    alpha = 0.38f
+                ).alpha
+            ),
             errorBorderColor = MaterialTheme.colorScheme.error,
             errorTrailingIconColor = MaterialTheme.colorScheme.error,
-            focusedLabelColor = MaterialTheme.colorScheme.primary.copy(alpha = ContentAlpha.high),
-            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(ContentAlpha.medium),
+            focusedLabelColor = MaterialTheme.colorScheme.primary.copy(
+                alpha = MaterialTheme.colorScheme.onSurface.alpha
+            ),
+            unfocusedLabelColor = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = MaterialTheme.colorScheme.onSurfaceVariant.alpha
+            ),
             errorLabelColor = MaterialTheme.colorScheme.error,
-            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(ContentAlpha.medium),
-            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(ContentAlpha.medium),
+            focusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = MaterialTheme.colorScheme.onSurfaceVariant.alpha
+            ),
+            unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(
+                alpha = MaterialTheme.colorScheme.onSurfaceVariant.alpha
+            ),
         )
     )
 }
 
 @[Composable ThemePreviews]
 fun LoginScreenPreview() = TaigaMobileTheme {
-    LoginScreenContent()
+    LoginScreenContent(
+        state = LoginState(
+            server = TextFieldValue(),
+            onServerValueChange = {},
+            isServerInputError = false,
+            login = TextFieldValue(),
+            onLoginValueChange = {},
+            isLoginInputError = false,
+            password = TextFieldValue(),
+            onPasswordValueChange = {},
+            isPasswordInputError = false,
+            isAlertVisible = false,
+            setIsAlertVisible = {},
+            onActionDialogConfirm = {},
+            onLoginContinue = {},
+            authType = AuthType.NORMAL,
+            onAuthTypeChange = {},
+            onLogin = {},
+        ),
+        isLoadingValue = false,
+    )
 }

@@ -23,9 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.core.nav.Routes
 import io.eugenethedev.taigamobile.ui.components.appbars.ClickableAppBar
 import io.eugenethedev.taigamobile.ui.components.buttons.PlusButton
@@ -39,11 +39,12 @@ import io.eugenethedev.taigamobile.ui.utils.navigateToWikiPageScreen
 
 @Composable
 fun WikiListScreen(
+    viewModel: WikiListViewModel = hiltViewModel(),
     navController: NavController,
-    showMessage: (message: Int) -> Unit = {},
+    showMessage: (message: Int) -> Unit,
+    goToProjectSelector: () -> Unit,
+    goBack: () -> Unit
 ) {
-    val viewModel: WikiListViewModel = viewModel()
-
     val projectName by viewModel.projectName.collectAsState()
 
     val wikiLinks by viewModel.wikiLinks.collectAsState()
@@ -64,14 +65,14 @@ fun WikiListScreen(
             .map { it.title to it.ref },
         allPages = wikiPagesSlug,
         isLoading = wikiLinks is LoadingResult || wikiPages is LoadingResult,
-        onTitleClick = { navController.navigate(Routes.projectsSelector) },
+        onTitleClick = goToProjectSelector,
         navigateToCreatePage = {
             navController.navigate(Routes.wiki_create_page)
         },
         navigateToPageBySlug = { slug ->
             navController.navigateToWikiPageScreen(slug)
         },
-        navigateBack = { navController.popBackStack() }
+        navigateBack = goBack
     )
 }
 

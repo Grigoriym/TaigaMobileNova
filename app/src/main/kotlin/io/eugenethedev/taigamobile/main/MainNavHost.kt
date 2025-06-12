@@ -1,7 +1,6 @@
-package io.eugenethedev.taigamobile.ui.screens.main
+package io.eugenethedev.taigamobile.main
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -12,17 +11,27 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import io.eugenethedev.taigamobile.core.nav.Routes
+import io.eugenethedev.taigamobile.dashboard.DashboardNavDestination
+import io.eugenethedev.taigamobile.dashboard.DashboardScreen
+import io.eugenethedev.taigamobile.dashboard.navigateToDashboardAsTopDestination
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
+import io.eugenethedev.taigamobile.login.LoginNavDestination
+import io.eugenethedev.taigamobile.login.navigateToLoginAsTopDestination
+import io.eugenethedev.taigamobile.login.ui.LoginScreen
+import io.eugenethedev.taigamobile.projectselector.ProjectSelectorNavDestination
+import io.eugenethedev.taigamobile.projectselector.ProjectSelectorScreen
+import io.eugenethedev.taigamobile.projectselector.navigateToProjectSelector
 import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskScreen
 import io.eugenethedev.taigamobile.ui.screens.createtask.CreateTaskScreen
-import io.eugenethedev.taigamobile.ui.screens.dashboard.DashboardScreen
+import io.eugenethedev.taigamobile.ui.screens.epics.EpicsNavDestination
 import io.eugenethedev.taigamobile.ui.screens.epics.EpicsScreen
+import io.eugenethedev.taigamobile.ui.screens.issues.IssuesNavDestination
 import io.eugenethedev.taigamobile.ui.screens.issues.IssuesScreen
 import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanScreen
-import io.eugenethedev.taigamobile.ui.screens.login.LoginScreen
+import io.eugenethedev.taigamobile.ui.screens.more.MoreNavDestination
 import io.eugenethedev.taigamobile.ui.screens.more.MoreScreen
 import io.eugenethedev.taigamobile.ui.screens.profile.ProfileScreen
-import io.eugenethedev.taigamobile.ui.screens.projectselector.ProjectSelectorScreen
+import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumNavDestination
 import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumScreen
 import io.eugenethedev.taigamobile.ui.screens.settings.SettingsScreen
 import io.eugenethedev.taigamobile.ui.screens.sprint.SprintScreen
@@ -36,59 +45,74 @@ fun MainNavHost(
     modifier: Modifier,
     viewModel: MainViewModel,
     navController: NavHostController,
-    showMessage: (message: Int) -> Unit = {},
+    showMessage: (message: Int) -> Unit,
+    onShowSnackbar: (message: String) -> Unit
 ) {
     val isLogged by viewModel.isLogged.collectAsState()
-    val isProjectSelected by viewModel.isProjectSelected.collectAsState()
 
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = remember { if (isLogged) Routes.dashboard else Routes.login }
+        startDestination = remember { if (isLogged) DashboardNavDestination else LoginNavDestination }
     ) {
-        composable(Routes.login) {
+        composable<LoginNavDestination> {
             LoginScreen(
-                navController = navController,
-                showMessage = showMessage
+                onShowSnackbar = onShowSnackbar,
+                onLoginSuccess = {
+                    navController.navigateToProjectSelector(isFromLogin = true)
+                }
             )
         }
 
-        // start screen
-        composable(Routes.dashboard) {
+        composable<ProjectSelectorNavDestination> {
+            ProjectSelectorScreen(
+                showMessage = showMessage,
+                onBack = navController::popBackStack,
+                onProjectSelected = { isFromLogin: Boolean ->
+                    /**
+                     * After the login and the project is selected, dashboard will become the top destination
+                     */
+                    if (isFromLogin) {
+                        navController.navigateToDashboardAsTopDestination()
+                    } else {
+                        navController.popBackStack()
+                    }
+                }
+            )
+        }
+
+        composable<DashboardNavDestination> {
             DashboardScreen(
                 navController = navController,
                 showMessage = showMessage
             )
-            // user must select project first
-            LaunchedEffect(Unit) {
-                if (!isProjectSelected) {
-                    navController.navigate(Routes.projectsSelector)
-                }
-            }
         }
 
-        composable(Routes.scrum) {
+        composable<ScrumNavDestination> {
             ScrumScreen(
                 navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                goToProjectSelector = navController::navigateToProjectSelector,
             )
         }
 
-        composable(Routes.epics) {
+        composable<EpicsNavDestination> {
             EpicsScreen(
                 navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                goToProjectSelector = navController::navigateToProjectSelector,
             )
         }
 
-        composable(Routes.issues) {
+        composable<IssuesNavDestination> {
             IssuesScreen(
                 navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                goToProjectSelector = navController::navigateToProjectSelector,
             )
         }
 
-        composable(Routes.more) {
+        composable<MoreNavDestination> {
             MoreScreen(
                 navController = navController
             )
@@ -97,21 +121,26 @@ fun MainNavHost(
         composable(Routes.team) {
             TeamScreen(
                 navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                goToProjectSelector = navController::navigateToProjectSelector,
+                goBck = navController::popBackStack
             )
         }
 
         composable(Routes.kanban) {
             KanbanScreen(
                 navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                goToProjectSelector = navController::navigateToProjectSelector,
             )
         }
 
         composable(Routes.wiki_selector) {
             WikiListScreen(
                 navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                goToProjectSelector = navController::navigateToProjectSelector,
+                goBack = navController::popBackStack
             )
         }
 
@@ -138,14 +167,8 @@ fun MainNavHost(
         composable(Routes.settings) {
             SettingsScreen(
                 navController = navController,
-                showMessage = showMessage
-            )
-        }
-
-        composable(Routes.projectsSelector) {
-            ProjectSelectorScreen(
-                navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                onLogout = navController::navigateToLoginAsTopDestination,
             )
         }
 

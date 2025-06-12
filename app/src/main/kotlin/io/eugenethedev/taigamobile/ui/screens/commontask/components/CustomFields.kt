@@ -43,7 +43,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CustomField
 import io.eugenethedev.taigamobile.domain.entities.CustomFieldType
 import io.eugenethedev.taigamobile.domain.entities.CustomFieldValue

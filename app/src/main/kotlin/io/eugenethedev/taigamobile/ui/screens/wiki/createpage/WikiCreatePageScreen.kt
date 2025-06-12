@@ -9,9 +9,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.ui.components.dialogs.LoadingDialog
 import io.eugenethedev.taigamobile.ui.components.editors.Editor
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
@@ -21,11 +21,10 @@ import io.eugenethedev.taigamobile.ui.utils.navigateToWikiPageScreen
 
 @Composable
 fun WikiCreatePageScreen(
+    viewModel: WikiCreatePageViewModel = hiltViewModel(),
     navController: NavController,
     showMessage: (message: Int) -> Unit = {},
 ) {
-    val viewModel: WikiCreatePageViewModel = viewModel()
-
     val creationResult by viewModel.creationResult.collectAsState()
     creationResult.SubscribeOnError(showMessage)
 

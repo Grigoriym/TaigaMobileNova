@@ -31,14 +31,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import io.eugenethedev.taigamobile.R
-import io.eugenethedev.taigamobile.core.nav.Routes
+import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
@@ -67,13 +66,13 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-
 @Composable
 fun ScrumScreen(
+    viewModel: ScrumViewModel = hiltViewModel(),
     navController: NavController,
-    showMessage: (message: Int) -> Unit = {},
+    showMessage: (message: Int) -> Unit,
+    goToProjectSelector: () -> Unit
 ) {
-    val viewModel: ScrumViewModel = viewModel()
     LaunchedEffect(Unit) {
         viewModel.onOpen()
     }
@@ -101,7 +100,7 @@ fun ScrumScreen(
 
     ScrumScreenContent(
         projectName = projectName,
-        onTitleClick = { navController.navigate(Routes.projectsSelector) },
+        onTitleClick = goToProjectSelector,
         stories = stories,
         filters = filters.data ?: FiltersData(),
         activeFilters = activeFilters,

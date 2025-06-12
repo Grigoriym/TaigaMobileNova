@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
-import io.eugenethedev.taigamobile.TaigaApp
-import io.eugenethedev.taigamobile.dagger.AppComponent
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
 import io.eugenethedev.taigamobile.domain.paging.CommonPagingSource
@@ -21,19 +20,15 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class EpicsViewModel(appComponent: AppComponent = TaigaApp.appComponent) : ViewModel() {
-    @Inject
-    lateinit var session: Session
-    @Inject
-    lateinit var tasksRepository: ITasksRepository
+@HiltViewModel
+class EpicsViewModel @Inject constructor(
+    private val session: Session,
+    private val tasksRepository: ITasksRepository
+) : ViewModel() {
 
     val projectName by lazy { session.currentProjectName }
 
     private var shouldReload = true
-
-    init {
-        appComponent.inject(this)
-    }
 
     fun onOpen() {
         if (!shouldReload) return

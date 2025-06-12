@@ -9,7 +9,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
 import io.eugenethedev.taigamobile.core.nav.Routes
@@ -30,10 +30,11 @@ import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 
 @Composable
 fun IssuesScreen(
+    viewModel: IssuesViewModel = hiltViewModel(),
     navController: NavController,
-    showMessage: (message: Int) -> Unit = {}
+    showMessage: (message: Int) -> Unit,
+    goToProjectSelector: () -> Unit
 ) {
-    val viewModel: IssuesViewModel = viewModel()
     LaunchedEffect(Unit) {
         viewModel.onOpen()
     }
@@ -50,7 +51,7 @@ fun IssuesScreen(
 
     IssuesScreenContent(
         projectName = projectName,
-        onTitleClick = { navController.navigate(Routes.projectsSelector) },
+        onTitleClick = goToProjectSelector,
         navigateToCreateTask = { navController.navigateToCreateTaskScreen(CommonTaskType.Issue) },
         issues = issues,
         filters = filters.data ?: FiltersData(),

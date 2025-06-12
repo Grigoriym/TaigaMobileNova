@@ -35,11 +35,9 @@ interface TaigaApi {
     @POST("auth")
     suspend fun auth(@Body authRequest: AuthRequest): AuthResponse
 
-
     /**
      * Projects
      */
-
     @GET("projects?order_by=user_order&slight=true")
     suspend fun getProjects(
         @Query("q") query: String? = null,
@@ -50,7 +48,6 @@ interface TaigaApi {
 
     @GET("projects/{id}")
     suspend fun getProject(@Path("id") projectId: Long): ProjectResponse
-
 
     /**
      * Users
@@ -67,7 +64,6 @@ interface TaigaApi {
 
     @GET("projects/{id}/member_stats")
     suspend fun getMemberStats(@Path("id") projectId: Long): MemberStatsResponse
-
 
     /**
      * Sprints

@@ -1,4 +1,4 @@
-package io.eugenethedev.taigamobile.dagger
+package io.eugenethedev.taigamobile.di
 
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson

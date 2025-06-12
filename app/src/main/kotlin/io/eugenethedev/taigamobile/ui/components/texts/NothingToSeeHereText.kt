@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import io.eugenethedev.taigamobile.R
+import com.grappim.taigamobile.R
 
 /**
  * Common nothing to see here text

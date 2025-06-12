@@ -11,11 +11,13 @@ kotlin-serialization-plugin = "2.1.21"
 kotlin-serialization-json = "1.8.1"
 
 dagger = "2.56.2"
+androidx-hilt = "1.2.0"
 
 core-ktx = "1.16.0"
 appcompat = "1.7.1"
 
 material = "1.12.0"
+mockk = "1.14.2"
 navigation = "2.9.0"
 activity-compose = "1.10.1"
 lifecycle = "2.9.1"
@@ -23,6 +25,7 @@ constraintLayout = "1.1.1"
 paging = "3.3.6"
 
 gson = "2.12.1"
+robolectric = "4.14.1"
 timber = "5.0.1"
 coil = "2.7.0"
 retrofit = "2.11.0"
@@ -34,6 +37,7 @@ markwon = "4.6.2"
 [libraries]
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
+kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -66,6 +70,8 @@ coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
 markwon-image-coil = { module = "io.noties.markwon:image-coil", version.ref = "markwon" }
 markwon-core = { module = "io.noties.markwon:core", version.ref = "markwon" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
@@ -77,12 +83,13 @@ okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-intercepto
 moshi = { module = "com.squareup.moshi:moshi", version.ref = "moshi" }
 moshi-kotlin-codegen = { module = "com.squareup.moshi:moshi-kotlin-codegen", version.ref = "moshi" }
 
-dagger = { module = "com.google.dagger:dagger", version.ref = "dagger" }
-dagger-compiler = { module = "com.google.dagger:dagger-compiler", version.ref = "dagger" }
-dagger-android = { module = "com.google.dagger:dagger-android", version.ref = "dagger" }
-dagger-android-processor = { module = "com.google.dagger:dagger-android-processor", version.ref = "dagger" }
+hilt = { module = "com.google.dagger:hilt-android", version.ref = "dagger" }
+hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "dagger" }
+androidx-hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "androidx-hilt" }
+androidx-hilt-compiler = { module = "androidx.hilt:hilt-compiler", version.ref = "androidx-hilt" }
 
 [plugins]
+hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }

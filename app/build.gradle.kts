@@ -5,12 +5,14 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.hilt.android)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
     compileSdk = 35
 
-    namespace = "io.eugenethedev.taigamobile"
+    namespace = "com.grappim.taigamobile"
 
     defaultConfig {
         applicationId = namespace!!
@@ -26,29 +28,8 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
-//    signingConfigs {
-//        getByName("debug") {
-//            storeFile = file("./keystores/debug.keystore")
-//            storePassword = "android"
-//            keyAlias = "debug"
-//            keyPassword = "android"
-//        }
-//
-//        create("release") {
-//            val properties = Properties().also {
-//                it.load(file("./signing.properties").inputStream())
-//            }
-//            storeFile = file("./keystores/release.keystore")
-//            storePassword = properties.getProperty("password")
-//            keyAlias = properties.getProperty("alias")
-//            keyPassword = properties.getProperty("password")
-//        }
-//    }
-
-
     buildTypes {
         getByName("debug") {
-//            signingConfig = signingConfigs.getByName("debug")
             applicationIdSuffix = ".debug"
         }
 
@@ -58,7 +39,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-//            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -98,7 +78,7 @@ android {
 }
 
 dependencies {
-    implementation(enforcedPlatform(kotlin("bom")))
+//    implementation(enforcedPlatform(kotlin("bom")))
 
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
@@ -128,35 +108,38 @@ dependencies {
 
     implementation(libs.coil.compose)
 
-    val coroutinesVersion = "1.10.2"
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.moshi)
     ksp(libs.moshi.kotlin.codegen)
-
-    testImplementation(libs.gson)
 
     implementation(libs.retrofit)
     implementation(libs.retrofit.moshi)
 
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
-
-    implementation(libs.dagger)
-    ksp(libs.dagger.compiler)
+    
+    implementation(libs.hilt)
+    ksp(libs.hilt.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
+    ksp(libs.androidx.hilt.compiler)
 
     implementation(libs.timber)
+
+    implementation(libs.kotlinx.serialization.json)
 
     implementation(libs.markwon.core)
     implementation(libs.markwon.image.coil)
 
     implementation(libs.vanpra.color)
 
+    testImplementation(libs.gson)
+    testImplementation(libs.kotlinx.coroutines.test)
+
     allTestsImplementation(kotlin("test-junit"))
 
-    testRuntimeOnly("org.robolectric:robolectric:4.14.1")
+    testRuntimeOnly(libs.robolectric)
 
     allTestsImplementation("androidx.test:core-ktx:1.6.1")
     allTestsImplementation("androidx.test:runner:1.6.2")
@@ -166,7 +149,7 @@ dependencies {
     testRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
     androidTestRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
 
-    testImplementation("io.mockk:mockk:1.14.2")
+    testImplementation(libs.mockk)
 }
 
 fun DependencyHandler.allTestsImplementation(dependencyNotation: Any) {

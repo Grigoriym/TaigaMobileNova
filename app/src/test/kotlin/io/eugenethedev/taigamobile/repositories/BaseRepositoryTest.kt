@@ -2,7 +2,6 @@ package io.eugenethedev.taigamobile.repositories
 
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import io.eugenethedev.taigamobile.dagger.DataModule
 import io.eugenethedev.taigamobile.data.api.TaigaApi
 import io.eugenethedev.taigamobile.manager.TaigaTestInstanceManager
 import io.eugenethedev.taigamobile.manager.UserInfo

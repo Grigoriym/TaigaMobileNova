@@ -3,11 +3,12 @@ package io.eugenethedev.taigamobile
 import android.app.Application
 import android.util.Log
 import com.google.android.material.color.DynamicColors
-import io.eugenethedev.taigamobile.dagger.AppComponent
-import io.eugenethedev.taigamobile.dagger.DaggerAppComponent
+import com.grappim.taigamobile.BuildConfig
+import dagger.hilt.android.HiltAndroidApp
 import io.eugenethedev.taigamobile.utils.FileLoggingTree
 import timber.log.Timber
 
+@HiltAndroidApp
 class TaigaApp : Application() {
 
     private var fileLoggingTree: FileLoggingTree? = null
@@ -15,10 +16,6 @@ class TaigaApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        appComponent = DaggerAppComponent
-            .factory()
-            .create(this)
-
         val minLoggingPriority = if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
             Log.DEBUG
@@ -36,11 +33,6 @@ class TaigaApp : Application() {
             Timber.w("Cannot setup FileLoggingTree, skipping")
         }
 
-        // Apply dynamic color
         DynamicColors.applyToActivitiesIfAvailable(this)
-    }
-
-    companion object {
-        lateinit var appComponent: AppComponent
     }
 }
