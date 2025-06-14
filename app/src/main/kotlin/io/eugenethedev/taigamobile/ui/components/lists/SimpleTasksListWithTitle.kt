@@ -21,7 +21,7 @@ import androidx.paging.compose.itemKey
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.ui.components.loaders.DotsLoader
 import io.eugenethedev.taigamobile.ui.components.texts.SectionTitle
-import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.core.nav.NavigateToTask
 
 /**
  * List of tasks with optional title.

@@ -1,6 +1,5 @@
 package io.eugenethedev.taigamobile.dashboard
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -22,11 +21,11 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.grappim.taigamobile.R
+import io.eugenethedev.taigamobile.core.nav.TaskArguments
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.Project
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
 import io.eugenethedev.taigamobile.ui.components.containers.HorizontalTabbedPager
-import io.eugenethedev.taigamobile.ui.components.containers.Tab
 import io.eugenethedev.taigamobile.ui.components.lists.ProjectCard
 import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
@@ -35,13 +34,12 @@ import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
-import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
 
 @Composable
 fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
-    navController: NavController,
-    showMessage: (message: Int) -> Unit = {},
+    showMessage: (message: Int) -> Unit,
+    navigateToTaskScreen: (TaskArguments) -> Unit,
 ) {
     LaunchedEffect(Unit) {
         viewModel.onOpen()
@@ -66,7 +64,7 @@ fun DashboardScreen(
         currentProjectId = currentProjectId,
         navigateToTask = {
             viewModel.changeCurrentProject(it.projectInfo)
-            navController.navigateToTaskScreen(it.id, it.taskType, it.ref)
+            navigateToTaskScreen(TaskArguments(it.id, it.taskType, it.ref))
         },
         changeCurrentProject = viewModel::changeCurrentProject
     )
@@ -85,7 +83,7 @@ fun DashboardScreenContent(
     modifier = Modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
-    AppBarWithBackButton(title = { Text(stringResource(R.string.dashboard)) })
+//    AppBarWithBackButton(title = { Text(stringResource(R.string.dashboard)) })
 
     if (isLoading) {
         Box(
@@ -119,13 +117,6 @@ fun DashboardScreenContent(
             }
         }
     }
-
-}
-
-private enum class Tabs(@StringRes override val titleId: Int) : Tab {
-    WorkingOn(R.string.working_on),
-    Watching(R.string.watching),
-    MyProjects(R.string.my_projects)
 }
 
 @Composable

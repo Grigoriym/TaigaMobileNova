@@ -1,8 +1,6 @@
 package io.eugenethedev.taigamobile.ui.screens.settings
 
 import android.content.Intent
-import android.net.Uri
-import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -39,21 +37,19 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.core.content.FileProvider
+import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.grappim.taigamobile.BuildConfig
 import com.grappim.taigamobile.R
-import io.eugenethedev.taigamobile.TaigaApp
 import io.eugenethedev.taigamobile.state.ThemeSetting
 import io.eugenethedev.taigamobile.ui.components.DropdownSelector
 import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
@@ -76,8 +72,7 @@ fun SettingsScreen(
     LaunchedEffect(Unit) {
         viewModel.onOpen()
     }
-
-    val serverUrl by viewModel.serverUrl.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     val user by viewModel.user.collectAsState()
     user.SubscribeOnError(showMessage)
@@ -85,17 +80,14 @@ fun SettingsScreen(
     val themeSetting by viewModel.themeSetting.collectAsState()
 
     SettingsScreenContent(
+        state = state,
         avatarUrl = user.data?.avatarUrl,
         displayName = user.data?.displayName.orEmpty(),
         username = user.data?.username.orEmpty(),
-        serverUrl = serverUrl,
         navigateBack = navController::popBackStack,
         logout = {
             viewModel.logout()
             onLogout()
-//            navController.navigate(Routes.login) {
-//                popUpTo(Routes.settings) { inclusive = true }
-//            }
         },
         themeSetting = themeSetting,
         switchTheme = viewModel::switchTheme
@@ -105,10 +97,10 @@ fun SettingsScreen(
 @OptIn(ExperimentalCoilApi::class)
 @Composable
 fun SettingsScreenContent(
+    state: SettingsState,
     avatarUrl: String?,
     displayName: String,
     username: String,
-    serverUrl: String,
     navigateBack: () -> Unit = {},
     logout: () -> Unit = {},
     themeSetting: ThemeSetting = ThemeSetting.System,
@@ -147,7 +139,6 @@ fun SettingsScreenContent(
             }
     )
 
-    // logout
     var isAlertVisible by remember { mutableStateOf(false) }
     if (isAlertVisible) {
         ConfirmActionDialog(
@@ -177,7 +168,6 @@ fun SettingsScreenContent(
         )
     }
 
-
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier.constrainAs(userInfo) {
@@ -199,13 +189,12 @@ fun SettingsScreenContent(
         Spacer(Modifier.height(4.dp))
 
         Text(
-            text = serverUrl,
+            text = state.serverUrl,
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outline
         )
     }
 
-    // settings itself
     Column(
         horizontalAlignment = Alignment.Start,
         modifier = Modifier.constrainAs(settings) {
@@ -214,7 +203,6 @@ fun SettingsScreenContent(
             top.linkTo(userInfo.bottom, 24.dp)
         }
     ) {
-        // appearance
         SettingsBlock(
             titleId = R.string.appearance,
             items = listOf {
@@ -232,7 +220,7 @@ fun SettingsScreenContent(
                     )
 
                     DropdownSelector(
-                        items = ThemeSetting.values().toList(),
+                        items = ThemeSetting.entries,
                         selectedItem = themeSetting,
                         onItemSelected = { switchTheme(it) },
                         itemContent = {
@@ -252,47 +240,7 @@ fun SettingsScreenContent(
                 }
             }
         )
-
-        // help
-        val activity = LocalContext.current.activity
-        SettingsBlock(
-            titleId = R.string.help,
-            items = listOf {
-                SettingItem(
-                    textId = R.string.submit_report,
-                    onClick = {
-                        activity.startActivity(
-                            Intent(Intent.ACTION_SEND).also {
-                                it.type = "text/plain"
-
-                                (activity.application as TaigaApp).currentLogFile?.let { file ->
-                                    it.putExtra(
-                                        Intent.EXTRA_STREAM,
-                                        FileProvider.getUriForFile(
-                                            activity,
-                                            "${activity.packageName}.provider",
-                                            file
-                                        )
-                                    )
-                                }
-
-                                it.putExtra(
-                                    Intent.EXTRA_SUBJECT,
-                                    "Report. Version ${BuildConfig.VERSION_NAME}"
-                                )
-                                it.putExtra(
-                                    Intent.EXTRA_TEXT,
-                                    "Android: ${Build.VERSION.RELEASE}\nDevice: ${Build.MODEL}\nDescribe in details your problem:"
-                                )
-                            }
-                        )
-                    }
-                )
-            }
-        )
-
     }
-
 
     Column(
         modifier = Modifier.constrainAs(appVersion) {
@@ -303,18 +251,7 @@ fun SettingsScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = stringResource(R.string.credits_message),
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(horizontal = mainHorizontalScreenPadding),
-            textAlign = TextAlign.Center
-        )
-
-        Spacer(Modifier.height(6.dp))
-
-        Text(
-            text = stringResource(R.string.app_name_with_version_template).format(
-                stringResource(R.string.app_name), BuildConfig.VERSION_NAME
-            ),
+            text = state.appInfo,
             style = MaterialTheme.typography.bodyLarge.merge(TextStyle(fontSize = 18.sp)),
             color = MaterialTheme.colorScheme.outline,
         )
@@ -333,7 +270,7 @@ fun SettingsScreenContent(
                 activity.startActivity(
                     Intent(
                         Intent.ACTION_VIEW,
-                        Uri.parse(githubUrl)
+                        githubUrl.toUri()
                     )
                 )
             }
@@ -401,6 +338,6 @@ fun SettingsScreenPreview() = TaigaMobileTheme {
         avatarUrl = null,
         displayName = "Cool Name",
         username = "username",
-        serverUrl = "https://sample.server/"
+        state = SettingsState(appInfo = "asdasd", serverUrl = "https://sample.server/")
     )
 }

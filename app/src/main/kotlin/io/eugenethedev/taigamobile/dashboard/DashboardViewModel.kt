@@ -32,6 +32,15 @@ class DashboardViewModel @Inject constructor(
 
     private var shouldReload = true
 
+    init {
+        session.taskEdit.onEach {
+            workingOn.value = NothingResult()
+            watching.value = NothingResult()
+            myProjects.value = NothingResult()
+            shouldReload = true
+        }.launchIn(viewModelScope)
+    }
+
     fun onOpen() = viewModelScope.launch {
         if (!shouldReload) return@launch
         joinAll(
@@ -46,14 +55,5 @@ class DashboardViewModel @Inject constructor(
         project.apply {
             session.changeCurrentProject(id, name)
         }
-    }
-
-    init {
-        session.taskEdit.onEach {
-            workingOn.value = NothingResult()
-            watching.value = NothingResult()
-            myProjects.value = NothingResult()
-            shouldReload = true
-        }.launchIn(viewModelScope)
     }
 }

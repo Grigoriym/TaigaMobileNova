@@ -1,9 +1,7 @@
 package io.eugenethedev.taigamobile.core.nav
 
 object Routes {
-    const val team = "team"
     const val settings = "settings"
-    const val kanban = "kanban"
     const val wiki_selector = "wiki_selector"
     const val wiki_page = "wiki_page"
     const val wiki_create_page = "wiki_create_page"
