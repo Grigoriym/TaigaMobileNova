@@ -1,8 +1,6 @@
 package io.eugenethedev.taigamobile.main
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
@@ -11,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import io.eugenethedev.taigamobile.core.nav.Routes
+import io.eugenethedev.taigamobile.core.nav.navigateToTaskScreen
 import io.eugenethedev.taigamobile.dashboard.DashboardNavDestination
 import io.eugenethedev.taigamobile.dashboard.DashboardScreen
 import io.eugenethedev.taigamobile.dashboard.navigateToDashboardAsTopDestination
@@ -27,15 +26,17 @@ import io.eugenethedev.taigamobile.ui.screens.epics.EpicsNavDestination
 import io.eugenethedev.taigamobile.ui.screens.epics.EpicsScreen
 import io.eugenethedev.taigamobile.ui.screens.issues.IssuesNavDestination
 import io.eugenethedev.taigamobile.ui.screens.issues.IssuesScreen
+import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanNavDestination
 import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanScreen
-import io.eugenethedev.taigamobile.ui.screens.more.MoreNavDestination
-import io.eugenethedev.taigamobile.ui.screens.more.MoreScreen
 import io.eugenethedev.taigamobile.ui.screens.profile.ProfileScreen
 import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumNavDestination
 import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumScreen
+import io.eugenethedev.taigamobile.ui.screens.settings.SettingsNavDestination
 import io.eugenethedev.taigamobile.ui.screens.settings.SettingsScreen
 import io.eugenethedev.taigamobile.ui.screens.sprint.SprintScreen
+import io.eugenethedev.taigamobile.ui.screens.team.TeamNavDestination
 import io.eugenethedev.taigamobile.ui.screens.team.TeamScreen
+import io.eugenethedev.taigamobile.ui.screens.wiki.WikiNavDestination
 import io.eugenethedev.taigamobile.ui.screens.wiki.createpage.WikiCreatePageScreen
 import io.eugenethedev.taigamobile.ui.screens.wiki.list.WikiListScreen
 import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageScreen
@@ -43,13 +44,11 @@ import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageScreen
 @Composable
 fun MainNavHost(
     modifier: Modifier,
-    viewModel: MainViewModel,
+    isLogged: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
     onShowSnackbar: (message: String) -> Unit
 ) {
-    val isLogged by viewModel.isLogged.collectAsState()
-
     NavHost(
         modifier = modifier,
         navController = navController,
@@ -83,8 +82,10 @@ fun MainNavHost(
 
         composable<DashboardNavDestination> {
             DashboardScreen(
-                navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                navigateToTaskScreen = { taskArgs ->
+                    navController.navigateToTaskScreen(taskArgs)
+                }
             )
         }
 
@@ -112,13 +113,13 @@ fun MainNavHost(
             )
         }
 
-        composable<MoreNavDestination> {
-            MoreScreen(
-                navController = navController
-            )
-        }
+//        composable<MoreNavDestination> {
+//            MoreScreen(
+//                navController = navController
+//            )
+//        }
 
-        composable(Routes.team) {
+        composable<TeamNavDestination> {
             TeamScreen(
                 navController = navController,
                 showMessage = showMessage,
@@ -127,7 +128,7 @@ fun MainNavHost(
             )
         }
 
-        composable(Routes.kanban) {
+        composable<KanbanNavDestination> {
             KanbanScreen(
                 navController = navController,
                 showMessage = showMessage,
@@ -135,7 +136,7 @@ fun MainNavHost(
             )
         }
 
-        composable(Routes.wiki_selector) {
+        composable<WikiNavDestination> {
             WikiListScreen(
                 navController = navController,
                 showMessage = showMessage,
@@ -164,7 +165,7 @@ fun MainNavHost(
             )
         }
 
-        composable(Routes.settings) {
+        composable<SettingsNavDestination> {
             SettingsScreen(
                 navController = navController,
                 showMessage = showMessage,

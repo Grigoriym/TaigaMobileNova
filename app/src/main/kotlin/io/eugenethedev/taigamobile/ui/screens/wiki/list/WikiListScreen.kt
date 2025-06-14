@@ -35,7 +35,7 @@ import io.eugenethedev.taigamobile.ui.components.containers.Tab
 import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
-import io.eugenethedev.taigamobile.ui.utils.navigateToWikiPageScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToWikiPageScreen
 
 @Composable
 fun WikiListScreen(

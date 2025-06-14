@@ -38,11 +38,11 @@ import io.eugenethedev.taigamobile.ui.components.loaders.CircularLoader
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.dialogTonalElevation
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
-import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.core.nav.NavigateToTask
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
-import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
-import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToCreateTaskScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToTaskScreen
 import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter

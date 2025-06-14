@@ -54,11 +54,11 @@ fun MoreScreen(
 
     val space = 2.dp
 
-    Item(R.drawable.ic_team, R.string.team, Routes.team)
+//    Item(R.drawable.ic_team, R.string.team, Routes.team)
     Spacer(Modifier.height(space))
-    Item(R.drawable.ic_kanban, R.string.kanban, Routes.kanban)
+//    Item(R.drawable.ic_kanban, R.string.kanban, Routes.kanban)
     Spacer(Modifier.height(space))
-    Item(R.drawable.ic_wiki, R.string.wiki, Routes.wiki_selector)
+//    Item(R.drawable.ic_wiki, R.string.wiki, Routes.wiki_selector)
     Spacer(Modifier.height(space))
-    Item(R.drawable.ic_settings, R.string.settings, Routes.settings)
+//    Item(R.drawable.ic_settings, R.string.settings, Routes.settings)
 }

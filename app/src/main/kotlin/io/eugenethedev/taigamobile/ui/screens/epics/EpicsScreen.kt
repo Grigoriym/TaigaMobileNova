@@ -12,7 +12,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.paging.compose.LazyPagingItems
-import io.eugenethedev.taigamobile.core.nav.Routes
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
@@ -23,10 +22,10 @@ import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
-import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.core.nav.NavigateToTask
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
-import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
-import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToCreateTaskScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToTaskScreen
 
 @Composable
 fun EpicsScreen(

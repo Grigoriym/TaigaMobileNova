@@ -14,7 +14,7 @@ class Settings @Inject constructor(@ApplicationContext private val context: Cont
         context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
 
     private val _themeSetting =
-        MutableStateFlow(ThemeSetting.values()[sharedPreferences.getInt(THEME, 0)])
+        MutableStateFlow(ThemeSetting.entries[sharedPreferences.getInt(THEME, 0)])
     val themeSetting: StateFlow<ThemeSetting> = _themeSetting
     fun changeThemeSetting(value: ThemeSetting) {
         sharedPreferences.edit { putInt(THEME, value.ordinal) }

@@ -17,7 +17,7 @@ import io.eugenethedev.taigamobile.ui.components.editors.Editor
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
-import io.eugenethedev.taigamobile.ui.utils.navigateToWikiPageScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToWikiPageScreen
 
 @Composable
 fun WikiCreatePageScreen(

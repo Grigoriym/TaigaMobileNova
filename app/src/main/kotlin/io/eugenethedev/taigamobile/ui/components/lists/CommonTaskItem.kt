@@ -23,7 +23,7 @@ import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
 import io.eugenethedev.taigamobile.ui.components.texts.CommonTaskTitle
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
-import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.core.nav.NavigateToTask
 import io.eugenethedev.taigamobile.ui.utils.toColor
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

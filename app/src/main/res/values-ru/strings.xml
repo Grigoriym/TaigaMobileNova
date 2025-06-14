@@ -217,6 +217,5 @@
 
     <string name="credits_message">Сделано с ❤️ EugeneTheDev. Если вам понравилось это приложение, поставьте ему высокую оценку в Google Play и звезду на GitHub</string>
 
-    <string name="github_url" translatable="false">https://github.com/EugeneTheDev/TaigaMobile</string>
     <string name="source_code">Исходный код</string>
 </resources>

@@ -78,8 +78,6 @@ android {
 }
 
 dependencies {
-//    implementation(enforcedPlatform(kotlin("bom")))
-
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
 
     implementation(kotlin("reflect"))
@@ -119,7 +117,7 @@ dependencies {
 
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
-    
+
     implementation(libs.hilt)
     ksp(libs.hilt.compiler)
     implementation(libs.androidx.hilt.navigation.compose)

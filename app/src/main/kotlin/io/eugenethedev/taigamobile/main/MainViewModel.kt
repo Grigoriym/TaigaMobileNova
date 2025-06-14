@@ -12,7 +12,6 @@ class MainViewModel @Inject constructor(
     private val settings: Settings
 ) : ViewModel() {
     val isLogged by lazy { session.isLogged }
-    val isProjectSelected by lazy { session.isProjectSelected }
 
     val theme by lazy { settings.themeSetting }
 }

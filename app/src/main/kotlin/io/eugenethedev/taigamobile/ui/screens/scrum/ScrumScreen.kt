@@ -57,11 +57,11 @@ import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.commonVerticalPadding
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
-import io.eugenethedev.taigamobile.ui.utils.NavigateToTask
+import io.eugenethedev.taigamobile.core.nav.NavigateToTask
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
-import io.eugenethedev.taigamobile.ui.utils.navigateToCreateTaskScreen
-import io.eugenethedev.taigamobile.ui.utils.navigateToSprint
-import io.eugenethedev.taigamobile.ui.utils.navigateToTaskScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToCreateTaskScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToSprint
+import io.eugenethedev.taigamobile.core.nav.navigateToTaskScreen
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle

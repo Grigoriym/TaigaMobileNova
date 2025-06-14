@@ -47,7 +47,7 @@ import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
-import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToProfileScreen
 import io.eugenethedev.taigamobile.ui.utils.surfaceColorAtElevationInternal
 import java.io.InputStream
 import java.time.LocalDateTime

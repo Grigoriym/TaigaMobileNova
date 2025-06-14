@@ -46,7 +46,7 @@ import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
 import io.eugenethedev.taigamobile.ui.theme.mainHorizontalScreenPadding
 import io.eugenethedev.taigamobile.ui.utils.LoadingResult
 import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
-import io.eugenethedev.taigamobile.ui.utils.navigateToProfileScreen
+import io.eugenethedev.taigamobile.core.nav.navigateToProfileScreen
 
 @Composable
 fun TeamScreen(

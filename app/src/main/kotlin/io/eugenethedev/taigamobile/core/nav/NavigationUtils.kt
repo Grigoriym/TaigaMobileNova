@@ -1,7 +1,6 @@
-package io.eugenethedev.taigamobile.ui.utils
+package io.eugenethedev.taigamobile.core.nav
 
 import androidx.navigation.NavController
-import io.eugenethedev.taigamobile.core.nav.Routes
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 
 /**
@@ -10,6 +9,15 @@ import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
  */
 
 typealias NavigateToTask = (id: Long, type: CommonTaskType, ref: Int) -> Unit
+
+data class TaskArguments(
+    val id: Long,
+    val type: CommonTaskType,
+    val ref: Int
+)
+
+fun NavController.navigateToTaskScreen(task: TaskArguments) =
+    navigateToTaskScreen(task.id, task.type, task.ref)
 
 fun NavController.navigateToTaskScreen(id: Long, type: CommonTaskType, ref: Int) =
     navigate("${Routes.commonTask}/$id/$type/$ref")
