@@ -16,5 +16,5 @@ dependencyResolutionManagement {
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
-rootProject.name = "TaigaMobile"
+rootProject.name = "TaigaMobileNova"
 include(":app")
