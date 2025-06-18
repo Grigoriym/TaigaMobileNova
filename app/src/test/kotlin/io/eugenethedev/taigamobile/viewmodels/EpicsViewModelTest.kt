@@ -2,7 +2,7 @@ package io.eugenethedev.taigamobile.viewmodels
 
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
-import io.eugenethedev.taigamobile.ui.screens.epics.EpicsViewModel
+import io.eugenethedev.taigamobile.epics.EpicsViewModel
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.viewmodels.utils.assertResultEquals

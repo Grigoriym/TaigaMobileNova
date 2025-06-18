@@ -4,25 +4,27 @@ import io.eugenethedev.taigamobile.data.api.TaigaApi
 import io.eugenethedev.taigamobile.domain.entities.Stats
 import io.eugenethedev.taigamobile.domain.entities.TeamMember
 import io.eugenethedev.taigamobile.domain.repositories.IUsersRepository
+import io.eugenethedev.taigamobile.projectselector.ProjectsApi
 import io.eugenethedev.taigamobile.state.Session
 import kotlinx.coroutines.async
 import javax.inject.Inject
 
 class UsersRepository @Inject constructor(
     private val taigaApi: TaigaApi,
+    private val projectsApi: ProjectsApi,
     private val session: Session
 ) : IUsersRepository {
     private val currentProjectId get() = session.currentProjectId.value
 
     override suspend fun getMe() = withIO { taigaApi.getMyProfile() }
 
-    override suspend fun getUser(userId: Long) = withIO { taigaApi.getUser(userId) }
+    override suspend fun getUser(userId: Long) = taigaApi.getUser(userId)
 
     override suspend fun getUserStats(userId: Long): Stats =
         withIO { taigaApi.getUserStats(userId) }
 
     override suspend fun getTeam() = withIO {
-        val team = async { taigaApi.getProject(currentProjectId).members }
+        val team = async { projectsApi.getProject(currentProjectId).members }
         val stats = async {
             taigaApi.getMemberStats(currentProjectId).run {
                 // calculating total number of points for each id

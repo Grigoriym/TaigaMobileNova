@@ -1,5 +1,6 @@
 package io.eugenethedev.taigamobile.main
 
+import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -12,28 +13,41 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import io.eugenethedev.taigamobile.core.nav.DrawerDestination
+import io.eugenethedev.taigamobile.main.topbar.LocalTopBarConfig
+import io.eugenethedev.taigamobile.main.topbar.TopBarConfig
+import io.eugenethedev.taigamobile.main.topbar.TopBarController
 import io.eugenethedev.taigamobile.ui.components.TaigaDrawer
 import io.eugenethedev.taigamobile.ui.components.appbars.TaigaTopAppBar
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun MainContent(viewModel: MainViewModel) {
     val isLogged by viewModel.isLogged.collectAsStateWithLifecycle()
-    MainScreenContent(isLogged = isLogged)
+    val topBarController = remember { TopBarController() }
+    CompositionLocalProvider(
+        LocalTopBarConfig provides topBarController
+    ) {
+        val topBarConfig = topBarController.config
+        MainScreenContent(isLogged = isLogged, topBarConfig = topBarConfig)
+    }
 }
 
 @Composable
 private fun MainScreenContent(
-    isLogged: Boolean
+    isLogged: Boolean,
+    topBarConfig: TopBarConfig
 ) {
     val appState = rememberMainAppState()
     val scope = rememberCoroutineScope()
@@ -41,6 +55,13 @@ private fun MainScreenContent(
     val drawerState by appState.drawerState.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    LaunchedEffect(Unit) {
+        appState.navController.addOnDestinationChangedListener({ _, _, _ ->
+            keyboardController?.hide()
+        })
+    }
 
     TaigaDrawer(
         screens = appState.topLevelDestinations,
@@ -58,7 +79,16 @@ private fun MainScreenContent(
             modifier = Modifier
                 .imePadding(),
             topBar = {
-                TaigaTopAppBar(drawerState = drawerState)
+                TaigaTopAppBar(
+                    isVisible = appState.isTopBarVisible,
+                    topBarConfig = topBarConfig,
+                    drawerState = drawerState,
+                    isMenuButton = !topBarConfig.showBackButton,
+                    goBack = {
+                        topBarConfig.overrideBackHandlerAction?.invoke()
+                            ?: appState.navController.popBackStack()
+                    }
+                )
             },
             snackbarHost = {
                 SnackbarHost(

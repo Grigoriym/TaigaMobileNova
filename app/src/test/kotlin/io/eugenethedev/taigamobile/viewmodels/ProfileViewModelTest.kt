@@ -3,7 +3,7 @@ package io.eugenethedev.taigamobile.viewmodels
 import io.eugenethedev.taigamobile.domain.entities.Project
 import io.eugenethedev.taigamobile.domain.entities.Stats
 import io.eugenethedev.taigamobile.domain.entities.User
-import io.eugenethedev.taigamobile.ui.screens.profile.ProfileViewModel
+import io.eugenethedev.taigamobile.profile.ProfileViewModel
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.viewmodels.utils.accessDeniedException

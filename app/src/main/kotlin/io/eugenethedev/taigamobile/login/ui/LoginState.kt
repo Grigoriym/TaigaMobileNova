@@ -2,7 +2,7 @@ package io.eugenethedev.taigamobile.login.ui
 
 import androidx.compose.ui.text.input.TextFieldValue
 import io.eugenethedev.taigamobile.domain.entities.AuthType
-import io.eugenethedev.taigamobile.login.data.NetworkConstants
+import io.eugenethedev.taigamobile.data.api.NetworkConstants
 import io.eugenethedev.taigamobile.login.domain.AuthData
 
 data class LoginState(

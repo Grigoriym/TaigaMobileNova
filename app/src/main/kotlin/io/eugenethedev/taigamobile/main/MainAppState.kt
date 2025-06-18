@@ -15,8 +15,10 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import io.eugenethedev.taigamobile.core.nav.DrawerDestination
 import io.eugenethedev.taigamobile.core.nav.navigate
+import io.eugenethedev.taigamobile.login.LoginNavDestination
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlin.reflect.KClass
 
 @Composable
 fun rememberMainAppState(navController: NavHostController = rememberNavController()): MainAppState {
@@ -25,6 +27,9 @@ fun rememberMainAppState(navController: NavHostController = rememberNavControlle
     }
 }
 
+/**
+ * Responsible for holding state related to navigation-wide data.
+ */
 @Stable
 class MainAppState(val navController: NavHostController) {
 
@@ -54,6 +59,15 @@ class MainAppState(val navController: NavHostController) {
 
     val areDrawerGesturesEnabled: Boolean
         @Composable get() = currentTopLevelDestination != null
+
+    private val destinationsWithoutTopBar = setOf<KClass<out Any>>(
+        LoginNavDestination::class,
+    )
+
+    val isTopBarVisible: Boolean
+        @Composable get() = destinationsWithoutTopBar.firstOrNull { dest ->
+            currentDestination?.hasRoute(route = dest) == true
+        } == null
 
     fun navigateToTopLevelDestination(destination: DrawerDestination) {
         val navOptions = navOptions {

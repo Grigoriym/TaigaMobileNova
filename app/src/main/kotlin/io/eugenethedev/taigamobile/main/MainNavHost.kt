@@ -4,42 +4,48 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
-import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
-import io.eugenethedev.taigamobile.core.nav.Routes
-import io.eugenethedev.taigamobile.core.nav.navigateToTaskScreen
+import io.eugenethedev.taigamobile.commontask.CommonTaskNavDestination
+import io.eugenethedev.taigamobile.commontask.CommonTaskScreen
+import io.eugenethedev.taigamobile.commontask.navigateToCommonTask
+import io.eugenethedev.taigamobile.createtask.CreateTaskNavDestination
+import io.eugenethedev.taigamobile.createtask.CreateTaskScreen
+import io.eugenethedev.taigamobile.createtask.navigateToCreateTask
 import io.eugenethedev.taigamobile.dashboard.DashboardNavDestination
 import io.eugenethedev.taigamobile.dashboard.DashboardScreen
 import io.eugenethedev.taigamobile.dashboard.navigateToDashboardAsTopDestination
-import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
+import io.eugenethedev.taigamobile.epics.EpicsNavDestination
+import io.eugenethedev.taigamobile.epics.EpicsScreen
+import io.eugenethedev.taigamobile.issues.IssuesNavDestination
+import io.eugenethedev.taigamobile.issues.IssuesScreen
+import io.eugenethedev.taigamobile.kanban.KanbanNavDestination
+import io.eugenethedev.taigamobile.kanban.KanbanScreen
 import io.eugenethedev.taigamobile.login.LoginNavDestination
 import io.eugenethedev.taigamobile.login.navigateToLoginAsTopDestination
 import io.eugenethedev.taigamobile.login.ui.LoginScreen
+import io.eugenethedev.taigamobile.profile.ProfileNavDestination
+import io.eugenethedev.taigamobile.profile.ProfileScreen
+import io.eugenethedev.taigamobile.profile.navigateToProfileScreen
 import io.eugenethedev.taigamobile.projectselector.ProjectSelectorNavDestination
 import io.eugenethedev.taigamobile.projectselector.ProjectSelectorScreen
 import io.eugenethedev.taigamobile.projectselector.navigateToProjectSelector
-import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskScreen
-import io.eugenethedev.taigamobile.ui.screens.createtask.CreateTaskScreen
-import io.eugenethedev.taigamobile.ui.screens.epics.EpicsNavDestination
-import io.eugenethedev.taigamobile.ui.screens.epics.EpicsScreen
-import io.eugenethedev.taigamobile.ui.screens.issues.IssuesNavDestination
-import io.eugenethedev.taigamobile.ui.screens.issues.IssuesScreen
-import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanNavDestination
-import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanScreen
-import io.eugenethedev.taigamobile.ui.screens.profile.ProfileScreen
-import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumNavDestination
-import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumScreen
-import io.eugenethedev.taigamobile.ui.screens.settings.SettingsNavDestination
-import io.eugenethedev.taigamobile.ui.screens.settings.SettingsScreen
-import io.eugenethedev.taigamobile.ui.screens.sprint.SprintScreen
-import io.eugenethedev.taigamobile.ui.screens.team.TeamNavDestination
-import io.eugenethedev.taigamobile.ui.screens.team.TeamScreen
-import io.eugenethedev.taigamobile.ui.screens.wiki.WikiNavDestination
-import io.eugenethedev.taigamobile.ui.screens.wiki.createpage.WikiCreatePageScreen
-import io.eugenethedev.taigamobile.ui.screens.wiki.list.WikiListScreen
-import io.eugenethedev.taigamobile.ui.screens.wiki.page.WikiPageScreen
+import io.eugenethedev.taigamobile.scrum.ScrumNavDestination
+import io.eugenethedev.taigamobile.scrum.ScrumScreen
+import io.eugenethedev.taigamobile.settings.SettingsNavDestination
+import io.eugenethedev.taigamobile.settings.SettingsScreen
+import io.eugenethedev.taigamobile.sprint.SprintNavDestination
+import io.eugenethedev.taigamobile.sprint.SprintScreen
+import io.eugenethedev.taigamobile.sprint.navigateToSprintScreen
+import io.eugenethedev.taigamobile.team.TeamNavDestination
+import io.eugenethedev.taigamobile.team.TeamScreen
+import io.eugenethedev.taigamobile.wiki.WikiNavDestination
+import io.eugenethedev.taigamobile.wiki.createpage.WikiCreatePageNavDestination
+import io.eugenethedev.taigamobile.wiki.createpage.WikiCreatePageScreen
+import io.eugenethedev.taigamobile.wiki.list.WikiListScreen
+import io.eugenethedev.taigamobile.wiki.page.WikiPageNavDestination
+import io.eugenethedev.taigamobile.wiki.page.WikiPageScreen
+import io.eugenethedev.taigamobile.wiki.page.navigateToWikiPage
 
 @Composable
 fun MainNavHost(
@@ -66,7 +72,6 @@ fun MainNavHost(
         composable<ProjectSelectorNavDestination> {
             ProjectSelectorScreen(
                 showMessage = showMessage,
-                onBack = navController::popBackStack,
                 onProjectSelected = { isFromLogin: Boolean ->
                     /**
                      * After the login and the project is selected, dashboard will become the top destination
@@ -83,180 +88,170 @@ fun MainNavHost(
         composable<DashboardNavDestination> {
             DashboardScreen(
                 showMessage = showMessage,
-                navigateToTaskScreen = { taskArgs ->
-                    navController.navigateToTaskScreen(taskArgs)
+                navigateToTaskScreen = { id, type, ref ->
+                    navController.navigateToCommonTask(id, type, ref)
                 }
             )
         }
 
         composable<ScrumNavDestination> {
             ScrumScreen(
-                navController = navController,
                 showMessage = showMessage,
-                goToProjectSelector = navController::navigateToProjectSelector,
+                goToCreateTask = { type ->
+                    navController.navigateToCreateTask(type = type)
+                },
+                goToSprint = { id ->
+                    navController.navigateToSprintScreen(id)
+                },
+                goToTask = { id, type, ref ->
+                    navController.navigateToCommonTask(id, type, ref)
+                }
             )
         }
 
         composable<EpicsNavDestination> {
             EpicsScreen(
-                navController = navController,
                 showMessage = showMessage,
-                goToProjectSelector = navController::navigateToProjectSelector,
+                goToCreateTask = { type ->
+                    navController.navigateToCreateTask(type = type)
+                },
+                goToTask = { id, type, ref ->
+                    navController.navigateToCommonTask(id, type, ref)
+                }
             )
         }
 
         composable<IssuesNavDestination> {
             IssuesScreen(
-                navController = navController,
                 showMessage = showMessage,
-                goToProjectSelector = navController::navigateToProjectSelector,
+                goToCreateTask = { type ->
+                    navController.navigateToCreateTask(type = type)
+                },
+                goToTask = { id, type, ref ->
+                    navController.navigateToCommonTask(id, type, ref)
+                }
             )
         }
 
-//        composable<MoreNavDestination> {
-//            MoreScreen(
-//                navController = navController
-//            )
-//        }
-
         composable<TeamNavDestination> {
             TeamScreen(
-                navController = navController,
                 showMessage = showMessage,
-                goToProjectSelector = navController::navigateToProjectSelector,
-                goBck = navController::popBackStack
+                goToProfile = { userId ->
+                    navController.navigateToProfileScreen(userId)
+                }
             )
         }
 
         composable<KanbanNavDestination> {
             KanbanScreen(
-                navController = navController,
                 showMessage = showMessage,
-                goToProjectSelector = navController::navigateToProjectSelector,
+                goToTask = { id, type, ref ->
+                    navController.navigateToCommonTask(id, type, ref)
+                },
+                goToCreateTask = { task, statusId, swimlaneId ->
+                    navController.navigateToCreateTask(
+                        type = task,
+                        statusId = statusId,
+                        swimlaneId = swimlaneId
+                    )
+                }
             )
         }
 
         composable<WikiNavDestination> {
             WikiListScreen(
-                navController = navController,
                 showMessage = showMessage,
-                goToProjectSelector = navController::navigateToProjectSelector,
-                goBack = navController::popBackStack
+                goToWikiCreatePage = {
+                    navController.navigate(route = WikiCreatePageNavDestination)
+                },
+                goToWikiPage = {
+                    navController.navigateToWikiPage(it)
+                }
             )
         }
 
-        composable(Routes.wiki_create_page) {
+        composable<WikiCreatePageNavDestination> {
             WikiCreatePageScreen(
-                navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                goToWikiPage = {
+                    navController.popBackStack()
+                    navController.navigateToWikiPage(it)
+                }
             )
         }
 
-        composable(
-            "${Routes.wiki_page}/{${Routes.Arguments.wikiSlug}}",
-            arguments = listOf(
-                navArgument(Routes.Arguments.wikiSlug) { type = NavType.StringType }
-            )
-        ) {
+        composable<WikiPageNavDestination> {
             WikiPageScreen(
-                slug = it.arguments!!.getString(Routes.Arguments.wikiSlug).orEmpty(),
-                navController = navController,
-                showMessage = showMessage
+                showMessage = showMessage,
+                goToProfile = { userId ->
+                    navController.navigateToProfileScreen(userId)
+                },
+                goBack = navController::popBackStack
             )
         }
 
         composable<SettingsNavDestination> {
             SettingsScreen(
-                navController = navController,
                 showMessage = showMessage,
                 onLogout = navController::navigateToLoginAsTopDestination,
             )
         }
 
-        composable(
-            "${Routes.sprint}/{${Routes.Arguments.sprintId}}",
-            arguments = listOf(
-                navArgument(Routes.Arguments.sprintId) { type = NavType.LongType }
-            )
-        ) {
+        composable<SprintNavDestination> {
             SprintScreen(
-                navController = navController,
-                sprintId = it.arguments!!.getLong(Routes.Arguments.sprintId),
-                showMessage = showMessage
-            )
-        }
-
-        composable(
-            "${Routes.profile}/{${Routes.Arguments.userId}}",
-            arguments = listOf(
-                navArgument(Routes.Arguments.userId) { type = NavType.LongType }
-            )
-        ) {
-            ProfileScreen(
-                navController = navController,
                 showMessage = showMessage,
-                userId = it.arguments!!.getLong(Routes.Arguments.userId),
+                goBack = navController::popBackStack,
+                goToTaskScreen = { id, taskType, ref ->
+                    navController.navigateToCommonTask(id, taskType, ref)
+                },
+                goToCreateTask = { type, parentId, sprintId ->
+                    navController.navigateToCreateTask(
+                        type = type,
+                        parentId = parentId,
+                        sprintId = sprintId
+                    )
+                }
             )
         }
 
-        composable(
-            Routes.Arguments.run { "${Routes.commonTask}/{$commonTaskId}/{$commonTaskType}/{$ref}" },
-            arguments = listOf(
-                navArgument(Routes.Arguments.commonTaskType) { type = NavType.StringType },
-                navArgument(Routes.Arguments.commonTaskId) { type = NavType.LongType },
-                navArgument(Routes.Arguments.ref) { type = NavType.IntType },
+        composable<ProfileNavDestination> {
+            ProfileScreen(
+                showMessage = showMessage
             )
-        ) {
+        }
+
+        composable<CommonTaskNavDestination> {
             CommonTaskScreen(
-                navController = navController,
-                commonTaskId = it.arguments!!.getLong(Routes.Arguments.commonTaskId),
-                commonTaskType = CommonTaskType.valueOf(
-                    it.arguments!!.getString(
-                        Routes.Arguments.commonTaskType,
-                        ""
+                showMessage = showMessage,
+                goToProfile = { userId ->
+                    navController.navigateToProfileScreen(userId)
+                },
+                goToUserStory = { id, taskType, ref ->
+                    navController.popBackStack()
+                    navController.navigateToCommonTask(id, taskType, ref)
+                },
+                goBack = {
+                    navController.popBackStack()
+                },
+                navigateToCreateTask = { type, id ->
+                    navController.navigateToCreateTask(
+                        type = type,
+                        parentId = id
                     )
-                ),
-                ref = it.arguments!!.getInt(Routes.Arguments.ref),
-                showMessage = showMessage
+                },
+                navigateToTask = { id, type, ref ->
+                    navController.navigateToCommonTask(id, type, ref)
+                }
             )
         }
 
-        composable(
-            Routes.Arguments.run { "${Routes.createTask}/{$commonTaskType}?$parentId={$parentId}&$sprintId={$sprintId}&$statusId={$statusId}&$swimlaneId={$swimlaneId}" },
-            arguments = listOf(
-                navArgument(Routes.Arguments.commonTaskType) { type = NavType.StringType },
-                navArgument(Routes.Arguments.parentId) {
-                    type = NavType.LongType
-                    defaultValue = -1L // long does not allow null values
-                },
-                navArgument(Routes.Arguments.sprintId) {
-                    type = NavType.LongType
-                    defaultValue = -1L
-                },
-                navArgument(Routes.Arguments.statusId) {
-                    type = NavType.LongType
-                    defaultValue = -1L
-                },
-                navArgument(Routes.Arguments.swimlaneId) {
-                    type = NavType.LongType
-                    defaultValue = -1L
-                },
-            )
-        ) {
+        composable<CreateTaskNavDestination> {
             CreateTaskScreen(
-                navController = navController,
-                commonTaskType = CommonTaskType.valueOf(
-                    it.arguments!!.getString(
-                        Routes.Arguments.commonTaskType,
-                        ""
-                    )
-                ),
-                parentId = it.arguments!!.getLong(Routes.Arguments.parentId).takeIf { it >= 0 },
-                sprintId = it.arguments!!.getLong(Routes.Arguments.sprintId).takeIf { it >= 0 },
-                statusId = it.arguments!!.getLong(Routes.Arguments.statusId).takeIf { it >= 0 },
-                swimlaneId = it.arguments!!.getLong(Routes.Arguments.swimlaneId)
-                    .takeIf { it >= 0 },
-                showMessage = showMessage
+                showMessage = showMessage,
+                navigateOnTaskCreated = { id, type, ref ->
+                    navController.popBackStack()
+                    navController.navigateToCommonTask(id, type, ref)
+                }
             )
         }
     }

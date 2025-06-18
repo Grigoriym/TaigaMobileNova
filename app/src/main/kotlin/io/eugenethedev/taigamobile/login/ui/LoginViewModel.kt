@@ -3,8 +3,8 @@ package io.eugenethedev.taigamobile.login.ui
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import dagger.hilt.android.lifecycle.HiltViewModel
 import com.grappim.taigamobile.R
+import dagger.hilt.android.lifecycle.HiltViewModel
 import io.eugenethedev.taigamobile.core.ui.NativeText
 import io.eugenethedev.taigamobile.core.ui.SnackbarStateViewModel
 import io.eugenethedev.taigamobile.core.ui.SnackbarStateViewModelImpl

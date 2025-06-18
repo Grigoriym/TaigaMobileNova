@@ -1,12 +1,12 @@
 package io.eugenethedev.taigamobile.repositories
 
-import io.eugenethedev.taigamobile.data.repositories.SprintsRepository
+import io.eugenethedev.taigamobile.sprint.SprintsRepository
 import io.eugenethedev.taigamobile.data.repositories.TasksRepository
 import io.eugenethedev.taigamobile.data.repositories.UsersRepository
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
-import io.eugenethedev.taigamobile.domain.repositories.ISprintsRepository
+import io.eugenethedev.taigamobile.sprint.ISprintsRepository
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
 import io.eugenethedev.taigamobile.domain.repositories.IUsersRepository
 import com.grappim.taigamobile.Repositories.utils.TestCommonTask

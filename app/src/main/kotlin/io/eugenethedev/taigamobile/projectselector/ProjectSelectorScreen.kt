@@ -2,20 +2,21 @@ package io.eugenethedev.taigamobile.projectselector
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
@@ -24,86 +25,94 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.R
+import io.eugenethedev.taigamobile.core.ui.NativeText
 import io.eugenethedev.taigamobile.domain.entities.Project
+import io.eugenethedev.taigamobile.main.topbar.LocalTopBarConfig
+import io.eugenethedev.taigamobile.main.topbar.TopBarConfig
 import io.eugenethedev.taigamobile.ui.components.containers.ContainerBox
-import io.eugenethedev.taigamobile.ui.components.editors.SelectorList
-import io.eugenethedev.taigamobile.ui.components.editors.SelectorListConstants
 import io.eugenethedev.taigamobile.ui.theme.TaigaMobileTheme
-import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun ProjectSelectorScreen(
     viewModel: ProjectSelectorViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
-    onBack: () -> Unit,
     onProjectSelected: (isFromLogin: Boolean) -> Unit,
 ) {
+    val topBarController = LocalTopBarConfig.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
-        viewModel.onOpen()
+        topBarController.update(
+            TopBarConfig(
+                title = NativeText.Resource(R.string.project_selector),
+                showBackButton = state.isFromLogin
+            )
+        )
     }
-    val coroutineScope = rememberCoroutineScope()
 
-    val projects = viewModel.projects
-    projects.SubscribeOnError(showMessage)
+    val lazyProjectItems = viewModel.projects.collectAsLazyPagingItems()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-    val currentProjectId by viewModel.currentProjectId.collectAsState()
-
-    var isSelectorVisible by remember { mutableStateOf(true) }
-    val selectorAnimationDuration = SelectorListConstants.defaultAnimDurationMillis
-
-    fun navigateBack() = coroutineScope.launch {
-        isSelectorVisible = false
-        delay(selectorAnimationDuration.toLong())
-        onBack()
+    LaunchedEffect(lazyProjectItems.loadState.hasError) {
+        if (lazyProjectItems.loadState.hasError) {
+            showMessage(R.string.common_error_message)
+        }
     }
 
     ProjectSelectorScreenContent(
-        projects = projects,
-        isVisible = isSelectorVisible,
-        currentProjectId = currentProjectId,
-        selectorAnimationDuration = selectorAnimationDuration,
-        navigateBack = onBack,
-        searchProjects = { viewModel.searchProjects(it) },
+        state = state,
+        searchQuery = searchQuery,
+        projects = lazyProjectItems,
         selectProject = {
             viewModel.selectProject(it)
-//            navigateBack()
-            onProjectSelected(viewModel.navDestination.isFromLogin)
+            onProjectSelected(state.isFromLogin)
         }
     )
 }
 
 @Composable
 fun ProjectSelectorScreenContent(
-    projects: LazyPagingItems<Project>? = null,
-    isVisible: Boolean = false,
-    currentProjectId: Long = -1,
-    selectorAnimationDuration: Int = SelectorListConstants.defaultAnimDurationMillis,
-    navigateBack: () -> Unit = {},
-    searchProjects: (String) -> Unit = {},
+    state: ProjectSelectorState,
+    searchQuery: String,
+    projects: LazyPagingItems<Project>,
     selectProject: (Project) -> Unit = {}
-) = Box(
-    Modifier.fillMaxSize(),
-    contentAlignment = Alignment.TopStart
 ) {
-    if (projects == null) return@Box
-
-    SelectorList(
-        titleHintId = R.string.search_projects_hint,
-        itemsLazy = projects,
-        isVisible = isVisible,
-        searchData = searchProjects,
-        navigateBack = navigateBack,
-        animationDurationMillis = selectorAnimationDuration
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(horizontal = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        ItemProject(
-            project = it,
-            currentProjectId = currentProjectId,
-            onClick = { selectProject(it) }
+        OutlinedTextField(
+            modifier = Modifier
+                .fillMaxWidth(),
+            value = searchQuery,
+            onValueChange = state.setProjectsQuery,
+            shape = RoundedCornerShape(16.dp),
+            placeholder = {
+                Text(stringResource(R.string.search_projects_hint))
+            }
         )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        LazyColumn {
+            items(projects.itemCount) { index ->
+                val project = projects[index]
+                if (project != null) {
+                    ItemProject(
+                        project = project,
+                        currentProjectId = state.currentProjectId,
+                        onClick = { selectProject(project) }
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -160,6 +169,14 @@ private fun ItemProject(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 fun ProjectSelectorScreenPreview() = TaigaMobileTheme {
-    ProjectSelectorScreenContent(isVisible = true)
+    ProjectSelectorScreenContent(
+        projects = flowOf(
+            PagingData.empty<Project>()
+        ).collectAsLazyPagingItems(),
+        searchQuery = "",
+        state = ProjectSelectorState(
+            currentProjectId = 1L,
+            setProjectsQuery = {}
+        ),
+    )
 }
-

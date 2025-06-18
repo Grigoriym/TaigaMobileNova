@@ -1,6 +1,5 @@
 package io.eugenethedev.taigamobile.data.repositories
 
-import io.eugenethedev.taigamobile.di.toLocalDate
 import io.eugenethedev.taigamobile.data.api.CommonTaskPathPlural
 import io.eugenethedev.taigamobile.data.api.CommonTaskPathSingular
 import io.eugenethedev.taigamobile.data.api.CommonTaskResponse
@@ -14,6 +13,8 @@ import io.eugenethedev.taigamobile.data.api.EditCustomAttributesValuesRequest
 import io.eugenethedev.taigamobile.data.api.LinkToEpicRequest
 import io.eugenethedev.taigamobile.data.api.PromoteToUserStoryRequest
 import io.eugenethedev.taigamobile.data.api.TaigaApi
+import io.eugenethedev.taigamobile.di.toLocalDate
+import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskExtended
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.CustomField
@@ -32,7 +33,11 @@ import io.eugenethedev.taigamobile.domain.entities.Tag
 import io.eugenethedev.taigamobile.domain.entities.TagsFilter
 import io.eugenethedev.taigamobile.domain.entities.UsersFilter
 import io.eugenethedev.taigamobile.domain.repositories.ITasksRepository
+import io.eugenethedev.taigamobile.epics.EpicsApi
+import io.eugenethedev.taigamobile.issues.IssuesApi
+import io.eugenethedev.taigamobile.sprint.SprintApi
 import io.eugenethedev.taigamobile.state.Session
+import io.eugenethedev.taigamobile.userstories.UserStoriesApi
 import kotlinx.coroutines.async
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -43,7 +48,11 @@ import javax.inject.Inject
 
 class TasksRepository @Inject constructor(
     private val taigaApi: TaigaApi,
-    private val session: Session
+    private val session: Session,
+    private val epicsApi: EpicsApi,
+    private val userStoriesApi: UserStoriesApi,
+    private val sprintApi: SprintApi,
+    private val issuesApi: IssuesApi
 ) : ITasksRepository {
     private val currentProjectId get() = session.currentProjectId.value
     private val currentUserId get() = session.currentUserId.value
@@ -138,12 +147,12 @@ class TasksRepository @Inject constructor(
 
     override suspend fun getWorkingOn() = withIO {
         val epics = async {
-            taigaApi.getEpics(assignedId = currentUserId, isClosed = false)
+            epicsApi.getEpics(assignedId = currentUserId, isClosed = false)
                 .map { it.toCommonTask(CommonTaskType.Epic) }
         }
 
         val stories = async {
-            taigaApi.getUserStories(
+            userStoriesApi.getUserStories(
                 assignedId = currentUserId,
                 isClosed = false,
                 isDashboard = true
@@ -157,7 +166,7 @@ class TasksRepository @Inject constructor(
         }
 
         val issues = async {
-            taigaApi.getIssues(assignedIds = currentUserId.toString(), isClosed = false)
+            issuesApi.getIssues(assignedIds = currentUserId.toString(), isClosed = false)
                 .map { it.toCommonTask(CommonTaskType.Issue) }
         }
 
@@ -166,12 +175,12 @@ class TasksRepository @Inject constructor(
 
     override suspend fun getWatching() = withIO {
         val epics = async {
-            taigaApi.getEpics(watcherId = currentUserId, isClosed = false)
+            epicsApi.getEpics(watcherId = currentUserId, isClosed = false)
                 .map { it.toCommonTask(CommonTaskType.Epic) }
         }
 
         val stories = async {
-            taigaApi.getUserStories(watcherId = currentUserId, isClosed = false, isDashboard = true)
+            userStoriesApi.getUserStories(watcherId = currentUserId, isClosed = false, isDashboard = true)
                 .map { it.toCommonTask(CommonTaskType.UserStory) }
         }
 
@@ -181,7 +190,7 @@ class TasksRepository @Inject constructor(
         }
 
         val issues = async {
-            taigaApi.getIssues(watcherId = currentUserId, isClosed = false)
+            issuesApi.getIssues(watcherId = currentUserId, isClosed = false)
                 .map { it.toCommonTask(CommonTaskType.Issue) }
         }
 
@@ -208,9 +217,10 @@ class TasksRepository @Inject constructor(
             }
         }
 
-    override suspend fun getEpics(page: Int, filters: FiltersData) = withIO {
+    @Deprecated("remove it and use the one form epics repo")
+    override suspend fun getEpics(page: Int, filters: FiltersData): List<CommonTask> =
         handle404 {
-            taigaApi.getEpics(
+            epicsApi.getEpics(
                 page = page,
                 project = currentProjectId,
                 query = filters.query,
@@ -221,13 +231,12 @@ class TasksRepository @Inject constructor(
             )
                 .map { it.toCommonTask(CommonTaskType.Epic) }
         }
-    }
 
     override suspend fun getAllUserStories() = withIO {
         val filters = async { getFiltersData(CommonTaskType.UserStory) }
         val swimlanes = async { getSwimlanes() }
 
-        taigaApi.getUserStories(project = currentProjectId)
+        userStoriesApi.getUserStories(project = currentProjectId)
             .map {
                 it.toCommonTaskExtended(
                     commonTaskType = CommonTaskType.UserStory,
@@ -240,7 +249,7 @@ class TasksRepository @Inject constructor(
 
     override suspend fun getBacklogUserStories(page: Int, filters: FiltersData) = withIO {
         handle404 {
-            taigaApi.getUserStories(
+            userStoriesApi.getUserStories(
                 project = currentProjectId,
                 sprint = "null",
                 page = page,
@@ -257,7 +266,7 @@ class TasksRepository @Inject constructor(
     }
 
     override suspend fun getEpicUserStories(epicId: Long) = withIO {
-        taigaApi.getUserStories(epic = epicId)
+        userStoriesApi.getUserStories(epic = epicId)
             .map { it.toCommonTask(CommonTaskType.UserStory) }
 
     }
@@ -271,7 +280,7 @@ class TasksRepository @Inject constructor(
 
     override suspend fun getIssues(page: Int, filters: FiltersData) = withIO {
         handle404 {
-            taigaApi.getIssues(
+            issuesApi.getIssues(
                 page = page,
                 project = currentProjectId,
                 query = filters.query,
@@ -287,14 +296,6 @@ class TasksRepository @Inject constructor(
                 .map { it.toCommonTask(CommonTaskType.Issue) }
         }
     }
-
-    private fun List<Filter>.commaString() = map { it.id }
-        .joinToString(separator = ",")
-        .takeIf { it.isNotEmpty() }
-
-    private fun List<TagsFilter>.tagsCommaString() =
-        joinToString(separator = ",") { it.name.replace(" ", "+") }
-            .takeIf { it.isNotEmpty() }
 
     override suspend fun getCommonTask(commonTaskId: Long, type: CommonTaskType) = withIO {
         val filters = async { getFiltersData(type) }
@@ -385,7 +386,7 @@ class TasksRepository @Inject constructor(
             ),
             taskType = commonTaskType,
             createdDateTime = created_date,
-            sprint = if (loadSprint) milestone?.let { taigaApi.getSprint(it).toSprint() } else null,
+            sprint = if (loadSprint) milestone?.let { sprintApi.getSprint(it).toSprint() } else null,
             assignedIds = assigned_users ?: listOfNotNull(assigned_to),
             watcherIds = watchers.orEmpty(),
             creatorId = owner
@@ -722,3 +723,11 @@ class TasksRepository @Inject constructor(
         const val PATH_TO_ISSUE = "issue"
     }
 }
+
+fun List<Filter>.commaString() = map { it.id }
+    .joinToString(separator = ",")
+    .takeIf { it.isNotEmpty() }
+
+fun List<TagsFilter>.tagsCommaString() =
+    joinToString(separator = ",") { it.name.replace(" ", "+") }
+        .takeIf { it.isNotEmpty() }

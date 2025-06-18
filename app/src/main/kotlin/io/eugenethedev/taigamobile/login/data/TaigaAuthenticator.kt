@@ -1,6 +1,7 @@
 package io.eugenethedev.taigamobile.login.data
 
 import com.squareup.moshi.Moshi
+import io.eugenethedev.taigamobile.data.api.NetworkConstants
 import io.eugenethedev.taigamobile.data.api.RefreshTokenRequest
 import io.eugenethedev.taigamobile.data.api.RefreshTokenRequestJsonAdapter
 import io.eugenethedev.taigamobile.data.api.RefreshTokenResponseJsonAdapter

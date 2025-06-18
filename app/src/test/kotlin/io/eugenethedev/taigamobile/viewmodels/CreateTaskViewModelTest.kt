@@ -2,7 +2,7 @@ package io.eugenethedev.taigamobile.viewmodels
 
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
 import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
-import io.eugenethedev.taigamobile.ui.screens.createtask.CreateTaskViewModel
+import io.eugenethedev.taigamobile.createtask.CreateTaskViewModel
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.viewmodels.utils.accessDeniedException

@@ -26,6 +26,7 @@
     <string name="login_alert_text">You are going to use an unencrypted connection. Are you sure?</string>
 
     <string name="dashboard">Dashboard</string>
+    <string name="project_selector">Select Project</string>
     <string name="dashboard_short">Board</string>
     <string name="scrum">Scrum</string>
     <string name="epics">Epics</string>

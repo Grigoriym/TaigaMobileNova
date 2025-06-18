@@ -17,7 +17,7 @@ import io.eugenethedev.taigamobile.domain.entities.Swimlane
 import io.eugenethedev.taigamobile.domain.entities.Tag
 import io.eugenethedev.taigamobile.domain.entities.TeamMember
 import io.eugenethedev.taigamobile.domain.entities.User
-import io.eugenethedev.taigamobile.ui.screens.commontask.CommonTaskViewModel
+import io.eugenethedev.taigamobile.commontask.CommonTaskViewModel
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.viewmodels.utils.accessDeniedException

@@ -51,6 +51,8 @@ androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constr
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 androidx-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+
+androidx-paging-runtime = { module = "androidx.paging:paging-runtime", version.ref = "paging" }
 androidx-paging-compose = { module = "androidx.paging:paging-compose", version.ref = "paging" }
 
 android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "androidDesugarJdkLibs" }

@@ -1,9 +1,11 @@
 package io.eugenethedev.taigamobile.domain.repositories
 
+import androidx.paging.PagingData
 import io.eugenethedev.taigamobile.domain.entities.Project
+import kotlinx.coroutines.flow.Flow
 
 interface IProjectsRepository {
-    suspend fun searchProjects(query: String, page: Int): List<Project>
+    suspend fun fetchProjects(query: String):Flow<PagingData<Project>>
     suspend fun getMyProjects(): List<Project>
     suspend fun getUserProjects(userId: Long): List<Project>
 }

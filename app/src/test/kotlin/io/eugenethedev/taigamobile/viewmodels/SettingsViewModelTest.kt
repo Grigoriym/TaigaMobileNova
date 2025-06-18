@@ -2,7 +2,7 @@ package io.eugenethedev.taigamobile.viewmodels
 
 import io.eugenethedev.taigamobile.domain.entities.User
 import io.eugenethedev.taigamobile.state.ThemeSetting
-import io.eugenethedev.taigamobile.ui.screens.settings.SettingsViewModel
+import io.eugenethedev.taigamobile.settings.SettingsViewModel
 import io.eugenethedev.taigamobile.ui.utils.ErrorResult
 import io.eugenethedev.taigamobile.ui.utils.SuccessResult
 import io.eugenethedev.taigamobile.viewmodels.utils.assertResultEquals

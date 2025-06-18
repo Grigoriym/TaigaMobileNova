@@ -6,13 +6,14 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import com.grappim.taigamobile.R
 import io.eugenethedev.taigamobile.dashboard.DashboardNavDestination
-import io.eugenethedev.taigamobile.ui.screens.epics.EpicsNavDestination
-import io.eugenethedev.taigamobile.ui.screens.issues.IssuesNavDestination
-import io.eugenethedev.taigamobile.ui.screens.kanban.KanbanNavDestination
-import io.eugenethedev.taigamobile.ui.screens.scrum.ScrumNavDestination
-import io.eugenethedev.taigamobile.ui.screens.settings.SettingsNavDestination
-import io.eugenethedev.taigamobile.ui.screens.team.TeamNavDestination
-import io.eugenethedev.taigamobile.ui.screens.wiki.WikiNavDestination
+import io.eugenethedev.taigamobile.epics.EpicsNavDestination
+import io.eugenethedev.taigamobile.issues.IssuesNavDestination
+import io.eugenethedev.taigamobile.kanban.KanbanNavDestination
+import io.eugenethedev.taigamobile.projectselector.ProjectSelectorNavDestination
+import io.eugenethedev.taigamobile.scrum.ScrumNavDestination
+import io.eugenethedev.taigamobile.settings.SettingsNavDestination
+import io.eugenethedev.taigamobile.team.TeamNavDestination
+import io.eugenethedev.taigamobile.wiki.WikiNavDestination
 
 fun DrawerDestination.navigate(navController: NavHostController, navOptions: NavOptions) {
     navController.navigate(route = route, navOptions)
@@ -23,6 +24,11 @@ enum class DrawerDestination(
     @StringRes val label: Int,
     @DrawableRes val icon: Int,
 ) {
+    ProjectSelector(
+        ProjectSelectorNavDestination(),
+        R.string.project_selector,
+        R.drawable.ic_folder,
+    ),
     Dashboard(
         DashboardNavDestination,
         R.string.dashboard_short,

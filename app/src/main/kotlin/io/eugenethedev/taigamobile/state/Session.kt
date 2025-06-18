@@ -7,7 +7,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import io.eugenethedev.taigamobile.data.api.TaigaApi
 import io.eugenethedev.taigamobile.domain.entities.FiltersData
 import io.eugenethedev.taigamobile.domain.entities.FiltersDataJsonAdapter
-import io.eugenethedev.taigamobile.login.data.NetworkConstants
+import io.eugenethedev.taigamobile.data.api.NetworkConstants
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob

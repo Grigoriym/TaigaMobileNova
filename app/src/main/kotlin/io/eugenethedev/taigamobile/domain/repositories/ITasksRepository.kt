@@ -30,6 +30,7 @@ interface ITasksRepository {
         isCommonTaskFromBacklog: Boolean = false
     ): FiltersData
 
+    @Deprecated("remove it and use the one form epics repo")
     suspend fun getEpics(page: Int, filters: FiltersData): List<CommonTask>
 
     suspend fun getAllUserStories(): List<CommonTaskExtended> // for stories kanban

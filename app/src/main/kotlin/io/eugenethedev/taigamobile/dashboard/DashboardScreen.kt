@@ -8,23 +8,22 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import com.grappim.taigamobile.R
-import io.eugenethedev.taigamobile.core.nav.TaskArguments
+import io.eugenethedev.taigamobile.core.ui.NativeText
 import io.eugenethedev.taigamobile.domain.entities.CommonTask
+import io.eugenethedev.taigamobile.domain.entities.CommonTaskType
 import io.eugenethedev.taigamobile.domain.entities.Project
-import io.eugenethedev.taigamobile.ui.components.appbars.AppBarWithBackButton
+import io.eugenethedev.taigamobile.main.topbar.LocalTopBarConfig
+import io.eugenethedev.taigamobile.main.topbar.TopBarConfig
 import io.eugenethedev.taigamobile.ui.components.containers.HorizontalTabbedPager
 import io.eugenethedev.taigamobile.ui.components.lists.ProjectCard
 import io.eugenethedev.taigamobile.ui.components.lists.SimpleTasksListWithTitle
@@ -39,10 +38,17 @@ import io.eugenethedev.taigamobile.ui.utils.SubscribeOnError
 fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
-    navigateToTaskScreen: (TaskArguments) -> Unit,
+    navigateToTaskScreen: (Long, CommonTaskType, Int) -> Unit,
 ) {
+    val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
         viewModel.onOpen()
+
+        topBarController.update(
+            TopBarConfig(
+                title = NativeText.Resource(R.string.dashboard)
+            )
+        )
     }
 
     val workingOn by viewModel.workingOn.collectAsState()
@@ -64,7 +70,7 @@ fun DashboardScreen(
         currentProjectId = currentProjectId,
         navigateToTask = {
             viewModel.changeCurrentProject(it.projectInfo)
-            navigateToTaskScreen(TaskArguments(it.id, it.taskType, it.ref))
+            navigateToTaskScreen(it.id, it.taskType, it.ref)
         },
         changeCurrentProject = viewModel::changeCurrentProject
     )
@@ -83,8 +89,6 @@ fun DashboardScreenContent(
     modifier = Modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
-//    AppBarWithBackButton(title = { Text(stringResource(R.string.dashboard)) })
-
     if (isLoading) {
         Box(
             contentAlignment = Alignment.Center,

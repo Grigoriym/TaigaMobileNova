@@ -4,19 +4,21 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.eugenethedev.taigamobile.domain.entities.Project
-import io.eugenethedev.taigamobile.domain.paging.CommonPagingSource
 import io.eugenethedev.taigamobile.domain.repositories.IProjectsRepository
 import io.eugenethedev.taigamobile.state.Session
-import io.eugenethedev.taigamobile.ui.utils.asLazyPagingItems
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.update
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ProjectSelectorViewModel @Inject constructor(
     private val projectsRepository: IProjectsRepository,
@@ -24,30 +26,32 @@ class ProjectSelectorViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    val navDestination = savedStateHandle.toRoute<ProjectSelectorNavDestination>()
+    private val route = savedStateHandle.toRoute<ProjectSelectorNavDestination>()
 
-    val currentProjectId by lazy { session.currentProjectId }
+    private val _state = MutableStateFlow(
+        ProjectSelectorState(
+            isFromLogin = route.isFromLogin,
+            currentProjectId = session.currentProjectId.value,
+            setProjectsQuery = ::searchProjects
+        )
+    )
+    val state = _state.asStateFlow()
 
-    fun onOpen() {
-        projects.refresh()
-    }
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
 
-    private val projectsQuery = MutableStateFlow("")
-
-    @OptIn(ExperimentalCoroutinesApi::class)
-    val projects by lazy {
-        projectsQuery.flatMapLatest { query ->
-            Pager(PagingConfig(CommonPagingSource.PAGE_SIZE)) {
-                CommonPagingSource { projectsRepository.searchProjects(query, it) }
-            }.flow
-        }.asLazyPagingItems(viewModelScope)
-    }
+    val projects: Flow<PagingData<Project>> = _searchQuery.flatMapLatest { query ->
+        projectsRepository.fetchProjects(query)
+    }.cachedIn(viewModelScope)
 
     fun searchProjects(query: String) {
-        projectsQuery.value = query
+        _searchQuery.value = query
     }
 
     fun selectProject(project: Project) {
         session.changeCurrentProject(project.id, project.name)
+        _state.update {
+            it.copy(currentProjectId = project.id)
+        }
     }
 }

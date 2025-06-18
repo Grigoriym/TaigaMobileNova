@@ -1,6 +1,7 @@
 package io.eugenethedev.taigamobile.login.data
 
 import com.grappim.taigamobile.BuildConfig
+import io.eugenethedev.taigamobile.data.api.NetworkConstants
 import io.eugenethedev.taigamobile.state.Session
 import okhttp3.Interceptor
 import okhttp3.Request
