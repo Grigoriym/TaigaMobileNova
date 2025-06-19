@@ -24,15 +24,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.ui.components.badges.ClickableBadge
-import com.grappim.taigamobile.ui.components.pickers.ColorPicker
-import com.grappim.taigamobile.ui.theme.taigaRed
-import com.grappim.taigamobile.ui.utils.toColor
-import com.grappim.taigamobile.ui.utils.toHex
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.taigaRed
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.badge.ClickableBadge
+import com.grappim.taigamobile.uikit.widgets.picker.ColorPicker
+import com.grappim.taigamobile.utils.ui.toColor
+import com.grappim.taigamobile.utils.ui.toHex
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskHeader(
@@ -60,14 +61,14 @@ fun LazyListScope.CommonTaskHeader(
 
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_lock),
+                        painter = painterResource(RDrawable.ic_lock),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.onSurface
                     )
 
                     Spacer(Modifier.width(space))
 
-                    Text(stringResource(R.string.blocked))
+                    Text(stringResource(RString.blocked))
                 }
 
                 if (it.isNotEmpty()) {
@@ -110,7 +111,7 @@ fun LazyListScope.CommonTaskHeader(
             // sprint
             if (commonTask.taskType != CommonTaskType.Epic) {
                 ClickableBadge(
-                    text = commonTask.sprint?.name ?: stringResource(R.string.no_sprint),
+                    text = commonTask.sprint?.name ?: stringResource(RString.no_sprint),
                     color = commonTask.sprint?.let { MaterialTheme.colorScheme.primary }
                         ?: MaterialTheme.colorScheme.outline,
                     onClick = { showSprintSelector() },
@@ -122,7 +123,7 @@ fun LazyListScope.CommonTaskHeader(
             // swimlane
             if (commonTask.taskType == CommonTaskType.UserStory) {
                 ClickableBadge(
-                    text = commonTask.swimlane?.name ?: stringResource(R.string.unclassifed),
+                    text = commonTask.swimlane?.name ?: stringResource(RString.unclassifed),
                     color = commonTask.swimlane?.let { MaterialTheme.colorScheme.primary }
                         ?: MaterialTheme.colorScheme.outline,
                     isLoading = editActions.editSwimlane.isLoading,
@@ -134,7 +135,7 @@ fun LazyListScope.CommonTaskHeader(
                 // type
                 ClickableBadge(
                     text = commonTask.type!!.name,
-                    colorHex = commonTask.type.color,
+                    colorHex = commonTask.type!!.color,
                     onClick = { showTypeSelector() },
                     isLoading = editActions.editType.isLoading
                 )
@@ -142,7 +143,7 @@ fun LazyListScope.CommonTaskHeader(
                 // severity
                 ClickableBadge(
                     text = commonTask.severity!!.name,
-                    colorHex = commonTask.severity.color,
+                    colorHex = commonTask.severity!!.color,
                     onClick = { showSeveritySelector() },
                     isLoading = editActions.editSeverity.isLoading
                 )
@@ -150,7 +151,7 @@ fun LazyListScope.CommonTaskHeader(
                 // priority
                 ClickableBadge(
                     text = commonTask.priority!!.name,
-                    colorHex = commonTask.priority.color,
+                    colorHex = commonTask.priority!!.color,
                     onClick = { showPrioritySelector() },
                     isLoading = editActions.editPriority.isLoading
                 )

@@ -41,14 +41,15 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.core.ui.asString
-import com.grappim.taigamobile.core.ui.collectSnackbarMessage
-import com.grappim.taigamobile.domain.entities.AuthType
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.utils.ThemePreviews
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.asString
+import com.grappim.taigamobile.utils.ui.collectSnackbarMessage
+import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.utils.ThemePreviews
 
 @Composable
 fun LoginScreen(
@@ -100,7 +101,7 @@ fun LoginScreenContent(
             .padding(bottom = 24.dp)
     ) {
         Image(
-            painter = painterResource(R.drawable.ic_taiga_tree),
+            painter = painterResource(RDrawable.ic_taiga_tree),
             contentDescription = null,
             modifier = Modifier
                 .size(130.dp)
@@ -108,7 +109,7 @@ fun LoginScreenContent(
         )
 
         Text(
-            text = stringResource(R.string.app_name),
+            text = stringResource(RString.app_name),
             style = MaterialTheme.typography.headlineSmall,
         )
     }
@@ -126,21 +127,21 @@ fun LoginScreenContent(
     ) {
         LoginTextField(
             value = state.server,
-            labelId = R.string.login_taiga_server,
+            labelId = RString.login_taiga_server,
             onValueChange = state.onServerValueChange,
             isError = state.isServerInputError
         )
 
         LoginTextField(
             value = state.login,
-            labelId = R.string.login_username,
+            labelId = RString.login_username,
             onValueChange = state.onLoginValueChange,
             isError = state.isLoginInputError
         )
 
         LoginTextField(
             value = state.password,
-            labelId = R.string.login_password,
+            labelId = RString.login_password,
             onValueChange = state.onPasswordValueChange,
             visualTransformation = PasswordVisualTransformation(),
             keyboardType = KeyboardType.Password,
@@ -158,11 +159,11 @@ fun LoginScreenContent(
     ) {
         if (state.isAlertVisible) {
             ConfirmActionDialog(
-                title = stringResource(R.string.login_alert_title),
-                text = stringResource(R.string.login_alert_text),
+                title = stringResource(RString.login_alert_title),
+                text = stringResource(RString.login_alert_text),
                 onConfirm = state.onActionDialogConfirm,
                 onDismiss = { state.setIsAlertVisible(false) },
-                iconId = R.drawable.ic_insecure
+                iconId = RDrawable.ic_insecure
             )
         }
 
@@ -178,7 +179,7 @@ fun LoginScreenContent(
                 },
                 contentPadding = PaddingValues(horizontal = 40.dp)
             ) {
-                Text(stringResource(R.string.login_continue))
+                Text(stringResource(RString.login_continue))
             }
 
             Spacer(Modifier.height(8.dp))
@@ -188,7 +189,7 @@ fun LoginScreenContent(
                     state.onLoginContinue(AuthType.LDAP)
                 }
             ) {
-                Text(stringResource(R.string.login_ldap))
+                Text(stringResource(RString.login_ldap))
             }
         }
     }

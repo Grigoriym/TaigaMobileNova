@@ -36,19 +36,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.Tag
-import com.grappim.taigamobile.ui.components.Chip
-import com.grappim.taigamobile.ui.components.buttons.AddButton
-import com.grappim.taigamobile.ui.components.editors.TextFieldWithHint
-import com.grappim.taigamobile.ui.components.pickers.ColorPicker
-import com.grappim.taigamobile.ui.theme.dialogTonalElevation
-import com.grappim.taigamobile.ui.utils.surfaceColorAtElevationInternal
-import com.grappim.taigamobile.ui.utils.textColor
-import com.grappim.taigamobile.ui.utils.toColor
-import com.grappim.taigamobile.ui.utils.toHex
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.Chip
+import com.grappim.taigamobile.uikit.widgets.button.AddButton
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.uikit.widgets.picker.ColorPicker
+import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
+import com.grappim.taigamobile.utils.ui.textColor
+import com.grappim.taigamobile.utils.ui.toColor
+import com.grappim.taigamobile.utils.ui.toHex
 import com.vanpra.composematerialdialogs.color.ColorPalette
 
 @ExperimentalLayoutApi
@@ -80,7 +81,7 @@ fun LazyListScope.CommonTaskTags(
                 )
             } else {
                 AddButton(
-                    text = stringResource(R.string.add_tag),
+                    text = stringResource(RString.add_tag),
                     onClick = { isAddTagDialogVisible = true }
                 )
             }
@@ -129,7 +130,7 @@ private fun TagItem(
                     .clip(CircleShape)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_remove),
+                    painter = painterResource(RDrawable.ic_remove),
                     contentDescription = null,
                     tint = textColor
                 )
@@ -154,7 +155,7 @@ private fun AddTagDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = stringResource(R.string.cancel),
+                    text = stringResource(RString.cancel),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
@@ -168,14 +169,14 @@ private fun AddTagDialog(
                 }
             ) {
                 Text(
-                    text = stringResource(R.string.ok),
+                    text = stringResource(RString.ok),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
         },
         title = {
             Text(
-                text = stringResource(R.string.add_tag),
+                text = stringResource(RString.add_tag),
                 style = MaterialTheme.typography.titleLarge
             )
         },
@@ -185,7 +186,7 @@ private fun AddTagDialog(
             ) {
                 Column {
                     TextFieldWithHint(
-                        hintId = R.string.tag,
+                        hintId = RString.tag,
                         value = name,
                         onValueChange = {
                             name = it

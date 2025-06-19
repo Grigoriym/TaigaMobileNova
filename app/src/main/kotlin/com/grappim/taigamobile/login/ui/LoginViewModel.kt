@@ -4,12 +4,13 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.core.ui.SnackbarStateViewModel
-import com.grappim.taigamobile.core.ui.SnackbarStateViewModelImpl
-import com.grappim.taigamobile.domain.entities.AuthType
-import com.grappim.taigamobile.login.domain.AuthData
-import com.grappim.taigamobile.login.domain.IAuthRepository
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SnackbarStateViewModel
+import com.grappim.taigamobile.utils.ui.SnackbarStateViewModelImpl
+import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.feature.login.domain.model.AuthData
+import com.grappim.taigamobile.feature.login.domain.repo.IAuthRepository
+import com.grappim.taigamobile.strings.RString
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,7 +59,7 @@ class LoginViewModel @Inject constructor(
                     _loginSuccessful.emit(true)
                 }.onFailure {
                     isLoading(false)
-                    setSnackbarMessageSuspend(NativeText.Resource(R.string.login_error_message))
+                    setSnackbarMessageSuspend(NativeText.Resource(RString.login_error_message))
                 }
         }
     }

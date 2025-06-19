@@ -1,8 +1,32 @@
 package com.grappim.taigamobile.data.repositories
 
+import com.grappim.taigamobile.core.api.fixNullColor
+import com.grappim.taigamobile.core.api.handle404
+import com.grappim.taigamobile.core.api.toCommonTask
+import com.grappim.taigamobile.core.api.withIO
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskResponse
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.CustomField
+import com.grappim.taigamobile.core.domain.CustomFieldType
+import com.grappim.taigamobile.core.domain.CustomFieldValue
+import com.grappim.taigamobile.core.domain.CustomFields
+import com.grappim.taigamobile.core.domain.EpicsFilter
+import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.RolesFilter
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.StatusType
+import com.grappim.taigamobile.core.domain.StatusesFilter
+import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagsFilter
+import com.grappim.taigamobile.core.domain.UsersFilter
+import com.grappim.taigamobile.core.domain.commaString
+import com.grappim.taigamobile.core.domain.tagsCommaString
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.data.api.CommonTaskPathPlural
 import com.grappim.taigamobile.data.api.CommonTaskPathSingular
-import com.grappim.taigamobile.data.api.CommonTaskResponse
 import com.grappim.taigamobile.data.api.CreateCommentRequest
 import com.grappim.taigamobile.data.api.CreateCommonTaskRequest
 import com.grappim.taigamobile.data.api.CreateIssueRequest
@@ -14,30 +38,10 @@ import com.grappim.taigamobile.data.api.LinkToEpicRequest
 import com.grappim.taigamobile.data.api.PromoteToUserStoryRequest
 import com.grappim.taigamobile.data.api.TaigaApi
 import com.grappim.taigamobile.di.toLocalDate
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.CustomField
-import com.grappim.taigamobile.domain.entities.CustomFieldType
-import com.grappim.taigamobile.domain.entities.CustomFieldValue
-import com.grappim.taigamobile.domain.entities.CustomFields
-import com.grappim.taigamobile.domain.entities.EpicsFilter
-import com.grappim.taigamobile.domain.entities.Filter
-import com.grappim.taigamobile.domain.entities.FiltersData
-import com.grappim.taigamobile.domain.entities.RolesFilter
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.StatusType
-import com.grappim.taigamobile.domain.entities.StatusesFilter
-import com.grappim.taigamobile.domain.entities.Swimlane
-import com.grappim.taigamobile.domain.entities.Tag
-import com.grappim.taigamobile.domain.entities.TagsFilter
-import com.grappim.taigamobile.domain.entities.UsersFilter
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
-import com.grappim.taigamobile.epics.EpicsApi
-import com.grappim.taigamobile.issues.IssuesApi
-import com.grappim.taigamobile.sprint.SprintApi
-import com.grappim.taigamobile.state.Session
-import com.grappim.taigamobile.userstories.UserStoriesApi
+import com.grappim.taigamobile.feature.sprint.data.SprintApi
+import com.grappim.taigamobile.feature.sprint.data.toSprint
+import com.grappim.taigamobile.feature.userstories.data.UserStoriesApi
 import kotlinx.coroutines.async
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -49,10 +53,10 @@ import javax.inject.Inject
 class TasksRepository @Inject constructor(
     private val taigaApi: TaigaApi,
     private val session: Session,
-    private val epicsApi: EpicsApi,
+    private val epicsApi: com.grappim.taigamobile.feature.epics.data.EpicsApi,
     private val userStoriesApi: UserStoriesApi,
     private val sprintApi: SprintApi,
-    private val issuesApi: IssuesApi
+    private val issuesApi: com.grappim.taigamobile.feature.issues.data.IssuesApi
 ) : ITasksRepository {
     private val currentProjectId get() = session.currentProjectId.value
     private val currentUserId get() = session.currentUserId.value
@@ -180,7 +184,11 @@ class TasksRepository @Inject constructor(
         }
 
         val stories = async {
-            userStoriesApi.getUserStories(watcherId = currentUserId, isClosed = false, isDashboard = true)
+            userStoriesApi.getUserStories(
+                watcherId = currentUserId,
+                isClosed = false,
+                isDashboard = true
+            )
                 .map { it.toCommonTask(CommonTaskType.UserStory) }
         }
 
@@ -197,9 +205,8 @@ class TasksRepository @Inject constructor(
         epics.await() + stories.await() + tasks.await() + issues.await()
     }
 
-    override suspend fun getStatuses(commonTaskType: CommonTaskType) = withIO {
+    override suspend fun getStatuses(commonTaskType: CommonTaskType) =
         getFiltersData(commonTaskType).statuses.map { it.toStatus(StatusType.Status) }
-    }
 
     override suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType) =
         withIO {
@@ -247,7 +254,7 @@ class TasksRepository @Inject constructor(
             }
     }
 
-    override suspend fun getBacklogUserStories(page: Int, filters: FiltersData) = withIO {
+    override suspend fun getBacklogUserStories(page: Int, filters: FiltersData) =
         handle404 {
             userStoriesApi.getUserStories(
                 project = currentProjectId,
@@ -263,20 +270,16 @@ class TasksRepository @Inject constructor(
             )
                 .map { it.toCommonTask(CommonTaskType.UserStory) }
         }
-    }
 
-    override suspend fun getEpicUserStories(epicId: Long) = withIO {
+    override suspend fun getEpicUserStories(epicId: Long) =
         userStoriesApi.getUserStories(epic = epicId)
             .map { it.toCommonTask(CommonTaskType.UserStory) }
 
-    }
-
-    override suspend fun getUserStoryTasks(storyId: Long) = withIO {
+    override suspend fun getUserStoryTasks(storyId: Long) =
         handle404 {
             taigaApi.getTasks(userStory = storyId, project = currentProjectId)
                 .map { it.toCommonTask(CommonTaskType.Task) }
         }
-    }
 
     override suspend fun getIssues(page: Int, filters: FiltersData) = withIO {
         handle404 {
@@ -386,7 +389,9 @@ class TasksRepository @Inject constructor(
             ),
             taskType = commonTaskType,
             createdDateTime = created_date,
-            sprint = if (loadSprint) milestone?.let { sprintApi.getSprint(it).toSprint() } else null,
+            sprint = if (loadSprint) milestone?.let {
+                sprintApi.getSprint(it).toSprint()
+            } else null,
             assignedIds = assigned_users ?: listOfNotNull(assigned_to),
             watcherIds = watchers.orEmpty(),
             creatorId = owner
@@ -499,13 +504,10 @@ class TasksRepository @Inject constructor(
         }
 
     override suspend fun editWatchers(commonTask: CommonTaskExtended, watchers: List<Long>) =
-        withIO {
-            editCommonTask(commonTask, commonTask.toEditRequest().copy(watchers = watchers))
-        }
+        editCommonTask(commonTask, commonTask.toEditRequest().copy(watchers = watchers))
 
-    override suspend fun editDueDate(commonTask: CommonTaskExtended, date: LocalDate?) = withIO {
+    override suspend fun editDueDate(commonTask: CommonTaskExtended, date: LocalDate?) =
         editCommonTask(commonTask, commonTask.toEditRequest().copy(dueDate = date))
-    }
 
     override suspend fun editCommonTaskBasicInfo(
         commonTask: CommonTaskExtended,
@@ -518,9 +520,8 @@ class TasksRepository @Inject constructor(
         )
     }
 
-    override suspend fun editTags(commonTask: CommonTaskExtended, tags: List<Tag>) = withIO {
+    override suspend fun editTags(commonTask: CommonTaskExtended, tags: List<Tag>) =
         editCommonTask(commonTask, commonTask.toEditRequest().copy(tags = tags.map { it.toList() }))
-    }
 
     override suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?) =
         withIO {
@@ -540,26 +541,22 @@ class TasksRepository @Inject constructor(
     }
 
     override suspend fun editBlocked(commonTask: CommonTaskExtended, blockedNote: String?) =
-        withIO {
-            editCommonTask(
-                commonTask,
-                commonTask.toEditRequest()
-                    .copy(isBlocked = blockedNote != null, blockedNote = blockedNote.orEmpty())
-            )
-        }
+        editCommonTask(
+            commonTask,
+            commonTask.toEditRequest()
+                .copy(isBlocked = blockedNote != null, blockedNote = blockedNote.orEmpty())
+        )
 
     // edit other related parts
 
-    override suspend fun linkToEpic(epicId: Long, userStoryId: Long) = withIO {
+    override suspend fun linkToEpic(epicId: Long, userStoryId: Long) =
         taigaApi.linkToEpic(
             epicId = epicId,
             linkToEpicRequest = LinkToEpicRequest(epicId.toString(), userStoryId)
         )
-    }
 
-    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) = withIO {
+    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
         taigaApi.unlinkFromEpic(epicId, userStoryId)
-        return@withIO
     }
 
     override suspend fun createComment(
@@ -567,26 +564,21 @@ class TasksRepository @Inject constructor(
         commonTaskType: CommonTaskType,
         comment: String,
         version: Int
-    ) = withIO {
-        taigaApi.createCommonTaskComment(
-            taskPath = CommonTaskPathPlural(commonTaskType),
-            id = commonTaskId,
-            createCommentRequest = CreateCommentRequest(comment, version)
-        )
-    }
+    ) = taigaApi.createCommonTaskComment(
+        taskPath = CommonTaskPathPlural(commonTaskType),
+        id = commonTaskId,
+        createCommentRequest = CreateCommentRequest(comment, version)
+    )
 
     override suspend fun deleteComment(
         commonTaskId: Long,
         commonTaskType: CommonTaskType,
         commentId: String
-    ) = withIO {
-        taigaApi.deleteCommonTaskComment(
-            taskPath = CommonTaskPathSingular(commonTaskType),
-            id = commonTaskId,
-            commentId = commentId
-        )
-    }
-
+    ) = taigaApi.deleteCommonTaskComment(
+        taskPath = CommonTaskPathSingular(commonTaskType),
+        id = commonTaskId,
+        commentId = commentId
+    )
 
     override suspend fun createCommonTask(
         commonTaskType: CommonTaskType,
@@ -639,14 +631,12 @@ class TasksRepository @Inject constructor(
         }.toCommonTask(commonTaskType)
     }
 
-    override suspend fun deleteCommonTask(commonTaskType: CommonTaskType, commonTaskId: Long) =
-        withIO {
-            taigaApi.deleteCommonTask(
-                taskPath = CommonTaskPathPlural(commonTaskType),
-                id = commonTaskId
-            )
-            return@withIO
-        }
+    override suspend fun deleteCommonTask(commonTaskType: CommonTaskType, commonTaskId: Long) {
+        taigaApi.deleteCommonTask(
+            taskPath = CommonTaskPathPlural(commonTaskType),
+            id = commonTaskId
+        )
+    }
 
     override suspend fun promoteCommonTaskToUserStory(
         commonTaskId: Long,
@@ -691,14 +681,12 @@ class TasksRepository @Inject constructor(
         }
     }
 
-    override suspend fun deleteAttachment(commonTaskType: CommonTaskType, attachmentId: Long) =
-        withIO {
-            taigaApi.deleteCommonTaskAttachment(
-                taskPath = CommonTaskPathPlural(commonTaskType),
-                attachmentId = attachmentId
-            )
-            return@withIO
-        }
+    override suspend fun deleteAttachment(commonTaskType: CommonTaskType, attachmentId: Long) {
+        taigaApi.deleteCommonTaskAttachment(
+            taskPath = CommonTaskPathPlural(commonTaskType),
+            attachmentId = attachmentId
+        )
+    }
 
     override suspend fun editCustomFields(
         commonTaskType: CommonTaskType,
@@ -723,11 +711,3 @@ class TasksRepository @Inject constructor(
         const val PATH_TO_ISSUE = "issue"
     }
 }
-
-fun List<Filter>.commaString() = map { it.id }
-    .joinToString(separator = ",")
-    .takeIf { it.isNotEmpty() }
-
-fun List<TagsFilter>.tagsCommaString() =
-    joinToString(separator = ",") { it.name.replace(" ", "+") }
-        .takeIf { it.isNotEmpty() }

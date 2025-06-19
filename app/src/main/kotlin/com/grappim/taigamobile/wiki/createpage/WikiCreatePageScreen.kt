@@ -19,17 +19,18 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarActionResource
-import com.grappim.taigamobile.main.topbar.TopBarConfig
-import com.grappim.taigamobile.ui.components.dialogs.LoadingDialog
-import com.grappim.taigamobile.ui.components.editors.TextFieldWithHint
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.ui.utils.SuccessResult
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun WikiCreatePageScreen(
@@ -43,11 +44,11 @@ fun WikiCreatePageScreen(
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.create_new_page),
+                title = NativeText.Resource(RString.create_new_page),
                 showBackButton = true,
                 actions = listOf(
                     TopBarActionResource(
-                        drawable = R.drawable.ic_save,
+                        drawable = RDrawable.ic_save,
                         contentDescription = "Save",
                         onClick = {
                             state.onCreateWikiPage()
@@ -96,7 +97,7 @@ fun WikiCreatePageScreenContent(
             Spacer(Modifier.height(8.dp))
 
             TextFieldWithHint(
-                hintId = R.string.title_hint,
+                hintId = RString.title_hint,
                 value = state.title,
                 onValueChange = { state.setTitle(it) },
                 style = MaterialTheme.typography.headlineSmall,
@@ -106,7 +107,7 @@ fun WikiCreatePageScreenContent(
             Spacer(Modifier.height(16.dp))
 
             TextFieldWithHint(
-                hintId = R.string.description_hint,
+                hintId = RString.description_hint,
                 value = state.description,
                 onValueChange = { state.setDescription(it) },
             )

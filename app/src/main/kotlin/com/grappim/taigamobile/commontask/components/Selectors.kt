@@ -8,20 +8,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.CommonTaskViewModel
 import com.grappim.taigamobile.commontask.EditAction
 import com.grappim.taigamobile.commontask.SimpleEditAction
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.Sprint
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.Swimlane
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.ui.components.containers.ContainerBox
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.editors.SelectorList
 import com.grappim.taigamobile.ui.components.lists.UserItem
 import com.grappim.taigamobile.ui.components.texts.CommonTaskTitle
-import com.grappim.taigamobile.ui.utils.toColor
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.utils.ui.toColor
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
@@ -42,7 +42,7 @@ fun Selectors(
 ) {
     // status editor
     SelectorList(
-        titleHintId = R.string.choose_status,
+        titleHintId = RString.choose_status,
         items = statusEntry.edit.items,
         isVisible = statusEntry.isVisible,
         isSearchable = false,
@@ -60,7 +60,7 @@ fun Selectors(
 
     // type editor
     SelectorList(
-        titleHintId = R.string.choose_type,
+        titleHintId = RString.choose_type,
         items = typeEntry.edit.items,
         isVisible = typeEntry.isVisible,
         isSearchable = false,
@@ -78,7 +78,7 @@ fun Selectors(
 
     // severity editor
     SelectorList(
-        titleHintId = R.string.choose_severity,
+        titleHintId = RString.choose_severity,
         items = severityEntry.edit.items,
         isVisible = severityEntry.isVisible,
         isSearchable = false,
@@ -96,7 +96,7 @@ fun Selectors(
 
     // priority editor
     SelectorList(
-        titleHintId = R.string.choose_priority,
+        titleHintId = RString.choose_priority,
         items = priorityEntry.edit.items,
         isVisible = priorityEntry.isVisible,
         isSearchable = false,
@@ -114,7 +114,7 @@ fun Selectors(
 
     // sprint editor
     SelectorList(
-        titleHintId = R.string.choose_sprint,
+        titleHintId = RString.choose_sprint,
         itemsLazy = sprintEntry.edit.itemsLazy,
         isVisible = sprintEntry.isVisible,
         isSearchable = false,
@@ -131,7 +131,7 @@ fun Selectors(
 
     // epics editor
     SelectorList(
-        titleHintId = R.string.search_epics,
+        titleHintId = RString.search_epics,
         itemsLazy = epicsEntry.edit.itemsLazy,
         isVisible = epicsEntry.isVisible,
         searchData = epicsEntry.edit.searchItems,
@@ -149,7 +149,7 @@ fun Selectors(
 
     // assignees editor
     SelectorList(
-        titleHintId = R.string.search_members,
+        titleHintId = RString.search_members,
         items = assigneesEntry.edit.items,
         isVisible = assigneesEntry.isVisible,
         searchData = assigneesEntry.edit.searchItems,
@@ -166,7 +166,7 @@ fun Selectors(
 
     // watchers editor
     SelectorList(
-        titleHintId = R.string.search_members,
+        titleHintId = RString.search_members,
         items = watchersEntry.edit.items,
         isVisible = watchersEntry.isVisible,
         searchData = watchersEntry.edit.searchItems,
@@ -183,7 +183,7 @@ fun Selectors(
 
     // swimlane editor
     SelectorList(
-        titleHintId = R.string.choose_swimlane,
+        titleHintId = RString.choose_swimlane,
         items = swimlaneEntry.edit.items,
         isVisible = swimlaneEntry.isVisible,
         isSearchable = false,
@@ -236,14 +236,14 @@ private fun SprintItem(
             Column {
                 Text(
                     if (it.isClosed) {
-                        stringResource(R.string.closed_sprint_name_template).format(it.name)
+                        stringResource(RString.closed_sprint_name_template).format(it.name)
                     } else {
                         it.name
                     }
                 )
 
                 Text(
-                    text = stringResource(R.string.sprint_dates_template).format(
+                    text = stringResource(RString.sprint_dates_template).format(
                         it.start.format(dateFormatter),
                         it.end.format(dateFormatter)
                     ),
@@ -253,7 +253,7 @@ private fun SprintItem(
         }
     } ?: run {
         Text(
-            text = stringResource(R.string.move_to_backlog),
+            text = stringResource(RString.move_to_backlog),
             color = MaterialTheme.colorScheme.primary
         )
     }
@@ -297,7 +297,7 @@ private fun SwimlaneItem(
     val swimlaneNullable = swimlane.takeIf { it != CommonTaskViewModel.SWIMLANE_HEADER }
 
     Text(
-        text = swimlaneNullable?.name ?: stringResource(R.string.unclassifed),
+        text = swimlaneNullable?.name ?: stringResource(RString.unclassifed),
         style = MaterialTheme.typography.bodyLarge,
         color = swimlaneNullable?.let { MaterialTheme.colorScheme.onSurface }
             ?: MaterialTheme.colorScheme.primary

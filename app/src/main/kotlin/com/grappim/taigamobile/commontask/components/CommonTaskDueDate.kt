@@ -17,15 +17,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.DueDateStatus
-import com.grappim.taigamobile.ui.components.pickers.DatePicker
-import com.grappim.taigamobile.ui.theme.taigaGreenPositive
-import com.grappim.taigamobile.ui.theme.taigaOrange
-import com.grappim.taigamobile.ui.theme.taigaRed
-import com.grappim.taigamobile.ui.utils.surfaceColorAtElevationInternal
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.DueDateStatus
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
+import com.grappim.taigamobile.uikit.theme.taigaOrange
+import com.grappim.taigamobile.uikit.theme.taigaRed
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.picker.DatePicker
+import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskDueDate(
@@ -68,7 +69,7 @@ fun LazyListScope.CommonTaskDueDate(
                     )
                 } else {
                     Icon(
-                        painter = painterResource(R.drawable.ic_clock),
+                        painter = painterResource(RDrawable.ic_clock),
                         contentDescription = null,
                         tint = commonTask.dueDate?.let { MaterialTheme.colorScheme.onSurface }
                             ?: MaterialTheme.colorScheme.primary,
@@ -84,7 +85,7 @@ fun LazyListScope.CommonTaskDueDate(
                         it?.let { select(it) } ?: remove(Unit)
                     }
                 },
-                hintId = R.string.no_due_date,
+                hintId = RString.no_due_date,
                 modifier = Modifier.padding(6.dp)
             )
         }

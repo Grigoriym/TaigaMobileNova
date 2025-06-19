@@ -2,15 +2,15 @@ package com.grappim.taigamobile.kanban
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.Swimlane
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.state.Session
-import com.grappim.taigamobile.state.subscribeToAll
+import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.subscribeToAll
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError

@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.commontask
 
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.CommonTaskType
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.core.domain.CommonTaskType
 
 data class CommonTaskState(
     val commonTaskType: CommonTaskType,

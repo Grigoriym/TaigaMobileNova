@@ -46,19 +46,20 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
+import com.grappim.taigamobile.core.storage.ThemeSetting
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarConfig
-import com.grappim.taigamobile.state.ThemeSetting
-import com.grappim.taigamobile.ui.components.DropdownSelector
-import com.grappim.taigamobile.ui.components.containers.ContainerBox
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
-import com.grappim.taigamobile.ui.utils.activity
-import com.grappim.taigamobile.ui.utils.clickableUnindicated
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.utils.clickableUnindicated
+import com.grappim.taigamobile.uikit.widgets.DropdownSelector
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.activity
 import timber.log.Timber
 
 @Composable
@@ -73,7 +74,7 @@ fun SettingsScreen(
 
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.settings),
+                title = NativeText.Resource(RString.settings),
             )
         )
     }
@@ -116,9 +117,9 @@ fun SettingsScreenContent(
         Image(
             painter = rememberAsyncImagePainter(
                 ImageRequest.Builder(LocalContext.current)
-                    .data(data = avatarUrl ?: R.drawable.default_avatar).apply(
+                    .data(data = avatarUrl ?: RDrawable.default_avatar).apply(
                         block = fun ImageRequest.Builder.() {
-                            error(R.drawable.default_avatar)
+                            error(RDrawable.default_avatar)
                             crossfade(true)
                         }).build()
             ),
@@ -132,14 +133,14 @@ fun SettingsScreenContent(
         var isAlertVisible by remember { mutableStateOf(false) }
         if (isAlertVisible) {
             ConfirmActionDialog(
-                title = stringResource(R.string.logout_title),
-                text = stringResource(R.string.logout_text),
+                title = stringResource(RString.logout_title),
+                text = stringResource(RString.logout_text),
                 onConfirm = {
                     isAlertVisible = false
                     logout()
                 },
                 onDismiss = { isAlertVisible = false },
-                iconId = R.drawable.ic_logout
+                iconId = RDrawable.ic_logout
             )
         }
 
@@ -147,7 +148,7 @@ fun SettingsScreenContent(
             onClick = { isAlertVisible = true },
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_logout),
+                painter = painterResource(RDrawable.ic_logout),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary,
                 modifier = Modifier.size(28.dp)
@@ -165,7 +166,7 @@ fun SettingsScreenContent(
             )
 
             Text(
-                text = stringResource(R.string.username_template).format(username),
+                text = stringResource(RString.username_template).format(username),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -184,18 +185,18 @@ fun SettingsScreenContent(
             horizontalAlignment = Alignment.Start,
         ) {
             SettingsBlock(
-                titleId = R.string.appearance,
+                titleId = RString.appearance,
                 items = listOf {
                     SettingItem(
-                        textId = R.string.theme_title,
+                        textId = RString.theme_title,
                         itemWeight = 0.4f
                     ) {
                         @Composable
                         fun titleForThemeSetting(themeSetting: ThemeSetting) = stringResource(
                             when (themeSetting) {
-                                ThemeSetting.System -> R.string.theme_system
-                                ThemeSetting.Light -> R.string.theme_light
-                                ThemeSetting.Dark -> R.string.theme_dark
+                                ThemeSetting.System -> RString.theme_system
+                                ThemeSetting.Light -> RString.theme_light
+                                ThemeSetting.Dark -> RString.theme_dark
                             }
                         )
 
@@ -234,9 +235,9 @@ fun SettingsScreenContent(
             )
 
             val activity = LocalContext.current.activity
-            val githubUrl = stringResource(R.string.github_url)
+            val githubUrl = stringResource(RString.github_url)
             Text(
-                text = stringResource(R.string.source_code),
+                text = stringResource(RString.source_code),
                 style = MaterialTheme.typography.bodyLarge.merge(
                     SpanStyle(
                         color = MaterialTheme.colorScheme.primary,

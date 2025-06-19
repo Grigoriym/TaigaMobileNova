@@ -21,14 +21,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
-import com.grappim.taigamobile.domain.entities.Comment
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
+import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.ui.components.lists.UserItem
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
-import com.grappim.taigamobile.ui.components.texts.MarkdownText
-import com.grappim.taigamobile.ui.components.texts.SectionTitle
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.text.MarkdownText
+import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskComments(
@@ -37,7 +38,7 @@ fun LazyListScope.CommonTaskComments(
     navigateToProfile: (userId: Long) -> Unit
 ) {
     item {
-        SectionTitle(stringResource(R.string.comments_template).format(comments.size))
+        SectionTitle(stringResource(RString.comments_template).format(comments.size))
     }
 
     itemsIndexed(comments) { index, item ->
@@ -72,14 +73,14 @@ private fun CommentItem(
 
     if (isAlertVisible) {
         ConfirmActionDialog(
-            title = stringResource(R.string.delete_comment_title),
-            text = stringResource(R.string.delete_comment_text),
+            title = stringResource(RString.delete_comment_title),
+            text = stringResource(RString.delete_comment_text),
             onConfirm = {
                 isAlertVisible = false
                 onDeleteClick()
             },
             onDismiss = { isAlertVisible = false },
-            iconId = R.drawable.ic_delete
+            iconId = RDrawable.ic_delete
         )
     }
 
@@ -97,7 +98,7 @@ private fun CommentItem(
         if (comment.canDelete) {
             IconButton(onClick = { isAlertVisible = true }) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_delete),
+                    painter = painterResource(RDrawable.ic_delete),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.error
                 )

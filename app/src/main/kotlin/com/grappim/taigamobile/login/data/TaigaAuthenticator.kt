@@ -1,11 +1,10 @@
 package com.grappim.taigamobile.login.data
 
-import com.grappim.taigamobile.data.api.NetworkConstants
+import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.data.api.RefreshTokenRequest
 import com.grappim.taigamobile.data.api.RefreshTokenRequestJsonAdapter
 import com.grappim.taigamobile.data.api.RefreshTokenResponseJsonAdapter
-import com.grappim.taigamobile.data.api.TaigaApi
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.storage.Session
 import com.squareup.moshi.Moshi
 import okhttp3.Authenticator
 import okhttp3.MediaType.Companion.toMediaType
@@ -20,19 +19,19 @@ import javax.inject.Singleton
 
 @Singleton
 class TaigaAuthenticator @Inject constructor(
-    val session: Session,
-    val moshi: Moshi,
-    val okHttpClient: OkHttpClient,
+    private val session: Session,
+    private val moshi: Moshi,
+    private val okHttpClient: OkHttpClient,
 ) : Authenticator {
     override fun authenticate(route: Route?, response: Response): Request? {
-        val currentToken = response.request.header(NetworkConstants.AUTHORIZATION) ?: return null
+        val currentToken = response.request.header(ApiConstants.AUTHORIZATION) ?: return null
 
         try {
             // prevent multiple refresh requests from different threads
             synchronized(session) {
                 // refresh token only if it was not refreshed in another thread
                 if (currentToken.replace(
-                        "${NetworkConstants.BEARER} ",
+                        "${ApiConstants.BEARER} ",
                         ""
                     ) == session.token.value
                 ) {
@@ -40,7 +39,7 @@ class TaigaAuthenticator @Inject constructor(
                         .toJson(RefreshTokenRequest(session.refreshToken.value))
 
                     val request = Request.Builder()
-                        .url("${session.baseUrl}/${TaigaApi.REFRESH_ENDPOINT}")
+                        .url("${session.baseUrl}/${ApiConstants.REFRESH_ENDPOINT}")
                         .post(body.toRequestBody("application/json".toMediaType()))
                         .build()
 
@@ -59,8 +58,8 @@ class TaigaAuthenticator @Inject constructor(
 
             return response.request.newBuilder()
                 .header(
-                    NetworkConstants.AUTHORIZATION,
-                    "${NetworkConstants.BEARER} ${session.token.value}"
+                    ApiConstants.AUTHORIZATION,
+                    "${ApiConstants.BEARER} ${session.token.value}"
                 )
                 .build()
         } catch (e: Exception) {
@@ -68,6 +67,5 @@ class TaigaAuthenticator @Inject constructor(
             session.changeAuthCredentials("", "")
             return null
         }
-        return null
     }
 }

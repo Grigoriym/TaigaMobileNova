@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.Sprint
-import com.grappim.taigamobile.domain.entities.Status
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.sprint.SprintViewModel
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.SuccessResult

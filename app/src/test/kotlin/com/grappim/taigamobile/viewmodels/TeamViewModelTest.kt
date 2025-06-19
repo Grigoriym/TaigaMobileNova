@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.TeamMember
+import com.grappim.taigamobile.core.domain.TeamMember
 import com.grappim.taigamobile.team.TeamViewModel
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.SuccessResult

@@ -4,12 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.domain.entities.Project
-import com.grappim.taigamobile.domain.entities.Stats
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.domain.repositories.IProjectsRepository
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.Stats
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
 import dagger.hilt.android.lifecycle.HiltViewModel

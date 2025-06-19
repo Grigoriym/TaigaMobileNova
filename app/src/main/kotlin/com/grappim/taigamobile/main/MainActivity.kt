@@ -8,21 +8,17 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.LocalRippleConfiguration
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.grappim.taigamobile.state.ThemeSetting
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.taigaMobileRippleTheme
+import com.grappim.taigamobile.core.storage.ThemeSetting
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.ui.utils.FilePicker
 import com.grappim.taigamobile.ui.utils.LocalFilePicker
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.InputStream
 
-@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -62,7 +58,6 @@ class MainActivity : AppCompatActivity() {
             TaigaMobileTheme(darkTheme) {
                 CompositionLocalProvider(
                     LocalFilePicker provides filePicker,
-                    LocalRippleConfiguration provides taigaMobileRippleTheme()
                 ) {
                     MainContent(viewModel)
                 }

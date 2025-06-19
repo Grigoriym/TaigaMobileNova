@@ -27,14 +27,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.utils.clickableUnindicated
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -42,7 +42,6 @@ import java.time.format.FormatStyle
 /**
  * User info (name and avatar).
  */
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun UserItem(
     user: User,
@@ -58,9 +57,9 @@ fun UserItem(
     Image(
         painter = rememberAsyncImagePainter(
             ImageRequest.Builder(LocalContext.current)
-                .data(user.avatarUrl ?: R.drawable.default_avatar).apply(
+                .data(user.avatarUrl ?: RDrawable.default_avatar).apply(
                     fun ImageRequest.Builder.() {
-                        error(R.drawable.default_avatar)
+                        error(RDrawable.default_avatar)
                         crossfade(true)
                     }).build()
         ),
@@ -99,14 +98,14 @@ fun UserItemWithAction(
 
     if (isAlertVisible) {
         ConfirmActionDialog(
-            title = stringResource(R.string.remove_user_title),
-            text = stringResource(R.string.remove_user_text),
+            title = stringResource(RString.remove_user_title),
+            text = stringResource(RString.remove_user_text),
             onConfirm = {
                 isAlertVisible = false
                 onRemoveClick()
             },
             onDismiss = { isAlertVisible = false },
-            iconId = R.drawable.ic_remove
+            iconId = RDrawable.ic_remove
         )
     }
 
@@ -122,7 +121,7 @@ fun UserItemWithAction(
 
         IconButton(onClick = { isAlertVisible = true }) {
             Icon(
-                painter = painterResource(R.drawable.ic_remove),
+                painter = painterResource(RDrawable.ic_remove),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.outline
             )

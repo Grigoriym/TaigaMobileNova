@@ -17,9 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.ui.components.buttons.TextButton
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.button.TextButton
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 
 @Composable
 fun EmptyWikiDialog(
@@ -40,14 +40,14 @@ fun EmptyWikiDialog(
     ) {
 
         Text(
-            text = stringResource(R.string.empty_wiki_dialog_title),
+            text = stringResource(RString.empty_wiki_dialog_title),
             style = MaterialTheme.typography.titleLarge
         )
 
         Spacer(modifier = Modifier.height(4.dp))
 
         Text(
-            text = stringResource(R.string.empty_wiki_dialog_subtitle),
+            text = stringResource(RString.empty_wiki_dialog_subtitle),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.outline
         )
@@ -56,7 +56,7 @@ fun EmptyWikiDialog(
 
         if (isButtonAvailable) {
             TextButton(
-                text = stringResource(R.string.create_new_page),
+                text = stringResource(RString.create_new_page),
                 onClick = createNewPage
             )
         }

@@ -33,20 +33,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.TeamMember
+import com.grappim.taigamobile.core.domain.TeamMember
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarConfig
-import com.grappim.taigamobile.ui.components.loaders.CircularLoader
-import com.grappim.taigamobile.ui.components.texts.NothingToSeeHereText
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun TeamScreen(
@@ -56,11 +56,9 @@ fun TeamScreen(
 ) {
     val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
-        viewModel.onOpen()
-
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.team),
+                title = NativeText.Resource(RString.team),
             )
         )
     }
@@ -109,7 +107,7 @@ fun TeamScreenContent(
                         teamMember = member,
                         onUserItemClick = { onUserItemClick(member.id) }
                     )
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(10.dp))
                 }
 
                 item {
@@ -120,7 +118,6 @@ fun TeamScreenContent(
     }
 }
 
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 private fun TeamMemberItem(
     teamMember: TeamMember,
@@ -137,9 +134,9 @@ private fun TeamMemberItem(
         Image(
             painter = rememberAsyncImagePainter(
                 ImageRequest.Builder(LocalContext.current).data(
-                    teamMember.avatarUrl ?: R.drawable.default_avatar
+                    teamMember.avatarUrl ?: RDrawable.default_avatar
                 ).apply(fun ImageRequest.Builder.() {
-                    error(R.drawable.default_avatar)
+                    error(RDrawable.default_avatar)
                     crossfade(true)
                 }).build()
             ),
@@ -179,7 +176,7 @@ private fun TeamMemberItem(
         Spacer(Modifier.width(4.dp))
 
         Text(
-            text = stringResource(R.string.power),
+            text = stringResource(RString.power),
             modifier = Modifier.padding(bottom = 2.dp)
         )
     }

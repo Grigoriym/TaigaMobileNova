@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.commontask.components
 
 import android.content.Intent
-import android.net.Uri
 import android.util.Patterns
 import androidx.annotation.StringRes
 import androidx.compose.foundation.border
@@ -43,16 +42,18 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.CustomField
-import com.grappim.taigamobile.domain.entities.CustomFieldType
-import com.grappim.taigamobile.domain.entities.CustomFieldValue
-import com.grappim.taigamobile.ui.components.DropdownSelector
-import com.grappim.taigamobile.ui.components.editors.TextFieldWithHint
-import com.grappim.taigamobile.ui.components.pickers.DatePicker
-import com.grappim.taigamobile.ui.components.texts.MarkdownText
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.utils.activity
+import androidx.core.net.toUri
+import com.grappim.taigamobile.core.domain.CustomField
+import com.grappim.taigamobile.core.domain.CustomFieldType
+import com.grappim.taigamobile.core.domain.CustomFieldValue
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.DropdownSelector
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.uikit.widgets.picker.DatePicker
+import com.grappim.taigamobile.uikit.widgets.text.MarkdownText
+import com.grappim.taigamobile.utils.ui.activity
 import java.time.LocalDate
 import kotlin.math.floor
 
@@ -182,7 +183,7 @@ fun CustomField(
                         .clip(CircleShape)
                 ) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_edit),
+                        painter = painterResource(RDrawable.ic_edit),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.outline
                     )
@@ -203,7 +204,7 @@ fun CustomField(
                     .clip(CircleShape)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_save),
+                    painter = painterResource(RDrawable.ic_save),
                     contentDescription = null,
                     tint = indicationColor
                 )
@@ -255,7 +256,7 @@ private fun CustomFieldText(
     }
 
     TextValue(
-        hintId = R.string.custom_field_text,
+        hintId = RString.custom_field_text,
         text = text,
         onTextChange = {
             text = it
@@ -275,7 +276,7 @@ private fun CustomFieldMultiline(
     var text by remember { mutableStateOf(TextFieldValue(value?.stringValue.orEmpty())) }
 
     TextValue(
-        hintId = R.string.custom_field_multiline,
+        hintId = RString.custom_field_multiline,
         text = text,
         onTextChange = {
             text = it
@@ -303,7 +304,7 @@ private fun CustomFieldRichText(
 
     if (fieldState == FieldState.Focused) {
         TextValue(
-            hintId = R.string.custom_field_rich_text,
+            hintId = RString.custom_field_rich_text,
             text = text,
             onTextChange = {
                 text = it
@@ -339,7 +340,7 @@ private fun CustomFieldNumber(
     }
 
     TextValue(
-        hintId = R.string.custom_field_number,
+        hintId = RString.custom_field_number,
         text = text,
         onTextChange = {
             text = it
@@ -385,7 +386,7 @@ private fun CustomFieldUrl(
     ) {
         Box(Modifier.weight(1f)) {
             TextValue(
-                hintId = R.string.custom_field_url,
+                hintId = RString.custom_field_url,
                 text = text,
                 onTextChange = {
                     text = it
@@ -417,7 +418,7 @@ private fun CustomFieldUrl(
                     activity.startActivity(
                         Intent(
                             Intent.ACTION_VIEW,
-                            Uri.parse(it)
+                            it.toUri()
                         )
                     )
                 }
@@ -427,7 +428,7 @@ private fun CustomFieldUrl(
                 .clip(CircleShape)
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_open),
+                painter = painterResource(RDrawable.ic_open),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.primary
             )
@@ -477,7 +478,7 @@ private fun CustomFieldDropdown(
                 )
             } else {
                 Text(
-                    text = stringResource(R.string.empty),
+                    text = stringResource(RString.empty),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.outline
                 )

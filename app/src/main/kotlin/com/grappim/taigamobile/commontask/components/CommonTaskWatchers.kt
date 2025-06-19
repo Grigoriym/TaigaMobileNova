@@ -15,13 +15,14 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.ui.components.buttons.AddButton
-import com.grappim.taigamobile.ui.components.buttons.TextButton
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.button.AddButton
+import com.grappim.taigamobile.uikit.widgets.button.TextButton
 import com.grappim.taigamobile.ui.components.lists.UserItemWithAction
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskWatchers(
@@ -34,7 +35,7 @@ fun LazyListScope.CommonTaskWatchers(
     item {
         // watchers
         Text(
-            text = stringResource(R.string.watchers),
+            text = stringResource(RString.watchers),
             style = MaterialTheme.typography.titleMedium
         )
     }
@@ -61,16 +62,16 @@ fun LazyListScope.CommonTaskWatchers(
             horizontalArrangement = Arrangement.Start
         ) {
             AddButton(
-                text = stringResource(R.string.add_watcher),
+                text = stringResource(RString.add_watcher),
                 onClick = { showWatchersSelector() }
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             val (@StringRes buttonText: Int, @DrawableRes buttonIcon: Int) = if (isWatchedByMe) {
-                R.string.unwatch to R.drawable.ic_unwatch
+                RString.unwatch to RDrawable.ic_unwatch
             } else {
-                R.string.watch to R.drawable.ic_watch
+                RString.watch to RDrawable.ic_watch
             }
 
             TextButton(

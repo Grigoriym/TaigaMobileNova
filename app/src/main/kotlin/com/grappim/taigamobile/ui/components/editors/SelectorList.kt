@@ -35,9 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
-import com.grappim.taigamobile.ui.components.appbars.AppBarWithBackButton
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.AppBarWithBackButton
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 import com.grappim.taigamobile.ui.utils.onBackPressed
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 
 /**
  * Selector list, which expands from bottom to top.

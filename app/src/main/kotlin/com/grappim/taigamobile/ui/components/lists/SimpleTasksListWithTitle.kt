@@ -19,9 +19,9 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
-import com.grappim.taigamobile.ui.components.texts.SectionTitle
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 /**
  * List of tasks with optional title.

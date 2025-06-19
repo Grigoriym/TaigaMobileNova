@@ -26,11 +26,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.ui.components.appbars.AppBarWithBackButton
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.AppBarWithBackButton
 import com.grappim.taigamobile.ui.utils.onBackPressed
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 
 @Composable
 fun Editor(
@@ -70,7 +72,7 @@ fun Editor(
                 }
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_save),
+                    painter = painterResource(RDrawable.ic_save),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )
@@ -90,7 +92,7 @@ fun Editor(
 
         if (showTitle) {
             TextFieldWithHint(
-                hintId = R.string.title_hint,
+                hintId = RString.title_hint,
                 value = titleInput,
                 onValueChange = { titleInput = it },
                 style = MaterialTheme.typography.headlineSmall
@@ -100,14 +102,13 @@ fun Editor(
         }
 
         TextFieldWithHint(
-            hintId = R.string.description_hint,
+            hintId = RString.description_hint,
             value = descriptionInput,
             onValueChange = { descriptionInput = it },
         )
 
         Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
     }
-
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)

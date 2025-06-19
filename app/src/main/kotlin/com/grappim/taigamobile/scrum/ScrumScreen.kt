@@ -38,29 +38,30 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.FiltersData
-import com.grappim.taigamobile.domain.entities.Sprint
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarActionResource
-import com.grappim.taigamobile.main.topbar.TopBarConfig
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.ui.components.TasksFiltersWithLazyList
-import com.grappim.taigamobile.ui.components.containers.ContainerBox
-import com.grappim.taigamobile.ui.components.containers.HorizontalTabbedPager
-import com.grappim.taigamobile.ui.components.dialogs.EditSprintDialog
-import com.grappim.taigamobile.ui.components.dialogs.LoadingDialog
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
+import com.grappim.taigamobile.uikit.widgets.dialog.EditSprintDialog
+import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.ui.components.lists.SimpleTasksListWithTitle
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
-import com.grappim.taigamobile.ui.components.texts.NothingToSeeHereText
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.commonVerticalPadding
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.utils.RDrawable
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -82,10 +83,10 @@ fun ScrumScreen(
 
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.scrum),
+                title = NativeText.Resource(RString.scrum),
                 actions = listOf(
                     TopBarActionResource(
-                        drawable = R.drawable.ic_add,
+                        drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = {
                             when (ScrumTabs.entries[pagerState.currentPage]) {
@@ -105,25 +106,13 @@ fun ScrumScreen(
     }
 
     val stories = viewModel.stories.collectAsLazyPagingItems()
-    LaunchedEffect(stories.loadState.hasError) {
-        if (stories.loadState.hasError) {
-            showMessage(R.string.common_error_message)
-        }
-    }
+    stories.SubscribeOnError(showMessage)
 
     val openSprints = viewModel.openSprints.collectAsLazyPagingItems()
-    LaunchedEffect(openSprints.loadState.hasError) {
-        if (openSprints.loadState.hasError) {
-            showMessage(R.string.common_error_message)
-        }
-    }
+    openSprints.SubscribeOnError(showMessage)
 
     val closedSprints = viewModel.closedSprints.collectAsLazyPagingItems()
-    LaunchedEffect(closedSprints.loadState.hasError) {
-        if (closedSprints.loadState.hasError) {
-            showMessage(R.string.common_error_message)
-        }
-    }
+    closedSprints.SubscribeOnError(showMessage)
 
     val createSprintResult by viewModel.createSprintResult.collectAsState()
     createSprintResult.SubscribeOnError(showMessage)
@@ -270,7 +259,7 @@ private fun SprintsTabContent(
 
         item {
             FilledTonalButton(onClick = { isClosedSprintsVisible = !isClosedSprintsVisible }) {
-                Text(stringResource(if (isClosedSprintsVisible) R.string.hide_closed_sprints else R.string.show_closed_sprints))
+                Text(stringResource(if (isClosedSprintsVisible) RString.hide_closed_sprints else RString.show_closed_sprints))
             }
         }
 
@@ -327,7 +316,7 @@ private fun SprintItem(
             )
 
             Text(
-                stringResource(R.string.sprint_dates_template).format(
+                stringResource(RString.sprint_dates_template).format(
                     sprint.start.format(dateFormatter),
                     sprint.end.format(dateFormatter)
                 )
@@ -335,7 +324,7 @@ private fun SprintItem(
 
             Row {
                 Text(
-                    text = stringResource(R.string.stories_count_template).format(sprint.storiesCount),
+                    text = stringResource(RString.stories_count_template).format(sprint.storiesCount),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -344,7 +333,7 @@ private fun SprintItem(
 
                 if (sprint.isClosed) {
                     Text(
-                        text = stringResource(R.string.closed),
+                        text = stringResource(RString.closed),
                         color = MaterialTheme.colorScheme.outline,
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -366,7 +355,7 @@ private fun SprintItem(
 //                    contentColor = contentColor
 //                )
             ) {
-                Text(stringResource(R.string.taskboard))
+                Text(stringResource(RString.taskboard))
             }
         }
     }

@@ -28,14 +28,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.Project
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
 
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 fun ProjectCard(
     project: Project,
@@ -68,9 +67,9 @@ fun ProjectCard(
             Image(
                 painter = rememberAsyncImagePainter(
                     ImageRequest.Builder(LocalContext.current).data(
-                        project.avatarUrl ?: R.drawable.default_avatar
+                        project.avatarUrl ?: RDrawable.default_avatar
                     ).apply(fun ImageRequest.Builder.() {
-                        error(R.drawable.default_avatar)
+                        error(RDrawable.default_avatar)
                         crossfade(true)
                     }).build()
                 ),
@@ -86,9 +85,9 @@ fun ProjectCard(
                     color = MaterialTheme.colorScheme.primary,
                     text = stringResource(
                         when {
-                            project.isOwner -> R.string.project_owner
-                            project.isAdmin -> R.string.project_admin
-                            else -> R.string.project_member
+                            project.isOwner -> RString.project_owner
+                            project.isAdmin -> RString.project_admin
+                            else -> RString.project_member
                         }
                     )
                 )
@@ -137,16 +136,16 @@ fun ProjectCard(
                     )
                 }
 
-                Indicator(R.drawable.ic_favorite, project.fansCount)
+                Indicator(RDrawable.ic_favorite, project.fansCount)
                 Spacer(Modifier.width(indicatorsSpacing))
-                Indicator(R.drawable.ic_watch, project.watchersCount)
+                Indicator(RDrawable.ic_watch, project.watchersCount)
                 Spacer(Modifier.width(indicatorsSpacing))
-                Indicator(R.drawable.ic_team, project.members.size)
+                Indicator(RDrawable.ic_team, project.members.size)
 
                 if (project.isPrivate) {
                     Spacer(Modifier.width(indicatorsSpacing))
                     Icon(
-                        painter = painterResource(R.drawable.ic_key),
+                        painter = painterResource(RDrawable.ic_key),
                         contentDescription = null,
                         modifier = Modifier.size(iconSize)
                     )

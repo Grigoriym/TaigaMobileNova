@@ -12,21 +12,22 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.R
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.FiltersData
 import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.FiltersData
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarActionResource
-import com.grappim.taigamobile.main.topbar.TopBarConfig
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.TasksFiltersWithLazyList
 import com.grappim.taigamobile.ui.components.lists.SimpleTasksListWithTitle
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.commonVerticalPadding
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun EpicsScreen(
@@ -42,10 +43,10 @@ fun EpicsScreen(
 
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.epics),
+                title = NativeText.Resource(RString.epics),
                 actions = listOf(
                     TopBarActionResource(
-                        drawable = R.drawable.ic_add,
+                        drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = {
                             goToCreateTask(CommonTaskType.Epic)
@@ -56,21 +57,16 @@ fun EpicsScreen(
         )
     }
 
-    val lazyEpicItems = viewModel.epics.collectAsLazyPagingItems()
+    val epics = viewModel.epics.collectAsLazyPagingItems()
+    epics.SubscribeOnError(showMessage)
 
     val filters by viewModel.filters.collectAsState()
     filters.SubscribeOnError(showMessage)
 
     val activeFilters by viewModel.activeFilters.collectAsState()
 
-    LaunchedEffect(lazyEpicItems.loadState.hasError) {
-        if (lazyEpicItems.loadState.hasError) {
-            showMessage(R.string.common_error_message)
-        }
-    }
-
     EpicsScreenContent(
-        epics = lazyEpicItems,
+        epics = epics,
         filters = filters.data ?: FiltersData(),
         activeFilters = activeFilters,
         selectFilters = viewModel::selectFilters,

@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.AuthType
+import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.login.ui.LoginViewModel
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.SuccessResult

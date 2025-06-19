@@ -13,18 +13,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.Project
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.StatusType
-import com.grappim.taigamobile.ui.components.containers.ContainerBox
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.texts.CommonTaskTitle
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.ui.utils.toColor
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.utils.ui.toColor
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -52,10 +52,10 @@ fun CommonTaskItem(
             Text(
                 text = stringResource(
                     when (commonTask.taskType) {
-                        CommonTaskType.UserStory -> R.string.userstory
-                        CommonTaskType.Task -> R.string.task
-                        CommonTaskType.Epic -> R.string.epic
-                        CommonTaskType.Issue -> R.string.issue
+                        CommonTaskType.UserStory -> RString.userstory
+                        CommonTaskType.Task -> RString.task
+                        CommonTaskType.Epic -> RString.epic
+                        CommonTaskType.Issue -> RString.issue
                     }
                 ).uppercase(),
                 color = MaterialTheme.colorScheme.secondary
@@ -90,9 +90,9 @@ fun CommonTaskItem(
 
         Text(
             text = commonTask.assignee?.fullName?.let {
-                stringResource(R.string.assignee_pattern)
+                stringResource(RString.assignee_pattern)
                     .format(it)
-            } ?: stringResource(R.string.unassigned),
+            } ?: stringResource(RString.unassigned),
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodyMedium
         )

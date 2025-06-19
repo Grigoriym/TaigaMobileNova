@@ -34,17 +34,19 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.Project
-import com.grappim.taigamobile.domain.entities.Stats
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.Stats
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarConfig
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.ui.components.lists.ProjectCard
-import com.grappim.taigamobile.ui.components.loaders.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
 fun ProfileScreen(
@@ -57,7 +59,7 @@ fun ProfileScreen(
 
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.profile),
+                title = NativeText.Resource(RString.profile),
                 showBackButton = true
             )
         )
@@ -109,9 +111,9 @@ fun ProfileScreenContent(
                     painter = rememberAsyncImagePainter(
                         ImageRequest.Builder(LocalContext.current)
                             .data(
-                                currentUser?.avatarUrl ?: R.drawable.default_avatar
+                                currentUser?.avatarUrl ?: RDrawable.default_avatar
                             ).apply(fun ImageRequest.Builder.() {
-                                error(R.drawable.default_avatar)
+                                error(RDrawable.default_avatar)
                                 crossfade(true)
                             }).build()
                     ),
@@ -132,7 +134,7 @@ fun ProfileScreenContent(
                 Spacer(Modifier.height(2.dp))
 
                 Text(
-                    text = stringResource(R.string.username_template).format(currentUser?.username.orEmpty()),
+                    text = stringResource(RString.username_template).format(currentUser?.username.orEmpty()),
                     color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -162,22 +164,22 @@ fun ProfileScreenContent(
                 ) {
                     ColumnTextData(
                         currentUserStats?.totalNumProjects.toString(),
-                        stringResource(R.string.projects)
+                        stringResource(RString.projects)
                     )
                     ColumnTextData(
                         currentUserStats?.totalNumClosedUserStories.toString(),
-                        stringResource(R.string.closed_user_story)
+                        stringResource(RString.closed_user_story)
                     )
                     ColumnTextData(
                         currentUserStats?.totalNumContacts.toString(),
-                        stringResource(R.string.contacts)
+                        stringResource(RString.contacts)
                     )
                 }
 
                 Spacer(Modifier.height(24.dp))
 
                 Text(
-                    text = stringResource(R.string.projects),
+                    text = stringResource(RString.projects),
                     style = MaterialTheme.typography.titleLarge
                 )
 

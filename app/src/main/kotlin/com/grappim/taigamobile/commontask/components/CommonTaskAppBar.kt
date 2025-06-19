@@ -28,15 +28,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
 import com.grappim.taigamobile.commontask.NavigationActions
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.ui.components.appbars.AppBarWithBackButton
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import com.grappim.taigamobile.ui.components.editors.TextFieldWithHint
-import com.grappim.taigamobile.ui.theme.dialogTonalElevation
-import com.grappim.taigamobile.ui.utils.surfaceColorAtElevationInternal
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.AppBarWithBackButton
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Composable
 fun CommonTaskAppBar(
@@ -74,7 +75,7 @@ fun CommonTaskAppBar(
             Box {
                 IconButton(onClick = { isMenuExpanded = true }) {
                     Icon(
-                        painter = painterResource(R.drawable.ic_options),
+                        painter = painterResource(RDrawable.ic_options),
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -84,14 +85,14 @@ fun CommonTaskAppBar(
                 var isDeleteAlertVisible by remember { mutableStateOf(false) }
                 if (isDeleteAlertVisible) {
                     ConfirmActionDialog(
-                        title = stringResource(R.string.delete_task_title),
-                        text = stringResource(R.string.delete_task_text),
+                        title = stringResource(RString.delete_task_title),
+                        text = stringResource(RString.delete_task_text),
                         onConfirm = {
                             isDeleteAlertVisible = false
                             editActions.deleteTask.select(Unit)
                         },
                         onDismiss = { isDeleteAlertVisible = false },
-                        iconId = R.drawable.ic_delete
+                        iconId = RDrawable.ic_delete
                     )
                 }
 
@@ -99,14 +100,14 @@ fun CommonTaskAppBar(
                 var isPromoteAlertVisible by remember { mutableStateOf(false) }
                 if (isPromoteAlertVisible) {
                     ConfirmActionDialog(
-                        title = stringResource(R.string.promote_title),
-                        text = stringResource(R.string.promote_text),
+                        title = stringResource(RString.promote_title),
+                        text = stringResource(RString.promote_text),
                         onConfirm = {
                             isPromoteAlertVisible = false
                             editActions.promoteTask.select(Unit)
                         },
                         onDismiss = { isPromoteAlertVisible = false },
-                        iconId = R.drawable.ic_arrow_upward
+                        iconId = RDrawable.ic_arrow_upward
                     )
                 }
 
@@ -137,11 +138,11 @@ fun CommonTaskAppBar(
                             isMenuExpanded = false
                             val clip = ClipData.newPlainText("Copy Link", AnnotatedString(url))
                             clipboardManager.nativeClipboard.setPrimaryClip(clip)
-                            showMessage(R.string.copy_link_successfully)
+                            showMessage(RString.copy_link_successfully)
                         },
                         text = {
                             Text(
-                                text = stringResource(R.string.copy_link),
+                                text = stringResource(RString.copy_link),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -155,7 +156,7 @@ fun CommonTaskAppBar(
                         },
                         text = {
                             Text(
-                                text = stringResource(R.string.edit),
+                                text = stringResource(RString.edit),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -169,7 +170,7 @@ fun CommonTaskAppBar(
                         },
                         text = {
                             Text(
-                                text = stringResource(R.string.delete),
+                                text = stringResource(RString.delete),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -184,7 +185,7 @@ fun CommonTaskAppBar(
                             },
                             text = {
                                 Text(
-                                    text = stringResource(R.string.promote_to_user_story),
+                                    text = stringResource(RString.promote_to_user_story),
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
@@ -202,7 +203,7 @@ fun CommonTaskAppBar(
                         },
                         text = {
                             Text(
-                                text = stringResource(if (isBlocked) R.string.unblock else R.string.block),
+                                text = stringResource(if (isBlocked) RString.unblock else RString.block),
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -230,7 +231,7 @@ fun BlockDialog(
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text(
-                    text = stringResource(R.string.cancel),
+                    text = stringResource(RString.cancel),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
@@ -238,20 +239,20 @@ fun BlockDialog(
         confirmButton = {
             TextButton(onClick = { onConfirm(reason.text) }) {
                 Text(
-                    text = stringResource(R.string.ok),
+                    text = stringResource(RString.ok),
                     style = MaterialTheme.typography.titleMedium
                 )
             }
         },
         title = {
             Text(
-                text = stringResource(R.string.block),
+                text = stringResource(RString.block),
                 style = MaterialTheme.typography.titleLarge
             )
         },
         text = {
             TextFieldWithHint(
-                hintId = R.string.block_reason,
+                hintId = RString.block_reason,
                 value = reason,
                 onValueChange = { reason = it },
                 minHeight = with(LocalDensity.current) { MaterialTheme.typography.bodyLarge.fontSize.toDp() * 4 },

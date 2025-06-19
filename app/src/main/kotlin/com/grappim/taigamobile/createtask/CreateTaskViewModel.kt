@@ -5,15 +5,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
-import com.grappim.taigamobile.state.Session
-import com.grappim.taigamobile.state.postUpdate
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.utils.ui.NativeText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,10 +34,10 @@ class CreateTaskViewModel @Inject constructor(
         CreateTaskState(
             toolbarTitle = NativeText.Resource(
                 when (route.type) {
-                    CommonTaskType.UserStory -> R.string.create_userstory
-                    CommonTaskType.Task -> R.string.create_task
-                    CommonTaskType.Epic -> R.string.create_epic
-                    CommonTaskType.Issue -> R.string.create_issue
+                    CommonTaskType.UserStory -> RString.create_userstory
+                    CommonTaskType.Task -> RString.create_task
+                    CommonTaskType.Epic -> RString.create_epic
+                    CommonTaskType.Issue -> RString.create_issue
                 }
             ),
             setTitle = ::setTitle,

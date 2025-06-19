@@ -4,14 +4,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.Sprint
-import com.grappim.taigamobile.domain.entities.Status
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
-import com.grappim.taigamobile.state.Session
-import com.grappim.taigamobile.state.postUpdate
+import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError
@@ -94,7 +95,7 @@ class SprintViewModel @Inject constructor(
 
     val editResult = MutableResultFlow<Unit>()
     fun editSprint(name: String, start: LocalDate, end: LocalDate) = viewModelScope.launch {
-        editResult.loadOrError(R.string.permission_error) {
+        editResult.loadOrError(RString.permission_error) {
             sprintsRepository.editSprint(_sprintId, name, start, end)
             session.sprintEdit.postUpdate()
             loadData().join()
@@ -103,7 +104,7 @@ class SprintViewModel @Inject constructor(
 
     val deleteResult = MutableResultFlow<Unit>()
     fun deleteSprint() = viewModelScope.launch {
-        deleteResult.loadOrError(R.string.permission_error) {
+        deleteResult.loadOrError(RString.permission_error) {
             sprintsRepository.deleteSprint(_sprintId)
             session.sprintEdit.postUpdate()
         }

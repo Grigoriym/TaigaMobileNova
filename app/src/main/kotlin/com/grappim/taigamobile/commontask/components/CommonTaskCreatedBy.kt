@@ -4,9 +4,9 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.ui.res.stringResource
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.lists.UserItem
 
 @Suppress("FunctionName")
@@ -17,7 +17,7 @@ fun LazyListScope.CommonTaskCreatedBy(
 ) {
     item {
         Text(
-            text = stringResource(R.string.created_by),
+            text = stringResource(RString.created_by),
             style = MaterialTheme.typography.titleMedium
         )
 

@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -28,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.components.BlockDialog
 import com.grappim.taigamobile.commontask.components.CommonTaskAssignees
 import com.grappim.taigamobile.commontask.components.CommonTaskBelongsTo
@@ -42,29 +42,39 @@ import com.grappim.taigamobile.commontask.components.CommonTaskWatchers
 import com.grappim.taigamobile.commontask.components.CreateCommentBar
 import com.grappim.taigamobile.commontask.components.SelectorEntry
 import com.grappim.taigamobile.commontask.components.Selectors
-import com.grappim.taigamobile.domain.entities.Attachment
-import com.grappim.taigamobile.domain.entities.Comment
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.CustomField
-import com.grappim.taigamobile.domain.entities.CustomFieldValue
-import com.grappim.taigamobile.domain.entities.StatusType
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.CustomField
+import com.grappim.taigamobile.core.domain.CustomFieldValue
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.StatusType
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarActionResource
-import com.grappim.taigamobile.main.topbar.TopBarConfig
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import com.grappim.taigamobile.ui.components.dialogs.LoadingDialog
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.ui.components.editors.Editor
 import com.grappim.taigamobile.ui.components.lists.Attachments
-import com.grappim.taigamobile.ui.components.lists.Description
+import com.grappim.taigamobile.uikit.widgets.list.Description
 import com.grappim.taigamobile.ui.components.lists.SimpleTasksListWithTitle
-import com.grappim.taigamobile.ui.components.loaders.CircularLoader
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.ui.utils.FilePicker
 import com.grappim.taigamobile.ui.utils.LoadingResult
+import com.grappim.taigamobile.ui.utils.LocalFilePicker
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.ui.utils.SuccessResult
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.utils.ThemePreviews
+import java.time.LocalDateTime
 
 @Composable
 fun CommonTaskScreen(
@@ -87,7 +97,7 @@ fun CommonTaskScreen(
                 showBackButton = true,
                 actions = listOf(
                     TopBarActionResource(
-                        drawable = R.drawable.ic_options,
+                        drawable = RDrawable.ic_options,
                         contentDescription = "Task options",
                         onClick = {
                             state.setDropdownMenuExpanded(true)
@@ -331,14 +341,14 @@ fun CommonTaskScreenContent(
 ) = Box(Modifier.fillMaxSize()) {
     if (state.isDeleteAlertVisible) {
         ConfirmActionDialog(
-            title = stringResource(R.string.delete_task_title),
-            text = stringResource(R.string.delete_task_text),
+            title = stringResource(RString.delete_task_title),
+            text = stringResource(RString.delete_task_text),
             onConfirm = {
                 state.setDeleteAlertVisible(false)
                 editActions.deleteTask.select(Unit)
             },
             onDismiss = { state.setDeleteAlertVisible(false) },
-            iconId = R.drawable.ic_delete
+            iconId = RDrawable.ic_delete
         )
     }
 
@@ -356,14 +366,14 @@ fun CommonTaskScreenContent(
 
     if (state.isPromoteAlertVisible) {
         ConfirmActionDialog(
-            title = stringResource(R.string.promote_title),
-            text = stringResource(R.string.promote_text),
+            title = stringResource(RString.promote_title),
+            text = stringResource(RString.promote_text),
             onConfirm = {
                 state.setPromoteAlertVisible(false)
                 editActions.promoteTask.select(Unit)
             },
             onDismiss = { state.setPromoteAlertVisible(false) },
-            iconId = R.drawable.ic_arrow_upward
+            iconId = RDrawable.ic_arrow_upward
         )
     }
 
@@ -526,7 +536,7 @@ fun CommonTaskScreenContent(
                     // user stories
                     if (state.commonTaskType == CommonTaskType.Epic) {
                         SimpleTasksListWithTitle(
-                            titleText = R.string.userstories,
+                            titleText = RString.userstories,
                             bottomPadding = sectionsPadding,
                             commonTasks = userStories,
                             navigateToTask = navigationActions.navigateToTask
@@ -536,7 +546,7 @@ fun CommonTaskScreenContent(
                     // tasks
                     if (state.commonTaskType == CommonTaskType.UserStory) {
                         SimpleTasksListWithTitle(
-                            titleText = R.string.tasks,
+                            titleText = RString.tasks,
                             bottomPadding = sectionsPadding,
                             commonTasks = tasks,
                             navigateToTask = navigationActions.navigateToTask,
@@ -621,7 +631,7 @@ fun CommonTaskScreenContent(
     // Editor
     if (state.isTaskEditorVisible || editActions.editBasicInfo.isLoading) {
         Editor(
-            toolbarText = stringResource(R.string.edit),
+            toolbarText = stringResource(RString.edit),
             title = commonTask?.title.orEmpty(),
             description = commonTask?.description.orEmpty(),
             onSaveClick = { title, description ->
@@ -638,75 +648,84 @@ fun CommonTaskScreenContent(
     }
 }
 
-//@Preview(showBackground = true)
-//@Composable
-//fun CommonTaskScreenPreview() = TaigaMobileTheme {
-//    CompositionLocalProvider(
-//        LocalFilePicker provides object : FilePicker() {}
-//    ) {
-//        CommonTaskScreenContent(
-//            commonTaskType = CommonTaskType.UserStory,
-//            toolbarTitle = "Userstory #99",
-//            toolbarSubtitle = "Project #228",
-//            commonTask = null, // TODO left it null for now since I do not really use this preview
-//            creator = User(
-//                _id = 0L,
-//                fullName = "Full Name",
-//                photo = null,
-//                bigPhoto = null,
-//                username = "username"
-//            ),
-//            assignees = List(1) {
-//                User(
-//                    _id = 0L,
-//                    fullName = "Full Name",
-//                    photo = null,
-//                    bigPhoto = null,
-//                    username = "username"
-//                )
-//            },
-//            watchers = List(2) {
-//                User(
-//                    _id = 0L,
-//                    fullName = "Full Name",
-//                    photo = null,
-//                    bigPhoto = null,
-//                    username = "username"
-//                )
-//            },
-//            tasks = List(1) {
-//                CommonTask(
-//                    id = it.toLong(),
-//                    createdDate = LocalDateTime.now(),
-//                    title = "Very cool story",
-//                    ref = 100,
-//                    status = Status(
-//                        id = 1,
-//                        name = "In progress",
-//                        color = "#729fcf",
-//                        type = StatusType.Status
-//                    ),
-//                    assignee = null,
-//                    projectInfo = Project(0, "", ""),
-//                    taskType = CommonTaskType.UserStory,
-//                    isClosed = false
-//                )
-//            },
-//            comments = List(1) {
-//                Comment(
-//                    id = "",
-//                    author = User(
-//                        _id = 0L,
-//                        fullName = "Full Name",
-//                        photo = null,
-//                        bigPhoto = null,
-//                        username = "username"
-//                    ),
-//                    text = "This is comment text",
-//                    postDateTime = LocalDateTime.now(),
-//                    deleteDate = null
-//                )
-//            }
-//        )
-//    }
-//}
+@ThemePreviews
+@Composable
+fun CommonTaskScreenPreview() = TaigaMobileTheme {
+    CompositionLocalProvider(
+        LocalFilePicker provides object : FilePicker() {}
+    ) {
+        CommonTaskScreenContent(
+            state = CommonTaskState(
+                commonTaskType = CommonTaskType.UserStory,
+                url = "https://duckduckgo.com/?q=facilisis",
+                editActions = EditActions(),
+                toolbarTitle = NativeText.Resource(RString.issues),
+                projectName = "Arnold Bolton",
+                setDropdownMenuExpanded = {},
+                setTaskEditorVisible = {},
+                setDeleteAlertVisible = {},
+                setPromoteAlertVisible = {},
+                setBlockDialogVisible = {}
+            ),
+            commonTask = null, // TODO left it null for now since I do not really use this preview
+            creator = User(
+                _id = 0L,
+                fullName = "Full Name",
+                photo = null,
+                bigPhoto = null,
+                username = "username"
+            ),
+            assignees = List(1) {
+                User(
+                    _id = 0L,
+                    fullName = "Full Name",
+                    photo = null,
+                    bigPhoto = null,
+                    username = "username"
+                )
+            },
+            watchers = List(2) {
+                User(
+                    _id = 0L,
+                    fullName = "Full Name",
+                    photo = null,
+                    bigPhoto = null,
+                    username = "username"
+                )
+            },
+            tasks = List(1) {
+                CommonTask(
+                    id = it.toLong(),
+                    createdDate = LocalDateTime.now(),
+                    title = "Very cool story",
+                    ref = 100,
+                    status = Status(
+                        id = 1,
+                        name = "In progress",
+                        color = "#729fcf",
+                        type = StatusType.Status
+                    ),
+                    assignee = null,
+                    projectInfo = Project(0, "", ""),
+                    taskType = CommonTaskType.UserStory,
+                    isClosed = false
+                )
+            },
+            comments = List(1) {
+                Comment(
+                    id = "",
+                    author = User(
+                        _id = 0L,
+                        fullName = "Full Name",
+                        photo = null,
+                        bigPhoto = null,
+                        username = "username"
+                    ),
+                    text = "This is comment text",
+                    postDateTime = LocalDateTime.now(),
+                    deleteDate = null
+                )
+            }
+        )
+    }
+}

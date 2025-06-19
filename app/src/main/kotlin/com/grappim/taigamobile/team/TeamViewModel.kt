@@ -2,9 +2,9 @@ package com.grappim.taigamobile.team
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.domain.entities.TeamMember
+import com.grappim.taigamobile.core.domain.TeamMember
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError
@@ -24,18 +24,20 @@ class TeamViewModel @Inject constructor(
 
     private var shouldReload = true
 
+    init {
+        session.currentProjectId.onEach {
+            team.value = NothingResult()
+            shouldReload = true
+        }.launchIn(viewModelScope)
+
+        onOpen()
+    }
+
     fun onOpen() {
         if (!shouldReload) return
         viewModelScope.launch {
             team.loadOrError { usersRepository.getTeam() }
         }
         shouldReload = false
-    }
-
-    init {
-        session.currentProjectId.onEach {
-            team.value = NothingResult()
-            shouldReload = true
-        }.launchIn(viewModelScope)
     }
 }

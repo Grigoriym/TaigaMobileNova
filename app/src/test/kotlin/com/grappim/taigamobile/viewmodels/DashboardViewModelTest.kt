@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.dashboard.DashboardViewModel
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.SuccessResult

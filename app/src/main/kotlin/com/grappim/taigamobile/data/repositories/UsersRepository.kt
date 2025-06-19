@@ -1,11 +1,12 @@
 package com.grappim.taigamobile.data.repositories
 
+import com.grappim.taigamobile.core.api.withIO
+import com.grappim.taigamobile.core.domain.Stats
+import com.grappim.taigamobile.core.domain.TeamMember
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.data.api.TaigaApi
-import com.grappim.taigamobile.domain.entities.Stats
-import com.grappim.taigamobile.domain.entities.TeamMember
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.projectselector.ProjectsApi
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.feature.projects.data.ProjectsApi
 import kotlinx.coroutines.async
 import javax.inject.Inject
 
@@ -16,12 +17,11 @@ class UsersRepository @Inject constructor(
 ) : IUsersRepository {
     private val currentProjectId get() = session.currentProjectId.value
 
-    override suspend fun getMe() = withIO { taigaApi.getMyProfile() }
+    override suspend fun getMe() = taigaApi.getMyProfile()
 
     override suspend fun getUser(userId: Long) = taigaApi.getUser(userId)
 
-    override suspend fun getUserStats(userId: Long): Stats =
-        withIO { taigaApi.getUserStats(userId) }
+    override suspend fun getUserStats(userId: Long): Stats = taigaApi.getUserStats(userId)
 
     override suspend fun getTeam() = withIO {
         val team = async { projectsApi.getProject(currentProjectId).members }

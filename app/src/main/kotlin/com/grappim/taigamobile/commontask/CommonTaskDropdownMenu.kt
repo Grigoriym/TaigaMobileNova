@@ -12,10 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.ui.theme.dialogTonalElevation
-import com.grappim.taigamobile.ui.utils.surfaceColorAtElevationInternal
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
+import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Composable
 fun CommonTaskDropdownMenu(
@@ -43,11 +43,11 @@ fun CommonTaskDropdownMenu(
                         AnnotatedString(url)
                     )
                     clipboardManager.nativeClipboard.setPrimaryClip(clip)
-                    showMessage(R.string.copy_link_successfully)
+                    showMessage(RString.copy_link_successfully)
                 },
                 text = {
                     Text(
-                        text = stringResource(R.string.copy_link),
+                        text = stringResource(RString.copy_link),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -60,7 +60,7 @@ fun CommonTaskDropdownMenu(
                 },
                 text = {
                     Text(
-                        text = stringResource(R.string.edit),
+                        text = stringResource(RString.edit),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -73,7 +73,7 @@ fun CommonTaskDropdownMenu(
                 },
                 text = {
                     Text(
-                        text = stringResource(R.string.delete),
+                        text = stringResource(RString.delete),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -87,7 +87,7 @@ fun CommonTaskDropdownMenu(
                     },
                     text = {
                         Text(
-                            text = stringResource(R.string.promote_to_user_story),
+                            text = stringResource(RString.promote_to_user_story),
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }
@@ -105,7 +105,7 @@ fun CommonTaskDropdownMenu(
                 },
                 text = {
                     Text(
-                        text = stringResource(if (state.isBlocked) R.string.unblock else R.string.block),
+                        text = stringResource(if (state.isBlocked) RString.unblock else RString.block),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

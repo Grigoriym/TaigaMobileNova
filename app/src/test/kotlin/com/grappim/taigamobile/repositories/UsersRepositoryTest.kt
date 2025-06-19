@@ -2,7 +2,7 @@ package com.grappim.taigamobile.repositories
 
 import com.grappim.taigamobile.data.repositories.UsersRepository
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.testdata.TestData
+import com.grappim.taigamobile.TestData
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import kotlin.test.BeforeTest

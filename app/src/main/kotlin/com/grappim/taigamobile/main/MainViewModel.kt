@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.main
 
 import androidx.lifecycle.ViewModel
-import com.grappim.taigamobile.state.Session
-import com.grappim.taigamobile.state.Settings
+import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.Settings
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 

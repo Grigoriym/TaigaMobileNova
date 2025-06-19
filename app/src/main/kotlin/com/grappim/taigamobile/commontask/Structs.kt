@@ -6,17 +6,17 @@ package com.grappim.taigamobile.commontask
 
 import androidx.paging.compose.LazyPagingItems
 import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.domain.entities.Attachment
-import com.grappim.taigamobile.domain.entities.Comment
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CustomField
-import com.grappim.taigamobile.domain.entities.CustomFieldValue
-import com.grappim.taigamobile.domain.entities.EpicShortInfo
-import com.grappim.taigamobile.domain.entities.Sprint
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.Swimlane
-import com.grappim.taigamobile.domain.entities.Tag
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CustomField
+import com.grappim.taigamobile.core.domain.CustomFieldValue
+import com.grappim.taigamobile.core.domain.EpicShortInfo
+import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.User
 import java.io.InputStream
 import java.time.LocalDate
 

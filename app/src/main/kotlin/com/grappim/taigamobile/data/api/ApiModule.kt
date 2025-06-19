@@ -1,11 +1,10 @@
 package com.grappim.taigamobile.data.api
 
-import com.grappim.taigamobile.epics.EpicsApi
-import com.grappim.taigamobile.issues.IssuesApi
-import com.grappim.taigamobile.login.data.AuthApi
-import com.grappim.taigamobile.projectselector.ProjectsApi
-import com.grappim.taigamobile.sprint.SprintApi
-import com.grappim.taigamobile.userstories.UserStoriesApi
+import com.grappim.taigamobile.feature.login.data.api.AuthApi
+import com.grappim.taigamobile.feature.projects.data.ProjectsApi
+import com.grappim.taigamobile.feature.wiki.data.WikiApi
+import com.grappim.taigamobile.feature.sprint.data.SprintApi
+import com.grappim.taigamobile.feature.userstories.data.UserStoriesApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -27,8 +26,8 @@ object ApiModule {
         retrofit.create(ProjectsApi::class.java)
 
     @[Provides Singleton]
-    fun provideEpicsApi(retrofit: Retrofit): EpicsApi =
-        retrofit.create(EpicsApi::class.java)
+    fun provideEpicsApi(retrofit: Retrofit): com.grappim.taigamobile.feature.epics.data.EpicsApi =
+        retrofit.create(com.grappim.taigamobile.feature.epics.data.EpicsApi::class.java)
 
     @[Provides Singleton]
     fun provideUserStoriesApi(retrofit: Retrofit): UserStoriesApi =
@@ -39,6 +38,10 @@ object ApiModule {
         retrofit.create(SprintApi::class.java)
 
     @[Provides Singleton]
-    fun provideIssuesApi(retrofit: Retrofit): IssuesApi =
-        retrofit.create(IssuesApi::class.java)
+    fun provideIssuesApi(retrofit: Retrofit): com.grappim.taigamobile.feature.issues.data.IssuesApi =
+        retrofit.create(com.grappim.taigamobile.feature.issues.data.IssuesApi::class.java)
+
+    @[Provides Singleton]
+    fun provideWIkiApi(retrofit: Retrofit): WikiApi =
+        retrofit.create(WikiApi::class.java)
 }

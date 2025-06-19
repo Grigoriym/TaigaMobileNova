@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.createtask.CreateTaskViewModel
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.SuccessResult

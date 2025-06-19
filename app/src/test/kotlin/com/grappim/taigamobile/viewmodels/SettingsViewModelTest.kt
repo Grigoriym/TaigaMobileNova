@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.state.ThemeSetting
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.storage.ThemeSetting
 import com.grappim.taigamobile.settings.SettingsViewModel
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.SuccessResult

@@ -29,13 +29,15 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.Project
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarConfig
-import com.grappim.taigamobile.ui.components.containers.ContainerBox
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.utils.RDrawable
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
@@ -50,7 +52,7 @@ fun ProjectSelectorScreen(
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.project_selector),
+                title = NativeText.Resource(RString.project_selector),
                 showBackButton = state.isFromLogin
             )
         )
@@ -59,11 +61,7 @@ fun ProjectSelectorScreen(
     val lazyProjectItems = viewModel.projects.collectAsLazyPagingItems()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-    LaunchedEffect(lazyProjectItems.loadState.hasError) {
-        if (lazyProjectItems.loadState.hasError) {
-            showMessage(R.string.common_error_message)
-        }
-    }
+    lazyProjectItems.SubscribeOnError(showMessage)
 
     ProjectSelectorScreenContent(
         state = state,
@@ -96,7 +94,7 @@ fun ProjectSelectorScreenContent(
             onValueChange = state.setProjectsQuery,
             shape = RoundedCornerShape(16.dp),
             placeholder = {
-                Text(stringResource(R.string.search_projects_hint))
+                Text(stringResource(RString.search_projects_hint))
             }
         )
         Spacer(modifier = Modifier.height(10.dp))
@@ -138,9 +136,9 @@ private fun ItemProject(
                     color = MaterialTheme.colorScheme.primary,
                     text = stringResource(
                         when {
-                            project.isOwner -> R.string.project_owner
-                            project.isAdmin -> R.string.project_admin
-                            project.isMember -> R.string.project_member
+                            project.isOwner -> RString.project_owner
+                            project.isAdmin -> RString.project_admin
+                            project.isMember -> RString.project_member
                             else -> 0
                         }
                     )
@@ -148,7 +146,7 @@ private fun ItemProject(
             }
 
             Text(
-                text = stringResource(R.string.project_name_template).format(
+                text = stringResource(RString.project_name_template).format(
                     project.name,
                     project.slug
                 )
@@ -157,7 +155,7 @@ private fun ItemProject(
 
         if (project.id == currentProjectId) {
             Image(
-                painter = painterResource(R.drawable.ic_check),
+                painter = painterResource(RDrawable.ic_check),
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
                 modifier = Modifier.weight(0.2f)

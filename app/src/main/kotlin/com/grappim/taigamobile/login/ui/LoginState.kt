@@ -1,12 +1,12 @@
 package com.grappim.taigamobile.login.ui
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.grappim.taigamobile.data.api.NetworkConstants
-import com.grappim.taigamobile.domain.entities.AuthType
-import com.grappim.taigamobile.login.domain.AuthData
+import com.grappim.taigamobile.core.api.ApiConstants
+import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.feature.login.domain.model.AuthData
 
 data class LoginState(
-    val server: TextFieldValue = TextFieldValue(NetworkConstants.DEFAULT_HOST),
+    val server: TextFieldValue = TextFieldValue(ApiConstants.DEFAULT_HOST),
     val onServerValueChange: (TextFieldValue) -> Unit,
     val isServerInputError: Boolean = false,
 

@@ -47,23 +47,24 @@ import androidx.compose.ui.unit.dp
 import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.grappim.taigamobile.R
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.StatusType
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.Project
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.StatusType
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.ui.components.buttons.PlusButton
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.lists.CommonTaskItem
 import com.grappim.taigamobile.ui.components.texts.CommonTaskTitle
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.cardShadowElevation
-import com.grappim.taigamobile.ui.theme.kanbanBoardTonalElevation
-import com.grappim.taigamobile.ui.utils.clickableUnindicated
-import com.grappim.taigamobile.ui.utils.surfaceColorAtElevationInternal
-import com.grappim.taigamobile.ui.utils.toColor
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.cardShadowElevation
+import com.grappim.taigamobile.uikit.theme.kanbanBoardTonalElevation
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.utils.clickableUnindicated
+import com.grappim.taigamobile.uikit.widgets.button.PlusButton
+import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
+import com.grappim.taigamobile.utils.ui.toColor
 import java.time.LocalDateTime
 
 @Composable
@@ -89,7 +90,7 @@ fun SprintKanban(
 
     Row(Modifier.padding(start = cellPadding, top = cellPadding)) {
         Header(
-            text = stringResource(R.string.userstory),
+            text = stringResource(RString.userstory),
             cellWidth = userStoryHeadingWidth,
             cellPadding = cellPadding,
             stripeColor = backgroundCellColor,
@@ -152,7 +153,7 @@ fun SprintKanban(
                     .padding(start = cellPadding)
             ) {
                 CategoryItem(
-                    titleId = R.string.tasks_without_story,
+                    titleId = RString.tasks_without_story,
                     cellPadding = cellPadding,
                     cellWidth = userStoryHeadingWidth,
                     minCellHeight = minCellHeight,
@@ -272,7 +273,7 @@ private fun IssueHeader(
     verticalAlignment = Alignment.CenterVertically
 ) {
     Text(
-        text = stringResource(R.string.sprint_issues).uppercase(),
+        text = stringResource(RString.sprint_issues).uppercase(),
         modifier = Modifier.weight(0.8f, fill = false)
     )
 
@@ -413,8 +414,8 @@ private fun TaskItem(
 
             Text(
                 text = task.assignee?.fullName?.let {
-                    stringResource(R.string.assignee_pattern).format(it)
-                } ?: stringResource(R.string.unassigned),
+                    stringResource(RString.assignee_pattern).format(it)
+                } ?: stringResource(RString.unassigned),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyMedium
             )
@@ -424,9 +425,9 @@ private fun TaskItem(
             Image(
                 painter = rememberAsyncImagePainter(
                     ImageRequest.Builder(LocalContext.current).data(
-                        data = it.avatarUrl ?: R.drawable.default_avatar
+                        data = it.avatarUrl ?: RDrawable.default_avatar
                     ).apply(block = fun ImageRequest.Builder.() {
-                        error(R.drawable.default_avatar)
+                        error(RDrawable.default_avatar)
                         crossfade(true)
                     }).build()
                 ),

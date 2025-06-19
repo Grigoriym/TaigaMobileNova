@@ -15,13 +15,14 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.ui.components.buttons.AddButton
-import com.grappim.taigamobile.ui.components.buttons.TextButton
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.lists.UserItemWithAction
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.button.AddButton
+import com.grappim.taigamobile.uikit.widgets.button.TextButton
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskAssignees(
@@ -34,7 +35,7 @@ fun LazyListScope.CommonTaskAssignees(
     item {
         // assigned to
         Text(
-            text = stringResource(R.string.assigned_to),
+            text = stringResource(RString.assigned_to),
             style = MaterialTheme.typography.titleMedium
         )
     }
@@ -61,16 +62,16 @@ fun LazyListScope.CommonTaskAssignees(
             horizontalArrangement = Arrangement.Start
         ) {
             AddButton(
-                text = stringResource(R.string.add_assignee),
+                text = stringResource(RString.add_assignee),
                 onClick = { showAssigneesSelector() }
             )
 
             Spacer(modifier = Modifier.width(16.dp))
 
             val (@StringRes buttonText: Int, @DrawableRes buttonIcon: Int) = if (isAssignedToMe) {
-                R.string.unassign to R.drawable.ic_unassigned
+                RString.unassign to RDrawable.ic_unassigned
             } else {
-                R.string.assign_to_me to R.drawable.ic_assignee_to_me
+                RString.assign_to_me to RDrawable.ic_assignee_to_me
             }
 
             TextButton(

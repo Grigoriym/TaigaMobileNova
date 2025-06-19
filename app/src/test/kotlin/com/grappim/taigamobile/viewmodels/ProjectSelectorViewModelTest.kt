@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.Project
+import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.projectselector.ProjectSelectorViewModel
 import com.grappim.taigamobile.viewmodels.utils.testLazyPagingItems
 import io.mockk.coVerify

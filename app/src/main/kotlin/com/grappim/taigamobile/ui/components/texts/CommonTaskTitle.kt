@@ -17,13 +17,13 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.Tag
-import com.grappim.taigamobile.ui.components.Chip
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.taigaRed
-import com.grappim.taigamobile.ui.utils.textColor
-import com.grappim.taigamobile.ui.utils.toColor
+import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.taigaRed
+import com.grappim.taigamobile.uikit.widgets.Chip
+import com.grappim.taigamobile.utils.ui.textColor
+import com.grappim.taigamobile.utils.ui.toColor
 
 /**
  * Text with colored dots (indicators) at the end and tags
@@ -50,7 +50,7 @@ fun CommonTaskTitle(
                     textDecoration = TextDecoration.LineThrough
                 )
             )
-            append(stringResource(R.string.title_with_ref_pattern).format(ref, title))
+            append(stringResource(RString.title_with_ref_pattern).format(ref, title))
             if (isInactive) pop()
 
             append(" ")
@@ -97,4 +97,3 @@ fun CommonTaskTitlePreview() = TaigaMobileTheme {
         isBlocked = true
     )
 }
-

@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.createtask
 
 import androidx.navigation.NavController
-import com.grappim.taigamobile.domain.entities.CommonTaskType
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import kotlinx.serialization.Serializable
 
 @Serializable

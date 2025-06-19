@@ -12,16 +12,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.Swimlane
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarConfig
-import com.grappim.taigamobile.ui.components.loaders.CircularLoader
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
 
@@ -38,7 +39,7 @@ fun KanbanScreen(
 
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.kanban),
+                title = NativeText.Resource(RString.kanban),
             )
         )
     }

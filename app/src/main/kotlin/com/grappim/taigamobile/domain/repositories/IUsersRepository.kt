@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.domain.repositories
 
-import com.grappim.taigamobile.domain.entities.Stats
-import com.grappim.taigamobile.domain.entities.TeamMember
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.core.domain.Stats
+import com.grappim.taigamobile.core.domain.TeamMember
+import com.grappim.taigamobile.core.domain.User
 
 interface IUsersRepository {
     suspend fun getMe(): User

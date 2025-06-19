@@ -4,11 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.FiltersData
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.FiltersData
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +25,7 @@ import javax.inject.Inject
 class EpicsViewModel @Inject constructor(
     private val session: Session,
     private val tasksRepository: ITasksRepository,
-    private val epicsRepository: EpicsRepository
+    private val epicsRepository: com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 ) : ViewModel() {
 
     private var shouldReload = true

@@ -46,26 +46,26 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import coil.annotation.ExperimentalCoilApi
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.DueDateStatus
-import com.grappim.taigamobile.domain.entities.EpicShortInfo
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.StatusType
-import com.grappim.taigamobile.domain.entities.Swimlane
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.ui.components.DropdownSelector
-import com.grappim.taigamobile.ui.components.buttons.PlusButton
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.DueDateStatus
+import com.grappim.taigamobile.core.domain.EpicShortInfo
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.StatusType
+import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.texts.CommonTaskTitle
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.cardShadowElevation
-import com.grappim.taigamobile.ui.theme.kanbanBoardTonalElevation
-import com.grappim.taigamobile.ui.utils.surfaceColorAtElevationInternal
-import com.grappim.taigamobile.ui.utils.toColor
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.cardShadowElevation
+import com.grappim.taigamobile.uikit.theme.kanbanBoardTonalElevation
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.DropdownSelector
+import com.grappim.taigamobile.uikit.widgets.button.PlusButton
+import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
+import com.grappim.taigamobile.utils.ui.toColor
 import java.time.LocalDateTime
 
 @Composable
@@ -91,7 +91,7 @@ fun KanbanBoard(
             modifier = Modifier.padding(cellOuterPadding)
         ) {
             Text(
-                text = stringResource(R.string.swimlane_title),
+                text = stringResource(RString.swimlane_title),
                 style = MaterialTheme.typography.titleLarge
             )
 
@@ -103,7 +103,7 @@ fun KanbanBoard(
                 onItemSelected = selectSwimlane,
                 itemContent = {
                     Text(
-                        text = it?.name ?: stringResource(R.string.unclassifed),
+                        text = it?.name ?: stringResource(RString.unclassifed),
                         style = MaterialTheme.typography.bodyLarge,
                         color = it?.let { MaterialTheme.colorScheme.onSurface }
                             ?: MaterialTheme.colorScheme.primary
@@ -111,7 +111,7 @@ fun KanbanBoard(
                 },
                 selectedItemContent = {
                     Text(
-                        text = it?.name ?: stringResource(R.string.unclassifed),
+                        text = it?.name ?: stringResource(RString.unclassifed),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -208,7 +208,7 @@ private fun Header(
         )
 
         Text(
-            text = stringResource(R.string.status_with_number_template).format(
+            text = stringResource(RString.status_with_number_template).format(
                 text.uppercase(), storiesCount
             ),
             style = textStyle,
@@ -226,7 +226,6 @@ private fun Header(
 }
 
 @ExperimentalLayoutApi
-@OptIn(ExperimentalCoilApi::class)
 @Composable
 private fun StoryItem(
     story: CommonTaskExtended,
@@ -290,9 +289,9 @@ private fun StoryItem(
                     painter = rememberAsyncImagePainter(
                         ImageRequest.Builder(LocalContext.current)
                             .data(
-                                it.avatarUrl ?: R.drawable.default_avatar
+                                it.avatarUrl ?: RDrawable.default_avatar
                             ).apply(fun ImageRequest.Builder.() {
-                                error(R.drawable.default_avatar)
+                                error(RDrawable.default_avatar)
                                 crossfade(true)
                             }).build()
                     ),

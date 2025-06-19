@@ -2,14 +2,14 @@ package com.grappim.taigamobile.viewmodels
 
 import android.content.Context
 import com.grappim.taigamobile.di.AppComponent
-import com.grappim.taigamobile.login.domain.IAuthRepository
-import com.grappim.taigamobile.domain.repositories.IProjectsRepository
-import com.grappim.taigamobile.sprint.ISprintsRepository
+import com.grappim.taigamobile.feature.login.domain.repo.IAuthRepository
+import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
+import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.domain.repositories.IWikiRepository
-import com.grappim.taigamobile.state.Session
-import com.grappim.taigamobile.state.Settings
+import com.grappim.taigamobile.feature.wiki.domain.IWikiRepository
+import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.Settings
 import com.grappim.taigamobile.commontask.CommonTaskViewModel
 import com.grappim.taigamobile.createtask.CreateTaskViewModel
 import com.grappim.taigamobile.dashboard.DashboardViewModel

@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersData
 import com.grappim.taigamobile.scrum.ScrumViewModel
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.SuccessResult

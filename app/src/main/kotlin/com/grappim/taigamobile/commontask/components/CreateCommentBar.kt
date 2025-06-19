@@ -31,9 +31,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.ui.components.editors.TextFieldWithHint
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -72,7 +73,7 @@ fun CreateCommentBar(
             contentAlignment = Alignment.CenterStart
         ) {
             TextFieldWithHint(
-                hintId = R.string.comment_hint,
+                hintId = RString.comment_hint,
                 maxLines = 3,
                 value = commentTextValue,
                 onValueChange = { commentTextValue = it }
@@ -96,7 +97,7 @@ fun CreateCommentBar(
                     .background(MaterialTheme.colorScheme.primary)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_send),
+                    painter = painterResource(RDrawable.ic_send),
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimary
                 )

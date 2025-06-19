@@ -24,17 +24,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarActionResource
-import com.grappim.taigamobile.main.topbar.TopBarConfig
-import com.grappim.taigamobile.ui.components.containers.ContainerBox
-import com.grappim.taigamobile.ui.components.containers.HorizontalTabbedPager
-import com.grappim.taigamobile.ui.components.containers.Tab
-import com.grappim.taigamobile.ui.components.loaders.CircularLoader
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.utils.Tab
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun WikiListScreen(
@@ -56,10 +57,10 @@ fun WikiListScreen(
 
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.wiki),
+                title = NativeText.Resource(RString.wiki),
                 actions = listOf(
                     TopBarActionResource(
-                        drawable = R.drawable.ic_add,
+                        drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = goToWikiCreatePage,
                     )
@@ -128,8 +129,8 @@ fun WikiListScreenContent(
 }
 
 private enum class WikiTabs(@StringRes override val titleId: Int) : Tab {
-    Bookmarks(R.string.bookmarks),
-    AllWikiPages(R.string.all_wiki_pages)
+    Bookmarks(RString.bookmarks),
+    AllWikiPages(RString.all_wiki_pages)
 }
 
 @Composable

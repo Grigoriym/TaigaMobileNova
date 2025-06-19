@@ -2,12 +2,12 @@ package com.grappim.taigamobile.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.appinfo.AppInfoProvider
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.state.Session
-import com.grappim.taigamobile.state.Settings
-import com.grappim.taigamobile.state.ThemeSetting
+import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.Settings
+import com.grappim.taigamobile.core.storage.ThemeSetting
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -21,7 +21,7 @@ class SettingsViewModel @Inject constructor(
     private val session: Session,
     private val settings: Settings,
     private val userRepository: IUsersRepository,
-    appInfoProvider: AppInfoProvider
+    appInfoProvider: com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 ) : ViewModel() {
 
     private val _state: MutableStateFlow<SettingsState> = MutableStateFlow(

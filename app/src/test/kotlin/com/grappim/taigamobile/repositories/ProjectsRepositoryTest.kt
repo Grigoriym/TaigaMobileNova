@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.repositories
 
-import com.grappim.taigamobile.data.repositories.ProjectsRepository
-import com.grappim.taigamobile.domain.repositories.IProjectsRepository
-import com.grappim.taigamobile.testdata.TestData
+import com.grappim.taigamobile.feature.projects.data.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
+import com.grappim.taigamobile.TestData
 import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test

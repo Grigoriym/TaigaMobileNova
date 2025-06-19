@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.repositories
 
-import com.grappim.taigamobile.login.data.AuthRepository
-import com.grappim.taigamobile.domain.entities.AuthType
-import com.grappim.taigamobile.login.domain.IAuthRepository
+import com.grappim.taigamobile.feature.login.data.repo.AuthRepository
+import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.feature.login.domain.repo.IAuthRepository
 import kotlinx.coroutines.runBlocking
 import kotlin.test.BeforeTest
 import kotlin.test.Test

@@ -10,12 +10,12 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
-import com.grappim.taigamobile.domain.entities.CustomField
-import com.grappim.taigamobile.domain.entities.CustomFieldValue
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
-import com.grappim.taigamobile.ui.components.texts.SectionTitle
+import com.grappim.taigamobile.core.domain.CustomField
+import com.grappim.taigamobile.core.domain.CustomFieldValue
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskCustomFields(
@@ -25,7 +25,7 @@ fun LazyListScope.CommonTaskCustomFields(
     editActions: EditActions
 ) {
     item {
-        SectionTitle(text = stringResource(R.string.custom_fields))
+        SectionTitle(text = stringResource(RString.custom_fields))
     }
 
     itemsIndexed(customFields) { index, item ->

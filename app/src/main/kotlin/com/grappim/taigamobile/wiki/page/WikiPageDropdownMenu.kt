@@ -9,9 +9,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.ui.theme.dialogTonalElevation
-import com.grappim.taigamobile.ui.utils.surfaceColorAtElevationInternal
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
+import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Composable
 fun WikiPageDropDownMenu(
@@ -35,7 +35,7 @@ fun WikiPageDropDownMenu(
                 },
                 text = {
                     Text(
-                        text = stringResource(R.string.edit),
+                        text = stringResource(RString.edit),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
@@ -47,7 +47,7 @@ fun WikiPageDropDownMenu(
                 },
                 text = {
                     Text(
-                        text = stringResource(R.string.delete),
+                        text = stringResource(RString.delete),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

@@ -1,8 +1,9 @@
 package com.grappim.taigamobile.login.data
 
 import com.grappim.taigamobile.BuildConfig
-import com.grappim.taigamobile.data.api.NetworkConstants
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.api.ApiConstants
+import com.grappim.taigamobile.core.api.RequestWithoutAuthToken
+import com.grappim.taigamobile.core.storage.Session
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -35,7 +36,7 @@ class AuthTokenInterceptor @Inject constructor(
     private fun Request.Builder.putUserAgent() {
         val userAgentValue = "TaigaMobileNova/${BuildConfig.VERSION_NAME}"
         this@putUserAgent.header(
-            NetworkConstants.USER_AGENT,
+            ApiConstants.USER_AGENT,
             userAgentValue
         )
     }
@@ -43,7 +44,7 @@ class AuthTokenInterceptor @Inject constructor(
     private fun Request.Builder.putXownerAndAuthorization() {
         val bearerToken = "Bearer ${session.token.value}"
         this@putXownerAndAuthorization.header(
-            NetworkConstants.AUTHORIZATION,
+            ApiConstants.AUTHORIZATION,
             bearerToken
         )
     }

@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.data.api
 
-import com.grappim.taigamobile.domain.entities.CommonTaskType
+import com.grappim.taigamobile.core.domain.CommonTaskType
 
 /**
  * Since API endpoints for different types of tasks are often the same (only part in the path is different),

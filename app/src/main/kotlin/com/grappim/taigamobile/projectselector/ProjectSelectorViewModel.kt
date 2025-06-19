@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.grappim.taigamobile.domain.entities.Project
-import com.grappim.taigamobile.domain.repositories.IProjectsRepository
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
+import com.grappim.taigamobile.core.storage.Session
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

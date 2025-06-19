@@ -1,17 +1,17 @@
 package com.grappim.taigamobile.domain.repositories
 
-import com.grappim.taigamobile.domain.entities.Attachment
-import com.grappim.taigamobile.domain.entities.Comment
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.CustomFieldValue
-import com.grappim.taigamobile.domain.entities.CustomFields
-import com.grappim.taigamobile.domain.entities.FiltersData
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.StatusType
-import com.grappim.taigamobile.domain.entities.Swimlane
-import com.grappim.taigamobile.domain.entities.Tag
+import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.CustomFieldValue
+import com.grappim.taigamobile.core.domain.CustomFields
+import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.StatusType
+import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.Tag
 import java.io.InputStream
 import java.time.LocalDate
 

@@ -5,13 +5,6 @@ import com.squareup.moshi.JsonClass
 import java.time.LocalDate
 
 @JsonClass(generateAdapter = true)
-data class AuthRequest(
-    val password: String,
-    val username: String,
-    val type: String
-)
-
-@JsonClass(generateAdapter = true)
 data class RefreshTokenRequest(
     val refresh: String
 )
@@ -92,32 +85,4 @@ data class PromoteToUserStoryRequest(
 data class EditCustomAttributesValuesRequest(
     val attributes_values: Map<Long, Any?>,
     val version: Int
-)
-
-@JsonClass(generateAdapter = true)
-data class CreateSprintRequest(
-    val name: String,
-    val estimated_start: LocalDate,
-    val estimated_finish: LocalDate,
-    val project: Long
-)
-
-@JsonClass(generateAdapter = true)
-data class EditSprintRequest(
-    val name: String,
-    val estimated_start: LocalDate,
-    val estimated_finish: LocalDate,
-)
-
-@JsonClass(generateAdapter = true)
-data class EditWikiPageRequest(
-    val content: String,
-    val version: Int
-)
-
-@JsonClass(generateAdapter = true)
-data class NewWikiLinkRequest(
-    val href: String,
-    val project: Long,
-    val title: String
 )

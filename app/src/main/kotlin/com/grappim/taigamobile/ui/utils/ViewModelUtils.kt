@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.ui.utils
 
 import androidx.annotation.StringRes
-import com.grappim.taigamobile.R
+import com.grappim.taigamobile.strings.RString
 import timber.log.Timber
 
 inline fun <T> MutableResultFlow<T>.loadOrError(
-    @StringRes messageId: Int = R.string.common_error_message,
+    @StringRes messageId: Int = RString.common_error_message,
     preserveValue: Boolean = true,
     showLoading: Boolean = true,
     load: () -> T?

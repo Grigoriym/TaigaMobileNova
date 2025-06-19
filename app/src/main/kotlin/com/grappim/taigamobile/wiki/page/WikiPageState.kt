@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.wiki.page
 
 import androidx.compose.ui.text.input.TextFieldValue
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.User
-import com.grappim.taigamobile.domain.entities.WikiPage
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.feature.wiki.domain.WikiPage
 
 data class WikiPageState(
     val toolbarTitle: NativeText = NativeText.Empty,

@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.scrum
 
 import androidx.annotation.StringRes
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.ui.components.containers.Tab
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.utils.Tab
 
 enum class ScrumTabs(@StringRes override val titleId: Int) : Tab {
-    Backlog(R.string.backlog),
-    Sprints(R.string.sprints_title)
+    Backlog(RString.backlog),
+    Sprints(RString.sprints_title)
 }

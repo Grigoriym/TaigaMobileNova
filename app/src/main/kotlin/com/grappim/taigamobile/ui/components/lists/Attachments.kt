@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.ui.components.lists
 
 import android.content.Intent
-import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -27,14 +26,16 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
+import androidx.core.net.toUri
 import com.grappim.taigamobile.commontask.EditAction
-import com.grappim.taigamobile.domain.entities.Attachment
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
-import com.grappim.taigamobile.ui.components.texts.SectionTitle
+import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.LocalFilePicker
-import com.grappim.taigamobile.ui.utils.activity
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
+import com.grappim.taigamobile.utils.ui.activity
 import java.io.InputStream
 
 @Suppress("FunctionName")
@@ -45,7 +46,7 @@ fun LazyListScope.Attachments(
     item {
         val filePicker = LocalFilePicker.current
         SectionTitle(
-            text = stringResource(R.string.attachments_template).format(attachments.size),
+            text = stringResource(RString.attachments_template).format(attachments.size),
             onAddClick = {
                 filePicker.requestFile { file, stream -> editAttachments.select(file to stream) }
             }
@@ -79,14 +80,14 @@ private fun AttachmentItem(
 
     if (isAlertVisible) {
         ConfirmActionDialog(
-            title = stringResource(R.string.remove_attachment_title),
-            text = stringResource(R.string.remove_attachment_text),
+            title = stringResource(RString.remove_attachment_title),
+            text = stringResource(RString.remove_attachment_text),
             onConfirm = {
                 isAlertVisible = false
                 onRemoveClick()
             },
             onDismiss = { isAlertVisible = false },
-            iconId = R.drawable.ic_remove
+            iconId = RDrawable.ic_remove
         )
     }
     Row(
@@ -97,7 +98,7 @@ private fun AttachmentItem(
     ) {
         val activity = LocalContext.current.activity
         Icon(
-            painter = painterResource(R.drawable.ic_attachment),
+            painter = painterResource(RDrawable.ic_attachment),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.outline,
             modifier = Modifier.padding(end = 2.dp)
@@ -107,7 +108,7 @@ private fun AttachmentItem(
             text = attachment.name,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier.clickable {
-                activity.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(attachment.url)))
+                activity.startActivity(Intent(Intent.ACTION_VIEW, attachment.url.toUri()))
             }
         )
     }
@@ -119,7 +120,7 @@ private fun AttachmentItem(
             .clip(CircleShape)
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_delete),
+            painter = painterResource(RDrawable.ic_delete),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.error
         )

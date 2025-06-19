@@ -6,11 +6,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.Attachment
-import com.grappim.taigamobile.domain.entities.WikiLink
-import com.grappim.taigamobile.domain.entities.WikiPage
+import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.domain.repositories.IWikiRepository
+import com.grappim.taigamobile.feature.wiki.domain.IWikiRepository
+import com.grappim.taigamobile.feature.wiki.domain.WikiLink
+import com.grappim.taigamobile.feature.wiki.domain.WikiPage
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -135,7 +136,7 @@ class WikiPageViewModel @Inject constructor(
     }
 
     fun deletePageAttachment(attachment: Attachment) = viewModelScope.launch {
-        attachments.loadOrError(R.string.permission_error) {
+        attachments.loadOrError(RString.permission_error) {
             wikiRepository.deletePageAttachment(
                 attachmentId = attachment.id
             )
@@ -146,7 +147,7 @@ class WikiPageViewModel @Inject constructor(
     }
 
     fun addPageAttachment(fileName: String, inputStream: InputStream) = viewModelScope.launch {
-        attachments.loadOrError(R.string.permission_error) {
+        attachments.loadOrError(RString.permission_error) {
             page.value.data?.id?.let { pageId ->
                 wikiRepository.addPageAttachment(
                     pageId = pageId,

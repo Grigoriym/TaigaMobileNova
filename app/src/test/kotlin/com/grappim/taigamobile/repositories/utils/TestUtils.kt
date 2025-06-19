@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.repositories.utils
 
-import com.grappim.taigamobile.testdata.Task
-import com.grappim.taigamobile.testdata.TestData
+import com.grappim.taigamobile.Task
+import com.grappim.taigamobile.TestData
 
 class TestCommonTask(
     val title: String,

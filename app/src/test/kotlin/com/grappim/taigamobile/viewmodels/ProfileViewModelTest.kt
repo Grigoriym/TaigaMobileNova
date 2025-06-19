@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.viewmodels
 
-import com.grappim.taigamobile.domain.entities.Project
-import com.grappim.taigamobile.domain.entities.Stats
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.Stats
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.profile.ProfileViewModel
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.SuccessResult

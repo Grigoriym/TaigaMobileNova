@@ -3,9 +3,9 @@ package com.grappim.taigamobile.repositories
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.grappim.taigamobile.data.api.TaigaApi
-import com.grappim.taigamobile.manager.TaigaTestInstanceManager
-import com.grappim.taigamobile.manager.UserInfo
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.TaigaTestInstanceManager
+import com.grappim.taigamobile.UserInfo
+import com.grappim.taigamobile.core.storage.Session
 import org.junit.runner.RunWith
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

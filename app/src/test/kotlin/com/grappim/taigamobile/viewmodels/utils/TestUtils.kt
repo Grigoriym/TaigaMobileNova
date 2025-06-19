@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.viewmodels.utils
 
 import androidx.paging.compose.LazyPagingItems
-import com.grappim.taigamobile.domain.paging.CommonPagingSource
 import io.mockk.MockKAnswerScope
 import io.mockk.MockKMatcherScope
 import io.mockk.coEvery

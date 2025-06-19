@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!-- Just copy from io.eugenethedev.taigamobile.ui.theme for android material dialogs -->
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#25A28C</color>
     <color name="colorPrimaryVariant">#00796D</color>

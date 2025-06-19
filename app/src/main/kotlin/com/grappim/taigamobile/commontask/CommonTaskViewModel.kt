@@ -6,34 +6,33 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import androidx.paging.cachedIn
 import androidx.paging.insertHeaderItem
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.Attachment
-import com.grappim.taigamobile.domain.entities.Comment
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.CustomField
-import com.grappim.taigamobile.domain.entities.CustomFieldValue
-import com.grappim.taigamobile.domain.entities.CustomFields
-import com.grappim.taigamobile.domain.entities.EpicShortInfo
-import com.grappim.taigamobile.domain.entities.FiltersData
-import com.grappim.taigamobile.domain.entities.Sprint
-import com.grappim.taigamobile.domain.entities.Status
-import com.grappim.taigamobile.domain.entities.StatusType
-import com.grappim.taigamobile.domain.entities.Swimlane
-import com.grappim.taigamobile.domain.entities.Tag
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.CustomField
+import com.grappim.taigamobile.core.domain.CustomFieldValue
+import com.grappim.taigamobile.core.domain.CustomFields
+import com.grappim.taigamobile.core.domain.EpicShortInfo
+import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.StatusType
+import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
-import com.grappim.taigamobile.epics.EpicsRepository
-import com.grappim.taigamobile.sprint.ISprintsRepository
-import com.grappim.taigamobile.state.Session
-import com.grappim.taigamobile.state.postUpdate
+import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.utils.ui.NativeText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -52,13 +51,14 @@ import java.io.InputStream
 import java.time.LocalDate
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class CommonTaskViewModel @Inject constructor(
     private val session: Session,
     private val tasksRepository: ITasksRepository,
     private val usersRepository: IUsersRepository,
     private val sprintsRepository: ISprintsRepository,
-    private val epicsRepository: EpicsRepository,
+    private val epicsRepository: com.grappim.taigamobile.feature.epics.domain.EpicsRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -75,10 +75,10 @@ class CommonTaskViewModel @Inject constructor(
         CommonTaskState(
             toolbarTitle = NativeText.Arguments(
                 id = when (route.taskType) {
-                    CommonTaskType.UserStory -> R.string.userstory_slug
-                    CommonTaskType.Task -> R.string.task_slug
-                    CommonTaskType.Epic -> R.string.epic_slug
-                    CommonTaskType.Issue -> R.string.issue_slug
+                    CommonTaskType.UserStory -> RString.userstory_slug
+                    CommonTaskType.Task -> RString.task_slug
+                    CommonTaskType.Epic -> RString.epic_slug
+                    CommonTaskType.Issue -> RString.issue_slug
                 },
                 args = listOf(ref)
             ),
@@ -126,10 +126,11 @@ class CommonTaskViewModel @Inject constructor(
 
     private val epicsQuery = MutableStateFlow("")
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     val epics = epicsQuery.flatMapLatest { query ->
         epicsRepository.getEpics(FiltersData(query = query))
     }.cachedIn(viewModelScope)
+
+    val editBasicInfoResult = MutableResultFlow<Unit>()
 
     init {
         loadData(isReloading = false)
@@ -264,15 +265,8 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    // ================
-    // Edit task itself
-    // ================
-
-    // Edit task itself (title & description)
-    val editBasicInfoResult = MutableResultFlow<Unit>()
-
     fun editBasicInfo(title: String, description: String) = viewModelScope.launch {
-        editBasicInfoResult.loadOrError(R.string.permission_error) {
+        editBasicInfoResult.loadOrError(RString.permission_error) {
             tasksRepository.editCommonTaskBasicInfo(commonTask.value.data!!, title, description)
             loadData().join()
             session.taskEdit.postUpdate()
@@ -285,7 +279,7 @@ class CommonTaskViewModel @Inject constructor(
     fun editStatus(status: Status) = viewModelScope.launch {
         editStatusResult.value = LoadingResult(status.type)
 
-        editStatusResult.loadOrError(R.string.permission_error) {
+        editStatusResult.loadOrError(RString.permission_error) {
             tasksRepository.editStatus(commonTask.value.data!!, status.id, status.type)
             loadData().join()
             session.taskEdit.postUpdate()
@@ -294,7 +288,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     fun editSprint(sprint: Sprint) = viewModelScope.launch {
-        editSprintResult.loadOrError(R.string.permission_error) {
+        editSprintResult.loadOrError(RString.permission_error) {
             tasksRepository.editSprint(
                 commonTask.value.data!!,
                 sprint.takeIf { it != SPRINT_HEADER }?.id
@@ -317,7 +311,7 @@ class CommonTaskViewModel @Inject constructor(
     // Edit assignees
 
     private fun editAssignees(userId: Long, remove: Boolean) = viewModelScope.launch {
-        assignees.loadOrError(R.string.permission_error) {
+        assignees.loadOrError(RString.permission_error) {
             teamSearched.value = team.value.data.orEmpty()
 
             tasksRepository.editAssignees(
@@ -343,7 +337,7 @@ class CommonTaskViewModel @Inject constructor(
     // Edit watchers
 
     private fun editWatchers(userId: Long, remove: Boolean) = viewModelScope.launch {
-        watchers.loadOrError(R.string.permission_error) {
+        watchers.loadOrError(RString.permission_error) {
             teamSearched.value = team.value.data.orEmpty()
 
             tasksRepository.editWatchers(
@@ -375,7 +369,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     private fun editTag(tag: Tag, remove: Boolean) = viewModelScope.launch {
-        tags.loadOrError(R.string.permission_error) {
+        tags.loadOrError(RString.permission_error) {
             tagsSearched.value = tags.value.data.orEmpty()
 
             tasksRepository.editTags(
@@ -394,7 +388,7 @@ class CommonTaskViewModel @Inject constructor(
 
     // Swimlanes
     fun editSwimlane(swimlane: Swimlane) = viewModelScope.launch {
-        swimlanes.loadOrError(R.string.permission_error) {
+        swimlanes.loadOrError(RString.permission_error) {
             tasksRepository.editUserStorySwimlane(
                 commonTask.value.data!!,
                 swimlane.takeIf { it != SWIMLANE_HEADER }?.id
@@ -409,7 +403,7 @@ class CommonTaskViewModel @Inject constructor(
     val editDueDateResult = MutableResultFlow<Unit>()
 
     fun editDueDate(date: LocalDate?) = viewModelScope.launch {
-        editDueDateResult.loadOrError(R.string.permission_error) {
+        editDueDateResult.loadOrError(RString.permission_error) {
             tasksRepository.editDueDate(commonTask.value.data!!, date)
             loadData().join()
         }
@@ -419,7 +413,7 @@ class CommonTaskViewModel @Inject constructor(
     val editEpicColorResult = MutableResultFlow<Unit>()
 
     fun editEpicColor(color: String) = viewModelScope.launch {
-        editEpicColorResult.loadOrError(R.string.permission_error) {
+        editEpicColorResult.loadOrError(RString.permission_error) {
             tasksRepository.editEpicColor(commonTask.value.data!!, color)
             loadData().join()
             session.taskEdit.postUpdate()
@@ -429,7 +423,7 @@ class CommonTaskViewModel @Inject constructor(
     val editBlockedResult = MutableResultFlow<Unit>()
 
     fun editBlocked(blockedNote: String?) = viewModelScope.launch {
-        editBlockedResult.loadOrError(R.string.permission_error) {
+        editBlockedResult.loadOrError(RString.permission_error) {
             tasksRepository.editBlocked(commonTask.value.data!!, blockedNote)
             loadData().join()
             session.taskEdit.postUpdate()
@@ -443,7 +437,7 @@ class CommonTaskViewModel @Inject constructor(
     val linkToEpicResult = MutableResultFlow<Unit>(NothingResult())
 
     fun linkToEpic(epic: CommonTask) = viewModelScope.launch {
-        linkToEpicResult.loadOrError(R.string.permission_error) {
+        linkToEpicResult.loadOrError(RString.permission_error) {
             tasksRepository.linkToEpic(epic.id, commonTaskId)
             loadData().join()
             session.taskEdit.postUpdate()
@@ -451,7 +445,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     fun unlinkFromEpic(epic: EpicShortInfo) = viewModelScope.launch {
-        linkToEpicResult.loadOrError(R.string.permission_error) {
+        linkToEpicResult.loadOrError(RString.permission_error) {
             tasksRepository.unlinkFromEpic(epic.id, commonTaskId)
             loadData().join()
             session.taskEdit.postUpdate()
@@ -461,7 +455,7 @@ class CommonTaskViewModel @Inject constructor(
     // Edit comments
 
     fun createComment(comment: String) = viewModelScope.launch {
-        comments.loadOrError(R.string.permission_error) {
+        comments.loadOrError(RString.permission_error) {
             tasksRepository.createComment(
                 commonTaskId,
                 _state.value.commonTaskType,
@@ -474,7 +468,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     fun deleteComment(comment: Comment) = viewModelScope.launch {
-        comments.loadOrError(R.string.permission_error) {
+        comments.loadOrError(RString.permission_error) {
             tasksRepository.deleteComment(commonTaskId, _state.value.commonTaskType, comment.id)
             loadData().join()
             comments.value.data
@@ -483,7 +477,7 @@ class CommonTaskViewModel @Inject constructor(
 
 
     fun deleteAttachment(attachment: Attachment) = viewModelScope.launch {
-        attachments.loadOrError(R.string.permission_error) {
+        attachments.loadOrError(RString.permission_error) {
             tasksRepository.deleteAttachment(_state.value.commonTaskType, attachment.id)
             loadData().join()
             attachments.value.data
@@ -491,7 +485,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     fun addAttachment(fileName: String, inputStream: InputStream) = viewModelScope.launch {
-        attachments.loadOrError(R.string.permission_error) {
+        attachments.loadOrError(RString.permission_error) {
             tasksRepository.addAttachment(
                 commonTaskId,
                 _state.value.commonTaskType,
@@ -507,7 +501,7 @@ class CommonTaskViewModel @Inject constructor(
     val deleteResult = MutableResultFlow<Unit>()
 
     fun deleteTask() = viewModelScope.launch {
-        deleteResult.loadOrError(R.string.permission_error) {
+        deleteResult.loadOrError(RString.permission_error) {
             tasksRepository.deleteCommonTask(_state.value.commonTaskType, commonTaskId)
             session.taskEdit.postUpdate()
         }
@@ -516,7 +510,7 @@ class CommonTaskViewModel @Inject constructor(
     val promoteResult = MutableResultFlow<CommonTask>()
 
     fun promoteToUserStory() = viewModelScope.launch {
-        promoteResult.loadOrError(R.string.permission_error, preserveValue = false) {
+        promoteResult.loadOrError(RString.permission_error, preserveValue = false) {
             tasksRepository.promoteCommonTaskToUserStory(commonTaskId, _state.value.commonTaskType)
                 .also {
                     session.taskEdit.postUpdate()
@@ -526,7 +520,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun editCustomField(customField: CustomField, value: CustomFieldValue?) =
         viewModelScope.launch {
-            customFields.loadOrError(R.string.permission_error) {
+            customFields.loadOrError(RString.permission_error) {
                 tasksRepository.editCustomFields(
                     commonTaskType = _state.value.commonTaskType,
                     commonTaskId = commonTaskId,

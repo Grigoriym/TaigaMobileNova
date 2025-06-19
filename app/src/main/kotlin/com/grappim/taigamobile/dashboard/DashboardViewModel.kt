@@ -2,11 +2,11 @@ package com.grappim.taigamobile.dashboard
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.Project
-import com.grappim.taigamobile.domain.repositories.IProjectsRepository
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError

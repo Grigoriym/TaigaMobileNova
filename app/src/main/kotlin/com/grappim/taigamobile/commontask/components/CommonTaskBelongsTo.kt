@@ -23,18 +23,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditActions
 import com.grappim.taigamobile.commontask.NavigationActions
-import com.grappim.taigamobile.domain.entities.CommonTaskExtended
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.EpicShortInfo
-import com.grappim.taigamobile.domain.entities.UserStoryShortInfo
-import com.grappim.taigamobile.ui.components.buttons.AddButton
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import com.grappim.taigamobile.ui.components.loaders.DotsLoader
+import com.grappim.taigamobile.core.domain.CommonTaskExtended
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.EpicShortInfo
+import com.grappim.taigamobile.core.domain.UserStoryShortInfo
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.texts.CommonTaskTitle
-import com.grappim.taigamobile.ui.utils.clickableUnindicated
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.utils.clickableUnindicated
+import com.grappim.taigamobile.uikit.widgets.button.AddButton
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskBelongsTo(
@@ -61,7 +62,7 @@ fun LazyListScope.CommonTaskBelongsTo(
             }
 
             AddButton(
-                text = stringResource(R.string.link_to_epic),
+                text = stringResource(RString.link_to_epic),
                 onClick = { showEpicsSelector() }
             )
         }
@@ -95,14 +96,14 @@ private fun EpicItemWithAction(
 
     if (isAlertVisible) {
         ConfirmActionDialog(
-            title = stringResource(R.string.unlink_epic_title),
-            text = stringResource(R.string.unlink_epic_text),
+            title = stringResource(RString.unlink_epic_title),
+            text = stringResource(RString.unlink_epic_text),
             onConfirm = {
                 isAlertVisible = false
                 onRemoveClick()
             },
             onDismiss = { isAlertVisible = false },
-            iconId = R.drawable.ic_remove
+            iconId = RDrawable.ic_remove
         )
     }
 
@@ -124,7 +125,7 @@ private fun EpicItemWithAction(
             .clip(CircleShape)
     ) {
         Icon(
-            painter = painterResource(R.drawable.ic_remove),
+            painter = painterResource(RDrawable.ic_remove),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.outline
         )

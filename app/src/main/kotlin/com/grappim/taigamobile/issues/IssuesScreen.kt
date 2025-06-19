@@ -14,19 +14,21 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.R
 import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.CommonTask
-import com.grappim.taigamobile.domain.entities.CommonTaskType
-import com.grappim.taigamobile.domain.entities.FiltersData
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.FiltersData
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarActionResource
-import com.grappim.taigamobile.main.topbar.TopBarConfig
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.ui.components.TasksFiltersWithLazyList
 import com.grappim.taigamobile.ui.components.lists.SimpleTasksListWithTitle
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.commonVerticalPadding
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
 fun IssuesScreen(
@@ -36,15 +38,14 @@ fun IssuesScreen(
     goToTask: (Long, CommonTaskType, Int) -> Unit
 ) {
     val topBarController = LocalTopBarConfig.current
-    LaunchedEffect(Unit) {
-        viewModel.onOpen()
 
+    LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(R.string.issues),
+                title = NativeText.Resource(RString.issues),
                 actions = listOf(
                     TopBarActionResource(
-                        drawable = R.drawable.ic_add,
+                        drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = {
                             goToCreateTask(CommonTaskType.Issue)
@@ -78,28 +79,30 @@ fun IssuesScreenContent(
     filters: FiltersData = FiltersData(),
     activeFilters: FiltersData = FiltersData(),
     selectFilters: (FiltersData) -> Unit = {},
-    navigateToTask: NavigateToTask = { _, _, _ -> }
-) = Column(
-    modifier = Modifier.fillMaxSize(),
-    horizontalAlignment = Alignment.Start
+    navigateToTask: NavigateToTask
 ) {
-    TasksFiltersWithLazyList(
-        filters = filters,
-        activeFilters = activeFilters,
-        selectFilters = selectFilters
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.Start
     ) {
-        SimpleTasksListWithTitle(
-            commonTasksLazy = issues,
-            keysHash = activeFilters.hashCode(),
-            navigateToTask = navigateToTask,
-            horizontalPadding = mainHorizontalScreenPadding,
-            bottomPadding = commonVerticalPadding
-        )
+        TasksFiltersWithLazyList(
+            filters = filters,
+            activeFilters = activeFilters,
+            selectFilters = selectFilters
+        ) {
+            SimpleTasksListWithTitle(
+                commonTasksLazy = issues,
+                keysHash = activeFilters.hashCode(),
+                navigateToTask = navigateToTask,
+                horizontalPadding = mainHorizontalScreenPadding,
+                bottomPadding = commonVerticalPadding
+            )
+        }
     }
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 fun IssuesScreenPreview() = TaigaMobileTheme {
-    IssuesScreenContent()
+    IssuesScreenContent(navigateToTask = { _, _, _ -> })
 }

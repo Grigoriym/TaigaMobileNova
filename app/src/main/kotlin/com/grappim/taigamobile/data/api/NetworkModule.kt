@@ -1,10 +1,11 @@
 package com.grappim.taigamobile.data.api
 
+import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.di.LocalDateTimeTypeAdapter
 import com.grappim.taigamobile.di.LocalDateTypeAdapter
 import com.grappim.taigamobile.login.data.AuthTokenInterceptor
 import com.grappim.taigamobile.login.data.TaigaAuthenticator
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.storage.Session
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -59,5 +60,5 @@ object NetworkModule {
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
         HttpLoggingInterceptor(Timber::d)
             .setLevel(HttpLoggingInterceptor.Level.BODY)
-            .also { it.redactHeader(NetworkConstants.AUTHORIZATION) }
+            .also { it.redactHeader(ApiConstants.AUTHORIZATION) }
 }

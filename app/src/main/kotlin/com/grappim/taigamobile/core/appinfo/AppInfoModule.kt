@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.core.appinfo
 
+import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

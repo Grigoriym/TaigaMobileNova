@@ -26,24 +26,25 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.commontask.EditAction
-import com.grappim.taigamobile.core.ui.NativeText
-import com.grappim.taigamobile.domain.entities.Attachment
-import com.grappim.taigamobile.domain.entities.User
+import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarActionResource
-import com.grappim.taigamobile.main.topbar.TopBarConfig
-import com.grappim.taigamobile.ui.components.dialogs.ConfirmActionDialog
-import com.grappim.taigamobile.ui.components.editors.TextFieldWithHint
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.lists.Attachments
-import com.grappim.taigamobile.ui.components.lists.Description
 import com.grappim.taigamobile.ui.components.lists.UserItem
-import com.grappim.taigamobile.ui.components.loaders.CircularLoader
-import com.grappim.taigamobile.ui.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.ui.utils.SuccessResult
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.uikit.widgets.list.Description
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 import java.io.InputStream
 import java.time.LocalDateTime
 
@@ -87,7 +88,7 @@ fun WikiPageScreen(
         topBarController.update(
             TopBarConfig(
                 title = if (state.isEditPageVisible) {
-                    NativeText.Resource(R.string.edit)
+                    NativeText.Resource(RString.edit)
                 } else {
                     NativeText.Simple(link.data?.title ?: viewModel.pageSlug)
                 },
@@ -102,7 +103,7 @@ fun WikiPageScreen(
                 actions = listOf(
                     if (state.isEditPageVisible) {
                         TopBarActionResource(
-                            drawable = R.drawable.ic_save,
+                            drawable = RDrawable.ic_save,
                             contentDescription = "Save",
                             onClick = {
                                 viewModel.editWikiPage(state.description.text)
@@ -111,7 +112,7 @@ fun WikiPageScreen(
                         )
                     } else {
                         TopBarActionResource(
-                            drawable = R.drawable.ic_options,
+                            drawable = RDrawable.ic_options,
                             contentDescription = "More",
                             onClick = {
                                 state.setDropdownMenuExpanded(true)
@@ -125,14 +126,14 @@ fun WikiPageScreen(
 
     if (state.isDeleteAlertVisible) {
         ConfirmActionDialog(
-            title = stringResource(R.string.delete_wiki_title),
-            text = stringResource(R.string.delete_wiki_text),
+            title = stringResource(RString.delete_wiki_title),
+            text = stringResource(RString.delete_wiki_text),
             onConfirm = {
                 state.setDeleteAlertVisible(false)
                 viewModel.deleteWikiPage()
             },
             onDismiss = { state.setDeleteAlertVisible(false) },
-            iconId = R.drawable.ic_delete
+            iconId = RDrawable.ic_delete
         )
     }
 
@@ -182,7 +183,7 @@ fun WikiPageScreenContent(
             Spacer(Modifier.height(8.dp))
 
             TextFieldWithHint(
-                hintId = R.string.description_hint,
+                hintId = RString.description_hint,
                 value = state.description,
                 onValueChange = { state.setDescription(it) },
             )
@@ -222,7 +223,7 @@ fun WikiPageScreenContent(
                 // last modification
                 item {
                     Text(
-                        text = stringResource(R.string.last_modification),
+                        text = stringResource(RString.last_modification),
                         style = MaterialTheme.typography.titleMedium
                     )
 

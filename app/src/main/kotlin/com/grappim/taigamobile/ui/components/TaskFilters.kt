@@ -22,7 +22,6 @@ import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetLayout
 import androidx.compose.material.ModalBottomSheetState
 import androidx.compose.material.ModalBottomSheetValue
@@ -40,7 +39,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
@@ -54,22 +52,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.domain.entities.Filter
-import com.grappim.taigamobile.domain.entities.FiltersData
-import com.grappim.taigamobile.domain.entities.RolesFilter
-import com.grappim.taigamobile.domain.entities.StatusesFilter
-import com.grappim.taigamobile.domain.entities.TagsFilter
-import com.grappim.taigamobile.domain.entities.UsersFilter
-import com.grappim.taigamobile.domain.entities.hasData
-import com.grappim.taigamobile.ui.components.badges.Badge
-import com.grappim.taigamobile.ui.components.editors.TextFieldWithHint
-import com.grappim.taigamobile.ui.components.editors.searchFieldHorizontalPadding
-import com.grappim.taigamobile.ui.components.editors.searchFieldVerticalPadding
-import com.grappim.taigamobile.ui.theme.TaigaMobileTheme
-import com.grappim.taigamobile.ui.theme.dialogTonalElevation
-import com.grappim.taigamobile.ui.utils.clickableUnindicated
-import com.grappim.taigamobile.ui.utils.toColor
+import com.grappim.taigamobile.core.domain.Filter
+import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.RolesFilter
+import com.grappim.taigamobile.core.domain.StatusesFilter
+import com.grappim.taigamobile.core.domain.TagsFilter
+import com.grappim.taigamobile.core.domain.UsersFilter
+import com.grappim.taigamobile.core.domain.hasData
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.uikit.widgets.editor.searchFieldHorizontalPadding
+import com.grappim.taigamobile.uikit.widgets.editor.searchFieldVerticalPadding
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.utils.clickableUnindicated
+import com.grappim.taigamobile.uikit.widgets.Chip
+import com.grappim.taigamobile.uikit.widgets.badge.Badge
+import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.coroutines.launch
 
 /**
@@ -102,11 +102,6 @@ fun TasksFiltersWithLazyList(
  * Filters for tasks (like status, assignees etc.).
  * Filters are placed in bottom sheet dialog as expandable options
  */
-
-@OptIn(
-    ExperimentalMaterialApi::class, ExperimentalComposeUiApi::class,
-    ExperimentalLayoutApi::class
-)
 @Composable
 fun TaskFilters(
     selected: FiltersData,
@@ -116,8 +111,6 @@ fun TaskFilters(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = Modifier.fillMaxWidth()
 ) {
-    // search field
-
     var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             TextFieldValue(
@@ -127,7 +120,7 @@ fun TaskFilters(
     }
 
     TextFieldWithHint(
-        hintId = R.string.tasks_search_hint,
+        hintId = RString.tasks_search_hint,
         value = query,
         onValueChange = { query = it },
         onSearchClick = { onSelect(selected.copy(query = query.text)) },
@@ -164,13 +157,13 @@ fun TaskFilters(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                painter = painterResource(R.drawable.ic_filter),
+                painter = painterResource(RDrawable.ic_filter),
                 contentDescription = null
             )
 
             Spacer(Modifier.width(space))
 
-            Text(stringResource(R.string.show_filters))
+            Text(stringResource(RString.show_filters))
 
             selected.filtersNumber.takeIf { it > 0 }?.let {
                 Spacer(Modifier.width(space))
@@ -212,7 +205,7 @@ fun TaskFilters(
                                 .padding(space)
                         ) {
                             Text(
-                                text = stringResource(R.string.filters),
+                                text = stringResource(RString.filters),
                                 style = MaterialTheme.typography.headlineSmall,
                                 modifier = Modifier.padding(start = space)
                             )
@@ -259,7 +252,7 @@ fun TaskFilters(
                                     selected.assignees.forEach {
                                         FilterChip(
                                             filter = it,
-                                            noNameId = R.string.unassigned,
+                                            noNameId = RString.unassigned,
                                             onRemoveClick = { onSelect(selected.copy(assignees = selected.assignees - it)) }
                                         )
                                     }
@@ -281,7 +274,7 @@ fun TaskFilters(
                                     selected.epics.forEach {
                                         FilterChip(
                                             filter = it,
-                                            noNameId = R.string.not_in_an_epic,
+                                            noNameId = RString.not_in_an_epic,
                                             onRemoveClick = { onSelect(selected.copy(epics = selected.epics - it)) }
                                         )
                                     }
@@ -295,7 +288,7 @@ fun TaskFilters(
 
                                 unselectedFilters.types.ifHasData {
                                     Section(
-                                        titleId = R.string.type_title,
+                                        titleId = RString.type_title,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(types = selected.types + it)) }
                                     )
@@ -304,7 +297,7 @@ fun TaskFilters(
 
                                 unselectedFilters.severities.ifHasData {
                                     Section(
-                                        titleId = R.string.severity_title,
+                                        titleId = RString.severity_title,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(severities = selected.severities + it)) }
                                     )
@@ -313,7 +306,7 @@ fun TaskFilters(
 
                                 unselectedFilters.priorities.ifHasData {
                                     Section(
-                                        titleId = R.string.priority_title,
+                                        titleId = RString.priority_title,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(priorities = selected.priorities + it)) }
                                     )
@@ -322,7 +315,7 @@ fun TaskFilters(
 
                                 unselectedFilters.statuses.ifHasData {
                                     Section(
-                                        titleId = R.string.status_title,
+                                        titleId = RString.status_title,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(statuses = selected.statuses + it)) }
                                     )
@@ -331,7 +324,7 @@ fun TaskFilters(
 
                                 unselectedFilters.tags.ifHasData {
                                     Section(
-                                        titleId = R.string.tags_title,
+                                        titleId = RString.tags_title,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(tags = selected.tags + it)) }
                                     )
@@ -340,8 +333,8 @@ fun TaskFilters(
 
                                 unselectedFilters.assignees.ifHasData {
                                     Section(
-                                        titleId = R.string.assignees_title,
-                                        noNameId = R.string.unassigned,
+                                        titleId = RString.assignees_title,
+                                        noNameId = RString.unassigned,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(assignees = selected.assignees + it)) }
                                     )
@@ -350,7 +343,7 @@ fun TaskFilters(
 
                                 unselectedFilters.roles.ifHasData {
                                     Section(
-                                        titleId = R.string.role_title,
+                                        titleId = RString.role_title,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(roles = selected.roles + it)) }
                                     )
@@ -359,7 +352,7 @@ fun TaskFilters(
 
                                 unselectedFilters.createdBy.ifHasData {
                                     Section(
-                                        titleId = R.string.created_by_title,
+                                        titleId = RString.created_by_title,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(createdBy = selected.createdBy + it)) }
                                     )
@@ -368,8 +361,8 @@ fun TaskFilters(
 
                                 unselectedFilters.epics.ifHasData {
                                     Section(
-                                        titleId = R.string.epic_title,
-                                        noNameId = R.string.not_in_an_epic,
+                                        titleId = RString.epic_title,
+                                        noNameId = RString.not_in_an_epic,
                                         filters = it,
                                         onSelect = { onSelect(selected.copy(epics = selected.epics + it)) }
                                     )
@@ -412,7 +405,7 @@ private fun <T : Filter> Section(
             "arrow"
         ).animateFloat { if (it) 0f else -90f }
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_down),
+            painter = painterResource(RDrawable.ic_arrow_down),
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.rotate(arrowRotation),
             contentDescription = null
@@ -464,7 +457,7 @@ private fun FilterChip(
                     .clip(CircleShape)
             ) {
                 Icon(
-                    painter = painterResource(R.drawable.ic_remove),
+                    painter = painterResource(RDrawable.ic_remove),
                     contentDescription = null,
                     modifier = Modifier.size(22.dp)
                 )

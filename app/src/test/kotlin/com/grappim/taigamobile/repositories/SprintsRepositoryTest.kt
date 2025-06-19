@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.repositories
 
 import com.grappim.taigamobile.sprint.SprintsRepository
-import com.grappim.taigamobile.sprint.ISprintsRepository
-import com.grappim.taigamobile.testdata.TestData
+import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
+import com.grappim.taigamobile.TestData
 import kotlinx.coroutines.runBlocking
 import org.junit.Test
 import java.time.LocalDate

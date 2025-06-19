@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.data.api
 
-import com.grappim.taigamobile.state.Session
+import com.grappim.taigamobile.core.storage.Session
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Interceptor.Chain
