@@ -1,4 +1,5 @@
 The previous author archived the project. Let's see what I can do about it. As of now I updated the project for it to be launched and built.
+Ktlint, Detekt, Codacy, Codecov, Renovate are in place. The next thing is CI
 
 # Taiga Mobile Nova
 As of now I will try to fix any issues and keep the repo up-to-date 
