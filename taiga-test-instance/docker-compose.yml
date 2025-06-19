@@ -36,7 +36,7 @@ x-volumes:
 
 services:
   taiga-db:
-    image: postgres:12.3
+    image: postgres:12.22
     ports:
       - "5432:5432" # expose port for jdbc connection
     environment: *default-back-environment
