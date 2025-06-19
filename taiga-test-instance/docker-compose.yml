@@ -71,7 +71,7 @@ services:
       - taiga-async-rabbitmq
 
   taiga-async-rabbitmq:
-    image: rabbitmq:3.8-management-alpine
+    image: rabbitmq:3.13-management-alpine
     environment:
       RABBITMQ_ERLANG_COOKIE: secret-erlang-cookie
       RABBITMQ_DEFAULT_USER: taiga
@@ -105,7 +105,7 @@ services:
       - taiga-events-rabbitmq
 
   taiga-events-rabbitmq:
-    image: rabbitmq:3.8-management-alpine
+    image: rabbitmq:3.13-management-alpine
     environment:
       RABBITMQ_ERLANG_COOKIE: secret-erlang-cookie
       RABBITMQ_DEFAULT_USER: taiga
