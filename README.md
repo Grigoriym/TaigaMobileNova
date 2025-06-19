@@ -1,3 +1,5 @@
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/df9b05b34af1456fbb8fe75fbab0f6f2)](https://app.codacy.com/gh/Grigoriym/TaigaMobileNova/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+
 The previous author archived the project. Let's see what I can do about it. As of now I updated the project for it to be launched and built.
 Ktlint, Detekt, Codacy, Codecov, Renovate are in place. The next thing is CI
 
