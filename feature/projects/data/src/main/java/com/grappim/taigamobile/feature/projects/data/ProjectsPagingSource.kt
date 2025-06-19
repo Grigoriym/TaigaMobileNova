@@ -6,16 +6,13 @@ import com.grappim.taigamobile.core.domain.Project
 import kotlinx.coroutines.CancellationException
 import retrofit2.HttpException
 
-class ProjectsPagingSource(
-    private val projectsApi: ProjectsApi,
-    private val query: String,
-) : PagingSource<Int, Project>() {
-    override fun getRefreshKey(state: PagingState<Int, Project>): Int? {
-        return state.anchorPosition?.let { anchorPosition ->
+class ProjectsPagingSource(private val projectsApi: ProjectsApi, private val query: String) :
+    PagingSource<Int, Project>() {
+    override fun getRefreshKey(state: PagingState<Int, Project>): Int? =
+        state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
         }
-    }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Project> {
         try {
@@ -36,10 +33,10 @@ class ProjectsPagingSource(
                 return LoadResult.Page(
                     data = emptyList(),
                     prevKey = null,
-                    nextKey = null,
+                    nextKey = null
                 )
             }
-           return LoadResult.Error(e)
+            return LoadResult.Error(e)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

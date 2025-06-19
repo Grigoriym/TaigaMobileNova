@@ -41,6 +41,7 @@ fun TextFieldWithHint(
     @StringRes hintId: Int,
     value: TextFieldValue,
     onValueChange: (TextFieldValue) -> Unit,
+    modifier: Modifier = Modifier,
     horizontalPadding: Dp = 0.dp,
     verticalPadding: Dp = 0.dp,
     width: Dp? = null,
@@ -62,7 +63,7 @@ fun TextFieldWithHint(
 
     Box(
         contentAlignment = contentAlignment,
-        modifier = Modifier.let { m -> width?.let { m.width(it) } ?: m.fillMaxWidth() }
+        modifier = modifier.let { m -> width?.let { m.width(it) } ?: m.fillMaxWidth() }
             .heightIn(min = minHeight ?: Dp.Unspecified)
             .padding(horizontal = horizontalPadding, vertical = verticalPadding)
             .let {

@@ -29,22 +29,22 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.flow.flowOf
 
 @Composable
 fun ProjectSelectorScreen(
-    viewModel: ProjectSelectorViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
-    onProjectSelected: (isFromLogin: Boolean) -> Unit,
+    onProjectSelect: (isFromLogin: Boolean) -> Unit,
+    viewModel: ProjectSelectorViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -69,7 +69,7 @@ fun ProjectSelectorScreen(
         projects = lazyProjectItems,
         selectProject = {
             viewModel.selectProject(it)
-            onProjectSelected(state.isFromLogin)
+            onProjectSelect(state.isFromLogin)
         }
     )
 }
@@ -79,10 +79,11 @@ fun ProjectSelectorScreenContent(
     state: ProjectSelectorState,
     searchQuery: String,
     projects: LazyPagingItems<Project>,
+    modifier: Modifier = Modifier,
     selectProject: (Project) -> Unit = {}
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 10.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -115,58 +116,54 @@ fun ProjectSelectorScreenContent(
 }
 
 @Composable
-private fun ItemProject(
-    project: Project,
-    currentProjectId: Long,
-    onClick: () -> Unit = {}
-) = ContainerBox(
-    verticalPadding = 16.dp,
-    onClick = onClick
-) {
-    Row(
-        modifier = Modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+private fun ItemProject(project: Project, currentProjectId: Long, onClick: () -> Unit = {}) =
+    ContainerBox(
+        verticalPadding = 16.dp,
+        onClick = onClick
     ) {
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(0.8f)) {
+                project.takeIf { it.isMember || it.isAdmin || it.isOwner }?.let {
+                    Text(
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        text = stringResource(
+                            when {
+                                project.isOwner -> RString.project_owner
+                                project.isAdmin -> RString.project_admin
+                                project.isMember -> RString.project_member
+                                else -> 0
+                            }
+                        )
+                    )
+                }
 
-        Column(Modifier.weight(0.8f)) {
-            project.takeIf { it.isMember || it.isAdmin || it.isOwner }?.let {
                 Text(
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    text = stringResource(
-                        when {
-                            project.isOwner -> RString.project_owner
-                            project.isAdmin -> RString.project_admin
-                            project.isMember -> RString.project_member
-                            else -> 0
-                        }
+                    text = stringResource(RString.project_name_template).format(
+                        project.name,
+                        project.slug
                     )
                 )
             }
 
-            Text(
-                text = stringResource(RString.project_name_template).format(
-                    project.name,
-                    project.slug
+            if (project.id == currentProjectId) {
+                Image(
+                    painter = painterResource(RDrawable.ic_check),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.weight(0.2f)
                 )
-            )
-        }
-
-        if (project.id == currentProjectId) {
-            Image(
-                painter = painterResource(RDrawable.ic_check),
-                contentDescription = null,
-                colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
-                modifier = Modifier.weight(0.2f)
-            )
+            }
         }
     }
-}
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun ProjectSelectorScreenPreview() = TaigaMobileTheme {
+private fun ProjectSelectorScreenPreview() = TaigaMobileTheme {
     ProjectSelectorScreenContent(
         projects = flowOf(
             PagingData.empty<Project>()
@@ -175,6 +172,6 @@ fun ProjectSelectorScreenPreview() = TaigaMobileTheme {
         state = ProjectSelectorState(
             currentProjectId = 1L,
             setProjectsQuery = {}
-        ),
+        )
     )
 }

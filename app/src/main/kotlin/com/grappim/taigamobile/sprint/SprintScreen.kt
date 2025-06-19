@@ -51,11 +51,11 @@ import java.time.format.FormatStyle
 
 @Composable
 fun SprintScreen(
-    viewModel: SprintViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
     goBack: () -> Unit,
     goToTaskScreen: (Long, CommonTaskType, Int) -> Unit,
-    goToCreateTask: (CommonTaskType, Long?, Long) -> Unit
+    goToCreateTask: (CommonTaskType, Long?, Long) -> Unit,
+    viewModel: SprintViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
 
@@ -121,10 +121,10 @@ fun SprintScreen(
     )
 }
 
-
 @Composable
 fun SprintScreenContent(
     sprint: Sprint?,
+    modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     isEditLoading: Boolean = false,
     isDeleteLoading: Boolean = false,
@@ -138,7 +138,7 @@ fun SprintScreenContent(
     navigateToTask: NavigateToTask = { _, _, _ -> },
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
 ) = Column(
-    modifier = Modifier.fillMaxSize(),
+    modifier = modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
     val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
@@ -266,10 +266,9 @@ fun SprintScreenContent(
     }
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun SprintScreenPreview() = TaigaMobileTheme {
+private fun SprintScreenPreview() = TaigaMobileTheme {
     SprintScreenContent(
         sprint = Sprint(
             id = 0L,

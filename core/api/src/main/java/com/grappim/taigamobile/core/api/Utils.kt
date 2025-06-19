@@ -16,29 +16,29 @@ import retrofit2.HttpException
 
 fun CommonTaskResponse.toCommonTask(commonTaskType: CommonTaskType) = CommonTask(
     id = id,
-    createdDate = created_date,
+    createdDate = createdDate,
     title = subject,
     ref = ref,
     status = Status(
         id = status,
-        name = status_extra_info.name,
-        color = status_extra_info.color,
+        name = statusExtraInfo.name,
+        color = statusExtraInfo.color,
         type = StatusType.Status
     ),
-    assignee = assigned_to_extra_info,
-    projectInfo = project_extra_info,
+    assignee = assignedToExtraInfo,
+    projectInfo = projectExtraInfo,
     taskType = commonTaskType,
     colors = color?.let { listOf(it) } ?: epics.orEmpty().map { it.color },
-    isClosed = is_closed,
+    isClosed = isClosed,
     tags = tags.orEmpty().map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
-    blockedNote = blocked_note.takeIf { is_blocked }
+    blockedNote = blockedNote.takeIf { isBlocked }
 )
 
 private val taigaGrayHex by lazy { taigaGray.toHex() }
 fun String?.fixNullColor() =
     this ?: taigaGrayHex // gray, because api returns null instead of gray -_-
 
-//TODO somehow remove it and use the general one
+// TODO somehow remove it and use the general one
 private fun Color.toHex() = "#%08X".format(toArgb()).replace("#FF", "#")
 
 suspend fun <T> withIO(block: suspend CoroutineScope.() -> T): T =

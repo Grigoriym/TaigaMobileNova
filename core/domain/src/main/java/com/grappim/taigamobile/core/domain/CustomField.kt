@@ -8,18 +8,25 @@ import java.time.LocalDate
 enum class CustomFieldType {
     @Json(name = "text")
     Text,
+
     @Json(name = "multiline")
     Multiline,
+
     @Json(name = "richtext")
     RichText,
+
     @Json(name = "date")
     Date,
+
     @Json(name = "url")
     Url,
+
     @Json(name = "dropdown")
     Dropdown,
+
     @Json(name = "number")
     Number,
+
     @Json(name = "checkbox")
     Checkbox
 }
@@ -30,7 +37,8 @@ data class CustomField(
     val name: String,
     val description: String?,
     val value: CustomFieldValue?,
-    val options: List<String>? = null // for CustomFieldType.Dropdown
+    // for CustomFieldType.Dropdown
+    val options: List<String>? = null
 )
 
 @JvmInline
@@ -38,9 +46,9 @@ value class CustomFieldValue(val value: Any) {
     init {
         require(
             value is String ||
-                    value is LocalDate ||
-                    value is Double ||
-                    value is Boolean
+                value is LocalDate ||
+                value is Double ||
+                value is Boolean
         )
     }
 
@@ -52,8 +60,4 @@ value class CustomFieldValue(val value: Any) {
         get() = value as? Boolean ?: throw IllegalArgumentException("value is not Boolean")
 }
 
-
-data class CustomFields(
-    val fields: List<CustomField>,
-    val version: Int
-)
+data class CustomFields(val fields: List<CustomField>, val version: Int)

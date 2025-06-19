@@ -64,9 +64,9 @@ import timber.log.Timber
 
 @Composable
 fun SettingsScreen(
-    viewModel: SettingsViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
-    onLogout: () -> Unit
+    onLogout: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
@@ -74,7 +74,7 @@ fun SettingsScreen(
 
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(RString.settings),
+                title = NativeText.Resource(RString.settings)
             )
         )
     }
@@ -105,12 +105,13 @@ fun SettingsScreenContent(
     avatarUrl: String?,
     displayName: String,
     username: String,
+    modifier: Modifier = Modifier,
     logout: () -> Unit = {},
     themeSetting: ThemeSetting = ThemeSetting.System,
     switchTheme: (ThemeSetting) -> Unit = {}
 ) {
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(20.dp))
@@ -121,7 +122,8 @@ fun SettingsScreenContent(
                         block = fun ImageRequest.Builder.() {
                             error(RDrawable.default_avatar)
                             crossfade(true)
-                        }).build()
+                        }
+                    ).build()
             ),
             contentDescription = null,
             contentScale = ContentScale.Crop,
@@ -145,7 +147,7 @@ fun SettingsScreenContent(
         }
 
         IconButton(
-            onClick = { isAlertVisible = true },
+            onClick = { isAlertVisible = true }
         ) {
             Icon(
                 painter = painterResource(RDrawable.ic_logout),
@@ -158,7 +160,7 @@ fun SettingsScreenContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
                 text = displayName,
@@ -182,7 +184,7 @@ fun SettingsScreenContent(
         Spacer(modifier = Modifier.height(24.dp))
 
         Column(
-            horizontalAlignment = Alignment.Start,
+            horizontalAlignment = Alignment.Start
         ) {
             SettingsBlock(
                 titleId = RString.appearance,
@@ -203,7 +205,7 @@ fun SettingsScreenContent(
                         DropdownSelector(
                             items = ThemeSetting.entries,
                             selectedItem = themeSetting,
-                            onItemSelected = { switchTheme(it) },
+                            onItemSelect = { switchTheme(it) },
                             itemContent = {
                                 Text(
                                     text = titleForThemeSetting(it),
@@ -231,7 +233,7 @@ fun SettingsScreenContent(
             Text(
                 text = state.appInfo,
                 style = MaterialTheme.typography.bodyLarge.merge(TextStyle(fontSize = 18.sp)),
-                color = MaterialTheme.colorScheme.outline,
+                color = MaterialTheme.colorScheme.outline
             )
 
             val activity = LocalContext.current.activity
@@ -260,10 +262,7 @@ fun SettingsScreenContent(
 }
 
 @Composable
-private fun SettingsBlock(
-    @StringRes titleId: Int,
-    items: List<@Composable () -> Unit>
-) {
+private fun SettingsBlock(@StringRes titleId: Int, items: List<@Composable () -> Unit>) {
     val verticalPadding = 2.dp
 
     Text(
@@ -312,7 +311,7 @@ private fun SettingItem(
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun SettingsScreenPreview() = TaigaMobileTheme {
+private fun SettingsScreenPreview() = TaigaMobileTheme {
     SettingsScreenContent(
         avatarUrl = null,
         displayName = "Cool Name",

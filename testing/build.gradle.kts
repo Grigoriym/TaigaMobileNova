@@ -17,7 +17,6 @@ dependencies {
     api(libs.androidx.arch.core.testing)
     api(libs.androidx.test.runner)
     api(libs.androidx.test.rules)
-    api(libs.androidx.test.espresso.core)
     api(libs.androidx.test.core)
     api(libs.androidx.compose.ui.test)
     api(libs.androidx.navigation.compose)

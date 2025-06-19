@@ -22,16 +22,16 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
-import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.ui.utils.SuccessResult
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 
 @Composable
 fun CreateTaskScreen(
@@ -55,7 +55,7 @@ fun CreateTaskScreen(
                             state.onCreateTask()
                         }
                     )
-                ),
+                )
             )
         )
     }
@@ -71,17 +71,18 @@ fun CreateTaskScreen(
 
     CreateTaskScreenContent(
         state = state,
-        isLoading = creationResult is LoadingResult,
+        isLoading = creationResult is LoadingResult
     )
 }
 
 @Composable
 fun CreateTaskScreenContent(
     state: CreateTaskState,
-    isLoading: Boolean = false,
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .imePadding()
     ) {
@@ -95,7 +96,6 @@ fun CreateTaskScreenContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = mainHorizontalScreenPadding)
         ) {
-
             Spacer(Modifier.height(8.dp))
 
             TextFieldWithHint(
@@ -111,7 +111,7 @@ fun CreateTaskScreenContent(
             TextFieldWithHint(
                 hintId = RString.description_hint,
                 value = state.description,
-                onValueChange = { state.setDescription(it) },
+                onValueChange = { state.setDescription(it) }
             )
         }
     }
@@ -119,7 +119,7 @@ fun CreateTaskScreenContent(
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun CreateTaskScreenPreview() = TaigaMobileTheme {
+private fun CreateTaskScreenPreview() = TaigaMobileTheme {
     CreateTaskScreenContent(
         state = CreateTaskState(
             setTitle = {},

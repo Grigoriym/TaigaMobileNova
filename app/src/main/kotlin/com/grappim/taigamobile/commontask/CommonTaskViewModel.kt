@@ -32,6 +32,7 @@ import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import com.grappim.taigamobile.utils.ui.NativeText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -95,34 +96,34 @@ class CommonTaskViewModel @Inject constructor(
     )
     val state = _state.asStateFlow()
 
-    val commonTask = MutableResultFlow<CommonTaskExtended>()
+    val commonTask = mutableResultFlow<CommonTaskExtended>()
 
-    val creator = MutableResultFlow<User>()
-    val customFields = MutableResultFlow<CustomFields>()
-    val attachments = MutableResultFlow<List<Attachment>>()
-    val assignees = MutableResultFlow<List<User>>()
-    val watchers = MutableResultFlow<List<User>>()
-    val userStories = MutableResultFlow<List<CommonTask>>()
-    val tasks = MutableResultFlow<List<CommonTask>>()
-    val comments = MutableResultFlow<List<Comment>>()
+    val creator = mutableResultFlow<User>()
+    val customFields = mutableResultFlow<CustomFields>()
+    val attachments = mutableResultFlow<List<Attachment>>()
+    val assignees = mutableResultFlow<List<User>>()
+    val watchers = mutableResultFlow<List<User>>()
+    val userStories = mutableResultFlow<List<CommonTask>>()
+    val tasks = mutableResultFlow<List<CommonTask>>()
+    val comments = mutableResultFlow<List<Comment>>()
 
-    val team = MutableResultFlow<List<User>>()
-    val tags = MutableResultFlow<List<Tag>>()
-    val swimlanes = MutableResultFlow<List<Swimlane>>()
-    val statuses = MutableResultFlow<Map<StatusType, List<Status>>>()
+    val team = mutableResultFlow<List<User>>()
+    val tags = mutableResultFlow<List<Tag>>()
+    val swimlanes = mutableResultFlow<List<Swimlane>>()
+    val statuses = mutableResultFlow<Map<StatusType, List<Status>>>()
 
     val isAssignedToMe =
-        assignees.map { session.currentUserId.value in it.data?.map { it.id }.orEmpty() }
+        assignees.map { session.currentUserId.value in it.data?.map { it.actualId }.orEmpty() }
             .stateIn(viewModelScope, SharingStarted.Lazily, false)
     val isWatchedByMe =
-        watchers.map { session.currentUserId.value in it.data?.map { it.id }.orEmpty() }
+        watchers.map { session.currentUserId.value in it.data?.map { it.actualId }.orEmpty() }
             .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
     val sprints = sprintsRepository.getSprints()
         .map { it.insertHeaderItem(item = SPRINT_HEADER) }
         .cachedIn(viewModelScope)
 
-    val editSprintResult = MutableResultFlow<Unit>(NothingResult())
+    val editSprintResult = mutableResultFlow<Unit>(NothingResult())
 
     private val epicsQuery = MutableStateFlow("")
 
@@ -130,7 +131,7 @@ class CommonTaskViewModel @Inject constructor(
         epicsRepository.getEpics(FiltersData(query = query))
     }.cachedIn(viewModelScope)
 
-    val editBasicInfoResult = MutableResultFlow<Unit>()
+    val editBasicInfoResult = mutableResultFlow<Unit>()
 
     init {
         loadData(isReloading = false)
@@ -169,7 +170,6 @@ class CommonTaskViewModel @Inject constructor(
     private fun loadData(isReloading: Boolean = true) = viewModelScope.launch {
         commonTask.loadOrError(showLoading = !isReloading) {
             tasksRepository.getCommonTask(commonTaskId, _state.value.commonTaskType).also {
-
                 suspend fun MutableResultFlow<List<User>>.loadUsersFromIds(ids: List<Long>) =
                     loadOrError(showLoading = false) {
                         coroutineScope {
@@ -181,7 +181,9 @@ class CommonTaskViewModel @Inject constructor(
 
                 val jobsToLoad = arrayOf(
                     launch {
-                        creator.loadOrError(showLoading = false) { usersRepository.getUser(it.creatorId) }
+                        creator.loadOrError(showLoading = false) {
+                            usersRepository.getUser(it.creatorId)
+                        }
                     },
                     launch {
                         customFields.loadOrError(showLoading = false) {
@@ -238,15 +240,20 @@ class CommonTaskViewModel @Inject constructor(
                                     .also { teamSearched.value = it }
                             }
                         },
+                        // prepend "unclassified"
                         launch {
                             swimlanes.loadOrError(showLoading = false) {
-                                listOf(SWIMLANE_HEADER) + tasksRepository.getSwimlanes() // prepend "unclassified"
+                                listOf(SWIMLANE_HEADER) + tasksRepository.getSwimlanes()
                             }
                         },
                         launch {
                             statuses.loadOrError(showLoading = false) {
-                                StatusType.values().filter {
-                                    if (_state.value.commonTaskType != CommonTaskType.Issue) it == StatusType.Status else true
+                                StatusType.entries.filter {
+                                    if (_state.value.commonTaskType != CommonTaskType.Issue) {
+                                        it == StatusType.Status
+                                    } else {
+                                        true
+                                    }
                                 }.associateWith {
                                     tasksRepository.getStatusByType(
                                         _state.value.commonTaskType,
@@ -274,7 +281,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     // Edit status (and also type, severity, priority)
-    val editStatusResult = MutableResultFlow<StatusType>()
+    val editStatusResult = mutableResultFlow<StatusType>()
 
     fun editStatus(status: Status) = viewModelScope.launch {
         editStatusResult.value = LoadingResult(status.type)
@@ -317,8 +324,11 @@ class CommonTaskViewModel @Inject constructor(
             tasksRepository.editAssignees(
                 commonTask.value.data!!,
                 commonTask.value.data!!.assignedIds.let {
-                    if (remove) it - userId
-                    else it + userId
+                    if (remove) {
+                        it - userId
+                    } else {
+                        it + userId
+                    }
                 }
             )
 
@@ -343,8 +353,11 @@ class CommonTaskViewModel @Inject constructor(
             tasksRepository.editWatchers(
                 commonTask.value.data!!,
                 commonTask.value.data?.watcherIds.orEmpty().let {
-                    if (remove) it - userId
-                    else it + userId
+                    if (remove) {
+                        it - userId
+                    } else {
+                        it + userId
+                    }
                 }
             )
 
@@ -374,7 +387,7 @@ class CommonTaskViewModel @Inject constructor(
 
             tasksRepository.editTags(
                 commonTask.value.data!!,
-                commonTask.value.data!!.tags.let { if (remove) it - tag else it + tag },
+                commonTask.value.data!!.tags.let { if (remove) it - tag else it + tag }
             )
 
             loadData().join()
@@ -400,7 +413,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     // Due date
-    val editDueDateResult = MutableResultFlow<Unit>()
+    val editDueDateResult = mutableResultFlow<Unit>()
 
     fun editDueDate(date: LocalDate?) = viewModelScope.launch {
         editDueDateResult.loadOrError(RString.permission_error) {
@@ -410,7 +423,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     // Epic color
-    val editEpicColorResult = MutableResultFlow<Unit>()
+    val editEpicColorResult = mutableResultFlow<Unit>()
 
     fun editEpicColor(color: String) = viewModelScope.launch {
         editEpicColorResult.loadOrError(RString.permission_error) {
@@ -420,7 +433,7 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    val editBlockedResult = MutableResultFlow<Unit>()
+    val editBlockedResult = mutableResultFlow<Unit>()
 
     fun editBlocked(blockedNote: String?) = viewModelScope.launch {
         editBlockedResult.loadOrError(RString.permission_error) {
@@ -434,7 +447,7 @@ class CommonTaskViewModel @Inject constructor(
         epicsQuery.value = query
     }
 
-    val linkToEpicResult = MutableResultFlow<Unit>(NothingResult())
+    val linkToEpicResult = mutableResultFlow<Unit>(NothingResult())
 
     fun linkToEpic(epic: CommonTask) = viewModelScope.launch {
         linkToEpicResult.loadOrError(RString.permission_error) {
@@ -475,7 +488,6 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-
     fun deleteAttachment(attachment: Attachment) = viewModelScope.launch {
         attachments.loadOrError(RString.permission_error) {
             tasksRepository.deleteAttachment(_state.value.commonTaskType, attachment.id)
@@ -498,7 +510,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     // Delete task
-    val deleteResult = MutableResultFlow<Unit>()
+    val deleteResult = mutableResultFlow<Unit>()
 
     fun deleteTask() = viewModelScope.launch {
         deleteResult.loadOrError(RString.permission_error) {
@@ -507,7 +519,7 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    val promoteResult = MutableResultFlow<CommonTask>()
+    val promoteResult = mutableResultFlow<CommonTask>()
 
     fun promoteToUserStory() = viewModelScope.launch {
         promoteResult.loadOrError(RString.permission_error, preserveValue = false) {
@@ -532,6 +544,5 @@ class CommonTaskViewModel @Inject constructor(
                 loadData().join()
                 customFields.value.data
             }
-
         }
 }

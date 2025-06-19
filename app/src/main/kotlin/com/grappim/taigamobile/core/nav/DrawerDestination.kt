@@ -23,37 +23,51 @@ fun DrawerDestination.navigate(navController: NavHostController, navOptions: Nav
 enum class DrawerDestination(
     val route: Any,
     @StringRes val label: Int,
-    @DrawableRes val icon: Int,
+    @DrawableRes val icon: Int
 ) {
     ProjectSelector(
         ProjectSelectorNavDestination(),
         RString.project_selector,
-        RDrawable.ic_folder,
+        RDrawable.ic_folder
     ),
     Dashboard(
         DashboardNavDestination,
         RString.dashboard_short,
-        RDrawable.ic_dashboard,
+        RDrawable.ic_dashboard
     ),
     Scrum(
-        ScrumNavDestination, RString.scrum, RDrawable.ic_scrum,
+        ScrumNavDestination,
+        RString.scrum,
+        RDrawable.ic_scrum
     ),
     Epics(
-        EpicsNavDestination, RString.epics, RDrawable.ic_epics,
+        EpicsNavDestination,
+        RString.epics,
+        RDrawable.ic_epics
     ),
     Issues(
-        IssuesNavDestination, RString.issues, RDrawable.ic_issues,
+        IssuesNavDestination,
+        RString.issues,
+        RDrawable.ic_issues
     ),
     Kanban(
-        KanbanNavDestination, RString.kanban, RDrawable.ic_kanban,
+        KanbanNavDestination,
+        RString.kanban,
+        RDrawable.ic_kanban
     ),
     Team(
-        TeamNavDestination, RString.team, RDrawable.ic_team,
+        TeamNavDestination,
+        RString.team,
+        RDrawable.ic_team
     ),
     Wiki(
-        WikiNavDestination, RString.wiki, RDrawable.ic_wiki,
+        WikiNavDestination,
+        RString.wiki,
+        RDrawable.ic_wiki
     ),
     Settings(
-        SettingsNavDestination, RString.settings, RDrawable.ic_settings,
-    ),
+        SettingsNavDestination,
+        RString.settings,
+        RDrawable.ic_settings
+    )
 }

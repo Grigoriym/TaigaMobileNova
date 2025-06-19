@@ -30,18 +30,18 @@ import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 /**
  * Dropdown selector with animated arrow
  */
-
 @Composable
 fun <T> DropdownSelector(
     items: List<T>,
     selectedItem: T,
-    onItemSelected: (T) -> Unit,
+    onItemSelect: (T) -> Unit,
     itemContent: @Composable (T) -> Unit,
     selectedItemContent: @Composable (T) -> Unit,
+    modifier: Modifier = Modifier,
     takeMaxWidth: Boolean = false,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     tint: Color = MaterialTheme.colorScheme.primary,
-    onExpanded: () -> Unit = {},
+    onExpand: () -> Unit = {},
     onDismissRequest: () -> Unit = {}
 ) {
     var isExpanded by remember { mutableStateOf(false) }
@@ -49,9 +49,9 @@ fun <T> DropdownSelector(
     val transitionState = remember { MutableTransitionState(isExpanded) }
     transitionState.targetState = isExpanded
 
-    if (isExpanded) onExpanded()
+    if (isExpanded) onExpand()
 
-    Column {
+    Column(modifier = modifier) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = horizontalArrangement,
@@ -61,7 +61,6 @@ fun <T> DropdownSelector(
                     isExpanded = !isExpanded
                 }
         ) {
-
             selectedItemContent(selectedItem)
 
             val arrowRotation by rememberTransition(
@@ -91,7 +90,7 @@ fun <T> DropdownSelector(
                 DropdownMenuItem(
                     onClick = {
                         isExpanded = false
-                        onItemSelected(it)
+                        onItemSelect(it)
                     },
                     text = {
                         itemContent(it)

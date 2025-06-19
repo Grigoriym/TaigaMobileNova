@@ -5,8 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.feature.wiki.domain.IWikiRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiPage
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,9 +15,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class WikiCreatePageViewModel @Inject constructor(
-    private val wikiRepository: IWikiRepository
-) : ViewModel() {
+class WikiCreatePageViewModel @Inject constructor(private val wikiRepository: IWikiRepository) :
+    ViewModel() {
 
     private val _state = MutableStateFlow(
         WikiCreatePageState(
@@ -28,7 +27,7 @@ class WikiCreatePageViewModel @Inject constructor(
     )
     val state = _state.asStateFlow()
 
-    val creationResult = MutableResultFlow<WikiPage>()
+    val creationResult = mutableResultFlow<WikiPage>()
 
     private fun setTitle(title: TextFieldValue) {
         _state.update {

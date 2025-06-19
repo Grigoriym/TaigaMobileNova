@@ -102,20 +102,14 @@ data class StatusesFilter(
 ) : Filter
 
 @JsonClass(generateAdapter = true)
-data class UsersFilter(
-    override val id: Long?,
-    override val name: String,
-    override val count: Int
-) : Filter {
+data class UsersFilter(override val id: Long?, override val name: String, override val count: Int) :
+    Filter {
     override val color: String? = null
 }
 
 @JsonClass(generateAdapter = true)
-data class RolesFilter(
-    override val id: Long,
-    override val name: String,
-    override val count: Int
-) : Filter {
+data class RolesFilter(override val id: Long, override val name: String, override val count: Int) :
+    Filter {
     override val color: String? = null
 }
 
@@ -129,11 +123,8 @@ data class TagsFilter(
 }
 
 @JsonClass(generateAdapter = true)
-data class EpicsFilter(
-    override val id: Long?,
-    override val name: String,
-    override val count: Int
-) : Filter {
+data class EpicsFilter(override val id: Long?, override val name: String, override val count: Int) :
+    Filter {
     override val color: String? = null
 }
 
@@ -141,6 +132,5 @@ fun List<Filter>.commaString() = map { it.id }
     .joinToString(separator = ",")
     .takeIf { it.isNotEmpty() }
 
-fun List<TagsFilter>.tagsCommaString() =
-    joinToString(separator = ",") { it.name.replace(" ", "+") }
-        .takeIf { it.isNotEmpty() }
+fun List<TagsFilter>.tagsCommaString() = joinToString(separator = ",") { it.name.replace(" ", "+") }
+    .takeIf { it.isNotEmpty() }

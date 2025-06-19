@@ -21,11 +21,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlin.reflect.KClass
 
 @Composable
-fun rememberMainAppState(navController: NavHostController = rememberNavController()): MainAppState {
-    return remember(navController) {
+fun rememberMainAppState(navController: NavHostController = rememberNavController()): MainAppState =
+    remember(navController) {
         MainAppState(navController)
     }
-}
 
 /**
  * Responsible for holding state related to navigation-wide data.
@@ -61,7 +60,7 @@ class MainAppState(val navController: NavHostController) {
         @Composable get() = currentTopLevelDestination != null
 
     private val destinationsWithoutTopBar = setOf<KClass<out Any>>(
-        LoginNavDestination::class,
+        LoginNavDestination::class
     )
 
     val isTopBarVisible: Boolean

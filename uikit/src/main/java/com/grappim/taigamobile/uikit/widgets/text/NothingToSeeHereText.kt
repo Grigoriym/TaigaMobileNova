@@ -14,9 +14,9 @@ import com.grappim.taigamobile.strings.RString
  * Common nothing to see here text
  */
 @Composable
-fun NothingToSeeHereText() {
+fun NothingToSeeHereText(modifier: Modifier = Modifier) {
     Box(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.Center
     ) {
         Text(

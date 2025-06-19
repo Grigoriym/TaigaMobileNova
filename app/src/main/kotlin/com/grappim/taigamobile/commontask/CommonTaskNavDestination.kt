@@ -5,11 +5,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class CommonTaskNavDestination(
-    val taskId: Long,
-    val taskType: CommonTaskType,
-    val ref: Int
-)
+data class CommonTaskNavDestination(val taskId: Long, val taskType: CommonTaskType, val ref: Int)
 
 fun NavController.navigateToCommonTask(destination: CommonTaskNavDestination) {
     navigate(route = destination)

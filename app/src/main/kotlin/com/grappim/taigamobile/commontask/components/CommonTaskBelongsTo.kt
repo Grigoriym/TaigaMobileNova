@@ -87,7 +87,7 @@ fun LazyListScope.CommonTaskBelongsTo(
 private fun EpicItemWithAction(
     epic: EpicShortInfo,
     onClick: () -> Unit,
-    onRemoveClick: () -> Unit,
+    onRemoveClick: () -> Unit
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
@@ -115,7 +115,7 @@ private fun EpicItemWithAction(
         modifier = Modifier
             .weight(1f)
             .padding(end = 4.dp)
-            .clickableUnindicated(onClick = onClick),
+            .clickableUnindicated(onClick = onClick)
     )
 
     IconButton(
@@ -133,10 +133,7 @@ private fun EpicItemWithAction(
 }
 
 @Composable
-private fun UserStoryItem(
-    story: UserStoryShortInfo,
-    onClick: () -> Unit
-) = CommonTaskTitle(
+private fun UserStoryItem(story: UserStoryShortInfo, onClick: () -> Unit) = CommonTaskTitle(
     ref = story.ref,
     title = story.title,
     textColor = MaterialTheme.colorScheme.primary,

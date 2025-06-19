@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.login.data
 
 import com.grappim.taigamobile.core.api.ApiConstants
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.data.api.RefreshTokenRequest
 import com.grappim.taigamobile.data.api.RefreshTokenRequestJsonAdapter
 import com.grappim.taigamobile.data.api.RefreshTokenResponseJsonAdapter
-import com.grappim.taigamobile.core.storage.Session
 import com.squareup.moshi.Moshi
 import okhttp3.Authenticator
 import okhttp3.MediaType.Companion.toMediaType
@@ -21,7 +21,7 @@ import javax.inject.Singleton
 class TaigaAuthenticator @Inject constructor(
     private val session: Session,
     private val moshi: Moshi,
-    private val okHttpClient: OkHttpClient,
+    private val okHttpClient: OkHttpClient
 ) : Authenticator {
     override fun authenticate(route: Route?, response: Response): Request? {
         val currentToken = response.request.header(ApiConstants.AUTHORIZATION) ?: return null
@@ -47,7 +47,7 @@ class TaigaAuthenticator @Inject constructor(
                         .fromJson(
                             okHttpClient.newCall(request).execute().body?.string().orEmpty()
                         )
-                        ?: throw IllegalStateException("Cannot parse RefreshResponse")
+                        ?: error("Cannot parse RefreshResponse")
 
                     session.changeAuthCredentials(
                         refreshResponse.authToken,

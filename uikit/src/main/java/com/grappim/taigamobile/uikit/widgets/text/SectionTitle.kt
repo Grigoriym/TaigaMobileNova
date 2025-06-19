@@ -34,13 +34,14 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 @Composable
 fun SectionTitle(
     text: String,
+    modifier: Modifier = Modifier,
     horizontalPadding: Dp = 0.dp,
     bottomPadding: Dp = 6.dp,
     onAddClick: (() -> Unit)? = null
 ) = Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = Modifier
+    modifier = modifier
         .height(IntrinsicSize.Min)
         .fillMaxWidth()
         .padding(horizontal = horizontalPadding)

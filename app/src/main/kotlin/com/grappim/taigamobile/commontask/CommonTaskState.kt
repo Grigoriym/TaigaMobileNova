@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.commontask
 
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.utils.ui.NativeText
 
 data class CommonTaskState(
     val commonTaskType: CommonTaskType,
@@ -24,5 +24,5 @@ data class CommonTaskState(
     val setPromoteAlertVisible: (Boolean) -> Unit,
 
     val isBlockDialogVisible: Boolean = false,
-    val setBlockDialogVisible: (Boolean) -> Unit,
+    val setBlockDialogVisible: (Boolean) -> Unit
 )

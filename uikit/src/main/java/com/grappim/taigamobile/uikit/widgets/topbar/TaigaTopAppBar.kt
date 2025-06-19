@@ -25,12 +25,12 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaigaTopAppBar(
-    modifier: Modifier = Modifier,
     isVisible: Boolean,
     drawerState: DrawerState,
     topBarConfig: TopBarConfig,
     isMenuButton: Boolean,
-    goBack: () -> Unit
+    goBack: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     if (isVisible) {
@@ -40,7 +40,7 @@ fun TaigaTopAppBar(
                 Text(
                     topBarConfig.title.asString(context),
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                    overflow = TextOverflow.Ellipsis
                 )
             },
             navigationIcon = {
@@ -57,23 +57,19 @@ fun TaigaTopAppBar(
                             is TopBarActionResource -> {
                                 Icon(
                                     painter = painterResource(action.drawable),
-                                    contentDescription = action.contentDescription,
+                                    contentDescription = action.contentDescription
                                 )
                             }
                         }
                     }
                 }
-            },
+            }
         )
     }
 }
 
 @Composable
-private fun NavigationIcon(
-    drawerState: DrawerState,
-    showMenuButton: Boolean,
-    goBack: () -> Unit,
-) {
+private fun NavigationIcon(drawerState: DrawerState, showMenuButton: Boolean, goBack: () -> Unit) {
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
     if (showMenuButton) {

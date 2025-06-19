@@ -39,116 +39,119 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 fun ProjectCard(
     project: Project,
     isCurrent: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {}
-) = Surface(
-    shape = MaterialTheme.shapes.small,
-    border = if (isCurrent) {
-        BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-    } else {
-        BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
-    },
-    modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = mainHorizontalScreenPadding, vertical = 4.dp)
 ) {
-    Column(
-        modifier = Modifier
+    Surface(
+        modifier = modifier
             .fillMaxWidth()
-            .clickable(
-                interactionSource = remember { MutableInteractionSource() },
-                indication = ripple(),
-                onClick = onClick
-            )
-            .padding(16.dp)
+            .padding(horizontal = mainHorizontalScreenPadding, vertical = 4.dp),
+        shape = MaterialTheme.shapes.small,
+        border = if (isCurrent) {
+            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+        } else {
+            BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
+        }
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current).data(
-                        project.avatarUrl ?: RDrawable.default_avatar
-                    ).apply(fun ImageRequest.Builder.() {
-                        error(RDrawable.default_avatar)
-                        crossfade(true)
-                    }).build()
-                ),
-                contentDescription = null,
-                modifier = Modifier.size(46.dp)
-            )
-
-            Spacer(Modifier.width(8.dp))
-
-            Column {
-                Text(
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    text = stringResource(
-                        when {
-                            project.isOwner -> RString.project_owner
-                            project.isAdmin -> RString.project_admin
-                            else -> RString.project_member
-                        }
-                    )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    interactionSource = remember { MutableInteractionSource() },
+                    indication = ripple(),
+                    onClick = onClick
                 )
-
-                Spacer(Modifier.height(4.dp))
-
-                Text(
-                    text = project.name,
-                    style = MaterialTheme.typography.bodyLarge
-                )
-            }
-        }
-
-        project.description?.let {
-            Spacer(Modifier.height(4.dp))
-            Text(
-                text = it,
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
-
-        Spacer(Modifier.height(8.dp))
-
-        CompositionLocalProvider(
-            LocalContentColor provides MaterialTheme.colorScheme.outline
+                .padding(16.dp)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                val iconSize = 18.dp
-                val indicatorsSpacing = 8.dp
+                Image(
+                    painter = rememberAsyncImagePainter(
+                        ImageRequest.Builder(LocalContext.current).data(
+                            project.avatarUrl ?: RDrawable.default_avatar
+                        ).apply(fun ImageRequest.Builder.() {
+                            error(RDrawable.default_avatar)
+                            crossfade(true)
+                        }).build()
+                    ),
+                    contentDescription = null,
+                    modifier = Modifier.size(46.dp)
+                )
 
-                @Composable
-                fun Indicator(@DrawableRes icon: Int, value: Int) {
-                    Icon(
-                        painter = painterResource(icon),
-                        contentDescription = null,
-                        modifier = Modifier.size(iconSize)
+                Spacer(Modifier.width(8.dp))
+
+                Column {
+                    Text(
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        text = stringResource(
+                            when {
+                                project.isOwner -> RString.project_owner
+                                project.isAdmin -> RString.project_admin
+                                else -> RString.project_member
+                            }
+                        )
                     )
 
-                    Spacer(Modifier.width(4.dp))
+                    Spacer(Modifier.height(4.dp))
 
                     Text(
-                        text = value.toString(),
-                        style = MaterialTheme.typography.bodySmall
+                        text = project.name,
+                        style = MaterialTheme.typography.bodyLarge
                     )
                 }
+            }
 
-                Indicator(RDrawable.ic_favorite, project.fansCount)
-                Spacer(Modifier.width(indicatorsSpacing))
-                Indicator(RDrawable.ic_watch, project.watchersCount)
-                Spacer(Modifier.width(indicatorsSpacing))
-                Indicator(RDrawable.ic_team, project.members.size)
+            project.description?.let {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = it,
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
 
-                if (project.isPrivate) {
+            Spacer(Modifier.height(8.dp))
+
+            CompositionLocalProvider(
+                LocalContentColor provides MaterialTheme.colorScheme.outline
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    val iconSize = 18.dp
+                    val indicatorsSpacing = 8.dp
+
+                    @Composable
+                    fun Indicator(@DrawableRes icon: Int, value: Int) {
+                        Icon(
+                            painter = painterResource(icon),
+                            contentDescription = null,
+                            modifier = Modifier.size(iconSize)
+                        )
+
+                        Spacer(Modifier.width(4.dp))
+
+                        Text(
+                            text = value.toString(),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+
+                    Indicator(RDrawable.ic_favorite, project.fansCount)
                     Spacer(Modifier.width(indicatorsSpacing))
-                    Icon(
-                        painter = painterResource(RDrawable.ic_key),
-                        contentDescription = null,
-                        modifier = Modifier.size(iconSize)
-                    )
+                    Indicator(RDrawable.ic_watch, project.watchersCount)
+                    Spacer(Modifier.width(indicatorsSpacing))
+                    Indicator(RDrawable.ic_team, project.members.size)
+
+                    if (project.isPrivate) {
+                        Spacer(Modifier.width(indicatorsSpacing))
+                        Icon(
+                            painter = painterResource(RDrawable.ic_key),
+                            contentDescription = null,
+                            modifier = Modifier.size(iconSize)
+                        )
+                    }
                 }
             }
         }

@@ -20,11 +20,10 @@ class WikiRepository @Inject constructor(
         projectId = currentProjectId
     )
 
-    override suspend fun getProjectWikiPageBySlug(slug: String) =
-        wikiApi.getProjectWikiPageBySlug(
-            projectId = currentProjectId,
-            slug = slug
-        )
+    override suspend fun getProjectWikiPageBySlug(slug: String) = wikiApi.getProjectWikiPageBySlug(
+        projectId = currentProjectId,
+        slug = slug
+    )
 
     override suspend fun editWikiPage(pageId: Long, content: String, version: Int) =
         wikiApi.editWikiPage(
@@ -76,14 +75,13 @@ class WikiRepository @Inject constructor(
         projectId = currentProjectId
     )
 
-    override suspend fun createWikiLink(href: String, title: String) =
-        wikiApi.createWikiLink(
-            newWikiLinkRequest = NewWikiLinkRequest(
-                href = href,
-                project = currentProjectId,
-                title = title
-            )
+    override suspend fun createWikiLink(href: String, title: String) = wikiApi.createWikiLink(
+        newWikiLinkRequest = NewWikiLinkRequest(
+            href = href,
+            project = currentProjectId,
+            title = title
         )
+    )
 
     override suspend fun deleteWikiLink(linkId: Long) {
         wikiApi.deleteWikiLink(

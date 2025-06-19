@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -62,8 +61,9 @@ fun CustomField(
     customField: CustomField,
     value: CustomFieldValue?,
     onValueChange: (CustomFieldValue?) -> Unit,
-    onSaveClick: () -> Unit
-) = Column {
+    onSaveClick: () -> Unit,
+    modifier: Modifier = Modifier
+) = Column(modifier = modifier) {
     Text(
         text = customField.name,
         style = MaterialTheme.typography.titleMedium
@@ -86,7 +86,11 @@ fun CustomField(
 
     var fieldState by remember { mutableStateOf(FieldState.Default) }
     val indicationColor =
-        if (value == customField.value) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.primary
+        if (value == customField.value) {
+            MaterialTheme.colorScheme.outline
+        } else {
+            MaterialTheme.colorScheme.primary
+        }
     val borderColor = when (fieldState) {
         FieldState.Focused -> MaterialTheme.colorScheme.primary
         FieldState.Error -> MaterialTheme.colorScheme.error
@@ -95,17 +99,20 @@ fun CustomField(
 
     Row {
         Box(
-            Modifier
+            modifier = Modifier
                 .weight(1f)
                 .border(
                     width = 1.dp,
-                    color = if (customField.type == CustomFieldType.Checkbox) Color.Transparent else borderColor,
+                    color = if (customField.type == CustomFieldType.Checkbox) {
+                        Color.Transparent
+                    } else {
+                        borderColor
+                    },
                     shape = MaterialTheme.shapes.small
                 )
                 .clip(MaterialTheme.shapes.extraSmall)
                 .padding(6.dp)
         ) {
-
             when (customField.type) {
                 CustomFieldType.Text -> CustomFieldText(
                     value = value,
@@ -156,7 +163,7 @@ fun CustomField(
 
                 CustomFieldType.Dropdown -> CustomFieldDropdown(
                     options = customField.options
-                        ?: throw IllegalStateException("Dropdown custom field without options"),
+                        ?: error("Dropdown custom field without options"),
                     borderColor = borderColor,
                     value = value,
                     onValueChange = onValueChange,
@@ -209,7 +216,6 @@ fun CustomField(
                     tint = indicationColor
                 )
             }
-
         }
     }
 }
@@ -282,7 +288,7 @@ private fun CustomFieldMultiline(
             text = it
             onValueChange(CustomFieldValue(it.text))
         },
-        onFocusChange = { changeFieldState(if (it) FieldState.Focused else FieldState.Default) },
+        onFocusChange = { changeFieldState(if (it) FieldState.Focused else FieldState.Default) }
     )
 }
 
@@ -310,7 +316,11 @@ private fun CustomFieldRichText(
                 text = it
                 onValueChange(CustomFieldValue(it.text))
             },
-            onFocusChange = { changeFieldState(if (it) FieldState.Focused else FieldState.Default) },
+            onFocusChange = {
+                changeFieldState(
+                    if (it) FieldState.Focused else FieldState.Default
+                )
+            },
             focusRequester = focusRequester
         )
         SideEffect {
@@ -446,7 +456,7 @@ private fun CustomFieldDate(
 
     DatePicker(
         date = date,
-        onDatePicked = { onValueChange(it?.let { CustomFieldValue(it) }) },
+        onDatePick = { onValueChange(it?.let { CustomFieldValue(it) }) },
         onOpen = { changeFieldState(FieldState.Focused) },
         onClose = { changeFieldState(FieldState.Default) },
         modifier = Modifier.fillMaxWidth()
@@ -466,7 +476,7 @@ private fun CustomFieldDropdown(
     DropdownSelector(
         items = options,
         selectedItem = option,
-        onItemSelected = {
+        onItemSelect = {
             onValueChange(CustomFieldValue(it))
             changeFieldState(FieldState.Default)
         },
@@ -494,12 +504,11 @@ private fun CustomFieldDropdown(
         takeMaxWidth = true,
         horizontalArrangement = Arrangement.SpaceBetween,
         tint = borderColor,
-        onExpanded = { changeFieldState(FieldState.Focused) },
+        onExpand = { changeFieldState(FieldState.Focused) },
         onDismissRequest = { changeFieldState(FieldState.Default) }
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CustomFieldCheckbox(
     value: CustomFieldValue?,
@@ -513,12 +522,15 @@ private fun CustomFieldCheckbox(
     )
 }
 
-
 @Preview(showBackground = true)
 @Composable
-fun CustomFieldsPreview() = TaigaMobileTheme {
+private fun CustomFieldsPreview() = TaigaMobileTheme {
     Column {
-        var value1 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue("Sample value")) }
+        var value1 by remember {
+            mutableStateOf<CustomFieldValue?>(
+                CustomFieldValue("Sample value")
+            )
+        }
 
         CustomField(
             customField = CustomField(
@@ -526,9 +538,9 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
                 type = CustomFieldType.Text,
                 name = "Sample name",
                 description = "Description",
-                value = CustomFieldValue("Sample value"),
+                value = CustomFieldValue("Sample value")
 
-                ),
+            ),
             value = value1,
             onValueChange = { value1 = it },
             onSaveClick = { }
@@ -536,7 +548,11 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
 
         Spacer(Modifier.height(8.dp))
 
-        var value2 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue("Sample value")) }
+        var value2 by remember {
+            mutableStateOf<CustomFieldValue?>(
+                CustomFieldValue("Sample value")
+            )
+        }
 
         CustomField(
             customField = CustomField(
@@ -544,9 +560,9 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
                 type = CustomFieldType.Multiline,
                 name = "Sample name",
                 description = "Description",
-                value = CustomFieldValue("Sample value"),
+                value = CustomFieldValue("Sample value")
 
-                ),
+            ),
             value = value2,
             onValueChange = { value2 = it },
             onSaveClick = { }
@@ -554,7 +570,11 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
 
         Spacer(Modifier.height(8.dp))
 
-        var value3 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue("__Sample__ `value`")) }
+        var value3 by remember {
+            mutableStateOf<CustomFieldValue?>(
+                CustomFieldValue("__Sample__ `value`")
+            )
+        }
 
         CustomField(
             customField = CustomField(
@@ -562,16 +582,15 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
                 type = CustomFieldType.RichText,
                 name = "Sample name",
                 description = "Description",
-                value = CustomFieldValue("__Sample__ `value`"),
+                value = CustomFieldValue("__Sample__ `value`")
 
-                ),
+            ),
             value = value3,
             onValueChange = { value3 = it },
             onSaveClick = { }
         )
 
         Spacer(Modifier.height(8.dp))
-
 
         var value4 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue(42.0)) }
 
@@ -590,7 +609,11 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
 
         Spacer(Modifier.height(8.dp))
 
-        var value5 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue("https://x.com")) }
+        var value5 by remember {
+            mutableStateOf<CustomFieldValue?>(
+                CustomFieldValue("https://x.com")
+            )
+        }
 
         CustomField(
             customField = CustomField(
@@ -634,7 +657,11 @@ fun CustomFieldsPreview() = TaigaMobileTheme {
 
         Spacer(Modifier.height(8.dp))
 
-        var value7 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue("Something 0")) }
+        var value7 by remember {
+            mutableStateOf<CustomFieldValue?>(
+                CustomFieldValue("Something 0")
+            )
+        }
 
         CustomField(
             customField = CustomField(

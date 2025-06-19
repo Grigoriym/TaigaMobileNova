@@ -50,15 +50,15 @@ import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun TeamScreen(
-    viewModel: TeamViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
-    goToProfile:(userId: Long) -> Unit,
+    goToProfile: (userId: Long) -> Unit,
+    viewModel: TeamViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(RString.team),
+                title = NativeText.Resource(RString.team)
             )
         )
     }
@@ -77,10 +77,11 @@ fun TeamScreen(
 
 @Composable
 fun TeamScreenContent(
+    modifier: Modifier = Modifier,
     team: List<TeamMember> = emptyList(),
     isLoading: Boolean = false,
     onUserItemClick: (userId: Long) -> Unit = { _ -> }
-) = Column(Modifier.fillMaxSize()) {
+) = Column(modifier.fillMaxSize()) {
     when {
         isLoading -> {
             Box(
@@ -119,10 +120,7 @@ fun TeamScreenContent(
 }
 
 @Composable
-private fun TeamMemberItem(
-    teamMember: TeamMember,
-    onUserItemClick: () -> Unit
-) = Row(
+private fun TeamMemberItem(teamMember: TeamMember, onUserItemClick: () -> Unit) = Row(
     modifier = Modifier.clickable { onUserItemClick() },
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
@@ -158,7 +156,7 @@ private fun TeamMemberItem(
             Text(
                 text = teamMember.role,
                 color = MaterialTheme.colorScheme.outline,
-                style = MaterialTheme.typography.bodyLarge,
+                style = MaterialTheme.typography.bodyLarge
             )
         }
     }
@@ -184,7 +182,7 @@ private fun TeamMemberItem(
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun TeamScreenPreview() = TaigaMobileTheme {
+private fun TeamScreenPreview() = TaigaMobileTheme {
     TeamScreenContent(
         team = List(3) {
             TeamMember(

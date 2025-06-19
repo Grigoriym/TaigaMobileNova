@@ -18,18 +18,14 @@ class LocalDateTypeAdapter {
 
 class LocalDateTimeTypeAdapter {
     @ToJson
-    fun toJson(value: LocalDateTime): String {
-        return value.atZone(ZoneId.systemDefault())
-            .toInstant()
-            .toString()
-    }
+    fun toJson(value: LocalDateTime): String = value.atZone(ZoneId.systemDefault())
+        .toInstant()
+        .toString()
 
     @FromJson
-    fun fromJson(input: String): LocalDateTime {
-        return Instant.parse(input)
-            .atZone(ZoneId.systemDefault())
-            .toLocalDateTime()
-    }
+    fun fromJson(input: String): LocalDateTime = Instant.parse(input)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDateTime()
 }
 
 // used in TaskRepository

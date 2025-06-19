@@ -2,14 +2,13 @@ package com.grappim.taigamobile.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.domain.repositories.IUsersRepository
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.Settings
 import com.grappim.taigamobile.core.storage.ThemeSetting
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
+import com.grappim.taigamobile.domain.repositories.IUsersRepository
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -32,7 +31,7 @@ class SettingsViewModel @Inject constructor(
     )
     val state = _state.asStateFlow()
 
-    val user = MutableResultFlow<User>()
+    val user = mutableResultFlow<User>()
 
     val themeSetting by lazy { settings.themeSetting }
 

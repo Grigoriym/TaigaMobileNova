@@ -42,7 +42,6 @@ import com.grappim.taigamobile.commontask.components.CommonTaskWatchers
 import com.grappim.taigamobile.commontask.components.CreateCommentBar
 import com.grappim.taigamobile.commontask.components.SelectorEntry
 import com.grappim.taigamobile.commontask.components.Selectors
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CommonTask
@@ -56,35 +55,36 @@ import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.ui.components.editors.Editor
 import com.grappim.taigamobile.ui.components.lists.Attachments
-import com.grappim.taigamobile.uikit.widgets.list.Description
-import com.grappim.taigamobile.ui.components.lists.SimpleTasksListWithTitle
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.ui.components.lists.simpleTasksListWithTitle
 import com.grappim.taigamobile.ui.utils.FilePicker
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.LocalFilePicker
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.ui.utils.SuccessResult
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.PreviewMulti
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.utils.ThemePreviews
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
+import com.grappim.taigamobile.uikit.widgets.list.Description
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 import java.time.LocalDateTime
 
 @Composable
 fun CommonTaskScreen(
-    viewModel: CommonTaskViewModel = hiltViewModel(),
-    showMessage: (message: Int) -> Unit = {},
     goToProfile: (userId: Long) -> Unit,
     goToUserStory: (Long, CommonTaskType, Int) -> Unit,
     goBack: () -> Unit,
     navigateToCreateTask: (CommonTaskType, Long) -> Unit,
-    navigateToTask: (Long, CommonTaskType, Int) -> Unit
+    navigateToTask: (Long, CommonTaskType, Int) -> Unit,
+    viewModel: CommonTaskViewModel = hiltViewModel(),
+    showMessage: (message: Int) -> Unit = {}
 ) {
     val topBarController = LocalTopBarConfig.current
 
@@ -176,7 +176,7 @@ fun CommonTaskScreen(
     val deleteResult by viewModel.deleteResult.collectAsState()
     deleteResult.SubscribeOnError(showMessage)
     deleteResult.takeIf { it is SuccessResult }?.let {
-        LaunchedEffect(Unit) {
+        LaunchedEffect(goBack) {
             goBack()
         }
     }
@@ -242,16 +242,16 @@ fun CommonTaskScreen(
             editAssignees = SimpleEditAction(
                 items = teamSearched,
                 searchItems = viewModel::searchTeam,
-                select = { viewModel.addAssignee(it.id) },
+                select = { viewModel.addAssignee(it.actualId) },
                 isLoading = assignees is LoadingResult,
-                remove = { viewModel.removeAssignee(it.id) }
+                remove = { viewModel.removeAssignee(it.actualId) }
             ),
             editWatchers = SimpleEditAction(
                 items = teamSearched,
                 searchItems = viewModel::searchTeam,
-                select = { viewModel.addWatcher(it.id) },
+                select = { viewModel.addWatcher(it.actualId) },
                 isLoading = watchers is LoadingResult,
-                remove = { viewModel.removeWatcher(it.id) }
+                remove = { viewModel.removeWatcher(it.actualId) }
             ),
             editComments = EditAction(
                 select = viewModel::createComment,
@@ -293,12 +293,12 @@ fun CommonTaskScreen(
             editAssign = EmptyEditAction(
                 select = { viewModel.addAssignee() },
                 remove = { viewModel.removeAssignee() },
-                isLoading = assignees is LoadingResult,
+                isLoading = assignees is LoadingResult
             ),
             editWatch = EmptyEditAction(
                 select = { viewModel.addWatcher() },
                 remove = { viewModel.removeWatcher() },
-                isLoading = watchers is LoadingResult,
+                isLoading = watchers is LoadingResult
             ),
             editBlocked = EditAction(
                 select = { viewModel.editBlocked(it) },
@@ -322,6 +322,7 @@ fun CommonTaskScreen(
 @Composable
 fun CommonTaskScreenContent(
     state: CommonTaskState,
+    modifier: Modifier = Modifier,
     commonTask: CommonTaskExtended? = null,
     creator: User? = null,
     isLoading: Boolean = false,
@@ -338,7 +339,7 @@ fun CommonTaskScreenContent(
     navigationActions: NavigationActions = NavigationActions(),
     navigateToProfile: (userId: Long) -> Unit = { _ -> },
     showMessage: (message: Int) -> Unit = {}
-) = Box(Modifier.fillMaxSize()) {
+) = Box(modifier.fillMaxSize()) {
     if (state.isDeleteAlertVisible) {
         ConfirmActionDialog(
             title = stringResource(RString.delete_task_title),
@@ -398,7 +399,9 @@ fun CommonTaskScreenContent(
 
     var customFieldsValues by remember { mutableStateOf(emptyMap<Long, CustomFieldValue?>()) }
     customFieldsValues =
-        customFields.associate { it.id to (if (it.id in customFieldsValues) customFieldsValues[it.id] else it.value) }
+        customFields.associate {
+            it.id to (if (it.id in customFieldsValues) customFieldsValues[it.id] else it.value)
+        }
 
     Column(Modifier.fillMaxSize()) {
         if (isLoading || creator == null || commonTask == null) {
@@ -415,13 +418,11 @@ fun CommonTaskScreenContent(
                 modifier = Modifier.weight(1f),
                 contentAlignment = Alignment.BottomCenter
             ) {
-
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(horizontal = mainHorizontalScreenPadding)
                 ) {
-
                     item {
                         Spacer(Modifier.height(sectionsPadding / 2))
                     }
@@ -535,7 +536,7 @@ fun CommonTaskScreenContent(
 
                     // user stories
                     if (state.commonTaskType == CommonTaskType.Epic) {
-                        SimpleTasksListWithTitle(
+                        simpleTasksListWithTitle(
                             titleText = RString.userstories,
                             bottomPadding = sectionsPadding,
                             commonTasks = userStories,
@@ -545,7 +546,7 @@ fun CommonTaskScreenContent(
 
                     // tasks
                     if (state.commonTaskType == CommonTaskType.UserStory) {
-                        SimpleTasksListWithTitle(
+                        simpleTasksListWithTitle(
                             titleText = RString.tasks,
                             bottomPadding = sectionsPadding,
                             commonTasks = tasks,
@@ -643,14 +644,15 @@ fun CommonTaskScreenContent(
     }
 
     if (editActions.run { listOf(editBasicInfo, promoteTask, deleteTask, editBlocked) }
-            .any { it.isLoading }) {
+            .any { it.isLoading }
+    ) {
         LoadingDialog()
     }
 }
 
-@ThemePreviews
+@PreviewMulti
 @Composable
-fun CommonTaskScreenPreview() = TaigaMobileTheme {
+private fun CommonTaskScreenPreview() = TaigaMobileTheme {
     CompositionLocalProvider(
         LocalFilePicker provides object : FilePicker() {}
     ) {
@@ -667,9 +669,10 @@ fun CommonTaskScreenPreview() = TaigaMobileTheme {
                 setPromoteAlertVisible = {},
                 setBlockDialogVisible = {}
             ),
-            commonTask = null, // TODO left it null for now since I do not really use this preview
+            // TODO left it null for now since I do not really use this preview
+            commonTask = null,
             creator = User(
-                _id = 0L,
+                id = 0L,
                 fullName = "Full Name",
                 photo = null,
                 bigPhoto = null,
@@ -677,7 +680,7 @@ fun CommonTaskScreenPreview() = TaigaMobileTheme {
             ),
             assignees = List(1) {
                 User(
-                    _id = 0L,
+                    id = 0L,
                     fullName = "Full Name",
                     photo = null,
                     bigPhoto = null,
@@ -686,7 +689,7 @@ fun CommonTaskScreenPreview() = TaigaMobileTheme {
             },
             watchers = List(2) {
                 User(
-                    _id = 0L,
+                    id = 0L,
                     fullName = "Full Name",
                     photo = null,
                     bigPhoto = null,
@@ -715,7 +718,7 @@ fun CommonTaskScreenPreview() = TaigaMobileTheme {
                 Comment(
                     id = "",
                     author = User(
-                        _id = 0L,
+                        id = 0L,
                         fullName = "Full Name",
                         photo = null,
                         bigPhoto = null,

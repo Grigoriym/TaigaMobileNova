@@ -59,7 +59,7 @@ fun Chip(
 
 @Preview
 @Composable
-fun ChipPreview() = TaigaMobileTheme {
+private fun ChipPreview() = TaigaMobileTheme {
     Box(modifier = Modifier.padding(10.dp)) {
         Chip {
             Text("Testing chip")

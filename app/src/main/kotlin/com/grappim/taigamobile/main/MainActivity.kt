@@ -13,9 +13,9 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.grappim.taigamobile.core.storage.ThemeSetting
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.ui.utils.FilePicker
 import com.grappim.taigamobile.ui.utils.LocalFilePicker
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import dagger.hilt.android.AndroidEntryPoint
 import java.io.InputStream
 
@@ -57,7 +57,7 @@ class MainActivity : AppCompatActivity() {
 
             TaigaMobileTheme(darkTheme) {
                 CompositionLocalProvider(
-                    LocalFilePicker provides filePicker,
+                    LocalFilePicker provides filePicker
                 ) {
                     MainContent(viewModel)
                 }

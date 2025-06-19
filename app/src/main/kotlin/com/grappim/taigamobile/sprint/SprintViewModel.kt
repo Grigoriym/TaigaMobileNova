@@ -13,9 +13,9 @@ import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -40,11 +40,11 @@ class SprintViewModel @Inject constructor(
     val sprintId
         get() = _sprintId
 
-    val sprint = MutableResultFlow<Sprint>()
-    val statuses = MutableResultFlow<List<Status>>()
-    val storiesWithTasks = MutableResultFlow<Map<CommonTask, List<CommonTask>>>()
-    val storylessTasks = MutableResultFlow<List<CommonTask>>()
-    val issues = MutableResultFlow<List<CommonTask>>()
+    val sprint = mutableResultFlow<Sprint>()
+    val statuses = mutableResultFlow<List<Status>>()
+    val storiesWithTasks = mutableResultFlow<Map<CommonTask, List<CommonTask>>>()
+    val storylessTasks = mutableResultFlow<List<CommonTask>>()
+    val issues = mutableResultFlow<List<CommonTask>>()
 
     private var shouldReload = true
 
@@ -69,7 +69,9 @@ class SprintViewModel @Inject constructor(
                         storiesWithTasks.loadOrError(showLoading = false) {
                             coroutineScope {
                                 sprintsRepository.getSprintUserStories(_sprintId)
-                                    .map { it to async { tasksRepository.getUserStoryTasks(it.id) } }
+                                    .map {
+                                        it to async { tasksRepository.getUserStoryTasks(it.id) }
+                                    }
                                     .associate { (story, tasks) -> story to tasks.await() }
                             }
                         }
@@ -93,7 +95,7 @@ class SprintViewModel @Inject constructor(
         }
     }
 
-    val editResult = MutableResultFlow<Unit>()
+    val editResult = mutableResultFlow<Unit>()
     fun editSprint(name: String, start: LocalDate, end: LocalDate) = viewModelScope.launch {
         editResult.loadOrError(RString.permission_error) {
             sprintsRepository.editSprint(_sprintId, name, start, end)
@@ -102,7 +104,7 @@ class SprintViewModel @Inject constructor(
         }
     }
 
-    val deleteResult = MutableResultFlow<Unit>()
+    val deleteResult = mutableResultFlow<Unit>()
     fun deleteSprint() = viewModelScope.launch {
         deleteResult.loadOrError(RString.permission_error) {
             sprintsRepository.deleteSprint(_sprintId)

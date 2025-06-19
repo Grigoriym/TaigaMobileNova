@@ -44,7 +44,7 @@ fun LazyListScope.CommonTaskAssignees(
         UserItemWithAction(
             user = item,
             onRemoveClick = { editActions.editAssignees.remove(item) },
-            onUserItemClick = { navigateToProfile(item.id) }
+            onUserItemClick = { navigateToProfile(item.actualId) }
         )
 
         if (index < assignees.lastIndex) {
@@ -88,4 +88,3 @@ fun LazyListScope.CommonTaskAssignees(
         }
     }
 }
-

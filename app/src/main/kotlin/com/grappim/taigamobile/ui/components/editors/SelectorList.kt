@@ -35,10 +35,10 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
+import com.grappim.taigamobile.ui.utils.OnBackPressed
 import com.grappim.taigamobile.uikit.widgets.AppBarWithBackButton
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
-import com.grappim.taigamobile.ui.utils.onBackPressed
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 
 /**
  * Selector list, which expands from bottom to top.
@@ -47,17 +47,20 @@ import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 @Composable
 fun <T : Any> SelectorList(
     @StringRes titleHintId: Int,
+    modifier: Modifier = Modifier,
     items: List<T> = emptyList(),
     itemsLazy: LazyPagingItems<T>? = null,
-    key: ((index: Int) -> Any)? = null, // used to preserve position with lazy items
+    // used to preserve position with lazy items
+    key: ((index: Int) -> Any)? = null,
     isVisible: Boolean = false,
     isItemsLoading: Boolean = false,
     isSearchable: Boolean = true,
     searchData: (String) -> Unit = {},
     navigateBack: () -> Unit = {},
-    animationDurationMillis: Int = SelectorListConstants.defaultAnimDurationMillis,
+    animationDurationMillis: Int = SelectorListConstants.DEFAULT_ANIM_DURATION_MILLIS,
     itemContent: @Composable (T) -> Unit
 ) = AnimatedVisibility(
+    modifier = modifier,
     visibleState = remember { MutableTransitionState(false) }
         .apply { targetState = isVisible },
     enter = slideInVertically(
@@ -69,9 +72,11 @@ fun <T : Any> SelectorList(
         animationSpec = tween(animationDurationMillis)
     )
 ) {
-    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
+    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+        mutableStateOf(TextFieldValue())
+    }
 
-    onBackPressed(navigateBack)
+    OnBackPressed(navigateBack)
 
     val isLoading = itemsLazy
         ?.run { loadState.refresh is LoadState.Loading || loadState.append is LoadState.Loading }
@@ -98,7 +103,6 @@ fun <T : Any> SelectorList(
             .background(MaterialTheme.colorScheme.surface),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         AppBarWithBackButton(
             title = {
                 Box(
@@ -144,5 +148,5 @@ fun <T : Any> SelectorList(
 }
 
 object SelectorListConstants {
-    const val defaultAnimDurationMillis = 200
+    const val DEFAULT_ANIM_DURATION_MILLIS = 200
 }

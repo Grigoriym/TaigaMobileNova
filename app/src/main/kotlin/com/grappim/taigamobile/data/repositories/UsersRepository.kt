@@ -28,8 +28,10 @@ class UsersRepository @Inject constructor(
         val stats = async {
             taigaApi.getMemberStats(currentProjectId).run {
                 // calculating total number of points for each id
-                (closed_bugs.toList() + closed_tasks.toList() + created_bugs.toList() +
-                        iocaine_tasks.toList() + wiki_changes.toList())
+                (
+                    closedBugs.toList() + closedTasks.toList() + createdBugs.toList() +
+                        iocaineTasks.toList() + wikiChanges.toList()
+                    )
                     .mapNotNull { p -> p.first.toLongOrNull()?.let { it to p.second } }
                     .groupBy { it.first }
                     .map { (k, v) -> k to v.sumOf { it.second } }
@@ -42,8 +44,8 @@ class UsersRepository @Inject constructor(
                 TeamMember(
                     id = it.id,
                     avatarUrl = it.photo,
-                    name = it.full_name_display,
-                    role = it.role_name,
+                    name = it.fullNameDisplay,
+                    role = it.roleName,
                     username = it.username,
                     totalPower = stat[it.id] ?: 0
                 )

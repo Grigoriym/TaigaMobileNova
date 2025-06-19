@@ -24,7 +24,6 @@ import retrofit2.http.Query
  */
 interface TaigaApi {
 
-
     /**
      * Users
      */
@@ -61,7 +60,6 @@ interface TaigaApi {
         @Query("assigned_to") assignedId: Long? = null,
         @Query("status__is_closed") isClosed: Boolean? = null,
         @Query("watchers") watcherId: Long? = null,
-
         @Header("x-disable-pagination") disablePagination: Boolean? = (page == null).takeIf { it }
     ): List<CommonTaskResponse>
 
@@ -97,7 +95,9 @@ interface TaigaApi {
     suspend fun createIssue(@Body createIssueRequest: CreateIssueRequest): CommonTaskResponse
 
     @POST("userstories")
-    suspend fun createUserstory(@Body createUserStoryRequest: CreateUserStoryRequest): CommonTaskResponse
+    suspend fun createUserstory(
+        @Body createUserStoryRequest: CreateUserStoryRequest
+    ): CommonTaskResponse
 
     @DELETE("{taskPath}/{id}")
     suspend fun deleteCommonTask(
@@ -106,10 +106,7 @@ interface TaigaApi {
     ): Response<Void>
 
     @POST("epics/{id}/related_userstories")
-    suspend fun linkToEpic(
-        @Path("id") epicId: Long,
-        @Body linkToEpicRequest: LinkToEpicRequest
-    )
+    suspend fun linkToEpic(@Path("id") epicId: Long, @Body linkToEpicRequest: LinkToEpicRequest)
 
     @DELETE("epics/{epicId}/related_userstories/{userStoryId}")
     suspend fun unlinkFromEpic(

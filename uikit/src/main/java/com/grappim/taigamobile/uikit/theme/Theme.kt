@@ -33,11 +33,17 @@ private val LightColorPalette = lightColorScheme(
 @Composable
 fun TaigaMobileTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     val colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (darkTheme) dynamicDarkColorScheme(LocalContext.current)
-        else dynamicLightColorScheme(LocalContext.current)
+        if (darkTheme) {
+            dynamicDarkColorScheme(LocalContext.current)
+        } else {
+            dynamicLightColorScheme(LocalContext.current)
+        }
     } else {
-        if (darkTheme) DarkColorPalette
-        else LightColorPalette
+        if (darkTheme) {
+            DarkColorPalette
+        } else {
+            LightColorPalette
+        }
     }
 
     MaterialTheme(

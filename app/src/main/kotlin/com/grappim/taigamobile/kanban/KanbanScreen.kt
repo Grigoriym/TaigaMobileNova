@@ -11,8 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Status
@@ -20,18 +18,19 @@ import com.grappim.taigamobile.core.domain.Swimlane
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun KanbanScreen(
-    viewModel: KanbanViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
     goToTask: (Long, CommonTaskType, Int) -> Unit,
-    goToCreateTask: (CommonTaskType, Long, Long?) -> Unit
+    goToCreateTask: (CommonTaskType, Long, Long?) -> Unit,
+    viewModel: KanbanViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
@@ -39,7 +38,7 @@ fun KanbanScreen(
 
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(RString.kanban),
+                title = NativeText.Resource(RString.kanban)
             )
         )
     }
@@ -85,6 +84,7 @@ fun KanbanScreen(
 
 @Composable
 fun KanbanScreenContent(
+    modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     statuses: List<Status> = emptyList(),
     stories: List<CommonTaskExtended> = emptyList(),
@@ -95,7 +95,7 @@ fun KanbanScreenContent(
     navigateToStory: (id: Long, ref: Int) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swinlanaeId: Long?) -> Unit = { _, _ -> }
 ) = Column(
-    modifier = Modifier.fillMaxSize(),
+    modifier = modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
     if (isLoading) {
@@ -121,6 +121,6 @@ fun KanbanScreenContent(
 
 @Preview(showBackground = true)
 @Composable
-fun KanbanScreenPreview() = TaigaMobileTheme {
+private fun KanbanScreenPreview() = TaigaMobileTheme {
     KanbanScreenContent()
 }

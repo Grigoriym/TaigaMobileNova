@@ -14,13 +14,12 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val userStoriesApi: UserStoriesApi,
     private val session: Session
 ) : UserStoriesRepository {
-    override fun getUserStories(filters: FiltersData): Flow<PagingData<CommonTask>> =
-        Pager(
-            PagingConfig(
-                pageSize = 20,
-                enablePlaceholders = false
-            )
-        ) {
-            UserStoriesPagingSource(userStoriesApi, filters, session)
-        }.flow
+    override fun getUserStories(filters: FiltersData): Flow<PagingData<CommonTask>> = Pager(
+        PagingConfig(
+            pageSize = 20,
+            enablePlaceholders = false
+        )
+    ) {
+        UserStoriesPagingSource(userStoriesApi, filters, session)
+    }.flow
 }

@@ -7,7 +7,7 @@ android {
     namespace = "com.grappim.taigamobile.feature.login.data"
 }
 
-dependencies{
+dependencies {
     implementation(projects.core.api)
     implementation(projects.core.domain)
     implementation(projects.core.storage)

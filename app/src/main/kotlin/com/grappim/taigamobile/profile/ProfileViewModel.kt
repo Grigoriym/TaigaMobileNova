@@ -7,11 +7,11 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.domain.Stats
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
-import com.grappim.taigamobile.domain.repositories.IUsersRepository
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
+import com.grappim.taigamobile.domain.repositories.IUsersRepository
+import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -28,11 +28,10 @@ class ProfileViewModel @Inject constructor(
     private val userId: Long
         get() = navRoute.userId
 
-    val currentUser = MutableResultFlow<User>()
-    val currentUserStats = MutableResultFlow<Stats>()
-    val currentUserProjects = MutableResultFlow<List<Project>>()
+    val currentUser = mutableResultFlow<User>()
+    val currentUserStats = mutableResultFlow<Stats>()
+    val currentUserProjects = mutableResultFlow<List<Project>>()
     val currentProjectId by lazy { session.currentProjectId }
-
 
     fun onOpen() = viewModelScope.launch {
         currentUser.loadOrError { usersRepository.getUser(userId) }

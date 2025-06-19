@@ -37,6 +37,8 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.utils.ui.textColor
 import com.grappim.taigamobile.utils.ui.toColor
 
+private const val DEFAULT_ANIMATION_DURATION_MS = 800
+
 /**
  * Badge on which you can click. With cool shimmer loading animation
  */
@@ -44,6 +46,7 @@ import com.grappim.taigamobile.utils.ui.toColor
 fun ClickableBadge(
     text: String,
     color: Color,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit = {},
     isLoading: Boolean = false,
     isClickable: Boolean = true
@@ -51,13 +54,16 @@ fun ClickableBadge(
     val textColor = color.textColor()
 
     val infiniteTransition = rememberInfiniteTransition()
-    val animationDuration = 800
 
     val rotation by infiniteTransition.animateFloat(
         initialValue = 0f,
-        targetValue = 360f, // BoxWithConstraints won't work there, because maxWidth always changing when this element is part of a list
+        // BoxWithConstraints won't work there, because maxWidth always changing when this element is part of a list
+        targetValue = 360f,
         animationSpec = infiniteRepeatable(
-            animation = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing),
+            animation = tween(
+                durationMillis = DEFAULT_ANIMATION_DURATION_MS,
+                easing = FastOutSlowInEasing
+            )
         )
     )
 
@@ -65,6 +71,7 @@ fun ClickableBadge(
         LocalMinimumInteractiveComponentSize provides Dp.Unspecified
     ) {
         Surface(
+            modifier = modifier,
             shape = MaterialTheme.shapes.large,
             color = color
         ) {
@@ -101,7 +108,6 @@ fun ClickableBadge(
     }
 }
 
-
 @Composable
 fun ClickableBadge(
     text: String,
@@ -110,16 +116,16 @@ fun ClickableBadge(
     isLoading: Boolean = false,
     isClickable: Boolean = true
 ) = ClickableBadge(
-    text,
-    colorHex.toColor(),
-    onClick,
-    isLoading,
-    isClickable
+    text = text,
+    color = colorHex.toColor(),
+    onClick = onClick,
+    isLoading = isLoading,
+    isClickable = isClickable
 )
 
 @Preview(showBackground = true)
 @Composable
-fun ClickableBadgePreview() = TaigaMobileTheme {
+private fun ClickableBadgePreview() = TaigaMobileTheme {
     ClickableBadge(
         text = "Sample",
         colorHex = "#25A28C",

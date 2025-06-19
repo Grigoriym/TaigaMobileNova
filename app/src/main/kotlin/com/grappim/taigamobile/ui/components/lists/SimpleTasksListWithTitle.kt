@@ -18,15 +18,15 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.grappim.taigamobile.core.nav.NavigateToTask
 import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.nav.NavigateToTask
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 /**
  * List of tasks with optional title.
  */
-fun LazyListScope.SimpleTasksListWithTitle(
+fun LazyListScope.simpleTasksListWithTitle(
     navigateToTask: NavigateToTask,
     commonTasks: List<CommonTask> = emptyList(),
     commonTasksLazy: LazyPagingItems<CommonTask>? = null,

@@ -49,16 +49,18 @@ import com.grappim.taigamobile.wiki.page.navigateToWikiPage
 
 @Composable
 fun MainNavHost(
-    modifier: Modifier,
     isLogged: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
-    onShowSnackbar: (message: String) -> Unit
+    onShowSnackbar: (message: String) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = remember { if (isLogged) DashboardNavDestination else LoginNavDestination }
+        startDestination = remember {
+            if (isLogged) DashboardNavDestination else LoginNavDestination
+        }
     ) {
         composable<LoginNavDestination> {
             LoginScreen(
@@ -72,7 +74,7 @@ fun MainNavHost(
         composable<ProjectSelectorNavDestination> {
             ProjectSelectorScreen(
                 showMessage = showMessage,
-                onProjectSelected = { isFromLogin: Boolean ->
+                onProjectSelect = { isFromLogin: Boolean ->
                     /**
                      * After the login and the project is selected, dashboard will become the top destination
                      */
@@ -193,7 +195,7 @@ fun MainNavHost(
         composable<SettingsNavDestination> {
             SettingsScreen(
                 showMessage = showMessage,
-                onLogout = navController::navigateToLoginAsTopDestination,
+                onLogout = navController::navigateToLoginAsTopDestination
             )
         }
 

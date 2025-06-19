@@ -41,21 +41,21 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
 import com.grappim.taigamobile.utils.ui.collectSnackbarMessage
-import com.grappim.taigamobile.feature.login.domain.model.AuthType
-import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.utils.ThemePreviews
 
 @Composable
 fun LoginScreen(
-    viewModel: LoginViewModel = hiltViewModel(),
     onShowSnackbar: (message: String) -> Unit,
-    onLoginSuccess: () -> Unit
+    onLoginSuccess: () -> Unit,
+    viewModel: LoginViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     val state by viewModel.loginState.collectAsStateWithLifecycle()
@@ -75,16 +75,17 @@ fun LoginScreen(
 
     LoginScreenContent(
         state = state,
-        isLoadingValue = state.isLoading,
+        isLoadingValue = state.isLoading
     )
 }
 
 @Composable
 fun LoginScreenContent(
     state: LoginState,
-    isLoadingValue: Boolean = false,
+    modifier: Modifier = Modifier,
+    isLoadingValue: Boolean = false
 ) = ConstraintLayout(
-    modifier = Modifier.fillMaxSize(),
+    modifier = modifier.fillMaxSize()
 ) {
     val (logo, loginForm, button) = createRefs()
 
@@ -110,7 +111,7 @@ fun LoginScreenContent(
 
         Text(
             text = stringResource(RString.app_name),
-            style = MaterialTheme.typography.headlineSmall,
+            style = MaterialTheme.typography.headlineSmall
         )
     }
 
@@ -123,7 +124,7 @@ fun LoginScreenContent(
                 bottom.linkTo(parent.bottom)
             }
             .imePadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LoginTextField(
             value = state.server,
@@ -200,6 +201,7 @@ fun LoginTextField(
     value: TextFieldValue,
     @StringRes labelId: Int,
     onValueChange: (TextFieldValue) -> Unit,
+    modifier: Modifier = Modifier,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Text,
     isError: Boolean = false
@@ -210,12 +212,12 @@ fun LoginTextField(
         TextStyle(fontWeight = FontWeight.Normal)
     )
     OutlinedTextField(
-        value = value,
-        onValueChange = onValueChange,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 40.dp)
             .padding(bottom = 6.dp),
+        value = value,
+        onValueChange = onValueChange,
         textStyle = textStyle,
         singleLine = true,
         label = { Text(text = stringResource(labelId), style = textStyle) },
@@ -254,13 +256,13 @@ fun LoginTextField(
             ),
             unfocusedPlaceholderColor = MaterialTheme.colorScheme.onSurface.copy(
                 alpha = MaterialTheme.colorScheme.onSurfaceVariant.alpha
-            ),
+            )
         )
     )
 }
 
-@[Composable ThemePreviews]
-fun LoginScreenPreview() = TaigaMobileTheme {
+@[Composable PreviewMulti]
+private fun LoginScreenPreview() = TaigaMobileTheme {
     LoginScreenContent(
         state = LoginState(
             server = TextFieldValue(),
@@ -278,8 +280,8 @@ fun LoginScreenPreview() = TaigaMobileTheme {
             onLoginContinue = {},
             authType = AuthType.NORMAL,
             onAuthTypeChange = {},
-            onLogin = {},
+            onLogin = {}
         ),
-        isLoadingValue = false,
+        isLoadingValue = false
     )
 }

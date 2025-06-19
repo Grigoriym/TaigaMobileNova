@@ -11,8 +11,8 @@ import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import com.grappim.taigamobile.utils.ui.NativeText
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,7 +47,7 @@ class CreateTaskViewModel @Inject constructor(
     )
     val state = _state.asStateFlow()
 
-    val creationResult = MutableResultFlow<CommonTask>()
+    val creationResult = mutableResultFlow<CommonTask>()
 
     // TODO handle empty title
     private fun createTask() {

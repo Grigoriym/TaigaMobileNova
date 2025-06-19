@@ -24,10 +24,10 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.nav.DrawerDestination
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.main.topbar.TopBarController
 import com.grappim.taigamobile.ui.components.TaigaDrawer
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import kotlinx.coroutines.launch
 
 @Composable
@@ -43,10 +43,7 @@ fun MainContent(viewModel: MainViewModel) {
 }
 
 @Composable
-private fun MainScreenContent(
-    isLogged: Boolean,
-    topBarConfig: TopBarConfig
-) {
+private fun MainScreenContent(isLogged: Boolean, topBarConfig: TopBarConfig) {
     val appState = rememberMainAppState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -65,13 +62,13 @@ private fun MainScreenContent(
         screens = appState.topLevelDestinations,
         currentItem = appState.currentTopLevelDestination,
         drawerState = drawerState,
-        onDrawerItemClicked = { item: DrawerDestination ->
+        onDrawerItemClick = { item: DrawerDestination ->
             scope.launch {
                 drawerState.close()
             }
             appState.navigateToTopLevelDestination(item)
         },
-        gesturesEnabled = appState.areDrawerGesturesEnabled,
+        gesturesEnabled = appState.areDrawerGesturesEnabled
     ) {
         Scaffold(
             modifier = Modifier

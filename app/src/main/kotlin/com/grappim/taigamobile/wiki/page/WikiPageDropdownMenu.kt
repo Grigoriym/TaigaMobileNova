@@ -14,12 +14,9 @@ import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Composable
-fun WikiPageDropDownMenu(
-    modifier: Modifier = Modifier,
-    state: WikiPageState,
-) {
+fun WikiPageDropDownMenu(state: WikiPageState, modifier: Modifier = Modifier) {
     Box(
-        modifier = modifier,
+        modifier = modifier
     ) {
         DropdownMenu(
             modifier = Modifier.background(

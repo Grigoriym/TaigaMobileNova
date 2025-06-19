@@ -9,7 +9,7 @@ data class ProjectSelectorNavDestination(val isFromLogin: Boolean = false)
 
 fun NavController.navigateToProjectSelector(
     isFromLogin: Boolean = false,
-    navOptions: NavOptionsBuilder.() -> Unit = {},
+    navOptions: NavOptionsBuilder.() -> Unit = {}
 ) = navigate(route = ProjectSelectorNavDestination(isFromLogin)) {
     navOptions()
 }

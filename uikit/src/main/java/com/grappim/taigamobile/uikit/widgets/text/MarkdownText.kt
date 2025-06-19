@@ -14,11 +14,7 @@ import io.noties.markwon.image.coil.CoilImagesPlugin
  * Use android TextView because Compose does not support Markdown yet
  */
 @Composable
-fun MarkdownText(
-    text: String,
-    modifier: Modifier = Modifier,
-    isSelectable: Boolean = true
-) {
+fun MarkdownText(text: String, modifier: Modifier = Modifier, isSelectable: Boolean = true) {
     if (!::markwon.isInitialized) {
         markwon = Markwon.builder(LocalContext.current)
             .usePlugin(CoilImagesPlugin.create(LocalContext.current))

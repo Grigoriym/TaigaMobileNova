@@ -39,10 +39,10 @@ import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun WikiListScreen(
-    viewModel: WikiListViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
     goToWikiCreatePage: () -> Unit,
-    goToWikiPage: (slug: String) -> Unit
+    goToWikiPage: (slug: String) -> Unit,
+    viewModel: WikiListViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
 
@@ -62,7 +62,7 @@ fun WikiListScreen(
                     TopBarActionResource(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",
-                        onClick = goToWikiCreatePage,
+                        onClick = goToWikiCreatePage
                     )
                 )
             )
@@ -77,19 +77,20 @@ fun WikiListScreen(
         allPages = wikiPagesSlug,
         isLoading = wikiLinks is LoadingResult || wikiPages is LoadingResult,
         navigateToCreatePage = goToWikiCreatePage,
-        navigateToPageBySlug = goToWikiPage,
+        navigateToPageBySlug = goToWikiPage
     )
 }
 
 @Composable
 fun WikiListScreenContent(
+    modifier: Modifier = Modifier,
     bookmarks: List<Pair<String, String>> = emptyList(),
     allPages: List<String> = emptyList(),
     isLoading: Boolean = false,
     navigateToCreatePage: () -> Unit = {},
-    navigateToPageBySlug: (slug: String) -> Unit = {},
+    navigateToPageBySlug: (slug: String) -> Unit = {}
 ) = Column(
-    modifier = Modifier.fillMaxSize(),
+    modifier = modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
     if (isLoading) {
@@ -175,10 +176,7 @@ private fun WikiSelectorList(
 }
 
 @Composable
-private fun WikiSelectorItem(
-    title: String,
-    onClick: () -> Unit = {}
-) = ContainerBox(
+private fun WikiSelectorItem(title: String, onClick: () -> Unit = {}) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -197,7 +195,6 @@ private fun WikiSelectorItem(
 
 @Preview
 @Composable
-fun WikiPageSelectorPreview() {
+private fun WikiPageSelectorPreview() {
     WikiListScreenContent()
 }
-

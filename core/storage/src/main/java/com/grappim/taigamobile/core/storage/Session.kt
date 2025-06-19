@@ -2,9 +2,9 @@ package com.grappim.taigamobile.core.storage
 
 import android.content.Context
 import androidx.core.content.edit
-import com.grappim.taigamobile.core.domain.FiltersDataJsonAdapter
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataJsonAdapter
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -27,10 +27,7 @@ import javax.inject.Singleton
  * Global app state
  */
 @Singleton
-class Session @Inject constructor(
-    @ApplicationContext private val context: Context,
-    moshi: Moshi
-) {
+class Session @Inject constructor(@ApplicationContext private val context: Context, moshi: Moshi) {
 
     private val sharedPreferences =
         context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
@@ -61,7 +58,7 @@ class Session @Inject constructor(
         get() = sharedPreferences.getString(SERVER_KEY, ApiConstants.DEFAULT_HOST).orEmpty()
 
     val baseUrl: String
-        get() = "${server}/${ApiConstants.API_PREFIX}/"
+        get() = "$server/${ApiConstants.API_PREFIX}/"
 
     fun changeServer(value: String) {
         sharedPreferences.edit { putString(SERVER_KEY, value) }
@@ -150,7 +147,6 @@ class Session @Inject constructor(
         changeIssuesFilters(FiltersData())
     }
 
-
     fun reset() {
         changeAuthCredentials("", "")
         changeServer("")
@@ -176,8 +172,8 @@ class Session @Inject constructor(
 
     // Events (no data, just dispatch update to subscribers)
 
-    val taskEdit = EventFlow() // some task was edited
-    val sprintEdit = EventFlow() // sprint was edited
+    val taskEdit = eventFlow() // some task was edited
+    val sprintEdit = eventFlow() // sprint was edited
 }
 
 /**
@@ -185,8 +181,7 @@ class Session @Inject constructor(
  */
 class Event
 
-@Suppress("FunctionName")
-fun EventFlow() = MutableSharedFlow<Event>()
+fun eventFlow() = MutableSharedFlow<Event>()
 
 suspend fun MutableSharedFlow<Event>.postUpdate() = emit(Event())
 fun MutableSharedFlow<Event>.tryPostUpdate() = tryEmit(Event())

@@ -38,41 +38,41 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersData
 import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.core.nav.NavigateToTask
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.ui.components.TasksFiltersWithLazyList
+import com.grappim.taigamobile.ui.components.lists.simpleTasksListWithTitle
+import com.grappim.taigamobile.ui.utils.LoadingResult
+import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
 import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
 import com.grappim.taigamobile.uikit.widgets.dialog.EditSprintDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
-import com.grappim.taigamobile.ui.components.lists.SimpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
-import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.ui.utils.LoadingResult
-import com.grappim.taigamobile.ui.utils.SubscribeOnError
-import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
 @Composable
 fun ScrumScreen(
-    viewModel: ScrumViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
     goToCreateTask: (CommonTaskType) -> Unit,
     goToSprint: (sprintId: Long) -> Unit,
     goToTask: (Long, CommonTaskType, Int) -> Unit,
+    viewModel: ScrumViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -144,6 +144,7 @@ fun ScrumScreen(
 fun ScrumScreenContent(
     state: ScrumState,
     pagerState: PagerState,
+    modifier: Modifier = Modifier,
     stories: LazyPagingItems<CommonTask>? = null,
     filters: FiltersData = FiltersData(),
     activeFilters: FiltersData = FiltersData(),
@@ -155,7 +156,7 @@ fun ScrumScreenContent(
     navigateToTask: NavigateToTask = { _, _, _ -> },
     createSprint: (name: String, start: LocalDate, end: LocalDate) -> Unit = { _, _, _ -> }
 ) = Column(
-    modifier = Modifier.fillMaxSize(),
+    modifier = modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
     if (state.isCreateSprintDialogVisible) {
@@ -193,26 +194,26 @@ fun ScrumScreenContent(
             )
         }
     }
-
 }
 
 @Composable
 private fun BacklogTabContent(
+    navigateToTask: NavigateToTask,
     stories: LazyPagingItems<CommonTask>?,
+    modifier: Modifier = Modifier,
     filters: FiltersData = FiltersData(),
     activeFilters: FiltersData = FiltersData(),
-    selectFilters: (FiltersData) -> Unit = {},
-    navigateToTask: NavigateToTask
+    selectFilters: (FiltersData) -> Unit = {}
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
-    modifier = Modifier.fillMaxWidth()
+    modifier = modifier.fillMaxWidth()
 ) {
     TasksFiltersWithLazyList(
         filters = filters,
         activeFilters = activeFilters,
         selectFilters = selectFilters
     ) {
-        SimpleTasksListWithTitle(
+        simpleTasksListWithTitle(
             commonTasksLazy = stories,
             keysHash = activeFilters.hashCode(),
             navigateToTask = navigateToTask,
@@ -226,7 +227,7 @@ private fun BacklogTabContent(
 private fun SprintsTabContent(
     openSprints: LazyPagingItems<Sprint>?,
     closedSprints: LazyPagingItems<Sprint>?,
-    navigateToBoard: (Sprint) -> Unit,
+    navigateToBoard: (Sprint) -> Unit
 ) {
     if (openSprints == null || closedSprints == null) return
 
@@ -252,14 +253,24 @@ private fun SprintsTabContent(
         }
 
         item {
-            if (openSprints.loadState.refresh is LoadState.Loading || openSprints.loadState.append is LoadState.Loading) {
+            if (openSprints.loadState.refresh is LoadState.Loading ||
+                openSprints.loadState.append is LoadState.Loading
+            ) {
                 DotsLoader()
             }
         }
 
         item {
             FilledTonalButton(onClick = { isClosedSprintsVisible = !isClosedSprintsVisible }) {
-                Text(stringResource(if (isClosedSprintsVisible) RString.hide_closed_sprints else RString.show_closed_sprints))
+                Text(
+                    stringResource(
+                        if (isClosedSprintsVisible) {
+                            RString.hide_closed_sprints
+                        } else {
+                            RString.show_closed_sprints
+                        }
+                    )
+                )
             }
         }
 
@@ -281,7 +292,9 @@ private fun SprintsTabContent(
             }
 
             item {
-                if (closedSprints.loadState.refresh is LoadState.Loading || closedSprints.loadState.append is LoadState.Loading) {
+                if (closedSprints.loadState.refresh is LoadState.Loading ||
+                    closedSprints.loadState.append is LoadState.Loading
+                ) {
                     DotsLoader()
                 }
             }
@@ -298,10 +311,7 @@ private fun SprintsTabContent(
 }
 
 @Composable
-private fun SprintItem(
-    sprint: Sprint,
-    navigateToBoard: (Sprint) -> Unit = {}
-) = ContainerBox {
+private fun SprintItem(sprint: Sprint, navigateToBoard: (Sprint) -> Unit = {}) = ContainerBox {
     val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
     Row(
@@ -324,7 +334,9 @@ private fun SprintItem(
 
             Row {
                 Text(
-                    text = stringResource(RString.stories_count_template).format(sprint.storiesCount),
+                    text = stringResource(
+                        RString.stories_count_template
+                    ).format(sprint.storiesCount),
                     color = MaterialTheme.colorScheme.primary,
                     style = MaterialTheme.typography.bodyMedium
                 )
@@ -341,7 +353,7 @@ private fun SprintItem(
             }
         }
 
-        //TODO the only place I had to comment the code since the usage is internal and I couldn't find
+        // TODO the only place I had to comment the code since the usage is internal and I couldn't find
         // anything to change it
         buttonColors().let {
 //            val containerColor by it.containerColor(!sprint.isClosed)
@@ -349,7 +361,7 @@ private fun SprintItem(
 
             Button(
                 onClick = { navigateToBoard(sprint) },
-                modifier = Modifier.weight(0.3f),
+                modifier = Modifier.weight(0.3f)
 //                colors = buttonColors(
 //                    containerColor = containerColor,
 //                    contentColor = contentColor
@@ -363,7 +375,7 @@ private fun SprintItem(
 
 @Preview(showBackground = true)
 @Composable
-fun SprintPreview() = TaigaMobileTheme {
+private fun SprintPreview() = TaigaMobileTheme {
     SprintItem(
         Sprint(
             id = 0L,
@@ -379,11 +391,11 @@ fun SprintPreview() = TaigaMobileTheme {
 
 @Preview(showBackground = true)
 @Composable
-fun ScrumScreenPreview() = TaigaMobileTheme {
+private fun ScrumScreenPreview() = TaigaMobileTheme {
     ScrumScreenContent(
         state = ScrumState(
-            setIsCreateSprintDialogVisible = {},
+            setIsCreateSprintDialogVisible = {}
         ),
-        pagerState = rememberPagerState { 2 },
+        pagerState = rememberPagerState { 2 }
     )
 }

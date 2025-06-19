@@ -7,9 +7,7 @@ import com.grappim.taigamobile.uikit.widgets.text.MarkdownText
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 
 @Suppress("FunctionName")
-fun LazyListScope.Description(
-    description: String
-) {
+fun LazyListScope.Description(description: String) {
     item {
         if (description.isNotEmpty()) {
             MarkdownText(

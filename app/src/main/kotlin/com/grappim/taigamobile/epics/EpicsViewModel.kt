@@ -7,10 +7,10 @@ import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersData
-import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
+import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -30,7 +30,7 @@ class EpicsViewModel @Inject constructor(
 
     private var shouldReload = true
 
-    val filters = MutableResultFlow<FiltersData>()
+    val filters = mutableResultFlow<FiltersData>()
     val activeFilters by lazy { session.epicsFilters }
 
     val epics: Flow<PagingData<CommonTask>> = activeFilters.flatMapLatest { filters ->

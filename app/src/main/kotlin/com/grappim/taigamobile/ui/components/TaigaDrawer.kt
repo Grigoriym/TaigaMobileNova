@@ -25,12 +25,14 @@ import com.grappim.taigamobile.core.nav.DrawerDestination
 fun TaigaDrawer(
     screens: List<DrawerDestination>,
     currentItem: DrawerDestination?,
-    onDrawerItemClicked: (DrawerDestination) -> Unit,
+    onDrawerItemClick: (DrawerDestination) -> Unit,
     drawerState: DrawerState,
+    modifier: Modifier = Modifier,
     gesturesEnabled: Boolean = true,
     content: @Composable () -> Unit
 ) {
     ModalNavigationDrawer(
+        modifier = modifier,
         gesturesEnabled = gesturesEnabled,
         drawerState = drawerState,
         drawerContent = {
@@ -59,7 +61,7 @@ fun TaigaDrawer(
                                     )
                                 },
                                 onClick = {
-                                    onDrawerItemClicked(item)
+                                    onDrawerItemClick(item)
                                 }
                             )
                         }

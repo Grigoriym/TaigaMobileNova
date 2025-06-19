@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.uikit.widgets.container
 
-
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -21,18 +20,19 @@ import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
  */
 @Composable
 fun ContainerBox(
+    modifier: Modifier = Modifier,
     horizontalPadding: Dp = mainHorizontalScreenPadding,
     verticalPadding: Dp = 8.dp,
     onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit = {}
 ) = Box(
-    modifier = Modifier
+    modifier = modifier
         .fillMaxWidth()
         .clickable(
             indication = ripple(),
             onClick = onClick ?: {},
             enabled = onClick != null,
-            interactionSource = remember { MutableInteractionSource() },
+            interactionSource = remember { MutableInteractionSource() }
         )
         .padding(horizontalPadding, verticalPadding),
     content = content

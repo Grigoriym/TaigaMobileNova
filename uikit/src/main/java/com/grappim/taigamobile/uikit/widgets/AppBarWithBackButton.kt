@@ -37,6 +37,6 @@ fun AppBarWithBackButton(
                 }
             }
         } ?: {},
-        actions = actions,
+        actions = actions
     )
 }

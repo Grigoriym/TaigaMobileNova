@@ -31,10 +31,10 @@ import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.clickableUnindicated
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -45,45 +45,50 @@ import java.time.format.FormatStyle
 @Composable
 fun UserItem(
     user: User,
+    modifier: Modifier = Modifier,
     dateTime: LocalDateTime? = null,
     onUserItemClick: () -> Unit = { }
-) = Row(
-    modifier = Modifier.clickableUnindicated { onUserItemClick() },
-    verticalAlignment = Alignment.CenterVertically
 ) {
-    val dateTimeFormatter = remember { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM) }
-    val imageSize = if (dateTime != null) 46.dp else 40.dp
+    Row(
+        modifier = modifier.clickableUnindicated { onUserItemClick() },
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        val dateTimeFormatter =
+            remember { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM) }
+        val imageSize = if (dateTime != null) 46.dp else 40.dp
 
-    Image(
-        painter = rememberAsyncImagePainter(
-            ImageRequest.Builder(LocalContext.current)
-                .data(user.avatarUrl ?: RDrawable.default_avatar).apply(
-                    fun ImageRequest.Builder.() {
-                        error(RDrawable.default_avatar)
-                        crossfade(true)
-                    }).build()
-        ),
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier
-            .size(imageSize)
-            .clip(CircleShape)
-    )
-
-    Spacer(Modifier.width(6.dp))
-
-    Column {
-        Text(
-            text = user.displayName,
-            style = MaterialTheme.typography.titleMedium
+        Image(
+            painter = rememberAsyncImagePainter(
+                ImageRequest.Builder(LocalContext.current)
+                    .data(user.avatarUrl ?: RDrawable.default_avatar).apply(
+                        fun ImageRequest.Builder.() {
+                            error(RDrawable.default_avatar)
+                            crossfade(true)
+                        }
+                    ).build()
+            ),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(imageSize)
+                .clip(CircleShape)
         )
 
-        dateTime?.let {
+        Spacer(Modifier.width(6.dp))
+
+        Column {
             Text(
-                text = it.format(dateTimeFormatter),
-                color = MaterialTheme.colorScheme.outline,
-                style = MaterialTheme.typography.bodyMedium
+                text = user.displayName,
+                style = MaterialTheme.typography.titleMedium
             )
+
+            dateTime?.let {
+                Text(
+                    text = it.format(dateTimeFormatter),
+                    color = MaterialTheme.colorScheme.outline,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
         }
     }
 }
@@ -92,6 +97,7 @@ fun UserItem(
 fun UserItemWithAction(
     user: User,
     onRemoveClick: () -> Unit,
+    modifier: Modifier = Modifier,
     onUserItemClick: () -> Unit = { }
 ) {
     var isAlertVisible by remember { mutableStateOf(false) }
@@ -112,7 +118,7 @@ fun UserItemWithAction(
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
+        modifier = modifier.fillMaxWidth()
     ) {
         UserItem(
             user = user,
@@ -131,10 +137,10 @@ fun UserItemWithAction(
 
 @Preview(showBackground = true)
 @Composable
-fun UserItemPreview() = TaigaMobileTheme {
+private fun UserItemPreview() = TaigaMobileTheme {
     UserItem(
         user = User(
-            _id = 0L,
+            id = 0L,
             fullName = "Full Name",
             photo = null,
             bigPhoto = null,

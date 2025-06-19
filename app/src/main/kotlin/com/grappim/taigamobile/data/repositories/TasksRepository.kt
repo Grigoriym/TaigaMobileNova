@@ -78,10 +78,10 @@ class TasksRepository @Inject constructor(
             milestone = if (isCommonTaskFromBacklog) "null" else null
         ).let {
             FiltersData(
-                assignees = it.assigned_to.map {
+                assignees = it.assignedTo.map {
                     UsersFilter(
                         id = it.id,
-                        name = it.full_name,
+                        name = it.fullName,
                         count = it.count
                     )
                 },
@@ -110,7 +110,7 @@ class TasksRepository @Inject constructor(
                 createdBy = it.owners.map {
                     UsersFilter(
                         id = it.id!!,
-                        name = it.full_name,
+                        name = it.fullName,
                         count = it.count
                     )
                 },
@@ -225,19 +225,18 @@ class TasksRepository @Inject constructor(
         }
 
     @Deprecated("remove it and use the one form epics repo")
-    override suspend fun getEpics(page: Int, filters: FiltersData): List<CommonTask> =
-        handle404 {
-            epicsApi.getEpics(
-                page = page,
-                project = currentProjectId,
-                query = filters.query,
-                assignedIds = filters.assignees.commaString(),
-                ownerIds = filters.createdBy.commaString(),
-                statuses = filters.statuses.commaString(),
-                tags = filters.tags.tagsCommaString()
-            )
-                .map { it.toCommonTask(CommonTaskType.Epic) }
-        }
+    override suspend fun getEpics(page: Int, filters: FiltersData): List<CommonTask> = handle404 {
+        epicsApi.getEpics(
+            page = page,
+            project = currentProjectId,
+            query = filters.query,
+            assignedIds = filters.assignees.commaString(),
+            ownerIds = filters.createdBy.commaString(),
+            statuses = filters.statuses.commaString(),
+            tags = filters.tags.tagsCommaString()
+        )
+            .map { it.toCommonTask(CommonTaskType.Epic) }
+    }
 
     override suspend fun getAllUserStories() = withIO {
         val filters = async { getFiltersData(CommonTaskType.UserStory) }
@@ -254,32 +253,30 @@ class TasksRepository @Inject constructor(
             }
     }
 
-    override suspend fun getBacklogUserStories(page: Int, filters: FiltersData) =
-        handle404 {
-            userStoriesApi.getUserStories(
-                project = currentProjectId,
-                sprint = "null",
-                page = page,
-                query = filters.query,
-                assignedIds = filters.assignees.commaString(),
-                ownerIds = filters.createdBy.commaString(),
-                roles = filters.roles.commaString(),
-                statuses = filters.statuses.commaString(),
-                epics = filters.epics.commaString(),
-                tags = filters.tags.tagsCommaString()
-            )
-                .map { it.toCommonTask(CommonTaskType.UserStory) }
-        }
+    override suspend fun getBacklogUserStories(page: Int, filters: FiltersData) = handle404 {
+        userStoriesApi.getUserStories(
+            project = currentProjectId,
+            sprint = "null",
+            page = page,
+            query = filters.query,
+            assignedIds = filters.assignees.commaString(),
+            ownerIds = filters.createdBy.commaString(),
+            roles = filters.roles.commaString(),
+            statuses = filters.statuses.commaString(),
+            epics = filters.epics.commaString(),
+            tags = filters.tags.tagsCommaString()
+        )
+            .map { it.toCommonTask(CommonTaskType.UserStory) }
+    }
 
     override suspend fun getEpicUserStories(epicId: Long) =
         userStoriesApi.getUserStories(epic = epicId)
             .map { it.toCommonTask(CommonTaskType.UserStory) }
 
-    override suspend fun getUserStoryTasks(storyId: Long) =
-        handle404 {
-            taigaApi.getTasks(userStory = storyId, project = currentProjectId)
-                .map { it.toCommonTask(CommonTaskType.Task) }
-        }
+    override suspend fun getUserStoryTasks(storyId: Long) = handle404 {
+        taigaApi.getTasks(userStory = storyId, project = currentProjectId)
+            .map { it.toCommonTask(CommonTaskType.Task) }
+    }
 
     override suspend fun getIssues(page: Int, filters: FiltersData) = withIO {
         handle404 {
@@ -307,7 +304,7 @@ class TasksRepository @Inject constructor(
         taigaApi.getCommonTask(CommonTaskPathPlural(type), commonTaskId).toCommonTaskExtended(
             commonTaskType = type,
             filters = filters.await(),
-            swimlanes = swimlanes.await(),
+            swimlanes = swimlanes.await()
         )
     }
 
@@ -315,7 +312,7 @@ class TasksRepository @Inject constructor(
         taigaApi.getCommonTaskComments(CommonTaskPathSingular(type), commonTaskId)
             .sortedBy { it.postDateTime }
             .filter { it.deleteDate == null }
-            .map { it.also { it.canDelete = it.author.id == currentUserId } }
+            .map { it.also { it.canDelete = it.author.actualId == currentUserId } }
     }
 
     override suspend fun getAttachments(commonTaskId: Long, type: CommonTaskType) = withIO {
@@ -340,11 +337,12 @@ class TasksRepository @Inject constructor(
                         type = it.type,
                         name = it.name,
                         description = it.description?.takeIf { it.isNotEmpty() },
-                        value = values.attributes_values[it.id]?.let { value ->
+                        value = values.attributesValues[it.id]?.let { value ->
                             CustomFieldValue(
                                 when (it.type) {
-                                    CustomFieldType.Date -> (value as? String)?.takeIf { it.isNotEmpty() }
-                                        ?.toLocalDate()
+                                    CustomFieldType.Date -> (value as? String)?.takeIf {
+                                        it.isNotEmpty()
+                                    }?.toLocalDate()
 
                                     CustomFieldType.Checkbox -> value as? Boolean
                                     else -> value
@@ -373,62 +371,65 @@ class TasksRepository @Inject constructor(
             CommonTaskType.Issue -> PATH_TO_ISSUE
         }
 
+    private val nullOwnerError = IllegalArgumentException(
+        "CommonTaskResponse requires not null 'owner' field"
+    )
+
     private suspend fun CommonTaskResponse.toCommonTaskExtended(
         commonTaskType: CommonTaskType,
         filters: FiltersData,
         swimlanes: List<Swimlane>,
         loadSprint: Boolean = true
-    ): CommonTaskExtended {
-        return CommonTaskExtended(
-            id = id,
-            status = Status(
-                id = status,
-                name = status_extra_info.name,
-                color = status_extra_info.color,
-                type = StatusType.Status
-            ),
-            taskType = commonTaskType,
-            createdDateTime = created_date,
-            sprint = if (loadSprint) milestone?.let {
+    ): CommonTaskExtended = CommonTaskExtended(
+        id = id,
+        status = Status(
+            id = status,
+            name = statusExtraInfo.name,
+            color = statusExtraInfo.color,
+            type = StatusType.Status
+        ),
+        taskType = commonTaskType,
+        createdDateTime = createdDate,
+        sprint = if (loadSprint) {
+            milestone?.let {
                 sprintApi.getSprint(it).toSprint()
-            } else null,
-            assignedIds = assigned_users ?: listOfNotNull(assigned_to),
-            watcherIds = watchers.orEmpty(),
-            creatorId = owner
-                ?: throw IllegalArgumentException("CommonTaskResponse requires not null 'owner' field"),
-            ref = ref,
-            title = subject,
-            isClosed = is_closed,
-            description = description ?: "",
-            epicsShortInfo = epics.orEmpty(),
-            projectSlug = project_extra_info.slug,
-            tags = tags.orEmpty().map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
-            swimlane = swimlanes.find { it.id == swimlane },
-            dueDate = due_date,
-            dueDateStatus = due_date_status,
-            userStoryShortInfo = user_story_extra_info,
-            version = version,
-            color = color,
-            type = type?.let { id -> filters.types.find { it.id == id } }
-                ?.toStatus(StatusType.Type),
-            severity = severity?.let { id -> filters.severities.find { it.id == id } }
-                ?.toStatus(StatusType.Severity),
-            priority = priority?.let { id -> filters.priorities.find { it.id == id } }
-                ?.toStatus(StatusType.Priority),
-            url = "${session.server}/project/${project_extra_info.slug}/${
-                transformTaskTypeForCopyLink(
-                    commonTaskType
-                )
-            }/$ref",
-            blockedNote = blocked_note.takeIf { is_blocked }
-        )
-    }
-
+            }
+        } else {
+            null
+        },
+        assignedIds = assignedUsers ?: listOfNotNull(assignedTo),
+        watcherIds = watchers.orEmpty(),
+        creatorId = owner ?: throw nullOwnerError,
+        ref = ref,
+        title = subject,
+        isClosed = isClosed,
+        description = description ?: "",
+        epicsShortInfo = epics.orEmpty(),
+        projectSlug = projectExtraInfo.slug,
+        tags = tags.orEmpty().map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
+        swimlane = swimlanes.find { it.id == swimlane },
+        dueDate = dueDate,
+        dueDateStatus = dueDateStatus,
+        userStoryShortInfo = userStoryExtraInfo,
+        version = version,
+        color = color,
+        type = type?.let { id -> filters.types.find { it.id == id } }
+            ?.toStatus(StatusType.Type),
+        severity = severity?.let { id -> filters.severities.find { it.id == id } }
+            ?.toStatus(StatusType.Severity),
+        priority = priority?.let { id -> filters.priorities.find { it.id == id } }
+            ?.toStatus(StatusType.Priority),
+        url = "${session.server}/project/${projectExtraInfo.slug}/${
+            transformTaskTypeForCopyLink(
+                commonTaskType
+            )
+        }/$ref",
+        blockedNote = blockedNote.takeIf { isBlocked }
+    )
 
     /**
      * Edit related
      */
-
 
     // edit task itself
 
@@ -467,7 +468,9 @@ class TasksRepository @Inject constructor(
         statusType: StatusType
     ) = withIO {
         if (commonTask.taskType != CommonTaskType.Issue && statusType != StatusType.Status) {
-            throw UnsupportedOperationException("Cannot change $statusType for ${commonTask.taskType}")
+            throw UnsupportedOperationException(
+                "Cannot change $statusType for ${commonTask.taskType}"
+            )
         }
 
         val request = commonTask.toEditRequest().let {
@@ -512,7 +515,7 @@ class TasksRepository @Inject constructor(
     override suspend fun editCommonTaskBasicInfo(
         commonTask: CommonTaskExtended,
         title: String,
-        description: String,
+        description: String
     ) = withIO {
         editCommonTask(
             commonTask,
@@ -526,7 +529,9 @@ class TasksRepository @Inject constructor(
     override suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?) =
         withIO {
             if (commonTask.taskType != CommonTaskType.UserStory) {
-                throw UnsupportedOperationException("Cannot change swimlane for ${commonTask.taskType}")
+                throw UnsupportedOperationException(
+                    "Cannot change swimlane for ${commonTask.taskType}"
+                )
             }
 
             editCommonTask(commonTask, commonTask.toEditRequest().copy(swimlane = swimlaneId))
@@ -549,11 +554,10 @@ class TasksRepository @Inject constructor(
 
     // edit other related parts
 
-    override suspend fun linkToEpic(epicId: Long, userStoryId: Long) =
-        taigaApi.linkToEpic(
-            epicId = epicId,
-            linkToEpicRequest = LinkToEpicRequest(epicId.toString(), userStoryId)
-        )
+    override suspend fun linkToEpic(epicId: Long, userStoryId: Long) = taigaApi.linkToEpic(
+        epicId = epicId,
+        linkToEpicRequest = LinkToEpicRequest(epicId.toString(), userStoryId)
+    )
 
     override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
         taigaApi.unlinkFromEpic(epicId, userStoryId)

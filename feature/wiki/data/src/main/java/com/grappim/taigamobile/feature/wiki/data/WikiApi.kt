@@ -17,9 +17,7 @@ import retrofit2.http.Query
 
 interface WikiApi {
     @GET("wiki")
-    suspend fun getProjectWikiPages(
-        @Query("project") projectId: Long
-    ): List<WikiPage>
+    suspend fun getProjectWikiPages(@Query("project") projectId: Long): List<WikiPage>
 
     @GET("wiki/by_slug")
     suspend fun getProjectWikiPageBySlug(
@@ -48,27 +46,17 @@ interface WikiApi {
     )
 
     @DELETE("wiki/attachments/{id}")
-    suspend fun deletePageAttachment(
-        @Path("id") attachmentId: Long
-    ): Response<Void>
+    suspend fun deletePageAttachment(@Path("id") attachmentId: Long): Response<Void>
 
     @DELETE("wiki/{id}")
-    suspend fun deleteWikiPage(
-        @Path("id") pageId: Long
-    ): Response<Void>
+    suspend fun deleteWikiPage(@Path("id") pageId: Long): Response<Void>
 
     @GET("wiki-links")
-    suspend fun getWikiLink(
-        @Query("project") projectId: Long
-    ): List<WikiLink>
+    suspend fun getWikiLink(@Query("project") projectId: Long): List<WikiLink>
 
     @POST("wiki-links")
-    suspend fun createWikiLink(
-        @Body newWikiLinkRequest: NewWikiLinkRequest
-    )
+    suspend fun createWikiLink(@Body newWikiLinkRequest: NewWikiLinkRequest)
 
     @DELETE("wiki-links/{id}")
-    suspend fun deleteWikiLink(
-        @Path("id") linkId: Long
-    ): Response<Void>
+    suspend fun deleteWikiLink(@Path("id") linkId: Long): Response<Void>
 }

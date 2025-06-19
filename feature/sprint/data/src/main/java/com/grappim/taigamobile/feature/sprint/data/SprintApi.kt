@@ -24,10 +24,7 @@ interface SprintApi {
     suspend fun createSprint(@Body request: CreateSprintRequest)
 
     @PATCH("milestones/{id}")
-    suspend fun editSprint(
-        @Path("id") id: Long,
-        @Body request: EditSprintRequest
-    )
+    suspend fun editSprint(@Path("id") id: Long, @Body request: EditSprintRequest)
 
     @DELETE("milestones/{id}")
     suspend fun deleteSprint(@Path("id") id: Long): Response<Void>

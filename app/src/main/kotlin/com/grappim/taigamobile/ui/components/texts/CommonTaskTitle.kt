@@ -44,12 +44,14 @@ fun CommonTaskTitle(
 
     Text(
         text = buildAnnotatedString {
-            if (isInactive) pushStyle(
-                SpanStyle(
-                    color = MaterialTheme.colorScheme.outline,
-                    textDecoration = TextDecoration.LineThrough
+            if (isInactive) {
+                pushStyle(
+                    SpanStyle(
+                        color = MaterialTheme.colorScheme.outline,
+                        textDecoration = TextDecoration.LineThrough
+                    )
                 )
-            )
+            }
             append(stringResource(RString.title_with_ref_pattern).format(ref, title))
             if (isInactive) pop()
 
@@ -70,7 +72,7 @@ fun CommonTaskTitle(
 
         FlowRow(
             horizontalArrangement = Arrangement.spacedBy(space),
-            verticalArrangement = Arrangement.spacedBy(space),
+            verticalArrangement = Arrangement.spacedBy(space)
         ) {
             tags.forEach {
                 val bgColor = it.color.toColor()
@@ -89,7 +91,7 @@ fun CommonTaskTitle(
 
 @Preview(showBackground = true)
 @Composable
-fun CommonTaskTitlePreview() = TaigaMobileTheme {
+private fun CommonTaskTitlePreview() = TaigaMobileTheme {
     CommonTaskTitle(
         ref = 42,
         title = "Some title",

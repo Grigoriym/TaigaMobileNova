@@ -33,11 +33,11 @@ import java.time.LocalDate
 
 @Composable
 fun EditSprintDialog(
+    onDismiss: () -> Unit,
     initialName: String = "",
     initialStart: LocalDate? = null,
     initialEnd: LocalDate? = null,
-    onConfirm: (name: String, start: LocalDate, end: LocalDate) -> Unit,
-    onDismiss: () -> Unit
+    onConfirm: (name: String, start: LocalDate, end: LocalDate) -> Unit
 ) {
     var name by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
@@ -83,7 +83,9 @@ fun EditSprintDialog(
         },
         text = {
             val pickerStyle =
-                MaterialTheme.typography.titleMedium.merge(TextStyle(fontWeight = FontWeight.Normal))
+                MaterialTheme.typography.titleMedium.merge(
+                    TextStyle(fontWeight = FontWeight.Normal)
+                )
             val pickerModifier = Modifier
                 .border(
                     width = 1.dp,
@@ -99,7 +101,7 @@ fun EditSprintDialog(
             ) {
                 DatePicker(
                     date = start,
-                    onDatePicked = { start = it!! },
+                    onDatePick = { start = it!! },
                     showClearButton = false,
                     style = pickerStyle,
                     modifier = pickerModifier
@@ -114,7 +116,7 @@ fun EditSprintDialog(
 
                 DatePicker(
                     date = end,
-                    onDatePicked = { end = it!! },
+                    onDatePick = { end = it!! },
                     showClearButton = false,
                     style = pickerStyle,
                     modifier = pickerModifier

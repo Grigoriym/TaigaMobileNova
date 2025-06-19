@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalMinimumInteractiveComponentSize
@@ -23,7 +22,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -32,17 +30,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 
-@OptIn(ExperimentalComposeUiApi::class, ExperimentalMaterial3Api::class)
 @Composable
-fun CreateCommentBar(
-    onButtonClick: (String) -> Unit
-) = Surface(
+fun CreateCommentBar(onButtonClick: (String) -> Unit, modifier: Modifier = Modifier) = Surface(
     modifier = Modifier.fillMaxWidth(),
-    tonalElevation = 8.dp,
+    tonalElevation = 8.dp
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     var commentTextValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
@@ -53,10 +48,10 @@ fun CreateCommentBar(
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
+        modifier = modifier
             .padding(vertical = 8.dp, horizontal = mainHorizontalScreenPadding)
             .navigationBarsPadding()
-            .imePadding(),
+            .imePadding()
     ) {
         Box(
             modifier = Modifier

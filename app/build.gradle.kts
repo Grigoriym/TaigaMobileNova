@@ -1,11 +1,10 @@
-import com.android.build.api.dsl.AndroidSourceSet
-
 plugins {
     alias(libs.plugins.taigamobile.android.application)
     alias(libs.plugins.taigamobile.android.hilt)
     alias(libs.plugins.taigamobile.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.compose.compiler)
+    alias(libs.plugins.moduleGraphAssertion)
 }
 
 android {
@@ -121,20 +120,7 @@ dependencies {
     androidTestRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
 }
 
-fun DependencyHandler.allTestsImplementation(dependencyNotation: Any) {
-    testImplementation(dependencyNotation)
-    androidTestImplementation(dependencyNotation)
-}
-
-tasks.register<Exec>("launchTestInstance") {
-    commandLine("../taiga-test-instance/launch-taiga.sh")
-}
-
-tasks.register<Exec>("stopTestInstance") {
-    commandLine("../taiga-test-instance/stop-taiga.sh")
-}
-
-tasks.withType<Test> {
-    dependsOn("launchTestInstance")
-    finalizedBy("stopTestInstance")
+moduleGraphAssert {
+    maxHeight = 6
+    assertOnAnyBuild = true
 }

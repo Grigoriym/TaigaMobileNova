@@ -71,12 +71,13 @@ import java.time.LocalDateTime
 fun SprintKanban(
     statuses: List<Status>,
     storiesWithTasks: Map<CommonTask, List<CommonTask>>,
+    modifier: Modifier = Modifier,
     storylessTasks: List<CommonTask> = emptyList(),
     issues: List<CommonTask> = emptyList(),
     navigateToTask: NavigateToTask = { _, _, _ -> },
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
 ) = Column(
-    modifier = Modifier.horizontalScroll(rememberScrollState())
+    modifier = modifier.horizontalScroll(rememberScrollState())
 ) {
     val cellOuterPadding = 8.dp
     val cellPadding = 8.dp
@@ -157,7 +158,7 @@ fun SprintKanban(
                     cellPadding = cellPadding,
                     cellWidth = userStoryHeadingWidth,
                     minCellHeight = minCellHeight,
-                    onAddClick = { navigateToCreateTask(CommonTaskType.Task, null) },
+                    onAddClick = { navigateToCreateTask(CommonTaskType.Task, null) }
                 )
 
                 statuses.forEach { status ->
@@ -226,7 +227,7 @@ private fun Header(
     cellWidth: Dp,
     cellPadding: Dp,
     stripeColor: Color,
-    backgroundColor: Color,
+    backgroundColor: Color
 ) = Column(
     modifier = Modifier
         .padding(end = cellPadding, bottom = cellPadding)
@@ -257,32 +258,28 @@ private fun Header(
 }
 
 @Composable
-private fun IssueHeader(
-    width: Dp,
-    padding: Dp,
-    backgroundColor: Color,
-    onAddClick: () -> Unit
-) = Row(
-    modifier = Modifier
-        .width(width)
-        .padding(padding)
-        .clip(MaterialTheme.shapes.extraSmall)
-        .background(backgroundColor)
-        .padding(horizontal = 6.dp, vertical = 4.dp),
-    horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically
-) {
-    Text(
-        text = stringResource(RString.sprint_issues).uppercase(),
-        modifier = Modifier.weight(0.8f, fill = false)
-    )
+private fun IssueHeader(width: Dp, padding: Dp, backgroundColor: Color, onAddClick: () -> Unit) =
+    Row(
+        modifier = Modifier
+            .width(width)
+            .padding(padding)
+            .clip(MaterialTheme.shapes.extraSmall)
+            .background(backgroundColor)
+            .padding(horizontal = 6.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = stringResource(RString.sprint_issues).uppercase(),
+            modifier = Modifier.weight(0.8f, fill = false)
+        )
 
-    PlusButton(
-        tint = MaterialTheme.colorScheme.outline,
-        onClick = onAddClick,
-        modifier = Modifier.weight(0.2f)
-    )
-}
+        PlusButton(
+            tint = MaterialTheme.colorScheme.outline,
+            onClick = onAddClick,
+            modifier = Modifier.weight(0.2f)
+        )
+    }
 
 @Composable
 private fun UserStoryItem(
@@ -336,7 +333,7 @@ private fun CategoryItem(
     cellPadding: Dp,
     cellWidth: Dp,
     minCellHeight: Dp,
-    onAddClick: () -> Unit,
+    onAddClick: () -> Unit
 ) = Column(
     modifier = Modifier
         .padding(end = cellPadding, bottom = cellPadding)
@@ -381,10 +378,7 @@ private fun Cell(
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-private fun TaskItem(
-    task: CommonTask,
-    onTaskClick: () -> Unit
-) = Surface(
+private fun TaskItem(task: CommonTask, onTaskClick: () -> Unit) = Surface(
     modifier = Modifier
         .fillMaxWidth()
         .padding(4.dp),
@@ -444,7 +438,7 @@ private fun TaskItem(
 
 @Preview(showBackground = true)
 @Composable
-fun SprintKanbanPreview() = TaigaMobileTheme {
+private fun SprintKanbanPreview() = TaigaMobileTheme {
     SprintKanban(
         statuses = listOf(
             Status(
@@ -470,7 +464,7 @@ fun SprintKanbanPreview() = TaigaMobileTheme {
                 name = "Archived",
                 color = "#A9AABC",
                 type = StatusType.Status
-            ),
+            )
         ),
         storiesWithTasks = List(5) {
             CommonTask(
@@ -485,7 +479,7 @@ fun SprintKanbanPreview() = TaigaMobileTheme {
                     type = StatusType.Status
                 ),
                 assignee = User(
-                    _id = it.toLong(),
+                    id = it.toLong(),
                     fullName = "Name Name",
                     photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                     bigPhoto = null,
@@ -507,7 +501,7 @@ fun SprintKanbanPreview() = TaigaMobileTheme {
                         type = StatusType.Status
                     ),
                     assignee = User(
-                        _id = it.toLong(),
+                        id = it.toLong(),
                         fullName = "Name Name",
                         photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                         bigPhoto = null,
@@ -529,7 +523,7 @@ fun SprintKanbanPreview() = TaigaMobileTheme {
                         type = StatusType.Status
                     ),
                     assignee = User(
-                        _id = it.toLong(),
+                        id = it.toLong(),
                         fullName = "Name Name",
                         photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                         bigPhoto = null,
@@ -551,7 +545,7 @@ fun SprintKanbanPreview() = TaigaMobileTheme {
                         type = StatusType.Status
                     ),
                     assignee = User(
-                        _id = it.toLong(),
+                        id = it.toLong(),
                         fullName = "Name Name",
                         photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                         bigPhoto = null,
@@ -576,7 +570,7 @@ fun SprintKanbanPreview() = TaigaMobileTheme {
                     type = StatusType.Status
                 ),
                 assignee = User(
-                    _id = it.toLong(),
+                    id = it.toLong(),
                     fullName = "Name Name",
                     photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                     bigPhoto = null,

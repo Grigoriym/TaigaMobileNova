@@ -12,12 +12,11 @@ class SprintPagingSource(
     private val isClosed: Boolean,
     private val session: Session
 ) : PagingSource<Int, Sprint>() {
-    override fun getRefreshKey(state: PagingState<Int, Sprint>): Int? {
-        return state.anchorPosition?.let { anchorPosition ->
+    override fun getRefreshKey(state: PagingState<Int, Sprint>): Int? =
+        state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
         }
-    }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Sprint> {
         try {
@@ -38,7 +37,7 @@ class SprintPagingSource(
                 return LoadResult.Page(
                     data = emptyList(),
                     prevKey = null,
-                    nextKey = null,
+                    nextKey = null
                 )
             }
             return LoadResult.Error(e)

@@ -28,7 +28,7 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
  * Three dots pulsing
  */
 @Composable
-fun DotsLoader() {
+fun DotsLoader(modifier: Modifier = Modifier) {
     val delayUnit = 300
 
     val infiniteTransition = rememberInfiniteTransition()
@@ -54,7 +54,7 @@ fun DotsLoader() {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(4.dp)
     ) {
@@ -69,9 +69,7 @@ fun DotsLoader() {
 }
 
 @Composable
-private fun Dot(
-    scale: Float
-) = Spacer(
+private fun Dot(scale: Float) = Spacer(
     Modifier
         .size(12.dp)
         .scale(scale)
@@ -83,6 +81,6 @@ private fun Dot(
 
 @Preview(showBackground = true)
 @Composable
-fun DotsLoaderPreview() = TaigaMobileTheme {
+private fun DotsLoaderPreview() = TaigaMobileTheme {
     DotsLoader()
 }

@@ -49,7 +49,6 @@ fun LazyListScope.CommonTaskHeader(
     val badgesPadding = 8.dp
 
     item {
-
         commonTask.blockedNote?.trim()?.let {
             Column(
                 modifier = Modifier
@@ -87,7 +86,7 @@ fun LazyListScope.CommonTaskHeader(
         FlowRow(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(badgesPadding),
-            verticalArrangement = Arrangement.spacedBy(badgesPadding),
+            verticalArrangement = Arrangement.spacedBy(badgesPadding)
 //            crossAxisAlignment = FlowCrossAxisAlignment.Center,
         ) {
             // epic color
@@ -95,9 +94,8 @@ fun LazyListScope.CommonTaskHeader(
                 ColorPicker(
                     size = 32.dp,
                     color = commonTask.color.orEmpty().toColor(),
-                    onColorPicked = { editActions.editEpicColor.select(it.toHex()) }
+                    onColorPick = { editActions.editEpicColor.select(it.toHex()) }
                 )
-
             }
 
             // status

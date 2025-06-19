@@ -50,10 +50,10 @@ import java.time.LocalDateTime
 
 @Composable
 fun WikiPageScreen(
-    viewModel: WikiPageViewModel = hiltViewModel(),
-    showMessage: (message: Int) -> Unit = {},
+    goBack: () -> Unit,
     goToProfile: (userId: Long) -> Unit,
-    goBack: () -> Unit
+    viewModel: WikiPageViewModel = hiltViewModel(),
+    showMessage: (message: Int) -> Unit = {}
 ) {
     val topBarController = LocalTopBarConfig.current
 
@@ -74,9 +74,11 @@ fun WikiPageScreen(
     val attachments by viewModel.attachments.collectAsState()
     attachments.SubscribeOnError(showMessage)
 
-    val isLoading = page is LoadingResult || link is LoadingResult ||
-            editWikiPageResult is LoadingResult || deleteWikiPageResult is LoadingResult ||
-            attachments is LoadingResult
+    val isLoading = page is LoadingResult ||
+        link is LoadingResult ||
+        editWikiPageResult is LoadingResult ||
+        deleteWikiPageResult is LoadingResult ||
+        attachments is LoadingResult
 
     deleteWikiPageResult.takeIf { it is SuccessResult }?.let {
         LaunchedEffect(Unit) {
@@ -162,12 +164,13 @@ fun WikiPageScreen(
 fun WikiPageScreenContent(
     state: WikiPageState,
     lastModifierDate: LocalDateTime,
+    modifier: Modifier = Modifier,
     attachments: List<Attachment> = emptyList(),
     isLoading: Boolean = false,
     onUserItemClick: (userId: Long) -> Unit = { _ -> },
-    editAttachments: EditAction<Pair<String, InputStream>, Attachment> = EditAction(),
+    editAttachments: EditAction<Pair<String, InputStream>, Attachment> = EditAction()
 ) = Box(
-    modifier = Modifier
+    modifier = modifier
         .fillMaxSize()
         .imePadding()
 ) {
@@ -185,7 +188,7 @@ fun WikiPageScreenContent(
             TextFieldWithHint(
                 hintId = RString.description_hint,
                 value = state.description,
-                onValueChange = { state.setDescription(it) },
+                onValueChange = { state.setDescription(it) }
             )
         }
     } else {
@@ -195,7 +198,6 @@ fun WikiPageScreenContent(
                 .background(MaterialTheme.colorScheme.surface)
                 .imePadding()
         ) {
-
             if (isLoading) {
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -210,7 +212,6 @@ fun WikiPageScreenContent(
                     .fillMaxSize()
                     .padding(horizontal = mainHorizontalScreenPadding)
             ) {
-
                 // description
                 Description(state.description.text)
 
@@ -234,7 +235,7 @@ fun WikiPageScreenContent(
                             user = state.user,
                             dateTime = lastModifierDate,
                             onUserItemClick = {
-                                onUserItemClick(state.user.id)
+                                onUserItemClick(state.user.actualId)
                             }
                         )
                     }
@@ -242,7 +243,7 @@ fun WikiPageScreenContent(
 
                 item {
                     Spacer(
-                        Modifier.height(sectionsPadding)
+                        modifier = Modifier.height(sectionsPadding)
                     )
                 }
 
@@ -253,7 +254,7 @@ fun WikiPageScreenContent(
 
                 item {
                     Spacer(
-                        Modifier.height(sectionsPadding)
+                        modifier = Modifier.height(sectionsPadding)
                     )
                 }
             }
@@ -263,12 +264,12 @@ fun WikiPageScreenContent(
 
 @Preview
 @Composable
-fun WikiPagePreview() {
+private fun WikiPagePreview() {
     WikiPageScreenContent(
         lastModifierDate = LocalDateTime.now(),
         state = WikiPageState(
             user = User(
-                _id = 0,
+                id = 0,
                 fullName = "Some cool fullname",
                 photo = null,
                 bigPhoto = null,

@@ -5,7 +5,6 @@ package com.grappim.taigamobile.commontask
  */
 
 import androidx.paging.compose.LazyPagingItems
-import com.grappim.taigamobile.core.nav.NavigateToTask
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CommonTask
@@ -17,6 +16,7 @@ import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.Swimlane
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.nav.NavigateToTask
 import java.io.InputStream
 import java.time.LocalDate
 
@@ -54,7 +54,8 @@ class EditActions(
     val editWatchers: SimpleEditAction<User> = SimpleEditAction(),
     val editComments: EditAction<String, Comment> = EditAction(),
     val editBasicInfo: SimpleEditAction<Pair<String, String>> = SimpleEditAction(),
-    val editCustomField: SimpleEditAction<Pair<CustomField, CustomFieldValue?>> = SimpleEditAction(),
+    val editCustomField: SimpleEditAction<Pair<CustomField, CustomFieldValue?>> =
+        SimpleEditAction(),
     val editTags: SimpleEditAction<Tag> = SimpleEditAction(),
     val editDueDate: EditAction<LocalDate, Unit> = EditAction(),
     val editEpicColor: SimpleEditAction<String> = SimpleEditAction(),
@@ -71,5 +72,5 @@ class EditActions(
 class NavigationActions(
     val navigateBack: () -> Unit = {},
     val navigateToCreateTask: () -> Unit = {},
-    val navigateToTask: NavigateToTask = { _, _, _ -> },
+    val navigateToTask: NavigateToTask = { _, _, _ -> }
 )

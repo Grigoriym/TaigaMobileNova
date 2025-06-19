@@ -15,6 +15,7 @@ fun Color.toHex() = "#%08X".format(toArgb()).replace("#FF", "#")
 // calculate optimal text color for colored background background
 fun Color.textColor() = if (luminance() < 0.5) Color.White else Color.Black
 
+@Suppress("SwallowedException")
 fun String.toColor(): Color = try {
     Color(this.toColorInt())
 } catch (e: Exception) {

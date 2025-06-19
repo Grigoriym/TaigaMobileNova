@@ -54,15 +54,12 @@ import com.vanpra.composematerialdialogs.color.ColorPalette
 
 @ExperimentalLayoutApi
 @Suppress("FunctionName")
-fun LazyListScope.CommonTaskTags(
-    commonTask: CommonTaskExtended,
-    editActions: EditActions
-) {
+fun LazyListScope.CommonTaskTags(commonTask: CommonTaskExtended, editActions: EditActions) {
     item {
         FlowRow(
 //            crossAxisAlignment = FlowCrossAxisAlignment.Center,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             var isAddTagDialogVisible by remember { mutableStateOf(false) }
 
@@ -102,10 +99,7 @@ fun LazyListScope.CommonTaskTags(
 }
 
 @Composable
-private fun TagItem(
-    tag: Tag,
-    onRemoveClick: () -> Unit
-) {
+private fun TagItem(tag: Tag, onRemoveClick: () -> Unit) {
     val bgColor = tag.color.toColor()
     val textColor = bgColor.textColor()
 
@@ -114,7 +108,7 @@ private fun TagItem(
         modifier = Modifier.padding(end = 4.dp, bottom = 4.dp)
     ) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = tag.name,
@@ -146,7 +140,9 @@ private fun AddTagDialog(
     onConfirm: (Tag) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var name by rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue()) }
+    var name by rememberSaveable(
+        stateSaver = TextFieldValue.Saver
+    ) { mutableStateOf(TextFieldValue()) }
     var color by remember { mutableStateOf(ColorPalette.Primary.first()) }
     var isDropdownVisible by remember { mutableStateOf(true) }
 
@@ -251,7 +247,7 @@ private fun AddTagDialog(
                 ColorPicker(
                     size = 32.dp,
                     color = color,
-                    onColorPicked = { color = it }
+                    onColorPick = { color = it }
                 )
             }
         }

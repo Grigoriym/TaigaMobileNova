@@ -27,15 +27,14 @@ class SprintsRepository @Inject constructor(
     private val sprintApi: SprintApi,
     private val issuesApi: com.grappim.taigamobile.feature.issues.data.IssuesApi
 ) : ISprintsRepository {
-    override fun getSprints(isClosed: Boolean): Flow<PagingData<Sprint>> =
-        Pager(
-            PagingConfig(
-                pageSize = 20,
-                enablePlaceholders = false
-            )
-        ) {
-            SprintPagingSource(sprintApi, isClosed, session)
-        }.flow
+    override fun getSprints(isClosed: Boolean): Flow<PagingData<Sprint>> = Pager(
+        PagingConfig(
+            pageSize = 20,
+            enablePlaceholders = false
+        )
+    ) {
+        SprintPagingSource(sprintApi, isClosed, session)
+    }.flow
 
     private val currentProjectId get() = session.currentProjectId.value
 
@@ -43,10 +42,9 @@ class SprintsRepository @Inject constructor(
         userStoriesApi.getUserStories(project = currentProjectId, sprint = sprintId)
             .map { it.toCommonTask(CommonTaskType.UserStory) }
 
-    override suspend fun getSprints(page: Int, isClosed: Boolean) =
-        handle404 {
-            sprintApi.getSprints(currentProjectId, page, isClosed).map { it.toSprint() }
-        }
+    override suspend fun getSprints(page: Int, isClosed: Boolean) = handle404 {
+        sprintApi.getSprints(currentProjectId, page, isClosed).map { it.toSprint() }
+    }
 
     override suspend fun getSprint(sprintId: Long) = sprintApi.getSprint(sprintId).toSprint()
 

@@ -36,7 +36,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 fun WikiCreatePageScreen(
     viewModel: WikiCreatePageViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit = {},
-    goToWikiPage: (slug: String) -> Unit,
+    goToWikiPage: (slug: String) -> Unit
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -70,17 +70,18 @@ fun WikiCreatePageScreen(
 
     WikiCreatePageScreenContent(
         state = state,
-        isLoading = creationResult is LoadingResult,
+        isLoading = creationResult is LoadingResult
     )
 }
 
 @Composable
 fun WikiCreatePageScreenContent(
     state: WikiCreatePageState,
-    isLoading: Boolean = false,
+    modifier: Modifier = Modifier,
+    isLoading: Boolean = false
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .imePadding()
     ) {
@@ -109,7 +110,7 @@ fun WikiCreatePageScreenContent(
             TextFieldWithHint(
                 hintId = RString.description_hint,
                 value = state.description,
-                onValueChange = { state.setDescription(it) },
+                onValueChange = { state.setDescription(it) }
             )
         }
     }
@@ -117,11 +118,12 @@ fun WikiCreatePageScreenContent(
 
 @Preview
 @Composable
-fun WikiCreatePageScreenPreview() {
+private fun WikiCreatePageScreenPreview() {
     WikiCreatePageScreenContent(
         state = WikiCreatePageState(
-        setTitle = {},
-        setDescription = {},
-        onCreateWikiPage = {}
-    ))
+            setTitle = {},
+            setDescription = {},
+            onCreateWikiPage = {}
+        )
+    )
 }

@@ -17,29 +17,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardTabs
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
 import com.grappim.taigamobile.ui.components.lists.ProjectCard
-import com.grappim.taigamobile.ui.components.lists.SimpleTasksListWithTitle
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.ui.components.lists.simpleTasksListWithTitle
+import com.grappim.taigamobile.ui.utils.LoadingResult
+import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.ui.utils.LoadingResult
-import com.grappim.taigamobile.ui.utils.SubscribeOnError
+import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun DashboardScreen(
-    viewModel: DashboardViewModel = hiltViewModel(),
     showMessage: (message: Int) -> Unit,
     navigateToTaskScreen: (Long, CommonTaskType, Int) -> Unit,
+    viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
@@ -79,6 +79,7 @@ fun DashboardScreen(
 
 @Composable
 fun DashboardScreenContent(
+    modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     workingOn: List<CommonTask> = emptyList(),
     watching: List<CommonTask> = emptyList(),
@@ -87,7 +88,7 @@ fun DashboardScreenContent(
     navigateToTask: (CommonTask) -> Unit = { _ -> },
     changeCurrentProject: (Project) -> Unit = { _ -> }
 ) = Column(
-    modifier = Modifier.fillMaxSize(),
+    modifier = modifier.fillMaxSize(),
     horizontalAlignment = Alignment.Start
 ) {
     if (isLoading) {
@@ -101,7 +102,7 @@ fun DashboardScreenContent(
         HorizontalTabbedPager(
             modifier = Modifier.fillMaxSize(),
             tabs = DashboardTabs.entries.toTypedArray(),
-            pagerState = rememberPagerState(pageCount = { DashboardTabs.entries.size }),
+            pagerState = rememberPagerState(pageCount = { DashboardTabs.entries.size })
         ) { page ->
             when (DashboardTabs.entries[page]) {
                 DashboardTabs.WorkingOn -> TabContent(
@@ -125,18 +126,16 @@ fun DashboardScreenContent(
 }
 
 @Composable
-private fun TabContent(
-    commonTasks: List<CommonTask>,
-    navigateToTask: (CommonTask) -> Unit,
-) = LazyColumn(Modifier.fillMaxSize()) {
-    SimpleTasksListWithTitle(
-        bottomPadding = commonVerticalPadding,
-        horizontalPadding = mainHorizontalScreenPadding,
-        showExtendedTaskInfo = true,
-        commonTasks = commonTasks,
-        navigateToTask = { id, _, _ -> navigateToTask(commonTasks.find { it.id == id }!!) },
-    )
-}
+private fun TabContent(commonTasks: List<CommonTask>, navigateToTask: (CommonTask) -> Unit) =
+    LazyColumn(Modifier.fillMaxSize()) {
+        simpleTasksListWithTitle(
+            bottomPadding = commonVerticalPadding,
+            horizontalPadding = mainHorizontalScreenPadding,
+            showExtendedTaskInfo = true,
+            commonTasks = commonTasks,
+            navigateToTask = { id, _, _ -> navigateToTask(commonTasks.find { it.id == id }!!) }
+        )
+    }
 
 @Composable
 private fun MyProjects(
@@ -163,7 +162,8 @@ private fun ProjectCardPreview() = TaigaMobileTheme {
             id = 0,
             name = "Name",
             slug = "slug",
-            description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+            description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+                "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
             isPrivate = true
         ),
         isCurrent = true,
@@ -180,7 +180,8 @@ private fun DashboardPreview() = TaigaMobileTheme {
                 id = it.toLong(),
                 name = "Name",
                 slug = "slug",
-                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit," +
+                    " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
                 isPrivate = true
             )
         }

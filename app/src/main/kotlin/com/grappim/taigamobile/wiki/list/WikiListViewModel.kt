@@ -5,19 +5,18 @@ import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.feature.wiki.domain.IWikiRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiLink
 import com.grappim.taigamobile.feature.wiki.domain.WikiPage
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class WikiListViewModel @Inject constructor(
-    private val wikiRepository: IWikiRepository
-) : ViewModel() {
+class WikiListViewModel @Inject constructor(private val wikiRepository: IWikiRepository) :
+    ViewModel() {
 
-    val wikiPages = MutableResultFlow<List<WikiPage>>()
-    val wikiLinks = MutableResultFlow<List<WikiLink>>()
+    val wikiPages = mutableResultFlow<List<WikiPage>>()
+    val wikiLinks = mutableResultFlow<List<WikiLink>>()
 
     fun onOpen() {
         getWikiPage()

@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.data.api
 
 import com.grappim.taigamobile.core.api.ApiConstants
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.di.LocalDateTimeTypeAdapter
 import com.grappim.taigamobile.di.LocalDateTypeAdapter
 import com.grappim.taigamobile.login.data.AuthTokenInterceptor
 import com.grappim.taigamobile.login.data.TaigaAuthenticator
-import com.grappim.taigamobile.core.storage.Session
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
@@ -49,16 +49,14 @@ object NetworkModule {
         loggingInterceptor: HttpLoggingInterceptor,
         authTokenInterceptor: AuthTokenInterceptor,
         hostSelectionInterceptor: HostSelectionInterceptor
-    ): OkHttpClient =
-        OkHttpClient.Builder()
-            .addInterceptor(hostSelectionInterceptor)
-            .addInterceptor(authTokenInterceptor)
-            .addInterceptor(loggingInterceptor)
-            .build()
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(hostSelectionInterceptor)
+        .addInterceptor(authTokenInterceptor)
+        .addInterceptor(loggingInterceptor)
+        .build()
 
     @[Provides Singleton]
-    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor =
-        HttpLoggingInterceptor(Timber::d)
-            .setLevel(HttpLoggingInterceptor.Level.BODY)
-            .also { it.redactHeader(ApiConstants.AUTHORIZATION) }
+    fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor = HttpLoggingInterceptor(Timber::d)
+        .setLevel(HttpLoggingInterceptor.Level.BODY)
+        .also { it.redactHeader(ApiConstants.AUTHORIZATION) }
 }

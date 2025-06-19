@@ -71,9 +71,10 @@ import java.time.LocalDateTime
 @Composable
 fun KanbanBoard(
     statuses: List<Status>,
+    swimlanes: List<Swimlane?>,
+    modifier: Modifier = Modifier,
     stories: List<CommonTaskExtended> = emptyList(),
     team: List<User> = emptyList(),
-    swimlanes: List<Swimlane?>,
     selectSwimlane: (Swimlane?) -> Unit = {},
     selectedSwimlane: Swimlane? = null,
     navigateToStory: (id: Long, ref: Int) -> Unit = { _, _ -> },
@@ -87,8 +88,8 @@ fun KanbanBoard(
 
     swimlanes.takeIf { it.isNotEmpty() }?.let {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(cellOuterPadding)
+            modifier = modifier.padding(cellOuterPadding),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
                 text = stringResource(RString.swimlane_title),
@@ -100,7 +101,7 @@ fun KanbanBoard(
             DropdownSelector(
                 items = swimlanes,
                 selectedItem = selectedSwimlane,
-                onItemSelected = selectSwimlane,
+                onItemSelect = selectSwimlane,
                 itemContent = {
                     Text(
                         text = it?.name ?: stringResource(RString.unclassifed),
@@ -127,7 +128,6 @@ fun KanbanBoard(
             .fillMaxSize()
             .horizontalScroll(rememberScrollState())
     ) {
-
         Spacer(Modifier.width(cellPadding))
 
         statuses.forEach { status ->
@@ -154,7 +154,9 @@ fun KanbanBoard(
                     items(statusStories) {
                         StoryItem(
                             story = it,
-                            assignees = it.assignedIds.mapNotNull { id -> team.find { it.id == id } },
+                            assignees = it.assignedIds.mapNotNull { id ->
+                                team.find { it.actualId == id }
+                            },
                             onTaskClick = { navigateToStory(it.id, it.ref) }
                         )
                     }
@@ -209,7 +211,8 @@ private fun Header(
 
         Text(
             text = stringResource(RString.status_with_number_template).format(
-                text.uppercase(), storiesCount
+                text.uppercase(),
+                storiesCount
             ),
             style = textStyle,
             maxLines = 1,
@@ -227,90 +230,86 @@ private fun Header(
 
 @ExperimentalLayoutApi
 @Composable
-private fun StoryItem(
-    story: CommonTaskExtended,
-    assignees: List<User>,
-    onTaskClick: () -> Unit
-) = Surface(
-    modifier = Modifier
-        .fillMaxWidth()
-        .padding(4.dp),
-    shape = MaterialTheme.shapes.small,
-    shadowElevation = cardShadowElevation
-) {
-    Column(
+private fun StoryItem(story: CommonTaskExtended, assignees: List<User>, onTaskClick: () -> Unit) =
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(
-                onClick = onTaskClick,
-                indication = ripple(),
-                interactionSource = remember { MutableInteractionSource() }
-            )
-            .padding(12.dp)
+            .padding(4.dp),
+        shape = MaterialTheme.shapes.small,
+        shadowElevation = cardShadowElevation
     ) {
-        story.epicsShortInfo.forEach {
-            val textStyle = MaterialTheme.typography.bodySmall
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Spacer(
-                    Modifier
-                        .size(with(LocalDensity.current) { textStyle.fontSize.toDp() })
-                        .background(it.color.toColor(), CircleShape)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable(
+                    onClick = onTaskClick,
+                    indication = ripple(),
+                    interactionSource = remember { MutableInteractionSource() }
                 )
+                .padding(12.dp)
+        ) {
+            story.epicsShortInfo.forEach {
+                val textStyle = MaterialTheme.typography.bodySmall
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Spacer(
+                        Modifier
+                            .size(with(LocalDensity.current) { textStyle.fontSize.toDp() })
+                            .background(it.color.toColor(), CircleShape)
+                    )
 
-                Spacer(Modifier.width(4.dp))
+                    Spacer(Modifier.width(4.dp))
 
-                Text(
-                    text = it.title,
-                    style = textStyle
-                )
+                    Text(
+                        text = it.title,
+                        style = textStyle
+                    )
+                }
+
+                Spacer(Modifier.height(4.dp))
             }
 
             Spacer(Modifier.height(4.dp))
-        }
 
-        Spacer(Modifier.height(4.dp))
+            CommonTaskTitle(
+                ref = story.ref,
+                title = story.title,
+                isInactive = story.isClosed,
+                tags = story.tags,
+                isBlocked = story.blockedNote != null
+            )
 
-        CommonTaskTitle(
-            ref = story.ref,
-            title = story.title,
-            isInactive = story.isClosed,
-            tags = story.tags,
-            isBlocked = story.blockedNote != null
-        )
+            Spacer(Modifier.height(8.dp))
 
-        Spacer(Modifier.height(8.dp))
-
-        FlowRow(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            assignees.forEach {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalContext.current)
-                            .data(
-                                it.avatarUrl ?: RDrawable.default_avatar
-                            ).apply(fun ImageRequest.Builder.() {
-                                error(RDrawable.default_avatar)
-                                crossfade(true)
-                            }).build()
-                    ),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier
-                        .size(28.dp)
-                        .clip(CircleShape)
-                        .weight(0.2f, fill = false)
-                )
+            FlowRow(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                assignees.forEach {
+                    Image(
+                        painter = rememberAsyncImagePainter(
+                            ImageRequest.Builder(LocalContext.current)
+                                .data(
+                                    it.avatarUrl ?: RDrawable.default_avatar
+                                ).apply(fun ImageRequest.Builder.() {
+                                    error(RDrawable.default_avatar)
+                                    crossfade(true)
+                                }).build()
+                        ),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .weight(0.2f, fill = false)
+                    )
+                }
             }
         }
-
     }
-}
 
 @Preview(showBackground = true)
 @Composable
-fun KanbanBoardPreview() = TaigaMobileTheme {
+private fun KanbanBoardPreview() = TaigaMobileTheme {
     KanbanBoard(
         swimlanes = listOf(
             Swimlane(0, "Name", 0),
@@ -340,7 +339,7 @@ fun KanbanBoardPreview() = TaigaMobileTheme {
                 name = "Archived",
                 color = "#A9AABC",
                 type = StatusType.Status
-            ),
+            )
         ),
         stories = List(5) {
             CommonTaskExtended(
@@ -377,7 +376,7 @@ fun KanbanBoardPreview() = TaigaMobileTheme {
         },
         team = List(10) {
             User(
-                _id = it.toLong(),
+                id = it.toLong(),
                 fullName = "Name Name",
                 photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                 bigPhoto = null,

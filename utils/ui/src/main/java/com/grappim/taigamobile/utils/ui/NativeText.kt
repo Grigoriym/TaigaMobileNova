@@ -14,23 +14,21 @@ sealed class NativeText {
 }
 
 @Suppress("SpreadOperator")
-fun NativeText.asString(context: Context): String {
-    return when (this) {
-        is NativeText.Arguments -> context.getString(id, *args.toTypedArray())
-        is NativeText.Multi -> {
-            val builder = StringBuilder()
-            for (t in text) {
-                builder.append(t.asString(context))
-            }
-            builder.toString()
+fun NativeText.asString(context: Context): String = when (this) {
+    is NativeText.Arguments -> context.getString(id, *args.toTypedArray())
+    is NativeText.Multi -> {
+        val builder = StringBuilder()
+        for (t in text) {
+            builder.append(t.asString(context))
         }
-        is NativeText.Plural -> context.resources.getQuantityString(
-            id,
-            number,
-            *args.toTypedArray()
-        )
-        is NativeText.Resource -> context.getString(id)
-        is NativeText.Simple -> text
-        is NativeText.Empty -> ""
+        builder.toString()
     }
+    is NativeText.Plural -> context.resources.getQuantityString(
+        id,
+        number,
+        *args.toTypedArray()
+    )
+    is NativeText.Resource -> context.getString(id)
+    is NativeText.Simple -> text
+    is NativeText.Empty -> ""
 }

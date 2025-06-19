@@ -38,7 +38,7 @@ fun Selectors(
     epicsEntry: SelectorEntry<CommonTask> = SelectorEntry(),
     assigneesEntry: SelectorEntry<User> = SelectorEntry(),
     watchersEntry: SelectorEntry<User> = SelectorEntry(),
-    swimlaneEntry: SelectorEntry<Swimlane> = SelectorEntry(),
+    swimlaneEntry: SelectorEntry<Swimlane> = SelectorEntry()
 ) {
     // status editor
     SelectorList(
@@ -146,7 +146,6 @@ fun Selectors(
         )
     }
 
-
     // assignees editor
     SelectorList(
         titleHintId = RString.search_members,
@@ -206,10 +205,7 @@ class SelectorEntry<TItem : Any>(
 )
 
 @Composable
-private fun StatusItem(
-    status: Status,
-    onClick: () -> Unit
-) = ContainerBox(
+private fun StatusItem(status: Status, onClick: () -> Unit) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -220,10 +216,7 @@ private fun StatusItem(
 }
 
 @Composable
-private fun SprintItem(
-    sprint: Sprint?,
-    onClick: () -> Unit
-) = ContainerBox(
+private fun SprintItem(sprint: Sprint?, onClick: () -> Unit) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -231,7 +224,11 @@ private fun SprintItem(
 
     sprint.takeIf { it != CommonTaskViewModel.SPRINT_HEADER }?.also {
         Surface(
-            contentColor = if (it.isClosed) MaterialTheme.colorScheme.outline else MaterialTheme.colorScheme.onSurface
+            contentColor = if (it.isClosed) {
+                MaterialTheme.colorScheme.outline
+            } else {
+                MaterialTheme.colorScheme.onSurface
+            }
         ) {
             Column {
                 Text(
@@ -260,10 +257,7 @@ private fun SprintItem(
 }
 
 @Composable
-private fun MemberItem(
-    member: User,
-    onClick: () -> Unit
-) = ContainerBox(
+private fun MemberItem(member: User, onClick: () -> Unit) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -271,10 +265,7 @@ private fun MemberItem(
 }
 
 @Composable
-private fun EpicItem(
-    epic: CommonTask,
-    onClick: () -> Unit
-) = ContainerBox(
+private fun EpicItem(epic: CommonTask, onClick: () -> Unit) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -287,10 +278,7 @@ private fun EpicItem(
 }
 
 @Composable
-private fun SwimlaneItem(
-    swimlane: Swimlane,
-    onClick: () -> Unit
-) = ContainerBox(
+private fun SwimlaneItem(swimlane: Swimlane, onClick: () -> Unit) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {

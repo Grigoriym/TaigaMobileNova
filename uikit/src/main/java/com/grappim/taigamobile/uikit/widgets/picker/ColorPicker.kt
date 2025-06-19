@@ -22,11 +22,7 @@ import com.vanpra.composematerialdialogs.title
  * Color picker with material dialog
  */
 @Composable
-fun ColorPicker(
-    size: Dp,
-    color: Color,
-    onColorPicked: (Color) -> Unit = {}
-) {
+fun ColorPicker(size: Dp, color: Color, onColorPick: (Color) -> Unit = {}) {
     val dialogState = rememberMaterialDialogState()
 
     MaterialDialog(
@@ -41,7 +37,7 @@ fun ColorPicker(
 
         colorChooser(
             colors = (listOf(color) + ColorPalette.Primary).toSet().toList(),
-            onColorSelected = onColorPicked,
+            onColorSelected = onColorPick,
             argbPickerState = ARGBPickerState.WithoutAlphaSelector
         )
     }

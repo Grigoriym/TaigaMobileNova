@@ -8,13 +8,7 @@ import java.time.LocalDateTime
 /**
  * Tasks related entities
  */
-
-data class Status(
-    val id: Long,
-    val name: String,
-    val color: String,
-    val type: StatusType
-)
+data class Status(val id: Long, val name: String, val color: String, val type: StatusType)
 
 enum class StatusType {
     Status,
@@ -41,7 +35,8 @@ data class CommonTask(
     val taskType: CommonTaskType,
     val isClosed: Boolean,
     val tags: List<Tag> = emptyList(),
-    val colors: List<String> = emptyList(), // colored indicators (for stories and epics)
+    // colored indicators (for stories and epics)
+    val colors: List<String> = emptyList(),
     val blockedNote: String? = null
 )
 
@@ -49,12 +44,16 @@ data class CommonTask(
 enum class DueDateStatus {
     @Json(name = "not_set")
     NotSet,
+
     @Json(name = "set")
     Set,
+
     @Json(name = "due_soon")
     DueSoon,
+
     @Json(name = "past_due")
     PastDue,
+
     @Json(name = "no_longer_applicable")
     NoLongerApplicable
 }

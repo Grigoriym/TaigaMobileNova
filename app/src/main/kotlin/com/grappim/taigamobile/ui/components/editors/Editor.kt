@@ -27,28 +27,29 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.AppBarWithBackButton
-import com.grappim.taigamobile.ui.utils.onBackPressed
+import com.grappim.taigamobile.ui.utils.OnBackPressed
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.AppBarWithBackButton
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 
 @Composable
 fun Editor(
     toolbarText: String,
+    modifier: Modifier = Modifier,
     title: String = "",
     description: String = "",
     showTitle: Boolean = true,
     onSaveClick: (title: String, description: String) -> Unit = { _, _ -> },
     navigateBack: () -> Unit = {}
 ) = Column(
-    modifier = Modifier
+    modifier = modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.surface)
         .imePadding()
 ) {
-    onBackPressed(navigateBack)
+    OnBackPressed(navigateBack)
 
     var titleInput by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
@@ -87,7 +88,6 @@ fun Editor(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = mainHorizontalScreenPadding)
     ) {
-
         Spacer(Modifier.height(8.dp))
 
         if (showTitle) {
@@ -104,7 +104,7 @@ fun Editor(
         TextFieldWithHint(
             hintId = RString.description_hint,
             value = descriptionInput,
-            onValueChange = { descriptionInput = it },
+            onValueChange = { descriptionInput = it }
         )
 
         Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
@@ -113,6 +113,6 @@ fun Editor(
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun TaskEditorPreview() = TaigaMobileTheme {
+private fun TaskEditorPreview() = TaigaMobileTheme {
     Editor("Edit")
 }

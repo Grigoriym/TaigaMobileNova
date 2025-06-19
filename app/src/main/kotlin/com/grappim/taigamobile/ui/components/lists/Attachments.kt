@@ -68,10 +68,7 @@ fun LazyListScope.Attachments(
 }
 
 @Composable
-private fun AttachmentItem(
-    attachment: Attachment,
-    onRemoveClick: () -> Unit
-) = Row(
+private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) = Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween,
     modifier = Modifier.fillMaxWidth()
@@ -125,5 +122,4 @@ private fun AttachmentItem(
             tint = MaterialTheme.colorScheme.error
         )
     }
-
 }

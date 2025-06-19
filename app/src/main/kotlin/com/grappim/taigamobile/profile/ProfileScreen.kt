@@ -33,25 +33,24 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
-import com.grappim.taigamobile.R
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.domain.Stats
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.ui.components.lists.ProjectCard
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
 import com.grappim.taigamobile.ui.utils.ErrorResult
 import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel(),
-    showMessage: (message: Int) -> Unit = {},
+    showMessage: (message: Int) -> Unit = {}
 ) {
     val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
@@ -78,13 +77,18 @@ fun ProfileScreen(
         currentUserStats = currentUserStats.data,
         currentUserProjects = currentUserProjects.data ?: emptyList(),
         currentProjectId = currentProjectId,
-        isLoading = currentUser is LoadingResult || currentUserStats is LoadingResult || currentUserProjects is LoadingResult,
-        isError = currentUser is ErrorResult || currentUserStats is ErrorResult || currentUserProjects is ErrorResult
+        isLoading = currentUser is LoadingResult ||
+            currentUserStats is LoadingResult ||
+            currentUserProjects is LoadingResult,
+        isError = currentUser is ErrorResult ||
+            currentUserStats is ErrorResult ||
+            currentUserProjects is ErrorResult
     )
 }
 
 @Composable
 fun ProfileScreenContent(
+    modifier: Modifier = Modifier,
     currentUser: User? = null,
     currentUserStats: Stats? = null,
     currentUserProjects: List<Project> = emptyList(),
@@ -92,7 +96,7 @@ fun ProfileScreenContent(
     isLoading: Boolean = false,
     isError: Boolean = false
 ) = Column(
-    modifier = Modifier.fillMaxSize(),
+    modifier = modifier.fillMaxSize(),
     horizontalAlignment = Alignment.CenterHorizontally
 ) {
     if (isLoading || isError) {
@@ -134,7 +138,9 @@ fun ProfileScreenContent(
                 Spacer(Modifier.height(2.dp))
 
                 Text(
-                    text = stringResource(RString.username_template).format(currentUser?.username.orEmpty()),
+                    text = stringResource(
+                        RString.username_template
+                    ).format(currentUser?.username.orEmpty()),
                     color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -215,15 +221,15 @@ private fun ColumnTextData(titleText: String, bodyText: String) = Column(
     Text(
         text = bodyText,
         color = MaterialTheme.colorScheme.outline,
-        style = MaterialTheme.typography.bodyLarge,
+        style = MaterialTheme.typography.bodyLarge
     )
 }
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-fun ProfileScreenPreview() {
+private fun ProfileScreenPreview() {
     val currentUser = User(
-        _id = 123,
+        id = 123,
         fullName = null,
         photo = null,
         bigPhoto = null,
@@ -234,7 +240,7 @@ fun ProfileScreenPreview() {
     val currentUserStats = Stats(
         roles = listOf(
             "Design",
-            "Front",
+            "Front"
         ),
         totalNumClosedUserStories = 4,
         totalNumContacts = 48,

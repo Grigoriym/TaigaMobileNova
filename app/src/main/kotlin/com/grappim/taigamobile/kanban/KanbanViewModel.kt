@@ -7,13 +7,13 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.Swimlane
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.domain.repositories.ITasksRepository
-import com.grappim.taigamobile.domain.repositories.IUsersRepository
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.subscribeToAll
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
+import com.grappim.taigamobile.domain.repositories.ITasksRepository
+import com.grappim.taigamobile.domain.repositories.IUsersRepository
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.joinAll
@@ -27,10 +27,10 @@ class KanbanViewModel @Inject constructor(
     session: Session
 ) : ViewModel() {
 
-    val statuses = MutableResultFlow<List<Status>>()
-    val team = MutableResultFlow<List<User>>()
-    val stories = MutableResultFlow<List<CommonTaskExtended>>()
-    val swimlanes = MutableResultFlow<List<Swimlane?>>()
+    val statuses = mutableResultFlow<List<Status>>()
+    val team = mutableResultFlow<List<User>>()
+    val stories = mutableResultFlow<List<CommonTaskExtended>>()
+    val swimlanes = mutableResultFlow<List<Swimlane?>>()
 
     val selectedSwimlane = MutableStateFlow<Swimlane?>(null)
 
@@ -54,9 +54,10 @@ class KanbanViewModel @Inject constructor(
             launch {
                 stories.loadOrError(preserveValue = false) { tasksRepository.getAllUserStories() }
             },
+            // prepend null to show "unclassified" swimlane
             launch {
                 swimlanes.loadOrError {
-                    listOf(null) + tasksRepository.getSwimlanes() // prepend null to show "unclassified" swimlane
+                    listOf(null) + tasksRepository.getSwimlanes()
                 }
             }
         )

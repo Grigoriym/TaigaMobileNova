@@ -2,8 +2,8 @@ package com.grappim.taigamobile.login.ui
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.grappim.taigamobile.core.api.ApiConstants
-import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
+import com.grappim.taigamobile.feature.login.domain.model.AuthType
 
 data class LoginState(
     val server: TextFieldValue = TextFieldValue(ApiConstants.DEFAULT_HOST),

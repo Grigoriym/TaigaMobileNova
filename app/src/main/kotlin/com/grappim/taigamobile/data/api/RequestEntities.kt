@@ -5,9 +5,7 @@ import com.squareup.moshi.JsonClass
 import java.time.LocalDate
 
 @JsonClass(generateAdapter = true)
-data class RefreshTokenRequest(
-    val refresh: String
-)
+data class RefreshTokenRequest(val refresh: String)
 
 @JsonClass(generateAdapter = true)
 data class EditCommonTaskRequest(
@@ -31,10 +29,7 @@ data class EditCommonTaskRequest(
 )
 
 @JsonClass(generateAdapter = true)
-data class CreateCommentRequest(
-    val comment: String,
-    val version: Int
-)
+data class CreateCommentRequest(val comment: String, val version: Int)
 
 @JsonClass(generateAdapter = true)
 data class CreateCommonTaskRequest(
@@ -50,7 +45,8 @@ data class CreateTaskRequest(
     val subject: String,
     val description: String,
     val milestone: Long?,
-    val user_story: Long?
+    @Json(name = "user_story")
+    val userStory: Long?
 )
 
 @JsonClass(generateAdapter = true)
@@ -58,7 +54,7 @@ data class CreateIssueRequest(
     val project: Long,
     val subject: String,
     val description: String,
-    val milestone: Long?,
+    val milestone: Long?
 )
 
 @JsonClass(generateAdapter = true)
@@ -73,16 +69,19 @@ data class CreateUserStoryRequest(
 @JsonClass(generateAdapter = true)
 data class LinkToEpicRequest(
     val epic: String,
-    val user_story: Long
+    @Json(name = "user_story")
+    val userStory: Long
 )
 
 @JsonClass(generateAdapter = true)
 data class PromoteToUserStoryRequest(
-    val project_id: Long
+    @Json(name = "project_id")
+    val projectId: Long
 )
 
 @JsonClass(generateAdapter = true)
 data class EditCustomAttributesValuesRequest(
-    val attributes_values: Map<Long, Any?>,
+    @Json(name = "attributes_values")
+    val attributesValues: Map<Long, Any?>,
     val version: Int
 )

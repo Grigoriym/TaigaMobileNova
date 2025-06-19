@@ -7,14 +7,14 @@ import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.NothingResult
 import com.grappim.taigamobile.ui.utils.loadOrError
-import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -52,13 +52,13 @@ class ScrumViewModel @Inject constructor(
     val closedSprints = sprintsRepository.getSprints(isClosed = true)
         .cachedIn(viewModelScope)
 
-    val filters = MutableResultFlow<FiltersData>()
+    val filters = mutableResultFlow<FiltersData>()
     val activeFilters by lazy { session.scrumFilters }
     val stories: Flow<PagingData<CommonTask>> = activeFilters.flatMapLatest { filters ->
         userStoriesRepository.getUserStories(filters)
     }.cachedIn(viewModelScope)
 
-    val createSprintResult = MutableResultFlow<Unit>(NothingResult())
+    val createSprintResult = mutableResultFlow<Unit>(NothingResult())
 
     // TODO handle refresh
     init {

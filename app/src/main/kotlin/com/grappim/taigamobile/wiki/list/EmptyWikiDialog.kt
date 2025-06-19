@@ -18,15 +18,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.button.TextButton
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.widgets.button.TextButton
 
 @Composable
 fun EmptyWikiDialog(
+    modifier: Modifier = Modifier,
     createNewPage: () -> Unit = {},
     isButtonAvailable: Boolean = true
 ) = Box(
-    modifier = Modifier
+    modifier = modifier
         .fillMaxSize()
         .background(MaterialTheme.colorScheme.surface)
         .imePadding()
@@ -38,7 +39,6 @@ fun EmptyWikiDialog(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-
         Text(
             text = stringResource(RString.empty_wiki_dialog_title),
             style = MaterialTheme.typography.titleLarge
@@ -65,6 +65,6 @@ fun EmptyWikiDialog(
 
 @Preview(showBackground = true)
 @Composable
-fun EmptyWikiDialogPreview() {
+private fun EmptyWikiDialogPreview() {
     EmptyWikiDialog()
 }

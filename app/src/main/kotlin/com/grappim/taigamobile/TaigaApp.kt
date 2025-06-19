@@ -29,7 +29,7 @@ class TaigaApp : Application() {
             )
             Timber.plant(fileLoggingTree!!)
         } catch (e: NullPointerException) {
-            Timber.w("Cannot setup FileLoggingTree, skipping")
+            Timber.e(e, "Cannot setup FileLoggingTree, skipping")
         }
 
         DynamicColors.applyToActivitiesIfAvailable(this)

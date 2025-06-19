@@ -15,14 +15,16 @@ import androidx.compose.ui.unit.dp
  * Centered circular loader for some screens
  */
 @Composable
-fun CircularLoader() = Box(
-    modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp),
-    contentAlignment = Alignment.Center
-) {
-    CircularProgressIndicator(
-        modifier = Modifier.size(40.dp),
-        color = MaterialTheme.colorScheme.primary
-    )
+fun CircularLoader(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(8.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator(
+            modifier = Modifier.size(40.dp),
+            color = MaterialTheme.colorScheme.primary
+        )
+    }
 }

@@ -15,13 +15,15 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.utils.ui.textColor
 
 @Composable
-fun Badge(
-    text: String,
-    isActive: Boolean = true
-) {
+fun Badge(text: String, modifier: Modifier = Modifier, isActive: Boolean = true) {
     val color =
-        if (isActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.inverseOnSurface
+        if (isActive) {
+            MaterialTheme.colorScheme.primary
+        } else {
+            MaterialTheme.colorScheme.inverseOnSurface
+        }
     Surface(
+        modifier = modifier,
         shape = MaterialTheme.shapes.extraSmall,
         color = color,
         contentColor = color.textColor(),
@@ -30,14 +32,14 @@ fun Badge(
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.padding(horizontal = 2.dp),
+            modifier = Modifier.padding(horizontal = 2.dp)
         )
     }
 }
 
 @Preview
 @Composable
-fun BadgePreview() = TaigaMobileTheme {
+private fun BadgePreview() = TaigaMobileTheme {
     Row(modifier = Modifier.padding(10.dp)) {
         Badge("1", isActive = false)
         Spacer(Modifier.width(4.dp))

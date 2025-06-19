@@ -19,10 +19,10 @@ import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Composable
 fun CommonTaskDropdownMenu(
-    modifier: Modifier = Modifier,
     state: CommonTaskState,
     url: String,
-    showMessage: (message: Int) -> Unit
+    showMessage: (message: Int) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val clipboardManager = LocalClipboard.current
     Box(modifier = modifier) {
@@ -79,7 +79,9 @@ fun CommonTaskDropdownMenu(
                 }
             )
 
-            if (state.commonTaskType == CommonTaskType.Task || state.commonTaskType == CommonTaskType.Issue) {
+            if (state.commonTaskType == CommonTaskType.Task ||
+                state.commonTaskType == CommonTaskType.Issue
+            ) {
                 DropdownMenuItem(
                     onClick = {
                         state.setDropdownMenuExpanded(false)
@@ -105,7 +107,9 @@ fun CommonTaskDropdownMenu(
                 },
                 text = {
                     Text(
-                        text = stringResource(if (state.isBlocked) RString.unblock else RString.block),
+                        text = stringResource(
+                            if (state.isBlocked) RString.unblock else RString.block
+                        ),
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }

@@ -12,9 +12,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class AuthTokenInterceptor @Inject constructor(
-    private val session: Session
-) : Interceptor {
+class AuthTokenInterceptor @Inject constructor(private val session: Session) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()

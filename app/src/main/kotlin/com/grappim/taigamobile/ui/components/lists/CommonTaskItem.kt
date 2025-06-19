@@ -35,12 +35,15 @@ import java.time.format.FormatStyle
 @Composable
 fun CommonTaskItem(
     commonTask: CommonTask,
+    modifier: Modifier = Modifier,
     horizontalPadding: Dp = mainHorizontalScreenPadding,
     verticalPadding: Dp = 8.dp,
     showExtendedInfo: Boolean = false,
     navigateToTask: NavigateToTask = { _, _, _ -> }
 ) = ContainerBox(
-    horizontalPadding, verticalPadding,
+    modifier = modifier,
+    horizontalPadding = horizontalPadding,
+    verticalPadding = verticalPadding,
     onClick = { navigateToTask(commonTask.id, commonTask.taskType, commonTask.ref) }
 ) {
     val dateTimeFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
@@ -101,7 +104,7 @@ fun CommonTaskItem(
 
 @Preview(showBackground = true)
 @Composable
-fun CommonTaskItemPreview() = TaigaMobileTheme {
+private fun CommonTaskItemPreview() = TaigaMobileTheme {
     CommonTaskItem(
         CommonTask(
             id = 0L,

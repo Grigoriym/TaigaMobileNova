@@ -20,9 +20,10 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun TextButton(
     text: String,
-    icon: Int? = null,
-    onClick: () -> Unit
-) = FilledTonalButton(onClick = onClick) {
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: Int? = null
+) = FilledTonalButton(modifier = modifier, onClick = onClick) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         icon?.let {
             Icon(

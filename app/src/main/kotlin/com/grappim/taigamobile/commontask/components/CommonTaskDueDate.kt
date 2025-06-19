@@ -29,10 +29,7 @@ import com.grappim.taigamobile.uikit.widgets.picker.DatePicker
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Suppress("FunctionName")
-fun LazyListScope.CommonTaskDueDate(
-    commonTask: CommonTaskExtended,
-    editActions: EditActions
-) {
+fun LazyListScope.CommonTaskDueDate(commonTask: CommonTaskExtended, editActions: EditActions) {
     item {
         val background = MaterialTheme.colorScheme.surfaceColorAtElevationInternal(2.dp)
         val defaultIconBackground = MaterialTheme.colorScheme.surfaceColorAtElevationInternal(8.dp)
@@ -50,7 +47,9 @@ fun LazyListScope.CommonTaskDueDate(
                     .aspectRatio(1f)
                     .background(
                         color = when (commonTask.dueDateStatus) {
-                            DueDateStatus.NotSet, DueDateStatus.NoLongerApplicable, null -> defaultIconBackground
+                            DueDateStatus.NotSet, DueDateStatus.NoLongerApplicable, null ->
+                                defaultIconBackground
+
                             DueDateStatus.Set -> taigaGreenPositive
                             DueDateStatus.DueSoon -> taigaOrange
                             DueDateStatus.PastDue -> taigaRed
@@ -80,7 +79,7 @@ fun LazyListScope.CommonTaskDueDate(
 
             DatePicker(
                 date = commonTask.dueDate,
-                onDatePicked = {
+                onDatePick = {
                     editActions.editDueDate.apply {
                         it?.let { select(it) } ?: remove(Unit)
                     }

@@ -5,15 +5,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.R
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.domain.repositories.IUsersRepository
 import com.grappim.taigamobile.feature.wiki.domain.IWikiRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiLink
 import com.grappim.taigamobile.feature.wiki.domain.WikiPage
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
 import com.grappim.taigamobile.ui.utils.loadOrError
+import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,7 +28,6 @@ class WikiPageViewModel @Inject constructor(
     private val userRepository: IUsersRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-
     private val _state = MutableStateFlow(
         WikiPageState(
             setDeleteAlertVisible = ::setDeleteAlertVisible,
@@ -44,11 +42,11 @@ class WikiPageViewModel @Inject constructor(
     val pageSlug: String
         get() = route.slug
 
-    val page = MutableResultFlow<WikiPage>()
-    val link = MutableResultFlow<WikiLink>()
-    val attachments = MutableResultFlow<List<Attachment>>()
-    val editWikiPageResult = MutableResultFlow<Unit>()
-    val deleteWikiPageResult = MutableResultFlow<Unit>()
+    val page = mutableResultFlow<WikiPage>()
+    val link = mutableResultFlow<WikiLink>()
+    val attachments = mutableResultFlow<List<Attachment>>()
+    val editWikiPageResult = mutableResultFlow<Unit>()
+    val deleteWikiPageResult = mutableResultFlow<Unit>()
 
     init {
         loadData()
@@ -92,8 +90,7 @@ class WikiPageViewModel @Inject constructor(
                 _state.update { state ->
                     state.copy(user = user)
                 }
-
-                val jobsToLoad = arrayOf(
+                joinAll(
                     launch {
                         link.loadOrError(showLoading = false) {
                             wikiRepository.getWikiLinks().find { it.ref == pageSlug }
@@ -105,8 +102,6 @@ class WikiPageViewModel @Inject constructor(
                         }
                     }
                 )
-
-                joinAll(*jobsToLoad)
             }
         }
     }

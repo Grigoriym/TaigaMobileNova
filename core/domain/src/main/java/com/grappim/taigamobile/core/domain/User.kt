@@ -6,22 +6,21 @@ import com.squareup.moshi.JsonClass
 /**
  * Users related entities
  */
-
 @JsonClass(generateAdapter = true)
 data class User(
-    @Json(name = "id") val _id: Long?,
+    @Json(name = "id") val id: Long?,
     @Json(name = "full_name_display") val fullName: String?,
     val photo: String?,
     @Json(name = "big_photo") val bigPhoto: String?,
     val username: String,
-    val name: String? = null, // sometimes name appears here
+    // sometimes name appears here
+    val name: String? = null,
     val pk: Long? = null
 ) {
     val displayName get() = fullName ?: name!!
     val avatarUrl get() = bigPhoto ?: photo
-    val id get() = _id ?: pk!!
+    val actualId get() = id ?: pk!!
 }
-
 
 data class TeamMember(
     val id: Long,
@@ -32,7 +31,7 @@ data class TeamMember(
     val totalPower: Int
 ) {
     fun toUser() = User(
-        _id = id,
+        id = id,
         fullName = name,
         photo = avatarUrl,
         bigPhoto = null,
@@ -48,5 +47,5 @@ data class Stats(
     @Json(name = "total_num_contacts")
     val totalNumContacts: Int,
     @Json(name = "total_num_projects")
-    val totalNumProjects: Int,
+    val totalNumProjects: Int
 )

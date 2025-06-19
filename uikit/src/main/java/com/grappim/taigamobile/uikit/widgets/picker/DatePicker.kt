@@ -40,7 +40,7 @@ import java.time.format.FormatStyle
 @Composable
 fun DatePicker(
     date: LocalDate?,
-    onDatePicked: (LocalDate?) -> Unit,
+    onDatePick: (LocalDate?) -> Unit,
     modifier: Modifier = Modifier,
     @StringRes hintId: Int = RString.date_hint,
     showClearButton: Boolean = true,
@@ -63,7 +63,7 @@ fun DatePicker(
         .apply {
             addOnDismissListener { onClose() }
             addOnPositiveButtonClickListener {
-                onDatePicked(
+                onDatePick(
                     Instant.ofEpochMilli(it)
                         .atOffset(ZoneOffset.UTC)
                         .toLocalDate()
@@ -78,7 +78,6 @@ fun DatePicker(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
     ) {
-
         Text(
             text = date?.format(dateFormatter) ?: stringResource(hintId),
             style = style,
@@ -90,11 +89,12 @@ fun DatePicker(
                 ?: MaterialTheme.colorScheme.outline
         )
 
-        if (showClearButton && date != null) { // do not show clear button if there is no date (sounds right to me)
+        // do not show clear button if there is no date (sounds right to me)
+        if (showClearButton && date != null) {
             Spacer(Modifier.width(4.dp))
 
             IconButton(
-                onClick = { onDatePicked(null) },
+                onClick = { onDatePick(null) },
                 modifier = Modifier
                     .size(22.dp)
                     .clip(CircleShape)
