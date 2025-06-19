@@ -1,0 +1,10 @@
+coverage:
+  status:
+    patch:
+      default:
+        target: 80%
+        threshold: 2%  # the leniency in hitting the target
+        informational: true
+    project:
+      default:
+        informational: true

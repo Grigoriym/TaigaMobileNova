@@ -1,0 +1,225 @@
+<resources>
+    <string name="app_name" translatable="false">Taiga Mobile</string>
+    <string name="app_name_debug" translatable="false">Dbg Taiga Mobile</string>
+    <string name="app_name_with_version_template" translatable="false">%s - %s</string>
+    <string name="global_taiga_host" translatable="false">https://api.taiga.io</string>
+
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="common_error_message">An error has occurred. Check your connection</string>
+    <string name="permission_error">Error, you may not have sufficient permissions</string>
+
+    <string name="nothing_to_see">Nothing to see here</string>
+
+    <string name="login_taiga_server">Taiga server url</string>
+    <string name="login_username">Login</string>
+    <string name="login_password">Password</string>
+    <string name="login_continue">Continue</string>
+    <string name="login_ldap">Continue with LDAP</string>
+    <string name="login_error_message">Error during login. Check credentials or connection</string>
+
+    <string name="login_alert_title">Unencrypted connection</string>
+    <string name="login_alert_text">You are going to use an unencrypted connection. Are you sure?</string>
+
+    <string name="dashboard">Dashboard</string>
+    <string name="project_selector">Select Project</string>
+    <string name="dashboard_short">Board</string>
+    <string name="scrum">Scrum</string>
+    <string name="epics">Epics</string>
+    <string name="issues">Issues</string>
+    <string name="team">Team</string>
+    <string name="settings">Settings</string>
+    <string name="more">More</string>
+    <string name="kanban">Kanban</string>
+    <string name="wiki">Wiki</string>
+
+    <string name="choose_project_title">Choose project</string>
+
+    <string name="search_projects_hint">Search projects</string>
+    <string name="project_name_template" translatable="false">%s (%s)</string>
+    <string name="project_member">Member</string>
+    <string name="project_admin">Admin</string>
+    <string name="project_owner">Owner</string>
+    <string name="projects">Projects</string>
+
+    <string name="working_on">Working on</string>
+    <string name="watching">Watching</string>
+    <string name="my_projects">My projects</string>
+
+    <string name="title_with_ref_pattern" translatable="false">#%d %s</string>
+    <string name="unassigned">Unassigned</string>
+    <string name="assignee_pattern">Assignee: %s</string>
+    <string name="backlog">Backlog</string>
+
+    <string name="sprints_title">Sprints</string>
+    <string name="sprint_dates_template" translatable="false">%s - %s</string>
+    <string name="stories_count_template">Stories: %d</string>
+    <string name="taskboard">Board</string>
+    <string name="closed">Closed</string>
+    <string name="closed_sprint_name_template">%s (Closed)</string>
+    <string name="sprint_name_hint">Sprint name</string>
+    <string name="show_closed_sprints">Show closed sprints</string>
+    <string name="hide_closed_sprints">Hide closed sprints</string>
+
+    <string name="closed_user_story">Closed US</string>
+    <string name="tasks_without_story">Storyless tasks</string>
+    <string name="sprint_issues">Sprint issues</string>
+
+    <string name="userstory_slug">User story #%d</string>
+    <string name="task_slug">Task #%d</string>
+    <string name="epic_slug">Epic #%d</string>
+    <string name="issue_slug">Issue #%d</string>
+
+    <string name="epic">Epic</string>
+    <string name="userstory">User story</string>
+    <string name="task">Task</string>
+    <string name="issue">Issue</string>
+
+    <string name="no_sprint">No sprint</string>
+    <string name="link_to_epic">Link to epic</string>
+    <string name="add_tag">Add tag</string>
+    <string name="created_by">Created by</string>
+    <string name="last_modification">Last modification</string>
+    <string name="assigned_to">Assigned to</string>
+    <string name="watchers">Watchers</string>
+    <string name="userstories">User stories</string>
+    <string name="tasks">Tasks</string>
+    <string name="comments_template">%d Comments</string>
+    <string name="comment_hint">Comment</string>
+    <string name="delete_comment_title">Delete comment</string>
+    <string name="delete_comment_text">Are you sure you want to delete this comment?</string>
+    <string name="add_user">Add user</string>
+    <string name="attachments_template">%d Attachments</string>
+    <string name="custom_fields">Custom fields</string>
+    <string name="block">Block</string>
+    <string name="unblock">Unblock</string>
+    <string name="blocked">Blocked</string>
+    <string name="block_reason">Block reason</string>
+
+    <string name="add_assignee">Add assignee</string>
+    <string name="assign_to_me">Assign to me</string>
+    <string name="unassign">Unassign</string>
+    <string name="add_watcher">Add watcher</string>
+    <string name="watch">Watch</string>
+    <string name="unwatch">Unwatch</string>
+
+    <string name="swimlane_title">Swimlane:</string>
+    <string name="unclassifed">Unclassified</string>
+
+    <string name="custom_field_text">Text</string>
+    <string name="custom_field_multiline">Multiline text</string>
+    <string name="custom_field_rich_text">Rich text</string>
+    <string name="custom_field_number">Number</string>
+    <string name="custom_field_url">Url</string>
+
+    <string name="date_hint">Date</string>
+    <string name="no_due_date">No due date</string>
+
+    <string name="select_date">Select date</string>
+    <string name="select_color">Select color</string>
+    <string name="tag">Tag</string>
+    <string name="empty">Empty</string>
+
+    <string name="choose_status">Choose status</string>
+    <string name="choose_type">Choose type</string>
+    <string name="choose_severity">Choose severity</string>
+    <string name="choose_priority">Choose priority</string>
+    <string name="choose_sprint">Choose sprint</string>
+    <string name="move_to_backlog">Move to backlog</string>
+    <string name="search_members">Search members</string>
+    <string name="search_epics">Search epics</string>
+    <string name="choose_swimlane">Choose swimlane</string>
+
+    <string name="power">power</string>
+
+    <string name="unlink_epic_title">Unlink epic</string>
+    <string name="unlink_epic_text">Are you sure you want to unlink this epic?</string>
+
+    <string name="remove_user_title">Remove user</string>
+    <string name="remove_user_text">Are you sure you want to remove this user?</string>
+
+    <string name="delete_task_title">Delete task</string>
+    <string name="delete_task_text">Are you sure you want to delete this task?</string>
+
+    <string name="delete_wiki_title">Delete page</string>
+    <string name="delete_wiki_text">Are you sure you want to delete this page?</string>
+
+    <string name="promote_title">Promote</string>
+    <string name="promote_text">Are you sure you want to promote this task to a user story?</string>
+
+    <string name="remove_attachment_title">Remove attachment</string>
+    <string name="remove_attachment_text">Are you sure you want to remove this attachment?</string>
+
+    <string name="delete_sprint_title">Delete sprint</string>
+    <string name="delete_sprint_text">Are you sure you want to delete this sprint?</string>
+
+    <string name="title_hint">Title</string>
+    <string name="description_hint">Description</string>
+
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="promote_to_user_story">Promote</string>
+    <string name="copy_link">Copy link</string>
+    <string name="copy_link_successfully">The link has been copied!</string>
+
+    <string name="create_task">New task</string>
+    <string name="create_userstory">New user story</string>
+    <string name="create_epic">New epic</string>
+    <string name="create_issue">New issue</string>
+
+    <string name="loading">Loading…</string>
+
+    <string name="tasks_search_hint">Search by ref or subject</string>
+    <string name="filters">Filters</string>
+    <string name="show_filters">Show filters</string>
+    <string name="type_title">Type</string>
+    <string name="severity_title">Severity</string>
+    <string name="priority_title">Priority</string>
+    <string name="status_title">Status</string>
+    <string name="tags_title">Tags</string>
+    <string name="assignees_title">Assignees</string>
+    <string name="role_title">Role</string>
+    <string name="created_by_title">Created by</string>
+    <string name="epic_title">Epic</string>
+    <string name="not_in_an_epic">Not in an epic</string>
+
+    <string name="profile">Profile</string>
+    <string name="contacts">Contacts</string>
+
+    <string name="status_with_number_template" translatable="false">%s - %d</string>
+
+    <!-- settings -->
+    <string name="username_template" translatable="false">\@%s</string>
+    <string name="logout_title">Log out</string>
+    <string name="logout_text">Are you sure you want to log out?</string>
+
+    <string name="appearance">Appearance</string>
+
+    <string name="theme_title">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+
+    <string name="help">Help</string>
+    <string name="submit_report">Submit report</string>
+
+    <!-- wiki_selector -->
+    <string name="bookmarks">Bookmarks</string>
+    <string name="all_wiki_pages">All wiki pages</string>
+    <string name="empty_wiki_dialog_title">There are no wiki pages…</string>
+    <string name="empty_wiki_dialog_subtitle">Let\'s add a new one?</string>
+    <string name="create_new_page">Create new page</string>
+    <string name="list_of_bookmarks">List of bookmarks</string>
+    <string name="pages">Pages</string>
+    <string name="pages_without_link">Pages without link</string>
+
+
+    <string name="credits_message">Made with ❤️ by EugeneTheDev. If you enjoy the app please consider rating it on Google Play and starring the project on GitHub</string>
+
+    <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
+    <string name="source_code">Source code</string>
+</resources>

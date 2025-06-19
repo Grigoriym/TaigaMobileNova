@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="DatePicker" parent="ThemeOverlay.Material3.MaterialCalendar">
+        <item name="materialCalendarHeaderTitle">@style/DatePicker.Title</item>
+    </style>
+
+    <style name="DatePicker.Title" parent="Widget.Material3.MaterialCalendar.HeaderTitle">
+        <item name="android:textAppearance">@style/TextAppearance.Material3.TitleMedium</item>
+        <item name="autoSizeTextType">none</item>
+    </style>
+</resources>
