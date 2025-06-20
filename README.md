@@ -1,14 +1,13 @@
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/df9b05b34af1456fbb8fe75fbab0f6f2)](https://app.codacy.com/gh/Grigoriym/TaigaMobileNova/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 
-The previous author archived the project. Let's see what I can do about it. As of now I updated the project for it to be launched and built.
-Ktlint, Detekt, Codacy, Codecov, Renovate are in place. The next thing is CI
-
 # Taiga Mobile Nova
-As of now I will try to fix any issues and keep the repo up-to-date 
+The previous author archived the project. I have since updated it to be ready for launch and build. 
+Kotlin, Jetpack Compose, Coroutines and all that basic stuff.
+Ktlint, Detekt, Codacy, Codecov, Renovate, and CI are in place
 
 # TaigaMobile
 
-This is the **unofficial** android app for the agile project management system [taiga.io](https://www.taiga.io/). It was built with [Jetpack Compose](https://developer.android.com/jetpack/compose), featuring Material You with dynamic colors.
+This is the **unofficial** android app for the agile project management system [taiga.io](https://www.taiga.io/).
 
 <img src="screenshots/m3_1.png" width=200/> <img src="screenshots/m3_2.png" width=200/>
 <img src="screenshots/m3_3.png" width=200/> <img src="screenshots/m3_4.png" width=200/>
