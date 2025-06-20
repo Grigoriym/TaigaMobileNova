@@ -1,4 +1,4 @@
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/df9b05b34af1456fbb8fe75fbab0f6f2)](https://app.codacy.com/gh/Grigoriym/TaigaMobileNova/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/df9b05b34af1456fbb8fe75fbab0f6f2)](https://app.codacy.com/gh/Grigoriym/TaigaMobileNova/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade) [![codecov](https://codecov.io/gh/Grigoriym/TaigaMobileNova/branch/master/graph/badge.svg?token=8SI5NVSBNF)](https://codecov.io/gh/Grigoriym/TaigaMobileNova)
 
 # Taiga Mobile Nova
 The previous author archived the project. I have since updated it to be ready for launch and build. 
