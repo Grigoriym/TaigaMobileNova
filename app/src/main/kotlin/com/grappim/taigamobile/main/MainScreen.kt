@@ -23,11 +23,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.nav.DrawerDestination
-import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.main.topbar.TopBarController
 import com.grappim.taigamobile.ui.components.TaigaDrawer
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import kotlinx.coroutines.launch
 
 @Composable

@@ -6,13 +6,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
-import com.grappim.taigamobile.domain.repositories.IUsersRepository
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.wiki.domain.IWikiRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiLink
 import com.grappim.taigamobile.feature.wiki.domain.WikiPage
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.loadOrError
-import com.grappim.taigamobile.ui.utils.mutableResultFlow
+import com.grappim.taigamobile.utils.ui.loadOrError
+import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class WikiPageViewModel @Inject constructor(
     private val wikiRepository: IWikiRepository,
-    private val userRepository: IUsersRepository,
+    private val userRepository: UsersRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val _state = MutableStateFlow(

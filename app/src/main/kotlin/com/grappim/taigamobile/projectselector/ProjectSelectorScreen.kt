@@ -30,14 +30,14 @@ import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.Project
-import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SubscribeOnError
 import kotlinx.coroutines.flow.flowOf
 
 @Composable

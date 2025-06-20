@@ -2,7 +2,6 @@ package com.grappim.taigamobile.feature.login.ui
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.grappim.taigamobile.core.api.ApiConstants
-import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 
 data class LoginState(
@@ -22,12 +21,13 @@ data class LoginState(
     val setIsAlertVisible: (Boolean) -> Unit,
 
     val onActionDialogConfirm: () -> Unit,
-    val onLoginContinue: (authType: AuthType) -> Unit,
+    val validateAuthData: (authType: AuthType) -> Unit,
 
     val authType: AuthType = AuthType.NORMAL,
     val onAuthTypeChange: (AuthType) -> Unit,
 
-    val onLogin: (authData: AuthData) -> Unit,
+    val isLoading: Boolean = false,
 
-    val isLoading: Boolean = false
+    val isPasswordVisible: Boolean = false,
+    val setIsPasswordVisible: (Boolean) -> Unit
 )

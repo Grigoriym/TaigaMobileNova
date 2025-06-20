@@ -6,3 +6,10 @@ plugins {
 android {
     namespace = "com.grappim.taigamobile.utils.ui"
 }
+
+dependencies {
+    implementation(projects.strings)
+
+    implementation(libs.timber)
+    implementation(libs.androidx.paging.compose)
+}

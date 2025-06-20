@@ -16,7 +16,7 @@ import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.Swimlane
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.core.nav.NavigateToTask
+import com.grappim.taigamobile.core.navigation.NavigateToTask
 import java.io.InputStream
 import java.time.LocalDate
 

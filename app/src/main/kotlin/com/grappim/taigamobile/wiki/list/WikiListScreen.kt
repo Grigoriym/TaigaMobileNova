@@ -24,18 +24,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.LoadingResult
-import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.Tab
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
 import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SubscribeOnError
 
 @Composable
 fun WikiListScreen(

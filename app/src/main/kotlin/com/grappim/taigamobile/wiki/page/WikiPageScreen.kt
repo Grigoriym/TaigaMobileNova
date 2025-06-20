@@ -29,22 +29,22 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.commontask.EditAction
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.ui.components.lists.Attachments
-import com.grappim.taigamobile.ui.components.lists.UserItem
-import com.grappim.taigamobile.ui.utils.LoadingResult
-import com.grappim.taigamobile.ui.utils.SubscribeOnError
-import com.grappim.taigamobile.ui.utils.SuccessResult
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.widgets.list.Description
+import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SubscribeOnError
+import com.grappim.taigamobile.utils.ui.SuccessResult
 import java.io.InputStream
 import java.time.LocalDateTime
 

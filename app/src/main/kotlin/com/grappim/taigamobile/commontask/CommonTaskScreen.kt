@@ -53,27 +53,27 @@ import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.components.editors.Editor
 import com.grappim.taigamobile.ui.components.lists.Attachments
-import com.grappim.taigamobile.ui.components.lists.simpleTasksListWithTitle
 import com.grappim.taigamobile.ui.utils.FilePicker
-import com.grappim.taigamobile.ui.utils.LoadingResult
 import com.grappim.taigamobile.ui.utils.LocalFilePicker
-import com.grappim.taigamobile.ui.utils.SubscribeOnError
-import com.grappim.taigamobile.ui.utils.SuccessResult
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewMulti
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
+import com.grappim.taigamobile.uikit.widgets.editor.Editor
 import com.grappim.taigamobile.uikit.widgets.list.Description
+import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SubscribeOnError
+import com.grappim.taigamobile.utils.ui.SuccessResult
 import java.time.LocalDateTime
 
 @Composable

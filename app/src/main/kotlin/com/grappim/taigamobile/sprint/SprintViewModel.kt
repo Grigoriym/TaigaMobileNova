@@ -8,14 +8,14 @@ import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
-import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.NothingResult
-import com.grappim.taigamobile.ui.utils.loadOrError
-import com.grappim.taigamobile.ui.utils.mutableResultFlow
+import com.grappim.taigamobile.utils.ui.NothingResult
+import com.grappim.taigamobile.utils.ui.loadOrError
+import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -28,7 +28,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SprintViewModel @Inject constructor(
-    private val tasksRepository: ITasksRepository,
+    private val tasksRepository: TasksRepository,
     private val sprintsRepository: ISprintsRepository,
     private val session: Session,
     savedStateHandle: SavedStateHandle

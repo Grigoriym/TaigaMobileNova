@@ -24,38 +24,40 @@ fun ConfirmActionDialog(
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     @DrawableRes iconId: Int? = null
-) = AlertDialog(
-    onDismissRequest = onDismiss,
-    confirmButton = {
-        TextButton(onClick = onConfirm) {
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = stringResource(RString.yes),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(
+                    text = stringResource(RString.no),
+                    style = MaterialTheme.typography.titleMedium
+                )
+            }
+        },
+        title = {
             Text(
-                text = stringResource(RString.yes),
-                style = MaterialTheme.typography.titleMedium
+                text = title,
+                style = MaterialTheme.typography.titleLarge
             )
+        },
+        text = { Text(text) },
+        icon = iconId?.let {
+            {
+                Icon(
+                    modifier = Modifier.size(26.dp),
+                    painter = painterResource(it),
+                    contentDescription = null
+                )
+            }
         }
-    },
-    dismissButton = {
-        TextButton(onClick = onDismiss) {
-            Text(
-                text = stringResource(RString.no),
-                style = MaterialTheme.typography.titleMedium
-            )
-        }
-    },
-    title = {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleLarge
-        )
-    },
-    text = { Text(text) },
-    icon = iconId?.let {
-        {
-            Icon(
-                modifier = Modifier.size(26.dp),
-                painter = painterResource(it),
-                contentDescription = null
-            )
-        }
-    }
-)
+    )
+}

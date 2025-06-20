@@ -24,9 +24,9 @@ import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.commontask.EditActions
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.components.lists.UserItem
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownText
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle

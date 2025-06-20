@@ -18,10 +18,10 @@ import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.commontask.EditActions
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.components.lists.UserItemWithAction
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.button.AddButton
 import com.grappim.taigamobile.uikit.widgets.button.TextButton
+import com.grappim.taigamobile.uikit.widgets.list.UserItemWithAction
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 
 @Suppress("FunctionName")

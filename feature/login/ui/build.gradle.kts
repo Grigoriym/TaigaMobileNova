@@ -12,4 +12,9 @@ dependencies {
     implementation(projects.feature.login.domain)
     implementation(projects.strings)
     implementation(projects.core.api)
+    implementation(projects.utils.ui)
+    implementation(projects.uikit)
+
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
 }

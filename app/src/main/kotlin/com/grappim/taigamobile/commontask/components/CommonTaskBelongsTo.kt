@@ -30,12 +30,12 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.EpicShortInfo
 import com.grappim.taigamobile.core.domain.UserStoryShortInfo
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.components.texts.CommonTaskTitle
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import com.grappim.taigamobile.uikit.widgets.button.AddButton
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskBelongsTo(

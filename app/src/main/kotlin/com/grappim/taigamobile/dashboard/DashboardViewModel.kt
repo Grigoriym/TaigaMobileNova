@@ -4,12 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
-import com.grappim.taigamobile.ui.utils.NothingResult
-import com.grappim.taigamobile.ui.utils.loadOrError
-import com.grappim.taigamobile.ui.utils.mutableResultFlow
+import com.grappim.taigamobile.utils.ui.NothingResult
+import com.grappim.taigamobile.utils.ui.loadOrError
+import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val tasksRepository: ITasksRepository,
+    private val tasksRepository: TasksRepository,
     private val projectsRepository: IProjectsRepository,
     private val session: Session
 ) : ViewModel() {

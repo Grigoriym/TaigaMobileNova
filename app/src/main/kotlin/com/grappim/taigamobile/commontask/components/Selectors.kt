@@ -17,10 +17,10 @@ import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.Swimlane
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.components.editors.SelectorList
-import com.grappim.taigamobile.ui.components.lists.UserItem
-import com.grappim.taigamobile.ui.components.texts.CommonTaskTitle
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.editor.SelectorList
+import com.grappim.taigamobile.uikit.widgets.list.UserItem
+import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.toColor
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle

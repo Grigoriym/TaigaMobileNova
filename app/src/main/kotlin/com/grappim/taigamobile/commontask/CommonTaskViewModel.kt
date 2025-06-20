@@ -21,19 +21,20 @@ import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.domain.Swimlane
 import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
-import com.grappim.taigamobile.domain.repositories.ITasksRepository
-import com.grappim.taigamobile.domain.repositories.IUsersRepository
+import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.LoadingResult
-import com.grappim.taigamobile.ui.utils.MutableResultFlow
-import com.grappim.taigamobile.ui.utils.NothingResult
-import com.grappim.taigamobile.ui.utils.loadOrError
-import com.grappim.taigamobile.ui.utils.mutableResultFlow
+import com.grappim.taigamobile.utils.ui.LoadingResult
+import com.grappim.taigamobile.utils.ui.MutableResultFlow
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.NothingResult
+import com.grappim.taigamobile.utils.ui.loadOrError
+import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -56,10 +57,10 @@ import javax.inject.Inject
 @HiltViewModel
 class CommonTaskViewModel @Inject constructor(
     private val session: Session,
-    private val tasksRepository: ITasksRepository,
-    private val usersRepository: IUsersRepository,
-    private val sprintsRepository: ISprintsRepository,
-    private val epicsRepository: com.grappim.taigamobile.feature.epics.domain.EpicsRepository,
+    private val tasksRepository: TasksRepository,
+    private val usersRepository: UsersRepository,
+    sprintsRepository: ISprintsRepository,
+    private val epicsRepository: EpicsRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
