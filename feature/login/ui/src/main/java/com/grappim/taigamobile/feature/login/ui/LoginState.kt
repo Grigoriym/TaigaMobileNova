@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.login.ui
+package com.grappim.taigamobile.feature.login.ui
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.grappim.taigamobile.core.api.ApiConstants

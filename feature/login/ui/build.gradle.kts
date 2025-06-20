@@ -11,4 +11,5 @@ android {
 dependencies {
     implementation(projects.feature.login.domain)
     implementation(projects.strings)
+    implementation(projects.core.api)
 }

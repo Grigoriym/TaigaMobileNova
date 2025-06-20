@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.login.data.di
 
-import com.grappim.taigamobile.feature.login.data.repo.AuthRepository
-import com.grappim.taigamobile.feature.login.domain.repo.IAuthRepository
+import com.grappim.taigamobile.feature.login.data.repo.AuthRepositoryImpl
+import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
@@ -12,5 +12,5 @@ import javax.inject.Singleton
 interface LoginModule {
     @Singleton
     @Binds
-    fun bindIAuthRepository(authRepository: AuthRepository): IAuthRepository
+    fun bindIAuthRepository(authRepositoryImpl: AuthRepositoryImpl): AuthRepository
 }

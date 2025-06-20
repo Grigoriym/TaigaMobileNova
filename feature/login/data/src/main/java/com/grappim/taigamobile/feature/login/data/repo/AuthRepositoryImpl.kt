@@ -6,16 +6,16 @@ import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.AuthRequest
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
-import com.grappim.taigamobile.feature.login.domain.repo.IAuthRepository
+import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class AuthRepository @Inject constructor(
+class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
     private val session: Session,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
-) : IAuthRepository {
+) : AuthRepository {
 
     companion object {
         /**

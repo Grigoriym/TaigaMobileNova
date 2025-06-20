@@ -5,7 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
-import com.grappim.taigamobile.feature.login.domain.repo.IAuthRepository
+import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
+import com.grappim.taigamobile.feature.login.ui.LoginState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SnackbarStateViewModel
@@ -20,7 +21,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val authRepository: IAuthRepository) :
+class LoginViewModel @Inject constructor(private val authRepository: AuthRepository) :
     ViewModel(),
     SnackbarStateViewModel by SnackbarStateViewModelImpl() {
 
@@ -45,7 +46,7 @@ class LoginViewModel @Inject constructor(private val authRepository: IAuthReposi
     )
     val loginState = _loginState.asStateFlow()
 
-    fun login(authData: AuthData) {
+    private fun login(authData: AuthData) {
         viewModelScope.launch {
             isLoading(true)
             authRepository.auth(authData)
