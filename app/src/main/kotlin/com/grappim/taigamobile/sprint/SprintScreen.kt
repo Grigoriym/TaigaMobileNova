@@ -28,12 +28,8 @@ import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.Status
-import com.grappim.taigamobile.core.nav.NavigateToTask
-import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.core.navigation.NavigateToTask
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.LoadingResult
-import com.grappim.taigamobile.ui.utils.SubscribeOnError
-import com.grappim.taigamobile.ui.utils.SuccessResult
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -42,8 +38,12 @@ import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.EditSprintDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SubscribeOnError
+import com.grappim.taigamobile.utils.ui.SuccessResult
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter

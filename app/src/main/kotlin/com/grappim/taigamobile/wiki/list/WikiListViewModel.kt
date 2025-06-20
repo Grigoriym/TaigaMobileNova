@@ -5,8 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.feature.wiki.domain.IWikiRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiLink
 import com.grappim.taigamobile.feature.wiki.domain.WikiPage
-import com.grappim.taigamobile.ui.utils.loadOrError
-import com.grappim.taigamobile.ui.utils.mutableResultFlow
+import com.grappim.taigamobile.utils.ui.loadOrError
+import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject

@@ -36,17 +36,17 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.grappim.taigamobile.core.domain.TeamMember
-import com.grappim.taigamobile.main.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.LoadingResult
-import com.grappim.taigamobile.ui.utils.SubscribeOnError
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SubscribeOnError
 
 @Composable
 fun TeamScreen(

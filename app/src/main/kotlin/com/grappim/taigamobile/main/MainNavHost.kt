@@ -16,14 +16,15 @@ import com.grappim.taigamobile.dashboard.DashboardNavDestination
 import com.grappim.taigamobile.dashboard.DashboardScreen
 import com.grappim.taigamobile.dashboard.navigateToDashboardAsTopDestination
 import com.grappim.taigamobile.epics.EpicsNavDestination
-import com.grappim.taigamobile.epics.EpicsScreen
+import com.grappim.taigamobile.feature.epics.ui.EpicsScreen
+import com.grappim.taigamobile.feature.issues.ui.IssuesScreen
+import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
+import com.grappim.taigamobile.feature.login.ui.LoginScreen
+import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.issues.IssuesNavDestination
-import com.grappim.taigamobile.issues.IssuesScreen
 import com.grappim.taigamobile.kanban.KanbanNavDestination
-import com.grappim.taigamobile.kanban.KanbanScreen
 import com.grappim.taigamobile.login.LoginNavDestination
 import com.grappim.taigamobile.login.navigateToLoginAsTopDestination
-import com.grappim.taigamobile.login.ui.LoginScreen
 import com.grappim.taigamobile.profile.ProfileNavDestination
 import com.grappim.taigamobile.profile.ProfileScreen
 import com.grappim.taigamobile.profile.navigateToProfileScreen
@@ -33,7 +34,6 @@ import com.grappim.taigamobile.projectselector.navigateToProjectSelector
 import com.grappim.taigamobile.scrum.ScrumNavDestination
 import com.grappim.taigamobile.scrum.ScrumScreen
 import com.grappim.taigamobile.settings.SettingsNavDestination
-import com.grappim.taigamobile.settings.SettingsScreen
 import com.grappim.taigamobile.sprint.SprintNavDestination
 import com.grappim.taigamobile.sprint.SprintScreen
 import com.grappim.taigamobile.sprint.navigateToSprintScreen

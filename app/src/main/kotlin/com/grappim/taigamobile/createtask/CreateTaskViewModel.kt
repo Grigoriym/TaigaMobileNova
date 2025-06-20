@@ -7,13 +7,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
-import com.grappim.taigamobile.domain.repositories.ITasksRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.utils.loadOrError
-import com.grappim.taigamobile.ui.utils.mutableResultFlow
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.loadOrError
+import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreateTaskViewModel @Inject constructor(
-    private val tasksRepository: ITasksRepository,
+    private val tasksRepository: TasksRepository,
     private val session: Session,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {

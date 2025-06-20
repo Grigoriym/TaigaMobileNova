@@ -11,4 +11,12 @@ android {
 dependencies {
     implementation(projects.feature.epics.domain)
     implementation(projects.strings)
+    implementation(projects.uikit)
+    implementation(projects.core.domain)
+    implementation(projects.core.storage)
+    implementation(projects.core.navigation)
+    implementation(projects.utils.ui)
+
+    implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.paging.compose)
 }

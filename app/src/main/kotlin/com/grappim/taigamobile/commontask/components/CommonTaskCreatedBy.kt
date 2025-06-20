@@ -7,7 +7,7 @@ import androidx.compose.ui.res.stringResource
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.components.lists.UserItem
+import com.grappim.taigamobile.uikit.widgets.list.UserItem
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskCreatedBy(

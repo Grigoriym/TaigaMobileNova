@@ -7,4 +7,15 @@
 /captures
 .externalNativeBuild
 .cxx
-local.properties
+
+/core/build/
+/feature/build/
+/feature/dashboard/build
+/feature/epics/build
+/feature/issues/build
+/feature/login/build
+/feature/projects/build
+/feature/sprint/build
+/feature/userstories/build
+/feature/wiki/build
+/utils/build

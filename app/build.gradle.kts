@@ -38,6 +38,7 @@ dependencies {
     implementation(projects.core.async)
     implementation(projects.core.asyncAndroid)
     implementation(projects.core.appinfoApi)
+    implementation(projects.core.navigation)
 
     implementation(projects.feature.dashboard.domain)
     implementation(projects.feature.dashboard.ui)
@@ -53,6 +54,13 @@ dependencies {
     implementation(projects.feature.wiki.domain)
     implementation(projects.feature.wiki.data)
     implementation(projects.feature.wiki.ui)
+
+    implementation(projects.feature.settings.ui)
+
+    implementation(projects.feature.users.data)
+    implementation(projects.feature.users.domain)
+
+    implementation(projects.feature.kanban.ui)
 
     implementation(projects.feature.epics.ui)
     implementation(projects.feature.epics.domain)
@@ -121,6 +129,6 @@ dependencies {
 }
 
 moduleGraphAssert {
-    maxHeight = 6
+    maxHeight = 10
     assertOnAnyBuild = true
 }

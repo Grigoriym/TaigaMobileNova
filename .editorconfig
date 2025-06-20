@@ -28,3 +28,6 @@ ktlint_compose_modifier-composed-check=disabled
 generated_code = true
 ij_formatter_enabled = false
 ktlint = disabled
+
+[**/testing/**]
+ktlint = disabled
