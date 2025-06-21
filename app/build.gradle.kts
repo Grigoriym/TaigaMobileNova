@@ -120,7 +120,7 @@ dependencies {
     testImplementation(libs.blockHound)
     testImplementation(libs.kotlinx.coroutines.debug)
 
-    val postgresDriverVersion = "42.3.6"
+    val postgresDriverVersion = "42.7.7"
     testRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
     androidTestRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
 
