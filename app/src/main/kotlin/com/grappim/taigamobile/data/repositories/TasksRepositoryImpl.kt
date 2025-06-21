@@ -63,7 +63,7 @@ class TasksRepositoryImpl @Inject constructor(
     private val serverStorage: ServerStorage
 ) : TasksRepository {
     private val currentProjectId get() = session.currentProject
-    private val currentUserId get() = session.currentUserId.value
+    private val currentUserId get() = session.userId
 
     private fun StatusesFilter.toStatus(statusType: StatusType) = Status(
         id = id,

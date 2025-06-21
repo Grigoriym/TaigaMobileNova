@@ -30,11 +30,12 @@ internal class LoginViewModelTest {
     private val authRepository = mockk<AuthRepository>()
     private val serverStorage = mockk<ServerStorage>()
 
-    private val server = getRandomString()
+    private val defaultServer = getRandomString()
+    private val correctServer = "https://10.0.2.2:9000"
 
     @Before
     fun setup() {
-        every { serverStorage.server } returns server
+        every { serverStorage.server } returns defaultServer
 
         sut = LoginViewModel(authRepository, serverStorage)
     }
@@ -69,6 +70,90 @@ internal class LoginViewModelTest {
     }
 
     @Test
+    fun `on validateAuthData with incorrect server should not login`() {
+        val authType = AuthType.LDAP
+        val password = getRandomString()
+        val username = getRandomString()
+        val incorrectServer = getRandomString()
+
+        sut.state.value.onServerValueChange(TextFieldValue(incorrectServer))
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(TextFieldValue(password))
+        sut.state.value.onLoginValueChange(TextFieldValue(username))
+
+        sut.state.value.validateAuthData(authType)
+
+        assertTrue(sut.state.value.isServerInputError)
+        assertFalse(sut.state.value.isLoginInputError)
+        assertFalse(sut.state.value.isPasswordInputError)
+
+        coVerify(exactly = 0) { authRepository.auth(any()) }
+    }
+
+    @Test
+    fun `on validateAuthData with empty login should not login`() {
+        val authType = AuthType.LDAP
+        val password = getRandomString()
+        val username = ""
+
+        sut.state.value.onServerValueChange(TextFieldValue(correctServer))
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(TextFieldValue(password))
+        sut.state.value.onLoginValueChange(TextFieldValue(username))
+
+        sut.state.value.validateAuthData(authType)
+
+        assertFalse(sut.state.value.isServerInputError)
+        assertTrue(sut.state.value.isLoginInputError)
+        assertFalse(sut.state.value.isPasswordInputError)
+
+        coVerify(exactly = 0) { authRepository.auth(any()) }
+    }
+
+    @Test
+    fun `on validateAuthData with empty password should not login`() {
+        val authType = AuthType.LDAP
+        val password = ""
+        val username = getRandomString()
+
+        sut.state.value.onServerValueChange(TextFieldValue(correctServer))
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(TextFieldValue(password))
+        sut.state.value.onLoginValueChange(TextFieldValue(username))
+
+        sut.state.value.validateAuthData(authType)
+
+        assertFalse(sut.state.value.isServerInputError)
+        assertFalse(sut.state.value.isLoginInputError)
+        assertTrue(sut.state.value.isPasswordInputError)
+
+        coVerify(exactly = 0) { authRepository.auth(any()) }
+    }
+
+    @Test
+    fun `on validateAuthData with valid data, but without https in server should not login`() {
+        val authType = AuthType.LDAP
+        val password = getRandomString()
+        val username = getRandomString()
+        val server = "http://10.0.2.2:9000"
+
+        sut.state.value.onServerValueChange(TextFieldValue(server))
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(TextFieldValue(password))
+        sut.state.value.onLoginValueChange(TextFieldValue(username))
+
+        sut.state.value.validateAuthData(authType)
+
+        assertFalse(sut.state.value.isServerInputError)
+        assertFalse(sut.state.value.isLoginInputError)
+        assertFalse(sut.state.value.isPasswordInputError)
+
+        assertTrue(sut.state.value.isAlertVisible)
+
+        coVerify(exactly = 0) { authRepository.auth(any()) }
+    }
+
+    @Test
     fun `on onAuthTypeChange should change the authType`() {
         assertEquals(AuthType.NORMAL, sut.state.value.authType)
 
@@ -84,6 +169,15 @@ internal class LoginViewModelTest {
         sut.state.value.setIsAlertVisible(true)
 
         assertTrue(sut.state.value.isAlertVisible)
+    }
+
+    @Test
+    fun `on changePasswordVisibility should change the isPasswordVisible`() {
+        assertFalse(sut.state.value.isPasswordVisible)
+
+        sut.state.value.setIsPasswordVisible(true)
+
+        assertTrue(sut.state.value.isPasswordVisible)
     }
 
     @Test
@@ -113,7 +207,7 @@ internal class LoginViewModelTest {
         val newServerValue = getRandomString()
 
         assertFalse(sut.state.value.isServerInputError)
-        assertEquals(server, sut.state.value.server.text)
+        assertEquals(defaultServer, sut.state.value.server.text)
 
         sut.state.value.onServerValueChange(TextFieldValue(newServerValue))
 

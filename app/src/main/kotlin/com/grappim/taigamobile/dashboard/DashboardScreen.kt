@@ -85,39 +85,41 @@ fun DashboardScreenContent(
     currentProjectId: Long = 0,
     navigateToTask: (CommonTask) -> Unit = { _ -> },
     changeCurrentProject: (Project) -> Unit = { _ -> }
-) = Column(
-    modifier = modifier.fillMaxSize(),
-    horizontalAlignment = Alignment.Start
 ) {
-    if (isLoading) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CircularLoader()
-        }
-    } else {
-        HorizontalTabbedPager(
-            modifier = Modifier.fillMaxSize(),
-            tabs = DashboardTabs.entries.toTypedArray(),
-            pagerState = rememberPagerState(pageCount = { DashboardTabs.entries.size })
-        ) { page ->
-            when (DashboardTabs.entries[page]) {
-                DashboardTabs.WorkingOn -> TabContent(
-                    commonTasks = workingOn,
-                    navigateToTask = navigateToTask
-                )
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.Start
+    ) {
+        if (isLoading) {
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                CircularLoader()
+            }
+        } else {
+            HorizontalTabbedPager(
+                modifier = Modifier.fillMaxSize(),
+                tabs = DashboardTabs.entries.toTypedArray(),
+                pagerState = rememberPagerState(pageCount = { DashboardTabs.entries.size })
+            ) { page ->
+                when (DashboardTabs.entries[page]) {
+                    DashboardTabs.WorkingOn -> TabContent(
+                        commonTasks = workingOn,
+                        navigateToTask = navigateToTask
+                    )
 
-                DashboardTabs.Watching -> TabContent(
-                    commonTasks = watching,
-                    navigateToTask = navigateToTask
-                )
+                    DashboardTabs.Watching -> TabContent(
+                        commonTasks = watching,
+                        navigateToTask = navigateToTask
+                    )
 
-                DashboardTabs.MyProjects -> MyProjects(
-                    myProjects = myProjects,
-                    currentProjectId = currentProjectId,
-                    changeCurrentProject = changeCurrentProject
-                )
+                    DashboardTabs.MyProjects -> MyProjects(
+                        myProjects = myProjects,
+                        currentProjectId = currentProjectId,
+                        changeCurrentProject = changeCurrentProject
+                    )
+                }
             }
         }
     }
@@ -140,33 +142,37 @@ private fun MyProjects(
     myProjects: List<Project>,
     currentProjectId: Long,
     changeCurrentProject: (Project) -> Unit
-) = LazyColumn {
-    items(myProjects) {
-        ProjectCard(
-            project = it,
-            isCurrent = it.id == currentProjectId,
-            onClick = { changeCurrentProject(it) }
-        )
+) {
+    LazyColumn {
+        items(myProjects) {
+            ProjectCard(
+                project = it,
+                isCurrent = it.id == currentProjectId,
+                onClick = { changeCurrentProject(it) }
+            )
 
-        Spacer(Modifier.height(12.dp))
+            Spacer(Modifier.height(12.dp))
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-private fun ProjectCardPreview() = TaigaMobileTheme {
-    ProjectCard(
-        project = Project(
-            id = 0,
-            name = "Name",
-            slug = "slug",
-            description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-                "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-            isPrivate = true
-        ),
-        isCurrent = true,
-        onClick = {}
-    )
+private fun ProjectCardPreview() {
+    TaigaMobileTheme {
+        ProjectCard(
+            project = Project(
+                id = 0,
+                name = "Name",
+                slug = "slug",
+                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+                    "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
+                isPrivate = true
+            ),
+            isCurrent = true,
+            onClick = {}
+        )
+    }
 }
 
 @Preview(showBackground = true)

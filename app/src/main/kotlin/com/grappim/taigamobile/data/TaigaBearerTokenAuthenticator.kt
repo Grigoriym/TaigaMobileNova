@@ -38,58 +38,63 @@ class TaigaBearerTokenAuthenticator @Inject constructor(
         get() = generateSequence(this) { it.priorResponse }.count()
 
     override fun authenticate(route: Route?, response: Response): Request? {
-        // Prevent endless loops
-        if (response.responseCount >= MAX_AUTHENTICATOR_RETRIES) {
+        if (hasExceededRetryLimit(response)) {
             logout()
             return null
         }
 
-        val requestAccessToken = response.request.header(ApiConstants.AUTHORIZATION)
-            ?.removePrefix("${ApiConstants.BEARER} ")
+        val requestAccessToken = extractToken(response)
         val currentAccessToken = session.token.value
 
         Timber.d("requestAccessToken : $requestAccessToken ")
-
-        // Another thread has already refreshed the token, so we will just retry with the new one
-        // This can happen when several requests are sent to the server at the same time
-        if (requestAccessToken != null && requestAccessToken != currentAccessToken) {
-            return response.withBearerToken(currentAccessToken)
-        }
 
         if (requestAccessToken == null) {
             logout()
             return null
         }
 
-        synchronized(lock) {
-            // Double-check if token was refreshed while we waited for the lock
-            val newAccessToken = session.token.value
-            if (requestAccessToken != newAccessToken) {
-                return response.withBearerToken(newAccessToken)
-            }
+        if (requestAccessToken != currentAccessToken) {
+            return response.withBearerToken(currentAccessToken)
+        }
 
-            val refreshRequest = RefreshTokenRequest(session.refreshToken.value)
-
-            val refreshResponse = try {
-                authApi.refresh(request = refreshRequest).execute()
-            } catch (e: Exception) {
-                Timber.e(e)
-                logout()
-                return null
-            }
-            val body = refreshResponse.body()
-            if (!refreshResponse.isSuccessful || body == null) {
-                logout()
-                return null
-            }
-
-            session.changeAuthCredentials(
-                body.authToken,
-                body.refresh
-            )
-            return response.withBearerToken(session.token.value)
+        return synchronized(lock) {
+            handleTokenRefresh(requestAccessToken, response)
         }
     }
+
+    private fun extractToken(response: Response): String? =
+        response.request.header(ApiConstants.AUTHORIZATION)
+            ?.removePrefix("${ApiConstants.BEARER} ")
+
+    private fun handleTokenRefresh(oldToken: String, response: Response): Request? {
+        val latestToken = session.token.value
+        if (oldToken != latestToken) {
+            return response.withBearerToken(latestToken)
+        }
+
+        val refreshResponse = try {
+            authApi.refresh(RefreshTokenRequest(session.refreshToken.value)).execute()
+        } catch (e: Exception) {
+            Timber.e(e)
+            logout()
+            return null
+        }
+
+        val body = refreshResponse.body()
+        if (!refreshResponse.isSuccessful || body == null) {
+            logout()
+            return null
+        }
+
+        session.changeAuthCredentials(body.authToken, body.refresh)
+        return response.withBearerToken(session.token.value)
+    }
+
+    /**
+     * Prevent endless loops
+     */
+    private fun hasExceededRetryLimit(response: Response): Boolean =
+        response.responseCount >= MAX_AUTHENTICATOR_RETRIES
 
     private fun Response.withBearerToken(newToken: String): Request = request.newBuilder()
         .header(

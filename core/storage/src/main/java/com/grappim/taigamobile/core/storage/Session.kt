@@ -35,6 +35,10 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         MutableStateFlow(sharedPreferences.getString(REFRESH_TOKEN_KEY, "").orEmpty())
     private val _token = MutableStateFlow(sharedPreferences.getString(TOKEN_KEY, "").orEmpty())
 
+    // todo to make them immutable, we need an interface
+    var currentProject: Long by sharedPreferences.long(PROJECT_ID_KEY, -1)
+    var userId: Long by sharedPreferences.long(USER_ID_KEY, -1)
+
     val refreshToken: StateFlow<String> = _refreshToken
     val token: StateFlow<String> = _token
 
@@ -47,11 +51,8 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         _refreshToken.value = refreshToken
     }
 
-    private val _currentUserId = MutableStateFlow(sharedPreferences.getLong(USER_ID_KEY, -1))
-    val currentUserId: StateFlow<Long> = _currentUserId
     fun changeCurrentUserId(value: Long) {
-        sharedPreferences.edit { putLong(USER_ID_KEY, value) }
-        _currentUserId.value = value
+        userId = value
     }
 
     private val _currentProjectId = MutableStateFlow(sharedPreferences.getLong(PROJECT_ID_KEY, -1))
@@ -61,13 +62,11 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
     @Deprecated("remove it or use data store")
     val currentProjectId: StateFlow<Long> = _currentProjectId
 
-    val currentProject: Long by sharedPreferences.long(PROJECT_ID_KEY, -1)
-
     val currentProjectName: StateFlow<String> = _currentProjectName
 
     fun changeCurrentProject(id: Long, name: String) {
+        currentProject = id
         sharedPreferences.edit {
-            putLong(PROJECT_ID_KEY, id)
             putString(PROJECT_NAME_KEY, name)
         }
         _currentProjectId.value = id
@@ -79,6 +78,7 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
     private fun checkLogged(token: String, refresh: String) =
         listOf(token, refresh).all { it.isNotEmpty() }
 
+    @Deprecated("find another way of checking that")
     val isLogged = combine(token, refreshToken, ::checkLogged)
         .stateIn(
             scope,
@@ -137,7 +137,6 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         sharedPreferences.edit { clear() }
 
         // TODO remove Flows
-        _currentUserId.value = -1
         _currentProjectId.value = -1
         _currentProjectName.value = ""
         _refreshToken.value = ""

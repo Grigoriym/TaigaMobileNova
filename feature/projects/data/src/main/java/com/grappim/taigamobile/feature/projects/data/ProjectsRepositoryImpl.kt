@@ -22,8 +22,9 @@ class ProjectsRepositoryImpl @Inject constructor(
         ProjectsPagingSource(projectsApi, query)
     }.flow
 
-    override suspend fun getMyProjects() =
-        projectsApi.getProjects(memberId = session.currentUserId.value)
+    override suspend fun getMyProjects(): List<Project> =
+        projectsApi.getProjects(memberId = session.userId)
 
-    override suspend fun getUserProjects(userId: Long) = projectsApi.getProjects(memberId = userId)
+    override suspend fun getUserProjects(userId: Long): List<Project> =
+        projectsApi.getProjects(memberId = userId)
 }
