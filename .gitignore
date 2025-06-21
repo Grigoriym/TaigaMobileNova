@@ -19,3 +19,6 @@
 /feature/userstories/build
 /feature/wiki/build
 /utils/build
+/feature/kanban/build/
+/feature/settings/build/
+/feature/users/build/

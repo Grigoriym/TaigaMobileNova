@@ -1,12 +1,19 @@
 package com.grappim.taigamobile.feature.login.ui
 
+import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.text.input.TextFieldValue
-import com.grappim.taigamobile.core.api.ApiConstants
+import app.cash.turbine.test
 import com.grappim.taigamobile.core.storage.server.ServerStorage
+import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.getRandomString
+import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
@@ -19,64 +26,102 @@ internal class LoginViewModelTest {
     @get:Rule
     val coroutineRule = MainDispatcherRule()
 
+    @get:Rule
+    var instantRule = InstantTaskExecutorRule()
+
     private lateinit var sut: LoginViewModel
 
     private val authRepository = mockk<AuthRepository>()
     private val serverStorage = mockk<ServerStorage>()
 
+    private val server = getRandomString()
+
     @Before
     fun setup() {
+        every { serverStorage.server } returns server
+
         sut = LoginViewModel(authRepository, serverStorage)
     }
 
     @Test
+    fun `on onActionDialogConfirm without error should login`() = runTest {
+        val server = getRandomString()
+        val authType = AuthType.LDAP
+        val password = getRandomString()
+        val username = getRandomString()
+
+        val authData = AuthData(server, authType, password, username)
+
+        coEvery { authRepository.auth(authData) } returns Result.success(Unit)
+
+        sut.state.value.onServerValueChange(TextFieldValue(server))
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(TextFieldValue(password))
+        sut.state.value.onLoginValueChange(TextFieldValue(username))
+
+        sut.loginSuccessful.test {
+            sut.state.value.onActionDialogConfirm()
+
+            assertFalse(sut.state.value.isLoading)
+            assertFalse(sut.state.value.isAlertVisible)
+
+            assertTrue(awaitItem())
+            assertFalse(sut.state.value.isLoading)
+
+            coVerify { authRepository.auth(authData) }
+        }
+    }
+
+    @Test
     fun `on onAuthTypeChange should change the authType`() {
-        assertEquals(AuthType.NORMAL, sut.loginState.value.authType)
+        assertEquals(AuthType.NORMAL, sut.state.value.authType)
 
-        sut.loginState.value.onAuthTypeChange(AuthType.LDAP)
+        sut.state.value.onAuthTypeChange(AuthType.LDAP)
 
-        assertEquals(AuthType.LDAP, sut.loginState.value.authType)
+        assertEquals(AuthType.LDAP, sut.state.value.authType)
     }
 
     @Test
     fun `on setIsAlertVisible should change the isAlertVisible`() {
-        assertFalse(sut.loginState.value.isAlertVisible)
+        assertFalse(sut.state.value.isAlertVisible)
 
-        sut.loginState.value.setIsAlertVisible(true)
+        sut.state.value.setIsAlertVisible(true)
 
-        assertTrue(sut.loginState.value.isAlertVisible)
+        assertTrue(sut.state.value.isAlertVisible)
     }
 
     @Test
     fun `on setPassword should change the password`() {
-        assertFalse(sut.loginState.value.isPasswordInputError)
-        assertEquals("", sut.loginState.value.password.text)
+        assertFalse(sut.state.value.isPasswordInputError)
+        assertEquals("", sut.state.value.password.text)
 
-        sut.loginState.value.onPasswordValueChange(TextFieldValue("password"))
+        sut.state.value.onPasswordValueChange(TextFieldValue("password"))
 
-        assertEquals("password", sut.loginState.value.password.text)
-        assertFalse(sut.loginState.value.isPasswordInputError)
+        assertEquals("password", sut.state.value.password.text)
+        assertFalse(sut.state.value.isPasswordInputError)
     }
 
     @Test
     fun `on setLogin should change the login`() {
-        assertFalse(sut.loginState.value.isLoginInputError)
-        assertEquals("", sut.loginState.value.login.text)
+        assertFalse(sut.state.value.isLoginInputError)
+        assertEquals("", sut.state.value.login.text)
 
-        sut.loginState.value.onLoginValueChange(TextFieldValue("login"))
+        sut.state.value.onLoginValueChange(TextFieldValue("login"))
 
-        assertEquals("login", sut.loginState.value.login.text)
-        assertFalse(sut.loginState.value.isLoginInputError)
+        assertEquals("login", sut.state.value.login.text)
+        assertFalse(sut.state.value.isLoginInputError)
     }
 
     @Test
     fun `on setServer should change the server`() {
-        assertFalse(sut.loginState.value.isServerInputError)
-        assertEquals(ApiConstants.DEFAULT_HOST, sut.loginState.value.server.text)
+        val newServerValue = getRandomString()
 
-        sut.loginState.value.onServerValueChange(TextFieldValue("server"))
+        assertFalse(sut.state.value.isServerInputError)
+        assertEquals(server, sut.state.value.server.text)
 
-        assertEquals("server", sut.loginState.value.server.text)
-        assertFalse(sut.loginState.value.isServerInputError)
+        sut.state.value.onServerValueChange(TextFieldValue(newServerValue))
+
+        assertEquals(newServerValue, sut.state.value.server.text)
+        assertFalse(sut.state.value.isServerInputError)
     }
 }

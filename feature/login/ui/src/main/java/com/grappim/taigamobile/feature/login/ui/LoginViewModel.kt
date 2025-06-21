@@ -35,20 +35,20 @@ class LoginViewModel @Inject constructor(
     private val _loginSuccessful = MutableSharedFlow<Boolean>()
     val loginSuccessful = _loginSuccessful.asSharedFlow()
 
-    private val _loginState = MutableStateFlow(
+    private val _state = MutableStateFlow(
         LoginState(
             server = TextFieldValue(serverStorage.server),
             onServerValueChange = ::setServer,
             onLoginValueChange = ::setLogin,
             onPasswordValueChange = ::setPassword,
             setIsAlertVisible = ::setIsAlertVisible,
-            onActionDialogConfirm = ::loginAction,
+            onActionDialogConfirm = ::login,
             validateAuthData = ::validateAuthData,
             onAuthTypeChange = ::onAuthTypeChange,
             setIsPasswordVisible = ::changePasswordVisibility
         )
     )
-    val loginState = _loginState.asStateFlow()
+    val state = _state.asStateFlow()
 
     private fun login(authData: AuthData) {
         viewModelScope.launch {
@@ -65,21 +65,22 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun login() {
-        val taigaServer = _loginState.value.server.text.trim()
-        val authType = _loginState.value.authType
-        val password = _loginState.value.password.text.trim()
-        val username = _loginState.value.login.text.trim()
+        setIsAlertVisible(false)
+        val taigaServer = _state.value.server.text.trim()
+        val authType = _state.value.authType
+        val password = _state.value.password.text.trim()
+        val username = _state.value.login.text.trim()
 
         login(AuthData(taigaServer, authType, password, username))
     }
 
     private fun validateAuthData(authType: AuthType) {
         onAuthTypeChange(authType)
-        val isServerInputError = !_loginState.value.server.text.matches(Regex(SERVER_REGEX))
-        val isLoginInputError = _loginState.value.login.text.isBlank()
-        val isPasswordInputError = _loginState.value.password.text.isBlank()
+        val isServerInputError = !_state.value.server.text.matches(Regex(SERVER_REGEX))
+        val isLoginInputError = _state.value.login.text.isBlank()
+        val isPasswordInputError = _state.value.password.text.isBlank()
 
-        _loginState.update {
+        _state.update {
             it.copy(
                 isServerInputError = isServerInputError,
                 isLoginInputError = isLoginInputError,
@@ -88,21 +89,16 @@ class LoginViewModel @Inject constructor(
         }
 
         if (!(isServerInputError || isLoginInputError || isPasswordInputError)) {
-            if (_loginState.value.server.text.startsWith(ApiConstants.HTTP_SCHEME)) {
+            if (_state.value.server.text.startsWith(ApiConstants.HTTP_SCHEME)) {
                 setIsAlertVisible(true)
             } else {
-                loginAction()
+                login()
             }
         }
     }
 
-    private fun loginAction() {
-        setIsAlertVisible(false)
-        login()
-    }
-
     private fun isLoading(isLoading: Boolean) {
-        _loginState.update {
+        _state.update {
             it.copy(
                 isLoading = isLoading
             )
@@ -110,7 +106,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun changePasswordVisibility(isVisible: Boolean) {
-        _loginState.update {
+        _state.update {
             it.copy(
                 isPasswordVisible = isVisible
             )
@@ -118,7 +114,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun onAuthTypeChange(authType: AuthType) {
-        _loginState.update {
+        _state.update {
             it.copy(
                 authType = authType
             )
@@ -126,7 +122,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun setIsAlertVisible(newValue: Boolean) {
-        _loginState.update {
+        _state.update {
             it.copy(
                 isAlertVisible = newValue
             )
@@ -134,7 +130,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun setPassword(newValue: TextFieldValue) {
-        _loginState.update {
+        _state.update {
             it.copy(
                 password = newValue,
                 isPasswordInputError = false
@@ -143,7 +139,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun setLogin(newValue: TextFieldValue) {
-        _loginState.update {
+        _state.update {
             it.copy(
                 login = newValue,
                 isLoginInputError = false
@@ -152,7 +148,7 @@ class LoginViewModel @Inject constructor(
     }
 
     private fun setServer(newValue: TextFieldValue) {
-        _loginState.update {
+        _state.update {
             it.copy(
                 server = newValue,
                 isServerInputError = false
