@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.login.ui
 
-import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.storage.server.ServerStorage
@@ -25,9 +24,6 @@ internal class LoginViewModelTest {
 
     @get:Rule
     val coroutineRule = MainDispatcherRule()
-
-    @get:Rule
-    var instantRule = InstantTaskExecutorRule()
 
     private lateinit var sut: LoginViewModel
 
