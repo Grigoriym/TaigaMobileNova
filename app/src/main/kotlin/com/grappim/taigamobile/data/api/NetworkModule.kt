@@ -1,15 +1,22 @@
 package com.grappim.taigamobile.data.api
 
-import com.grappim.taigamobile.core.api.ApiConstants
-import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.data.AuthTokenInterceptor
-import com.grappim.taigamobile.data.TaigaAuthenticator
+import android.content.Context
+import com.chuckerteam.chucker.api.ChuckerCollector
+import com.chuckerteam.chucker.api.ChuckerInterceptor
+import com.chuckerteam.chucker.api.RetentionManager
+import com.grappim.taigamobile.core.api.AuthTokenProviderInterceptor
+import com.grappim.taigamobile.core.api.BaseUrlProvider
+import com.grappim.taigamobile.core.api.CommonOkHttp
+import com.grappim.taigamobile.core.api.CommonRetrofit
+import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.data.TaigaBearerTokenAuthenticator
 import com.grappim.taigamobile.di.LocalDateTimeTypeAdapter
 import com.grappim.taigamobile.di.LocalDateTypeAdapter
 import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -22,16 +29,35 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    @[Provides Singleton]
+    @[Provides CommonRetrofit Singleton]
     fun provideRetrofit(
         moshiConverterFactory: MoshiConverterFactory,
-        session: Session,
-        taigaAuthenticator: TaigaAuthenticator,
-        okHttpClient: OkHttpClient
+        baseUrlProvider: BaseUrlProvider,
+        @CommonOkHttp okHttpClient: OkHttpClient
     ): Retrofit = Retrofit.Builder()
-        .baseUrl(session.baseUrl)
+        .baseUrl(baseUrlProvider.getBaseUrl())
         .addConverterFactory(moshiConverterFactory)
-        .client(okHttpClient.newBuilder().authenticator(taigaAuthenticator).build())
+        .client(okHttpClient)
+        .build()
+
+    @[Provides CommonOkHttp Singleton]
+    fun provideCommonOkHttpClient(
+        loggingInterceptor: HttpLoggingInterceptor,
+        chuckerInterceptor: ChuckerInterceptor,
+        authTokenProviderInterceptor: AuthTokenProviderInterceptor,
+        hostSelectionInterceptor: HostSelectionInterceptor,
+        appInfoProvider: AppInfoProvider,
+        taigaBearerTokenAuthenticator: TaigaBearerTokenAuthenticator
+    ): OkHttpClient = OkHttpClient.Builder()
+        .addInterceptor(hostSelectionInterceptor)
+        .addInterceptor(authTokenProviderInterceptor)
+        .authenticator(taigaBearerTokenAuthenticator)
+        .apply {
+            if (appInfoProvider.isDebug()) {
+                addInterceptor(loggingInterceptor)
+                addInterceptor(chuckerInterceptor)
+            }
+        }
         .build()
 
     @[Provides Singleton]
@@ -45,18 +71,27 @@ object NetworkModule {
         .build()
 
     @[Provides Singleton]
-    fun provideOkHttpClient(
-        loggingInterceptor: HttpLoggingInterceptor,
-        authTokenInterceptor: AuthTokenInterceptor,
-        hostSelectionInterceptor: HostSelectionInterceptor
-    ): OkHttpClient = OkHttpClient.Builder()
-        .addInterceptor(hostSelectionInterceptor)
-        .addInterceptor(authTokenInterceptor)
-        .addInterceptor(loggingInterceptor)
-        .build()
-
-    @[Provides Singleton]
     fun provideHttpLoggingInterceptor(): HttpLoggingInterceptor = HttpLoggingInterceptor(Timber::d)
         .setLevel(HttpLoggingInterceptor.Level.BODY)
-        .also { it.redactHeader(ApiConstants.AUTHORIZATION) }
+
+    /**
+     * Should be turned on in the App Info once you enable notifications
+     * Maybe later we will ask for permissions on debug
+     */
+    @[Provides Singleton]
+    fun provideChuckerInterceptor(@ApplicationContext appContext: Context): ChuckerInterceptor {
+        val chuckerCollector = ChuckerCollector(
+            context = appContext,
+            showNotification = true,
+            retentionPeriod = RetentionManager.Period.ONE_HOUR
+        )
+        return ChuckerInterceptor.Builder(context = appContext)
+            .collector(collector = chuckerCollector)
+            .maxContentLength(
+                length = 250000L
+            )
+            .redactHeaders(emptySet())
+            .alwaysReadResponseBody(true)
+            .build()
+    }
 }

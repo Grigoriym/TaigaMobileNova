@@ -36,7 +36,7 @@ class SprintsRepository @Inject constructor(
         SprintPagingSource(sprintApi, isClosed, session)
     }.flow
 
-    private val currentProjectId get() = session.currentProjectId.value
+    private val currentProjectId get() = session.currentProject
 
     override suspend fun getSprintUserStories(sprintId: Long) =
         userStoriesApi.getUserStories(project = currentProjectId, sprint = sprintId)

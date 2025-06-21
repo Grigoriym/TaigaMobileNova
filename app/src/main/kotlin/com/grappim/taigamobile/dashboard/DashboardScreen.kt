@@ -43,8 +43,6 @@ fun DashboardScreen(
 ) {
     val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
-        viewModel.onOpen()
-
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.dashboard)

@@ -24,7 +24,6 @@ import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.issues.IssuesNavDestination
 import com.grappim.taigamobile.kanban.KanbanNavDestination
 import com.grappim.taigamobile.login.LoginNavDestination
-import com.grappim.taigamobile.login.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.profile.ProfileNavDestination
 import com.grappim.taigamobile.profile.ProfileScreen
 import com.grappim.taigamobile.profile.navigateToProfileScreen
@@ -194,8 +193,7 @@ fun MainNavHost(
 
         composable<SettingsNavDestination> {
             SettingsScreen(
-                showMessage = showMessage,
-                onLogout = navController::navigateToLoginAsTopDestination
+                showMessage = showMessage
             )
         }
 

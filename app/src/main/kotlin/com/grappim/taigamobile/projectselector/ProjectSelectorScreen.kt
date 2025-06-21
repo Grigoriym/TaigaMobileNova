@@ -116,7 +116,7 @@ fun ProjectSelectorScreenContent(
 }
 
 @Composable
-private fun ItemProject(project: Project, currentProjectId: Long, onClick: () -> Unit = {}) =
+private fun ItemProject(project: Project, currentProjectId: Long, onClick: () -> Unit = {}) {
     ContainerBox(
         verticalPadding = 16.dp,
         onClick = onClick
@@ -160,6 +160,7 @@ private fun ItemProject(project: Project, currentProjectId: Long, onClick: () ->
             }
         }
     }
+}
 
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable

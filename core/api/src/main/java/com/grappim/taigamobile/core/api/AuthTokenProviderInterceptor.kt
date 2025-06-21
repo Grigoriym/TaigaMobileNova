@@ -1,38 +1,35 @@
-package com.grappim.taigamobile.data
+package com.grappim.taigamobile.core.api
 
-import com.grappim.taigamobile.BuildConfig
-import com.grappim.taigamobile.core.api.ApiConstants
-import com.grappim.taigamobile.core.api.RequestWithoutAuthToken
+import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.storage.Session
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
-import retrofit2.Invocation
 import javax.inject.Inject
 import javax.inject.Singleton
 
+/**
+ * Interceptor that adds a token to requests automatically
+ */
 @Singleton
-class AuthTokenInterceptor @Inject constructor(private val session: Session) : Interceptor {
+class AuthTokenProviderInterceptor @Inject constructor(
+    private val session: Session,
+    private val appInfoProvider: AppInfoProvider
+) : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
         val requestBuilder = request.newBuilder()
 
         requestBuilder.putUserAgent()
+        requestBuilder.putXownerAndAuthorization()
 
-        val annotation = getAnnotation(request)
-        if (annotation == null) {
-            requestBuilder.putXownerAndAuthorization()
-        }
+        request.method
         return chain.proceed(requestBuilder.build())
     }
 
-    private fun getAnnotation(request: Request): RequestWithoutAuthToken? =
-        request.tag(Invocation::class.java)
-            ?.method()?.getAnnotation(RequestWithoutAuthToken::class.java)
-
     private fun Request.Builder.putUserAgent() {
-        val userAgentValue = "TaigaMobileNova/${BuildConfig.VERSION_NAME}"
+        val userAgentValue = "TaigaMobileNova/${appInfoProvider.getVersionName()}"
         this@putUserAgent.header(
             ApiConstants.USER_AGENT,
             userAgentValue

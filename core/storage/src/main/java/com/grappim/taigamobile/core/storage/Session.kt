@@ -2,9 +2,9 @@ package com.grappim.taigamobile.core.storage
 
 import android.content.Context
 import androidx.core.content.edit
-import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.domain.FiltersData
 import com.grappim.taigamobile.core.domain.FiltersDataJsonAdapter
+import com.grappim.taigamobile.core.storage.utils.long
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
@@ -15,9 +15,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -49,22 +47,6 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         _refreshToken.value = refreshToken
     }
 
-    private val _server = MutableStateFlow(
-        sharedPreferences.getString(SERVER_KEY, ApiConstants.DEFAULT_HOST).orEmpty()
-    )
-
-    val serverFlow: StateFlow<String> = _server.asStateFlow()
-    val server: String
-        get() = sharedPreferences.getString(SERVER_KEY, ApiConstants.DEFAULT_HOST).orEmpty()
-
-    val baseUrl: String
-        get() = "$server/${ApiConstants.API_PREFIX}/"
-
-    fun changeServer(value: String) {
-        sharedPreferences.edit { putString(SERVER_KEY, value) }
-        _server.value = value
-    }
-
     private val _currentUserId = MutableStateFlow(sharedPreferences.getLong(USER_ID_KEY, -1))
     val currentUserId: StateFlow<Long> = _currentUserId
     fun changeCurrentUserId(value: Long) {
@@ -76,7 +58,11 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
     private val _currentProjectName =
         MutableStateFlow(sharedPreferences.getString(PROJECT_NAME_KEY, "").orEmpty())
 
+    @Deprecated("remove it or use data store")
     val currentProjectId: StateFlow<Long> = _currentProjectId
+
+    val currentProject: Long by sharedPreferences.long(PROJECT_ID_KEY, -1)
+
     val currentProjectName: StateFlow<String> = _currentProjectName
 
     fun changeCurrentProject(id: Long, name: String) {
@@ -100,13 +86,13 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
             initialValue = checkLogged(token.value, refreshToken.value)
         )
 
-    private fun checkProjectSelected(id: Long) = id >= 0
-    val isProjectSelected = currentProjectId.map(::checkProjectSelected)
-        .stateIn(
-            scope,
-            SharingStarted.Eagerly,
-            initialValue = checkProjectSelected(currentProjectId.value)
-        )
+//    private fun checkProjectSelected(id: Long) = id >= 0
+//    val isProjectSelected = currentProjectId.map(::checkProjectSelected)
+//        .stateIn(
+//            scope,
+//            SharingStarted.Eagerly,
+//            initialValue = checkProjectSelected(currentProjectId.value)
+//        )
 
     // Filters
     private val filtersJsonAdapter = FiltersDataJsonAdapter(moshi)
@@ -148,19 +134,20 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
     }
 
     fun reset() {
-        changeAuthCredentials("", "")
-        changeServer("")
-        changeCurrentUserId(-1)
-        changeCurrentProject(-1, "")
+        sharedPreferences.edit { clear() }
 
-        resetFilters()
+        // TODO remove Flows
+        _currentUserId.value = -1
+        _currentProjectId.value = -1
+        _currentProjectName.value = ""
+        _refreshToken.value = ""
+        _token.value = ""
     }
 
     companion object {
         private const val PREFERENCES_NAME = "session"
         private const val TOKEN_KEY = "token"
         private const val REFRESH_TOKEN_KEY = "refresh_token"
-        private const val SERVER_KEY = "server"
         private const val PROJECT_NAME_KEY = "project_name"
         private const val PROJECT_ID_KEY = "project_id"
         private const val USER_ID_KEY = "user_id"

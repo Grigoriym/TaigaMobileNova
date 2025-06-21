@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.login.ui
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.grappim.taigamobile.core.api.ApiConstants
+import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.testing.MainDispatcherRule
@@ -21,10 +22,11 @@ internal class LoginViewModelTest {
     private lateinit var sut: LoginViewModel
 
     private val authRepository = mockk<AuthRepository>()
+    private val serverStorage = mockk<ServerStorage>()
 
     @Before
     fun setup() {
-        sut = LoginViewModel(authRepository)
+        sut = LoginViewModel(authRepository, serverStorage)
     }
 
     @Test

@@ -4,6 +4,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.api.ApiConstants
+import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
@@ -21,8 +22,10 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(private val authRepository: AuthRepository) :
-    ViewModel(),
+class LoginViewModel @Inject constructor(
+    private val authRepository: AuthRepository,
+    serverStorage: ServerStorage
+) : ViewModel(),
     SnackbarStateViewModel by SnackbarStateViewModelImpl() {
 
     companion object {
@@ -34,6 +37,7 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
 
     private val _loginState = MutableStateFlow(
         LoginState(
+            server = TextFieldValue(serverStorage.server),
             onServerValueChange = ::setServer,
             onLoginValueChange = ::setLogin,
             onPasswordValueChange = ::setPassword,

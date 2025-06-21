@@ -3,6 +3,7 @@ package com.grappim.taigamobile.feature.login.data.repo
 import com.grappim.taigamobile.core.api.resultOf
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.AuthRequest
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
@@ -14,6 +15,7 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
     private val session: Session,
+    private val serverStorage: ServerStorage,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : AuthRepository {
 
@@ -27,7 +29,7 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun auth(authData: AuthData): Result<Unit> = withContext(dispatcher) {
         resultOf {
             val server = authData.taigaServer.removeTrailingSlashes()
-            session.changeServer(server)
+            serverStorage.defineServer(server)
             val response = authApi.auth(
                 AuthRequest(
                     username = authData.username,

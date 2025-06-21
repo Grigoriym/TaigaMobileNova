@@ -8,7 +8,7 @@ import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.domain.Stats
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.utils.ui.loadOrError
 import com.grappim.taigamobile.utils.ui.mutableResultFlow
@@ -19,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val usersRepository: UsersRepository,
-    private val projectsRepository: IProjectsRepository,
+    private val projectsRepository: ProjectsRepository,
     private val session: Session,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {

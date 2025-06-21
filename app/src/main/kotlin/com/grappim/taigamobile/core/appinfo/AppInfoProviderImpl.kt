@@ -11,4 +11,6 @@ class AppInfoProviderImpl @Inject constructor() :
 
     override fun isDebug(): Boolean = BuildConfig.DEBUG
     override fun isFdroidBuild(): Boolean = false
+
+    override fun getVersionName(): String = BuildConfig.VERSION_NAME
 }

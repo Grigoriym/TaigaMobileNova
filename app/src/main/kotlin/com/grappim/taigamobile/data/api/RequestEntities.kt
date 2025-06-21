@@ -5,9 +5,6 @@ import com.squareup.moshi.JsonClass
 import java.time.LocalDate
 
 @JsonClass(generateAdapter = true)
-data class RefreshTokenRequest(val refresh: String)
-
-@JsonClass(generateAdapter = true)
 data class EditCommonTaskRequest(
     val subject: String,
     val description: String,

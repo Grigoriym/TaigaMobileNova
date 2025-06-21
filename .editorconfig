@@ -31,3 +31,6 @@ ktlint = disabled
 
 [**/testing/**]
 ktlint = disabled
+
+[**/MainScreen.kt]
+ktlint_compose_vm-forwarding-check=disabled

@@ -28,7 +28,7 @@ class IssuesPagingSource(
             val nextPageNumber = params.key ?: 1
             val response = issuesApi.getIssues(
                 page = nextPageNumber,
-                project = session.currentProjectId.value,
+                project = session.currentProject,
                 query = filters.query,
                 assignedIds = filters.assignees.commaString(),
                 ownerIds = filters.createdBy.commaString(),

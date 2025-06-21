@@ -6,7 +6,7 @@ import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.utils.ui.NothingResult
 import com.grappim.taigamobile.utils.ui.loadOrError
 import com.grappim.taigamobile.utils.ui.mutableResultFlow
@@ -20,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
     private val tasksRepository: TasksRepository,
-    private val projectsRepository: IProjectsRepository,
+    private val projectsRepository: ProjectsRepository,
     private val session: Session
 ) : ViewModel() {
 
@@ -39,28 +39,32 @@ class DashboardViewModel @Inject constructor(
             myProjects.value = NothingResult()
             shouldReload = true
         }.launchIn(viewModelScope)
+
+        onOpen()
     }
 
-    fun onOpen() = viewModelScope.launch {
-        if (!shouldReload) return@launch
-        joinAll(
-            launch {
-                workingOn.loadOrError(
-                    preserveValue = false
-                ) { tasksRepository.getWorkingOn() }
-            },
-            launch {
-                watching.loadOrError(
-                    preserveValue = false
-                ) { tasksRepository.getWatching() }
-            },
-            launch {
-                myProjects.loadOrError(
-                    preserveValue = false
-                ) { projectsRepository.getMyProjects() }
-            }
-        )
-        shouldReload = false
+    fun onOpen() {
+        viewModelScope.launch {
+            if (!shouldReload) return@launch
+            joinAll(
+                launch {
+                    workingOn.loadOrError(
+                        preserveValue = false
+                    ) { tasksRepository.getWorkingOn() }
+                },
+                launch {
+                    watching.loadOrError(
+                        preserveValue = false
+                    ) { tasksRepository.getWatching() }
+                },
+                launch {
+                    myProjects.loadOrError(
+                        preserveValue = false
+                    ) { projectsRepository.getMyProjects() }
+                }
+            )
+            shouldReload = false
+        }
     }
 
     fun changeCurrentProject(project: Project) {

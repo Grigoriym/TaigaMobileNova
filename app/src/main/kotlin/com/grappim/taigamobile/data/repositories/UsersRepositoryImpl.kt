@@ -16,7 +16,7 @@ class UsersRepositoryImpl @Inject constructor(
     private val projectsApi: ProjectsApi,
     private val session: Session
 ) : UsersRepository {
-    private val currentProjectId get() = session.currentProjectId.value
+    private val currentProjectId get() = session.currentProject
 
     override suspend fun getMe(): User = taigaApi.getMyProfile()
 

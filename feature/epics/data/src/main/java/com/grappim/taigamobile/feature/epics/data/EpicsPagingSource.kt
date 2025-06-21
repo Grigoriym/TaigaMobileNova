@@ -29,7 +29,7 @@ class EpicsPagingSource(
             val response = epicsApi.getEpics(
                 page = nextPageNumber,
                 pageSize = params.loadSize,
-                project = session.currentProjectId.value,
+                project = session.currentProject,
                 query = filters.query,
                 assignedIds = filters.assignees.commaString(),
                 ownerIds = filters.createdBy.commaString(),

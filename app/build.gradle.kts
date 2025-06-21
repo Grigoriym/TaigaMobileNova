@@ -84,15 +84,11 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.viewmodel.compose)
     implementation(libs.androidx.runtime.compose)
-    implementation(libs.androidx.lifecycle.runtime)
-    implementation(libs.androidx.constraintlayout.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.activity.compose)
-    implementation(libs.androidx.paging.runtime)
     implementation(libs.androidx.paging.compose)
     implementation(libs.material)
 
-    implementation(libs.androidx.compose.ui.util)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.material)
     implementation(libs.androidx.compose.material3)
@@ -118,14 +114,18 @@ dependencies {
 
     implementation(libs.timber)
 
-    implementation(libs.markwon.core)
-    implementation(libs.markwon.image.coil)
-
     implementation(libs.vanpra.color)
+
+    // todo start utilise this blockhound
+    testImplementation(libs.blockHound)
+    testImplementation(libs.kotlinx.coroutines.debug)
 
     val postgresDriverVersion = "42.3.6"
     testRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
     androidTestRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
+
+    debugImplementation(libs.chucker)
+    releaseImplementation(libs.chucker.noop)
 }
 
 moduleGraphAssert {
