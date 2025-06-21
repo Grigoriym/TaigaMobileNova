@@ -23,7 +23,7 @@ class SprintPagingSource(
             val nextPageNumber = params.key ?: 1
             val response =
                 sprintApi.getSprints(
-                    project = session.currentProjectId.value,
+                    project = session.currentProject,
                     page = nextPageNumber,
                     isClosed = isClosed
                 ).map { it.toSprint() }

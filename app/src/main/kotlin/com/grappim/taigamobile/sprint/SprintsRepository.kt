@@ -9,6 +9,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.data.api.TaigaApi
+import com.grappim.taigamobile.feature.issues.data.IssuesApi
 import com.grappim.taigamobile.feature.sprint.data.CreateSprintRequest
 import com.grappim.taigamobile.feature.sprint.data.EditSprintRequest
 import com.grappim.taigamobile.feature.sprint.data.SprintApi
@@ -25,7 +26,7 @@ class SprintsRepository @Inject constructor(
     private val session: Session,
     private val userStoriesApi: UserStoriesApi,
     private val sprintApi: SprintApi,
-    private val issuesApi: com.grappim.taigamobile.feature.issues.data.IssuesApi
+    private val issuesApi: IssuesApi
 ) : ISprintsRepository {
     override fun getSprints(isClosed: Boolean): Flow<PagingData<Sprint>> = Pager(
         PagingConfig(
@@ -36,7 +37,7 @@ class SprintsRepository @Inject constructor(
         SprintPagingSource(sprintApi, isClosed, session)
     }.flow
 
-    private val currentProjectId get() = session.currentProjectId.value
+    private val currentProjectId get() = session.currentProject
 
     override suspend fun getSprintUserStories(sprintId: Long) =
         userStoriesApi.getUserStories(project = currentProjectId, sprint = sprintId)

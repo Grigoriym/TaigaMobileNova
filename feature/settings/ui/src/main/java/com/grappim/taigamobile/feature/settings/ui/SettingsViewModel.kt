@@ -4,9 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.AuthStateManager
 import com.grappim.taigamobile.core.storage.Settings
 import com.grappim.taigamobile.core.storage.ThemeSetting
+import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.utils.ui.loadOrError
 import com.grappim.taigamobile.utils.ui.mutableResultFlow
@@ -19,16 +20,17 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val session: Session,
     private val settings: Settings,
     private val userRepository: UsersRepository,
+    private val authStateManager: AuthStateManager,
+    serverStorage: ServerStorage,
     appInfoProvider: AppInfoProvider
 ) : ViewModel() {
 
     private val _state: MutableStateFlow<SettingsState> = MutableStateFlow(
         SettingsState(
             appInfo = appInfoProvider.getAppInfo(),
-            serverUrl = session.server,
+            serverUrl = serverStorage.server,
             setIsAlertVisible = ::setAlertVisible
         )
     )
@@ -55,7 +57,9 @@ class SettingsViewModel @Inject constructor(
     }
 
     fun logout() {
-        session.reset()
+        viewModelScope.launch {
+            authStateManager.logoutSuspend()
+        }
     }
 
     fun switchTheme(theme: ThemeSetting) {

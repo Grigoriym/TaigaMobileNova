@@ -142,3 +142,10 @@ tasks.jacocoAggregatedReport {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+// taken from https://github.com/reactor/BlockHound
+tasks.withType<Test>().all {
+    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
+        jvmArgs("-XX:+AllowRedefinitionToAddDeleteMethods")
+    }
+}

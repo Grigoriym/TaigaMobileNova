@@ -27,7 +27,7 @@ class UserStoriesPagingSource(
         try {
             val nextPageNumber = params.key ?: 1
             val response = userStoriesApi.getUserStories(
-                project = session.currentProjectId.value,
+                project = session.currentProject,
                 sprint = "null",
                 page = nextPageNumber,
                 query = filters.query,

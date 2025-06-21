@@ -23,39 +23,51 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.nav.DrawerDestination
+import com.grappim.taigamobile.login.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.ui.components.TaigaDrawer
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun MainContent(viewModel: MainViewModel) {
-    val isLogged by viewModel.isLogged.collectAsStateWithLifecycle()
     val topBarController = remember { TopBarController() }
     CompositionLocalProvider(
         LocalTopBarConfig provides topBarController
     ) {
         val topBarConfig = topBarController.config
-        MainScreenContent(isLogged = isLogged, topBarConfig = topBarConfig)
+        MainScreenContent(viewModel = viewModel, topBarConfig = topBarConfig)
     }
 }
 
 @Composable
-private fun MainScreenContent(isLogged: Boolean, topBarConfig: TopBarConfig) {
+private fun MainScreenContent(viewModel: MainViewModel, topBarConfig: TopBarConfig) {
     val appState = rememberMainAppState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val drawerState by appState.drawerState.collectAsStateWithLifecycle()
+    val isLogged by viewModel.isLogged.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
 
+    /**
+     * On any navigation event hide the keyboard
+     */
     LaunchedEffect(Unit) {
         appState.navController.addOnDestinationChangedListener({ _, _, _ ->
             keyboardController?.hide()
         })
+
+        viewModel.logoutEvent.onEach {
+            Timber.d("Logout Event with $it")
+            appState.navController.navigateToLoginAsTopDestination()
+        }.launchIn(this)
     }
 
     TaigaDrawer(

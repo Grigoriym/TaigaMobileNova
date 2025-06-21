@@ -12,4 +12,6 @@ dependencies {
 
     implementation(libs.timber)
     implementation(libs.androidx.paging.compose)
+
+    testImplementation(libs.robolectric)
 }

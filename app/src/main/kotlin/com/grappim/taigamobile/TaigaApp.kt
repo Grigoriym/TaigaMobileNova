@@ -11,10 +11,10 @@ import timber.log.Timber
 class TaigaApp : Application() {
 
     private var fileLoggingTree: FileLoggingTree? = null
-    val currentLogFile get() = fileLoggingTree?.currentFile
 
     override fun onCreate() {
         super.onCreate()
+
         val minLoggingPriority = if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
             Log.DEBUG

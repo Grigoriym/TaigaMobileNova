@@ -1,5 +1,9 @@
 package com.grappim.taigamobile.data.api
 
+import com.grappim.taigamobile.core.api.AuthRetrofit
+import com.grappim.taigamobile.core.api.CommonRetrofit
+import com.grappim.taigamobile.feature.epics.data.EpicsApi
+import com.grappim.taigamobile.feature.issues.data.IssuesApi
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
 import com.grappim.taigamobile.feature.sprint.data.SprintApi
@@ -16,32 +20,34 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApiModule {
     @[Provides Singleton]
-    fun provideAuthApi(retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
+    fun provideAuthApi(@AuthRetrofit retrofit: Retrofit): AuthApi =
+        retrofit.create(AuthApi::class.java)
 
     @[Provides Singleton]
-    fun provideTaigaApi(retrofit: Retrofit): TaigaApi = retrofit.create(TaigaApi::class.java)
+    fun provideTaigaApi(@CommonRetrofit retrofit: Retrofit): TaigaApi =
+        retrofit.create(TaigaApi::class.java)
 
     @[Provides Singleton]
-    fun provideProjectsApi(retrofit: Retrofit): ProjectsApi =
+    fun provideProjectsApi(@CommonRetrofit retrofit: Retrofit): ProjectsApi =
         retrofit.create(ProjectsApi::class.java)
 
     @[Provides Singleton]
-    fun provideEpicsApi(retrofit: Retrofit): com.grappim.taigamobile.feature.epics.data.EpicsApi =
-        retrofit.create(com.grappim.taigamobile.feature.epics.data.EpicsApi::class.java)
+    fun provideEpicsApi(@CommonRetrofit retrofit: Retrofit): EpicsApi =
+        retrofit.create(EpicsApi::class.java)
 
     @[Provides Singleton]
-    fun provideUserStoriesApi(retrofit: Retrofit): UserStoriesApi =
+    fun provideUserStoriesApi(@CommonRetrofit retrofit: Retrofit): UserStoriesApi =
         retrofit.create(UserStoriesApi::class.java)
 
     @[Provides Singleton]
-    fun provideSprintApi(retrofit: Retrofit): SprintApi = retrofit.create(SprintApi::class.java)
+    fun provideSprintApi(@CommonRetrofit retrofit: Retrofit): SprintApi =
+        retrofit.create(SprintApi::class.java)
 
     @[Provides Singleton]
-    fun provideIssuesApi(
-        retrofit: Retrofit
-    ): com.grappim.taigamobile.feature.issues.data.IssuesApi =
-        retrofit.create(com.grappim.taigamobile.feature.issues.data.IssuesApi::class.java)
+    fun provideIssuesApi(@CommonRetrofit retrofit: Retrofit): IssuesApi =
+        retrofit.create(IssuesApi::class.java)
 
     @[Provides Singleton]
-    fun provideWIkiApi(retrofit: Retrofit): WikiApi = retrofit.create(WikiApi::class.java)
+    fun provideWIkiApi(@CommonRetrofit retrofit: Retrofit): WikiApi =
+        retrofit.create(WikiApi::class.java)
 }

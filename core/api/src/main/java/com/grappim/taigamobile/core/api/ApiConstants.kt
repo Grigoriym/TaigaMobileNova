@@ -10,4 +10,6 @@ object ApiConstants {
     const val DEFAULT_HOST = "https://api.taiga.io"
 
     const val HTTP_SCHEME = "http://"
+
+    fun generateBearerToken(token: String) = "$BEARER $token"
 }

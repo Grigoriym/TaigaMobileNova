@@ -43,24 +43,27 @@ constraintLayout = "1.1.1"
 paging = "3.3.6"
 
 gson = "2.12.1"
-robolectric = "4.14.1"
+robolectric = "4.15"
 timber = "5.0.1"
 coil = "2.7.0"
-retrofit = "2.11.0"
-okhttp = "4.12.0"
+retrofit = "3.0.0"
+okhttp = "5.0.0-alpha.16"
 moshi = "1.15.2"
 vanpra = "0.7.0"
 markwon = "4.6.2"
 junit4 = "4.13.2"
-turbine = "1.2.0"
+turbine = "1.2.1"
 junitVersion = "1.2.1"
 espressoCore = "3.6.1"
+chucker = "4.1.0"
+blockHound = "1.0.13.RELEASE"
 
 [libraries]
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
+kotlinx-coroutines-debug = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-debug", version.ref = "coroutines" }
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
@@ -127,6 +130,11 @@ androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "j
 
 composeRules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version.ref = "composeRules" }
 composeRules-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "composeRules" }
+
+chucker = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
+chucker-noop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
+
+blockHound = { module = "io.projectreactor.tools:blockhound", version.ref = "blockHound" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }

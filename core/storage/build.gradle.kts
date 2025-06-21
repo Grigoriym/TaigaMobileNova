@@ -8,8 +8,8 @@ android {
 }
 
 dependencies {
-    implementation(projects.core.api)
     implementation(projects.core.domain)
+    implementation(projects.core.async)
 
     implementation(libs.moshi)
     ksp(libs.moshi.kotlin.codegen)

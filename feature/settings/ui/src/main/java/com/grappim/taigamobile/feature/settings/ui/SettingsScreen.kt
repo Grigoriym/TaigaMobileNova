@@ -62,7 +62,6 @@ import timber.log.Timber
 @Composable
 fun SettingsScreen(
     showMessage: (message: Int) -> Unit,
-    onLogout: () -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -86,10 +85,7 @@ fun SettingsScreen(
         avatarUrl = user.data?.avatarUrl,
         displayName = user.data?.displayName.orEmpty(),
         username = user.data?.username.orEmpty(),
-        logout = {
-            viewModel.logout()
-            onLogout()
-        },
+        logout = viewModel::logout,
         themeSetting = themeSetting,
         switchTheme = viewModel::switchTheme
     )

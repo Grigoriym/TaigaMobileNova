@@ -65,7 +65,15 @@ class CommonTaskViewModel @Inject constructor(
 ) : ViewModel() {
 
     companion object {
-        val SPRINT_HEADER = Sprint(-1, "HEADER", -1, LocalDate.MIN, LocalDate.MIN, 0, false)
+        val SPRINT_HEADER = Sprint(
+            id = -1,
+            name = "HEADER",
+            order = -1,
+            start = LocalDate.MIN,
+            end = LocalDate.MIN,
+            storiesCount = 0,
+            isClosed = false
+        )
         val SWIMLANE_HEADER = Swimlane(-1, "HEADER", -1)
     }
 
@@ -114,10 +122,10 @@ class CommonTaskViewModel @Inject constructor(
     val statuses = mutableResultFlow<Map<StatusType, List<Status>>>()
 
     val isAssignedToMe =
-        assignees.map { session.currentUserId.value in it.data?.map { it.actualId }.orEmpty() }
+        assignees.map { session.userId in it.data?.map { it.actualId }.orEmpty() }
             .stateIn(viewModelScope, SharingStarted.Lazily, false)
     val isWatchedByMe =
-        watchers.map { session.currentUserId.value in it.data?.map { it.actualId }.orEmpty() }
+        watchers.map { session.userId in it.data?.map { it.actualId }.orEmpty() }
             .stateIn(viewModelScope, SharingStarted.Lazily, false)
 
     val sprints = sprintsRepository.getSprints()
@@ -339,11 +347,9 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    fun addAssignee(userId: Long = session.currentUserId.value) =
-        editAssignees(userId, remove = false)
+    fun addAssignee(userId: Long = session.userId) = editAssignees(userId, remove = false)
 
-    fun removeAssignee(userId: Long = session.currentUserId.value) =
-        editAssignees(userId, remove = true)
+    fun removeAssignee(userId: Long = session.userId) = editAssignees(userId, remove = true)
 
     // Edit watchers
 
@@ -368,11 +374,9 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    fun addWatcher(userId: Long = session.currentUserId.value) =
-        editWatchers(userId, remove = false)
+    fun addWatcher(userId: Long = session.userId) = editWatchers(userId, remove = false)
 
-    fun removeWatcher(userId: Long = session.currentUserId.value) =
-        editWatchers(userId, remove = true)
+    fun removeWatcher(userId: Long = session.userId) = editWatchers(userId, remove = true)
 
     // Tags
     val tagsSearched = MutableStateFlow(emptyList<Tag>())

@@ -8,7 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -21,7 +21,7 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ProjectSelectorViewModel @Inject constructor(
-    private val projectsRepository: IProjectsRepository,
+    private val projectsRepository: ProjectsRepository,
     private val session: Session,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -31,7 +31,7 @@ class ProjectSelectorViewModel @Inject constructor(
     private val _state = MutableStateFlow(
         ProjectSelectorState(
             isFromLogin = route.isFromLogin,
-            currentProjectId = session.currentProjectId.value,
+            currentProjectId = session.currentProject,
             setProjectsQuery = ::searchProjects
         )
     )

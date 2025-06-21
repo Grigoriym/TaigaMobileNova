@@ -3,8 +3,8 @@ package com.grappim.taigamobile.di
 import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.data.repositories.TasksRepositoryImpl
 import com.grappim.taigamobile.data.repositories.UsersRepositoryImpl
-import com.grappim.taigamobile.feature.projects.data.ProjectsRepository
-import com.grappim.taigamobile.feature.projects.domain.IProjectsRepository
+import com.grappim.taigamobile.feature.projects.data.ProjectsRepositoryImpl
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.wiki.data.WikiRepository
@@ -22,7 +22,7 @@ interface RepositoryModule {
 
     @Singleton
     @Binds
-    fun bindIProjectsRepository(searchRepository: ProjectsRepository): IProjectsRepository
+    fun bindIProjectsRepository(searchRepository: ProjectsRepositoryImpl): ProjectsRepository
 
     @Singleton
     @Binds

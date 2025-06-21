@@ -26,6 +26,7 @@ import com.grappim.taigamobile.core.domain.UsersFilter
 import com.grappim.taigamobile.core.domain.commaString
 import com.grappim.taigamobile.core.domain.tagsCommaString
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.data.api.CommonTaskPathPlural
 import com.grappim.taigamobile.data.api.CommonTaskPathSingular
 import com.grappim.taigamobile.data.api.CreateCommentRequest
@@ -58,10 +59,11 @@ class TasksRepositoryImpl @Inject constructor(
     private val epicsApi: EpicsApi,
     private val userStoriesApi: UserStoriesApi,
     private val sprintApi: SprintApi,
-    private val issuesApi: IssuesApi
+    private val issuesApi: IssuesApi,
+    private val serverStorage: ServerStorage
 ) : TasksRepository {
-    private val currentProjectId get() = session.currentProjectId.value
-    private val currentUserId get() = session.currentUserId.value
+    private val currentProjectId get() = session.currentProject
+    private val currentUserId get() = session.userId
 
     private fun StatusesFilter.toStatus(statusType: StatusType) = Status(
         id = id,
@@ -419,7 +421,7 @@ class TasksRepositoryImpl @Inject constructor(
             ?.toStatus(StatusType.Severity),
         priority = priority?.let { id -> filters.priorities.find { it.id == id } }
             ?.toStatus(StatusType.Priority),
-        url = "${session.server}/project/${projectExtraInfo.slug}/${
+        url = "${serverStorage.server}/project/${projectExtraInfo.slug}/${
             transformTaskTypeForCopyLink(
                 commonTaskType
             )

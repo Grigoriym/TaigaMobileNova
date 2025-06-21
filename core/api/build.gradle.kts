@@ -12,5 +12,7 @@ dependencies {
     implementation(libs.okhttp)
     implementation(projects.uikit)
     implementation(projects.core.domain)
+    implementation(projects.core.storage)
     implementation(libs.retrofit)
+    implementation(projects.core.appinfoApi)
 }

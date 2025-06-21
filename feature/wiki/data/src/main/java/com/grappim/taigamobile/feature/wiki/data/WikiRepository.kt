@@ -14,7 +14,7 @@ class WikiRepository @Inject constructor(
     private val wikiApi: WikiApi
 ) : IWikiRepository {
 
-    private val currentProjectId get() = session.currentProjectId.value
+    private val currentProjectId get() = session.currentProject
 
     override suspend fun getProjectWikiPages() = wikiApi.getProjectWikiPages(
         projectId = currentProjectId

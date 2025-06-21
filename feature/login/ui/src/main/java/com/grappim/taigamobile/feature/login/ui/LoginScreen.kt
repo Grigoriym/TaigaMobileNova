@@ -64,7 +64,7 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val state by viewModel.loginState.collectAsStateWithLifecycle()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarMessage by viewModel.snackBarMessage.collectSnackbarMessage()
     val isLoginSuccessful by viewModel.loginSuccessful.collectAsStateWithLifecycle(false)
 

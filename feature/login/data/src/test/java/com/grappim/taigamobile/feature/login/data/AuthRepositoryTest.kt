@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.login.data
 
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.AuthRequest
 import com.grappim.taigamobile.feature.login.data.model.AuthResponse
@@ -29,11 +30,13 @@ internal class AuthRepositoryTest {
 
     private val authApi = mockk<AuthApi>()
     private val session = mockk<Session>()
+    private val serverStorage = mockk<ServerStorage>()
 
     private val sut: AuthRepository =
         AuthRepositoryImpl(
             authApi = authApi,
             session = session,
+            serverStorage = serverStorage,
             dispatcher = UnconfinedTestDispatcher()
         )
 
@@ -51,7 +54,7 @@ internal class AuthRepositoryTest {
             id = getRandomLong()
         )
 
-        every { session.changeServer(authData.taigaServer) } just Runs
+        every { serverStorage.defineServer(authData.taigaServer) } just Runs
         coEvery {
             authApi.auth(
                 AuthRequest(
@@ -74,7 +77,7 @@ internal class AuthRepositoryTest {
 
         assertTrue(actual.isSuccess)
 
-        verify { session.changeServer(authData.taigaServer) }
+        verify { serverStorage.defineServer(authData.taigaServer) }
         verify {
             session.changeAuthCredentials(
                 token = response.authToken,
@@ -107,7 +110,7 @@ internal class AuthRepositoryTest {
             id = getRandomLong()
         )
 
-        every { session.changeServer(authData.taigaServer) } just Runs
+        every { serverStorage.defineServer(authData.taigaServer) } just Runs
         coEvery {
             authApi.auth(
                 AuthRequest(
@@ -122,7 +125,7 @@ internal class AuthRepositoryTest {
 
         assertTrue(actual.isFailure)
 
-        verify { session.changeServer(authData.taigaServer) }
+        verify { serverStorage.defineServer(authData.taigaServer) }
         coVerify {
             authApi.auth(
                 AuthRequest(
