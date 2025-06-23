@@ -106,7 +106,7 @@ fun KanbanScreenContent(
             CircularLoader()
         }
     } else {
-        KanbanBoard(
+        KanbanBoardWidget(
             statuses = statuses,
             stories = stories,
             team = team,

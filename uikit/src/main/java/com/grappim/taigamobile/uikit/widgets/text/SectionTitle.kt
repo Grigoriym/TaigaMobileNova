@@ -38,43 +38,45 @@ fun SectionTitle(
     horizontalPadding: Dp = 0.dp,
     bottomPadding: Dp = 6.dp,
     onAddClick: (() -> Unit)? = null
-) = Row(
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = modifier
-        .height(IntrinsicSize.Min)
-        .fillMaxWidth()
-        .padding(horizontal = horizontalPadding)
-        .padding(bottom = bottomPadding)
-        .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small)
 ) {
-    Text(
-        text = text,
-        style = MaterialTheme.typography.titleLarge,
-        modifier = Modifier.padding(6.dp)
-    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = modifier
+            .height(IntrinsicSize.Min)
+            .fillMaxWidth()
+            .padding(horizontal = horizontalPadding)
+            .padding(bottom = bottomPadding)
+            .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small)
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(6.dp)
+        )
 
-    onAddClick?.let {
-        Box(
-            modifier = Modifier
-                .fillMaxHeight()
-                .aspectRatio(1f)
-                .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
-                .clip(MaterialTheme.shapes.small)
-                .clickable(
-                    onClick = it,
-                    role = Role.Button,
-                    interactionSource = remember { MutableInteractionSource() },
-                    indication = ripple(bounded = true)
+        onAddClick?.let {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .aspectRatio(1f)
+                    .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
+                    .clip(MaterialTheme.shapes.small)
+                    .clickable(
+                        onClick = it,
+                        role = Role.Button,
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = ripple(bounded = true)
+                    )
+                    .padding(6.dp)
+            ) {
+                Icon(
+                    painter = painterResource(RDrawable.ic_add),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimary,
+                    modifier = Modifier.fillMaxSize()
                 )
-                .padding(6.dp)
-        ) {
-            Icon(
-                painter = painterResource(RDrawable.ic_add),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.fillMaxSize()
-            )
+            }
         }
     }
 }

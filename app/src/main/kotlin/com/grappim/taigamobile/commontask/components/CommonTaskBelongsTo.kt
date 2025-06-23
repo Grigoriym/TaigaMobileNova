@@ -23,13 +23,13 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.commontask.EditActions
-import com.grappim.taigamobile.commontask.NavigationActions
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.EpicShortInfo
 import com.grappim.taigamobile.core.domain.UserStoryShortInfo
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditActions
+import com.grappim.taigamobile.uikit.NavigationActions
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import com.grappim.taigamobile.uikit.widgets.button.AddButton

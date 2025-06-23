@@ -21,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.commontask.EditActions
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.list.UserItem

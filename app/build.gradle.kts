@@ -57,10 +57,24 @@ dependencies {
 
     implementation(projects.feature.settings.ui)
 
+    implementation(projects.feature.projectselector.ui)
+
+    implementation(projects.feature.profile.ui)
+
+    implementation(projects.feature.tasks.data)
+
+    implementation(projects.feature.scrum.ui)
+
+    implementation(projects.feature.teams.ui)
+
+    implementation(projects.feature.profile.ui)
+
     implementation(projects.feature.users.data)
     implementation(projects.feature.users.domain)
 
     implementation(projects.feature.kanban.ui)
+
+    implementation(projects.feature.tasks.data)
 
     implementation(projects.feature.epics.ui)
     implementation(projects.feature.epics.domain)

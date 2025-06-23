@@ -23,12 +23,12 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.nav.DrawerDestination
-import com.grappim.taigamobile.login.navigateToLoginAsTopDestination
-import com.grappim.taigamobile.ui.components.TaigaDrawer
+import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
+import com.grappim.taigamobile.widget.TaigaDrawerWidget
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -70,7 +70,7 @@ private fun MainScreenContent(viewModel: MainViewModel, topBarConfig: TopBarConf
         }.launchIn(this)
     }
 
-    TaigaDrawer(
+    TaigaDrawerWidget(
         screens = appState.topLevelDestinations,
         currentItem = appState.currentTopLevelDestination,
         drawerState = drawerState,

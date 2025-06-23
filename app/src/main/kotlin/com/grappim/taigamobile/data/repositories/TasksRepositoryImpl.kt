@@ -44,6 +44,7 @@ import com.grappim.taigamobile.feature.epics.data.EpicsApi
 import com.grappim.taigamobile.feature.issues.data.IssuesApi
 import com.grappim.taigamobile.feature.sprint.data.SprintApi
 import com.grappim.taigamobile.feature.sprint.data.toSprint
+import com.grappim.taigamobile.feature.tasks.data.TasksApi
 import com.grappim.taigamobile.feature.userstories.data.UserStoriesApi
 import kotlinx.coroutines.async
 import okhttp3.MediaType.Companion.toMediaType
@@ -60,7 +61,8 @@ class TasksRepositoryImpl @Inject constructor(
     private val userStoriesApi: UserStoriesApi,
     private val sprintApi: SprintApi,
     private val issuesApi: IssuesApi,
-    private val serverStorage: ServerStorage
+    private val serverStorage: ServerStorage,
+    private val tasksApi: TasksApi
 ) : TasksRepository {
     private val currentProjectId get() = session.currentProject
     private val currentUserId get() = session.userId
@@ -167,7 +169,7 @@ class TasksRepositoryImpl @Inject constructor(
         }
 
         val tasks = async {
-            taigaApi.getTasks(assignedId = currentUserId, isClosed = false)
+            tasksApi.getTasks(assignedId = currentUserId, isClosed = false)
                 .map { it.toCommonTask(CommonTaskType.Task) }
         }
 
@@ -195,7 +197,7 @@ class TasksRepositoryImpl @Inject constructor(
         }
 
         val tasks = async {
-            taigaApi.getTasks(watcherId = currentUserId, isClosed = false)
+            tasksApi.getTasks(watcherId = currentUserId, isClosed = false)
                 .map { it.toCommonTask(CommonTaskType.Task) }
         }
 
@@ -276,7 +278,7 @@ class TasksRepositoryImpl @Inject constructor(
             .map { it.toCommonTask(CommonTaskType.UserStory) }
 
     override suspend fun getUserStoryTasks(storyId: Long) = handle404 {
-        taigaApi.getTasks(userStory = storyId, project = currentProjectId)
+        tasksApi.getTasks(userStory = storyId, project = currentProjectId)
             .map { it.toCommonTask(CommonTaskType.Task) }
     }
 

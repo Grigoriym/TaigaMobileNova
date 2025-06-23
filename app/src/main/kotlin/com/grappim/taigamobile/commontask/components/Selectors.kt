@@ -9,14 +9,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.commontask.CommonTaskViewModel
-import com.grappim.taigamobile.commontask.EditAction
-import com.grappim.taigamobile.commontask.SimpleEditAction
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.Swimlane
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditAction
+import com.grappim.taigamobile.uikit.SimpleEditAction
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
 import com.grappim.taigamobile.uikit.widgets.editor.SelectorList
 import com.grappim.taigamobile.uikit.widgets.list.UserItem

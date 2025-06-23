@@ -12,10 +12,12 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.storage)
     implementation(projects.core.async)
-
+    implementation(projects.feature.tasks.data)
     implementation(projects.feature.sprint.domain)
     implementation(libs.androidx.paging.common)
     implementation(libs.retrofit)
+    implementation(projects.feature.userstories.data)
+    implementation(projects.feature.issues.data)
 
     implementation(libs.moshi)
     ksp(libs.moshi.kotlin.codegen)

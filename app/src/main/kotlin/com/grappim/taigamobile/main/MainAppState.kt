@@ -15,7 +15,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navOptions
 import com.grappim.taigamobile.core.nav.DrawerDestination
 import com.grappim.taigamobile.core.nav.navigate
-import com.grappim.taigamobile.login.LoginNavDestination
+import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlin.reflect.KClass

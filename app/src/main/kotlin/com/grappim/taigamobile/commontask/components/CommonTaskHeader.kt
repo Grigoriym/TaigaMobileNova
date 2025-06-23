@@ -24,10 +24,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.commontask.EditActions
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.theme.taigaRed
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.badge.ClickableBadge

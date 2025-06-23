@@ -114,7 +114,13 @@ private val coverageExclusions = listOf(
 
     "**/*JsonAdapter",
 
-    "**/testing/*"
+    "**/*NavDestination",
+    "**/*Widget",
+    "**/*Dialog",
+
+    "**/testing/*",
+    "**/uikit/theme/*",
+    "**/uikit/widgets/*"
 ).flatMap {
     listOf(
         "$it.class",

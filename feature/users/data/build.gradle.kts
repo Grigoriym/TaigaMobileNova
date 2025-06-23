@@ -12,6 +12,12 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.storage)
     implementation(projects.core.async)
+
+    implementation(libs.moshi)
+    ksp(libs.moshi.kotlin.codegen)
+
     implementation(projects.feature.users.domain)
     implementation(projects.feature.projects.data)
+
+    implementation(libs.retrofit)
 }

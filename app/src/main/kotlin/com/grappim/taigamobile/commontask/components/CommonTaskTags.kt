@@ -36,10 +36,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import com.grappim.taigamobile.commontask.EditActions
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.Chip

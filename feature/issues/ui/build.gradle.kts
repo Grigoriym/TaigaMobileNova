@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.taigamobile.android.library)
     alias(libs.plugins.taigamobile.android.hilt)
     alias(libs.plugins.taigamobile.android.library.compose)
+    alias(libs.plugins.taigamobile.kotlin.serialization)
 }
 
 android {
@@ -18,6 +19,7 @@ dependencies {
     implementation(projects.uikit)
     implementation(projects.core.navigation)
 
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.hilt.navigation.compose)
 }

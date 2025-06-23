@@ -57,6 +57,7 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 chucker = "4.1.0"
 blockHound = "1.0.13.RELEASE"
+espressoCoreVersion = "3.6.1"
 
 [libraries]
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
@@ -141,6 +142,7 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCoreVersion" }
 
 [plugins]
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }

@@ -48,6 +48,6 @@ object ApiModule {
         retrofit.create(IssuesApi::class.java)
 
     @[Provides Singleton]
-    fun provideWIkiApi(@CommonRetrofit retrofit: Retrofit): WikiApi =
+    fun provideWikiApi(@CommonRetrofit retrofit: Retrofit): WikiApi =
         retrofit.create(WikiApi::class.java)
 }

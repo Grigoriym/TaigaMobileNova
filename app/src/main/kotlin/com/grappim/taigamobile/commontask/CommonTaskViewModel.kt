@@ -26,9 +26,10 @@ import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
-import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
+import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.MutableResultFlow
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -59,7 +60,7 @@ class CommonTaskViewModel @Inject constructor(
     private val session: Session,
     private val tasksRepository: TasksRepository,
     private val usersRepository: UsersRepository,
-    sprintsRepository: ISprintsRepository,
+    sprintsRepository: SprintsRepository,
     private val epicsRepository: EpicsRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {

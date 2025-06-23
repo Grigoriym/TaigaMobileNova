@@ -17,10 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.commontask.EditActions
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.DueDateStatus
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
 import com.grappim.taigamobile.uikit.theme.taigaOrange
 import com.grappim.taigamobile.uikit.theme.taigaRed
