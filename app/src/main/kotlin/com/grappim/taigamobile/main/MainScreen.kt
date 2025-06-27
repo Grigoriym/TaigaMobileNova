@@ -23,12 +23,13 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.nav.DrawerDestination
-import com.grappim.taigamobile.login.navigateToLoginAsTopDestination
-import com.grappim.taigamobile.ui.components.TaigaDrawer
+import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
+import com.grappim.taigamobile.utils.ui.asString
+import com.grappim.taigamobile.widget.TaigaDrawerWidget
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -57,11 +58,16 @@ private fun MainScreenContent(viewModel: MainViewModel, topBarConfig: TopBarConf
     val keyboardController = LocalSoftwareKeyboardController.current
 
     /**
-     * On any navigation event hide the keyboard
+     * On any navigation event hide the keyboard, close the drawer if it is open
      */
     LaunchedEffect(Unit) {
-        appState.navController.addOnDestinationChangedListener({ _, _, _ ->
+        appState.navController.addOnDestinationChangedListener({ nc, _, _ ->
             keyboardController?.hide()
+            if (drawerState.isOpen) {
+                scope.launch {
+                    drawerState.close()
+                }
+            }
         })
 
         viewModel.logoutEvent.onEach {
@@ -70,7 +76,7 @@ private fun MainScreenContent(viewModel: MainViewModel, topBarConfig: TopBarConf
         }.launchIn(this)
     }
 
-    TaigaDrawer(
+    TaigaDrawerWidget(
         screens = appState.topLevelDestinations,
         currentItem = appState.currentTopLevelDestination,
         drawerState = drawerState,
@@ -125,10 +131,10 @@ private fun MainScreenContent(viewModel: MainViewModel, topBarConfig: TopBarConf
                             )
                         }
                     },
-                    onShowSnackbar = { message ->
+                    showSnackbar = { text ->
                         scope.launch {
                             snackbarHostState.showSnackbar(
-                                message = message,
+                                message = text.asString(context),
                                 actionLabel = null,
                                 duration = SnackbarDuration.Short
                             )

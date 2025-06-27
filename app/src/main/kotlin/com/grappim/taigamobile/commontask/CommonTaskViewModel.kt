@@ -21,14 +21,19 @@ import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.domain.Swimlane
 import com.grappim.taigamobile.core.domain.Tag
-import com.grappim.taigamobile.core.domain.TasksRepository
+import com.grappim.taigamobile.core.domain.TasksRepositoryOld
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
-import com.grappim.taigamobile.feature.sprint.domain.ISprintsRepository
+import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
+import com.grappim.taigamobile.feature.history.domain.HistoryRepository
+import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
+import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.MutableResultFlow
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -57,10 +62,16 @@ import javax.inject.Inject
 @HiltViewModel
 class CommonTaskViewModel @Inject constructor(
     private val session: Session,
-    private val tasksRepository: TasksRepository,
+    private val tasksRepositoryOld: TasksRepositoryOld,
+    private val historyRepository: HistoryRepository,
     private val usersRepository: UsersRepository,
-    sprintsRepository: ISprintsRepository,
+    sprintsRepository: SprintsRepository,
     private val epicsRepository: EpicsRepository,
+    private val filtersRepository: FiltersRepository,
+    private val swimlanesRepository:
+    com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository,
+    private val userStoriesRepository: UserStoriesRepository,
+    private val tasksRepository: TasksRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -137,7 +148,7 @@ class CommonTaskViewModel @Inject constructor(
     private val epicsQuery = MutableStateFlow("")
 
     val epics = epicsQuery.flatMapLatest { query ->
-        epicsRepository.getEpics(FiltersData(query = query))
+        epicsRepository.getEpicsPaging(FiltersData(query = query))
     }.cachedIn(viewModelScope)
 
     val editBasicInfoResult = mutableResultFlow<Unit>()
@@ -178,7 +189,7 @@ class CommonTaskViewModel @Inject constructor(
 
     private fun loadData(isReloading: Boolean = true) = viewModelScope.launch {
         commonTask.loadOrError(showLoading = !isReloading) {
-            tasksRepository.getCommonTask(commonTaskId, _state.value.commonTaskType).also {
+            tasksRepositoryOld.getCommonTask(commonTaskId, _state.value.commonTaskType).also {
                 suspend fun MutableResultFlow<List<User>>.loadUsersFromIds(ids: List<Long>) =
                     loadOrError(showLoading = false) {
                         coroutineScope {
@@ -196,7 +207,7 @@ class CommonTaskViewModel @Inject constructor(
                     },
                     launch {
                         customFields.loadOrError(showLoading = false) {
-                            tasksRepository.getCustomFields(
+                            tasksRepositoryOld.getCustomFields(
                                 commonTaskId,
                                 _state.value.commonTaskType
                             )
@@ -204,7 +215,7 @@ class CommonTaskViewModel @Inject constructor(
                     },
                     launch {
                         attachments.loadOrError(showLoading = false) {
-                            tasksRepository.getAttachments(
+                            tasksRepositoryOld.getAttachments(
                                 commonTaskId,
                                 _state.value.commonTaskType
                             )
@@ -214,8 +225,8 @@ class CommonTaskViewModel @Inject constructor(
                     launch { watchers.loadUsersFromIds(it.watcherIds) },
                     launch {
                         userStories.loadOrError(showLoading = false) {
-                            tasksRepository.getEpicUserStories(
-                                commonTaskId
+                            userStoriesRepository.getUserStories(
+                                epicId = commonTaskId
                             )
                         }
                     },
@@ -228,15 +239,15 @@ class CommonTaskViewModel @Inject constructor(
                     },
                     launch {
                         comments.loadOrError(showLoading = false) {
-                            tasksRepository.getComments(
-                                commonTaskId,
-                                _state.value.commonTaskType
+                            historyRepository.getComments(
+                                commonTaskId = commonTaskId,
+                                type = _state.value.commonTaskType
                             )
                         }
                     },
                     launch {
                         tags.loadOrError(showLoading = false) {
-                            tasksRepository.getAllTags(_state.value.commonTaskType)
+                            filtersRepository.getAllTags(_state.value.commonTaskType)
                                 .also { tagsSearched.value = it }
                         }
                     }
@@ -244,7 +255,7 @@ class CommonTaskViewModel @Inject constructor(
                     arrayOf(
                         launch {
                             team.loadOrError(showLoading = false) {
-                                usersRepository.getTeam()
+                                usersRepository.getTeamSimple()
                                     .map { it.toUser() }
                                     .also { teamSearched.value = it }
                             }
@@ -252,7 +263,7 @@ class CommonTaskViewModel @Inject constructor(
                         // prepend "unclassified"
                         launch {
                             swimlanes.loadOrError(showLoading = false) {
-                                listOf(SWIMLANE_HEADER) + tasksRepository.getSwimlanes()
+                                listOf(SWIMLANE_HEADER) + swimlanesRepository.getSwimlanes()
                             }
                         },
                         launch {
@@ -264,7 +275,7 @@ class CommonTaskViewModel @Inject constructor(
                                         true
                                     }
                                 }.associateWith {
-                                    tasksRepository.getStatusByType(
+                                    filtersRepository.getStatusByType(
                                         _state.value.commonTaskType,
                                         it
                                     )
@@ -283,7 +294,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun editBasicInfo(title: String, description: String) = viewModelScope.launch {
         editBasicInfoResult.loadOrError(RString.permission_error) {
-            tasksRepository.editCommonTaskBasicInfo(commonTask.value.data!!, title, description)
+            tasksRepositoryOld.editCommonTaskBasicInfo(commonTask.value.data!!, title, description)
             loadData().join()
             session.taskEdit.postUpdate()
         }
@@ -296,7 +307,7 @@ class CommonTaskViewModel @Inject constructor(
         editStatusResult.value = LoadingResult(status.type)
 
         editStatusResult.loadOrError(RString.permission_error) {
-            tasksRepository.editStatus(commonTask.value.data!!, status.id, status.type)
+            tasksRepositoryOld.editStatus(commonTask.value.data!!, status.id, status.type)
             loadData().join()
             session.taskEdit.postUpdate()
             status.type
@@ -305,7 +316,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun editSprint(sprint: Sprint) = viewModelScope.launch {
         editSprintResult.loadOrError(RString.permission_error) {
-            tasksRepository.editSprint(
+            tasksRepositoryOld.editSprint(
                 commonTask.value.data!!,
                 sprint.takeIf { it != SPRINT_HEADER }?.id
             )
@@ -330,7 +341,7 @@ class CommonTaskViewModel @Inject constructor(
         assignees.loadOrError(RString.permission_error) {
             teamSearched.value = team.value.data.orEmpty()
 
-            tasksRepository.editAssignees(
+            tasksRepositoryOld.editAssignees(
                 commonTask.value.data!!,
                 commonTask.value.data!!.assignedIds.let {
                     if (remove) {
@@ -357,7 +368,7 @@ class CommonTaskViewModel @Inject constructor(
         watchers.loadOrError(RString.permission_error) {
             teamSearched.value = team.value.data.orEmpty()
 
-            tasksRepository.editWatchers(
+            tasksRepositoryOld.editWatchers(
                 commonTask.value.data!!,
                 commonTask.value.data?.watcherIds.orEmpty().let {
                     if (remove) {
@@ -390,7 +401,7 @@ class CommonTaskViewModel @Inject constructor(
         tags.loadOrError(RString.permission_error) {
             tagsSearched.value = tags.value.data.orEmpty()
 
-            tasksRepository.editTags(
+            tasksRepositoryOld.editTags(
                 commonTask.value.data!!,
                 commonTask.value.data!!.tags.let { if (remove) it - tag else it + tag }
             )
@@ -407,7 +418,7 @@ class CommonTaskViewModel @Inject constructor(
     // Swimlanes
     fun editSwimlane(swimlane: Swimlane) = viewModelScope.launch {
         swimlanes.loadOrError(RString.permission_error) {
-            tasksRepository.editUserStorySwimlane(
+            tasksRepositoryOld.editUserStorySwimlane(
                 commonTask.value.data!!,
                 swimlane.takeIf { it != SWIMLANE_HEADER }?.id
             )
@@ -422,7 +433,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun editDueDate(date: LocalDate?) = viewModelScope.launch {
         editDueDateResult.loadOrError(RString.permission_error) {
-            tasksRepository.editDueDate(commonTask.value.data!!, date)
+            tasksRepositoryOld.editDueDate(commonTask.value.data!!, date)
             loadData().join()
         }
     }
@@ -432,7 +443,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun editEpicColor(color: String) = viewModelScope.launch {
         editEpicColorResult.loadOrError(RString.permission_error) {
-            tasksRepository.editEpicColor(commonTask.value.data!!, color)
+            tasksRepositoryOld.editEpicColor(commonTask.value.data!!, color)
             loadData().join()
             session.taskEdit.postUpdate()
         }
@@ -442,7 +453,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun editBlocked(blockedNote: String?) = viewModelScope.launch {
         editBlockedResult.loadOrError(RString.permission_error) {
-            tasksRepository.editBlocked(commonTask.value.data!!, blockedNote)
+            tasksRepositoryOld.editBlocked(commonTask.value.data!!, blockedNote)
             loadData().join()
             session.taskEdit.postUpdate()
         }
@@ -456,7 +467,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun linkToEpic(epic: CommonTask) = viewModelScope.launch {
         linkToEpicResult.loadOrError(RString.permission_error) {
-            tasksRepository.linkToEpic(epic.id, commonTaskId)
+            epicsRepository.linkToEpic(epic.id, commonTaskId)
             loadData().join()
             session.taskEdit.postUpdate()
         }
@@ -464,7 +475,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun unlinkFromEpic(epic: EpicShortInfo) = viewModelScope.launch {
         linkToEpicResult.loadOrError(RString.permission_error) {
-            tasksRepository.unlinkFromEpic(epic.id, commonTaskId)
+            epicsRepository.unlinkFromEpic(epic.id, commonTaskId)
             loadData().join()
             session.taskEdit.postUpdate()
         }
@@ -474,7 +485,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun createComment(comment: String) = viewModelScope.launch {
         comments.loadOrError(RString.permission_error) {
-            tasksRepository.createComment(
+            tasksRepositoryOld.createComment(
                 commonTaskId,
                 _state.value.commonTaskType,
                 comment,
@@ -487,7 +498,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun deleteComment(comment: Comment) = viewModelScope.launch {
         comments.loadOrError(RString.permission_error) {
-            tasksRepository.deleteComment(commonTaskId, _state.value.commonTaskType, comment.id)
+            historyRepository.deleteComment(commonTaskId, _state.value.commonTaskType, comment.id)
             loadData().join()
             comments.value.data
         }
@@ -495,7 +506,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun deleteAttachment(attachment: Attachment) = viewModelScope.launch {
         attachments.loadOrError(RString.permission_error) {
-            tasksRepository.deleteAttachment(_state.value.commonTaskType, attachment.id)
+            tasksRepositoryOld.deleteAttachment(_state.value.commonTaskType, attachment.id)
             loadData().join()
             attachments.value.data
         }
@@ -503,7 +514,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun addAttachment(fileName: String, inputStream: InputStream) = viewModelScope.launch {
         attachments.loadOrError(RString.permission_error) {
-            tasksRepository.addAttachment(
+            tasksRepositoryOld.addAttachment(
                 commonTaskId,
                 _state.value.commonTaskType,
                 fileName,
@@ -519,7 +530,7 @@ class CommonTaskViewModel @Inject constructor(
 
     fun deleteTask() = viewModelScope.launch {
         deleteResult.loadOrError(RString.permission_error) {
-            tasksRepository.deleteCommonTask(_state.value.commonTaskType, commonTaskId)
+            tasksRepositoryOld.deleteCommonTask(_state.value.commonTaskType, commonTaskId)
             session.taskEdit.postUpdate()
         }
     }
@@ -528,7 +539,10 @@ class CommonTaskViewModel @Inject constructor(
 
     fun promoteToUserStory() = viewModelScope.launch {
         promoteResult.loadOrError(RString.permission_error, preserveValue = false) {
-            tasksRepository.promoteCommonTaskToUserStory(commonTaskId, _state.value.commonTaskType)
+            tasksRepositoryOld.promoteCommonTaskToUserStory(
+                commonTaskId,
+                _state.value.commonTaskType
+            )
                 .also {
                     session.taskEdit.postUpdate()
                 }
@@ -538,7 +552,7 @@ class CommonTaskViewModel @Inject constructor(
     fun editCustomField(customField: CustomField, value: CustomFieldValue?) =
         viewModelScope.launch {
             customFields.loadOrError(RString.permission_error) {
-                tasksRepository.editCustomFields(
+                tasksRepositoryOld.editCustomFields(
                     commonTaskType = _state.value.commonTaskType,
                     commonTaskId = commonTaskId,
                     fields = customFields.value.data?.fields.orEmpty().map {

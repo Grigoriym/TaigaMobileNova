@@ -12,6 +12,7 @@ import javax.inject.Singleton
 @Singleton
 class AuthStateManager @Inject constructor(
     private val session: Session,
+    private val taigaStorage: TaigaStorage,
     @ApplicationScope private val applicationScope: CoroutineScope
 ) {
 
@@ -20,6 +21,7 @@ class AuthStateManager @Inject constructor(
 
     suspend fun logoutSuspend() {
         session.reset()
+        taigaStorage.clearData()
         _logoutEvents.emit(LogoutEvent.UserInitiated)
     }
 

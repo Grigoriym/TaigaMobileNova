@@ -50,7 +50,7 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    fun onOpen() {
+    private fun onOpen() {
         viewModelScope.launch {
             user.loadOrError(preserveValue = false) { userRepository.getMe() }
         }

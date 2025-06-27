@@ -35,8 +35,6 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         MutableStateFlow(sharedPreferences.getString(REFRESH_TOKEN_KEY, "").orEmpty())
     private val _token = MutableStateFlow(sharedPreferences.getString(TOKEN_KEY, "").orEmpty())
 
-    // todo to make them immutable, we need an interface
-    var currentProject: Long by sharedPreferences.long(PROJECT_ID_KEY, -1)
     var userId: Long by sharedPreferences.long(USER_ID_KEY, -1)
 
     val refreshToken: StateFlow<String> = _refreshToken
@@ -55,21 +53,15 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         userId = value
     }
 
-    private val _currentProjectId = MutableStateFlow(sharedPreferences.getLong(PROJECT_ID_KEY, -1))
     private val _currentProjectName =
         MutableStateFlow(sharedPreferences.getString(PROJECT_NAME_KEY, "").orEmpty())
 
-    @Deprecated("remove it or use data store")
-    val currentProjectId: StateFlow<Long> = _currentProjectId
-
     val currentProjectName: StateFlow<String> = _currentProjectName
 
-    fun changeCurrentProject(id: Long, name: String) {
-        currentProject = id
+    fun changeCurrentProjectName(name: String) {
         sharedPreferences.edit {
             putString(PROJECT_NAME_KEY, name)
         }
-        _currentProjectId.value = id
         _currentProjectName.value = name
 
         resetFilters()
@@ -137,7 +129,6 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         sharedPreferences.edit { clear() }
 
         // TODO remove Flows
-        _currentProjectId.value = -1
         _currentProjectName.value = ""
         _refreshToken.value = ""
         _token.value = ""
@@ -148,7 +139,6 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         private const val TOKEN_KEY = "token"
         private const val REFRESH_TOKEN_KEY = "refresh_token"
         private const val PROJECT_NAME_KEY = "project_name"
-        private const val PROJECT_ID_KEY = "project_id"
         private const val USER_ID_KEY = "user_id"
 
         private const val FILTERS_SCRUM = "filters_scrum"

@@ -1,20 +1,20 @@
 package com.grappim.taigamobile.core.nav
 
+import KanbanNavDestination
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
-import com.grappim.taigamobile.dashboard.DashboardNavDestination
-import com.grappim.taigamobile.epics.EpicsNavDestination
-import com.grappim.taigamobile.issues.IssuesNavDestination
-import com.grappim.taigamobile.kanban.KanbanNavDestination
-import com.grappim.taigamobile.projectselector.ProjectSelectorNavDestination
-import com.grappim.taigamobile.scrum.ScrumNavDestination
-import com.grappim.taigamobile.settings.SettingsNavDestination
+import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
+import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
+import com.grappim.taigamobile.feature.issues.ui.IssuesNavDestination
+import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
+import com.grappim.taigamobile.feature.scrum.ui.ScrumNavDestination
+import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
+import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
+import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.team.TeamNavDestination
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.wiki.WikiNavDestination
 
 fun DrawerDestination.navigate(navController: NavHostController, navOptions: NavOptions) {
     navController.navigate(route = route, navOptions = navOptions)

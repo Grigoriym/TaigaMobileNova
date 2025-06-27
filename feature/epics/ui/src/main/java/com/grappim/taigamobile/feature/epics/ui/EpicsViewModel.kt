@@ -7,17 +7,19 @@ import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersData
-import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
-import com.grappim.taigamobile.utils.ui.loadOrError
-import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -25,40 +27,60 @@ import javax.inject.Inject
 @HiltViewModel
 class EpicsViewModel @Inject constructor(
     private val session: Session,
-    private val tasksRepository: TasksRepository,
-    private val epicsRepository: EpicsRepository
+    private val epicsRepository: EpicsRepository,
+    private val filtersRepository: com.grappim.taigamobile.feature.filters.domain.FiltersRepository,
+    taigaStorage: TaigaStorage
 ) : ViewModel() {
 
-    private var shouldReload = true
+    private val _state = MutableStateFlow(
+        EpicsState(
+            onRefresh = ::refresh
+        )
+    )
+    val state = _state.asStateFlow()
 
-    val filters = mutableResultFlow<FiltersData>()
-    val activeFilters by lazy { session.epicsFilters }
-
-    val epics: Flow<PagingData<CommonTask>> = activeFilters.flatMapLatest { filters ->
-        epicsRepository.getEpics(filters)
+    val epics: Flow<PagingData<CommonTask>> = session.epicsFilters.onEach { filters ->
+        _state.update { it.copy(activeFilters = filters) }
+    }.flatMapLatest { filters ->
+        epicsRepository.getEpicsPaging(filters)
     }.cachedIn(viewModelScope)
 
-    // TODO handle refresh
     init {
-        session.currentProjectId.onEach {
-//            epics.refresh()
-            shouldReload = true
-        }.launchIn(viewModelScope)
-
-        session.taskEdit.onEach {
-//            epics.refresh()
-        }.launchIn(viewModelScope)
-    }
-
-    fun onOpen() {
-        if (!shouldReload) return
         viewModelScope.launch {
-            filters.loadOrError { tasksRepository.getFiltersData(CommonTaskType.Epic) }
-            filters.value.data?.let {
-                session.changeEpicsFilters(activeFilters.value.updateData(it))
+            launch {
+                taigaStorage.currentProjectIdFlow.distinctUntilChanged().collect {
+                    refresh()
+                }
+            }
+            launch {
+                session.taskEdit.onEach {
+                    refresh()
+                }.launchIn(viewModelScope)
+            }
+            launch {
+                loadFilters()
             }
         }
-        shouldReload = false
+    }
+
+    private suspend fun loadFilters() {
+        filtersRepository.getFiltersDataResult(CommonTaskType.Epic)
+            .onSuccess { data ->
+                _state.update {
+                    it.copy(
+                        isError = false,
+                        filters = data
+                    )
+                }
+                val updatedActiveFilters = _state.value.activeFilters.updateData(data)
+                session.changeEpicsFilters(updatedActiveFilters)
+            }.onFailure {
+                _state.update { it.copy(isError = true) }
+            }
+    }
+
+    private fun refresh() {
+        epicsRepository.refreshEpics()
     }
 
     fun selectFilters(filters: FiltersData) {

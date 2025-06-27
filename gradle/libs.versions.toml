@@ -7,20 +7,20 @@ targetSdk = "36"
 
 detekt = "1.23.8"
 ktlint = "12.3.0"
-moduleGraphAssertion = "2.8.0"
-gradleDoctor = "0.10.0"
-dependencyAnalysis = "2.17.0"
+moduleGraphAssertion = "2.9.0"
+gradleDoctor = "0.11.0"
+dependencyAnalysis = "2.19.0"
 jacocoAggregation = "2.4.4"
 composeRules = "0.4.22"
 
-agp = "8.10.1"
-androidTools = "31.10.1"
+agp = "8.11.0"
+androidTools = "31.11.0"
 androidDesugarJdkLibs = "2.1.5"
 
-kotlin = "2.1.21"
+kotlin = "2.2.0"
 coroutines = "1.10.2"
-ksp = "2.1.21-2.0.1"
-kotlin-serialization-plugin = "2.1.21"
+ksp = "2.2.0-2.0.2"
+kotlin-serialization-plugin = "2.2.0"
 kotlin-serialization-json = "1.8.1"
 
 dagger = "2.56.2"
@@ -35,7 +35,7 @@ androidxTestRunner = "1.6.2"
 androidxTestRules = "1.6.1"
 
 material = "1.12.0"
-mockk = "1.14.2"
+mockk = "1.14.4"
 navigation = "2.9.0"
 activity-compose = "1.10.1"
 lifecycle = "2.9.1"
@@ -43,13 +43,13 @@ constraintLayout = "1.1.1"
 paging = "3.3.6"
 
 gson = "2.12.1"
-robolectric = "4.15"
+robolectric = "4.15.1"
 timber = "5.0.1"
 coil = "2.7.0"
 retrofit = "3.0.0"
 okhttp = "5.0.0-alpha.16"
 moshi = "1.15.2"
-vanpra = "0.7.0"
+vanpra = "0.9.0"
 markwon = "4.6.2"
 junit4 = "4.13.2"
 turbine = "1.2.1"
@@ -57,6 +57,9 @@ junitVersion = "1.2.1"
 espressoCore = "3.6.1"
 chucker = "4.1.0"
 blockHound = "1.0.13.RELEASE"
+dataStore = "1.1.7"
+espressoCoreVersion = "3.6.1"
+jetbrainsKotlinJvm = "2.2.0"
 
 [libraries]
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
@@ -73,6 +76,7 @@ androidx-constraintlayout-compose = { module = "androidx.constraintlayout:constr
 androidx-lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
 androidx-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
 androidx-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+androidx-datastore-android = { module = "androidx.datastore:datastore-preferences", version.ref = "dataStore" }
 
 androidx-arch-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "archCore" }
 androidx-test-runner = { group = "androidx.test", name = "runner", version.ref = "androidxTestRunner" }
@@ -141,6 +145,7 @@ android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", ver
 android-tools-common = { group = "com.android.tools", name = "common", version.ref = "androidTools" }
 kotlin-gradlePlugin = { group = "org.jetbrains.kotlin", name = "kotlin-gradle-plugin", version.ref = "kotlin" }
 ksp-gradlePlugin = { group = "com.google.devtools.ksp", name = "com.google.devtools.ksp.gradle.plugin", version.ref = "ksp" }
+androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCoreVersion" }
 
 [plugins]
 hilt-android = { id = "com.google.dagger.hilt.android", version.ref = "dagger" }
@@ -167,3 +172,4 @@ taigamobile-android-library = { id = "taigamobile.android.library" }
 taigamobile-android-library-compose = { id = "taigamobile.android.library.compose" }
 taigamobile-kotlin-serialization = { id = "taigamobile.kotlin.serialization" }
 taigamobile-kotlin-library = { id = "taigamobile.kotlin.library" }
+jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrainsKotlinJvm" }

@@ -1,11 +1,25 @@
 package com.grappim.taigamobile.feature.userstories.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface UserStoriesApi {
+
+    @POST("userstories")
+    suspend fun createUserStory(
+        @Body createUserStoryRequest: CreateUserStoryRequest
+    ): CommonTaskResponse
+
+    @GET("userstories/by_ref")
+    suspend fun getUserStoryByRef(
+        @Query("project") projectId: Long,
+        @Query("ref") ref: Int
+    ): CommonTaskResponse
+
     @GET("userstories")
     suspend fun getUserStories(
         @Query("project") project: Long? = null,

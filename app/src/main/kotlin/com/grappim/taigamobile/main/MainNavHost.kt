@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.main
 
+import KanbanNavDestination
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -12,46 +13,46 @@ import com.grappim.taigamobile.commontask.navigateToCommonTask
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
 import com.grappim.taigamobile.createtask.navigateToCreateTask
-import com.grappim.taigamobile.dashboard.DashboardNavDestination
-import com.grappim.taigamobile.dashboard.DashboardScreen
-import com.grappim.taigamobile.dashboard.navigateToDashboardAsTopDestination
-import com.grappim.taigamobile.epics.EpicsNavDestination
+import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
+import com.grappim.taigamobile.feature.dashboard.ui.DashboardScreen
+import com.grappim.taigamobile.feature.dashboard.ui.navigateToDashboardAsTopDestination
+import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
 import com.grappim.taigamobile.feature.epics.ui.EpicsScreen
+import com.grappim.taigamobile.feature.issues.ui.IssuesNavDestination
 import com.grappim.taigamobile.feature.issues.ui.IssuesScreen
 import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
+import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginScreen
+import com.grappim.taigamobile.feature.profile.ui.ProfileNavDestination
+import com.grappim.taigamobile.feature.profile.ui.ProfileScreen
+import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
+import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
+import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorScreen
+import com.grappim.taigamobile.feature.projectselector.ui.navigateToProjectSelector
+import com.grappim.taigamobile.feature.scrum.ui.ScrumNavDestination
+import com.grappim.taigamobile.feature.scrum.ui.ScrumScreen
+import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
-import com.grappim.taigamobile.issues.IssuesNavDestination
-import com.grappim.taigamobile.kanban.KanbanNavDestination
-import com.grappim.taigamobile.login.LoginNavDestination
-import com.grappim.taigamobile.profile.ProfileNavDestination
-import com.grappim.taigamobile.profile.ProfileScreen
-import com.grappim.taigamobile.profile.navigateToProfileScreen
-import com.grappim.taigamobile.projectselector.ProjectSelectorNavDestination
-import com.grappim.taigamobile.projectselector.ProjectSelectorScreen
-import com.grappim.taigamobile.projectselector.navigateToProjectSelector
-import com.grappim.taigamobile.scrum.ScrumNavDestination
-import com.grappim.taigamobile.scrum.ScrumScreen
-import com.grappim.taigamobile.settings.SettingsNavDestination
-import com.grappim.taigamobile.sprint.SprintNavDestination
-import com.grappim.taigamobile.sprint.SprintScreen
-import com.grappim.taigamobile.sprint.navigateToSprintScreen
-import com.grappim.taigamobile.team.TeamNavDestination
-import com.grappim.taigamobile.team.TeamScreen
-import com.grappim.taigamobile.wiki.WikiNavDestination
-import com.grappim.taigamobile.wiki.createpage.WikiCreatePageNavDestination
-import com.grappim.taigamobile.wiki.createpage.WikiCreatePageScreen
-import com.grappim.taigamobile.wiki.list.WikiListScreen
-import com.grappim.taigamobile.wiki.page.WikiPageNavDestination
-import com.grappim.taigamobile.wiki.page.WikiPageScreen
-import com.grappim.taigamobile.wiki.page.navigateToWikiPage
+import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
+import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
+import com.grappim.taigamobile.feature.sprint.ui.navigateToSprintScreen
+import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
+import com.grappim.taigamobile.feature.teams.ui.TeamScreen
+import com.grappim.taigamobile.feature.wiki.ui.create.WikiCreatePageScreen
+import com.grappim.taigamobile.feature.wiki.ui.list.WikiListScreen
+import com.grappim.taigamobile.feature.wiki.ui.nav.WikiCreatePageNavDestination
+import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
+import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
+import com.grappim.taigamobile.feature.wiki.ui.nav.navigateToWikiPage
+import com.grappim.taigamobile.feature.wiki.ui.page.WikiPageScreen
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun MainNavHost(
     isLogged: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
-    onShowSnackbar: (message: String) -> Unit,
+    showSnackbar: (NativeText) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -63,7 +64,7 @@ fun MainNavHost(
     ) {
         composable<LoginNavDestination> {
             LoginScreen(
-                onShowSnackbar = onShowSnackbar,
+                onShowSnackbar = showSnackbar,
                 onLoginSuccess = {
                     navController.navigateToProjectSelector(isFromLogin = true)
                 }
@@ -145,7 +146,7 @@ fun MainNavHost(
 
         composable<KanbanNavDestination> {
             KanbanScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 goToTask = { id, type, ref ->
                     navController.navigateToCommonTask(id, type, ref)
                 },

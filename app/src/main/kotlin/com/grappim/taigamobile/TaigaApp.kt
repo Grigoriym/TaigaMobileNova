@@ -1,6 +1,7 @@
 package com.grappim.taigamobile
 
 import android.app.Application
+import android.os.StrictMode
 import android.util.Log
 import com.google.android.material.color.DynamicColors
 import com.grappim.taigamobile.utils.FileLoggingTree
@@ -14,6 +15,7 @@ class TaigaApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        setupStrictMode()
 
         val minLoggingPriority = if (BuildConfig.DEBUG) {
             Timber.plant(Timber.DebugTree())
@@ -33,5 +35,22 @@ class TaigaApp : Application() {
         }
 
         DynamicColors.applyToActivitiesIfAvailable(this)
+    }
+
+    private fun setupStrictMode() {
+        if (BuildConfig.DEBUG) {
+            StrictMode.setThreadPolicy(
+                StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build()
+            )
+            StrictMode.setVmPolicy(
+                StrictMode.VmPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build()
+            )
+        }
     }
 }

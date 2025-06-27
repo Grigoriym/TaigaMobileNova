@@ -4,12 +4,14 @@ import android.content.Context
 import com.chuckerteam.chucker.api.ChuckerCollector
 import com.chuckerteam.chucker.api.ChuckerInterceptor
 import com.chuckerteam.chucker.api.RetentionManager
-import com.grappim.taigamobile.core.api.AuthTokenProviderInterceptor
 import com.grappim.taigamobile.core.api.BaseUrlProvider
 import com.grappim.taigamobile.core.api.CommonOkHttp
 import com.grappim.taigamobile.core.api.CommonRetrofit
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.data.TaigaBearerTokenAuthenticator
+import com.grappim.taigamobile.data.api.AuthTokenProviderInterceptor
+import com.grappim.taigamobile.data.interceptors.ErrorMappingInterceptor
+import com.grappim.taigamobile.data.interceptors.HostSelectionInterceptor
+import com.grappim.taigamobile.data.interceptors.TaigaBearerTokenAuthenticator
 import com.grappim.taigamobile.di.LocalDateTimeTypeAdapter
 import com.grappim.taigamobile.di.LocalDateTypeAdapter
 import com.squareup.moshi.Moshi
@@ -23,6 +25,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import timber.log.Timber
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -47,8 +50,12 @@ object NetworkModule {
         authTokenProviderInterceptor: AuthTokenProviderInterceptor,
         hostSelectionInterceptor: HostSelectionInterceptor,
         appInfoProvider: AppInfoProvider,
-        taigaBearerTokenAuthenticator: TaigaBearerTokenAuthenticator
+        taigaBearerTokenAuthenticator: TaigaBearerTokenAuthenticator,
+        errorMappingInterceptor: ErrorMappingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(getOkHttpTimeout(appInfoProvider), TimeUnit.SECONDS)
+        .readTimeout(getOkHttpTimeout(appInfoProvider), TimeUnit.SECONDS)
+        .addInterceptor(errorMappingInterceptor)
         .addInterceptor(hostSelectionInterceptor)
         .addInterceptor(authTokenProviderInterceptor)
         .authenticator(taigaBearerTokenAuthenticator)

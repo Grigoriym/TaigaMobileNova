@@ -14,6 +14,7 @@ dependencies {
     implementation(projects.core.async)
 
     implementation(projects.feature.epics.domain)
+    implementation(projects.feature.filters.data)
 
     implementation(libs.retrofit)
 

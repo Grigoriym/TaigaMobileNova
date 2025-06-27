@@ -3,6 +3,8 @@ package com.grappim.taigamobile.utils.ui
 import android.content.Context
 import androidx.annotation.PluralsRes
 import androidx.annotation.StringRes
+import com.grappim.taigamobile.core.domain.NetworkException
+import com.grappim.taigamobile.strings.RString
 
 sealed class NativeText {
     data object Empty : NativeText()
@@ -23,12 +25,35 @@ fun NativeText.asString(context: Context): String = when (this) {
         }
         builder.toString()
     }
+
     is NativeText.Plural -> context.resources.getQuantityString(
         id,
         number,
         *args.toTypedArray()
     )
+
     is NativeText.Resource -> context.getString(id)
     is NativeText.Simple -> text
     is NativeText.Empty -> ""
+}
+
+fun getErrorMessage(exception: Throwable): NativeText = if (exception is NetworkException) {
+    when (exception.errorCode) {
+        NetworkException.ERROR_ON_REFRESH -> NativeText.Resource(
+            RString.auth_error_refresh_token_not_passed
+        )
+
+        NetworkException.ERROR_NO_INTERNET -> NativeText.Resource(
+            RString.error_no_internet_connection
+        )
+        NetworkException.ERROR_HOST_NOT_FOUND -> NativeText.Resource(
+            RString.error_host_not_found
+        )
+        NetworkException.ERROR_TIMEOUT -> NativeText.Resource(RString.timeout_exceeded)
+        NetworkException.ERROR_NETWORK_IO -> NativeText.Resource(RString.connection_failed)
+        NetworkException.ERROR_UNDEFINED -> NativeText.Resource(RString.request_failed)
+        else -> NativeText.Resource(RString.error_something_has_gone_wrong)
+    }
+} else {
+    NativeText.Simple(exception.message.toString())
 }

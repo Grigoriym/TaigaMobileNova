@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.login.data.repo
 
-import com.grappim.taigamobile.core.api.resultOf
 import com.grappim.taigamobile.core.async.IoDispatcher
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
@@ -26,8 +26,8 @@ class AuthRepositoryImpl @Inject constructor(
         private const val MISSING_REFRESH_TOKEN = "missing"
     }
 
-    override suspend fun auth(authData: AuthData): Result<Unit> = withContext(dispatcher) {
-        resultOf {
+    override suspend fun auth(authData: AuthData): Result<Unit> = resultOf {
+        withContext(dispatcher) {
             val server = authData.taigaServer.removeTrailingSlashes()
             serverStorage.defineServer(server)
             val response = authApi.auth(

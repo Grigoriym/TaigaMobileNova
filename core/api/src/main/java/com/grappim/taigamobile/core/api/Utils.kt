@@ -41,6 +41,7 @@ fun String?.fixNullColor() =
 // TODO somehow remove it and use the general one
 private fun Color.toHex() = "#%08X".format(toArgb()).replace("#FF", "#")
 
+@Deprecated("for the most cases we don't need it")
 suspend fun <T> withIO(block: suspend CoroutineScope.() -> T): T =
     withContext(Dispatchers.IO, block)
 

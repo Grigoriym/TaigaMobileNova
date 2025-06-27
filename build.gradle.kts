@@ -17,13 +17,11 @@ plugins {
     alias(libs.plugins.dependencyAnalysis)
     alias(libs.plugins.jacocoAggregationResults)
     alias(libs.plugins.jacocoAggregationCoverage)
+    alias(libs.plugins.jetbrains.kotlin.jvm) apply false
 }
 
 doctor {
-    failOnEmptyDirectories.set(false)
     enableTestCaching.set(false)
-    failOnEmptyDirectories.set(true)
-    warnWhenNotUsingParallelGC.set(true)
     disallowCleanTaskDependencies.set(true)
     warnWhenJetifierEnabled.set(true)
     javaHome {
@@ -114,7 +112,14 @@ private val coverageExclusions = listOf(
 
     "**/*JsonAdapter",
 
-    "**/testing/*"
+    "**/*NavDestination",
+    "**/*Widget",
+    "**/*Dialog",
+
+    "**/testing/*",
+    "**/uikit/theme/*",
+    "**/uikit/widgets/*",
+    "**/FileLoggingTree"
 ).flatMap {
     listOf(
         "$it.class",

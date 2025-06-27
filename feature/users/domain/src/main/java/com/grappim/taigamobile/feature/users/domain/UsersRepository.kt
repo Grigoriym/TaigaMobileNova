@@ -8,5 +8,9 @@ interface UsersRepository {
     suspend fun getMe(): User
     suspend fun getUser(userId: Long): User
     suspend fun getUserStats(userId: Long): Stats
-    suspend fun getTeam(): List<TeamMember>
+
+    suspend fun getTeamSimple(): List<TeamMember>
+
+    suspend fun getTeam(): Result<List<TeamMember>>
+    suspend fun getTeamByProjectId(projectId: Long): Result<List<TeamMember>>
 }

@@ -6,5 +6,15 @@ import com.grappim.taigamobile.core.domain.FiltersData
 import kotlinx.coroutines.flow.Flow
 
 interface EpicsRepository {
-    fun getEpics(filters: FiltersData): Flow<PagingData<CommonTask>>
+    fun getEpicsPaging(filters: FiltersData): Flow<PagingData<CommonTask>>
+    fun refreshEpics()
+
+    suspend fun getEpics(
+        assignedId: Long? = null,
+        isClosed: Boolean? = null,
+        watcherId: Long? = null
+    ): List<CommonTask>
+
+    suspend fun linkToEpic(epicId: Long, userStoryId: Long)
+    suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long)
 }

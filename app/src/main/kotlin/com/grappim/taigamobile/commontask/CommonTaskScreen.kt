@@ -54,9 +54,14 @@ import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.ui.components.lists.Attachments
-import com.grappim.taigamobile.ui.utils.FilePicker
-import com.grappim.taigamobile.ui.utils.LocalFilePicker
+import com.grappim.taigamobile.uikit.Attachments
+import com.grappim.taigamobile.uikit.EditAction
+import com.grappim.taigamobile.uikit.EditActions
+import com.grappim.taigamobile.uikit.EmptyEditAction
+import com.grappim.taigamobile.uikit.FilePicker
+import com.grappim.taigamobile.uikit.LocalFilePicker
+import com.grappim.taigamobile.uikit.NavigationActions
+import com.grappim.taigamobile.uikit.SimpleEditAction
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewMulti
@@ -378,7 +383,7 @@ fun CommonTaskScreenContent(
         )
     }
 
-    CommonTaskDropdownMenu(
+    CommonTaskDropdownMenuWidget(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentSize(Alignment.TopEnd),

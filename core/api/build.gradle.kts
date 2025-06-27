@@ -15,4 +15,6 @@ dependencies {
     implementation(projects.core.storage)
     implementation(libs.retrofit)
     implementation(projects.core.appinfoApi)
+
+    implementation(libs.timber)
 }

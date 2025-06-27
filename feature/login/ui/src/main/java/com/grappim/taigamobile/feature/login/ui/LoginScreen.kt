@@ -33,7 +33,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -54,23 +53,21 @@ import com.grappim.taigamobile.uikit.utils.PreviewMulti
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.asString
 import com.grappim.taigamobile.utils.ui.collectSnackbarMessage
 
 @Composable
 fun LoginScreen(
-    onShowSnackbar: (message: String) -> Unit,
+    onShowSnackbar: (message: NativeText) -> Unit,
     onLoginSuccess: () -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarMessage by viewModel.snackBarMessage.collectSnackbarMessage()
     val isLoginSuccessful by viewModel.loginSuccessful.collectAsStateWithLifecycle(false)
 
     LaunchedEffect(snackbarMessage) {
         if (snackbarMessage !is NativeText.Empty) {
-            onShowSnackbar(snackbarMessage.asString(context))
+            onShowSnackbar(snackbarMessage)
         }
     }
     LaunchedEffect(isLoginSuccessful) {

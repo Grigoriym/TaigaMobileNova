@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.commontask
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.utils.ui.NativeText
 
 data class CommonTaskState(
