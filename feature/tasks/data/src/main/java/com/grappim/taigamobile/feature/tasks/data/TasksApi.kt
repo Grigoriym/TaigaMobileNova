@@ -1,8 +1,10 @@
 package com.grappim.taigamobile.feature.tasks.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.POST
 import retrofit2.http.Query
 
 interface TasksApi {
@@ -17,4 +19,7 @@ interface TasksApi {
         @Query("watchers") watcherId: Long? = null,
         @Header("x-disable-pagination") disablePagination: Boolean? = (page == null).takeIf { it }
     ): List<CommonTaskResponse>
+
+    @POST("tasks")
+    suspend fun createTask(@Body createTaskRequest: CreateTaskRequest): CommonTaskResponse
 }

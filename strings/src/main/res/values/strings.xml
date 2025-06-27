@@ -222,4 +222,13 @@
 
     <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
     <string name="source_code">Source code</string>
+
+    <!--    Errors-->
+    <string name="error_something_has_gone_wrong">Something went wrong</string>
+    <string name="error_no_internet_connection">No Internet connection</string>
+    <string name="error_host_not_found">Host not found</string>
+    <string name="request_failed">Request ended with error</string>
+    <string name="connection_failed">Connection error</string>
+    <string name="timeout_exceeded">Waiting limit exceeded</string>
+    <string name="auth_error_refresh_token_not_passed">For security reasons, your session was closed</string>
 </resources>

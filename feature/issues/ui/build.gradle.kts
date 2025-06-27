@@ -11,6 +11,8 @@ android {
 
 dependencies {
     implementation(projects.feature.issues.domain)
+    implementation(projects.feature.filters.domain)
+
     implementation(projects.strings)
     implementation(projects.core.api)
     implementation(projects.core.domain)

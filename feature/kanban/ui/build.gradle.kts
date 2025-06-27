@@ -18,7 +18,7 @@ dependencies {
     implementation(projects.utils.ui)
     implementation(projects.uikit)
 
-    implementation(projects.feature.users.domain)
+    implementation(projects.feature.kanban.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)

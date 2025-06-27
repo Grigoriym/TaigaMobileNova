@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.TasksRepository
+import com.grappim.taigamobile.core.domain.TasksRepositoryOld
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.strings.RString
@@ -23,7 +23,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class CreateTaskViewModel @Inject constructor(
-    private val tasksRepository: TasksRepository,
+    private val tasksRepositoryOld: TasksRepositoryOld,
     private val session: Session,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -89,7 +89,7 @@ class CreateTaskViewModel @Inject constructor(
         swimlaneId: Long? = null
     ) = viewModelScope.launch {
         creationResult.loadOrError(preserveValue = false) {
-            tasksRepository.createCommonTask(
+            tasksRepositoryOld.createCommonTask(
                 commonTaskType,
                 title,
                 description,

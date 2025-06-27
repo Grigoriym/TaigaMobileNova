@@ -7,12 +7,14 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.domain.Stats
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.utils.ui.loadOrError
 import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,7 +22,7 @@ import javax.inject.Inject
 class ProfileViewModel @Inject constructor(
     private val usersRepository: UsersRepository,
     private val projectsRepository: ProjectsRepository,
-    private val session: Session,
+    taigaStorage: TaigaStorage,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -31,7 +33,12 @@ class ProfileViewModel @Inject constructor(
     val currentUser = mutableResultFlow<User>()
     val currentUserStats = mutableResultFlow<Stats>()
     val currentUserProjects = mutableResultFlow<List<Project>>()
-    val currentProjectId by lazy { session.currentProjectId }
+    val currentProjectId = taigaStorage.currentProjectIdFlow
+        .stateIn(
+            scope = viewModelScope,
+            initialValue = -1,
+            started = SharingStarted.WhileSubscribed(5_000)
+        )
 
     fun onOpen() = viewModelScope.launch {
         currentUser.loadOrError { usersRepository.getUser(userId) }

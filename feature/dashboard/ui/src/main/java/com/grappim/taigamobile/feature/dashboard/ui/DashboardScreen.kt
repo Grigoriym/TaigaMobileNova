@@ -10,13 +10,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Project
@@ -30,9 +30,7 @@ import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.SubscribeOnError
 
 @Composable
 fun DashboardScreen(
@@ -41,6 +39,8 @@ fun DashboardScreen(
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
@@ -49,23 +49,14 @@ fun DashboardScreen(
         )
     }
 
-    val workingOn by viewModel.workingOn.collectAsState()
-    workingOn.SubscribeOnError(showMessage)
-
-    val watching by viewModel.watching.collectAsState()
-    watching.SubscribeOnError(showMessage)
-
-    val myProjects by viewModel.myProjects.collectAsState()
-    myProjects.SubscribeOnError(showMessage)
-
-    val currentProjectId by viewModel.currentProjectId.collectAsState()
+    LaunchedEffect(state.isError) {
+        if (state.isError) {
+            showMessage(RString.common_error_message)
+        }
+    }
 
     DashboardScreenContent(
-        isLoading = listOf(workingOn, watching, myProjects).any { it is LoadingResult<*> },
-        workingOn = workingOn.data.orEmpty(),
-        watching = watching.data.orEmpty(),
-        myProjects = myProjects.data.orEmpty(),
-        currentProjectId = currentProjectId,
+        state = state,
         navigateToTask = {
             viewModel.changeCurrentProject(it.projectInfo)
             navigateToTaskScreen(it.id, it.taskType, it.ref)
@@ -76,12 +67,8 @@ fun DashboardScreen(
 
 @Composable
 fun DashboardScreenContent(
+    state: DashboardState,
     modifier: Modifier = Modifier,
-    isLoading: Boolean = false,
-    workingOn: List<CommonTask> = emptyList(),
-    watching: List<CommonTask> = emptyList(),
-    myProjects: List<Project> = emptyList(),
-    currentProjectId: Long = 0,
     navigateToTask: (CommonTask) -> Unit = { _ -> },
     changeCurrentProject: (Project) -> Unit = { _ -> }
 ) {
@@ -89,7 +76,7 @@ fun DashboardScreenContent(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.Start
     ) {
-        if (isLoading) {
+        if (state.isLoading) {
             Box(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
@@ -104,18 +91,18 @@ fun DashboardScreenContent(
             ) { page ->
                 when (DashboardTabs.entries[page]) {
                     DashboardTabs.WorkingOn -> TabContent(
-                        commonTasks = workingOn,
+                        commonTasks = state.workingOn,
                         navigateToTask = navigateToTask
                     )
 
                     DashboardTabs.Watching -> TabContent(
-                        commonTasks = watching,
+                        commonTasks = state.watching,
                         navigateToTask = navigateToTask
                     )
 
                     DashboardTabs.MyProjects -> MyProjects(
-                        myProjects = myProjects,
-                        currentProjectId = currentProjectId,
+                        myProjects = state.myProjects,
+                        currentProjectId = state.currentProjectId,
                         changeCurrentProject = changeCurrentProject
                     )
                 }
@@ -142,7 +129,7 @@ private fun MyProjects(
     currentProjectId: Long,
     changeCurrentProject: (Project) -> Unit
 ) {
-    LazyColumn {
+    LazyColumn(modifier = Modifier.fillMaxSize()) {
         items(myProjects) {
             ProjectCard(
                 project = it,
@@ -178,15 +165,6 @@ private fun ProjectCardPreview() {
 @Composable
 private fun DashboardPreview() = TaigaMobileTheme {
     DashboardScreenContent(
-        myProjects = List(3) {
-            Project(
-                id = it.toLong(),
-                name = "Name",
-                slug = "slug",
-                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit," +
-                    " sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                isPrivate = true
-            )
-        }
+        state = DashboardState()
     )
 }

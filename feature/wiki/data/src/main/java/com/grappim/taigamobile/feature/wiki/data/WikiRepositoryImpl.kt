@@ -1,8 +1,11 @@
 package com.grappim.taigamobile.feature.wiki.data
 
 import com.grappim.taigamobile.core.domain.Attachment
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.wiki.domain.WikiLink
+import com.grappim.taigamobile.feature.wiki.domain.WikiPage
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
+import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -10,20 +13,19 @@ import java.io.InputStream
 import javax.inject.Inject
 
 class WikiRepositoryImpl @Inject constructor(
-    private val session: Session,
-    private val wikiApi: WikiApi
+    private val wikiApi: WikiApi,
+    private val taigaStorage: TaigaStorage
 ) : WikiRepository {
 
-    private val currentProjectId get() = session.currentProject
-
-    override suspend fun getProjectWikiPages() = wikiApi.getProjectWikiPages(
-        projectId = currentProjectId
+    override suspend fun getProjectWikiPages(): List<WikiPage> = wikiApi.getProjectWikiPages(
+        projectId = taigaStorage.currentProjectIdFlow.first()
     )
 
-    override suspend fun getProjectWikiPageBySlug(slug: String) = wikiApi.getProjectWikiPageBySlug(
-        projectId = currentProjectId,
-        slug = slug
-    )
+    override suspend fun getProjectWikiPageBySlug(slug: String): WikiPage =
+        wikiApi.getProjectWikiPageBySlug(
+            projectId = taigaStorage.currentProjectIdFlow.first(),
+            slug = slug
+        )
 
     override suspend fun editWikiPage(pageId: Long, content: String, version: Int) =
         wikiApi.editWikiPage(
@@ -40,7 +42,7 @@ class WikiRepositoryImpl @Inject constructor(
     override suspend fun getPageAttachments(pageId: Long): List<Attachment> =
         wikiApi.getPageAttachments(
             pageId = pageId,
-            projectId = currentProjectId
+            projectId = taigaStorage.currentProjectIdFlow.first()
         )
 
     override suspend fun addPageAttachment(
@@ -53,7 +55,10 @@ class WikiRepositoryImpl @Inject constructor(
             filename = fileName,
             body = inputStream.readBytes().toRequestBody("*/*".toMediaType())
         )
-        val project = MultipartBody.Part.createFormData("project", currentProjectId.toString())
+        val project = MultipartBody.Part.createFormData(
+            "project",
+            taigaStorage.currentProjectIdFlow.first().toString()
+        )
         val objectId = MultipartBody.Part.createFormData("object_id", pageId.toString())
 
         inputStream.use {
@@ -71,17 +76,18 @@ class WikiRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getWikiLinks() = wikiApi.getWikiLink(
-        projectId = currentProjectId
+    override suspend fun getWikiLinks(): List<WikiLink> = wikiApi.getWikiLink(
+        projectId = taigaStorage.currentProjectIdFlow.first()
     )
 
-    override suspend fun createWikiLink(href: String, title: String) = wikiApi.createWikiLink(
-        newWikiLinkRequest = NewWikiLinkRequest(
+    override suspend fun createWikiLink(href: String, title: String) {
+        val request = NewWikiLinkRequest(
             href = href,
-            project = currentProjectId,
+            project = taigaStorage.currentProjectIdFlow.first(),
             title = title
         )
-    )
+        wikiApi.createWikiLink(newWikiLinkRequest = request)
+    }
 
     override suspend fun deleteWikiLink(linkId: Long) {
         wikiApi.deleteWikiLink(

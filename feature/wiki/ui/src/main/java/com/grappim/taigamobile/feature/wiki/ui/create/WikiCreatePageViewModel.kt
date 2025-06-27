@@ -48,26 +48,28 @@ class WikiCreatePageViewModel @Inject constructor(private val wikiRepository: Wi
         )
     }
 
-    private fun createWikiPage(title: String, content: String) = viewModelScope.launch {
-        creationResult.loadOrError {
-            val slug = title.replace(" ", "-").lowercase()
+    private fun createWikiPage(title: String, content: String) {
+        viewModelScope.launch {
+            creationResult.loadOrError {
+                val slug = title.replace(" ", "-").lowercase()
 
-            wikiRepository.createWikiLink(
-                href = slug,
-                title = title
-            )
+                wikiRepository.createWikiLink(
+                    href = slug,
+                    title = title
+                )
 
-            // Need it, because we can't put content to page
-            // and create link for it at the same time :(
-            val wikiPage = wikiRepository.getProjectWikiPageBySlug(slug)
+                // Need it, because we can't put content to page
+                // and create link for it at the same time :(
+                val wikiPage = wikiRepository.getProjectWikiPageBySlug(slug)
 
-            wikiRepository.editWikiPage(
-                pageId = wikiPage.id,
-                content = content,
-                version = wikiPage.version
-            )
+                wikiRepository.editWikiPage(
+                    pageId = wikiPage.id,
+                    content = content,
+                    version = wikiPage.version
+                )
 
-            wikiPage
+                wikiPage
+            }
         }
     }
 }

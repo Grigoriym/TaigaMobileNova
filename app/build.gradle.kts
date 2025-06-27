@@ -62,6 +62,7 @@ dependencies {
     implementation(projects.feature.profile.ui)
 
     implementation(projects.feature.tasks.data)
+    implementation(projects.feature.tasks.domain)
 
     implementation(projects.feature.scrum.ui)
 
@@ -69,12 +70,21 @@ dependencies {
 
     implementation(projects.feature.profile.ui)
 
+    implementation(projects.feature.filters.data)
+    implementation(projects.feature.filters.domain)
+
+    implementation(projects.feature.swimlanes.data)
+    implementation(projects.feature.swimlanes.domain)
+
     implementation(projects.feature.users.data)
     implementation(projects.feature.users.domain)
 
-    implementation(projects.feature.kanban.ui)
+    implementation(projects.feature.history.domain)
+    implementation(projects.feature.history.data)
 
-    implementation(projects.feature.tasks.data)
+    implementation(projects.feature.kanban.ui)
+    implementation(projects.feature.kanban.data)
+    implementation(projects.feature.kanban.domain)
 
     implementation(projects.feature.epics.ui)
     implementation(projects.feature.epics.domain)

@@ -9,6 +9,7 @@ android {
 
 dependencies {
     implementation(projects.strings)
+    implementation(projects.core.domain)
 
     implementation(libs.timber)
     implementation(libs.androidx.paging.compose)

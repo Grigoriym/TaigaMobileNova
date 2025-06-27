@@ -7,8 +7,9 @@ import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersData
-import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.strings.RString
@@ -31,10 +32,11 @@ import javax.inject.Inject
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ScrumViewModel @Inject constructor(
-    private val tasksRepository: TasksRepository,
     private val sprintsRepository: SprintsRepository,
     private val session: Session,
-    private val userStoriesRepository: UserStoriesRepository
+    private val userStoriesRepository: UserStoriesRepository,
+    private val filtersRepository: FiltersRepository,
+    taigaStorage: TaigaStorage
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -62,7 +64,7 @@ class ScrumViewModel @Inject constructor(
 
     // TODO handle refresh
     init {
-        session.currentProjectId.onEach {
+        taigaStorage.currentProjectIdFlow.onEach {
             createSprintResult.value = NothingResult()
 //            stories.refresh()
 //            openSprints.refresh()
@@ -94,7 +96,7 @@ class ScrumViewModel @Inject constructor(
         if (!shouldReload) return
         viewModelScope.launch {
             filters.loadOrError {
-                tasksRepository.getFiltersData(
+                filtersRepository.getFiltersData(
                     commonTaskType = CommonTaskType.UserStory,
                     isCommonTaskFromBacklog = true
                 )

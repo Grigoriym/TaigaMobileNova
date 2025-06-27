@@ -48,11 +48,11 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.TasksFiltersWithLazyList
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
 import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
 import com.grappim.taigamobile.uikit.widgets.dialog.EditSprintDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
+import com.grappim.taigamobile.uikit.widgets.filter.TasksFiltersWithLazyList
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText

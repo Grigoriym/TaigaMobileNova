@@ -8,6 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,6 +17,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -23,6 +25,7 @@ import javax.inject.Inject
 class ProjectSelectorViewModel @Inject constructor(
     private val projectsRepository: ProjectsRepository,
     private val session: Session,
+    private val taigaStorage: TaigaStorage,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -31,7 +34,6 @@ class ProjectSelectorViewModel @Inject constructor(
     private val _state = MutableStateFlow(
         ProjectSelectorState(
             isFromLogin = route.isFromLogin,
-            currentProjectId = session.currentProject,
             setProjectsQuery = ::searchProjects
         )
     )
@@ -44,14 +46,26 @@ class ProjectSelectorViewModel @Inject constructor(
         projectsRepository.fetchProjects(query)
     }.cachedIn(viewModelScope)
 
+    init {
+        viewModelScope.launch {
+            launch {
+                taigaStorage.currentProjectIdFlow.collect { id ->
+                    _state.update {
+                        it.copy(currentProjectId = id)
+                    }
+                }
+            }
+        }
+    }
+
     fun searchProjects(query: String) {
         _searchQuery.value = query
     }
 
     fun selectProject(project: Project) {
-        session.changeCurrentProject(project.id, project.name)
-        _state.update {
-            it.copy(currentProjectId = project.id)
+        viewModelScope.launch {
+            taigaStorage.setCurrentProjectId(projectId = project.id)
+            session.changeCurrentProjectName(project.name)
         }
     }
 }

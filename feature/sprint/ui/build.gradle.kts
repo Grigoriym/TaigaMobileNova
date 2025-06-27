@@ -11,6 +11,9 @@ android {
 
 dependencies {
     implementation(projects.feature.sprint.domain)
+    implementation(projects.feature.tasks.domain)
+    implementation(projects.feature.filters.domain)
+
     implementation(projects.strings)
     implementation(projects.uikit)
     implementation(projects.core.domain)

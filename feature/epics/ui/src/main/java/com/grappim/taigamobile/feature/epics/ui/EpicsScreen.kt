@@ -1,33 +1,34 @@
 package com.grappim.taigamobile.feature.epics.ui
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersData
-import com.grappim.taigamobile.core.navigation.NavigateToTask
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewMulti
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.TasksFiltersWithLazyList
+import com.grappim.taigamobile.uikit.widgets.filter.TasksFiltersWithLazyList
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
+import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 
 @Suppress("LambdaParameterInRestartableEffect")
 @Composable
@@ -38,10 +39,9 @@ fun EpicsScreen(
     viewModel: EpicsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
-        viewModel.onOpen()
-
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.epics),
@@ -58,52 +58,61 @@ fun EpicsScreen(
         )
     }
 
+    LaunchedEffect(state.isError) {
+        if (state.isError) {
+            showMessage(RString.common_error_message)
+        }
+    }
+
     val epics = viewModel.epics.collectAsLazyPagingItems()
     epics.SubscribeOnError(showMessage)
 
-    val filters by viewModel.filters.collectAsState()
-    filters.SubscribeOnError(showMessage)
-
-    val activeFilters by viewModel.activeFilters.collectAsState()
-
     EpicsScreenContent(
+        state = state,
         epics = epics,
-        filters = filters.data ?: FiltersData(),
-        activeFilters = activeFilters,
         selectFilters = viewModel::selectFilters,
         navigateToTask = goToTask
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EpicsScreenContent(
+    state: EpicsState,
+    epics: LazyPagingItems<CommonTask>,
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
     modifier: Modifier = Modifier,
-    epics: LazyPagingItems<CommonTask>? = null,
-    filters: FiltersData = FiltersData(),
-    activeFilters: FiltersData = FiltersData(),
-    selectFilters: (FiltersData) -> Unit = {},
-    navigateToTask: NavigateToTask = { _, _, _ -> }
-) = Column(
-    modifier = modifier.fillMaxSize(),
-    horizontalAlignment = Alignment.Start
+    selectFilters: (FiltersData) -> Unit = {}
 ) {
-    TasksFiltersWithLazyList(
-        filters = filters,
-        activeFilters = activeFilters,
-        selectFilters = selectFilters
+    PullToRefreshBox(
+        modifier = modifier.fillMaxSize(),
+        isRefreshing = epics.loadState.refresh is LoadState.Loading,
+        onRefresh = state.onRefresh
     ) {
-        simpleTasksListWithTitle(
-            commonTasksLazy = epics,
-            keysHash = activeFilters.hashCode(),
-            navigateToTask = navigateToTask,
-            horizontalPadding = mainHorizontalScreenPadding,
-            bottomPadding = commonVerticalPadding
-        )
+        TasksFiltersWithLazyList(
+            filters = state.filters,
+            activeFilters = state.activeFilters,
+            selectFilters = selectFilters
+        ) {
+            simpleTasksListWithTitle(
+                commonTasksLazy = epics,
+                keysHash = state.activeFilters.hashCode(),
+                navigateToTask = navigateToTask,
+                horizontalPadding = mainHorizontalScreenPadding,
+                bottomPadding = commonVerticalPadding
+            )
+        }
     }
 }
 
 @PreviewMulti
 @Composable
-private fun EpicsScreenPreview() = TaigaMobileTheme {
-    EpicsScreenContent()
+private fun EpicsScreenPreview() {
+    TaigaMobileTheme {
+        EpicsScreenContent(
+            state = EpicsState(onRefresh = {}),
+            navigateToTask = { _, _, _ -> },
+            epics = getPagingPreviewItems()
+        )
+    }
 }

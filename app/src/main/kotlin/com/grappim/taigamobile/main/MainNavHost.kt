@@ -45,13 +45,14 @@ import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.navigateToWikiPage
 import com.grappim.taigamobile.feature.wiki.ui.page.WikiPageScreen
+import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun MainNavHost(
     isLogged: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
-    onShowSnackbar: (message: String) -> Unit,
+    showSnackbar: (NativeText) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -63,7 +64,7 @@ fun MainNavHost(
     ) {
         composable<LoginNavDestination> {
             LoginScreen(
-                onShowSnackbar = onShowSnackbar,
+                onShowSnackbar = showSnackbar,
                 onLoginSuccess = {
                     navController.navigateToProjectSelector(isFromLogin = true)
                 }
@@ -145,7 +146,7 @@ fun MainNavHost(
 
         composable<KanbanNavDestination> {
             KanbanScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 goToTask = { id, type, ref ->
                     navController.navigateToCommonTask(id, type, ref)
                 },

@@ -13,6 +13,9 @@ dependencies {
     implementation(projects.core.storage)
     implementation(projects.core.async)
 
+    implementation(projects.feature.tasks.domain)
+    implementation(projects.feature.filters.domain)
+
     implementation(libs.retrofit)
 
     implementation(libs.moshi)

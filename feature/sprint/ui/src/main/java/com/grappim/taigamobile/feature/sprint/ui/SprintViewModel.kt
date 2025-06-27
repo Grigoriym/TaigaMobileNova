@@ -8,10 +8,11 @@ import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.Status
-import com.grappim.taigamobile.core.domain.TasksRepository
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
+import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
+import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NothingResult
 import com.grappim.taigamobile.utils.ui.loadOrError
@@ -28,9 +29,10 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SprintViewModel @Inject constructor(
-    private val tasksRepository: TasksRepository,
     private val sprintsRepository: SprintsRepository,
+    private val filtersRepository: FiltersRepository,
     private val session: Session,
+    private val tasksRepository: TasksRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -60,7 +62,7 @@ class SprintViewModel @Inject constructor(
                 joinAll(
                     launch {
                         statuses.loadOrError(showLoading = false) {
-                            tasksRepository.getStatuses(
+                            filtersRepository.getStatuses(
                                 CommonTaskType.Task
                             )
                         }

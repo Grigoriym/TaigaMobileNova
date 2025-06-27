@@ -19,6 +19,7 @@ dependencies {
 
     implementation(projects.feature.sprint.domain)
     implementation(projects.feature.userstories.domain)
+    implementation(projects.feature.filters.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)

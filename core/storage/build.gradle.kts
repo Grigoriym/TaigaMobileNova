@@ -13,4 +13,6 @@ dependencies {
 
     implementation(libs.moshi)
     ksp(libs.moshi.kotlin.codegen)
+
+    implementation(libs.androidx.datastore.android)
 }

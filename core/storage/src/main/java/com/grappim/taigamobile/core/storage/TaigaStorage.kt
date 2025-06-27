@@ -1,0 +1,50 @@
+package com.grappim.taigamobile.core.storage
+
+import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.runBlocking
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class TaigaStorage @Inject constructor(@ApplicationContext private val context: Context) {
+    companion object {
+        private const val TAIGA_STORAGE_NAME = "taiga_storage"
+
+        private const val CURRENT_PROJECT_ID_KEY = "current_project_id"
+    }
+
+    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
+        name = TAIGA_STORAGE_NAME
+    )
+
+    private val currentProjectIdKey = longPreferencesKey(CURRENT_PROJECT_ID_KEY)
+
+    val currentProjectIdFlow: Flow<Long> = context.dataStore.data
+        .map { preferences ->
+            preferences[currentProjectIdKey] ?: -1
+        }
+
+    val currentProjectId: Long
+        get() = runBlocking { currentProjectIdFlow.first() }
+
+    suspend fun setCurrentProjectId(projectId: Long) {
+        context.dataStore.edit { settings ->
+            settings[currentProjectIdKey] = projectId
+        }
+    }
+
+    suspend fun clearData() {
+        context.dataStore.edit {
+            it.clear()
+        }
+    }
+}

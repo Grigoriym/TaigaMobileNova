@@ -5,6 +5,8 @@ import com.grappim.taigamobile.core.api.AuthOkHttp
 import com.grappim.taigamobile.core.api.AuthRetrofit
 import com.grappim.taigamobile.core.api.BaseUrlProvider
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.data.interceptors.ErrorMappingInterceptor
+import com.grappim.taigamobile.data.interceptors.HostSelectionInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -13,6 +15,7 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 /**
@@ -37,8 +40,12 @@ object AuthModule {
         loggingInterceptor: HttpLoggingInterceptor,
         chuckerInterceptor: ChuckerInterceptor,
         hostSelectionInterceptor: HostSelectionInterceptor,
-        appInfoProvider: AppInfoProvider
+        appInfoProvider: AppInfoProvider,
+        errorMappingInterceptor: ErrorMappingInterceptor
     ): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(getOkHttpTimeout(appInfoProvider), TimeUnit.SECONDS)
+        .readTimeout(getOkHttpTimeout(appInfoProvider), TimeUnit.SECONDS)
+        .addInterceptor(errorMappingInterceptor)
         .addInterceptor(hostSelectionInterceptor)
         .apply {
             if (appInfoProvider.isDebug()) {

@@ -15,6 +15,8 @@ dependencies {
     implementation(projects.core.async)
 
     implementation(projects.feature.userstories.domain)
+    implementation(projects.feature.filters.domain)
+    implementation(projects.feature.swimlanes.domain)
 
     implementation(libs.androidx.paging.common)
     implementation(libs.retrofit)

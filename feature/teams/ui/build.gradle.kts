@@ -14,6 +14,7 @@ dependencies {
     implementation(projects.uikit)
     implementation(projects.utils.ui)
     implementation(projects.core.navigation)
+    implementation(projects.core.api)
     implementation(projects.core.domain)
     implementation(projects.core.storage)
 
