@@ -45,7 +45,7 @@ paging = "3.3.6"
 gson = "2.12.1"
 robolectric = "4.15.1"
 timber = "5.0.1"
-coil = "2.7.0"
+coil = "3.2.0"
 retrofit = "3.0.0"
 okhttp = "5.0.0-alpha.16"
 moshi = "1.15.2"
@@ -104,7 +104,8 @@ androidx-compose-material-icons-extended = { module = "androidx.compose.material
 
 androidx-compose-ui-test = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 
-coil-compose = { module = "io.coil-kt:coil-compose", version.ref = "coil" }
+coil-compose = { module = "io.coil-kt.coil3:coil-compose", version.ref = "coil" }
+coil-okhttp = { module = "io.coil-kt.coil3:coil-network-okhttp", version.ref = "coil" }
 markwon-image-coil = { module = "io.noties.markwon:image-coil", version.ref = "markwon" }
 markwon-core = { module = "io.noties.markwon:core", version.ref = "markwon" }
 material = { module = "com.google.android.material:material", version.ref = "material" }

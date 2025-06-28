@@ -21,9 +21,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.nav.DrawerDestination
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
@@ -38,21 +42,34 @@ import timber.log.Timber
 @Composable
 fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
+    val state by viewModel.state.collectAsStateWithLifecycle()
+    val isLogged by viewModel.isLogged.collectAsStateWithLifecycle()
+
     CompositionLocalProvider(
         LocalTopBarConfig provides topBarController
     ) {
         val topBarConfig = topBarController.config
-        MainScreenContent(viewModel = viewModel, topBarConfig = topBarConfig)
+        MainScreenContent(
+            viewModel = viewModel,
+            topBarConfig = topBarConfig,
+            state = state,
+            isLogged = isLogged
+        )
     }
 }
 
 @Composable
-private fun MainScreenContent(viewModel: MainViewModel, topBarConfig: TopBarConfig) {
+private fun MainScreenContent(
+    viewModel: MainViewModel,
+    topBarConfig: TopBarConfig,
+    state: MainScreenState,
+    isLogged: Boolean
+) {
     val appState = rememberMainAppState()
+
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val drawerState by appState.drawerState.collectAsStateWithLifecycle()
-    val isLogged by viewModel.isLogged.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -76,6 +93,18 @@ private fun MainScreenContent(viewModel: MainViewModel, topBarConfig: TopBarConf
         }.launchIn(this)
     }
 
+    if (state.isLogoutConfirmationVisible) {
+        ConfirmActionDialog(
+            title = stringResource(RString.logout_title),
+            text = stringResource(RString.logout_text),
+            onConfirm = {
+                state.onLogout()
+            },
+            onDismiss = { state.setIsLogoutConfirmationVisible(false) },
+            iconId = RDrawable.ic_logout
+        )
+    }
+
     TaigaDrawerWidget(
         screens = appState.topLevelDestinations,
         currentItem = appState.currentTopLevelDestination,
@@ -84,7 +113,11 @@ private fun MainScreenContent(viewModel: MainViewModel, topBarConfig: TopBarConf
             scope.launch {
                 drawerState.close()
             }
-            appState.navigateToTopLevelDestination(item)
+            if (item == DrawerDestination.Logout) {
+                state.setIsLogoutConfirmationVisible(true)
+            } else {
+                appState.navigateToTopLevelDestination(item)
+            }
         },
         gesturesEnabled = appState.areDrawerGesturesEnabled
     ) {

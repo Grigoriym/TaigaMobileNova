@@ -28,8 +28,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import coil3.compose.rememberAsyncImagePainter
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding

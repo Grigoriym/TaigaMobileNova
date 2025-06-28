@@ -223,6 +223,8 @@
     <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
     <string name="source_code">Source code</string>
 
+    <string name="error_opening_link">No applications available to open the link</string>
+
     <!--    Errors-->
     <string name="error_something_has_gone_wrong">Something went wrong</string>
     <string name="error_no_internet_connection">No Internet connection</string>

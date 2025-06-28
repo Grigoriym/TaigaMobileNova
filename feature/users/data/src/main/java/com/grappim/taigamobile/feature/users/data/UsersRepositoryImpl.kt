@@ -24,6 +24,8 @@ class UsersRepositoryImpl @Inject constructor(
 
     override suspend fun getMe(): User = usersApi.getMyProfile()
 
+    override suspend fun getMeResult(): Result<User> = resultOf { getMe() }
+
     override suspend fun getUser(userId: Long): User = usersApi.getUser(userId)
 
     override suspend fun getUserStats(userId: Long): Stats = usersApi.getUserStats(userId)

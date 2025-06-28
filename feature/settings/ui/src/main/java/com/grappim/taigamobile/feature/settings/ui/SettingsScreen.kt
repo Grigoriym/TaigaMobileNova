@@ -1,35 +1,29 @@
 package com.grappim.taigamobile.feature.settings.ui
 
-import android.content.Intent
 import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -38,34 +32,32 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.core.net.toUri
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil.compose.rememberAsyncImagePainter
-import coil.request.ImageRequest
-import com.grappim.taigamobile.core.storage.ThemeSetting
+import coil3.compose.AsyncImage
+import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
+import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
-import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.SubscribeOnError
-import com.grappim.taigamobile.utils.ui.activity
+import com.grappim.taigamobile.utils.ui.asString
+import com.grappim.taigamobile.utils.ui.collectSnackbarMessage
 import timber.log.Timber
 
 @Composable
 fun SettingsScreen(
-    showMessage: (message: Int) -> Unit,
+    showSnackbar: (message: NativeText) -> Unit,
     viewModel: SettingsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val snackbarMsg by viewModel.snackBarMessage.collectSnackbarMessage()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -75,78 +67,40 @@ fun SettingsScreen(
         )
     }
 
-    val user by viewModel.user.collectAsState()
-    user.SubscribeOnError(showMessage)
+    LaunchedEffect(snackbarMsg) {
+        if (snackbarMsg != NativeText.Empty) {
+            showSnackbar(snackbarMsg)
+        }
+    }
 
-    val themeSetting by viewModel.themeSetting.collectAsState()
+    TaigaLoadingDialog(state.isLoading)
 
-    SettingsScreenContent(
-        state = state,
-        avatarUrl = user.data?.avatarUrl,
-        displayName = user.data?.displayName.orEmpty(),
-        username = user.data?.username.orEmpty(),
-        logout = viewModel::logout,
-        themeSetting = themeSetting,
-        switchTheme = viewModel::switchTheme
-    )
+    if (state.user != null) {
+        SettingsScreenContent(state = state)
+    }
 }
 
 @Composable
-fun SettingsScreenContent(
-    state: SettingsState,
-    avatarUrl: String?,
-    displayName: String,
-    username: String,
-    modifier: Modifier = Modifier,
-    logout: () -> Unit = {},
-    themeSetting: ThemeSetting = ThemeSetting.System,
-    switchTheme: (ThemeSetting) -> Unit = {}
-) {
+fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
+    requireNotNull(state.user)
+    val context = LocalContext.current
+
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(20.dp))
-        Image(
-            painter = rememberAsyncImagePainter(
-                ImageRequest.Builder(LocalContext.current)
-                    .data(data = avatarUrl ?: RDrawable.default_avatar).apply(
-                        block = fun ImageRequest.Builder.() {
-                            error(RDrawable.default_avatar)
-                            crossfade(true)
-                        }
-                    ).build()
-            ),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+
+        AsyncImage(
             modifier = Modifier
                 .size(120.dp)
-                .clip(MaterialTheme.shapes.large)
+                .clip(MaterialTheme.shapes.large),
+            placeholder = painterResource(RDrawable.default_avatar),
+            error = painterResource(RDrawable.default_avatar),
+            model = state.user.avatarUrl,
+            contentDescription = null,
+            contentScale = ContentScale.Crop
         )
-
-        if (state.isAlertVisible) {
-            ConfirmActionDialog(
-                title = stringResource(RString.logout_title),
-                text = stringResource(RString.logout_text),
-                onConfirm = {
-                    state.setIsAlertVisible(false)
-                    logout()
-                },
-                onDismiss = { state.setIsAlertVisible(false) },
-                iconId = RDrawable.ic_logout
-            )
-        }
-
-        IconButton(
-            onClick = { state.setIsAlertVisible(true) }
-        ) {
-            Icon(
-                painter = painterResource(RDrawable.ic_logout),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(28.dp)
-            )
-        }
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -154,12 +108,12 @@ fun SettingsScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = displayName,
+                text = state.user.displayName,
                 style = MaterialTheme.typography.titleLarge
             )
 
             Text(
-                text = stringResource(RString.username_template).format(username),
+                text = stringResource(RString.username_template).format(state.user.displayName),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -184,28 +138,19 @@ fun SettingsScreenContent(
                         textId = RString.theme_title,
                         itemWeight = 0.4f
                     ) {
-                        @Composable
-                        fun titleForThemeSetting(themeSetting: ThemeSetting) = stringResource(
-                            when (themeSetting) {
-                                ThemeSetting.System -> RString.theme_system
-                                ThemeSetting.Light -> RString.theme_light
-                                ThemeSetting.Dark -> RString.theme_dark
-                            }
-                        )
-
                         DropdownSelector(
-                            items = ThemeSetting.entries,
-                            selectedItem = themeSetting,
-                            onItemSelect = { switchTheme(it) },
+                            items = ThemeSettings.entries,
+                            selectedItem = state.themeSettings,
+                            onItemSelect = { state.onThemeChanged(it) },
                             itemContent = {
                                 Text(
-                                    text = titleForThemeSetting(it),
+                                    text = state.getThemeTitle(it).asString(context),
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             },
                             selectedItemContent = {
                                 Text(
-                                    text = titleForThemeSetting(it),
+                                    text = state.themeDropDownTitle.asString(context),
                                     style = MaterialTheme.typography.titleMedium,
                                     color = MaterialTheme.colorScheme.primary
                                 )
@@ -227,27 +172,24 @@ fun SettingsScreenContent(
                 color = MaterialTheme.colorScheme.outline
             )
 
-            val activity = LocalContext.current.activity
+            val uriHandler = LocalUriHandler.current
+
             val githubUrl = stringResource(RString.github_url)
-            Text(
-                text = stringResource(RString.source_code),
-                style = MaterialTheme.typography.bodyLarge.merge(
-                    SpanStyle(
-                        color = MaterialTheme.colorScheme.primary,
-                        textDecoration = TextDecoration.Underline
-                    )
-                ),
-                modifier = Modifier.clickableUnindicated {
-                    activity.startActivity(
-                        Intent(
-                            Intent.ACTION_VIEW,
-                            githubUrl.toUri()
+            TextButton(
+                onClick = {
+                    uriHandler.openUri(githubUrl)
+                }
+            ) {
+                Text(
+                    text = stringResource(RString.source_code),
+                    style = MaterialTheme.typography.bodyLarge.merge(
+                        SpanStyle(
+                            color = MaterialTheme.colorScheme.primary,
+                            textDecoration = TextDecoration.Underline
                         )
                     )
-                }
-            )
-
-            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                )
+            }
         }
     }
 }
@@ -276,27 +218,29 @@ private fun SettingItem(
     itemWeight: Float = 0.2f,
     onClick: () -> Unit = {},
     item: @Composable BoxScope.() -> Unit = {}
-) = ContainerBox(
-    verticalPadding = 10.dp,
-    onClick = onClick
 ) {
-    assert(itemWeight > 0 && itemWeight < 1) { Timber.e("Item weight must be between 0 and 1") }
-
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
+    ContainerBox(
+        verticalPadding = 10.dp,
+        onClick = onClick
     ) {
-        Text(
-            text = stringResource(textId),
-            modifier = Modifier.weight(1 - itemWeight, fill = false)
-        )
+        assert(itemWeight > 0 && itemWeight < 1) { Timber.e("Item weight must be between 0 and 1") }
 
-        Box(
-            modifier = Modifier.weight(itemWeight),
-            contentAlignment = Alignment.CenterEnd,
-            content = item
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = stringResource(textId),
+                modifier = Modifier.weight(1 - itemWeight, fill = false)
+            )
+
+            Box(
+                modifier = Modifier.weight(itemWeight),
+                contentAlignment = Alignment.CenterEnd,
+                content = item
+            )
+        }
     }
 }
 
@@ -304,13 +248,12 @@ private fun SettingItem(
 @Composable
 private fun SettingsScreenPreview() = TaigaMobileTheme {
     SettingsScreenContent(
-        avatarUrl = null,
-        displayName = "Cool Name",
-        username = "username",
         state = SettingsState(
             appInfo = "asdasd",
             serverUrl = "https://sample.server/",
-            setIsAlertVisible = {}
+            onThemeChanged = {},
+            themeSettings = ThemeSettings.System,
+            showSnackbar = {}
         )
     )
 }

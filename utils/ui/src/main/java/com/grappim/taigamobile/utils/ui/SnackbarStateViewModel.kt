@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 
 interface SnackbarStateViewModel {
     val snackBarMessage: SharedFlow<NativeText>
-    suspend fun setSnackbarMessageSuspend(message: NativeText)
+    suspend fun showSnackbarSuspend(message: NativeText)
 }
 
 class SnackbarStateViewModelImpl : SnackbarStateViewModel {
@@ -16,7 +16,7 @@ class SnackbarStateViewModelImpl : SnackbarStateViewModel {
     override val snackBarMessage: SharedFlow<NativeText>
         get() = _snackBarMessage.asSharedFlow()
 
-    override suspend fun setSnackbarMessageSuspend(message: NativeText) {
+    override suspend fun showSnackbarSuspend(message: NativeText) {
         _snackBarMessage.emit(message)
     }
 }

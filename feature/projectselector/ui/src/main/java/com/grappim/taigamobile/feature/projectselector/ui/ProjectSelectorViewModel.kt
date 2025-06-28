@@ -34,7 +34,8 @@ class ProjectSelectorViewModel @Inject constructor(
     private val _state = MutableStateFlow(
         ProjectSelectorState(
             isFromLogin = route.isFromLogin,
-            setProjectsQuery = ::searchProjects
+            setProjectsQuery = ::searchProjects,
+            setProject = ::selectProject
         )
     )
     val state = _state.asStateFlow()
@@ -58,11 +59,11 @@ class ProjectSelectorViewModel @Inject constructor(
         }
     }
 
-    fun searchProjects(query: String) {
+    private fun searchProjects(query: String) {
         _searchQuery.value = query
     }
 
-    fun selectProject(project: Project) {
+    private fun selectProject(project: Project) {
         viewModelScope.launch {
             taigaStorage.setCurrentProjectId(projectId = project.id)
             session.changeCurrentProjectName(project.name)

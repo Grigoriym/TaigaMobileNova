@@ -120,6 +120,7 @@ dependencies {
     implementation(libs.androidx.compose.foundation.layout)
 
     implementation(libs.coil.compose)
+    implementation(libs.coil.okhttp)
 
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)

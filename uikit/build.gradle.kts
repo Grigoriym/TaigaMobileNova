@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.markwon.core)
     implementation(libs.markwon.image.coil)
     implementation(libs.coil.compose)
+    implementation(libs.coil.okhttp)
     implementation(libs.material)
 
     implementation(libs.androidx.paging.compose)
