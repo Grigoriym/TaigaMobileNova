@@ -12,7 +12,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.grappim.taigamobile.core.storage.ThemeSetting
+import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.uikit.FilePicker
 import com.grappim.taigamobile.uikit.LocalFilePicker
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -50,9 +50,9 @@ class MainActivity : AppCompatActivity() {
             val theme by viewModel.theme.collectAsState()
 
             val darkTheme = when (theme) {
-                ThemeSetting.Light -> false
-                ThemeSetting.Dark -> true
-                ThemeSetting.System -> isSystemInDarkTheme()
+                ThemeSettings.Light -> false
+                ThemeSettings.Dark -> true
+                ThemeSettings.System -> isSystemInDarkTheme()
             }
 
             TaigaMobileTheme(darkTheme) {

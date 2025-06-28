@@ -6,12 +6,14 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ProjectsApi {
-    @GET("projects?order_by=user_order&slight=true")
+    @GET("projects")
     suspend fun getProjects(
         @Query("q") query: String? = null,
         @Query("page") page: Int? = null,
         @Query("member") memberId: Long? = null,
-        @Query("page_size") pageSize: Int? = null
+        @Query("page_size") pageSize: Int? = null,
+        @Query("order_by") orderBy: String = "user_order",
+        @Query("slight") slight: Boolean = true
     ): List<Project>
 
     @GET("projects/{id}")

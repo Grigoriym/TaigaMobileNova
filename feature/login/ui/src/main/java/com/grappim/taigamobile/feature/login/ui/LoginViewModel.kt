@@ -59,7 +59,7 @@ class LoginViewModel @Inject constructor(
                     _loginSuccessful.emit(true)
                 }.onFailure {
                     isLoading(false)
-                    setSnackbarMessageSuspend(NativeText.Resource(RString.login_error_message))
+                    showSnackbarSuspend(NativeText.Resource(RString.login_error_message))
                 }
         }
     }

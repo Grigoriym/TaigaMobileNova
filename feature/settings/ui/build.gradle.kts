@@ -21,6 +21,7 @@ dependencies {
     implementation(projects.feature.users.domain)
 
     implementation(libs.coil.compose)
+    implementation(libs.coil.okhttp)
     implementation(libs.timber)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)

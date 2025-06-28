@@ -3,66 +3,94 @@ package com.grappim.taigamobile.feature.settings.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.core.storage.AuthStateManager
-import com.grappim.taigamobile.core.storage.Settings
-import com.grappim.taigamobile.core.storage.ThemeSetting
+import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
-import com.grappim.taigamobile.utils.ui.loadOrError
-import com.grappim.taigamobile.utils.ui.mutableResultFlow
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SnackbarStateViewModel
+import com.grappim.taigamobile.utils.ui.SnackbarStateViewModelImpl
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val settings: Settings,
-    private val userRepository: UsersRepository,
-    private val authStateManager: AuthStateManager,
+    private val usersRepository: UsersRepository,
+    private val taigaStorage: TaigaStorage,
     serverStorage: ServerStorage,
     appInfoProvider: AppInfoProvider
-) : ViewModel() {
+) : ViewModel(),
+    SnackbarStateViewModel by SnackbarStateViewModelImpl() {
 
     private val _state: MutableStateFlow<SettingsState> = MutableStateFlow(
         SettingsState(
             appInfo = appInfoProvider.getAppInfo(),
             serverUrl = serverStorage.server,
-            setIsAlertVisible = ::setAlertVisible
+            onThemeChanged = ::switchTheme,
+            showSnackbar = ::showSnackbar,
+            getThemeTitle = ::getThemeTitle
         )
     )
     val state = _state.asStateFlow()
 
-    val user = mutableResultFlow<User>()
-
     init {
-        onOpen()
-    }
+        _state.update { it.copy(isLoading = true) }
+        taigaStorage.themeSettings.onEach { settings ->
+            val title = getThemeTitle(settings)
+            _state.update {
+                it.copy(
+                    themeSettings = settings,
+                    themeDropDownTitle = title
+                )
+            }
+        }.launchIn(viewModelScope)
 
-    val themeSetting by lazy { settings.themeSetting }
-
-    private fun setAlertVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isAlertVisible = isVisible)
-        }
-    }
-
-    private fun onOpen() {
         viewModelScope.launch {
-            user.loadOrError(preserveValue = false) { userRepository.getMe() }
+            usersRepository.getMeResult()
+                .onSuccess { result ->
+                    _state.update {
+                        it.copy(
+                            user = result,
+                            isLoading = false
+                        )
+                    }
+                }.onFailure { e ->
+                    val errorMessage = getErrorMessage(e)
+                    showSnackbar(errorMessage)
+                    _state.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
+                }
         }
     }
 
-    fun logout() {
+    private fun getThemeTitle(theme: ThemeSettings): NativeText = NativeText.Resource(
+        when (theme) {
+            ThemeSettings.System -> RString.theme_system
+            ThemeSettings.Light -> RString.theme_light
+            ThemeSettings.Dark -> RString.theme_dark
+        }
+    )
+
+    private fun showSnackbar(msg: NativeText) {
         viewModelScope.launch {
-            authStateManager.logoutSuspend()
+            showSnackbarSuspend(msg)
         }
     }
 
-    fun switchTheme(theme: ThemeSetting) {
-        settings.changeThemeSetting(theme)
+    private fun switchTheme(theme: ThemeSettings) {
+        viewModelScope.launch {
+            taigaStorage.setThemSetting(theme)
+        }
     }
 }

@@ -68,7 +68,7 @@ fun ProjectSelectorScreen(
         searchQuery = searchQuery,
         projects = lazyProjectItems,
         selectProject = {
-            viewModel.selectProject(it)
+            state.setProject(it)
             onProjectSelect(state.isFromLogin)
         }
     )
@@ -89,8 +89,7 @@ fun ProjectSelectorScreenContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         OutlinedTextField(
-            modifier = Modifier
-                .fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth(),
             value = searchQuery,
             onValueChange = state.setProjectsQuery,
             shape = RoundedCornerShape(16.dp),
@@ -172,7 +171,8 @@ private fun ProjectSelectorScreenPreview() = TaigaMobileTheme {
         searchQuery = "",
         state = ProjectSelectorState(
             currentProjectId = 1L,
-            setProjectsQuery = {}
+            setProjectsQuery = {},
+            setProject = {}
         )
     )
 }

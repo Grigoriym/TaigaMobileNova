@@ -5,6 +5,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
@@ -25,6 +26,18 @@ class TaigaStorage @Inject constructor(@ApplicationContext private val context: 
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
         name = TAIGA_STORAGE_NAME
     )
+
+    private val themeSettingKey = stringPreferencesKey("theme_settings")
+    val themeSettings: Flow<ThemeSettings> = context.dataStore.data
+        .map { preferences ->
+            ThemeSettings.fromValue(preferences[themeSettingKey]) ?: ThemeSettings.default()
+        }
+
+    suspend fun setThemSetting(themeSettings: ThemeSettings) {
+        context.dataStore.edit { settings ->
+            settings[themeSettingKey] = themeSettings.value
+        }
+    }
 
     private val currentProjectIdKey = longPreferencesKey(CURRENT_PROJECT_ID_KEY)
 

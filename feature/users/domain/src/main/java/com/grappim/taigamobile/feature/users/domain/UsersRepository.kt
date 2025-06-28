@@ -6,6 +6,7 @@ import com.grappim.taigamobile.core.domain.User
 
 interface UsersRepository {
     suspend fun getMe(): User
+    suspend fun getMeResult(): Result<User>
     suspend fun getUser(userId: Long): User
     suspend fun getUserStats(userId: Long): Stats
 

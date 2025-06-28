@@ -194,7 +194,7 @@ fun MainNavHost(
 
         composable<SettingsNavDestination> {
             SettingsScreen(
-                showMessage = showMessage
+                showSnackbar = showSnackbar
             )
         }
 

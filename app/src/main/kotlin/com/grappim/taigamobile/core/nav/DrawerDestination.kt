@@ -69,5 +69,10 @@ enum class DrawerDestination(
         SettingsNavDestination,
         RString.settings,
         RDrawable.ic_settings
+    ),
+    Logout(
+        "",
+        RString.logout_title,
+        RDrawable.ic_logout
     )
 }
