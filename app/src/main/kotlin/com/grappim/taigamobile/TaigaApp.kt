@@ -3,13 +3,30 @@ package com.grappim.taigamobile
 import android.app.Application
 import android.os.StrictMode
 import android.util.Log
-import com.google.android.material.color.DynamicColors
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import coil3.network.okhttp.OkHttpNetworkFetcherFactory
+import coil3.request.crossfade
+import coil3.util.DebugLogger
+import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.data.interceptors.DebugLocalHostImageManager
 import com.grappim.taigamobile.utils.FileLoggingTree
 import dagger.hilt.android.HiltAndroidApp
+import okhttp3.OkHttpClient
 import timber.log.Timber
+import javax.inject.Inject
 
 @HiltAndroidApp
-class TaigaApp : Application() {
+class TaigaApp :
+    Application(),
+    SingletonImageLoader.Factory {
+
+    @Inject
+    lateinit var appInfoProvider: AppInfoProvider
+
+    @Inject
+    lateinit var debugLocalHostImageManager: DebugLocalHostImageManager
 
     private var fileLoggingTree: FileLoggingTree? = null
 
@@ -17,7 +34,7 @@ class TaigaApp : Application() {
         super.onCreate()
         setupStrictMode()
 
-        val minLoggingPriority = if (BuildConfig.DEBUG) {
+        val minLoggingPriority = if (appInfoProvider.isDebug()) {
             Timber.plant(Timber.DebugTree())
             Log.DEBUG
         } else {
@@ -33,12 +50,10 @@ class TaigaApp : Application() {
         } catch (e: NullPointerException) {
             Timber.e(e, "Cannot setup FileLoggingTree, skipping")
         }
-
-        DynamicColors.applyToActivitiesIfAvailable(this)
     }
 
     private fun setupStrictMode() {
-        if (BuildConfig.DEBUG) {
+        if (appInfoProvider.isDebug()) {
             StrictMode.setThreadPolicy(
                 StrictMode.ThreadPolicy.Builder()
                     .detectAll()
@@ -53,4 +68,24 @@ class TaigaApp : Application() {
             )
         }
     }
+
+    // todo refactor before release
+    override fun newImageLoader(context: PlatformContext): ImageLoader =
+        ImageLoader.Builder(context)
+            .apply {
+                if (appInfoProvider.isDebug()) {
+                    components {
+                        add(
+                            OkHttpNetworkFetcherFactory(
+                                OkHttpClient.Builder()
+                                    .addInterceptor(debugLocalHostImageManager)
+                                    .build()
+                            )
+                        )
+                    }
+                    logger(DebugLogger())
+                }
+            }
+            .crossfade(true)
+            .build()
 }

@@ -51,7 +51,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.widgets.picker.DatePicker
-import com.grappim.taigamobile.uikit.widgets.text.MarkdownText
+import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.utils.ui.activity
 import java.time.LocalDate
 import kotlin.math.floor
@@ -327,7 +327,7 @@ private fun CustomFieldRichText(
             focusRequester.requestFocus()
         }
     } else {
-        MarkdownText(text.text)
+        MarkdownTextWidget(text.text)
     }
 }
 

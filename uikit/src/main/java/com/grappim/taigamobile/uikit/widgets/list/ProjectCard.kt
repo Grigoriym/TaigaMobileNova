@@ -2,7 +2,6 @@ package com.grappim.taigamobile.uikit.widgets.list
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -24,12 +23,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import coil.request.ImageRequest
-import coil3.compose.rememberAsyncImagePainter
+import coil3.compose.AsyncImage
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
@@ -66,17 +63,12 @@ fun ProjectCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalContext.current).data(
-                            project.avatarUrl ?: RDrawable.default_avatar
-                        ).apply(fun ImageRequest.Builder.() {
-                            error(RDrawable.default_avatar)
-                            crossfade(true)
-                        }).build()
-                    ),
+                AsyncImage(
+                    modifier = Modifier.size(46.dp),
                     contentDescription = null,
-                    modifier = Modifier.size(46.dp)
+                    placeholder = painterResource(RDrawable.default_avatar),
+                    error = painterResource(RDrawable.default_avatar),
+                    model = project.avatarUrl
                 )
 
                 Spacer(Modifier.width(8.dp))

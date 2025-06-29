@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.teams.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,14 +25,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import coil3.compose.AsyncImage
 import com.grappim.taigamobile.core.domain.TeamMember
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -127,20 +124,15 @@ private fun TeamMemberItem(teamMember: TeamMember, onUserItemClick: () -> Unit) 
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.weight(0.6f)
         ) {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current).data(
-                        teamMember.avatarUrl ?: RDrawable.default_avatar
-                    ).apply(fun ImageRequest.Builder.() {
-                        error(RDrawable.default_avatar)
-                        crossfade(true)
-                    }).build()
-                ),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            AsyncImage(
                 modifier = Modifier
                     .size(50.dp)
-                    .clip(CircleShape)
+                    .clip(CircleShape),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(RDrawable.default_avatar),
+                error = painterResource(RDrawable.default_avatar),
+                model = teamMember.avatarUrl
             )
 
             Spacer(Modifier.width(6.dp))

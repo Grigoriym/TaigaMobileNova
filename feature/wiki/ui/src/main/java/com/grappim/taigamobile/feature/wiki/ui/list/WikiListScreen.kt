@@ -12,7 +12,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.material.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -151,7 +151,7 @@ private fun WikiSelectorList(
         )
 
         if (index < titles.lastIndex) {
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 color = MaterialTheme.colorScheme.outline
             )

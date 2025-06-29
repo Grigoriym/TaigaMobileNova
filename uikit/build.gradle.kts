@@ -14,8 +14,7 @@ dependencies {
     implementation(projects.core.navigation)
 
     implementation(libs.vanpra.color)
-    implementation(libs.markwon.core)
-    implementation(libs.markwon.image.coil)
+    implementation(libs.markdown)
     implementation(libs.coil.compose)
     implementation(libs.coil.okhttp)
     implementation(libs.material)

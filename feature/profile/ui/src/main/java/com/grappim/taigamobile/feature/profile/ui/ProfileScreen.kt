@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.profile.ui
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,14 +25,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import coil3.compose.AsyncImage
 import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.domain.Stats
 import com.grappim.taigamobile.core.domain.User
@@ -112,21 +109,15 @@ fun ProfileScreenContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item {
-                Image(
-                    painter = rememberAsyncImagePainter(
-                        ImageRequest.Builder(LocalContext.current)
-                            .data(
-                                currentUser?.avatarUrl ?: RDrawable.default_avatar
-                            ).apply(fun ImageRequest.Builder.() {
-                                error(RDrawable.default_avatar)
-                                crossfade(true)
-                            }).build()
-                    ),
-                    contentDescription = null,
-                    contentScale = ContentScale.Crop,
+                AsyncImage(
                     modifier = Modifier
                         .size(200.dp)
-                        .clip(CircleShape)
+                        .clip(CircleShape),
+                    contentDescription = null,
+                    contentScale = ContentScale.Crop,
+                    placeholder = painterResource(RDrawable.default_avatar),
+                    error = painterResource(RDrawable.default_avatar),
+                    model = currentUser?.avatarUrl
                 )
 
                 Spacer(Modifier.height(16.dp))

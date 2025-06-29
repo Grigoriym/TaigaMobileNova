@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.sprint.ui
 
 import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -39,16 +38,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.annotation.ExperimentalCoilApi
-import coil3.compose.rememberAsyncImagePainter
-import coil3.request.ImageRequest
-import coil3.request.crossfade
+import coil3.compose.AsyncImage
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.Project
@@ -427,21 +424,16 @@ private fun TaskItem(task: CommonTask, onTaskClick: () -> Unit) = Surface(
         }
 
         task.assignee?.let {
-            Image(
-                painter = rememberAsyncImagePainter(
-                    ImageRequest.Builder(LocalContext.current).data(
-                        data = it.avatarUrl ?: RDrawable.default_avatar
-                    ).apply(block = fun ImageRequest.Builder.() {
-                        error(RDrawable.default_avatar)
-                        crossfade(true)
-                    }).build()
-                ),
-                contentDescription = null,
-                contentScale = ContentScale.Crop,
+            AsyncImage(
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape)
-                    .weight(0.2f, fill = false)
+                    .weight(0.2f, fill = false),
+                contentDescription = null,
+                contentScale = ContentScale.Crop,
+                placeholder = painterResource(RDrawable.default_avatar),
+                error = painterResource(RDrawable.default_avatar),
+                model = it.avatarUrl
             )
         }
     }
