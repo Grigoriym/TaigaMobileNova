@@ -18,7 +18,7 @@ import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -58,89 +58,94 @@ fun <T : Any> SelectorList(
     navigateBack: () -> Unit = {},
     animationDurationMillis: Int = SelectorListConstants.DEFAULT_ANIM_DURATION_MILLIS,
     itemContent: @Composable (T) -> Unit
-) = AnimatedVisibility(
-    modifier = modifier,
-    visibleState = remember { MutableTransitionState(false) }
-        .apply { targetState = isVisible },
-    enter = slideInVertically(
-        initialOffsetY = { it },
-        animationSpec = tween(animationDurationMillis)
-    ),
-    exit = slideOutVertically(
-        targetOffsetY = { it },
-        animationSpec = tween(animationDurationMillis)
-    )
 ) {
-    var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(TextFieldValue())
-    }
-
-    OnBackPressed(navigateBack)
-
-    val isLoading = itemsLazy
-        ?.run { loadState.refresh is LoadState.Loading || loadState.append is LoadState.Loading }
-        ?: isItemsLoading
-
-    val lastIndex = itemsLazy?.itemCount?.minus(1) ?: items.lastIndex
-
-    val listItemContent: @Composable LazyItemScope.(Int, T?) -> Unit = lambda@{ index, item ->
-        if (item == null) return@lambda
-
-        itemContent(item)
-
-        if (index < lastIndex) {
-            Divider(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                color = MaterialTheme.colorScheme.outline
-            )
-        }
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        AppBarWithBackButton(
-            title = {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.CenterStart
-                ) {
-                    if (isSearchable) {
-                        TextFieldWithHint(
-                            hintId = titleHintId,
-                            value = query,
-                            onValueChange = { query = it },
-                            singleLine = true,
-                            onSearchClick = { searchData(query.text) }
-                        )
-                    } else {
-                        Text(stringResource(titleHintId))
-                    }
-                }
-            },
-            navigateBack = navigateBack
+    AnimatedVisibility(
+        modifier = modifier,
+        visibleState = remember { MutableTransitionState(false) }
+            .apply { targetState = isVisible },
+        enter = slideInVertically(
+            initialOffsetY = { it },
+            animationSpec = tween(animationDurationMillis)
+        ),
+        exit = slideOutVertically(
+            targetOffsetY = { it },
+            animationSpec = tween(animationDurationMillis)
         )
+    ) {
+        var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+            mutableStateOf(TextFieldValue())
+        }
 
-        LazyColumn {
-            itemsLazy?.let { item ->
-                items(
-                    count = item.itemCount,
-                    key = key,
-                    contentType = item.itemContentType()
-                ) { index ->
-                    val item = item[index]
-                    listItemContent(index, item)
-                }
-            } ?: itemsIndexed(items, itemContent = listItemContent)
+        OnBackPressed(navigateBack)
 
-            item {
-                if (isLoading) {
-                    DotsLoader()
+        val isLoading = itemsLazy
+            ?.run {
+                loadState.refresh is LoadState.Loading ||
+                    loadState.append is LoadState.Loading
+            }
+            ?: isItemsLoading
+
+        val lastIndex = itemsLazy?.itemCount?.minus(1) ?: items.lastIndex
+
+        val listItemContent: @Composable LazyItemScope.(Int, T?) -> Unit = lambda@{ index, item ->
+            if (item == null) return@lambda
+
+            itemContent(item)
+
+            if (index < lastIndex) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outline
+                )
+            }
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.surface),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            AppBarWithBackButton(
+                title = {
+                    Box(
+                        modifier = Modifier.fillMaxSize(),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        if (isSearchable) {
+                            TextFieldWithHint(
+                                hintId = titleHintId,
+                                value = query,
+                                onValueChange = { query = it },
+                                singleLine = true,
+                                onSearchClick = { searchData(query.text) }
+                            )
+                        } else {
+                            Text(stringResource(titleHintId))
+                        }
+                    }
+                },
+                navigateBack = navigateBack
+            )
+
+            LazyColumn {
+                itemsLazy?.let { item ->
+                    items(
+                        count = item.itemCount,
+                        key = key,
+                        contentType = item.itemContentType()
+                    ) { index ->
+                        val item = item[index]
+                        listItemContent(index, item)
+                    }
+                } ?: itemsIndexed(items, itemContent = listItemContent)
+
+                item {
+                    if (isLoading) {
+                        DotsLoader()
+                    }
+                    Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
                 }
-                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
             }
         }
     }

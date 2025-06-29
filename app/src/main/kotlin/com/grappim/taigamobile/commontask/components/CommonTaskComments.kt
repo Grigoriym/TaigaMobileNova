@@ -7,7 +7,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -28,7 +28,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
-import com.grappim.taigamobile.uikit.widgets.text.MarkdownText
+import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 @Suppress("FunctionName")
@@ -49,7 +49,7 @@ fun LazyListScope.CommonTaskComments(
         )
 
         if (index < comments.lastIndex) {
-            Divider(
+            HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.outline
             )
@@ -106,7 +106,7 @@ private fun CommentItem(
         }
     }
 
-    MarkdownText(
+    MarkdownTextWidget(
         text = comment.text,
         modifier = Modifier.padding(start = 4.dp)
     )

@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.uikit.widgets.list
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,13 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.request.ImageRequest
-import coil3.compose.rememberAsyncImagePainter
+import coil3.compose.AsyncImage
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -57,21 +54,15 @@ fun UserItem(
             remember { DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM) }
         val imageSize = if (dateTime != null) 46.dp else 40.dp
 
-        Image(
-            painter = rememberAsyncImagePainter(
-                ImageRequest.Builder(LocalContext.current)
-                    .data(user.avatarUrl ?: RDrawable.default_avatar).apply(
-                        fun ImageRequest.Builder.() {
-                            error(RDrawable.default_avatar)
-                            crossfade(true)
-                        }
-                    ).build()
-            ),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+        AsyncImage(
             modifier = Modifier
                 .size(imageSize)
-                .clip(CircleShape)
+                .clip(CircleShape),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            placeholder = painterResource(RDrawable.default_avatar),
+            error = painterResource(RDrawable.default_avatar),
+            model = user.avatarUrl
         )
 
         Spacer(Modifier.width(6.dp))

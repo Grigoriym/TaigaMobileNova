@@ -7,13 +7,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerScope
 import androidx.compose.foundation.pager.PagerState
-import androidx.compose.material.ScrollableTabRow
-import androidx.compose.material.Tab
-import androidx.compose.material.TabPosition
-import androidx.compose.material.TabRow
-import androidx.compose.material.TabRowDefaults
-import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ScrollableTabRow
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabPosition
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -39,69 +39,71 @@ fun HorizontalTabbedPager(
     scrollable: Boolean = true,
     edgePadding: Dp = mainHorizontalScreenPadding,
     content: @Composable PagerScope.(page: Int) -> Unit
-) = Column(modifier = modifier) {
-    val coroutineScope = rememberCoroutineScope()
-    val selectedTabIndex by remember { derivedStateOf { pagerState.currentPage } }
+) {
+    Column(modifier = modifier) {
+        val coroutineScope = rememberCoroutineScope()
+        val selectedTabIndex by remember { derivedStateOf { pagerState.currentPage } }
 
-    val indicator: @Composable (tabPositions: List<TabPosition>) -> Unit = { tabPositions ->
-        TabRowDefaults.Indicator(
-            modifier = Modifier.tabIndicatorOffset(
-                currentTabPosition = tabPositions[selectedTabIndex]
-            )
-        )
-    }
-
-    val tabsRow: @Composable () -> Unit = {
-        tabs.forEachIndexed { index, tab ->
-            val selected = selectedTabIndex == index
-            Tab(
-                selected = selected,
-                onClick = {
-                    coroutineScope.launch {
-                        pagerState.animateScrollToPage(index)
-                    }
-                },
-                text = {
-                    Text(
-                        text = stringResource(tab.titleId),
-                        color = if (selected) {
-                            MaterialTheme.colorScheme.primary
-                        } else {
-                            MaterialTheme.colorScheme.onSurface
-                        }
-                    )
-                }
+        val indicator: @Composable (tabPositions: List<TabPosition>) -> Unit = { tabPositions ->
+            TabRowDefaults.SecondaryIndicator(
+                modifier = Modifier.tabIndicatorOffset(
+                    currentTabPosition = tabPositions[selectedTabIndex]
+                )
             )
         }
-    }
 
-    if (scrollable) {
-        ScrollableTabRow(
-            modifier = Modifier.fillMaxWidth(),
-            selectedTabIndex = selectedTabIndex,
-            contentColor = MaterialTheme.colorScheme.primary,
-            backgroundColor = MaterialTheme.colorScheme.surface,
-            indicator = indicator,
-            tabs = tabsRow,
-            divider = {},
-            edgePadding = edgePadding
+        val tabsRow: @Composable () -> Unit = {
+            tabs.forEachIndexed { index, tab ->
+                val selected = selectedTabIndex == index
+                Tab(
+                    selected = selected,
+                    onClick = {
+                        coroutineScope.launch {
+                            pagerState.animateScrollToPage(index)
+                        }
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(tab.titleId),
+                            color = if (selected) {
+                                MaterialTheme.colorScheme.primary
+                            } else {
+                                MaterialTheme.colorScheme.onSurface
+                            }
+                        )
+                    }
+                )
+            }
+        }
+
+        if (scrollable) {
+            ScrollableTabRow(
+                modifier = Modifier.fillMaxWidth(),
+                selectedTabIndex = selectedTabIndex,
+                contentColor = MaterialTheme.colorScheme.primary,
+//                backgroundColor = MaterialTheme.colorScheme.surface,
+                indicator = indicator,
+                tabs = tabsRow,
+                divider = {},
+                edgePadding = edgePadding
+            )
+        } else {
+            TabRow(
+                modifier = Modifier.fillMaxWidth(),
+                selectedTabIndex = selectedTabIndex,
+                contentColor = MaterialTheme.colorScheme.primary,
+//                backgroundColor = MaterialTheme.colorScheme.surface,
+                indicator = indicator,
+                tabs = tabsRow,
+                divider = {}
+            )
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        HorizontalPager(
+            state = pagerState,
+            pageContent = content
         )
-    } else {
-        TabRow(
-            modifier = Modifier.fillMaxWidth(),
-            selectedTabIndex = selectedTabIndex,
-            contentColor = MaterialTheme.colorScheme.primary,
-            backgroundColor = MaterialTheme.colorScheme.surface,
-            indicator = indicator,
-            tabs = tabsRow,
-            divider = {}
-        )
     }
-
-    Spacer(Modifier.height(8.dp))
-
-    HorizontalPager(
-        state = pagerState,
-        pageContent = content
-    )
 }

@@ -119,9 +119,6 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation.layout)
 
-    implementation(libs.coil.compose)
-    implementation(libs.coil.okhttp)
-
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
@@ -141,13 +138,12 @@ dependencies {
 
     implementation(libs.vanpra.color)
 
-    // todo start utilise this blockhound
+    implementation(libs.coil.core)
+    implementation(libs.coil.okhttp)
+    implementation(libs.coil.compose)
+
     testImplementation(libs.blockHound)
     testImplementation(libs.kotlinx.coroutines.debug)
-
-    val postgresDriverVersion = "42.3.6"
-    testRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
-    androidTestRuntimeOnly("org.postgresql:postgresql:$postgresDriverVersion")
 
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.noop)

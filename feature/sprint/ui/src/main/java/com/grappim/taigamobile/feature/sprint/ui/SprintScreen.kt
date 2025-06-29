@@ -137,132 +137,134 @@ fun SprintScreenContent(
     navigateBack: () -> Unit = {},
     navigateToTask: NavigateToTask = { _, _, _ -> },
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
-) = Column(
-    modifier = modifier.fillMaxSize(),
-    horizontalAlignment = Alignment.Start
 ) {
-    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.Start
+    ) {
+        val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
-    var isMenuExpanded by remember { mutableStateOf(false) }
-    AppBarWithBackButton(
-        title = {
-            Column {
-                Text(
-                    text = sprint?.name.orEmpty(),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+        var isMenuExpanded by remember { mutableStateOf(false) }
+        AppBarWithBackButton(
+            title = {
+                Column {
+                    Text(
+                        text = sprint?.name.orEmpty(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-                Text(
-                    text = stringResource(RString.sprint_dates_template).format(
-                        sprint?.start?.format(dateFormatter).orEmpty(),
-                        sprint?.end?.format(dateFormatter).orEmpty()
-                    ),
-                    style = MaterialTheme.typography.bodyMedium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        },
-        actions = {
-            Box {
-                IconButton(onClick = { isMenuExpanded = true }) {
-                    Icon(
-                        painter = painterResource(RDrawable.ic_options),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
+                    Text(
+                        text = stringResource(RString.sprint_dates_template).format(
+                            sprint?.start?.format(dateFormatter).orEmpty(),
+                            sprint?.end?.format(dateFormatter).orEmpty()
+                        ),
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
-
-                // delete alert dialog
-                var isDeleteAlertVisible by remember { mutableStateOf(false) }
-                if (isDeleteAlertVisible) {
-                    ConfirmActionDialog(
-                        title = stringResource(RString.delete_sprint_title),
-                        text = stringResource(RString.delete_sprint_text),
-                        onConfirm = {
-                            isDeleteAlertVisible = false
-                            deleteSprint()
-                        },
-                        onDismiss = { isDeleteAlertVisible = false },
-                        iconId = RDrawable.ic_delete
-                    )
-                }
-
-                var isEditDialogVisible by remember { mutableStateOf(false) }
-                if (isEditDialogVisible) {
-                    EditSprintDialog(
-                        initialName = sprint?.name.orEmpty(),
-                        initialStart = sprint?.start,
-                        initialEnd = sprint?.end,
-                        onConfirm = { name, start, end ->
-                            editSprint(name, start, end)
-                            isEditDialogVisible = false
-                        },
-                        onDismiss = { isEditDialogVisible = false }
-                    )
-                }
-
-                DropdownMenu(
-                    modifier = Modifier.background(
-                        MaterialTheme.colorScheme.surfaceColorAtElevationInternal(
-                            dialogTonalElevation
+            },
+            actions = {
+                Box {
+                    IconButton(onClick = { isMenuExpanded = true }) {
+                        Icon(
+                            painter = painterResource(RDrawable.ic_options),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
                         )
-                    ),
-                    expanded = isMenuExpanded,
-                    onDismissRequest = { isMenuExpanded = false }
-                ) {
-                    // edit
-                    DropdownMenuItem(
-                        onClick = {
-                            isMenuExpanded = false
-                            isEditDialogVisible = true
-                        },
-                        text = {
-                            Text(
-                                text = stringResource(RString.edit),
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-                    )
+                    }
 
-                    // delete
-                    DropdownMenuItem(
-                        onClick = {
-                            isMenuExpanded = false
-                            isDeleteAlertVisible = true
-                        },
-                        text = {
-                            Text(
-                                text = stringResource(RString.delete),
-                                style = MaterialTheme.typography.bodyLarge
+                    // delete alert dialog
+                    var isDeleteAlertVisible by remember { mutableStateOf(false) }
+                    if (isDeleteAlertVisible) {
+                        ConfirmActionDialog(
+                            title = stringResource(RString.delete_sprint_title),
+                            text = stringResource(RString.delete_sprint_text),
+                            onConfirm = {
+                                isDeleteAlertVisible = false
+                                deleteSprint()
+                            },
+                            onDismiss = { isDeleteAlertVisible = false },
+                            iconId = RDrawable.ic_delete
+                        )
+                    }
+
+                    var isEditDialogVisible by remember { mutableStateOf(false) }
+                    if (isEditDialogVisible) {
+                        EditSprintDialog(
+                            initialName = sprint?.name.orEmpty(),
+                            initialStart = sprint?.start,
+                            initialEnd = sprint?.end,
+                            onConfirm = { name, start, end ->
+                                editSprint(name, start, end)
+                                isEditDialogVisible = false
+                            },
+                            onDismiss = { isEditDialogVisible = false }
+                        )
+                    }
+
+                    DropdownMenu(
+                        modifier = Modifier.background(
+                            MaterialTheme.colorScheme.surfaceColorAtElevationInternal(
+                                dialogTonalElevation
                             )
-                        }
-                    )
+                        ),
+                        expanded = isMenuExpanded,
+                        onDismissRequest = { isMenuExpanded = false }
+                    ) {
+                        // edit
+                        DropdownMenuItem(
+                            onClick = {
+                                isMenuExpanded = false
+                                isEditDialogVisible = true
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(RString.edit),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        )
+
+                        // delete
+                        DropdownMenuItem(
+                            onClick = {
+                                isMenuExpanded = false
+                                isDeleteAlertVisible = true
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(RString.delete),
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+                        )
+                    }
                 }
-            }
-        },
-        navigateBack = navigateBack
-    )
-
-    when {
-        isLoading || sprint == null -> Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.fillMaxSize()
-        ) {
-            CircularLoader()
-        }
-
-        isEditLoading || isDeleteLoading -> LoadingDialog()
-
-        else -> SprintKanbanWidget(
-            statuses = statuses,
-            storiesWithTasks = storiesWithTasks,
-            storylessTasks = storylessTasks,
-            issues = issues,
-            navigateToTask = navigateToTask,
-            navigateToCreateTask = navigateToCreateTask
+            },
+            navigateBack = navigateBack
         )
+
+        when {
+            isLoading || sprint == null -> Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                CircularLoader()
+            }
+
+            isEditLoading || isDeleteLoading -> LoadingDialog()
+
+            else -> SprintKanbanWidget(
+                statuses = statuses,
+                storiesWithTasks = storiesWithTasks,
+                storylessTasks = storylessTasks,
+                issues = issues,
+                navigateToTask = navigateToTask,
+                navigateToCreateTask = navigateToCreateTask
+            )
+        }
     }
 }
 
