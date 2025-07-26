@@ -11,9 +11,9 @@ import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.commontask.CommonTaskViewModel
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.Sprint
-import com.grappim.taigamobile.core.domain.Status
-import com.grappim.taigamobile.core.domain.Swimlane
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.StatusOld
+import com.grappim.taigamobile.core.domain.SwimlaneDTO
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditAction
 import com.grappim.taigamobile.uikit.SimpleEditAction
@@ -29,31 +29,32 @@ import java.time.format.FormatStyle
  * Bunch of common selectors
  */
 @Composable
+@Deprecated("a god class must be removed")
 fun Selectors(
-    statusEntry: SelectorEntry<Status> = SelectorEntry(),
-    typeEntry: SelectorEntry<Status> = SelectorEntry(),
-    severityEntry: SelectorEntry<Status> = SelectorEntry(),
-    priorityEntry: SelectorEntry<Status> = SelectorEntry(),
+    statusOldEntry: SelectorEntry<StatusOld> = SelectorEntry(),
+    typeEntry: SelectorEntry<StatusOld> = SelectorEntry(),
+    severityEntry: SelectorEntry<StatusOld> = SelectorEntry(),
+    priorityEntry: SelectorEntry<StatusOld> = SelectorEntry(),
     sprintEntry: SelectorEntry<Sprint> = SelectorEntry(),
     epicsEntry: SelectorEntry<CommonTask> = SelectorEntry(),
-    assigneesEntry: SelectorEntry<User> = SelectorEntry(),
-    watchersEntry: SelectorEntry<User> = SelectorEntry(),
-    swimlaneEntry: SelectorEntry<Swimlane> = SelectorEntry()
+    assigneesEntry: SelectorEntry<UserDTO> = SelectorEntry(),
+    watchersEntry: SelectorEntry<UserDTO> = SelectorEntry(),
+    swimlaneDTOEntry: SelectorEntry<SwimlaneDTO> = SelectorEntry()
 ) {
     // status editor
     SelectorList(
         titleHintId = RString.choose_status,
-        items = statusEntry.edit.items,
-        isVisible = statusEntry.isVisible,
+        items = statusOldEntry.edit.items,
+        isVisible = statusOldEntry.isVisible,
         isSearchable = false,
-        searchData = statusEntry.edit.searchItems,
-        navigateBack = statusEntry.hide
+        searchData = statusOldEntry.edit.searchItems,
+        navigateBack = statusOldEntry.hide
     ) {
         StatusItem(
-            status = it,
+            statusOld = it,
             onClick = {
-                statusEntry.edit.select(it)
-                statusEntry.hide()
+                statusOldEntry.edit.select(it)
+                statusOldEntry.hide()
             }
         )
     }
@@ -68,7 +69,7 @@ fun Selectors(
         navigateBack = typeEntry.hide
     ) {
         StatusItem(
-            status = it,
+            statusOld = it,
             onClick = {
                 typeEntry.edit.select(it)
                 typeEntry.hide()
@@ -86,7 +87,7 @@ fun Selectors(
         navigateBack = severityEntry.hide
     ) {
         StatusItem(
-            status = it,
+            statusOld = it,
             onClick = {
                 severityEntry.edit.select(it)
                 severityEntry.hide()
@@ -104,7 +105,7 @@ fun Selectors(
         navigateBack = priorityEntry.hide
     ) {
         StatusItem(
-            status = it,
+            statusOld = it,
             onClick = {
                 priorityEntry.edit.select(it)
                 priorityEntry.hide()
@@ -183,16 +184,16 @@ fun Selectors(
     // swimlane editor
     SelectorList(
         titleHintId = RString.choose_swimlane,
-        items = swimlaneEntry.edit.items,
-        isVisible = swimlaneEntry.isVisible,
+        items = swimlaneDTOEntry.edit.items,
+        isVisible = swimlaneDTOEntry.isVisible,
         isSearchable = false,
-        navigateBack = swimlaneEntry.hide
+        navigateBack = swimlaneDTOEntry.hide
     ) {
         SwimlaneItem(
-            swimlane = it,
+            swimlaneDTO = it,
             onClick = {
-                swimlaneEntry.edit.select(it)
-                swimlaneEntry.hide()
+                swimlaneDTOEntry.edit.select(it)
+                swimlaneDTOEntry.hide()
             }
         )
     }
@@ -205,13 +206,13 @@ class SelectorEntry<TItem : Any>(
 )
 
 @Composable
-private fun StatusItem(status: Status, onClick: () -> Unit) = ContainerBox(
+private fun StatusItem(statusOld: StatusOld, onClick: () -> Unit) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
     Text(
-        text = status.name,
-        color = status.color.toColor()
+        text = statusOld.name,
+        color = statusOld.color.toColor()
     )
 }
 
@@ -257,7 +258,7 @@ private fun SprintItem(sprint: Sprint?, onClick: () -> Unit) = ContainerBox(
 }
 
 @Composable
-private fun MemberItem(member: User, onClick: () -> Unit) = ContainerBox(
+private fun MemberItem(member: UserDTO, onClick: () -> Unit) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -278,11 +279,11 @@ private fun EpicItem(epic: CommonTask, onClick: () -> Unit) = ContainerBox(
 }
 
 @Composable
-private fun SwimlaneItem(swimlane: Swimlane, onClick: () -> Unit) = ContainerBox(
+private fun SwimlaneItem(swimlaneDTO: SwimlaneDTO, onClick: () -> Unit) = ContainerBox(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
-    val swimlaneNullable = swimlane.takeIf { it != CommonTaskViewModel.SWIMLANE_HEADER }
+    val swimlaneNullable = swimlaneDTO.takeIf { it != CommonTaskViewModel.SWIMLANE_DTO_HEADER }
 
     Text(
         text = swimlaneNullable?.name ?: stringResource(RString.unclassifed),

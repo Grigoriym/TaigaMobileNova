@@ -26,6 +26,7 @@ internal fun Project.configureKotlinJvm() {
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
             allWarningsAsErrors.set(false)
+            freeCompilerArgs.add("-Xannotation-default-target=param-property")
         }
     }
 }
@@ -76,6 +77,7 @@ internal fun Project.configureKotlinAndroid(
     dependencies {
         "coreLibraryDesugaring"(libs.findLibrary("android.desugarJdkLibs").get())
         "implementation"(libs.findLibrary("kotlinx.coroutines.android").get())
+        "implementation"(libs.findLibrary("kotlinx.collections").get())
 
         add("testImplementation", kotlin("test"))
         add("testImplementation", project(":testing"))

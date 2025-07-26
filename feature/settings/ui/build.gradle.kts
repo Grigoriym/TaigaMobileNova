@@ -24,5 +24,6 @@ dependencies {
     implementation(libs.coil.okhttp)
     implementation(libs.timber)
     implementation(libs.androidx.hilt.navigation.compose)
+    implementation(libs.androidx.compose.material.icons.extended)
     implementation(libs.androidx.navigation.compose)
 }

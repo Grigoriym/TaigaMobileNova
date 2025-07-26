@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
@@ -29,7 +29,11 @@ class IssuesViewModel @Inject constructor(
     taigaStorage: TaigaStorage
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(IssuesState())
+    private val _state = MutableStateFlow(
+        IssuesState(
+            onUpdateData = ::onUpdateData
+        )
+    )
     val state = _state.asStateFlow()
 
     val issues = session.issuesFilters.flatMapLatest { filters ->
@@ -46,7 +50,7 @@ class IssuesViewModel @Inject constructor(
             }.launchIn(viewModelScope)
 
             launch {
-                filtersRepository.getFiltersDataResult(CommonTaskType.Issue)
+                filtersRepository.getFiltersDataResultOld(CommonTaskType.Issue)
                     .onSuccess { filters ->
                         session.changeIssuesFilters(
                             filters = _state.value.activeFilters.updateData(filters)
@@ -66,7 +70,13 @@ class IssuesViewModel @Inject constructor(
         }
     }
 
-    fun selectFilters(filters: FiltersData) {
+    private fun onUpdateData() {
+        viewModelScope.launch {
+            issuesRepository.refreshIssues()
+        }
+    }
+
+    fun selectFilters(filters: FiltersDataDTO) {
         session.changeIssuesFilters(filters)
     }
 }

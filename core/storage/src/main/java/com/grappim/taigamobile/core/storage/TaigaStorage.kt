@@ -3,6 +3,7 @@ package com.grappim.taigamobile.core.storage
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -12,6 +13,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.runBlocking
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -26,6 +28,12 @@ class TaigaStorage @Inject constructor(@ApplicationContext private val context: 
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
         name = TAIGA_STORAGE_NAME
     )
+
+    private val isNewUiUsedKey = booleanPreferencesKey("is_new_ui_used")
+    val isNewUIUsed: Flow<Boolean> = context.dataStore.data
+        .map {
+            it[isNewUiUsedKey] ?: false
+        }
 
     private val themeSettingKey = stringPreferencesKey("theme_settings")
     val themeSettings: Flow<ThemeSettings> = context.dataStore.data
@@ -58,6 +66,13 @@ class TaigaStorage @Inject constructor(@ApplicationContext private val context: 
     suspend fun clearData() {
         context.dataStore.edit {
             it.clear()
+        }
+    }
+
+    suspend fun setIsUIUsed(isEnabled: Boolean) {
+        Timber.d("setCrashesCollectionEnabled: $isEnabled")
+        context.dataStore.edit { settings ->
+            settings[isNewUiUsedKey] = isEnabled
         }
     }
 }

@@ -31,7 +31,7 @@ value class CommonTaskPathSingular private constructor(val path: String) {
     )
 }
 
-fun StatusesFilter.toStatus(statusType: StatusType) = Status(
+fun StatusesFilter.toStatus(statusType: StatusType) = StatusOld(
     id = id,
     name = name,
     color = color,

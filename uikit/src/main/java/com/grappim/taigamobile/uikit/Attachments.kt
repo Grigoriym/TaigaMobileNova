@@ -27,7 +27,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
-import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
@@ -37,22 +37,22 @@ import java.io.InputStream
 
 @Suppress("FunctionName")
 fun LazyListScope.Attachments(
-    attachments: List<Attachment>,
-    editAttachments: EditAction<Pair<String, InputStream>, Attachment>
+    attachmentDTOS: List<AttachmentDTO>,
+    editAttachments: EditAction<Pair<String, InputStream>, AttachmentDTO>
 ) {
     item {
         val filePicker = LocalFilePicker.current
         SectionTitle(
-            text = stringResource(RString.attachments_template).format(attachments.size),
+            text = stringResource(RString.attachments_template).format(attachmentDTOS.size),
             onAddClick = {
                 filePicker.requestFile { file, stream -> editAttachments.select(file to stream) }
             }
         )
     }
 
-    items(attachments) {
+    items(attachmentDTOS) {
         AttachmentItem(
-            attachment = it,
+            attachmentDTO = it,
             onRemoveClick = { editAttachments.remove(it) }
         )
     }
@@ -65,58 +65,60 @@ fun LazyListScope.Attachments(
 }
 
 @Composable
-private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) = Row(
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.SpaceBetween,
-    modifier = Modifier.fillMaxWidth()
-) {
-    var isAlertVisible by remember { mutableStateOf(false) }
-
-    if (isAlertVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.remove_attachment_title),
-            text = stringResource(RString.remove_attachment_text),
-            onConfirm = {
-                isAlertVisible = false
-                onRemoveClick()
-            },
-            onDismiss = { isAlertVisible = false },
-            iconId = R.drawable.ic_remove
-        )
-    }
+private fun AttachmentItem(attachmentDTO: AttachmentDTO, onRemoveClick: () -> Unit) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .weight(1f, fill = false)
-            .padding(end = 4.dp)
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        val activity = LocalContext.current.activity
-        Icon(
-            painter = painterResource(R.drawable.ic_attachment),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.outline,
-            modifier = Modifier.padding(end = 2.dp)
-        )
+        var isAlertVisible by remember { mutableStateOf(false) }
 
-        Text(
-            text = attachment.name,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.clickable {
-                activity.startActivity(Intent(Intent.ACTION_VIEW, attachment.url.toUri()))
-            }
-        )
-    }
+        if (isAlertVisible) {
+            ConfirmActionDialog(
+                title = stringResource(RString.remove_attachment_title),
+                description = stringResource(RString.remove_attachment_text),
+                onConfirm = {
+                    isAlertVisible = false
+                    onRemoveClick()
+                },
+                onDismiss = { isAlertVisible = false },
+                iconId = R.drawable.ic_remove
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .padding(end = 4.dp)
+        ) {
+            val activity = LocalContext.current.activity
+            Icon(
+                painter = painterResource(R.drawable.ic_attachment),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.padding(end = 2.dp)
+            )
 
-    IconButton(
-        onClick = { isAlertVisible = true },
-        modifier = Modifier
-            .size(32.dp)
-            .clip(CircleShape)
-    ) {
-        Icon(
-            painter = painterResource(R.drawable.ic_delete),
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.error
-        )
+            Text(
+                text = attachmentDTO.name,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable {
+                    activity.startActivity(Intent(Intent.ACTION_VIEW, attachmentDTO.url.toUri()))
+                }
+            )
+        }
+
+        IconButton(
+            onClick = { isAlertVisible = true },
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_delete),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error
+            )
+        }
     }
 }

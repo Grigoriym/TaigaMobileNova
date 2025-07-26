@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.kanban.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.SwimlaneDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.core.storage.subscribeToAll
@@ -36,9 +36,9 @@ class KanbanViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             team = emptyList(),
-                            statuses = emptyList(),
+                            statusOlds = emptyList(),
                             stories = emptyList(),
-                            swimlanes = emptyList()
+                            swimlaneDTOS = emptyList()
                         )
                     }
                 }
@@ -58,9 +58,9 @@ class KanbanViewModel @Inject constructor(
                         isLoading = false,
                         error = null,
                         team = result.team,
-                        statuses = result.statuses,
+                        statusOlds = result.statusOlds,
                         stories = result.stories,
-                        swimlanes = result.swimlanes
+                        swimlaneDTOS = result.swimlaneDTOS
                     )
                 }
             }
@@ -80,7 +80,7 @@ class KanbanViewModel @Inject constructor(
         }
     }
 
-    private fun selectSwimlane(swimlane: Swimlane?) {
-        _state.update { it.copy(selectedSwimlane = swimlane) }
+    private fun selectSwimlane(swimlaneDTO: SwimlaneDTO?) {
+        _state.update { it.copy(selectedSwimlaneDTO = swimlaneDTO) }
     }
 }

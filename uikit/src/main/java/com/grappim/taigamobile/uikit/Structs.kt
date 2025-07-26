@@ -5,17 +5,17 @@ package com.grappim.taigamobile.uikit
  */
 
 import androidx.paging.compose.LazyPagingItems
-import com.grappim.taigamobile.core.domain.Attachment
-import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.AttachmentDTO
+import com.grappim.taigamobile.core.domain.CommentDTO
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CustomField
 import com.grappim.taigamobile.core.domain.CustomFieldValue
 import com.grappim.taigamobile.core.domain.EpicShortInfo
 import com.grappim.taigamobile.core.domain.Sprint
-import com.grappim.taigamobile.core.domain.Status
-import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.StatusOld
+import com.grappim.taigamobile.core.domain.SwimlaneDTO
 import com.grappim.taigamobile.core.domain.Tag
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.core.navigation.NavigateToTask
 import java.io.InputStream
 import java.time.LocalDate
@@ -42,17 +42,17 @@ typealias EmptyEditAction = EditAction<Unit, Unit>
  * All edit actions
  */
 class EditActions(
-    val editStatus: SimpleEditAction<Status> = SimpleEditAction(),
-    val editType: SimpleEditAction<Status> = SimpleEditAction(),
-    val editSeverity: SimpleEditAction<Status> = SimpleEditAction(),
-    val editPriority: SimpleEditAction<Status> = SimpleEditAction(),
-    val editSwimlane: SimpleEditAction<Swimlane> = SimpleEditAction(),
+    val editStatusOld: SimpleEditAction<StatusOld> = SimpleEditAction(),
+    val editType: SimpleEditAction<StatusOld> = SimpleEditAction(),
+    val editSeverity: SimpleEditAction<StatusOld> = SimpleEditAction(),
+    val editPriority: SimpleEditAction<StatusOld> = SimpleEditAction(),
+    val editSwimlaneDTO: SimpleEditAction<SwimlaneDTO> = SimpleEditAction(),
     val editSprint: SimpleEditAction<Sprint> = SimpleEditAction(),
     val editEpics: EditAction<CommonTask, EpicShortInfo> = EditAction(),
-    val editAttachments: EditAction<Pair<String, InputStream>, Attachment> = EditAction(),
-    val editAssignees: SimpleEditAction<User> = SimpleEditAction(),
-    val editWatchers: SimpleEditAction<User> = SimpleEditAction(),
-    val editComments: EditAction<String, Comment> = EditAction(),
+    val editAttachments: EditAction<Pair<String, InputStream>, AttachmentDTO> = EditAction(),
+    val editAssignees: SimpleEditAction<UserDTO> = SimpleEditAction(),
+    val editWatchers: SimpleEditAction<UserDTO> = SimpleEditAction(),
+    val editComments: EditAction<String, CommentDTO> = EditAction(),
     val editBasicInfo: SimpleEditAction<Pair<String, String>> = SimpleEditAction(),
     val editCustomField: SimpleEditAction<Pair<CustomField, CustomFieldValue?>> =
         SimpleEditAction(),

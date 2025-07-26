@@ -11,6 +11,7 @@ dependencies {
     implementation(projects.utils.ui)
     implementation(projects.strings)
     implementation(projects.core.domain)
+    implementation(projects.feature.filters.domain)
     implementation(projects.core.navigation)
 
     implementation(libs.vanpra.color)

@@ -7,14 +7,14 @@ val nullOwnerError = IllegalArgumentException(
 @Deprecated("yep")
 fun CommonTaskResponse.toCommonTaskExtended(
     commonTaskType: CommonTaskType,
-    filters: FiltersData,
-    swimlanes: List<Swimlane>,
+    filters: FiltersDataDTO,
+    swimlaneDTOS: List<SwimlaneDTO>,
     sprint: Sprint? = null,
     tags: List<Tag>,
     url: String
 ): CommonTaskExtended = CommonTaskExtended(
     id = id,
-    status = Status(
+    statusOld = StatusOld(
         id = status,
         name = statusExtraInfo.name,
         color = statusExtraInfo.color,
@@ -31,11 +31,11 @@ fun CommonTaskResponse.toCommonTaskExtended(
     isClosed = isClosed,
     description = description ?: "",
     epicsShortInfo = epics.orEmpty(),
-    projectSlug = projectExtraInfo.slug,
+    projectSlug = projectDTOExtraInfo.slug,
     tags = tags,
-    swimlane = swimlanes.find { it.id == swimlane },
+    swimlaneDTO = swimlaneDTOS.find { it.id == swimlane },
     dueDate = dueDate,
-    dueDateStatus = dueDateStatus,
+    dueDateStatusDTO = dueDateStatusDTO,
     userStoryShortInfo = userStoryExtraInfo,
     version = version,
     color = color,

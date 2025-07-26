@@ -6,7 +6,7 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class FiltersDataResponse(
     val statuses: List<Filter>,
-    val tags: List<Filter>?,
+    val tags: List<TagDTO>?,
     val roles: List<Filter>?,
     @Json(name = "assigned_to")
     val assignedTo: List<UserFilter>,
@@ -21,16 +21,25 @@ data class FiltersDataResponse(
     val types: List<Filter>?
 ) {
     @JsonClass(generateAdapter = true)
-    data class Filter(val id: Long?, val name: String?, val color: String?, val count: Int)
+    data class Filter(
+        val id: Long,
+        val name: String,
+        val color: String?,
+        val count: Long,
+        val order: Long
+    )
 
     @JsonClass(generateAdapter = true)
     data class UserFilter(
         val id: Long?,
         @Json(name = "full_name")
         val fullName: String,
-        val count: Int
+        val count: Long
     )
 
     @JsonClass(generateAdapter = true)
-    data class EpicsFilter(val id: Long?, val ref: Int?, val subject: String?, val count: Int)
+    data class EpicsFilter(val id: Long?, val ref: Long?, val subject: String?, val count: Long)
 }
+
+@JsonClass(generateAdapter = true)
+data class TagDTO(val color: String?, val count: Long, val name: String)

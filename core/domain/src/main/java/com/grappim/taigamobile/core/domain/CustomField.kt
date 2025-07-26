@@ -35,7 +35,7 @@ data class CustomField(
     val id: Long,
     val type: CustomFieldType,
     val name: String,
-    val description: String?,
+    val description: String? = null,
     val value: CustomFieldValue?,
     // for CustomFieldType.Dropdown
     val options: List<String>? = null
@@ -53,11 +53,11 @@ value class CustomFieldValue(val value: Any) {
     }
 
     val stringValue
-        get() = value as? String ?: throw IllegalArgumentException("value is not String")
-    val doubleValue get() = value as? Double ?: throw IllegalArgumentException("value is not Int")
-    val dateValue get() = value as? LocalDate ?: throw IllegalArgumentException("value is not Date")
+        get() = value as? String ?: error("value is not String")
+    val doubleValue get() = value as? Double ?: error("value is not Double")
+    val dateValue get() = value as? LocalDate ?: error("value is not Date")
     val booleanValue
-        get() = value as? Boolean ?: throw IllegalArgumentException("value is not Boolean")
+        get() = value as? Boolean ?: error("value is not Boolean")
 }
 
-data class CustomFields(val fields: List<CustomField>, val version: Int)
+data class CustomFields(val fields: List<CustomField>, val version: Long)

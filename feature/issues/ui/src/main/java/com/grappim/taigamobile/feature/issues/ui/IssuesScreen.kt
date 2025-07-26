@@ -14,7 +14,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -23,7 +23,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.filter.TasksFiltersWithLazyList
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
@@ -34,6 +34,7 @@ fun IssuesScreen(
     showMessage: (message: Int) -> Unit,
     goToCreateTask: (CommonTaskType) -> Unit,
     goToTask: (Long, CommonTaskType, Int) -> Unit,
+    updateData: Boolean,
     viewModel: IssuesViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -44,7 +45,7 @@ fun IssuesScreen(
             TopBarConfig(
                 title = NativeText.Resource(RString.issues),
                 actions = listOf(
-                    TopBarActionResource(
+                    TopBarActionIconButton(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = {
@@ -58,6 +59,12 @@ fun IssuesScreen(
 
     val issues = viewModel.issues.collectAsLazyPagingItems()
     issues.SubscribeOnError(showMessage)
+
+    LaunchedEffect(updateData) {
+        if (updateData) {
+            state.onUpdateData()
+        }
+    }
 
     LaunchedEffect(state.isFiltersError) {
         if (state.isFiltersError) {
@@ -79,7 +86,7 @@ fun IssuesScreenContent(
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
     modifier: Modifier = Modifier,
     issues: LazyPagingItems<CommonTask>? = null,
-    selectFilters: (FiltersData) -> Unit = {}
+    selectFilters: (FiltersDataDTO) -> Unit = {}
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -106,6 +113,8 @@ fun IssuesScreenContent(
 private fun IssuesScreenPreview() = TaigaMobileTheme {
     IssuesScreenContent(
         navigateToTask = { _, _, _ -> },
-        state = IssuesState()
+        state = IssuesState(
+            onUpdateData = {}
+        )
     )
 }

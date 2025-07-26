@@ -10,9 +10,10 @@ android {
 
 dependencies {
     implementation(libs.okhttp)
-    implementation(projects.uikit)
+    implementation(projects.utils.ui)
     implementation(projects.core.domain)
     implementation(projects.core.storage)
+    implementation(projects.core.async)
     implementation(libs.retrofit)
     implementation(projects.core.appinfoApi)
 

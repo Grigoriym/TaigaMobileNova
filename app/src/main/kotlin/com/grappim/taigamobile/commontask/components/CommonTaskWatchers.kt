@@ -15,25 +15,24 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.button.AddButton
-import com.grappim.taigamobile.uikit.widgets.button.TextButton
+import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButton
 import com.grappim.taigamobile.uikit.widgets.list.UserItemWithAction
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskWatchers(
-    watchers: List<User>,
+    watchers: List<UserDTO>,
     isWatchedByMe: Boolean,
     editActions: EditActions,
     showWatchersSelector: () -> Unit,
     navigateToProfile: (userId: Long) -> Unit
 ) {
     item {
-        // watchers
         Text(
             text = stringResource(RString.watchers),
             style = MaterialTheme.typography.titleMedium
@@ -42,7 +41,7 @@ fun LazyListScope.CommonTaskWatchers(
 
     itemsIndexed(watchers) { index, item ->
         UserItemWithAction(
-            user = item,
+            userDTO = item,
             onRemoveClick = { editActions.editWatchers.remove(item) },
             onUserItemClick = { navigateToProfile(item.actualId) }
         )
@@ -74,7 +73,7 @@ fun LazyListScope.CommonTaskWatchers(
                 RString.watch to RDrawable.ic_watch
             }
 
-            TextButton(
+            TaigaTextButton(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
                 onClick = {

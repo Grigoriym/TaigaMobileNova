@@ -15,6 +15,7 @@ import com.grappim.taigamobile.core.domain.CustomField
 import com.grappim.taigamobile.core.domain.CustomFieldValue
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
+import com.grappim.taigamobile.uikit.widgets.CustomFieldOldWidget
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
@@ -30,7 +31,7 @@ fun LazyListScope.CommonTaskCustomFields(
     }
 
     itemsIndexed(customFields) { index, item ->
-        CustomField(
+        CustomFieldOldWidget(
             customField = item,
             value = customFieldsValues[item.id],
             onValueChange = { onValueChange(item.id, it) },

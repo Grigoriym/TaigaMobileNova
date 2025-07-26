@@ -3,13 +3,14 @@ package com.grappim.taigamobile.feature.filters.data
 import com.grappim.taigamobile.core.api.withIO
 import com.grappim.taigamobile.core.domain.CommonTaskPathPlural
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.domain.toStatus
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
+import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
@@ -18,30 +19,44 @@ class FiltersRepositoryImpl @Inject constructor(
     private val taigaStorage: TaigaStorage,
     private val filtersMapper: FiltersMapper
 ) : FiltersRepository {
-    override suspend fun getFiltersData(
+
+    override suspend fun getFiltersData(commonTaskType: CommonTaskType): FiltersData {
+        val response = filtersApi.getCommonTaskFiltersData(
+            taskPath = CommonTaskPathPlural(commonTaskType),
+            project = taigaStorage.currentProjectIdFlow.first()
+        )
+        return filtersMapper.toDomain(response)
+    }
+
+    override suspend fun getFiltersDataResult(commonTaskType: CommonTaskType): Result<FiltersData> =
+        resultOf {
+            getFiltersData(commonTaskType)
+        }
+
+    override suspend fun getFiltersDataOld(
         commonTaskType: CommonTaskType,
         isCommonTaskFromBacklog: Boolean
-    ): FiltersData {
+    ): FiltersDataDTO {
         val result = filtersApi.getCommonTaskFiltersData(
             taskPath = CommonTaskPathPlural(commonTaskType),
             project = taigaStorage.currentProjectIdFlow.first(),
             milestone = if (isCommonTaskFromBacklog) "null" else null
         )
-        return filtersMapper.toFiltersData(result)
+        return filtersMapper.toFiltersDataDTO(result)
     }
 
-    override suspend fun getFiltersDataResult(
+    override suspend fun getFiltersDataResultOld(
         commonTaskType: CommonTaskType,
         isCommonTaskFromBacklog: Boolean
-    ): Result<FiltersData> = resultOf {
-        getFiltersData(
+    ): Result<FiltersDataDTO> = resultOf {
+        getFiltersDataOld(
             commonTaskType = commonTaskType,
             isCommonTaskFromBacklog = isCommonTaskFromBacklog
         )
     }
 
     override suspend fun getStatuses(commonTaskType: CommonTaskType) =
-        getFiltersData(commonTaskType).statuses.map { it.toStatus(StatusType.Status) }
+        getFiltersDataOld(commonTaskType).statuses.map { it.toStatus(StatusType.Status) }
 
     override suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType) =
         withIO {
@@ -49,7 +64,7 @@ class FiltersRepositoryImpl @Inject constructor(
                 throw UnsupportedOperationException("Cannot get $statusType for $commonTaskType")
             }
 
-            getFiltersData(commonTaskType).let {
+            getFiltersDataOld(commonTaskType).let {
                 when (statusType) {
                     StatusType.Status -> it.statuses.map { it.toStatus(statusType) }
                     StatusType.Type -> it.types.map { it.toStatus(statusType) }
@@ -60,5 +75,5 @@ class FiltersRepositoryImpl @Inject constructor(
         }
 
     override suspend fun getAllTags(commonTaskType: CommonTaskType) =
-        getFiltersData(commonTaskType).tags.map { Tag(it.name, it.color) }
+        getFiltersDataOld(commonTaskType).tags.map { Tag(it.name, it.color) }
 }

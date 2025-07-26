@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.ProjectDTO
 
-fun getProject(): Project = Project(
+fun getProject(): ProjectDTO = ProjectDTO(
     id = 6498,
     name = "Jeremy Reilly",
     slug = "elit",

@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.swimlanes.domain
 
-import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.SwimlaneDTO
 
 interface SwimlanesRepository {
-    suspend fun getSwimlanes(): List<Swimlane>
+    suspend fun getSwimlanes(): List<SwimlaneDTO>
 }

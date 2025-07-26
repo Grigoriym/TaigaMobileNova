@@ -19,7 +19,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -58,7 +58,7 @@ fun DashboardScreen(
     DashboardScreenContent(
         state = state,
         navigateToTask = {
-            viewModel.changeCurrentProject(it.projectInfo)
+            viewModel.changeCurrentProject(it.projectDTOInfo)
             navigateToTaskScreen(it.id, it.taskType, it.ref)
         },
         changeCurrentProject = viewModel::changeCurrentProject
@@ -70,7 +70,7 @@ fun DashboardScreenContent(
     state: DashboardState,
     modifier: Modifier = Modifier,
     navigateToTask: (CommonTask) -> Unit = { _ -> },
-    changeCurrentProject: (Project) -> Unit = { _ -> }
+    changeCurrentProject: (ProjectDTO) -> Unit = { _ -> }
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -101,7 +101,7 @@ fun DashboardScreenContent(
                     )
 
                     DashboardTabs.MyProjects -> MyProjects(
-                        myProjects = state.myProjects,
+                        myProjectDTOS = state.myProjectDTOS,
                         currentProjectId = state.currentProjectId,
                         changeCurrentProject = changeCurrentProject
                     )
@@ -125,14 +125,14 @@ private fun TabContent(commonTasks: List<CommonTask>, navigateToTask: (CommonTas
 
 @Composable
 private fun MyProjects(
-    myProjects: List<Project>,
+    myProjectDTOS: List<ProjectDTO>,
     currentProjectId: Long,
-    changeCurrentProject: (Project) -> Unit
+    changeCurrentProject: (ProjectDTO) -> Unit
 ) {
     LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(myProjects) {
+        items(myProjectDTOS) {
             ProjectCard(
-                project = it,
+                projectDTO = it,
                 isCurrent = it.id == currentProjectId,
                 onClick = { changeCurrentProject(it) }
             )
@@ -147,7 +147,7 @@ private fun MyProjects(
 private fun ProjectCardPreview() {
     TaigaMobileTheme {
         ProjectCard(
-            project = Project(
+            projectDTO = ProjectDTO(
                 id = 0,
                 name = "Name",
                 slug = "slug",

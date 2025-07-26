@@ -4,125 +4,120 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.CommonTask
-import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.Sprint
-import com.grappim.taigamobile.core.domain.Status
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
-import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
-import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.utils.ui.NothingResult
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.loadOrError
 import com.grappim.taigamobile.utils.ui.mutableResultFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
 import javax.inject.Inject
 
 @HiltViewModel
 class SprintViewModel @Inject constructor(
     private val sprintsRepository: SprintsRepository,
-    private val filtersRepository: FiltersRepository,
     private val session: Session,
-    private val tasksRepository: TasksRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
+    private val _state = MutableStateFlow(
+        SprintState(
+            setIsMenuExpanded = ::setIsMenuExpanded,
+            setIsEditDialogVisible = ::setIsEditDialogVisible,
+            setIsDeleteDialogVisible = ::setIsDeleteDialogVisible
+        )
+    )
+    val state = _state.asStateFlow()
+
     private val route = savedStateHandle.toRoute<SprintNavDestination>()
 
-    private var _sprintId: Long = route.sprintId
-    val sprintId
-        get() = _sprintId
+    private val sprintId: Long = route.sprintId
 
-    val sprint = mutableResultFlow<Sprint>()
-    val statuses = mutableResultFlow<List<Status>>()
-    val storiesWithTasks = mutableResultFlow<Map<CommonTask, List<CommonTask>>>()
-    val storylessTasks = mutableResultFlow<List<CommonTask>>()
-    val issues = mutableResultFlow<List<CommonTask>>()
+    val editResult = mutableResultFlow<Unit>()
+    val deleteResult = mutableResultFlow<Unit>()
 
-    private var shouldReload = true
+    private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
-    fun onOpen() {
-        if (!shouldReload) return
-        loadData(isReloading = false)
-        shouldReload = false
+    init {
+        session.taskEdit.onEach {
+            loadData()
+        }.launchIn(viewModelScope)
+
+        viewModelScope.launch {
+            loadData()
+        }
     }
 
-    private fun loadData(isReloading: Boolean = true) = viewModelScope.launch {
-        sprint.loadOrError(showLoading = !isReloading) {
-            sprintsRepository.getSprint(_sprintId).also {
-                joinAll(
-                    launch {
-                        statuses.loadOrError(showLoading = false) {
-                            filtersRepository.getStatuses(
-                                CommonTaskType.Task
+    private fun setIsMenuExpanded(isExpanded: Boolean) {
+        _state.update {
+            it.copy(isMenuExpanded = isExpanded)
+        }
+    }
+
+    private fun setIsEditDialogVisible(isVisible: Boolean) {
+        _state.update {
+            it.copy(isEditDialogVisible = isVisible)
+        }
+    }
+
+    private fun setIsDeleteDialogVisible(isVisible: Boolean) {
+        _state.update {
+            it.copy(isDeleteDialogVisible = isVisible)
+        }
+    }
+
+    private suspend fun loadData() {
+        _state.update { it.copy(isLoading = true) }
+
+        sprintsRepository.getSprintData(sprintId)
+            .onSuccess { result ->
+                _state.update {
+                    it.copy(
+                        sprint = result.sprint,
+                        sprintToolbarTitle = NativeText.Simple(result.sprint.name),
+                        sprintToolbarSubtitle = NativeText.Arguments(
+                            id = RString.sprint_dates_template,
+                            args = listOf(
+                                result.sprint.start.format(dateFormatter),
+                                result.sprint.end.format(dateFormatter)
                             )
-                        }
-                    },
-                    launch {
-                        storiesWithTasks.loadOrError(showLoading = false) {
-                            coroutineScope {
-                                sprintsRepository.getSprintUserStories(_sprintId)
-                                    .map {
-                                        it to async { tasksRepository.getUserStoryTasks(it.id) }
-                                    }
-                                    .associate { (story, tasks) -> story to tasks.await() }
-                            }
-                        }
-                    },
-                    launch {
-                        issues.loadOrError(showLoading = false) {
-                            sprintsRepository.getSprintIssues(
-                                _sprintId
-                            )
-                        }
-                    },
-                    launch {
-                        storylessTasks.loadOrError(showLoading = false) {
-                            sprintsRepository.getSprintTasks(
-                                _sprintId
-                            )
-                        }
-                    }
-                )
+                        ),
+                        isLoading = false,
+                        statusOlds = result.statusOlds,
+                        storiesWithTasks = result.storiesWithTasks,
+                        storylessTasks = result.storylessTasks,
+                        issues = result.issues
+                    )
+                }
+            }.onFailure {
+                _state.update { it.copy(isLoading = false) }
+            }
+    }
+
+    fun editSprint(name: String, start: LocalDate, end: LocalDate) {
+        viewModelScope.launch {
+            editResult.loadOrError(RString.permission_error) {
+                sprintsRepository.editSprint(sprintId, name, start, end)
+                session.sprintEdit.postUpdate()
+                loadData()
             }
         }
     }
 
-    val editResult = mutableResultFlow<Unit>()
-    fun editSprint(name: String, start: LocalDate, end: LocalDate) = viewModelScope.launch {
-        editResult.loadOrError(RString.permission_error) {
-            sprintsRepository.editSprint(_sprintId, name, start, end)
-            session.sprintEdit.postUpdate()
-            loadData().join()
-        }
-    }
-
-    val deleteResult = mutableResultFlow<Unit>()
     fun deleteSprint() = viewModelScope.launch {
         deleteResult.loadOrError(RString.permission_error) {
-            sprintsRepository.deleteSprint(_sprintId)
+            sprintsRepository.deleteSprint(sprintId)
             session.sprintEdit.postUpdate()
         }
-    }
-
-    init {
-        session.taskEdit.onEach {
-            _sprintId = -1
-            sprint.value = NothingResult()
-            statuses.value = NothingResult()
-            storiesWithTasks.value = NothingResult()
-            storylessTasks.value = NothingResult()
-            issues.value = NothingResult()
-            shouldReload = true
-        }.launchIn(viewModelScope)
     }
 }

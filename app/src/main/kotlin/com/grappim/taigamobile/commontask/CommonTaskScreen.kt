@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.commontask.components.BlockDialog
 import com.grappim.taigamobile.commontask.components.CommonTaskAssignees
 import com.grappim.taigamobile.commontask.components.CommonTaskBelongsTo
 import com.grappim.taigamobile.commontask.components.CommonTaskComments
@@ -39,20 +38,20 @@ import com.grappim.taigamobile.commontask.components.CommonTaskDueDate
 import com.grappim.taigamobile.commontask.components.CommonTaskHeader
 import com.grappim.taigamobile.commontask.components.CommonTaskTags
 import com.grappim.taigamobile.commontask.components.CommonTaskWatchers
-import com.grappim.taigamobile.commontask.components.CreateCommentBar
 import com.grappim.taigamobile.commontask.components.SelectorEntry
 import com.grappim.taigamobile.commontask.components.Selectors
-import com.grappim.taigamobile.core.domain.Attachment
-import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.AttachmentDTO
+import com.grappim.taigamobile.core.domain.CommentDTO
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.CustomField
 import com.grappim.taigamobile.core.domain.CustomFieldValue
-import com.grappim.taigamobile.core.domain.Project
-import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
+import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.Attachments
 import com.grappim.taigamobile.uikit.EditAction
@@ -66,6 +65,7 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewMulti
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.Editor
@@ -73,7 +73,7 @@ import com.grappim.taigamobile.uikit.widgets.list.Description
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -82,6 +82,7 @@ import com.grappim.taigamobile.utils.ui.SuccessResult
 import java.time.LocalDateTime
 
 @Composable
+@Deprecated("a god class must be removed")
 fun CommonTaskScreen(
     goToProfile: (userId: Long) -> Unit,
     goToUserStory: (Long, CommonTaskType, Int) -> Unit,
@@ -101,7 +102,7 @@ fun CommonTaskScreen(
                 title = state.toolbarTitle,
                 showBackButton = true,
                 actions = listOf(
-                    TopBarActionResource(
+                    TopBarActionIconButton(
                         drawable = RDrawable.ic_options,
                         contentDescription = "Task options",
                         onClick = {
@@ -209,20 +210,20 @@ fun CommonTaskScreen(
         creator = creator.data,
         isLoading = commonTask is LoadingResult,
         customFields = customFields.data?.fields.orEmpty(),
-        attachments = attachments.data.orEmpty(),
+        attachmentDTOS = attachments.data.orEmpty(),
         assignees = assignees.data.orEmpty(),
         watchers = watchers.data.orEmpty(),
         isAssignedToMe = isAssignedToMe,
         isWatchedByMe = isWatchedByMe,
         userStories = userStories.data.orEmpty(),
         tasks = tasks.data.orEmpty(),
-        comments = comments.data.orEmpty(),
+        commentDTOS = comments.data.orEmpty(),
         editActions = EditActions(
-            editStatus = createEditStatusAction(StatusType.Status),
+            editStatusOld = createEditStatusAction(StatusType.Status),
             editType = createEditStatusAction(StatusType.Type),
             editSeverity = createEditStatusAction(StatusType.Severity),
             editPriority = createEditStatusAction(StatusType.Priority),
-            editSwimlane = SimpleEditAction(
+            editSwimlaneDTO = SimpleEditAction(
                 items = swimlanes.data.orEmpty(),
                 select = viewModel::editSwimlane,
                 isLoading = swimlanes is LoadingResult
@@ -329,148 +330,141 @@ fun CommonTaskScreenContent(
     state: CommonTaskState,
     modifier: Modifier = Modifier,
     commonTask: CommonTaskExtended? = null,
-    creator: User? = null,
+    creator: UserDTO? = null,
     isLoading: Boolean = false,
     customFields: List<CustomField> = emptyList(),
-    attachments: List<Attachment> = emptyList(),
-    assignees: List<User> = emptyList(),
-    watchers: List<User> = emptyList(),
+    attachmentDTOS: List<AttachmentDTO> = emptyList(),
+    assignees: List<UserDTO> = emptyList(),
+    watchers: List<UserDTO> = emptyList(),
     isAssignedToMe: Boolean = false,
     isWatchedByMe: Boolean = false,
     userStories: List<CommonTask> = emptyList(),
     tasks: List<CommonTask> = emptyList(),
-    comments: List<Comment> = emptyList(),
+    commentDTOS: List<CommentDTO> = emptyList(),
     editActions: EditActions = EditActions(),
     navigationActions: NavigationActions = NavigationActions(),
     navigateToProfile: (userId: Long) -> Unit = { _ -> },
     showMessage: (message: Int) -> Unit = {}
-) = Box(modifier.fillMaxSize()) {
-    if (state.isDeleteAlertVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.delete_task_title),
-            text = stringResource(RString.delete_task_text),
-            onConfirm = {
-                state.setDeleteAlertVisible(false)
-                editActions.deleteTask.select(Unit)
-            },
-            onDismiss = { state.setDeleteAlertVisible(false) },
-            iconId = RDrawable.ic_delete
-        )
-    }
-
-    if (state.isBlockDialogVisible) {
-        BlockDialog(
-            onConfirm = {
-                editActions.editBlocked.select(it)
-                state.setBlockDialogVisible(false)
-            },
-            onDismiss = {
-                state.setBlockDialogVisible(false)
-            }
-        )
-    }
-
-    if (state.isPromoteAlertVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.promote_title),
-            text = stringResource(RString.promote_text),
-            onConfirm = {
-                state.setPromoteAlertVisible(false)
-                editActions.promoteTask.select(Unit)
-            },
-            onDismiss = { state.setPromoteAlertVisible(false) },
-            iconId = RDrawable.ic_arrow_upward
-        )
-    }
-
-    CommonTaskDropdownMenuWidget(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentSize(Alignment.TopEnd),
-        state = state,
-        showMessage = showMessage,
-        url = commonTask?.url ?: ""
-    )
-
-    var isStatusSelectorVisible by remember { mutableStateOf(false) }
-    var isTypeSelectorVisible by remember { mutableStateOf(false) }
-    var isSeveritySelectorVisible by remember { mutableStateOf(false) }
-    var isPrioritySelectorVisible by remember { mutableStateOf(false) }
-    var isSprintSelectorVisible by remember { mutableStateOf(false) }
-    var isAssigneesSelectorVisible by remember { mutableStateOf(false) }
-    var isWatchersSelectorVisible by remember { mutableStateOf(false) }
-    var isEpicsSelectorVisible by remember { mutableStateOf(false) }
-    var isSwimlaneSelectorVisible by remember { mutableStateOf(false) }
-
-    var customFieldsValues by remember { mutableStateOf(emptyMap<Long, CustomFieldValue?>()) }
-    customFieldsValues =
-        customFields.associate {
-            it.id to (if (it.id in customFieldsValues) customFieldsValues[it.id] else it.value)
+) {
+    Box(modifier.fillMaxSize()) {
+        if (state.isDeleteAlertVisible) {
+            ConfirmActionDialog(
+                title = stringResource(RString.delete_task_title),
+                description = stringResource(RString.delete_task_text),
+                onConfirm = {
+                    state.setDeleteAlertVisible(false)
+                    editActions.deleteTask.select(Unit)
+                },
+                onDismiss = { state.setDeleteAlertVisible(false) },
+                iconId = RDrawable.ic_delete
+            )
         }
 
-    Column(Modifier.fillMaxSize()) {
-        if (isLoading || creator == null || commonTask == null) {
-            Box(
-                contentAlignment = Alignment.Center,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                CircularLoader()
+        if (state.isBlockDialogVisible) {
+            BlockDialog(
+                onConfirm = {
+                    editActions.editBlocked.select(it)
+                    state.setBlockDialogVisible(false)
+                },
+                onDismiss = {
+                    state.setBlockDialogVisible(false)
+                }
+            )
+        }
+
+        if (state.isPromoteAlertVisible) {
+            ConfirmActionDialog(
+                title = stringResource(RString.promote_title),
+                description = stringResource(RString.promote_text),
+                onConfirm = {
+                    state.setPromoteAlertVisible(false)
+                    editActions.promoteTask.select(Unit)
+                },
+                onDismiss = { state.setPromoteAlertVisible(false) },
+                iconId = RDrawable.ic_arrow_upward
+            )
+        }
+
+        CommonTaskDropdownMenuWidget(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.TopEnd),
+            state = state,
+            editActions = editActions,
+            showMessage = showMessage,
+            url = commonTask?.url ?: "",
+            isBlocked = commonTask?.blockedNote != null
+        )
+
+        var isStatusSelectorVisible by remember { mutableStateOf(false) }
+        var isTypeSelectorVisible by remember { mutableStateOf(false) }
+        var isSeveritySelectorVisible by remember { mutableStateOf(false) }
+        var isPrioritySelectorVisible by remember { mutableStateOf(false) }
+        var isSprintSelectorVisible by remember { mutableStateOf(false) }
+        var isAssigneesSelectorVisible by remember { mutableStateOf(false) }
+        var isWatchersSelectorVisible by remember { mutableStateOf(false) }
+        var isEpicsSelectorVisible by remember { mutableStateOf(false) }
+        var isSwimlaneSelectorVisible by remember { mutableStateOf(false) }
+
+        var customFieldsValues by remember { mutableStateOf(emptyMap<Long, CustomFieldValue?>()) }
+        customFieldsValues =
+            customFields.associate {
+                it.id to (if (it.id in customFieldsValues) customFieldsValues[it.id] else it.value)
             }
-        } else {
-            val sectionsPadding = 16.dp
 
-            Box(
-                modifier = Modifier.weight(1f),
-                contentAlignment = Alignment.BottomCenter
-            ) {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = mainHorizontalScreenPadding)
+        Column(Modifier.fillMaxSize()) {
+            if (isLoading || creator == null || commonTask == null) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.fillMaxSize()
                 ) {
-                    item {
-                        Spacer(Modifier.height(sectionsPadding / 2))
-                    }
+                    CircularLoader()
+                }
+            } else {
+                val sectionsPadding = 16.dp
 
-                    CommonTaskHeader(
-                        commonTask = commonTask,
-                        editActions = editActions,
-                        showStatusSelector = { isStatusSelectorVisible = true },
-                        showSprintSelector = { isSprintSelectorVisible = true },
-                        showTypeSelector = { isTypeSelectorVisible = true },
-                        showSeveritySelector = { isSeveritySelectorVisible = true },
-                        showPrioritySelector = { isPrioritySelectorVisible = true },
-                        showSwimlaneSelector = { isSwimlaneSelectorVisible = true }
-                    )
+                Box(
+                    modifier = Modifier.weight(1f),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = mainHorizontalScreenPadding)
+                    ) {
+                        item {
+                            Spacer(Modifier.height(sectionsPadding / 2))
+                        }
 
-                    CommonTaskBelongsTo(
-                        commonTask = commonTask,
-                        navigationActions = navigationActions,
-                        editActions = editActions,
-                        showEpicsSelector = { isEpicsSelectorVisible = true }
-                    )
+                        CommonTaskHeader(
+                            commonTask = commonTask,
+                            editActions = editActions,
+                            showStatusSelector = { isStatusSelectorVisible = true },
+                            showSprintSelector = { isSprintSelectorVisible = true },
+                            showTypeSelector = { isTypeSelectorVisible = true },
+                            showSeveritySelector = { isSeveritySelectorVisible = true },
+                            showPrioritySelector = { isPrioritySelectorVisible = true },
+                            showSwimlaneSelector = { isSwimlaneSelectorVisible = true }
+                        )
 
-                    item {
-                        Spacer(Modifier.height(sectionsPadding))
-                    }
+                        CommonTaskBelongsTo(
+                            commonTask = commonTask,
+                            navigationActions = navigationActions,
+                            editActions = editActions,
+                            showEpicsSelector = { isEpicsSelectorVisible = true }
+                        )
 
-                    Description(commonTask.description)
+                        item {
+                            Spacer(Modifier.height(sectionsPadding))
+                        }
 
-                    item {
-                        Spacer(Modifier.height(sectionsPadding))
-                    }
+                        Description(commonTask.description)
 
-                    CommonTaskTags(
-                        commonTask = commonTask,
-                        editActions = editActions
-                    )
+                        item {
+                            Spacer(Modifier.height(sectionsPadding))
+                        }
 
-                    item {
-                        Spacer(Modifier.height(sectionsPadding))
-                    }
-
-                    if (state.commonTaskType != CommonTaskType.Epic) {
-                        CommonTaskDueDate(
+                        CommonTaskTags(
                             commonTask = commonTask,
                             editActions = editActions
                         )
@@ -478,262 +472,274 @@ fun CommonTaskScreenContent(
                         item {
                             Spacer(Modifier.height(sectionsPadding))
                         }
-                    }
 
-                    CommonTaskCreatedBy(
-                        creator = creator,
-                        commonTask = commonTask,
-                        navigateToProfile = navigateToProfile
-                    )
+                        if (state.commonTaskType != CommonTaskType.Epic) {
+                            CommonTaskDueDate(
+                                commonTask = commonTask,
+                                editActions = editActions
+                            )
 
-                    item {
-                        Spacer(Modifier.height(sectionsPadding))
-                    }
+                            item {
+                                Spacer(Modifier.height(sectionsPadding))
+                            }
+                        }
 
-                    CommonTaskAssignees(
-                        assignees = assignees,
-                        isAssignedToMe = isAssignedToMe,
-                        editActions = editActions,
-                        showAssigneesSelector = { isAssigneesSelectorVisible = true },
-                        navigateToProfile = navigateToProfile
-                    )
-
-                    item {
-                        Spacer(Modifier.height(sectionsPadding))
-                    }
-
-                    CommonTaskWatchers(
-                        watchers = watchers,
-                        isWatchedByMe = isWatchedByMe,
-                        editActions = editActions,
-                        showWatchersSelector = { isWatchersSelectorVisible = true },
-                        navigateToProfile = navigateToProfile
-                    )
-
-                    item {
-                        Spacer(Modifier.height(sectionsPadding * 2))
-                    }
-
-                    if (customFields.isNotEmpty()) {
-                        CommonTaskCustomFields(
-                            customFields = customFields,
-                            customFieldsValues = customFieldsValues,
-                            onValueChange = { itemId, value ->
-                                customFieldsValues =
-                                    customFieldsValues - itemId + Pair(itemId, value)
-                            },
-                            editActions = editActions
+                        CommonTaskCreatedBy(
+                            creator = creator,
+                            commonTask = commonTask,
+                            navigateToProfile = navigateToProfile
                         )
 
                         item {
-                            Spacer(Modifier.height(sectionsPadding * 3))
+                            Spacer(Modifier.height(sectionsPadding))
+                        }
+
+                        CommonTaskAssignees(
+                            assignees = assignees,
+                            isAssignedToMe = isAssignedToMe,
+                            editActions = editActions,
+                            showAssigneesSelector = { isAssigneesSelectorVisible = true },
+                            navigateToProfile = navigateToProfile
+                        )
+
+                        item {
+                            Spacer(Modifier.height(sectionsPadding))
+                        }
+
+                        CommonTaskWatchers(
+                            watchers = watchers,
+                            isWatchedByMe = isWatchedByMe,
+                            editActions = editActions,
+                            showWatchersSelector = { isWatchersSelectorVisible = true },
+                            navigateToProfile = navigateToProfile
+                        )
+
+                        item {
+                            Spacer(Modifier.height(sectionsPadding * 2))
+                        }
+
+                        if (customFields.isNotEmpty()) {
+                            CommonTaskCustomFields(
+                                customFields = customFields,
+                                customFieldsValues = customFieldsValues,
+                                onValueChange = { itemId, value ->
+                                    customFieldsValues =
+                                        customFieldsValues - itemId + Pair(itemId, value)
+                                },
+                                editActions = editActions
+                            )
+
+                            item {
+                                Spacer(Modifier.height(sectionsPadding * 3))
+                            }
+                        }
+
+                        Attachments(
+                            attachmentDTOS = attachmentDTOS,
+                            editAttachments = editActions.editAttachments
+                        )
+
+                        item {
+                            Spacer(Modifier.height(sectionsPadding))
+                        }
+
+                        // user stories
+                        if (state.commonTaskType == CommonTaskType.Epic) {
+                            simpleTasksListWithTitle(
+                                titleText = RString.userstories,
+                                bottomPadding = sectionsPadding,
+                                commonTasks = userStories,
+                                navigateToTask = navigationActions.navigateToTask
+                            )
+                        }
+
+                        // tasks
+                        if (state.commonTaskType == CommonTaskType.UserStory) {
+                            simpleTasksListWithTitle(
+                                titleText = RString.tasks,
+                                bottomPadding = sectionsPadding,
+                                commonTasks = tasks,
+                                navigateToTask = navigationActions.navigateToTask,
+                                navigateToCreateCommonTask = navigationActions.navigateToCreateTask
+                            )
+                        }
+
+                        item {
+                            Spacer(Modifier.height(sectionsPadding))
+                        }
+
+                        CommonTaskComments(
+                            commentDTOS = commentDTOS,
+                            editActions = editActions,
+                            navigateToProfile = navigateToProfile
+                        )
+
+                        item {
+                            Spacer(
+                                Modifier
+                                    .navigationBarsPadding()
+                                    .imePadding()
+                                    .height(72.dp)
+                            )
                         }
                     }
 
-                    Attachments(
-                        attachments = attachments,
-                        editAttachments = editActions.editAttachments
-                    )
-
-                    item {
-                        Spacer(Modifier.height(sectionsPadding))
-                    }
-
-                    // user stories
-                    if (state.commonTaskType == CommonTaskType.Epic) {
-                        simpleTasksListWithTitle(
-                            titleText = RString.userstories,
-                            bottomPadding = sectionsPadding,
-                            commonTasks = userStories,
-                            navigateToTask = navigationActions.navigateToTask
-                        )
-                    }
-
-                    // tasks
-                    if (state.commonTaskType == CommonTaskType.UserStory) {
-                        simpleTasksListWithTitle(
-                            titleText = RString.tasks,
-                            bottomPadding = sectionsPadding,
-                            commonTasks = tasks,
-                            navigateToTask = navigationActions.navigateToTask,
-                            navigateToCreateCommonTask = navigationActions.navigateToCreateTask
-                        )
-                    }
-
-                    item {
-                        Spacer(Modifier.height(sectionsPadding))
-                    }
-
-                    CommonTaskComments(
-                        comments = comments,
-                        editActions = editActions,
-                        navigateToProfile = navigateToProfile
-                    )
-
-                    item {
-                        Spacer(
-                            Modifier
-                                .navigationBarsPadding()
-                                .imePadding()
-                                .height(72.dp)
-                        )
-                    }
+                    CreateCommentBar(editActions.editComments.select)
                 }
-
-                CreateCommentBar(editActions.editComments.select)
             }
         }
-    }
 
-    // Bunch of list selectors
-    Selectors(
-        statusEntry = SelectorEntry(
-            edit = editActions.editStatus,
-            isVisible = isStatusSelectorVisible,
-            hide = { isStatusSelectorVisible = false }
-        ),
-        typeEntry = SelectorEntry(
-            edit = editActions.editType,
-            isVisible = isTypeSelectorVisible,
-            hide = { isTypeSelectorVisible = false }
-        ),
-        severityEntry = SelectorEntry(
-            edit = editActions.editSeverity,
-            isVisible = isSeveritySelectorVisible,
-            hide = { isSeveritySelectorVisible = false }
-        ),
-        priorityEntry = SelectorEntry(
-            edit = editActions.editPriority,
-            isVisible = isPrioritySelectorVisible,
-            hide = { isPrioritySelectorVisible = false }
-        ),
-        sprintEntry = SelectorEntry(
-            edit = editActions.editSprint,
-            isVisible = isSprintSelectorVisible,
-            hide = { isSprintSelectorVisible = false }
-        ),
-        epicsEntry = SelectorEntry(
-            edit = editActions.editEpics,
-            isVisible = isEpicsSelectorVisible,
-            hide = { isEpicsSelectorVisible = false }
-        ),
-        assigneesEntry = SelectorEntry(
-            edit = editActions.editAssignees,
-            isVisible = isAssigneesSelectorVisible,
-            hide = { isAssigneesSelectorVisible = false }
-        ),
-        watchersEntry = SelectorEntry(
-            edit = editActions.editWatchers,
-            isVisible = isWatchersSelectorVisible,
-            hide = { isWatchersSelectorVisible = false }
-        ),
-        swimlaneEntry = SelectorEntry(
-            edit = editActions.editSwimlane,
-            isVisible = isSwimlaneSelectorVisible,
-            hide = { isSwimlaneSelectorVisible = false }
+        // Bunch of list selectors
+        Selectors(
+            statusOldEntry = SelectorEntry(
+                edit = editActions.editStatusOld,
+                isVisible = isStatusSelectorVisible,
+                hide = { isStatusSelectorVisible = false }
+            ),
+            typeEntry = SelectorEntry(
+                edit = editActions.editType,
+                isVisible = isTypeSelectorVisible,
+                hide = { isTypeSelectorVisible = false }
+            ),
+            severityEntry = SelectorEntry(
+                edit = editActions.editSeverity,
+                isVisible = isSeveritySelectorVisible,
+                hide = { isSeveritySelectorVisible = false }
+            ),
+            priorityEntry = SelectorEntry(
+                edit = editActions.editPriority,
+                isVisible = isPrioritySelectorVisible,
+                hide = { isPrioritySelectorVisible = false }
+            ),
+            sprintEntry = SelectorEntry(
+                edit = editActions.editSprint,
+                isVisible = isSprintSelectorVisible,
+                hide = { isSprintSelectorVisible = false }
+            ),
+            epicsEntry = SelectorEntry(
+                edit = editActions.editEpics,
+                isVisible = isEpicsSelectorVisible,
+                hide = { isEpicsSelectorVisible = false }
+            ),
+            assigneesEntry = SelectorEntry(
+                edit = editActions.editAssignees,
+                isVisible = isAssigneesSelectorVisible,
+                hide = { isAssigneesSelectorVisible = false }
+            ),
+            watchersEntry = SelectorEntry(
+                edit = editActions.editWatchers,
+                isVisible = isWatchersSelectorVisible,
+                hide = { isWatchersSelectorVisible = false }
+            ),
+            swimlaneDTOEntry = SelectorEntry(
+                edit = editActions.editSwimlaneDTO,
+                isVisible = isSwimlaneSelectorVisible,
+                hide = { isSwimlaneSelectorVisible = false }
+            )
         )
-    )
 
-    // Editor
-    if (state.isTaskEditorVisible || editActions.editBasicInfo.isLoading) {
-        Editor(
-            toolbarText = stringResource(RString.edit),
-            title = commonTask?.title.orEmpty(),
-            description = commonTask?.description.orEmpty(),
-            onSaveClick = { title, description ->
-                state.setTaskEditorVisible(false)
-                editActions.editBasicInfo.select(Pair(title, description))
-            },
-            navigateBack = { state.setTaskEditorVisible(false) }
-        )
-    }
+        if (state.isTaskEditorVisible || editActions.editBasicInfo.isLoading) {
+            Editor(
+                toolbarText = stringResource(RString.edit),
+                title = commonTask?.title.orEmpty(),
+                description = commonTask?.description.orEmpty(),
+                onSaveClick = { title, description ->
+                    state.setTaskEditorVisible(false)
+                    editActions.editBasicInfo.select(Pair(title, description))
+                },
+                navigateBack = { state.setTaskEditorVisible(false) }
+            )
+        }
 
-    if (editActions.run { listOf(editBasicInfo, promoteTask, deleteTask, editBlocked) }
-            .any { it.isLoading }
-    ) {
-        LoadingDialog()
+        if (editActions.run { listOf(editBasicInfo, promoteTask, deleteTask, editBlocked) }
+                .any { it.isLoading }
+        ) {
+            LoadingDialog()
+        }
     }
 }
 
 @PreviewMulti
 @Composable
-private fun CommonTaskScreenPreview() = TaigaMobileTheme {
-    CompositionLocalProvider(
-        LocalFilePicker provides object : FilePicker() {}
-    ) {
-        CommonTaskScreenContent(
-            state = CommonTaskState(
-                commonTaskType = CommonTaskType.UserStory,
-                url = "https://duckduckgo.com/?q=facilisis",
-                editActions = EditActions(),
-                toolbarTitle = NativeText.Resource(RString.issues),
-                projectName = "Arnold Bolton",
-                setDropdownMenuExpanded = {},
-                setTaskEditorVisible = {},
-                setDeleteAlertVisible = {},
-                setPromoteAlertVisible = {},
-                setBlockDialogVisible = {}
-            ),
-            // TODO left it null for now since I do not really use this preview
-            commonTask = null,
-            creator = User(
-                id = 0L,
-                fullName = "Full Name",
-                photo = null,
-                bigPhoto = null,
-                username = "username"
-            ),
-            assignees = List(1) {
-                User(
+private fun CommonTaskScreenPreview() {
+    TaigaMobileTheme {
+        CompositionLocalProvider(
+            LocalFilePicker provides object : FilePicker() {}
+        ) {
+            CommonTaskScreenContent(
+                state = CommonTaskState(
+                    commonTaskType = CommonTaskType.UserStory,
+                    url = "https://duckduckgo.com/?q=facilisis",
+//                    editActions = EditActions(),
+                    toolbarTitle = NativeText.Resource(RString.issues),
+                    projectName = "Arnold Bolton",
+                    setDropdownMenuExpanded = {},
+                    setTaskEditorVisible = {},
+                    setDeleteAlertVisible = {},
+                    setPromoteAlertVisible = {},
+                    setBlockDialogVisible = {}
+                ),
+                // TODO left it null for now since I do not really use this preview
+                commonTask = null,
+                creator = UserDTO(
                     id = 0L,
                     fullName = "Full Name",
                     photo = null,
                     bigPhoto = null,
                     username = "username"
-                )
-            },
-            watchers = List(2) {
-                User(
-                    id = 0L,
-                    fullName = "Full Name",
-                    photo = null,
-                    bigPhoto = null,
-                    username = "username"
-                )
-            },
-            tasks = List(1) {
-                CommonTask(
-                    id = it.toLong(),
-                    createdDate = LocalDateTime.now(),
-                    title = "Very cool story",
-                    ref = 100,
-                    status = Status(
-                        id = 1,
-                        name = "In progress",
-                        color = "#729fcf",
-                        type = StatusType.Status
-                    ),
-                    assignee = null,
-                    projectInfo = Project(0, "", ""),
-                    taskType = CommonTaskType.UserStory,
-                    isClosed = false
-                )
-            },
-            comments = List(1) {
-                Comment(
-                    id = "",
-                    author = User(
+                ),
+                assignees = List(1) {
+                    UserDTO(
                         id = 0L,
                         fullName = "Full Name",
                         photo = null,
                         bigPhoto = null,
                         username = "username"
-                    ),
-                    text = "This is comment text",
-                    postDateTime = LocalDateTime.now(),
-                    deleteDate = null
-                )
-            }
-        )
+                    )
+                },
+                watchers = List(2) {
+                    UserDTO(
+                        id = 0L,
+                        fullName = "Full Name",
+                        photo = null,
+                        bigPhoto = null,
+                        username = "username"
+                    )
+                },
+                tasks = List(1) {
+                    CommonTask(
+                        id = it.toLong(),
+                        createdDate = LocalDateTime.now(),
+                        title = "Very cool story",
+                        ref = 100,
+                        statusOld = StatusOld(
+                            id = 1,
+                            name = "In progress",
+                            color = "#729fcf",
+                            type = StatusType.Status
+                        ),
+                        assignee = null,
+                        projectDTOInfo = ProjectDTO(0, "", ""),
+                        taskType = CommonTaskType.UserStory,
+                        isClosed = false
+                    )
+                },
+                commentDTOS = List(1) {
+                    CommentDTO(
+                        id = "",
+                        author = UserDTO(
+                            id = 0L,
+                            fullName = "Full Name",
+                            photo = null,
+                            bigPhoto = null,
+                            username = "username"
+                        ),
+                        text = "This is comment text",
+                        postDateTime = LocalDateTime.now(),
+                        deleteDate = null
+                    )
+                }
+            )
+        }
     }
 }

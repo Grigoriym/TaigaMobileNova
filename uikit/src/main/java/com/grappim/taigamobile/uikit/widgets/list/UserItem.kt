@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.uikit.widgets.list
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,11 +27,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -41,13 +41,13 @@ import java.time.format.FormatStyle
  */
 @Composable
 fun UserItem(
-    user: User,
+    userDTO: UserDTO,
     modifier: Modifier = Modifier,
     dateTime: LocalDateTime? = null,
     onUserItemClick: () -> Unit = { }
 ) {
     Row(
-        modifier = modifier.clickableUnindicated { onUserItemClick() },
+        modifier = modifier.clickable { onUserItemClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         val dateTimeFormatter =
@@ -62,14 +62,14 @@ fun UserItem(
             contentScale = ContentScale.Crop,
             placeholder = painterResource(RDrawable.default_avatar),
             error = painterResource(RDrawable.default_avatar),
-            model = user.avatarUrl
+            model = userDTO.avatarUrl
         )
 
         Spacer(Modifier.width(6.dp))
 
         Column {
             Text(
-                text = user.displayName,
+                text = userDTO.displayName,
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -86,7 +86,7 @@ fun UserItem(
 
 @Composable
 fun UserItemWithAction(
-    user: User,
+    userDTO: UserDTO,
     onRemoveClick: () -> Unit,
     modifier: Modifier = Modifier,
     onUserItemClick: () -> Unit = { }
@@ -96,7 +96,7 @@ fun UserItemWithAction(
     if (isAlertVisible) {
         ConfirmActionDialog(
             title = stringResource(RString.remove_user_title),
-            text = stringResource(RString.remove_user_text),
+            description = stringResource(RString.remove_user_text),
             onConfirm = {
                 isAlertVisible = false
                 onRemoveClick()
@@ -112,7 +112,7 @@ fun UserItemWithAction(
         modifier = modifier.fillMaxWidth()
     ) {
         UserItem(
-            user = user,
+            userDTO = userDTO,
             onUserItemClick = onUserItemClick
         )
 
@@ -130,7 +130,7 @@ fun UserItemWithAction(
 @Composable
 private fun UserItemPreview() = TaigaMobileTheme {
     UserItem(
-        user = User(
+        userDTO = UserDTO(
             id = 0L,
             fullName = "Full Name",
             photo = null,

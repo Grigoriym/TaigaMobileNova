@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.wiki.data
 
-import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiLink
 import com.grappim.taigamobile.feature.wiki.domain.WikiPage
@@ -39,7 +39,7 @@ class WikiRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getPageAttachments(pageId: Long): List<Attachment> =
+    override suspend fun getPageAttachments(pageId: Long): List<AttachmentDTO> =
         wikiApi.getPageAttachments(
             pageId = pageId,
             projectId = taigaStorage.currentProjectIdFlow.first()

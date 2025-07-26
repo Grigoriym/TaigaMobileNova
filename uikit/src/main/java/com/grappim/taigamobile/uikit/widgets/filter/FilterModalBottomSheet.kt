@@ -20,17 +20,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.strings.RString
 
 @Composable
 fun FilterModalBottomSheet(
     bottomSheetState: SheetState,
-    unselectedFilters: FiltersData,
+    unselectedFilters: FiltersDataDTO,
     isBottomSheetVisible: Boolean,
     setBottomSheetVisible: (Boolean) -> Unit,
-    selected: FiltersData,
-    onSelect: (FiltersData) -> Unit
+    selected: FiltersDataDTO,
+    onSelect: (FiltersDataDTO) -> Unit
 ) {
     if (isBottomSheetVisible) {
         FilterModalBottomSheetContent(
@@ -46,10 +46,10 @@ fun FilterModalBottomSheet(
 @Composable
 private fun FilterModalBottomSheetContent(
     bottomSheetState: SheetState,
-    unselectedFilters: FiltersData,
+    unselectedFilters: FiltersDataDTO,
     setBottomSheetVisible: (Boolean) -> Unit,
-    selected: FiltersData,
-    onSelect: (FiltersData) -> Unit
+    selected: FiltersDataDTO,
+    onSelect: (FiltersDataDTO) -> Unit
 ) {
     val space = 6.dp
 

@@ -32,7 +32,7 @@ class DashboardRepositoryImpl @Inject constructor(
             DashboardData(
                 workingOn = workingOn.await(),
                 watching = watching.await(),
-                myProjects = myProjects.await()
+                myProjectDTOS = myProjects.await()
             )
         }
     }

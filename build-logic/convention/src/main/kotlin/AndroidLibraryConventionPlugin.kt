@@ -22,6 +22,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             dependencies {
                 "implementation"(libs.findLibrary("androidx.core.ktx").get())
                 "implementation"(libs.findLibrary("androidx.appcompat").get())
+                "implementation"(libs.findLibrary("timber").get())
             }
         }
     }

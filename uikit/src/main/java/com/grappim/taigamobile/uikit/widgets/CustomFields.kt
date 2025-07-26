@@ -1,8 +1,9 @@
-package com.grappim.taigamobile.commontask.components
+package com.grappim.taigamobile.uikit.widgets
 
 import android.content.Intent
 import android.util.Patterns
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -48,7 +49,6 @@ import com.grappim.taigamobile.core.domain.CustomFieldValue
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.DropdownSelector
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.widgets.picker.DatePicker
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
@@ -57,170 +57,172 @@ import java.time.LocalDate
 import kotlin.math.floor
 
 @Composable
-fun CustomField(
+fun CustomFieldOldWidget(
     customField: CustomField,
     value: CustomFieldValue?,
     onValueChange: (CustomFieldValue?) -> Unit,
     onSaveClick: () -> Unit,
     modifier: Modifier = Modifier
-) = Column(modifier = modifier) {
-    Text(
-        text = customField.name,
-        style = MaterialTheme.typography.titleMedium
-    )
-
-    customField.description?.let {
+) {
+    Column(modifier = modifier) {
         Text(
-            text = it,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.outline
+            text = customField.name,
+            style = MaterialTheme.typography.titleMedium
         )
-    }
 
-    Spacer(Modifier.height(4.dp))
-
-    val focusRequester = remember { FocusRequester() }
-    val focusManager = LocalFocusManager.current
-    var showEditButton = false
-    var buttonsAlignment = Alignment.CenterVertically
-
-    var fieldState by remember { mutableStateOf(FieldState.Default) }
-    val indicationColor =
-        if (value == customField.value) {
-            MaterialTheme.colorScheme.outline
-        } else {
-            MaterialTheme.colorScheme.primary
+        customField.description?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.outline
+            )
         }
-    val borderColor = when (fieldState) {
-        FieldState.Focused -> MaterialTheme.colorScheme.primary
-        FieldState.Error -> MaterialTheme.colorScheme.error
-        FieldState.Default -> indicationColor
-    }
 
-    Row {
-        Box(
-            modifier = Modifier
-                .weight(1f)
-                .border(
-                    width = 1.dp,
-                    color = if (customField.type == CustomFieldType.Checkbox) {
-                        Color.Transparent
-                    } else {
-                        borderColor
-                    },
-                    shape = MaterialTheme.shapes.small
-                )
-                .clip(MaterialTheme.shapes.extraSmall)
-                .padding(6.dp)
-        ) {
-            when (customField.type) {
-                CustomFieldType.Text -> CustomFieldText(
-                    value = value,
-                    onValueChange = onValueChange,
-                    changeFieldState = { fieldState = it }
-                )
+        Spacer(Modifier.height(4.dp))
 
-                CustomFieldType.Multiline -> {
-                    buttonsAlignment = Alignment.Top
+        val focusRequester = remember { FocusRequester() }
+        val focusManager = LocalFocusManager.current
+        var showEditButton = false
+        var buttonsAlignment = Alignment.CenterVertically
 
-                    CustomFieldMultiline(
+        var fieldState by remember { mutableStateOf(FieldState.Default) }
+        val indicationColor =
+            if (value == customField.value) {
+                MaterialTheme.colorScheme.outline
+            } else {
+                MaterialTheme.colorScheme.primary
+            }
+        val borderColor = when (fieldState) {
+            FieldState.Focused -> MaterialTheme.colorScheme.primary
+            FieldState.Error -> MaterialTheme.colorScheme.error
+            FieldState.Default -> indicationColor
+        }
+
+        Row {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .border(
+                        width = 1.dp,
+                        color = if (customField.type == CustomFieldType.Checkbox) {
+                            Color.Transparent
+                        } else {
+                            borderColor
+                        },
+                        shape = MaterialTheme.shapes.small
+                    )
+                    .clip(MaterialTheme.shapes.extraSmall)
+                    .padding(6.dp)
+            ) {
+                when (customField.type) {
+                    CustomFieldType.Text -> CustomFieldText(
                         value = value,
                         onValueChange = onValueChange,
                         changeFieldState = { fieldState = it }
                     )
-                }
 
-                CustomFieldType.RichText -> {
-                    buttonsAlignment = Alignment.Top
-                    showEditButton = true
+                    CustomFieldType.Multiline -> {
+                        buttonsAlignment = Alignment.Top
 
-                    CustomFieldRichText(
+                        CustomFieldMultiline(
+                            value = value,
+                            onValueChange = onValueChange,
+                            changeFieldState = { fieldState = it }
+                        )
+                    }
+
+                    CustomFieldType.RichText -> {
+                        buttonsAlignment = Alignment.Top
+                        showEditButton = true
+
+                        CustomFieldRichText(
+                            value = value,
+                            onValueChange = onValueChange,
+                            fieldState = fieldState,
+                            changeFieldState = { fieldState = it },
+                            focusRequester = focusRequester
+                        )
+                    }
+
+                    CustomFieldType.Number -> CustomFieldNumber(
                         value = value,
                         onValueChange = onValueChange,
-                        fieldState = fieldState,
-                        changeFieldState = { fieldState = it },
-                        focusRequester = focusRequester
+                        changeFieldState = { fieldState = it }
+                    )
+
+                    CustomFieldType.Url -> CustomFieldUrl(
+                        value = value,
+                        onValueChange = onValueChange,
+                        changeFieldState = { fieldState = it }
+                    )
+
+                    CustomFieldType.Date -> CustomFieldDate(
+                        value = value,
+                        onValueChange = onValueChange,
+                        changeFieldState = { fieldState = it }
+                    )
+
+                    CustomFieldType.Dropdown -> CustomFieldDropdown(
+                        options = customField.options
+                            ?: error("Dropdown custom field without options"),
+                        borderColor = borderColor,
+                        value = value,
+                        onValueChange = onValueChange,
+                        changeFieldState = { fieldState = it }
+                    )
+
+                    CustomFieldType.Checkbox -> CustomFieldCheckbox(
+                        value = value,
+                        onValueChange = onValueChange
                     )
                 }
-
-                CustomFieldType.Number -> CustomFieldNumber(
-                    value = value,
-                    onValueChange = onValueChange,
-                    changeFieldState = { fieldState = it }
-                )
-
-                CustomFieldType.Url -> CustomFieldUrl(
-                    value = value,
-                    onValueChange = onValueChange,
-                    changeFieldState = { fieldState = it }
-                )
-
-                CustomFieldType.Date -> CustomFieldDate(
-                    value = value,
-                    onValueChange = onValueChange,
-                    changeFieldState = { fieldState = it }
-                )
-
-                CustomFieldType.Dropdown -> CustomFieldDropdown(
-                    options = customField.options
-                        ?: error("Dropdown custom field without options"),
-                    borderColor = borderColor,
-                    value = value,
-                    onValueChange = onValueChange,
-                    changeFieldState = { fieldState = it }
-                )
-
-                CustomFieldType.Checkbox -> CustomFieldCheckbox(
-                    value = value,
-                    onValueChange = onValueChange
-                )
             }
-        }
 
-        Row(Modifier.align(buttonsAlignment)) {
-            if (showEditButton) {
-                Spacer(Modifier.width(4.dp))
+            Row(Modifier.align(buttonsAlignment)) {
+                if (showEditButton) {
+                    Spacer(Modifier.width(4.dp))
+
+                    IconButton(
+                        onClick = {
+                            fieldState = FieldState.Focused
+                        },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                    ) {
+                        Icon(
+                            painter = painterResource(RDrawable.ic_edit),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                } else {
+                    Spacer(Modifier.width(4.dp))
+                }
 
                 IconButton(
                     onClick = {
-                        fieldState = FieldState.Focused
+                        if (fieldState != FieldState.Error && value != customField.value) {
+                            focusManager.clearFocus()
+                            onSaveClick()
+                        }
                     },
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape)
                 ) {
                     Icon(
-                        painter = painterResource(RDrawable.ic_edit),
+                        painter = painterResource(RDrawable.ic_save),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.outline
+                        tint = indicationColor
                     )
                 }
-            } else {
-                Spacer(Modifier.width(4.dp))
-            }
-
-            IconButton(
-                onClick = {
-                    if (fieldState != FieldState.Error && value != customField.value) {
-                        focusManager.clearFocus()
-                        onSaveClick()
-                    }
-                },
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-            ) {
-                Icon(
-                    painter = painterResource(RDrawable.ic_save),
-                    contentDescription = null,
-                    tint = indicationColor
-                )
             }
         }
     }
 }
 
-private enum class FieldState {
+enum class FieldState {
     Focused,
     Error,
     Default
@@ -236,16 +238,18 @@ private fun TextValue(
     singleLine: Boolean = false,
     keyboardType: KeyboardType = KeyboardType.Text,
     textColor: Color = MaterialTheme.colorScheme.onSurface
-) = TextFieldWithHint(
-    hintId = hintId,
-    value = text,
-    onValueChange = onTextChange,
-    onFocusChange = onFocusChange,
-    focusRequester = focusRequester,
-    singleLine = singleLine,
-    keyboardType = keyboardType,
-    textColor = textColor
-)
+) {
+    TextFieldWithHint(
+        hintId = hintId,
+        value = text,
+        onValueChange = onTextChange,
+        onFocusChange = onFocusChange,
+        focusRequester = focusRequester,
+        singleLine = singleLine,
+        keyboardType = keyboardType,
+        textColor = textColor
+    )
+}
 
 @Composable
 private fun CustomFieldText(
@@ -421,7 +425,8 @@ private fun CustomFieldUrl(
 
         Spacer(Modifier.width(2.dp))
 
-        val activity = LocalContext.current.activity
+        val context = LocalContext.current
+        val activity = context as AppCompatActivity
         IconButton(
             onClick = {
                 value?.stringValue?.takeIf { it.isNotEmpty() }?.let {
@@ -532,12 +537,11 @@ private fun CustomFieldsPreview() = TaigaMobileTheme {
             )
         }
 
-        CustomField(
+        CustomFieldOldWidget(
             customField = CustomField(
                 id = 0L,
                 type = CustomFieldType.Text,
                 name = "Sample name",
-                description = "Description",
                 value = CustomFieldValue("Sample value")
 
             ),
@@ -554,12 +558,11 @@ private fun CustomFieldsPreview() = TaigaMobileTheme {
             )
         }
 
-        CustomField(
+        CustomFieldOldWidget(
             customField = CustomField(
                 id = 0L,
                 type = CustomFieldType.Multiline,
                 name = "Sample name",
-                description = "Description",
                 value = CustomFieldValue("Sample value")
 
             ),
@@ -576,12 +579,11 @@ private fun CustomFieldsPreview() = TaigaMobileTheme {
             )
         }
 
-        CustomField(
+        CustomFieldOldWidget(
             customField = CustomField(
                 id = 0L,
                 type = CustomFieldType.RichText,
                 name = "Sample name",
-                description = "Description",
                 value = CustomFieldValue("__Sample__ `value`")
 
             ),
@@ -594,12 +596,11 @@ private fun CustomFieldsPreview() = TaigaMobileTheme {
 
         var value4 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue(42.0)) }
 
-        CustomField(
+        CustomFieldOldWidget(
             customField = CustomField(
                 id = 0L,
                 type = CustomFieldType.Number,
                 name = "Sample name",
-                description = "Description",
                 value = CustomFieldValue(42.0)
             ),
             value = value4,
@@ -615,12 +616,11 @@ private fun CustomFieldsPreview() = TaigaMobileTheme {
             )
         }
 
-        CustomField(
+        CustomFieldOldWidget(
             customField = CustomField(
                 id = 0L,
                 type = CustomFieldType.Url,
                 name = "Sample name",
-                description = "Description",
                 value = CustomFieldValue("https://x.com")
             ),
             value = value5,
@@ -642,12 +642,11 @@ private fun CustomFieldsPreview() = TaigaMobileTheme {
             )
         }
 
-        CustomField(
+        CustomFieldOldWidget(
             customField = CustomField(
                 id = 0L,
                 type = CustomFieldType.Date,
                 name = "Sample name",
-                description = "Description",
                 value = CustomFieldValue(LocalDate.of(1970, 1, 1))
             ),
             value = value6,
@@ -663,12 +662,11 @@ private fun CustomFieldsPreview() = TaigaMobileTheme {
             )
         }
 
-        CustomField(
+        CustomFieldOldWidget(
             customField = CustomField(
                 id = 0L,
                 type = CustomFieldType.Dropdown,
                 name = "Sample name",
-                description = "Description",
                 value = CustomFieldValue("Something 0"),
                 options = listOf("", "Something 0", "Something 1", "Something 2")
             ),
@@ -681,12 +679,11 @@ private fun CustomFieldsPreview() = TaigaMobileTheme {
 
         var value8 by remember { mutableStateOf<CustomFieldValue?>(CustomFieldValue(true)) }
 
-        CustomField(
+        CustomFieldOldWidget(
             customField = CustomField(
                 id = 0L,
                 type = CustomFieldType.Checkbox,
                 name = "Sample name",
-                description = "Description",
                 value = CustomFieldValue(true)
             ),
             value = value8,

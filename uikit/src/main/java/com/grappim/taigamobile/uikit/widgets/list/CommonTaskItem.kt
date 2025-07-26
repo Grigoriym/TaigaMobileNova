@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.Project
-import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.navigation.NavigateToTask
 import com.grappim.taigamobile.strings.RString
@@ -50,7 +50,7 @@ fun CommonTaskItem(
 
     Column(modifier = Modifier.fillMaxWidth()) {
         if (showExtendedInfo) {
-            Text(commonTask.projectInfo.name)
+            Text(commonTask.projectDTOInfo.name)
 
             Text(
                 text = stringResource(
@@ -70,8 +70,8 @@ fun CommonTaskItem(
             modifier = Modifier.fillMaxWidth()
         ) {
             Text(
-                text = commonTask.status.name,
-                color = commonTask.status.color.toColor(),
+                text = commonTask.statusOld.name,
+                color = commonTask.statusOld.color.toColor(),
                 style = MaterialTheme.typography.bodyMedium
             )
 
@@ -111,14 +111,14 @@ private fun CommonTaskItemPreview() = TaigaMobileTheme {
             createdDate = LocalDateTime.now(),
             title = "Very cool story",
             ref = 100,
-            status = Status(
+            statusOld = StatusOld(
                 id = 0L,
                 name = "In progress",
                 color = "#729fcf",
                 type = StatusType.Status
             ),
             assignee = null,
-            projectInfo = Project(0, "Name", "slug"),
+            projectDTOInfo = ProjectDTO(0, "Name", "slug"),
             taskType = CommonTaskType.UserStory,
             isClosed = false,
             blockedNote = "Block reason"

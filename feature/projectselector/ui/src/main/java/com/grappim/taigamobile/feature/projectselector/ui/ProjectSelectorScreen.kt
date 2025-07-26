@@ -29,7 +29,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -78,9 +78,9 @@ fun ProjectSelectorScreen(
 fun ProjectSelectorScreenContent(
     state: ProjectSelectorState,
     searchQuery: String,
-    projects: LazyPagingItems<Project>,
+    projects: LazyPagingItems<ProjectDTO>,
     modifier: Modifier = Modifier,
-    selectProject: (Project) -> Unit = {}
+    selectProject: (ProjectDTO) -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -104,7 +104,7 @@ fun ProjectSelectorScreenContent(
                 val project = projects[index]
                 if (project != null) {
                     ItemProject(
-                        project = project,
+                        projectDTO = project,
                         currentProjectId = state.currentProjectId,
                         onClick = { selectProject(project) }
                     )
@@ -115,7 +115,7 @@ fun ProjectSelectorScreenContent(
 }
 
 @Composable
-private fun ItemProject(project: Project, currentProjectId: Long, onClick: () -> Unit = {}) {
+private fun ItemProject(projectDTO: ProjectDTO, currentProjectId: Long, onClick: () -> Unit = {}) {
     ContainerBox(
         verticalPadding = 16.dp,
         onClick = onClick
@@ -126,15 +126,15 @@ private fun ItemProject(project: Project, currentProjectId: Long, onClick: () ->
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(Modifier.weight(0.8f)) {
-                project.takeIf { it.isMember || it.isAdmin || it.isOwner }?.let {
+                projectDTO.takeIf { it.isMember || it.isAdmin || it.isOwner }?.let {
                     Text(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.primary,
                         text = stringResource(
                             when {
-                                project.isOwner -> RString.project_owner
-                                project.isAdmin -> RString.project_admin
-                                project.isMember -> RString.project_member
+                                projectDTO.isOwner -> RString.project_owner
+                                projectDTO.isAdmin -> RString.project_admin
+                                projectDTO.isMember -> RString.project_member
                                 else -> 0
                             }
                         )
@@ -143,13 +143,13 @@ private fun ItemProject(project: Project, currentProjectId: Long, onClick: () ->
 
                 Text(
                     text = stringResource(RString.project_name_template).format(
-                        project.name,
-                        project.slug
+                        projectDTO.name,
+                        projectDTO.slug
                     )
                 )
             }
 
-            if (project.id == currentProjectId) {
+            if (projectDTO.id == currentProjectId) {
                 Image(
                     painter = painterResource(RDrawable.ic_check),
                     contentDescription = null,
@@ -166,7 +166,7 @@ private fun ItemProject(project: Project, currentProjectId: Long, onClick: () ->
 private fun ProjectSelectorScreenPreview() = TaigaMobileTheme {
     ProjectSelectorScreenContent(
         projects = flowOf(
-            PagingData.empty<Project>()
+            PagingData.empty<ProjectDTO>()
         ).collectAsLazyPagingItems(),
         searchQuery = "",
         state = ProjectSelectorState(

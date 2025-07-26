@@ -21,6 +21,9 @@ ktlint_standard_property-naming = disabled
 [**/ColorPicker.kt]
 ktlint_compose_modifier-missing-check=disabled
 
+[**/TaigaSpacers.kt]
+ktlint_compose_modifier-missing-check=disabled
+
 [**/Modifiers.kt]
 ktlint_compose_modifier-composed-check=disabled
 

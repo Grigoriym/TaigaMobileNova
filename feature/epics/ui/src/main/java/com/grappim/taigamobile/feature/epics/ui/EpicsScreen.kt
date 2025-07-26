@@ -14,7 +14,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -24,7 +24,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.filter.TasksFiltersWithLazyList
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
@@ -46,7 +46,7 @@ fun EpicsScreen(
             TopBarConfig(
                 title = NativeText.Resource(RString.epics),
                 actions = listOf(
-                    TopBarActionResource(
+                    TopBarActionIconButton(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = {
@@ -82,7 +82,7 @@ fun EpicsScreenContent(
     epics: LazyPagingItems<CommonTask>,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
     modifier: Modifier = Modifier,
-    selectFilters: (FiltersData) -> Unit = {}
+    selectFilters: (FiltersDataDTO) -> Unit = {}
 ) {
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),

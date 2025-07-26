@@ -4,7 +4,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.appcompat.app.AppCompatActivity
 
-@Deprecated("I am not sure we need it")
+@Deprecated("I am not sure we need it, use val activity = context as Activity")
 val Context.activity: AppCompatActivity
     get() = when (this) {
         is AppCompatActivity -> this

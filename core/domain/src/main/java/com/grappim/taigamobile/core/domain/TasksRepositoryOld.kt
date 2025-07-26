@@ -7,7 +7,7 @@ import java.time.LocalDate
 interface TasksRepositoryOld {
     suspend fun getCommonTask(commonTaskId: Long, type: CommonTaskType): CommonTaskExtended
 
-    suspend fun getAttachments(commonTaskId: Long, type: CommonTaskType): List<Attachment>
+    suspend fun getAttachments(commonTaskId: Long, type: CommonTaskType): List<AttachmentDTO>
 
     suspend fun getCustomFields(commonTaskId: Long, type: CommonTaskType): CustomFields
 
@@ -37,7 +37,7 @@ interface TasksRepositoryOld {
         commonTaskId: Long,
         commonTaskType: CommonTaskType,
         comment: String,
-        version: Int
+        version: Long
     )
 
     suspend fun createCommonTask(
@@ -70,6 +70,6 @@ interface TasksRepositoryOld {
         commonTaskType: CommonTaskType,
         commonTaskId: Long,
         fields: Map<Long, CustomFieldValue?>,
-        version: Int
+        version: Long
     )
 }

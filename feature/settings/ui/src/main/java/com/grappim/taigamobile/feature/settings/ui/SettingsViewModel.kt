@@ -36,7 +36,8 @@ class SettingsViewModel @Inject constructor(
             serverUrl = serverStorage.server,
             onThemeChanged = ::switchTheme,
             showSnackbar = ::showSnackbar,
-            getThemeTitle = ::getThemeTitle
+            getThemeTitle = ::getThemeTitle,
+            onNewUIToggle = ::isNewUiToggle
         )
     )
     val state = _state.asStateFlow()
@@ -53,12 +54,20 @@ class SettingsViewModel @Inject constructor(
             }
         }.launchIn(viewModelScope)
 
+        taigaStorage.isNewUIUsed.onEach { isEnabled ->
+            _state.update {
+                it.copy(
+                    isNewUIUsed = isEnabled
+                )
+            }
+        }.launchIn(viewModelScope)
+
         viewModelScope.launch {
             usersRepository.getMeResult()
                 .onSuccess { result ->
                     _state.update {
                         it.copy(
-                            user = result,
+                            userDTO = result,
                             isLoading = false
                         )
                     }
@@ -71,6 +80,12 @@ class SettingsViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    private fun isNewUiToggle() {
+        viewModelScope.launch {
+            taigaStorage.setIsUIUsed(!_state.value.isNewUIUsed)
         }
     }
 

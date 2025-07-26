@@ -6,7 +6,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
@@ -64,7 +64,7 @@ class EpicsViewModel @Inject constructor(
     }
 
     private suspend fun loadFilters() {
-        filtersRepository.getFiltersDataResult(CommonTaskType.Epic)
+        filtersRepository.getFiltersDataResultOld(CommonTaskType.Epic)
             .onSuccess { data ->
                 _state.update {
                     it.copy(
@@ -83,7 +83,7 @@ class EpicsViewModel @Inject constructor(
         epicsRepository.refreshEpics()
     }
 
-    fun selectFilters(filters: FiltersData) {
+    fun selectFilters(filters: FiltersDataDTO) {
         session.changeEpicsFilters(filters)
     }
 }

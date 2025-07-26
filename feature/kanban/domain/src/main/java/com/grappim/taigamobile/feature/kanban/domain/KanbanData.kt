@@ -1,13 +1,13 @@
 package com.grappim.taigamobile.feature.kanban.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
-import com.grappim.taigamobile.core.domain.Status
-import com.grappim.taigamobile.core.domain.Swimlane
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.StatusOld
+import com.grappim.taigamobile.core.domain.SwimlaneDTO
+import com.grappim.taigamobile.core.domain.UserDTO
 
 data class KanbanData(
-    val statuses: List<Status>,
+    val statusOlds: List<StatusOld>,
     val stories: List<CommonTaskExtended>,
-    val swimlanes: List<Swimlane>,
-    val team: List<User>
+    val swimlaneDTOS: List<SwimlaneDTO>,
+    val team: List<UserDTO>
 )

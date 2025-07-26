@@ -3,17 +3,17 @@ package com.grappim.taigamobile.feature.projects.data
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.grappim.taigamobile.core.api.tryCatchWithPagination
-import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.ProjectDTO
 
 class ProjectsPagingSource(private val projectsApi: ProjectsApi, private val query: String) :
-    PagingSource<Int, Project>() {
-    override fun getRefreshKey(state: PagingState<Int, Project>): Int? =
+    PagingSource<Int, ProjectDTO>() {
+    override fun getRefreshKey(state: PagingState<Int, ProjectDTO>): Int? =
         state.anchorPosition?.let { anchorPosition ->
             val anchorPage = state.closestPageToPosition(anchorPosition)
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
         }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Project> =
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ProjectDTO> =
         tryCatchWithPagination(
             block = {
                 val nextPageNumber = params.key ?: 1

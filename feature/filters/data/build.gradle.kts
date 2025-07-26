@@ -12,6 +12,7 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.async)
     implementation(projects.core.storage)
+    implementation(projects.utils.ui)
 
     implementation(projects.feature.filters.domain)
 

@@ -44,6 +44,7 @@ class SettingsViewModelTest {
         every { appInfoProvider.getAppInfo() } returns appInfo
         every { serverStorage.server } returns server
         every { taigaStorage.themeSettings } returns flowOf(ThemeSettings.default())
+        every { taigaStorage.isNewUIUsed } returns flowOf(false)
 
         sut = SettingsViewModel(
             usersRepository = usersRepository,
@@ -67,5 +68,17 @@ class SettingsViewModelTest {
         sut.state.value.onThemeChanged(newTheme)
 
         coVerify { taigaStorage.setThemSetting(newTheme) }
+    }
+
+    @Test
+    fun `on isNewUIUsed toggle, should switch isNewUIUsed`() = runTest {
+        val expected = true
+        coEvery { taigaStorage.setIsUIUsed(expected) } just Runs
+        every { taigaStorage.isNewUIUsed } returns flowOf(expected)
+        assertEquals(false, sut.state.value.isNewUIUsed)
+
+        sut.state.value.onNewUIToggle()
+
+        coVerify { taigaStorage.setIsUIUsed(expected) }
     }
 }

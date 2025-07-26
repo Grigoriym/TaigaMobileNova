@@ -97,7 +97,7 @@ private fun EpicItemWithAction(
     if (isAlertVisible) {
         ConfirmActionDialog(
             title = stringResource(RString.unlink_epic_title),
-            text = stringResource(RString.unlink_epic_text),
+            description = stringResource(RString.unlink_epic_text),
             onConfirm = {
                 isAlertVisible = false
                 onRemoveClick()

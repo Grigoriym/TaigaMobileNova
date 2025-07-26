@@ -14,11 +14,11 @@ data class CommonTaskResponse(
     val status: Long,
     val ref: Int,
     @Json(name = "assigned_to_extra_info")
-    val assignedToExtraInfo: User?,
+    val assignedToExtraInfo: UserDTO?,
     @Json(name = "status_extra_info")
     val statusExtraInfo: StatusExtra,
     @Json(name = "project_extra_info")
-    val projectExtraInfo: Project,
+    val projectDTOExtraInfo: ProjectDTO,
     val milestone: Long?,
     @Json(name = "assigned_users")
     val assignedUsers: List<Long>?,
@@ -30,7 +30,7 @@ data class CommonTaskResponse(
     val epics: List<EpicShortInfo>?,
     @Json(name = "user_story_extra_info")
     val userStoryExtraInfo: UserStoryShortInfo?,
-    val version: Int,
+    val version: Long,
     @Json(name = "is_closed")
     val isClosed: Boolean,
     val tags: List<List<String?>>?,
@@ -38,7 +38,7 @@ data class CommonTaskResponse(
     @Json(name = "due_date")
     val dueDate: LocalDate?,
     @Json(name = "due_date_status")
-    val dueDateStatus: DueDateStatus?,
+    val dueDateStatusDTO: DueDateStatusDTO?,
     @Json(name = "blocked_note")
     val blockedNote: String,
     @Json(name = "is_blocked")

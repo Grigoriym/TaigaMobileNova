@@ -29,8 +29,8 @@ class KanbanRepositoryImpl @Inject constructor(
 
             KanbanData(
                 stories = userStories.await(),
-                swimlanes = swimlanes.await(),
-                statuses = filters.await(),
+                swimlaneDTOS = swimlanes.await(),
+                statusOlds = filters.await(),
                 team = users.await().map { it.toUser() }
             )
         }

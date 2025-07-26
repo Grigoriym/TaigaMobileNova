@@ -18,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
-import com.grappim.taigamobile.core.domain.DueDateStatus
+import com.grappim.taigamobile.core.domain.DueDateStatusDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
@@ -46,13 +46,13 @@ fun LazyListScope.CommonTaskDueDate(commonTask: CommonTaskExtended, editActions:
                     .fillMaxHeight()
                     .aspectRatio(1f)
                     .background(
-                        color = when (commonTask.dueDateStatus) {
-                            DueDateStatus.NotSet, DueDateStatus.NoLongerApplicable, null ->
+                        color = when (commonTask.dueDateStatusDTO) {
+                            DueDateStatusDTO.NotSet, DueDateStatusDTO.NoLongerApplicable, null ->
                                 defaultIconBackground
 
-                            DueDateStatus.Set -> taigaGreenPositive
-                            DueDateStatus.DueSoon -> taigaOrange
-                            DueDateStatus.PastDue -> taigaRed
+                            DueDateStatusDTO.Set -> taigaGreenPositive
+                            DueDateStatusDTO.DueSoon -> taigaOrange
+                            DueDateStatusDTO.PastDue -> taigaRed
                         }.takeUnless { editActions.editDueDate.isLoading } ?: defaultIconBackground,
                         shape = MaterialTheme.shapes.small
                     )

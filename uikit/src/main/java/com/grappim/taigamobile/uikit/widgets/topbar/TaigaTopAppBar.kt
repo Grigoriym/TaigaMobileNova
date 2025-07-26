@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.uikit.widgets.topbar
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
@@ -8,20 +9,26 @@ import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
 import kotlinx.coroutines.launch
 
 /**
  * Global top bar for the app.
  */
+// todo currently material dep does not provide subtitle, only in alpha, so in the future
+// todo I need to revisit it
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaigaTopAppBar(
@@ -37,11 +44,23 @@ fun TaigaTopAppBar(
         CenterAlignedTopAppBar(
             modifier = modifier,
             title = {
-                Text(
-                    topBarConfig.title.asString(context),
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = topBarConfig.title.asString(context),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (topBarConfig.subtitle !is NativeText.Empty) {
+                        Text(
+                            text = topBarConfig.subtitle.asString(context),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
             },
             navigationIcon = {
                 NavigationIcon(
@@ -52,13 +71,19 @@ fun TaigaTopAppBar(
             },
             actions = {
                 topBarConfig.actions.forEach { action ->
-                    IconButton(onClick = action.onClick) {
-                        when (action) {
-                            is TopBarActionResource -> {
+                    when (action) {
+                        is TopBarActionIconButton -> {
+                            IconButton(onClick = action.onClick) {
                                 Icon(
                                     painter = painterResource(action.drawable),
                                     contentDescription = action.contentDescription
                                 )
+                            }
+                        }
+
+                        is TopBarActionTextButton -> {
+                            TextButton(onClick = action.onClick) {
+                                Text(text = action.text.asString(context))
                             }
                         }
                     }

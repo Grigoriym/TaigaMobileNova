@@ -5,6 +5,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
+/**
+ * Controller to set up the global top bar
+ */
 val LocalTopBarConfig = compositionLocalOf<TopBarController> {
     error("TopBarController not provided")
 }

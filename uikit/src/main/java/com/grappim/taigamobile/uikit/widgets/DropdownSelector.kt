@@ -4,6 +4,7 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,7 +25,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 /**
@@ -53,13 +53,11 @@ fun <T> DropdownSelector(
 
     Column(modifier = modifier) {
         Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = horizontalArrangement,
             modifier = Modifier
                 .let { if (takeMaxWidth) it.fillMaxWidth() else it }
-                .clickableUnindicated {
-                    isExpanded = !isExpanded
-                }
+                .clickable { isExpanded = !isExpanded },
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = horizontalArrangement
         ) {
             selectedItemContent(selectedItem)
 

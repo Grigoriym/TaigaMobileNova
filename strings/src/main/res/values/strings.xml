@@ -7,8 +7,14 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
 
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep Editing</string>
+    <string name="are_you_sure_discarding_changes">Are you sure you want to discard changes?</string>
+    <string name="are_you_sure_discarding_tags_changes">Are you sure you want to discard changes? If you discard, then the work item tags will stay the same. </string>
+
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
 
     <string name="common_error_message">An error has occurred. Check your connection</string>
     <string name="permission_error">Error, you may not have sufficient permissions</string>
@@ -36,6 +42,9 @@
     <string name="more">More</string>
     <string name="kanban">Kanban</string>
     <string name="wiki">Wiki</string>
+
+    <string name="edit_description">Edit Description</string>
+    <string name="edit_tags">Edit Tags</string>
 
     <string name="choose_project_title">Choose project</string>
 
@@ -159,6 +168,7 @@
 
     <string name="title_hint">Title</string>
     <string name="description_hint">Description</string>
+    <string name="add_description">Add a description</string>
 
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
@@ -198,6 +208,7 @@
     <string name="logout_text">Are you sure you want to log out?</string>
 
     <string name="appearance">Appearance</string>
+    <string name="is_new_ui_used">Is New UI used?</string>
 
     <string name="theme_title">Theme</string>
     <string name="theme_system">System</string>
@@ -224,6 +235,8 @@
     <string name="source_code">Source code</string>
 
     <string name="error_opening_link">No applications available to open the link</string>
+
+    <string name="error_retrieving_due_date">Cannot get the Due Date</string>
 
     <!--    Errors-->
     <string name="error_something_has_gone_wrong">Something went wrong</string>

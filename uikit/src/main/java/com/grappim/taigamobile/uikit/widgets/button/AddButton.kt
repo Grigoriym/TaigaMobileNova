@@ -17,7 +17,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
  * Text button with plus icon on the left
  */
 @Composable
-fun AddButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) =
+fun AddButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     FilledTonalButton(modifier = modifier, onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
@@ -28,3 +28,4 @@ fun AddButton(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) 
             Text(text)
         }
     }
+}

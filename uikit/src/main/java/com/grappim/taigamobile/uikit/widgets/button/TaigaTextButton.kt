@@ -14,30 +14,29 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
-/**
- * Text button just with text
- */
 @Composable
-fun TextButton(
+fun TaigaTextButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     icon: Int? = null
-) = FilledTonalButton(modifier = modifier, onClick = onClick) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        icon?.let {
-            Icon(
-                painter = painterResource(it),
-                contentDescription = null,
-                modifier = Modifier.size(24.dp)
-            )
+) {
+    FilledTonalButton(modifier = modifier, onClick = onClick) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            icon?.let {
+                Icon(
+                    painter = painterResource(it),
+                    contentDescription = null,
+                    modifier = Modifier.size(24.dp)
+                )
 
-            Spacer(Modifier.width(6.dp))
+                Spacer(Modifier.width(6.dp))
+            }
+            Text(
+                text = text,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
         }
-        Text(
-            text = text,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis
-        )
     }
 }

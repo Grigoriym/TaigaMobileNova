@@ -19,6 +19,15 @@ import androidx.paging.compose.LazyPagingItems
 import com.grappim.taigamobile.strings.RString
 import kotlin.math.ln
 
+val taigaGrayHex by lazy { taigaGray.toHex() }
+
+/**
+ * gray, because api returns null instead of gray -_-
+ */
+fun String?.fixNullColor() = this ?: taigaGrayHex
+
+private val taigaGray = Color(0xFFA9AABC)
+
 fun Color.toHex() = "#%08X".format(toArgb()).replace("#FF", "#")
 
 // calculate optimal text color for colored background background

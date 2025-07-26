@@ -79,7 +79,7 @@ fun LoginScreen(
     if (state.isAlertVisible) {
         ConfirmActionDialog(
             title = stringResource(RString.login_alert_title),
-            text = stringResource(RString.login_alert_text),
+            description = stringResource(RString.login_alert_text),
             onConfirm = state.onActionDialogConfirm,
             onDismiss = { state.setIsAlertVisible(false) },
             iconId = RDrawable.ic_insecure

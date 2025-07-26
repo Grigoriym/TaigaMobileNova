@@ -3,14 +3,13 @@ package com.grappim.taigamobile.feature.userstories.data
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.grappim.taigamobile.core.api.fixNullColor
+import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.api.handle404
-import com.grappim.taigamobile.core.api.toCommonTask
 import com.grappim.taigamobile.core.api.withIO
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.commaString
 import com.grappim.taigamobile.core.domain.tagsCommaString
@@ -21,6 +20,7 @@ import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
+import com.grappim.taigamobile.utils.ui.fixNullColor
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -31,9 +31,10 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val taigaStorage: TaigaStorage,
     private val filtersRepository: FiltersRepository,
     private val swimlanesRepository: SwimlanesRepository,
-    private val serverStorage: ServerStorage
+    private val serverStorage: ServerStorage,
+    private val commonTaskMapper: CommonTaskMapper
 ) : UserStoriesRepository {
-    override fun getUserStories(filters: FiltersData): Flow<PagingData<CommonTask>> = Pager(
+    override fun getUserStories(filters: FiltersDataDTO): Flow<PagingData<CommonTask>> = Pager(
         PagingConfig(
             pageSize = 20,
             enablePlaceholders = false
@@ -43,7 +44,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     }.flow
 
     override suspend fun getAllUserStories() = withIO {
-        val filters = async { filtersRepository.getFiltersData(CommonTaskType.UserStory) }
+        val filters = async { filtersRepository.getFiltersDataOld(CommonTaskType.UserStory) }
         val swimlanes = async { swimlanesRepository.getSwimlanes() }
 
         userStoriesApi.getUserStories(project = taigaStorage.currentProjectIdFlow.first())
@@ -51,10 +52,10 @@ class UserStoriesRepositoryImpl @Inject constructor(
                 response.toCommonTaskExtended(
                     commonTaskType = CommonTaskType.UserStory,
                     filters = filters.await(),
-                    swimlanes = swimlanes.await(),
+                    swimlaneDTOS = swimlanes.await(),
                     tags = response.tags.orEmpty()
                         .map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
-                    url = "${serverStorage.server}/project/${response.projectExtraInfo.slug}/${
+                    url = "${serverStorage.server}/project/${response.projectDTOExtraInfo.slug}/${
                         transformTaskTypeForCopyLink(
                             CommonTaskType.UserStory
                         )
@@ -63,7 +64,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
             }
     }
 
-    override suspend fun getBacklogUserStories(page: Int, filters: FiltersData) = handle404 {
+    override suspend fun getBacklogUserStories(page: Int, filters: FiltersDataDTO) = handle404 {
         userStoriesApi.getUserStories(
             project = taigaStorage.currentProjectIdFlow.first(),
             sprint = "null",
@@ -75,7 +76,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
             statuses = filters.statuses.commaString(),
             epics = filters.epics.commaString(),
             tags = filters.tags.tagsCommaString()
-        ).map { it.toCommonTask(CommonTaskType.UserStory) }
+        ).map { commonTaskMapper.toDomain(it, CommonTaskType.UserStory) }
     }
 
     override suspend fun getUserStories(
@@ -83,13 +84,18 @@ class UserStoriesRepositoryImpl @Inject constructor(
         isClosed: Boolean?,
         isDashboard: Boolean?,
         watcherId: Long?,
-        epicId: Long?
+        epicId: Long?,
+        project: Long?,
+        sprint: Any?
     ): List<CommonTask> = userStoriesApi.getUserStories(
         assignedId = assignedId,
         isClosed = isClosed,
         isDashboard = isDashboard,
-        epic = epicId
-    ).map { it.toCommonTask(CommonTaskType.UserStory) }
+        watcherId = watcherId,
+        epic = epicId,
+        project = project,
+        sprint = sprint
+    ).map { commonTaskMapper.toDomain(it, CommonTaskType.UserStory) }
 
     override suspend fun createUserStory(
         project: Long,
@@ -107,9 +113,11 @@ class UserStoriesRepositoryImpl @Inject constructor(
         )
     )
 
-    override suspend fun getUserStoryByRef(projectId: Long, ref: Int): CommonTask =
-        userStoriesApi.getUserStoryByRef(
+    override suspend fun getUserStoryByRef(projectId: Long, ref: Int): CommonTask {
+        val response = userStoriesApi.getUserStoryByRef(
             projectId = projectId,
             ref = ref
-        ).toCommonTask(CommonTaskType.UserStory)
+        )
+        return commonTaskMapper.toDomain(response, CommonTaskType.UserStory)
+    }
 }

@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.dashboard.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.dashboard.domain.DashboardRepository
@@ -37,7 +37,7 @@ class DashboardViewModel @Inject constructor(
                                     currentProjectId = id,
                                     workingOn = result.workingOn,
                                     watching = result.watching,
-                                    myProjects = result.myProjects,
+                                    myProjectDTOS = result.myProjectDTOS,
                                     isLoading = false,
                                     isError = false
                                 )
@@ -58,7 +58,7 @@ class DashboardViewModel @Inject constructor(
                         it.copy(
                             workingOn = emptyList(),
                             watching = emptyList(),
-                            myProjects = emptyList()
+                            myProjectDTOS = emptyList()
 
                         )
                     }
@@ -67,9 +67,9 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
-    fun changeCurrentProject(project: Project) {
+    fun changeCurrentProject(projectDTO: ProjectDTO) {
         viewModelScope.launch {
-            project.apply {
+            projectDTO.apply {
                 session.changeCurrentProjectName(name)
                 taigaStorage.setCurrentProjectId(id)
             }

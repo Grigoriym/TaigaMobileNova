@@ -1,6 +1,11 @@
+@file:OptIn(ExperimentalMaterialApi::class)
+
 package com.grappim.taigamobile.feature.settings.ui
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -12,6 +17,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ListItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircleOutline
+import androidx.compose.material.icons.filled.HighlightOff
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,15 +32,16 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -37,18 +49,19 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
-import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
 import com.grappim.taigamobile.utils.ui.collectSnackbarMessage
 import timber.log.Timber
+
+private const val ANIMATION_DURATION = 500
 
 @Composable
 fun SettingsScreen(
@@ -73,16 +86,18 @@ fun SettingsScreen(
         }
     }
 
-    TaigaLoadingDialog(state.isLoading)
+    if (state.isLoading) {
+        CircularLoader(modifier = Modifier.fillMaxSize())
+    }
 
-    if (state.user != null) {
+    if (state.userDTO != null) {
         SettingsScreenContent(state = state)
     }
 }
 
 @Composable
 fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
-    requireNotNull(state.user)
+    requireNotNull(state.userDTO)
     val context = LocalContext.current
 
     Column(
@@ -97,7 +112,7 @@ fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
                 .clip(MaterialTheme.shapes.large),
             placeholder = painterResource(RDrawable.default_avatar),
             error = painterResource(RDrawable.default_avatar),
-            model = state.user.avatarUrl,
+            model = state.userDTO.avatarUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop
         )
@@ -108,12 +123,12 @@ fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = state.user.displayName,
+                text = state.userDTO.displayName,
                 style = MaterialTheme.typography.titleLarge
             )
 
             Text(
-                text = stringResource(RString.username_template).format(state.user.displayName),
+                text = stringResource(RString.username_template).format(state.userDTO.displayName),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -157,6 +172,19 @@ fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
                             }
                         )
                     }
+                }
+            )
+
+            ListItem(
+                modifier = Modifier
+                    .clickable {
+                        state.onNewUIToggle()
+                    },
+                text = {
+                    Text(text = stringResource(id = RString.is_new_ui_used))
+                },
+                trailing = {
+                    FeatureEnabledIcon(state.isNewUIUsed)
                 }
             )
         }
@@ -244,16 +272,42 @@ private fun SettingItem(
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
-private fun SettingsScreenPreview() = TaigaMobileTheme {
-    SettingsScreenContent(
-        state = SettingsState(
-            appInfo = "asdasd",
-            serverUrl = "https://sample.server/",
-            onThemeChanged = {},
-            themeSettings = ThemeSettings.System,
-            showSnackbar = {}
+fun FeatureEnabledIcon(state: Boolean) {
+    Crossfade(
+        targetState = state,
+        label = "custom_switch_label",
+        animationSpec = tween(ANIMATION_DURATION)
+    ) { enabled ->
+        val imageVector = if (enabled) {
+            Icons.Filled.CheckCircleOutline
+        } else {
+            Icons.Filled.HighlightOff
+        }
+        Icon(
+            modifier = Modifier
+                .testTag(imageVector.name),
+            imageVector = imageVector,
+            contentDescription = null,
+            tint = if (enabled) {
+                Color(0xFF_A8E272)
+            } else {
+                Color(0xFF_FF8C69)
+            }
         )
-    )
+    }
 }
+
+// @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+// @Composable
+// private fun SettingsScreenPreview() = TaigaMobileTheme {
+//    SettingsScreenContent(
+//        state = SettingsState(
+//            appInfo = "asdasd",
+//            serverUrl = "https://sample.server/",
+//            onThemeChanged = {},
+//            themeSettings = ThemeSettings.System,
+//            showSnackbar = {}
+//        )
+//    )
+// }

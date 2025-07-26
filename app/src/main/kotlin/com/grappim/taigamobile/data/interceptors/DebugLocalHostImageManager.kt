@@ -19,6 +19,9 @@ class DebugLocalHostImageManager @Inject constructor() : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
         synchronized(lock) {
             val request = chain.request()
+
+            if (!request.url.host.contains("localhost")) return chain.proceed(request)
+
             val newHost = "http://10.0.2.2:9000/".toHttpUrlOrNull()
             if (newHost != null) {
                 val newUrl = request.url.newBuilder()

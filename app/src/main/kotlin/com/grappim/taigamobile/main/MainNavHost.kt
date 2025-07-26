@@ -20,6 +20,10 @@ import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
 import com.grappim.taigamobile.feature.epics.ui.EpicsScreen
 import com.grappim.taigamobile.feature.issues.ui.IssuesNavDestination
 import com.grappim.taigamobile.feature.issues.ui.IssuesScreen
+import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
+import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsScreen
+import com.grappim.taigamobile.feature.issues.ui.details.UPDATE_DATA_ON_BACK
+import com.grappim.taigamobile.feature.issues.ui.details.navigateToIssueDetails
 import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginScreen
@@ -45,11 +49,20 @@ import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.navigateToWikiPage
 import com.grappim.taigamobile.feature.wiki.ui.page.WikiPageScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.EDIT_DESCRIPTION_CHANGED_VALUE
+import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navigateToWorkItemEditDescription
+import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WORK_ITEM_TAGS_CHANGED_KEY
+import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun MainNavHost(
     isLogged: Boolean,
+    isNewUiUsed: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
     showSnackbar: (NativeText) -> Unit,
@@ -123,14 +136,76 @@ fun MainNavHost(
             )
         }
 
-        composable<IssuesNavDestination> {
+        composable<IssuesNavDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             IssuesScreen(
                 showMessage = showMessage,
                 goToCreateTask = { type ->
                     navController.navigateToCreateTask(type = type)
                 },
+                updateData = updateData,
                 goToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
+                    if (isNewUiUsed) {
+                        navController.navigateToIssueDetails(
+                            taskId = id,
+                            ref = ref
+                        )
+                    } else {
+                        navController.navigateToCommonTask(id, type, ref)
+                    }
+                }
+            )
+        }
+
+        composable<IssueDetailsNavDestination> { navBackStackEntry ->
+            val editedDescriptionValue: String? =
+                navBackStackEntry.savedStateHandle[EDIT_DESCRIPTION_CHANGED_VALUE]
+            val wereTagsChanged: Boolean =
+                navBackStackEntry.savedStateHandle[WORK_ITEM_TAGS_CHANGED_KEY] ?: false
+
+            IssueDetailsScreen(
+                showSnackbar = showSnackbar,
+                goToProfile = { creatorId ->
+                    navController.navigateToProfileScreen(creatorId)
+                },
+                goToEditDescription = { description: String ->
+                    navController.navigateToWorkItemEditDescription(
+                        description = description
+                    )
+                },
+                editedDescriptionValue = editedDescriptionValue,
+                goToEditTags = {
+                    navController.navigateToWorkItemEditTags()
+                },
+                wereTagsChanged = wereTagsChanged,
+                goBack = { updateData ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(UPDATE_DATA_ON_BACK, updateData)
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<WorkItemEditDescriptionNavDestination> {
+            WorkItemEditDescriptionScreen(
+                goBack = { description: String? ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(EDIT_DESCRIPTION_CHANGED_VALUE, description)
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<WorkItemEditTagsNavDestination> {
+            WorkItemEditTagsScreen(
+                goBack = { wasChanged: Boolean ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(WORK_ITEM_TAGS_CHANGED_KEY, wasChanged)
+                    navController.popBackStack()
                 }
             )
         }
@@ -193,9 +268,7 @@ fun MainNavHost(
         }
 
         composable<SettingsNavDestination> {
-            SettingsScreen(
-                showSnackbar = showSnackbar
-            )
+            SettingsScreen(showSnackbar = showSnackbar)
         }
 
         composable<SprintNavDestination> {
@@ -232,6 +305,9 @@ fun MainNavHost(
                     navController.navigateToCommonTask(id, taskType, ref)
                 },
                 goBack = {
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(UPDATE_DATA_ON_BACK, true)
                     navController.popBackStack()
                 },
                 navigateToCreateTask = { type, id ->
