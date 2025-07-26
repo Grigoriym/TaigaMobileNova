@@ -16,6 +16,10 @@ interface IssuesRepository {
 
     suspend fun deleteIssue(id: Long)
 
+    suspend fun addAttachment(issueId: Long, fileName: String, fileByteArray: ByteArray): Attachment
+
+    suspend fun deleteAttachment(attachment: Attachment)
+
     suspend fun patchData(
         version: Long,
         issueId: Long,

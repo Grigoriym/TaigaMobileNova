@@ -1,12 +1,15 @@
 package com.grappim.taigamobile.feature.workitem.ui.widgets
 
+import android.net.Uri
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -24,48 +27,71 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.LocalFilePicker
 import com.grappim.taigamobile.uikit.R
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewMulti
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
-import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
+import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
 import kotlinx.collections.immutable.ImmutableList
 import timber.log.Timber
-import java.io.InputStream
 
-fun LazyListScope.attachmentsSectionWidget(
+@Composable
+fun AttachmentsSectionWidget(
     isAttachmentsLoading: Boolean,
     attachments: ImmutableList<Attachment>,
-    onAttachmentAdd: (fileName: String, inputStream: InputStream) -> Unit,
-    onAttachmentRemove: (Attachment) -> Unit
+    onAttachmentAdd: (uri: Uri?) -> Unit,
+    onAttachmentRemove: (Attachment) -> Unit,
+    setAreAttachmentsExpanded: (Boolean) -> Unit,
+    areAttachmentsExpanded: Boolean,
+    modifier: Modifier = Modifier
 ) {
-    item {
-        val filePicker = LocalFilePicker.current
-        SectionTitle(
+    val filePicker = LocalFilePicker.current
+    Column(modifier = modifier) {
+        SectionTitleExpandable(
             text = stringResource(RString.attachments_template).format(attachments.size),
-            onAddClick = {
-                filePicker.requestFile { file, stream ->
-                    onAttachmentAdd(file, stream)
+            isExpanded = areAttachmentsExpanded,
+            onExpandClick = {
+                setAreAttachmentsExpanded(!areAttachmentsExpanded)
+            }
+        )
+
+        if (areAttachmentsExpanded) {
+            Spacer(Modifier.height(10.dp))
+
+            attachments.forEachIndexed { index, item ->
+                AttachmentItem(
+                    attachment = item,
+                    onRemoveClick = {
+                        onAttachmentRemove(item)
+                    }
+                )
+
+                if (index < attachments.lastIndex) {
+                    Spacer(Modifier.height(8.dp))
                 }
             }
-        )
-    }
 
-    items(attachments) {
-        AttachmentItem(
-            attachment = it,
-            onRemoveClick = {
-                onAttachmentRemove(it)
+            Spacer(Modifier.height(10.dp))
+
+            if (isAttachmentsLoading) {
+                DotsLoader()
+            } else {
+                Button(
+                    onClick = {
+                        filePicker.requestFile { uri ->
+                            onAttachmentAdd(uri)
+                        }
+                    }
+                ) {
+                    Text(text = stringResource(RString.add_attachment))
+                }
             }
-        )
-    }
-
-    item {
-        if (isAttachmentsLoading) {
-            DotsLoader()
         }
     }
 }
@@ -89,12 +115,16 @@ private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) {
         )
     }
 
-    Card {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 4.dp)
+    ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(6.dp)
+                .padding(4.dp)
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_attachment),
@@ -114,7 +144,9 @@ private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) {
             ) {
                 Text(
                     text = attachment.name,
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
+                    overflow = TextOverflow.Ellipsis,
+                    maxLines = 1
                 )
             }
 
@@ -131,5 +163,21 @@ private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+@Composable
+@PreviewMulti
+private fun AttachmentItemPreview() {
+    TaigaMobileTheme {
+        AttachmentItem(
+            attachment = Attachment(
+                id = 1L,
+                name = "file 1 rqwr eqw qw fw ert",
+                sizeInBytes = 123235L,
+                url = ""
+            ),
+            onRemoveClick = {}
+        )
     }
 }

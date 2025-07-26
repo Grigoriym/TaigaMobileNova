@@ -57,8 +57,8 @@ import com.grappim.taigamobile.uikit.Attachments
 import com.grappim.taigamobile.uikit.EditAction
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.EmptyEditAction
-import com.grappim.taigamobile.uikit.FilePicker
-import com.grappim.taigamobile.uikit.LocalFilePicker
+import com.grappim.taigamobile.uikit.FilePickerOld
+import com.grappim.taigamobile.uikit.LocalFilePickerOld
 import com.grappim.taigamobile.uikit.NavigationActions
 import com.grappim.taigamobile.uikit.SimpleEditAction
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -664,7 +664,7 @@ fun CommonTaskScreenContent(
 private fun CommonTaskScreenPreview() {
     TaigaMobileTheme {
         CompositionLocalProvider(
-            LocalFilePicker provides object : FilePicker() {}
+            LocalFilePickerOld provides object : FilePickerOld() {}
         ) {
             CommonTaskScreenContent(
                 state = CommonTaskState(

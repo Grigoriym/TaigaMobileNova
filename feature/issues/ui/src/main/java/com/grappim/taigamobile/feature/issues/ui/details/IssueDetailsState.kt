@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.issues.ui.details
 
+import android.net.Uri
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.Sprint
@@ -18,7 +19,6 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
-import java.io.InputStream
 
 data class IssueDetailsState(
     val isLoading: Boolean = false,
@@ -49,7 +49,7 @@ data class IssueDetailsState(
     val comments: ImmutableList<Comment> = persistentListOf(),
     val isCommentsLoading: Boolean = false,
     val onCommentRemove: (Comment) -> Unit = {},
-    val isCommentsWidgetExpanded: Boolean = true,
+    val isCommentsWidgetExpanded: Boolean = false,
     val setIsCommentsWidgetExpanded: (Boolean) -> Unit = {},
 
     val isCustomFieldsLoading: Boolean = false,
@@ -57,15 +57,17 @@ data class IssueDetailsState(
     val onCustomFieldChange: (CustomFieldItemState) -> Unit = {},
     val onCustomFieldSave: (CustomFieldItemState) -> Unit = {},
     val customFieldsVersion: Long = 0,
-    val isCustomFieldsWidgetExpanded: Boolean = true,
+    val isCustomFieldsWidgetExpanded: Boolean = false,
     val setIsCustomFieldsWidgetExpanded: (Boolean) -> Unit = {},
     val onCustomFieldEditToggle: (CustomFieldItemState) -> Unit = {},
     val editingItemIds: ImmutableSet<Long> = persistentSetOf(),
 
-    val attachments: ImmutableList<Attachment> = persistentListOf(),
+    val attachments: PersistentList<Attachment> = persistentListOf(),
     val isAttachmentsLoading: Boolean = false,
-    val onAttachmentAdd: (fileName: String, inputStream: InputStream) -> Unit = { _, _ -> },
+    val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},
+    val areAttachmentsExpanded: Boolean = false,
+    val setAreAttachmentsExpanded: (Boolean) -> Unit = {},
 
     val tags: PersistentList<TagUI> = persistentListOf(),
     val areTagsLoading: Boolean = false,

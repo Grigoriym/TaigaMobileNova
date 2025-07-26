@@ -325,11 +325,10 @@ class TasksRepositoryOldImpl @Inject constructor(
             filename = fileName,
             body = inputStream.readBytes().toRequestBody("*/*".toMediaType())
         )
-        val project =
-            MultipartBody.Part.createFormData(
-                "project",
-                taigaStorage.currentProjectIdFlow.first().toString()
-            )
+        val project = MultipartBody.Part.createFormData(
+            "project",
+            taigaStorage.currentProjectIdFlow.first().toString()
+        )
         val objectId = MultipartBody.Part.createFormData("object_id", commonTaskId.toString())
 
         inputStream.use {

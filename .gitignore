@@ -30,3 +30,5 @@
 /feature/projectselector/build/
 /feature/history/build/
 /feature/tasks/build/
+/feature/workitem/build/
+/utils/formatter/build/

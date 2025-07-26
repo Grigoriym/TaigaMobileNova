@@ -67,7 +67,9 @@ fun LazyListScope.customFieldsSectionWidget(
     if (customFieldStateItems.isNotEmpty()) {
         item {
             SectionTitleExpandable(
-                text = stringResource(RString.custom_fields),
+                text = stringResource(RString.custom_fields_with_number).format(
+                    customFieldStateItems.size
+                ),
                 isExpanded = isCustomFieldsWidgetExpanded,
                 onExpandClick = {
                     setIsCustomFieldsWidgetExpanded(!isCustomFieldsWidgetExpanded)

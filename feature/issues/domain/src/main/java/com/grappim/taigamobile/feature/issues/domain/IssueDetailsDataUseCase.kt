@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.issues.domain
 
+import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
@@ -21,6 +22,22 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val usersRepository: UsersRepository,
     private val filtersRepository: FiltersRepository
 ) {
+
+    suspend fun deleteAttachment(attachment: Attachment): Result<Unit> = resultOf {
+        issuesRepository.deleteAttachment(attachment)
+    }
+
+    suspend fun addAttachment(
+        issueId: Long,
+        fileName: String,
+        fileByteArray: ByteArray
+    ): Result<Attachment> = resultOf {
+        issuesRepository.addAttachment(
+            issueId = issueId,
+            fileName = fileName,
+            fileByteArray = fileByteArray
+        )
+    }
 
     suspend fun patchCustomAttributes(
         version: Long,

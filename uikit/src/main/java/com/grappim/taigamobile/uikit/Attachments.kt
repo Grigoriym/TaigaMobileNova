@@ -41,7 +41,7 @@ fun LazyListScope.Attachments(
     editAttachments: EditAction<Pair<String, InputStream>, AttachmentDTO>
 ) {
     item {
-        val filePicker = LocalFilePicker.current
+        val filePicker = LocalFilePickerOld.current
         SectionTitle(
             text = stringResource(RString.attachments_template).format(attachmentDTOS.size),
             onAddClick = {

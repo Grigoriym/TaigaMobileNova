@@ -23,6 +23,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CreatedByWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WatchersWidget
@@ -32,7 +33,6 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDropdownMenuW
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemsBottomSheet
-import com.grappim.taigamobile.feature.workitem.ui.widgets.attachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.commentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.customFieldsSectionWidget
@@ -360,16 +360,20 @@ private fun IssueDetailsScreenContent(
                     editingItemIds = state.editingItemIds
                 )
 
-                attachmentsSectionWidget(
-                    attachments = state.attachments,
-                    isAttachmentsLoading = state.isAttachmentsLoading,
-                    onAttachmentAdd = { file, stream ->
-                        state.onAttachmentAdd(file, stream)
-                    },
-                    onAttachmentRemove = {
-                        state.onAttachmentRemove(it)
-                    }
-                )
+                item {
+                    AttachmentsSectionWidget(
+                        attachments = state.attachments,
+                        isAttachmentsLoading = state.isAttachmentsLoading,
+                        onAttachmentAdd = { uri ->
+                            state.onAttachmentAdd(uri)
+                        },
+                        areAttachmentsExpanded = state.areAttachmentsExpanded,
+                        setAreAttachmentsExpanded = state.setAreAttachmentsExpanded,
+                        onAttachmentRemove = {
+                            state.onAttachmentRemove(it)
+                        }
+                    )
+                }
 
                 commentsSectionWidget(
                     comments = state.comments,

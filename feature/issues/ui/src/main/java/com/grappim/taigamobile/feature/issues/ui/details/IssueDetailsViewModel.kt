@@ -1,9 +1,11 @@
 package com.grappim.taigamobile.feature.issues.ui.details
 
+import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
@@ -26,6 +28,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.NumberIt
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.toHex
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,7 +58,8 @@ class IssueDetailsViewModel @Inject constructor(
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val workItemsGenerator: WorkItemsGenerator,
     private val workItemEditShared: WorkItemEditShared,
-    private val dateTimeUtils: DateTimeUtils
+    private val dateTimeUtils: DateTimeUtils,
+    private val fileUriManager: FileUriManager
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -94,7 +98,10 @@ class IssueDetailsViewModel @Inject constructor(
             onBlockToggle = ::onBlockToggle,
             setIsBlockDialogVisible = ::setIsBlockDialogVisible,
             setIsDeleteDialogVisible = ::setIsDeleteDialogVisible,
-            onDelete = ::doOnDelete
+            onDelete = ::doOnDelete,
+            onAttachmentRemove = ::onAttachmentRemove,
+            onAttachmentAdd = ::onAttachmentAdd,
+            setAreAttachmentsExpanded = ::setAreAttachmentsExpanded
         )
     )
     val state = _state.asStateFlow()
@@ -153,7 +160,7 @@ class IssueDetailsViewModel @Inject constructor(
                         isLoading = false,
                         currentIssue = result.issueTask,
                         originalIssue = result.issueTask,
-                        attachments = result.attachments,
+                        attachments = result.attachments.toPersistentList(),
                         comments = result.comments,
                         sprint = sprint,
                         tags = tags.await(),
@@ -608,6 +615,12 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
+    private fun setAreAttachmentsExpanded(isExpanded: Boolean) {
+        _state.update {
+            it.copy(areAttachmentsExpanded = isExpanded)
+        }
+    }
+
     private fun onCustomFieldEditToggle(item: CustomFieldItemState) {
         _state.update { currentState ->
             val currentIds = _state.value.editingItemIds
@@ -656,6 +669,7 @@ class IssueDetailsViewModel @Inject constructor(
                     null
                 }
             }
+
             is NumberItemState -> {
                 valueToUse?.toString()?.toLongOrNull()
             }
@@ -728,6 +742,72 @@ class IssueDetailsViewModel @Inject constructor(
                 }
             }.toImmutableList()
             currentState.copy(customFieldStateItems = updatedList)
+        }
+    }
+
+    private fun onAttachmentAdd(uri: Uri?) {
+        val currentIssue = _state.value.currentIssue ?: return
+        viewModelScope.launch {
+            if (uri == null) {
+                _state.update {
+                    it.copy(
+                        isAttachmentsLoading = true,
+                        error = NativeText.Resource(RString.common_error_message)
+                    )
+                }
+                return@launch
+            }
+
+            val attachmentInfoToSend = fileUriManager.retrieveAttachmentInfo(uri)
+
+            issueDetailsDataUseCase.addAttachment(
+                issueId = currentIssue.id,
+                fileName = attachmentInfoToSend.name,
+                fileByteArray = attachmentInfoToSend.fileBytes.toByteArray()
+            ).onSuccess { result ->
+                val currentAttachments = _state.value.attachments
+                _state.update {
+                    it.copy(
+                        isAttachmentsLoading = false,
+                        attachments = currentAttachments.add(result)
+                    )
+                }
+            }.onFailure { error ->
+                Timber.e(error)
+                _state.update {
+                    it.copy(
+                        isAttachmentsLoading = false,
+                        error = getErrorMessage(error)
+                    )
+                }
+            }
+        }
+    }
+
+    private fun onAttachmentRemove(attachment: Attachment) {
+        _state.update {
+            it.copy(isAttachmentsLoading = true)
+        }
+        viewModelScope.launch {
+            issueDetailsDataUseCase.deleteAttachment(attachment)
+                .onSuccess { result ->
+                    val currentAttachments = _state.value.attachments
+                    _state.update {
+                        it.copy(
+                            isAttachmentsLoading = false,
+                            attachments = currentAttachments.remove(attachment)
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            isAttachmentsLoading = false,
+                            error = getErrorMessage(error)
+                        )
+                    }
+                }
         }
     }
 

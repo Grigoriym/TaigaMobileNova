@@ -25,6 +25,9 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 class IssuesRepositoryImpl @Inject constructor(
@@ -57,6 +60,34 @@ class IssuesRepositoryImpl @Inject constructor(
 
     override suspend fun deleteIssue(id: Long) {
         issuesApi.deleteCommonTask(id)
+    }
+
+    override suspend fun deleteAttachment(attachment: Attachment) {
+        issuesApi.deleteAttachment(attachment.id)
+    }
+
+    override suspend fun addAttachment(
+        issueId: Long,
+        fileName: String,
+        fileByteArray: ByteArray
+    ): Attachment {
+        val file = MultipartBody.Part.createFormData(
+            name = "attached_file",
+            filename = fileName,
+            body = fileByteArray.toRequestBody("*/*".toMediaType())
+        )
+        val project = MultipartBody.Part.createFormData(
+            "project",
+            taigaStorage.currentProjectIdFlow.first().toString()
+        )
+        val objectId = MultipartBody.Part.createFormData("object_id", issueId.toString())
+
+        val dto = issuesApi.uploadCommonTaskAttachment(
+            file = file,
+            project = project,
+            objectId = objectId
+        )
+        return attachmentMapper.toDomain(dto)
     }
 
     override suspend fun patchData(

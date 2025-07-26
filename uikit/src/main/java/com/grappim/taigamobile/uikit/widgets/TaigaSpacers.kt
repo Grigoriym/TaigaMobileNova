@@ -13,6 +13,6 @@ fun TaigaHeightSpacer(height: Dp) {
 }
 
 @Composable
-fun TaigaWidthSpacer(height: Dp) {
-    Spacer(Modifier.width(height))
+fun TaigaWidthSpacer(width: Dp) {
+    Spacer(Modifier.width(width))
 }

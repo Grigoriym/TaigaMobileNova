@@ -4,13 +4,16 @@ import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CustomAttributeResponse
 import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponse
+import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -64,6 +67,9 @@ interface IssuesApi {
         @Query("project") projectId: Long
     ): List<AttachmentDTO>
 
+    @DELETE("issues/attachments/{id}")
+    suspend fun deleteAttachment(@Path("id") attachmentId: Long): Response<Void>
+
     @GET("issue-custom-attributes")
     suspend fun getIssueCustomAttributes(
         @Query("project") projectId: Long
@@ -83,4 +89,12 @@ interface IssuesApi {
         @Path("id") taskId: Long,
         @Body payload: Map<String, Any?>
     ): CustomAttributesValuesResponse
+
+    @POST("issues/attachments")
+    @Multipart
+    suspend fun uploadCommonTaskAttachment(
+        @Part file: MultipartBody.Part,
+        @Part project: MultipartBody.Part,
+        @Part objectId: MultipartBody.Part
+    ): AttachmentDTO
 }

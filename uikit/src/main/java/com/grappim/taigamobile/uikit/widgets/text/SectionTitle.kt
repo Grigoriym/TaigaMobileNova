@@ -16,8 +16,8 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
@@ -32,7 +32,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewMulti
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 
 /**
  * Title with optional add button
@@ -92,10 +95,7 @@ fun SectionTitleExpandable(
     text: String,
     isExpanded: Boolean,
     onExpandClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    onAddClick: (() -> Unit)? = null,
-    horizontalPadding: Dp = 0.dp,
-    bottomPadding: Dp = 6.dp
+    modifier: Modifier = Modifier
 ) {
     val transitionState = remember { MutableTransitionState(isExpanded) }
     transitionState.targetState = isExpanded
@@ -105,51 +105,45 @@ fun SectionTitleExpandable(
     ).animateFloat { if (it) -180f else 0f }
 
     Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
         modifier = modifier
-            .height(IntrinsicSize.Min)
             .fillMaxWidth()
-            .padding(horizontal = horizontalPadding)
-            .padding(bottom = bottomPadding)
-            .background(MaterialTheme.colorScheme.surfaceVariant, MaterialTheme.shapes.small)
+            .height(50.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.small
+            )
+            .clickable {
+                onExpandClick()
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Text(
             text = text,
             style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(6.dp)
+            modifier = Modifier.padding(horizontal = 10.dp)
+                .weight(1f)
         )
 
-        IconButton(onClick = onExpandClick) {
-            Icon(
-                painter = painterResource(RDrawable.ic_arrow_down),
-                contentDescription = null,
-                modifier = Modifier.rotate(arrowRotation)
-            )
-        }
+        Icon(
+            painter = painterResource(RDrawable.ic_arrow_down),
+            contentDescription = null,
+            modifier = Modifier
+                .size(30.dp)
+                .rotate(arrowRotation)
+        )
+        TaigaWidthSpacer(width = 10.dp)
+    }
+}
 
-        onAddClick?.let {
-            Box(
-                modifier = Modifier
-                    .fillMaxHeight()
-                    .aspectRatio(1f)
-                    .background(MaterialTheme.colorScheme.primary, MaterialTheme.shapes.small)
-                    .clip(MaterialTheme.shapes.small)
-                    .clickable(
-                        onClick = it,
-                        role = Role.Button,
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = ripple(bounded = true)
-                    )
-                    .padding(6.dp)
-            ) {
-                Icon(
-                    painter = painterResource(RDrawable.ic_add),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimary,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
+@Composable
+@PreviewMulti
+private fun SectionTitleExpandablePreview() {
+    TaigaMobileTheme {
+        SectionTitleExpandable(
+            text = "3 Attachments",
+            isExpanded = true,
+            onExpandClick = {}
+        )
     }
 }
