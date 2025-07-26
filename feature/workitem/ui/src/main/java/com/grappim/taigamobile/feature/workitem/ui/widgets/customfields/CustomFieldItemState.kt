@@ -9,8 +9,10 @@ sealed interface CustomFieldItemState {
     val description: String?
     val isModified: Boolean
 
-    fun getValueForPatching(): Any?
     fun getSavedItem(): CustomFieldItemState
+
+    val originalValue: Any?
+    val currentValue: Any?
 }
 
 /**
@@ -23,13 +25,11 @@ data class TextItemState(
     override val id: Long,
     override val description: String?,
     override val label: String,
-    val originalValue: String,
-    val currentValue: String = originalValue
+    override val originalValue: String,
+    override val currentValue: String = originalValue
 ) : CustomFieldItemState {
     override val isModified: Boolean
         get() = originalValue != currentValue
-
-    override fun getValueForPatching(): Any? = currentValue
 
     override fun getSavedItem(): CustomFieldItemState = copy(originalValue = currentValue)
 }
@@ -38,13 +38,11 @@ data class MultilineTextItemState(
     override val id: Long,
     override val description: String?,
     override val label: String,
-    val originalValue: String,
-    val currentValue: String = originalValue
+    override val originalValue: String,
+    override val currentValue: String = originalValue
 ) : CustomFieldItemState {
     override val isModified: Boolean
         get() = originalValue != currentValue
-
-    override fun getValueForPatching(): Any? = currentValue
 
     override fun getSavedItem(): CustomFieldItemState = copy(originalValue = currentValue)
 }
@@ -53,14 +51,12 @@ data class RichTextItemState(
     override val id: Long,
     override val description: String?,
     override val label: String,
-    val originalValue: String,
-    val currentValue: String = originalValue
+    override val originalValue: String,
+    override val currentValue: String = originalValue
 ) : CustomFieldItemState,
     EditableItem {
     override val isModified: Boolean
         get() = originalValue != currentValue
-
-    override fun getValueForPatching(): Any? = currentValue
 
     override fun getSavedItem(): CustomFieldItemState = copy(originalValue = currentValue)
 }
@@ -69,13 +65,11 @@ data class NumberItemState(
     override val id: Long,
     override val description: String?,
     override val label: String,
-    val originalValue: String,
-    val currentValue: String = originalValue
+    override val originalValue: String,
+    override val currentValue: String = originalValue
 ) : CustomFieldItemState {
     override val isModified: Boolean
         get() = originalValue.compareTo(currentValue) != 0
-
-    override fun getValueForPatching(): Any? = currentValue.toLong()
 
     override fun getSavedItem(): CustomFieldItemState = copy(originalValue = currentValue)
 }
@@ -84,14 +78,12 @@ data class UrlItemState(
     override val id: Long,
     override val description: String?,
     override val label: String,
-    val originalValue: String,
-    val currentValue: String = originalValue
+    override val originalValue: String,
+    override val currentValue: String = originalValue
 ) : CustomFieldItemState,
     EditableItem {
     override val isModified: Boolean
         get() = originalValue != currentValue
-
-    override fun getValueForPatching(): Any? = currentValue
 
     override fun getSavedItem(): CustomFieldItemState = copy(originalValue = currentValue)
 }
@@ -100,8 +92,8 @@ data class DateItemState(
     override val id: Long,
     override val description: String?,
     override val label: String,
-    val originalValue: LocalDate?,
-    val currentValue: LocalDate? = originalValue
+    override val originalValue: LocalDate?,
+    override val currentValue: LocalDate? = originalValue
 ) : CustomFieldItemState {
     override val isModified: Boolean
         get() {
@@ -114,8 +106,6 @@ data class DateItemState(
             return originalValue != currentValue
         }
 
-    override fun getValueForPatching(): Any? = currentValue
-
     override fun getSavedItem(): CustomFieldItemState = copy(originalValue = currentValue)
 }
 
@@ -123,14 +113,12 @@ data class DropdownItemState(
     override val id: Long,
     override val description: String?,
     override val label: String,
-    val originalValue: String?,
-    val currentValue: String? = originalValue,
+    override val originalValue: String?,
+    override val currentValue: String? = originalValue,
     val options: ImmutableList<String>?
 ) : CustomFieldItemState {
     override val isModified: Boolean
         get() = originalValue != currentValue
-
-    override fun getValueForPatching(): Any? = currentValue
 
     override fun getSavedItem(): CustomFieldItemState = copy(originalValue = currentValue)
 }
@@ -139,13 +127,11 @@ data class CheckboxItemState(
     override val id: Long,
     override val description: String?,
     override val label: String,
-    val originalValue: Boolean,
-    val currentValue: Boolean = originalValue
+    override val originalValue: Boolean,
+    override val currentValue: Boolean = originalValue
 ) : CustomFieldItemState {
     override val isModified: Boolean
         get() = originalValue != currentValue
-
-    override fun getValueForPatching(): Any? = currentValue
 
     override fun getSavedItem(): CustomFieldItemState = copy(originalValue = currentValue)
 }

@@ -22,6 +22,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeType
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.DateItemState
+import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.NumberItemState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -638,6 +639,31 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
+    private fun getCustomFieldValue(
+        stateItem: CustomFieldItemState,
+        takeCurrentValue: Boolean
+    ): Any? {
+        val valueToUse = if (takeCurrentValue) {
+            stateItem.currentValue
+        } else {
+            stateItem.originalValue
+        }
+        return when (stateItem) {
+            is DateItemState -> {
+                if (valueToUse != null) {
+                    dateTimeUtils.parseLocalDateToString(valueToUse as LocalDate)
+                } else {
+                    null
+                }
+            }
+            is NumberItemState -> {
+                valueToUse?.toString()?.toLongOrNull()
+            }
+
+            else -> valueToUse
+        }
+    }
+
     private fun onCustomFieldSave(item: CustomFieldItemState) {
         val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
@@ -655,16 +681,12 @@ class IssueDetailsViewModel @Inject constructor(
                     stateItem.id.toString()
                 },
                 valueTransform = { stateItem ->
-                    when (stateItem) {
-                        is DateItemState -> {
-                            if (stateItem.currentValue != null) {
-                                dateTimeUtils.parseLocalDateToString(stateItem.currentValue!!)
-                            } else {
-                                null
-                            }
-                        }
-
-                        else -> stateItem.getValueForPatching()
+                    if (stateItem.id == item.id) {
+                        getCustomFieldValue(stateItem, true)
+                    } else if (stateItem.isModified) {
+                        getCustomFieldValue(stateItem, false)
+                    } else {
+                        getCustomFieldValue(stateItem, true)
                     }
                 }
             )
