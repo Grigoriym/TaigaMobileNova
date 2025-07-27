@@ -5,7 +5,6 @@ import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CustomAttributeResponse
 import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponse
 import okhttp3.MultipartBody
-import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -68,7 +67,7 @@ interface IssuesApi {
     ): List<AttachmentDTO>
 
     @DELETE("issues/attachments/{id}")
-    suspend fun deleteAttachment(@Path("id") attachmentId: Long): Response<Void>
+    suspend fun deleteAttachment(@Path("id") attachmentId: Long)
 
     @GET("issue-custom-attributes")
     suspend fun getIssueCustomAttributes(
@@ -81,7 +80,7 @@ interface IssuesApi {
     ): CustomAttributesValuesResponse
 
     @DELETE("issues/{id}")
-    suspend fun deleteCommonTask(@Path("id") id: Long): Response<Void>
+    suspend fun deleteCommonTask(@Path("id") id: Long)
 
     @PATCH("issues/custom-attributes-values/{id}")
     @JvmSuppressWildcards
@@ -97,4 +96,7 @@ interface IssuesApi {
         @Part project: MultipartBody.Part,
         @Part objectId: MultipartBody.Part
     ): AttachmentDTO
+
+    @POST("history/issue/{issueId}/delete_comment")
+    suspend fun deleteComment(@Path("issueId") issueId: Long, @Query("id") commentId: String)
 }

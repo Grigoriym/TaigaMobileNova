@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
@@ -101,7 +102,8 @@ class IssueDetailsViewModel @Inject constructor(
             onDelete = ::doOnDelete,
             onAttachmentRemove = ::onAttachmentRemove,
             onAttachmentAdd = ::onAttachmentAdd,
-            setAreAttachmentsExpanded = ::setAreAttachmentsExpanded
+            setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
+            onCommentRemove = ::deleteComment
         )
     )
     val state = _state.asStateFlow()
@@ -161,7 +163,7 @@ class IssueDetailsViewModel @Inject constructor(
                         currentIssue = result.issueTask,
                         originalIssue = result.issueTask,
                         attachments = result.attachments.toPersistentList(),
-                        comments = result.comments,
+                        comments = result.comments.toPersistentList(),
                         sprint = sprint,
                         tags = tags.await(),
                         dueDateText = getDueDateText(result.issueTask.dueDate),
@@ -179,6 +181,38 @@ class IssueDetailsViewModel @Inject constructor(
                 Timber.e(error)
                 _state.update {
                     it.copy(isLoading = false)
+                }
+            }
+        }
+    }
+
+    private fun deleteComment(comment: Comment) {
+        val currentIssue = _state.value.currentIssue ?: return
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isCommentsLoading = true,
+                    error = NativeText.Empty
+                )
+            }
+
+            issueDetailsDataUseCase.deleteComment(
+                issueId = currentIssue.id,
+                commentId = comment.id
+            ).onSuccess { result ->
+                _state.update { currentState ->
+                    currentState.copy(
+                        isCommentsLoading = false,
+                        comments = _state.value.comments.removeAll { it.id == comment.id }
+                    )
+                }
+            }.onFailure { error ->
+                Timber.e(error)
+                _state.update {
+                    it.copy(
+                        isCommentsLoading = false,
+                        error = getErrorMessage(error)
+                    )
                 }
             }
         }

@@ -23,6 +23,10 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val filtersRepository: FiltersRepository
 ) {
 
+    suspend fun deleteComment(issueId: Long, commentId: String) = resultOf {
+        issuesRepository.deleteComment(issueId = issueId, commentId = commentId)
+    }
+
     suspend fun deleteAttachment(attachment: Attachment): Result<Unit> = resultOf {
         issuesRepository.deleteAttachment(attachment)
     }

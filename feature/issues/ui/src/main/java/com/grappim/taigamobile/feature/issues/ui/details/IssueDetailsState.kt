@@ -46,7 +46,7 @@ data class IssueDetailsState(
 
     val filtersData: FiltersData? = null,
 
-    val comments: ImmutableList<Comment> = persistentListOf(),
+    val comments: PersistentList<Comment> = persistentListOf(),
     val isCommentsLoading: Boolean = false,
     val onCommentRemove: (Comment) -> Unit = {},
     val isCommentsWidgetExpanded: Boolean = false,
