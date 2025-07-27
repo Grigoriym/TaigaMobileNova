@@ -51,6 +51,7 @@ data class IssueDetailsState(
     val onCommentRemove: (Comment) -> Unit = {},
     val isCommentsWidgetExpanded: Boolean = false,
     val setIsCommentsWidgetExpanded: (Boolean) -> Unit = {},
+    val onCreateCommentClick: (String) -> Unit = {},
 
     val isCustomFieldsLoading: Boolean = false,
     val customFieldStateItems: ImmutableList<CustomFieldItemState> = persistentListOf(),

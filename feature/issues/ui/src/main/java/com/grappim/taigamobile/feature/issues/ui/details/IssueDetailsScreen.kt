@@ -389,6 +389,6 @@ private fun IssueDetailsScreenContent(
                 )
             }
         }
-        CreateCommentBar(onButtonClick = {})
+        CreateCommentBar(onButtonClick = state.onCreateCommentClick)
     }
 }

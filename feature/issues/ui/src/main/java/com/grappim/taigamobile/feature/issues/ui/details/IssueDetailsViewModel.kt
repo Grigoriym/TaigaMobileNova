@@ -103,7 +103,8 @@ class IssueDetailsViewModel @Inject constructor(
             onAttachmentRemove = ::onAttachmentRemove,
             onAttachmentAdd = ::onAttachmentAdd,
             setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
-            onCommentRemove = ::deleteComment
+            onCommentRemove = ::deleteComment,
+            onCreateCommentClick = ::createComment
         )
     )
     val state = _state.asStateFlow()
@@ -186,6 +187,44 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
+    private fun createComment(newComment: String) {
+        val currentIssue = _state.value.currentIssue ?: return
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isCommentsLoading = true,
+                    error = NativeText.Empty
+                )
+            }
+
+            issueDetailsDataUseCase.createComment(
+                version = currentIssue.version,
+                issueId = currentIssue.id,
+                comment = newComment
+            ).onSuccess { result ->
+                val updatedIssue = currentIssue.copy(
+                    version = result.newVersion
+                )
+
+                _state.update {
+                    it.copy(
+                        isCommentsLoading = false,
+                        currentIssue = updatedIssue,
+                        originalIssue = updatedIssue,
+                        comments = result.comments.toPersistentList()
+                    )
+                }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        error = getErrorMessage(error),
+                        isCommentsLoading = false
+                    )
+                }
+            }
+        }
+    }
+
     private fun deleteComment(comment: Comment) {
         val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
@@ -255,38 +294,40 @@ class IssueDetailsViewModel @Inject constructor(
     }
 
     private fun onBlockToggle(isBlocked: Boolean, blockNote: String?) {
-        val patchableData = mapOf(
-            "is_blocked" to isBlocked,
-            "blocked_note" to blockNote.orEmpty()
-        ).toPersistentMap()
-        patchData(
-            payload = patchableData,
-            doOnPreExecute = {
-                _state.update {
-                    it.copy(
-                        isLoading = true
-                    )
+        viewModelScope.launch {
+            val patchableData = mapOf(
+                "is_blocked" to isBlocked,
+                "blocked_note" to blockNote.orEmpty()
+            ).toPersistentMap()
+            patchData(
+                payload = patchableData,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(
+                            isLoading = true
+                        )
+                    }
+                },
+                doOnSuccess = { data: PatchedData, task: IssueTask ->
+                    val updatedIssue = task.copy(blockedNote = blockNote)
+                    _state.update {
+                        it.copy(
+                            currentIssue = updatedIssue,
+                            originalIssue = updatedIssue,
+                            isLoading = false
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error),
+                            isLoading = false
+                        )
+                    }
                 }
-            },
-            doOnSuccess = { data: PatchedData, task: IssueTask ->
-                val updatedIssue = task.copy(blockedNote = blockNote)
-                _state.update {
-                    it.copy(
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        isLoading = false
-                    )
-                }
-            },
-            doOnError = { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isLoading = false
-                    )
-                }
-            }
-        )
+            )
+        }
     }
 
     private fun setIsBlockDialogVisible(isVisible: Boolean) {
@@ -296,53 +337,55 @@ class IssueDetailsViewModel @Inject constructor(
     }
 
     private fun setDueDate(newDate: Long?) {
-        val localDate = if (newDate != null) {
-            dateTimeUtils.fromMillisToLocalDate(newDate)
-        } else {
-            null
-        }
-        val jsonLocalDate = if (localDate != null) {
-            dateTimeUtils.parseLocalDateToString(localDate)
-        } else {
-            null
-        }
-
-        val patchableData = mapOf("due_date" to jsonLocalDate).toPersistentMap()
-
-        patchData(
-            payload = patchableData,
-            doOnPreExecute = {
-                _state.update {
-                    it.copy(
-                        error = NativeText.Empty,
-                        isDueDateLoading = true
-                    )
-                }
-            },
-            doOnSuccess = { data: PatchedData, task: IssueTask ->
-                val updatedIssue = task.copy(
-                    dueDate = localDate,
-                    dueDateStatus = data.dueDateStatus
-                )
-
-                _state.update { currentState ->
-                    currentState.copy(
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        dueDateText = getDueDateText(localDate),
-                        isDueDateLoading = false
-                    )
-                }
-            },
-            doOnError = { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isDueDateLoading = false
-                    )
-                }
+        viewModelScope.launch {
+            val localDate = if (newDate != null) {
+                dateTimeUtils.fromMillisToLocalDate(newDate)
+            } else {
+                null
             }
-        )
+            val jsonLocalDate = if (localDate != null) {
+                dateTimeUtils.parseLocalDateToString(localDate)
+            } else {
+                null
+            }
+
+            val patchableData = mapOf("due_date" to jsonLocalDate).toPersistentMap()
+
+            patchData(
+                payload = patchableData,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(
+                            error = NativeText.Empty,
+                            isDueDateLoading = true
+                        )
+                    }
+                },
+                doOnSuccess = { data: PatchedData, task: IssueTask ->
+                    val updatedIssue = task.copy(
+                        dueDate = localDate,
+                        dueDateStatus = data.dueDateStatus
+                    )
+
+                    _state.update { currentState ->
+                        currentState.copy(
+                            currentIssue = updatedIssue,
+                            originalIssue = updatedIssue,
+                            dueDateText = getDueDateText(localDate),
+                            isDueDateLoading = false
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error),
+                            isDueDateLoading = false
+                        )
+                    }
+                }
+            )
+        }
     }
 
     private fun getDueDateText(dueDate: LocalDate?): NativeText = if (dueDate == null) {
@@ -356,145 +399,150 @@ class IssueDetailsViewModel @Inject constructor(
     }
 
     private fun onTagRemove(tag: TagUI) {
-        val currentTags = _state.value.tags
-        val newTagsToUse = currentTags.removeAll { it.name == tag.name }
+        viewModelScope.launch {
+            val currentTags = _state.value.tags
+            val newTagsToUse = currentTags.removeAll { it.name == tag.name }
 
-        val preparedTags = newTagsToUse.map { tag ->
-            listOf(tag.name, tag.color.toHex())
-        }
-
-        val patchableData = mapOf("tags" to preparedTags).toPersistentMap()
-
-        patchData(
-            payload = patchableData,
-            doOnPreExecute = {
-                _state.update {
-                    it.copy(
-                        error = NativeText.Empty,
-                        areTagsLoading = true
-                    )
-                }
-            },
-            doOnSuccess = { _, _ ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        tags = newTagsToUse,
-                        areTagsLoading = false
-                    )
-                }
-            },
-            doOnError = { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        areTagsLoading = false
-                    )
-                }
+            val preparedTags = newTagsToUse.map { tag ->
+                listOf(tag.name, tag.color.toHex())
             }
-        )
+
+            val patchableData = mapOf("tags" to preparedTags).toPersistentMap()
+
+            patchData(
+                payload = patchableData,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(
+                            error = NativeText.Empty,
+                            areTagsLoading = true
+                        )
+                    }
+                },
+                doOnSuccess = { _, _ ->
+                    _state.update { currentState ->
+                        currentState.copy(
+                            tags = newTagsToUse,
+                            areTagsLoading = false
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error),
+                            areTagsLoading = false
+                        )
+                    }
+                }
+            )
+        }
     }
 
-    private fun patchData(
+    private suspend fun patchData(
         payload: PersistentMap<String, Any?>,
         doOnPreExecute: () -> Unit,
         doOnSuccess: (PatchedData, IssueTask) -> Unit,
         doOnError: (Throwable) -> Unit
     ) {
         val currentIssue = _state.value.currentIssue ?: return
-        viewModelScope.launch {
-            doOnPreExecute()
 
-            issueDetailsDataUseCase.patchData(
-                issueId = currentIssue.id,
-                payload = payload,
-                version = currentIssue.version
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.version
+        doOnPreExecute()
+
+        issueDetailsDataUseCase.patchData(
+            issueId = currentIssue.id,
+            payload = payload,
+            version = currentIssue.version
+        ).onSuccess { result ->
+            val updatedIssue = currentIssue.copy(
+                version = result.newVersion
+            )
+            _state.update {
+                it.copy(
+                    currentIssue = updatedIssue,
+                    originalIssue = updatedIssue
                 )
-                _state.update {
-                    it.copy(
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue
-                    )
-                }
-
-                doOnSuccess(result, updatedIssue)
-            }.onFailure { error ->
-                Timber.e(error)
-                doOnError(error)
             }
+
+            doOnSuccess(result, updatedIssue)
+        }.onFailure { error ->
+            Timber.e(error)
+            doOnError(error)
         }
     }
 
     private fun onNewTagsUpdate() {
-        val newTagsToUse = workItemEditShared.currentTags.toPersistentList()
-        workItemEditShared.clear()
-        val preparedTags = newTagsToUse.map { tag ->
-            listOf(tag.name, tag.color.toHex())
-        }
-
-        val patchableData = mapOf("tags" to preparedTags).toPersistentMap()
-
-        patchData(
-            payload = patchableData,
-            doOnPreExecute = {
-                _state.update {
-                    it.copy(
-                        error = NativeText.Empty,
-                        areTagsLoading = true
-                    )
-                }
-            },
-            doOnSuccess = { _, _ ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        tags = newTagsToUse,
-                        areTagsLoading = false
-                    )
-                }
-            },
-            doOnError = { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        areTagsLoading = false
-                    )
-                }
+        viewModelScope.launch {
+            val newTagsToUse = workItemEditShared.currentTags.toPersistentList()
+            workItemEditShared.clear()
+            val preparedTags = newTagsToUse.map { tag ->
+                listOf(tag.name, tag.color.toHex())
             }
-        )
+
+            val patchableData = mapOf("tags" to preparedTags).toPersistentMap()
+
+            patchData(
+                payload = patchableData,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(
+                            error = NativeText.Empty,
+                            areTagsLoading = true
+                        )
+                    }
+                },
+                doOnSuccess = { _, _ ->
+                    _state.update { currentState ->
+                        currentState.copy(
+                            tags = newTagsToUse,
+                            areTagsLoading = false
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error),
+                            areTagsLoading = false
+                        )
+                    }
+                }
+            )
+        }
     }
 
     private fun onNewDescriptionUpdate(newDescription: String) {
-        val patchableData = mapOf("description" to newDescription).toPersistentMap()
+        viewModelScope.launch {
+            val patchableData = mapOf("description" to newDescription).toPersistentMap()
 
-        patchData(
-            payload = patchableData,
-            doOnPreExecute = {
-                _state.update {
-                    it.copy(error = NativeText.Empty, isLoading = true)
-                }
-            },
-            doOnSuccess = { _, issue ->
-                val updatedIssue = issue.copy(description = newDescription)
+            patchData(
+                payload = patchableData,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(error = NativeText.Empty, isLoading = true)
+                    }
+                },
+                doOnSuccess = { _, issue ->
+                    val updatedIssue = issue.copy(description = newDescription)
 
-                _state.update { currentState ->
-                    currentState.copy(
-                        isLoading = false,
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue
-                    )
+                    _state.update { currentState ->
+                        currentState.copy(
+                            isLoading = false,
+                            currentIssue = updatedIssue,
+                            originalIssue = updatedIssue
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = getErrorMessage(error)
+                        )
+                    }
                 }
-            },
-            doOnError = { error ->
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
-            }
-        )
+            )
+        }
     }
 
     private fun onBadgeSheetDismiss() {

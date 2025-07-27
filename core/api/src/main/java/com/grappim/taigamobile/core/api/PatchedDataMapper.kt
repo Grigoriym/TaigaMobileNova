@@ -16,7 +16,7 @@ class PatchedDataMapper @Inject constructor(
 ) {
     suspend fun toDomain(resp: CommonTaskResponse): PatchedData = withContext(dispatcher) {
         PatchedData(
-            version = resp.version,
+            newVersion = resp.version,
             dueDateStatus = when (resp.dueDateStatusDTO) {
                 DueDateStatusDTO.Set -> DueDateStatus.Set
                 DueDateStatusDTO.DueSoon -> DueDateStatus.DueSoon

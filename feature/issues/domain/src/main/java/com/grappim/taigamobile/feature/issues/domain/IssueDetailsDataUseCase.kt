@@ -10,6 +10,7 @@ import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -22,6 +23,34 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val usersRepository: UsersRepository,
     private val filtersRepository: FiltersRepository
 ) {
+
+    suspend fun createComment(
+        version: Long,
+        issueId: Long,
+        comment: String
+    ): Result<CreatedCommentData> = resultOf {
+        coroutineScope {
+            val payload = persistentMapOf(
+                "comment" to comment
+            )
+
+            val patchedData = issuesRepository.patchData(
+                version = version,
+                issueId = issueId,
+                payload = payload
+            )
+
+            val newComments = historyRepository.getComments(
+                commonTaskId = issueId,
+                type = CommonTaskType.Issue
+            )
+
+            CreatedCommentData(
+                newVersion = patchedData.newVersion,
+                comments = newComments
+            )
+        }
+    }
 
     suspend fun deleteComment(issueId: Long, commentId: String) = resultOf {
         issuesRepository.deleteComment(issueId = issueId, commentId = commentId)
@@ -118,7 +147,7 @@ class IssueDetailsDataUseCase @Inject constructor(
                 attachments = attachments.await().toImmutableList(),
                 sprint = sprint.await(),
                 customFields = customFields.await(),
-                comments = commentsDeferred.await().toImmutableList(),
+                comments = commentsDeferred.await(),
                 creator = creator.await(),
                 assignees = assignees.toImmutableList(),
                 watchers = watchers.toImmutableList(),
