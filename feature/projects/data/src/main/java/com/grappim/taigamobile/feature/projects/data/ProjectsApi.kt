@@ -17,5 +17,5 @@ interface ProjectsApi {
     ): List<ProjectDTO>
 
     @GET("projects/{id}")
-    suspend fun getProject(@Path("id") projectId: Long): ProjectResponse
+    suspend fun getProject(@Path("id") projectId: Long): ProjectResponseDTO
 }

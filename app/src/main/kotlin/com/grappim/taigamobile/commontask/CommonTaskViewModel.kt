@@ -255,7 +255,7 @@ class CommonTaskViewModel @Inject constructor(
                     arrayOf(
                         launch {
                             team.loadOrError(showLoading = false) {
-                                usersRepository.getTeamSimple()
+                                usersRepository.getTeamSimpleOld()
                                     .map { it.toUser() }
                                     .also { teamSearched.value = it }
                             }

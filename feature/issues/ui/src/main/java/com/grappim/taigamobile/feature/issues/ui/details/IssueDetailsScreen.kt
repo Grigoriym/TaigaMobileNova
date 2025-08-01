@@ -56,7 +56,9 @@ fun IssueDetailsScreen(
     editedDescriptionValue: String?,
     goToEditTags: () -> Unit,
     wereTagsChanged: Boolean,
+    wasAssigneeChanged: Boolean,
     goBack: (updateData: Boolean) -> Unit,
+    goToEditAssignee: () -> Unit,
     viewModel: IssueDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -96,6 +98,12 @@ fun IssueDetailsScreen(
     LaunchedEffect(wereTagsChanged) {
         if (wereTagsChanged) {
             state.onTagsUpdate()
+        }
+    }
+
+    LaunchedEffect(wasAssigneeChanged) {
+        if (wasAssigneeChanged) {
+            state.onAssigneeUpdate()
         }
     }
 
@@ -213,7 +221,8 @@ fun IssueDetailsScreen(
             state = state,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
-            goToEditTags = goToEditTags
+            goToEditTags = goToEditTags,
+            goToEditAssignee = goToEditAssignee
         )
     }
 }
@@ -223,7 +232,8 @@ private fun IssueDetailsScreenContent(
     state: IssueDetailsState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit
+    goToEditTags: () -> Unit,
+    goToEditAssignee: () -> Unit
 ) {
     requireNotNull(state.currentIssue)
 
@@ -326,10 +336,13 @@ private fun IssueDetailsScreenContent(
                         setIsRemoveAssigneeDialogVisible = { value ->
                             state.setIsRemoveAssigneeDialogVisible(value)
                         },
-                        setIsAddAssigneeDialogVisible = { value ->
-                            state.setIsAddAssigneeDialogVisible(value)
-                        },
-                        isAssignedToMe = state.isAssignedToMe
+                        isAssignedToMe = state.isAssignedToMe,
+                        onUnassign = state.onUnassign,
+                        onAssignToMe = state.onAssignToMe,
+                        onAddAssigneeClick = {
+                            state.onGoingToEditAssignee()
+                            goToEditAssignee()
+                        }
                     )
                 }
 

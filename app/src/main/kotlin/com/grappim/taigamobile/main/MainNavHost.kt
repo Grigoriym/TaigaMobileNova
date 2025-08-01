@@ -49,6 +49,10 @@ import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.navigateToWikiPage
 import com.grappim.taigamobile.feature.wiki.ui.page.WikiPageScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.editassignees.WORK_ITEM_WAS_ASSIGNEE_CHANGED
+import com.grappim.taigamobile.feature.workitem.ui.screens.editassignees.WorkItemEditAssigneeNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.editassignees.WorkItemEditAssigneeScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.editassignees.navigateToWorkItemEditAssignee
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.EDIT_DESCRIPTION_CHANGED_VALUE
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionNavDestination
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionScreen
@@ -163,6 +167,8 @@ fun MainNavHost(
                 navBackStackEntry.savedStateHandle[EDIT_DESCRIPTION_CHANGED_VALUE]
             val wereTagsChanged: Boolean =
                 navBackStackEntry.savedStateHandle[WORK_ITEM_TAGS_CHANGED_KEY] ?: false
+            val wasAssigneeChanged: Boolean =
+                navBackStackEntry.savedStateHandle[WORK_ITEM_WAS_ASSIGNEE_CHANGED] ?: false
 
             IssueDetailsScreen(
                 showSnackbar = showSnackbar,
@@ -179,11 +185,15 @@ fun MainNavHost(
                     navController.navigateToWorkItemEditTags()
                 },
                 wereTagsChanged = wereTagsChanged,
+                wasAssigneeChanged = wasAssigneeChanged,
                 goBack = { updateData ->
                     navController.previousBackStackEntry
                         ?.savedStateHandle
                         ?.set(UPDATE_DATA_ON_BACK, updateData)
                     navController.popBackStack()
+                },
+                goToEditAssignee = {
+                    navController.navigateToWorkItemEditAssignee()
                 }
             )
         }
@@ -205,6 +215,17 @@ fun MainNavHost(
                     navController.previousBackStackEntry
                         ?.savedStateHandle
                         ?.set(WORK_ITEM_TAGS_CHANGED_KEY, wasChanged)
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<WorkItemEditAssigneeNavDestination> {
+            WorkItemEditAssigneeScreen(
+                goBack = { wasChanged: Boolean ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(WORK_ITEM_WAS_ASSIGNEE_CHANGED, wasChanged)
                     navController.popBackStack()
                 }
             )

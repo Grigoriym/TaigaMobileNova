@@ -1,9 +1,10 @@
 package com.grappim.taigamobile.feature.users.domain
 
 import com.grappim.taigamobile.core.domain.Stats
-import com.grappim.taigamobile.core.domain.TeamMember
+import com.grappim.taigamobile.core.domain.TeamMemberDTO
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.UserDTO
+import kotlinx.collections.immutable.ImmutableList
 
 interface UsersRepository {
     suspend fun getMe(): UserDTO
@@ -14,8 +15,14 @@ interface UsersRepository {
     suspend fun isAnyAssignedToMe(list: List<User>): Boolean
     suspend fun getUserStats(userId: Long): Stats
 
-    suspend fun getTeamSimple(): List<TeamMember>
+    suspend fun getTeamSimpleOld(): List<TeamMemberDTO>
 
-    suspend fun getTeam(): Result<List<TeamMember>>
-    suspend fun getTeamByProjectId(projectId: Long): Result<List<TeamMember>>
+    suspend fun getTeamOld(): Result<List<TeamMemberDTO>>
+    suspend fun getTeamByProjectIdOld(projectId: Long): Result<List<TeamMemberDTO>>
+
+    suspend fun getCurrentTeam(generateMemberStats: Boolean = false): ImmutableList<TeamMember>
+
+    suspend fun getCurrentTeamResult(
+        generateMemberStats: Boolean = false
+    ): Result<ImmutableList<TeamMember>>
 }

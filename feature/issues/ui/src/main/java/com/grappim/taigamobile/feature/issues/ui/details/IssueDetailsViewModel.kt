@@ -9,6 +9,7 @@ import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
@@ -60,7 +61,8 @@ class IssueDetailsViewModel @Inject constructor(
     private val workItemsGenerator: WorkItemsGenerator,
     private val workItemEditShared: WorkItemEditShared,
     private val dateTimeUtils: DateTimeUtils,
-    private val fileUriManager: FileUriManager
+    private val fileUriManager: FileUriManager,
+    private val session: Session
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -77,7 +79,6 @@ class IssueDetailsViewModel @Inject constructor(
             ),
             setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
-            setIsAddAssigneeDialogVisible = ::setIsAddAssigneeDialogVisible,
             setIsAddWatcherDialogVisible = ::setIsAddWatcherDialogVisible,
             setIsRemoveWatcherDialogVisible = ::setIsRemoveWatcherDialogVisible,
             onCustomFieldChange = ::onCustomFieldChange,
@@ -104,7 +105,11 @@ class IssueDetailsViewModel @Inject constructor(
             onAttachmentAdd = ::onAttachmentAdd,
             setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
             onCommentRemove = ::deleteComment,
-            onCreateCommentClick = ::createComment
+            onCreateCommentClick = ::createComment,
+            onAssignToMe = ::onAssignToMe,
+            onUnassign = ::onUnassign,
+            onGoingToEditAssignee = ::onGoingToEditAssignee,
+            onAssigneeUpdate = ::onNewAssigneeUpdate
         )
     )
     val state = _state.asStateFlow()
@@ -182,6 +187,92 @@ class IssueDetailsViewModel @Inject constructor(
                 Timber.e(error)
                 _state.update {
                     it.copy(isLoading = false)
+                }
+            }
+        }
+    }
+
+    private fun onNewAssigneeUpdate() {
+        val currentIssue = _state.value.currentIssue ?: return
+        viewModelScope.launch {
+            val newAssignee = workItemEditShared.currentAssignee
+            workItemEditShared.clear()
+
+            _state.update {
+                it.copy(error = NativeText.Empty, isAssigneesLoading = true)
+            }
+
+            issueDetailsDataUseCase.updateAssigneesData(
+                version = currentIssue.version,
+                issueId = currentIssue.id,
+                userId = newAssignee
+            ).onSuccess { result ->
+                val updatedIssue = currentIssue.copy(
+                    version = result.newVersion
+                )
+                _state.update {
+                    it.copy(
+                        isAssigneesLoading = false,
+                        currentIssue = updatedIssue,
+                        originalIssue = updatedIssue,
+                        isAssignedToMe = result.isAssignedToMe,
+                        assignees = result.assignees
+                    )
+                }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        error = getErrorMessage(error),
+                        isAssigneesLoading = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun onGoingToEditAssignee() {
+        val assigneeId = _state.value.assignees.firstOrNull()?.id
+        workItemEditShared.setCurrentAssignee(assigneeId)
+    }
+
+    private fun onAssignToMe() {
+        patchAssignedToMe(false)
+    }
+
+    private fun onUnassign() {
+        patchAssignedToMe(true)
+    }
+
+    private fun patchAssignedToMe(onUnassign: Boolean) {
+        val currentIssue = _state.value.currentIssue ?: return
+        viewModelScope.launch {
+            _state.update {
+                it.copy(error = NativeText.Empty, isAssigneesLoading = true)
+            }
+
+            issueDetailsDataUseCase.updateAssigneesData(
+                version = currentIssue.version,
+                issueId = currentIssue.id,
+                userId = if (onUnassign) null else session.userId
+            ).onSuccess { result ->
+                val updatedIssue = currentIssue.copy(
+                    version = result.newVersion
+                )
+                _state.update {
+                    it.copy(
+                        isAssigneesLoading = false,
+                        currentIssue = updatedIssue,
+                        originalIssue = updatedIssue,
+                        isAssignedToMe = result.isAssignedToMe,
+                        assignees = result.assignees
+                    )
+                }
+            }.onFailure { error ->
+                _state.update {
+                    it.copy(
+                        error = getErrorMessage(error),
+                        isAssigneesLoading = false
+                    )
                 }
             }
         }
@@ -902,12 +993,6 @@ class IssueDetailsViewModel @Inject constructor(
     private fun setIsAddWatcherDialogVisible(isVisible: Boolean) {
         _state.update {
             it.copy(isAddWatcherDialogVisible = isVisible)
-        }
-    }
-
-    private fun setIsAddAssigneeDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isAddAssigneeDialogVisible = isVisible)
         }
     }
 

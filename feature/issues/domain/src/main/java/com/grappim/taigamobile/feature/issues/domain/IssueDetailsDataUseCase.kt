@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.issues.domain
 
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.resultOf
@@ -9,9 +10,12 @@ import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
@@ -53,7 +57,11 @@ class IssueDetailsDataUseCase @Inject constructor(
     }
 
     suspend fun deleteComment(issueId: Long, commentId: String) = resultOf {
-        issuesRepository.deleteComment(issueId = issueId, commentId = commentId)
+        historyRepository.deleteComment(
+            commonTaskId = issueId,
+            commentId = commentId,
+            commonTaskType = CommonTaskType.Issue
+        )
     }
 
     suspend fun deleteAttachment(attachment: Attachment): Result<Unit> = resultOf {
@@ -94,6 +102,33 @@ class IssueDetailsDataUseCase @Inject constructor(
         payload: PersistentMap<String, Any?>
     ): Result<PatchedData> = resultOf {
         issuesRepository.patchData(version = version, issueId = issueId, payload = payload)
+    }
+
+    suspend fun updateAssigneesData(version: Long, issueId: Long, userId: Long?) = resultOf {
+        coroutineScope {
+            val payload = persistentMapOf("assigned_to" to userId)
+            val patchedData = issuesRepository.patchData(
+                version = version,
+                issueId = issueId,
+                payload = payload
+            )
+
+            val assignees: ImmutableList<User>
+            val isAssignedToMe: Boolean
+            if (userId == null) {
+                assignees = persistentListOf()
+                isAssignedToMe = false
+            } else {
+                assignees = usersRepository.getUsersList(listOf(userId)).toPersistentList()
+                isAssignedToMe = usersRepository.isAnyAssignedToMe(assignees)
+            }
+
+            AssigneesData(
+                assignees = assignees.toImmutableList(),
+                isAssignedToMe = isAssignedToMe,
+                newVersion = patchedData.newVersion
+            )
+        }
     }
 
     /**

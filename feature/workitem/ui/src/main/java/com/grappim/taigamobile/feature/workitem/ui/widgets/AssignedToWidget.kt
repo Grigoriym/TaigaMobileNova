@@ -30,7 +30,9 @@ fun AssignedToWidget(
     goToProfile: (Long) -> Unit,
     isAssignedToMe: Boolean,
     setIsRemoveAssigneeDialogVisible: (Boolean) -> Unit,
-    setIsAddAssigneeDialogVisible: (Boolean) -> Unit,
+    onUnassign: () -> Unit,
+    onAssignToMe: () -> Unit,
+    onAddAssigneeClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -65,7 +67,7 @@ fun AssignedToWidget(
         ) {
             AddButton(
                 text = stringResource(RString.add_assignee),
-                onClick = { setIsAddAssigneeDialogVisible(true) }
+                onClick = onAddAssigneeClick
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -81,9 +83,9 @@ fun AssignedToWidget(
                 icon = buttonIcon,
                 onClick = {
                     if (isAssignedToMe) {
-//                        editActions.editAssign.remove(Unit)
+                        onUnassign()
                     } else {
-//                        editActions.editAssign.select(Unit)
+                        onAssignToMe()
                     }
                 }
             )

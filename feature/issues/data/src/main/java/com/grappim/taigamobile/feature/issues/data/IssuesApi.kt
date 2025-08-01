@@ -96,7 +96,4 @@ interface IssuesApi {
         @Part project: MultipartBody.Part,
         @Part objectId: MultipartBody.Part
     ): AttachmentDTO
-
-    @POST("history/issue/{issueId}/delete_comment")
-    suspend fun deleteComment(@Path("issueId") issueId: Long, @Query("id") commentId: String)
 }

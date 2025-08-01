@@ -58,10 +58,6 @@ class IssuesRepositoryImpl @Inject constructor(
         issuesPagingSource?.invalidate()
     }
 
-    override suspend fun deleteComment(issueId: Long, commentId: String) {
-        issuesApi.deleteComment(issueId = issueId, commentId = commentId)
-    }
-
     override suspend fun deleteIssue(id: Long) {
         issuesApi.deleteCommonTask(id)
     }

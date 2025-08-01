@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.TeamMember
+import com.grappim.taigamobile.core.domain.TeamMemberDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
@@ -85,7 +85,7 @@ fun TeamScreenContent(
         onRefresh = state.onRefresh
     ) {
         when {
-            state.teamMembers.isEmpty() -> {
+            state.teamMemberDTOS.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -96,9 +96,9 @@ fun TeamScreenContent(
 
             else -> {
                 LazyColumn(Modifier.padding(horizontal = mainHorizontalScreenPadding)) {
-                    items(state.teamMembers) { member ->
+                    items(state.teamMemberDTOS) { member ->
                         TeamMemberItem(
-                            teamMember = member,
+                            teamMemberDTO = member,
                             onUserItemClick = { onUserItemClick(member.id) }
                         )
                         HorizontalDivider(
@@ -114,7 +114,7 @@ fun TeamScreenContent(
 }
 
 @Composable
-private fun TeamMemberItem(teamMember: TeamMember, onUserItemClick: () -> Unit) {
+private fun TeamMemberItem(teamMemberDTO: TeamMemberDTO, onUserItemClick: () -> Unit) {
     Row(
         modifier = Modifier.clickable { onUserItemClick() },
         verticalAlignment = Alignment.CenterVertically,
@@ -132,19 +132,19 @@ private fun TeamMemberItem(teamMember: TeamMember, onUserItemClick: () -> Unit) 
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(RDrawable.default_avatar),
                 error = painterResource(RDrawable.default_avatar),
-                model = teamMember.avatarUrl
+                model = teamMemberDTO.avatarUrl
             )
 
             Spacer(Modifier.width(6.dp))
 
             Column {
                 Text(
-                    text = teamMember.name,
+                    text = teamMemberDTO.name,
                     style = MaterialTheme.typography.titleMedium
                 )
 
                 Text(
-                    text = teamMember.role,
+                    text = teamMemberDTO.role,
                     color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -157,7 +157,7 @@ private fun TeamMemberItem(teamMember: TeamMember, onUserItemClick: () -> Unit) 
             modifier = Modifier.weight(0.4f)
         ) {
             Text(
-                text = teamMember.totalPower.toString(),
+                text = teamMemberDTO.totalPower.toString(),
                 style = MaterialTheme.typography.headlineSmall
             )
 

@@ -25,13 +25,22 @@ class WorkItemEditShared @Inject constructor() {
     val currentTags: ImmutableList<TagUI>
         get() = _currentTags
 
+    private var _currentAssignee: Long? = null
+    val currentAssignee: Long?
+        get() = _currentAssignee
+
     fun setTags(tags: ImmutableList<TagUI>) {
         _originalTags = tags.toPersistentList()
         _currentTags = tags.toPersistentList()
     }
 
+    fun setCurrentAssignee(id: Long?) {
+        _currentAssignee = id
+    }
+
     fun clear() {
         _originalTags = _originalTags.clear()
         _currentTags = _currentTags.clear()
+        _currentAssignee = null
     }
 }

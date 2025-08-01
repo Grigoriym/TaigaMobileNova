@@ -3,14 +3,17 @@ package com.grappim.taigamobile.feature.users.data
 import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.Stats
-import com.grappim.taigamobile.core.domain.TeamMember
+import com.grappim.taigamobile.core.domain.TeamMemberDTO
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
+import com.grappim.taigamobile.feature.users.data.mappers.TeamMemberMapper
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -25,7 +28,8 @@ class UsersRepositoryImpl @Inject constructor(
     private val taigaStorage: TaigaStorage,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
     private val userMapper: UserMapper,
-    private val session: Session
+    private val session: Session,
+    private val teamMemberMapper: TeamMemberMapper
 ) : UsersRepository {
 
     override suspend fun getMe(): UserDTO = usersApi.getMyProfile()
@@ -51,18 +55,19 @@ class UsersRepositoryImpl @Inject constructor(
 
     override suspend fun getUserStats(userId: Long): Stats = usersApi.getUserStats(userId)
 
-    override suspend fun getTeamByProjectId(projectId: Long): Result<List<TeamMember>> = resultOf {
-        getTeam(projectId)
+    override suspend fun getTeamByProjectIdOld(projectId: Long): Result<List<TeamMemberDTO>> =
+        resultOf {
+            getTeamOld(projectId)
+        }
+
+    override suspend fun getTeamOld(): Result<List<TeamMemberDTO>> = resultOf {
+        getTeamOld(taigaStorage.currentProjectIdFlow.first())
     }
 
-    override suspend fun getTeam(): Result<List<TeamMember>> = resultOf {
-        getTeam(taigaStorage.currentProjectIdFlow.first())
-    }
+    override suspend fun getTeamSimpleOld(): List<TeamMemberDTO> =
+        getTeamOld(taigaStorage.currentProjectIdFlow.first())
 
-    override suspend fun getTeamSimple(): List<TeamMember> =
-        getTeam(taigaStorage.currentProjectIdFlow.first())
-
-    private suspend fun getTeam(projectId: Long) = coroutineScope {
+    private suspend fun getTeamOld(projectId: Long): List<TeamMemberDTO> = coroutineScope {
         val team = async { projectsApi.getProject(projectId).members }
         val stats = async { retrieveMembersStats() }
 
@@ -70,7 +75,7 @@ class UsersRepositoryImpl @Inject constructor(
         val teamResult = team.await()
 
         teamResult.map {
-            TeamMember(
+            TeamMemberDTO(
                 id = it.id,
                 avatarUrl = it.photo,
                 name = it.fullNameDisplay,
@@ -79,6 +84,25 @@ class UsersRepositoryImpl @Inject constructor(
                 totalPower = statsResult[it.id] ?: 0
             )
         }
+    }
+
+    override suspend fun getCurrentTeam(generateMemberStats: Boolean): ImmutableList<TeamMember> =
+        coroutineScope {
+            val currentProjectId = taigaStorage.currentProjectIdFlow.first()
+
+            val team = projectsApi.getProject(currentProjectId).members
+            val stats: Map<Long, Int> = if (generateMemberStats) {
+                retrieveMembersStats()
+            } else {
+                emptyMap()
+            }
+            teamMemberMapper.toDomain(team, stats)
+        }
+
+    override suspend fun getCurrentTeamResult(
+        generateMemberStats: Boolean
+    ): Result<ImmutableList<TeamMember>> = resultOf {
+        getCurrentTeam(generateMemberStats)
     }
 
     /**

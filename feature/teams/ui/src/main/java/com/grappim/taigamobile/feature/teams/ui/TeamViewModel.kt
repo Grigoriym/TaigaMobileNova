@@ -38,13 +38,13 @@ class TeamViewModel @Inject constructor(
 
     private suspend fun fetchTeam(projectId: Long) {
         setIsLoading(true)
-        usersRepository.getTeamByProjectId(projectId)
+        usersRepository.getTeamByProjectIdOld(projectId)
             .onSuccess { result ->
                 _state.update {
                     it.copy(
                         isLoading = false,
                         isError = false,
-                        teamMembers = result
+                        teamMemberDTOS = result
                     )
                 }
             }.onFailure {

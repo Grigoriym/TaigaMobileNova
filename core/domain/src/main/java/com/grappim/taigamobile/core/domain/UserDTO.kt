@@ -22,7 +22,7 @@ data class UserDTO(
     val actualId get() = id ?: pk!!
 }
 
-data class TeamMember(
+data class TeamMemberDTO(
     val id: Long,
     val avatarUrl: String?,
     val name: String,

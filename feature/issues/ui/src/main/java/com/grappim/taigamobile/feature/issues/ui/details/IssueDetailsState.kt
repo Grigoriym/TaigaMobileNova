@@ -91,8 +91,6 @@ data class IssueDetailsState(
     val isAssigneesLoading: Boolean = false,
     val isRemoveAssigneeDialogVisible: Boolean = false,
     val setIsRemoveAssigneeDialogVisible: (Boolean) -> Unit = {},
-    val isAddAssigneeDialogVisible: Boolean = false,
-    val setIsAddAssigneeDialogVisible: (Boolean) -> Unit = {},
 
     val isWatchersLoading: Boolean = false,
     val isAddWatcherDialogVisible: Boolean = false,
@@ -102,6 +100,10 @@ data class IssueDetailsState(
 
     val isAssignedToMe: Boolean = false,
     val isWatchedByMe: Boolean = false,
+    val onAssignToMe: () -> Unit = {},
+    val onUnassign: () -> Unit = {},
+    val onGoingToEditAssignee: () -> Unit = {},
+    val onAssigneeUpdate: () -> Unit,
 
     val onNewDescriptionUpdate: (String) -> Unit,
     val onTagsUpdate: () -> Unit,
