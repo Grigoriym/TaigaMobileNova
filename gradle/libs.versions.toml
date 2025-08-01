@@ -36,7 +36,7 @@ androidxTestRules = "1.6.1"
 
 material = "1.12.0"
 mockk = "1.14.4"
-navigation = "2.9.0"
+navigation = "2.9.3"
 activity-compose = "1.10.1"
 lifecycle = "2.9.1"
 constraintLayout = "1.1.1"
