@@ -65,7 +65,7 @@ fun WorkItemEditAssigneeScreen(
                         contentDescription = "",
                         onClick = {
                             state.setIsDialogVisible(false)
-                            goBack(state.wasAssigneeChanged(true))
+                            goBack(state.wasItemChanged(true))
                         }
                     )
                 )
@@ -82,7 +82,7 @@ fun WorkItemEditAssigneeScreen(
             description = stringResource(RString.are_you_sure_discarding_changes),
             onConfirm = {
                 state.setIsDialogVisible(false)
-                goBack(state.wasAssigneeChanged(false))
+                goBack(state.wasItemChanged(false))
             },
             onDismiss = {
                 state.setIsDialogVisible(false)
@@ -100,19 +100,18 @@ private fun EditAssigneeContent(state: EditAssigneeState) {
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
             itemsIndexed(
-                items = state.assignees,
+                items = state.itemsToShow,
                 key = { _, member -> member.id }
             ) { index, member ->
-
                 TeamMemberItem(
                     teamMemberUI = member,
-                    isSelected = member.id == state.selectedTeamMemberId,
+                    isSelected = state.isItemSelected(member.id),
                     onItemClick = {
-                        state.onTeamMemberClick(member)
+                        state.onTeamMemberClick(member.id)
                     }
                 )
 
-                if (index < state.assignees.lastIndex) {
+                if (index < state.itemsToShow.lastIndex) {
                     HorizontalDivider()
                 }
             }

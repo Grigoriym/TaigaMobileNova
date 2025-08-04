@@ -15,7 +15,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastForEachIndexed
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -27,12 +26,13 @@ import kotlinx.collections.immutable.ImmutableList
 @Composable
 fun WatchersWidget(
     watchers: ImmutableList<User>,
-    assignees: ImmutableList<User>,
     goToProfile: (Long) -> Unit,
-    setIsRemoveWatcherDialogVisible: (Boolean) -> Unit,
-    setIsAddWatcherDialogVisible: (Boolean) -> Unit,
+    onRemoveWatcherClick: (watcherId: Long) -> Unit,
+    onAddWatcherClick: () -> Unit,
     isWatchersLoading: Boolean,
     isWatchedByMe: Boolean,
+    onAddMeToWatchersClick: () -> Unit,
+    onRemoveMeFromWatchersClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
@@ -41,18 +41,18 @@ fun WatchersWidget(
             style = MaterialTheme.typography.titleMedium
         )
 
-        watchers.fastForEachIndexed { index, item ->
+        watchers.forEachIndexed { index, item ->
             TeamUserWithActionWidget(
                 user = item,
                 goToProfile = {
                     goToProfile(item.actualId)
                 },
                 onRemoveUserClick = {
-                    setIsRemoveWatcherDialogVisible(true)
+                    onRemoveWatcherClick(item.actualId)
                 }
             )
 
-            if (index < assignees.lastIndex) {
+            if (index < watchers.lastIndex) {
                 Spacer(Modifier.height(6.dp))
             }
         }
@@ -67,9 +67,7 @@ fun WatchersWidget(
         ) {
             AddButton(
                 text = stringResource(RString.add_watcher),
-                onClick = {
-                    setIsAddWatcherDialogVisible(true)
-                }
+                onClick = onAddWatcherClick
             )
 
             Spacer(modifier = Modifier.width(16.dp))
@@ -85,9 +83,9 @@ fun WatchersWidget(
                 icon = buttonIcon,
                 onClick = {
                     if (isWatchedByMe) {
-//                        editActions.editWatch.remove(Unit)
+                        onRemoveMeFromWatchersClick()
                     } else {
-//                        editActions.editWatch.select(Unit)
+                        onAddMeToWatchersClick()
                     }
                 }
             )

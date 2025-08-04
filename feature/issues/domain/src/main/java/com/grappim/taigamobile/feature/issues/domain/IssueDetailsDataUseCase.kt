@@ -16,6 +16,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
@@ -27,6 +28,42 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val usersRepository: UsersRepository,
     private val filtersRepository: FiltersRepository
 ) {
+
+    suspend fun removeMeFromWatchers(issueId: Long, ref: Int) = resultOf {
+        coroutineScope {
+            issuesRepository.unwatchIssue(issueId)
+
+            val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
+            val issue = issuesRepository.getIssueByRef(ref = ref, filtersData = filtersData)
+
+            val watchers = usersRepository.getUsersList(issue.watcherUserIds)
+
+            val isWatchedByMe = usersRepository.isAnyAssignedToMe(watchers)
+
+            WatchersData(
+                watchers = watchers.toImmutableList(),
+                isWatchedByMe = isWatchedByMe
+            )
+        }
+    }
+
+    suspend fun addMeToWatchers(issueId: Long, ref: Int) = resultOf {
+        coroutineScope {
+            issuesRepository.watchIssue(issueId)
+
+            val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
+            val issue = issuesRepository.getIssueByRef(ref = ref, filtersData = filtersData)
+
+            val watchers = usersRepository.getUsersList(issue.watcherUserIds)
+
+            val isWatchedByMe = usersRepository.isAnyAssignedToMe(watchers)
+
+            WatchersData(
+                watchers = watchers.toImmutableList(),
+                isWatchedByMe = isWatchedByMe
+            )
+        }
+    }
 
     suspend fun createComment(
         version: Long,
@@ -127,6 +164,37 @@ class IssueDetailsDataUseCase @Inject constructor(
                 assignees = assignees.toImmutableList(),
                 isAssignedToMe = isAssignedToMe,
                 newVersion = patchedData.newVersion
+            )
+        }
+    }
+
+    suspend fun updateWatchersData(
+        version: Long,
+        issueId: Long,
+        newList: ImmutableList<Long>
+    ): Result<WatchersListUpdateData> = resultOf {
+        coroutineScope {
+            val payload = mapOf("watchers" to newList).toPersistentMap()
+            val patchedData = issuesRepository.patchData(
+                version = version,
+                issueId = issueId,
+                payload = payload
+            )
+
+            val watchers: ImmutableList<User>
+            val isWatchedByMe: Boolean
+            if (newList.isEmpty()) {
+                watchers = persistentListOf()
+                isWatchedByMe = false
+            } else {
+                watchers = usersRepository.getUsersList(newList).toPersistentList()
+                isWatchedByMe = usersRepository.isAnyAssignedToMe(watchers)
+            }
+
+            WatchersListUpdateData(
+                version = patchedData.newVersion,
+                isWatchedByMe = isWatchedByMe,
+                watchers = watchers
             )
         }
     }

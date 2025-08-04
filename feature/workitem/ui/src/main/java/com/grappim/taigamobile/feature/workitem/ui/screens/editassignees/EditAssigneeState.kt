@@ -5,11 +5,13 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 data class EditAssigneeState(
-    val assignees: PersistentList<TeamMemberUI> = persistentListOf(),
-    val selectedTeamMemberId: Long? = null,
-    val originalTeamMemberId: Long? = null,
-    val onTeamMemberClick: (TeamMemberUI) -> Unit,
+    val itemsToShow: PersistentList<TeamMemberUI> = persistentListOf(),
+    val isItemSelected: (memberId: Long) -> Boolean,
+    val wasItemChanged: (shouldReturnCurrentValue: Boolean) -> Boolean,
+    val selectedItems: PersistentList<Long> = persistentListOf(),
+    val originalSelectedItems: PersistentList<Long> = persistentListOf(),
+
+    val onTeamMemberClick: (id: Long) -> Unit,
     val isDialogVisible: Boolean = false,
-    val setIsDialogVisible: (Boolean) -> Unit,
-    val wasAssigneeChanged: (shouldReturnCurrentValue: Boolean) -> Boolean
+    val setIsDialogVisible: (Boolean) -> Unit
 )

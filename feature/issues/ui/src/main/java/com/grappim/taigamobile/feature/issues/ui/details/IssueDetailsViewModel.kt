@@ -18,6 +18,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
+import com.grappim.taigamobile.feature.workitem.ui.screens.EditType
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgePriority
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeSeverity
@@ -35,6 +36,7 @@ import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.toHex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.collections.immutable.toPersistentList
@@ -79,7 +81,6 @@ class IssueDetailsViewModel @Inject constructor(
             ),
             setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
-            setIsAddWatcherDialogVisible = ::setIsAddWatcherDialogVisible,
             setIsRemoveWatcherDialogVisible = ::setIsRemoveWatcherDialogVisible,
             onCustomFieldChange = ::onCustomFieldChange,
             onCustomFieldSave = ::onCustomFieldSave,
@@ -109,7 +110,14 @@ class IssueDetailsViewModel @Inject constructor(
             onAssignToMe = ::onAssignToMe,
             onUnassign = ::onUnassign,
             onGoingToEditAssignee = ::onGoingToEditAssignee,
-            onAssigneeUpdate = ::onNewAssigneeUpdate
+            onUsersUpdate = ::onUsersUpdate,
+            onGoingToEditWatchers = ::onGoingToEditWatchers,
+            onRemoveMeFromWatchersClick = ::onRemoveMeFromWatchersClick,
+            onAddMeToWatchersClick = ::onAddMeToWatchersClick,
+            onRemoveWatcherClick = ::onRemoveWatcherClick,
+            removeWatcher = ::removeWatcher,
+            removeAssignee = ::removeAssignee,
+            onRemoveAssigneeClick = ::onRemoveAssigneeClick
         )
     )
     val state = _state.asStateFlow()
@@ -174,8 +182,8 @@ class IssueDetailsViewModel @Inject constructor(
                         tags = tags.await(),
                         dueDateText = getDueDateText(result.issueTask.dueDate),
                         creator = result.creator,
-                        assignees = result.assignees,
-                        watchers = result.watchers,
+                        assignees = result.assignees.toPersistentList(),
+                        watchers = result.watchers.toPersistentList(),
                         isAssignedToMe = result.isAssignedToMe,
                         isWatchedByMe = result.isWatchedByMe,
                         customFieldsVersion = result.customFields.version,
@@ -192,7 +200,178 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onNewAssigneeUpdate() {
+    private fun removeAssignee() {
+        viewModelScope.launch {
+            val payload = mapOf("assigned_to" to null).toPersistentMap()
+            patchData(
+                payload = payload,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(
+                            isAssigneesLoading = true,
+                            error = NativeText.Empty
+                        )
+                    }
+                },
+                doOnSuccess = { data: PatchedData, task: IssueTask ->
+                    _state.update {
+                        it.copy(
+                            isAssigneesLoading = false,
+                            error = NativeText.Empty,
+                            assignees = persistentListOf()
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            isAssigneesLoading = false,
+                            error = getErrorMessage(error)
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun onRemoveAssigneeClick() {
+        _state.update {
+            it.copy(
+                isRemoveAssigneeDialogVisible = true
+            )
+        }
+    }
+
+    private fun removeWatcher() {
+        viewModelScope.launch {
+            val newWatchers = _state.value.watchers.map { it.actualId }
+                .filterNot { it == _state.value.watcherIdToRemove }
+
+            val payload = mapOf("watchers" to newWatchers).toPersistentMap()
+
+            patchData(
+                payload = payload,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(
+                            isWatchersLoading = true,
+                            error = NativeText.Empty
+                        )
+                    }
+                },
+                doOnSuccess = { data: PatchedData, task: IssueTask ->
+                    val isWatchedByMe = session.userId in newWatchers
+                    val watchersToSave = _state.value.watchers.removeAll {
+                        it.actualId == _state.value.watcherIdToRemove
+                    }
+
+                    _state.update {
+                        it.copy(
+                            isWatchersLoading = false,
+                            error = NativeText.Empty,
+                            watcherIdToRemove = null,
+                            isWatchedByMe = isWatchedByMe,
+                            watchers = watchersToSave
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            isWatchersLoading = false,
+                            error = getErrorMessage(error)
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun onRemoveWatcherClick(watcherId: Long) {
+        _state.update {
+            it.copy(
+                watcherIdToRemove = watcherId,
+                isRemoveWatcherDialogVisible = true
+            )
+        }
+    }
+
+    private fun onGoingToEditWatchers() {
+        val watchersIds = _state.value.watchers.mapNotNull { it.id }
+            .toPersistentList()
+        workItemEditShared.setCurrentWatchers(watchersIds)
+    }
+
+    private fun onRemoveMeFromWatchersClick() {
+        val currentIssue = _state.value.currentIssue ?: return
+        viewModelScope.launch {
+            _state.update {
+                it.copy(isLoading = true)
+            }
+            issueDetailsDataUseCase.removeMeFromWatchers(issueId = currentIssue.id, ref = ref)
+                .onSuccess { result ->
+                    _state.update {
+                        it.copy(
+                            isWatchedByMe = result.isWatchedByMe,
+                            watchers = result.watchers.toPersistentList(),
+                            isLoading = false
+                        )
+                    }
+                }.onFailure { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error),
+                            isLoading = false
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun onAddMeToWatchersClick() {
+        val currentIssue = _state.value.currentIssue ?: return
+        viewModelScope.launch {
+            _state.update {
+                it.copy(isLoading = true)
+            }
+            issueDetailsDataUseCase.addMeToWatchers(issueId = currentIssue.id, ref = ref)
+                .onSuccess { result ->
+                    _state.update {
+                        it.copy(
+                            isWatchedByMe = result.isWatchedByMe,
+                            watchers = result.watchers.toPersistentList(),
+                            isLoading = false
+                        )
+                    }
+                }.onFailure { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error),
+                            isLoading = false
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun onUsersUpdate() {
+        val type = workItemEditShared.currentType ?: return
+        when (type) {
+            EditType.Assignee -> {
+                onAssigneeUpdated()
+            }
+
+            EditType.Watchers -> {
+                onWatchersUpdated()
+            }
+        }
+    }
+
+    private fun onAssigneeUpdated() {
         val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
             val newAssignee = workItemEditShared.currentAssignee
@@ -216,14 +395,54 @@ class IssueDetailsViewModel @Inject constructor(
                         currentIssue = updatedIssue,
                         originalIssue = updatedIssue,
                         isAssignedToMe = result.isAssignedToMe,
-                        assignees = result.assignees
+                        assignees = result.assignees.toPersistentList()
                     )
                 }
             }.onFailure { error ->
+                Timber.e(error)
                 _state.update {
                     it.copy(
                         error = getErrorMessage(error),
                         isAssigneesLoading = false
+                    )
+                }
+            }
+        }
+    }
+
+    private fun onWatchersUpdated() {
+        val currentIssue = _state.value.currentIssue ?: return
+        viewModelScope.launch {
+            val newWatchers = workItemEditShared.currentWatchers
+            workItemEditShared.clear()
+
+            _state.update {
+                it.copy(error = NativeText.Empty, isWatchersLoading = true)
+            }
+
+            issueDetailsDataUseCase.updateWatchersData(
+                version = currentIssue.version,
+                issueId = currentIssue.id,
+                newList = newWatchers
+            ).onSuccess { result ->
+                val updatedIssue = currentIssue.copy(
+                    version = result.version
+                )
+                _state.update {
+                    it.copy(
+                        currentIssue = updatedIssue,
+                        originalIssue = updatedIssue,
+                        isWatchersLoading = false,
+                        isWatchedByMe = result.isWatchedByMe,
+                        watchers = result.watchers.toPersistentList()
+                    )
+                }
+            }.onFailure { error ->
+                Timber.e(error)
+                _state.update {
+                    it.copy(
+                        error = getErrorMessage(error),
+                        isWatchersLoading = false
                     )
                 }
             }
@@ -264,10 +483,11 @@ class IssueDetailsViewModel @Inject constructor(
                         currentIssue = updatedIssue,
                         originalIssue = updatedIssue,
                         isAssignedToMe = result.isAssignedToMe,
-                        assignees = result.assignees
+                        assignees = result.assignees.toPersistentList()
                     )
                 }
             }.onFailure { error ->
+                Timber.e(error)
                 _state.update {
                     it.copy(
                         error = getErrorMessage(error),
@@ -987,12 +1207,6 @@ class IssueDetailsViewModel @Inject constructor(
     private fun setIsRemoveWatcherDialogVisible(isVisible: Boolean) {
         _state.update {
             it.copy(isRemoveWatcherDialogVisible = isVisible)
-        }
-    }
-
-    private fun setIsAddWatcherDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isAddWatcherDialogVisible = isVisible)
         }
     }
 

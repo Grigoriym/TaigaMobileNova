@@ -56,9 +56,10 @@ fun IssueDetailsScreen(
     editedDescriptionValue: String?,
     goToEditTags: () -> Unit,
     wereTagsChanged: Boolean,
-    wasAssigneeChanged: Boolean,
+    wereUsersChanged: Boolean,
     goBack: (updateData: Boolean) -> Unit,
     goToEditAssignee: () -> Unit,
+    goToEditWatchers: () -> Unit,
     viewModel: IssueDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -101,9 +102,9 @@ fun IssueDetailsScreen(
         }
     }
 
-    LaunchedEffect(wasAssigneeChanged) {
-        if (wasAssigneeChanged) {
-            state.onAssigneeUpdate()
+    LaunchedEffect(wereUsersChanged) {
+        if (wereUsersChanged) {
+            state.onUsersUpdate()
         }
     }
 
@@ -187,10 +188,10 @@ fun IssueDetailsScreen(
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
+            state.removeAssignee()
             state.setIsRemoveAssigneeDialogVisible(false)
         },
-        onDismiss = { state.setIsRemoveAssigneeDialogVisible(false) },
-        iconId = RDrawable.ic_remove
+        onDismiss = { state.setIsRemoveAssigneeDialogVisible(false) }
     )
 
     ConfirmActionDialog(
@@ -198,10 +199,10 @@ fun IssueDetailsScreen(
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
+            state.removeWatcher()
             state.setIsRemoveWatcherDialogVisible(false)
         },
-        onDismiss = { state.setIsRemoveWatcherDialogVisible(false) },
-        iconId = RDrawable.ic_remove
+        onDismiss = { state.setIsRemoveWatcherDialogVisible(false) }
     )
 
     ConfirmActionDialog(
@@ -212,8 +213,7 @@ fun IssueDetailsScreen(
             state.setIsDeleteDialogVisible(false)
             state.onDelete()
         },
-        onDismiss = { state.setIsDeleteDialogVisible(false) },
-        iconId = RDrawable.ic_delete
+        onDismiss = { state.setIsDeleteDialogVisible(false) }
     )
 
     if (state.currentIssue != null) {
@@ -222,7 +222,8 @@ fun IssueDetailsScreen(
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
-            goToEditAssignee = goToEditAssignee
+            goToEditAssignee = goToEditAssignee,
+            goToEditWatchers = goToEditWatchers
         )
     }
 }
@@ -233,7 +234,8 @@ private fun IssueDetailsScreenContent(
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
-    goToEditAssignee: () -> Unit
+    goToEditAssignee: () -> Unit,
+    goToEditWatchers: () -> Unit
 ) {
     requireNotNull(state.currentIssue)
 
@@ -333,8 +335,8 @@ private fun IssueDetailsScreenContent(
                         goToProfile = goToProfile,
                         assignees = state.assignees,
                         isAssigneesLoading = state.isAssigneesLoading,
-                        setIsRemoveAssigneeDialogVisible = { value ->
-                            state.setIsRemoveAssigneeDialogVisible(value)
+                        onRemoveAssigneeClick = {
+                            state.onRemoveAssigneeClick()
                         },
                         isAssignedToMe = state.isAssignedToMe,
                         onUnassign = state.onUnassign,
@@ -350,15 +352,17 @@ private fun IssueDetailsScreenContent(
                     WatchersWidget(
                         goToProfile = goToProfile,
                         watchers = state.watchers,
-                        assignees = state.assignees,
-                        setIsRemoveWatcherDialogVisible = {
-                            state.setIsRemoveWatcherDialogVisible(it)
+                        onRemoveWatcherClick = { watcherId ->
+                            state.onRemoveWatcherClick(watcherId)
                         },
                         isWatchersLoading = state.isWatchersLoading,
-                        setIsAddWatcherDialogVisible = {
-                            state.setIsAddWatcherDialogVisible(it)
+                        onAddWatcherClick = {
+                            state.onGoingToEditWatchers()
+                            goToEditWatchers()
                         },
-                        isWatchedByMe = state.isWatchedByMe
+                        isWatchedByMe = state.isWatchedByMe,
+                        onAddMeToWatchersClick = state.onAddMeToWatchersClick,
+                        onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
                     )
                 }
 

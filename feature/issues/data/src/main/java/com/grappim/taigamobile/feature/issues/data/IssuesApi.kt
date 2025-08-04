@@ -51,6 +51,12 @@ interface IssuesApi {
         @Body payload: Map<String, Any?>
     ): CommonTaskResponse
 
+    @POST("issues/{issueId}/watch")
+    suspend fun watchIssue(@Path("issueId") issueId: Long)
+
+    @POST("issues/{issueId}/unwatch")
+    suspend fun unwatchIssue(@Path("issueId") issueId: Long)
+
     @GET("issues/by_ref")
     suspend fun getIssueByRef(
         @Query("project") project: Long,

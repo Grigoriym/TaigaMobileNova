@@ -14,6 +14,7 @@ import com.grappim.taigamobile.feature.users.data.mappers.TeamMemberMapper
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -43,15 +44,16 @@ class UsersRepositoryImpl @Inject constructor(
         return userMapper.toUser(dto)
     }
 
-    override suspend fun getUsersList(ids: List<Long>): List<User> = coroutineScope {
+    override suspend fun getUsersList(ids: List<Long>): ImmutableList<User> = coroutineScope {
         ids.map { id ->
             async { getUser(id) }
-        }.awaitAll()
+        }.awaitAll().toImmutableList()
     }
 
-    override suspend fun isAnyAssignedToMe(list: List<User>): Boolean = withContext(dispatcher) {
-        session.userId in list.map { it.actualId }
-    }
+    override suspend fun isAnyAssignedToMe(list: ImmutableList<User>): Boolean =
+        withContext(dispatcher) {
+            session.userId in list.map { it.actualId }
+        }
 
     override suspend fun getUserStats(userId: Long): Stats = usersApi.getUserStats(userId)
 

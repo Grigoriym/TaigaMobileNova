@@ -14,6 +14,9 @@ import kotlinx.coroutines.flow.Flow
 
 interface IssuesRepository {
 
+    suspend fun watchIssue(issueId: Long)
+    suspend fun unwatchIssue(issueId: Long)
+
     suspend fun deleteIssue(id: Long)
 
     suspend fun addAttachment(issueId: Long, fileName: String, fileByteArray: ByteArray): Attachment

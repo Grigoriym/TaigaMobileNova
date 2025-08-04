@@ -29,7 +29,7 @@ fun AssignedToWidget(
     isAssigneesLoading: Boolean,
     goToProfile: (Long) -> Unit,
     isAssignedToMe: Boolean,
-    setIsRemoveAssigneeDialogVisible: (Boolean) -> Unit,
+    onRemoveAssigneeClick: () -> Unit,
     onUnassign: () -> Unit,
     onAssignToMe: () -> Unit,
     onAddAssigneeClick: () -> Unit,
@@ -48,7 +48,7 @@ fun AssignedToWidget(
                     goToProfile(item.actualId)
                 },
                 onRemoveUserClick = {
-                    setIsRemoveAssigneeDialogVisible(true)
+                    onRemoveAssigneeClick()
                 }
             )
 

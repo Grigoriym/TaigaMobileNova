@@ -58,6 +58,14 @@ class IssuesRepositoryImpl @Inject constructor(
         issuesPagingSource?.invalidate()
     }
 
+    override suspend fun watchIssue(issueId: Long) {
+        issuesApi.watchIssue(issueId = issueId)
+    }
+
+    override suspend fun unwatchIssue(issueId: Long) {
+        issuesApi.unwatchIssue(issueId = issueId)
+    }
+
     override suspend fun deleteIssue(id: Long) {
         issuesApi.deleteCommonTask(id)
     }

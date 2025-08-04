@@ -15,6 +15,10 @@ import javax.inject.Singleton
 @Singleton
 class WorkItemEditShared @Inject constructor() {
 
+    private var _currentType: EditType? = null
+    val currentType: EditType?
+        get() = _currentType
+
     private var _originalTags: PersistentList<TagUI> = persistentListOf()
     val originalTags: ImmutableList<TagUI>
         get() = _originalTags
@@ -29,12 +33,22 @@ class WorkItemEditShared @Inject constructor() {
     val currentAssignee: Long?
         get() = _currentAssignee
 
+    private var _currentWatchers: PersistentList<Long> = persistentListOf()
+    val currentWatchers: ImmutableList<Long>
+        get() = _currentWatchers
+
     fun setTags(tags: ImmutableList<TagUI>) {
         _originalTags = tags.toPersistentList()
         _currentTags = tags.toPersistentList()
     }
 
+    fun setCurrentWatchers(ids: PersistentList<Long>?) {
+        _currentType = EditType.Watchers
+        _currentWatchers = ids ?: persistentListOf()
+    }
+
     fun setCurrentAssignee(id: Long?) {
+        _currentType = EditType.Assignee
         _currentAssignee = id
     }
 
@@ -42,5 +56,12 @@ class WorkItemEditShared @Inject constructor() {
         _originalTags = _originalTags.clear()
         _currentTags = _currentTags.clear()
         _currentAssignee = null
+        _currentWatchers = _currentWatchers.clear()
+        _currentType = null
     }
+}
+
+sealed interface EditType {
+    data object Assignee : EditType
+    data object Watchers : EditType
 }

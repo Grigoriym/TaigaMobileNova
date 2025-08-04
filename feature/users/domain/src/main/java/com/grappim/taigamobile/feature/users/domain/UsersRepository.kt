@@ -11,8 +11,8 @@ interface UsersRepository {
     suspend fun getMeResult(): Result<UserDTO>
     suspend fun getUserDTO(userId: Long): UserDTO
     suspend fun getUser(userId: Long): User
-    suspend fun getUsersList(ids: List<Long>): List<User>
-    suspend fun isAnyAssignedToMe(list: List<User>): Boolean
+    suspend fun getUsersList(ids: List<Long>): ImmutableList<User>
+    suspend fun isAnyAssignedToMe(list: ImmutableList<User>): Boolean
     suspend fun getUserStats(userId: Long): Stats
 
     suspend fun getTeamSimpleOld(): List<TeamMemberDTO>
