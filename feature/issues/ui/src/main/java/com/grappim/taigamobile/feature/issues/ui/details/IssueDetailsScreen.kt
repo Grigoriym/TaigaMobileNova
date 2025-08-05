@@ -149,8 +149,6 @@ fun IssueDetailsScreen(
         setDeleteAlertVisible = {
             state.setIsDeleteDialogVisible(it)
         },
-        setPromoteAlertVisible = {
-        },
         isBlocked = state.currentIssue?.blockedNote != null,
         setBlockDialogVisible = {
             state.setIsBlockDialogVisible(it)

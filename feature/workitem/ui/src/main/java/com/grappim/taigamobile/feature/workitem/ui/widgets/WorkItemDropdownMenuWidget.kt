@@ -23,13 +23,11 @@ fun WorkItemDropdownMenuWidget(
     onDismissRequest: () -> Unit,
     showSnackbar: (NativeText) -> Unit,
     url: String,
-//    setTaskEditorVisible: (Boolean) -> Unit,
     setDeleteAlertVisible: (Boolean) -> Unit,
     isBlocked: Boolean,
     setBlockDialogVisible: (Boolean) -> Unit,
     doOnUnblock: () -> Unit,
-    modifier: Modifier = Modifier,
-    setPromoteAlertVisible: ((Boolean) -> Unit)? = null
+    modifier: Modifier = Modifier
 ) {
     val clipboardManager = LocalClipboard.current
     Box(modifier = modifier) {
@@ -60,19 +58,6 @@ fun WorkItemDropdownMenuWidget(
                 }
             )
 
-//            DropdownMenuItem(
-//                onClick = {
-//                    onDismissRequest()
-//                    setTaskEditorVisible(true)
-//                },
-//                text = {
-//                    Text(
-//                        text = stringResource(RString.edit),
-//                        style = MaterialTheme.typography.bodyLarge
-//                    )
-//                }
-//            )
-
             DropdownMenuItem(
                 onClick = {
                     onDismissRequest()
@@ -85,21 +70,6 @@ fun WorkItemDropdownMenuWidget(
                     )
                 }
             )
-
-            if (setPromoteAlertVisible != null) {
-                DropdownMenuItem(
-                    onClick = {
-                        onDismissRequest()
-                        setPromoteAlertVisible(true)
-                    },
-                    text = {
-                        Text(
-                            text = stringResource(RString.promote_to_user_story),
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                    }
-                )
-            }
 
             DropdownMenuItem(
                 onClick = {
