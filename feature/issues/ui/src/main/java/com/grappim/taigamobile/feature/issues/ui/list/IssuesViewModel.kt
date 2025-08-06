@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.issues.ui
+package com.grappim.taigamobile.feature.issues.ui.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

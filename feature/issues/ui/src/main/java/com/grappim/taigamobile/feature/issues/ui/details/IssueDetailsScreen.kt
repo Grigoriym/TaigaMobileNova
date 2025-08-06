@@ -35,7 +35,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemsBottomSheet
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.commentsSectionWidget
-import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.customFieldsSectionWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.WorkItemTagsWidget
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -364,16 +364,18 @@ private fun IssueDetailsScreenContent(
                     )
                 }
 
-                customFieldsSectionWidget(
-                    customFieldStateItems = state.customFieldStateItems,
-                    isCustomFieldsLoading = state.isCustomFieldsLoading,
-                    isCustomFieldsWidgetExpanded = state.isCustomFieldsWidgetExpanded,
-                    setIsCustomFieldsWidgetExpanded = state.setIsCustomFieldsWidgetExpanded,
-                    onCustomFieldChange = state.onCustomFieldChange,
-                    onCustomFieldSave = state.onCustomFieldSave,
-                    onCustomFieldEditToggle = state.onCustomFieldEditToggle,
-                    editingItemIds = state.editingItemIds
-                )
+                item {
+                    CustomFieldsSectionWidget(
+                        customFieldStateItems = state.customFieldStateItems,
+                        isCustomFieldsLoading = state.isCustomFieldsLoading,
+                        isCustomFieldsWidgetExpanded = state.isCustomFieldsWidgetExpanded,
+                        setIsCustomFieldsWidgetExpanded = state.setIsCustomFieldsWidgetExpanded,
+                        onCustomFieldChange = state.onCustomFieldChange,
+                        onCustomFieldSave = state.onCustomFieldSave,
+                        onCustomFieldEditToggle = state.onCustomFieldEditToggle,
+                        editingItemIds = state.editingItemIds
+                    )
+                }
 
                 item {
                     AttachmentsSectionWidget(

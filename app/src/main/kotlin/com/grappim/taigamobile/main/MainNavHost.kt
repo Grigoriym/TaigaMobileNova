@@ -18,12 +18,12 @@ import com.grappim.taigamobile.feature.dashboard.ui.DashboardScreen
 import com.grappim.taigamobile.feature.dashboard.ui.navigateToDashboardAsTopDestination
 import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
 import com.grappim.taigamobile.feature.epics.ui.EpicsScreen
-import com.grappim.taigamobile.feature.issues.ui.IssuesNavDestination
-import com.grappim.taigamobile.feature.issues.ui.IssuesScreen
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsScreen
 import com.grappim.taigamobile.feature.issues.ui.details.UPDATE_DATA_ON_BACK
 import com.grappim.taigamobile.feature.issues.ui.details.navigateToIssueDetails
+import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
+import com.grappim.taigamobile.feature.issues.ui.list.IssuesScreen
 import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginScreen

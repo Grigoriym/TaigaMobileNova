@@ -27,5 +27,4 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.coil.compose)
-    implementation(libs.timber)
 }

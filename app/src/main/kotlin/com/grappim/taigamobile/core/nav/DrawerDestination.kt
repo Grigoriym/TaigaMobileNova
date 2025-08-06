@@ -7,7 +7,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
-import com.grappim.taigamobile.feature.issues.ui.IssuesNavDestination
+import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import com.grappim.taigamobile.feature.scrum.ui.ScrumNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination

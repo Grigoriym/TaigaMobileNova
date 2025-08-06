@@ -15,7 +15,6 @@ dependencies {
 
     implementation(projects.core.async)
 
-    implementation(libs.timber)
     implementation(libs.androidx.paging.compose)
 
     testImplementation(libs.robolectric)

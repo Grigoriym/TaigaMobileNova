@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.issues.ui
+package com.grappim.taigamobile.feature.issues.ui.list
 
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 

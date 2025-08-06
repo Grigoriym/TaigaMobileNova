@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Checkbox
@@ -54,7 +52,8 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
 
-fun LazyListScope.customFieldsSectionWidget(
+@Composable
+fun CustomFieldsSectionWidget(
     customFieldStateItems: ImmutableList<CustomFieldItemState>,
     isCustomFieldsLoading: Boolean,
     isCustomFieldsWidgetExpanded: Boolean,
@@ -62,10 +61,11 @@ fun LazyListScope.customFieldsSectionWidget(
     onCustomFieldChange: (CustomFieldItemState) -> Unit,
     onCustomFieldSave: (CustomFieldItemState) -> Unit,
     onCustomFieldEditToggle: (CustomFieldItemState) -> Unit,
-    editingItemIds: ImmutableSet<Long>
+    editingItemIds: ImmutableSet<Long>,
+    modifier: Modifier = Modifier
 ) {
     if (customFieldStateItems.isNotEmpty()) {
-        item {
+        Column(modifier = modifier) {
             SectionTitleExpandable(
                 text = stringResource(RString.custom_fields_with_number).format(
                     customFieldStateItems.size
@@ -75,40 +75,28 @@ fun LazyListScope.customFieldsSectionWidget(
                     setIsCustomFieldsWidgetExpanded(!isCustomFieldsWidgetExpanded)
                 }
             )
-        }
 
-        if (isCustomFieldsWidgetExpanded) {
-            itemsIndexed(
-                items = customFieldStateItems,
-                key = { index, item -> item.id },
-                contentType = { index, item -> item }
-            ) { index, item ->
-                CustomFieldWidget(
-                    editingItemIds = editingItemIds,
-                    item = item,
-                    onItemChange = onCustomFieldChange,
-                    onItemSave = onCustomFieldSave,
-                    onItemEdit = onCustomFieldEditToggle
-                )
-                if (index < customFieldStateItems.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
-                        thickness = DividerDefaults.Thickness,
-                        color = MaterialTheme.colorScheme.outline
+            if (isCustomFieldsWidgetExpanded) {
+                customFieldStateItems.forEachIndexed { index, item ->
+                    CustomFieldWidget(
+                        editingItemIds = editingItemIds,
+                        item = item,
+                        onItemChange = onCustomFieldChange,
+                        onItemSave = onCustomFieldSave,
+                        onItemEdit = onCustomFieldEditToggle
                     )
+                    if (index < customFieldStateItems.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
+                            thickness = DividerDefaults.Thickness,
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
-            }
-
-            if (isCustomFieldsLoading) {
-                item {
+                if (isCustomFieldsLoading) {
                     TaigaHeightSpacer(8.dp)
-                }
-                item {
                     DotsLoader()
                 }
-            }
-
-            item {
                 TaigaHeightSpacer(10.dp)
             }
         }
@@ -127,17 +115,11 @@ private fun CustomFieldWidget(
     val isEditableItem = item is EditableItem
     val isEditMode = isEditableItem && item.id in editingItemIds
 
-//    val fieldState by remember { mutableStateOf(FieldState.Default) }
     val indicationColor = if (item.isModified) {
         MaterialTheme.colorScheme.primary
     } else {
         MaterialTheme.colorScheme.outline
     }
-//    val borderColor = when (fieldState) {
-//        FieldState.Focused -> MaterialTheme.colorScheme.primary
-//        FieldState.Error -> MaterialTheme.colorScheme.error
-//        FieldState.Default -> indicationColor
-//    }
 
     Column(
         modifier = modifier,
@@ -164,17 +146,6 @@ private fun CustomFieldWidget(
             Box(
                 modifier = Modifier
                     .weight(1f)
-//                    .border(
-//                        width = 1.dp,
-//                        color = borderColor,
-//                        //                        color = if (customField.type == CustomFieldType.Checkbox) {
-//                        //                            Color.Transparent
-//                        //                        } else {
-//                        //                            borderColor
-//                        //                        },
-//                        shape = MaterialTheme.shapes.small
-//                    )
-//                    .clip(MaterialTheme.shapes.extraSmall)
                     .padding(6.dp)
             ) {
                 when (item) {
@@ -230,7 +201,6 @@ private fun CustomFieldWidget(
                 }
             }
 
-//            Row {
             if (isEditableItem) {
                 TaigaWidthSpacer(4.dp)
 
@@ -263,10 +233,6 @@ private fun CustomFieldWidget(
                 enabled = item.isModified,
                 onClick = {
                     onItemSave(item)
-//                    if (fieldState != FieldState.Error && value != customField.value) {
-//                        focusManager.clearFocus()
-//                        onSaveClick()
-//                    }
                 }
             ) {
                 Icon(
@@ -275,7 +241,6 @@ private fun CustomFieldWidget(
                     tint = indicationColor
                 )
             }
-//            }
         }
     }
 }

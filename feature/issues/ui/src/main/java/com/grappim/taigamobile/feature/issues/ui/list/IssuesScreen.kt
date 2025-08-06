@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.issues.ui
+package com.grappim.taigamobile.feature.issues.ui.list
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +15,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.feature.issues.ui.list.IssuesState
+import com.grappim.taigamobile.feature.issues.ui.list.IssuesViewModel
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
