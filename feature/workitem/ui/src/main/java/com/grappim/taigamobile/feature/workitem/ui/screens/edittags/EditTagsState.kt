@@ -12,5 +12,5 @@ data class EditTagsState(
     val isDialogVisible: Boolean = false,
     val setIsDialogVisible: (Boolean) -> Unit,
     val onTagClick: (TagUI) -> Unit,
-    val wereTagsChanged: (Boolean) -> Boolean
+    val shouldGoBackWithCurrentValue: (shouldReturnCurrentValue: Boolean) -> Unit
 )

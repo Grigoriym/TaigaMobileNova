@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.button.AddButton
 import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButton
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
@@ -40,6 +41,8 @@ fun WatchersWidget(
             text = stringResource(RString.watchers),
             style = MaterialTheme.typography.titleMedium
         )
+
+        TaigaHeightSpacer(8.dp)
 
         watchers.forEachIndexed { index, item ->
             TeamUserWithActionWidget(

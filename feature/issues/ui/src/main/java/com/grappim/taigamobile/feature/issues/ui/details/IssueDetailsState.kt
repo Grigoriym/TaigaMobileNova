@@ -109,10 +109,7 @@ data class IssueDetailsState(
     val onAssignToMe: () -> Unit = {},
     val onUnassign: () -> Unit = {},
     val onGoingToEditAssignee: () -> Unit = {},
-    val onUsersUpdate: () -> Unit,
 
-    val onNewDescriptionUpdate: (String) -> Unit,
-    val onTagsUpdate: () -> Unit,
     val onTagRemove: (TagUI) -> Unit,
     val onGoingToEditTags: () -> Unit,
 

@@ -46,6 +46,8 @@
     <string name="edit_description">Edit Description</string>
     <string name="edit_tags">Edit Tags</string>
 
+    <string name="edit_team_members">Edit Team Members</string>
+
     <string name="choose_project_title">Choose project</string>
 
     <string name="search_projects_hint">Search projects</string>

@@ -21,11 +21,12 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun WorkItemEditDescriptionScreen(
-    goBack: (newDescription: String?) -> Unit,
+    goBack: () -> Unit,
     viewModel: EditDescriptionViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -44,8 +45,7 @@ fun WorkItemEditDescriptionScreen(
                         text = NativeText.Resource(RString.save),
                         contentDescription = "",
                         onClick = {
-                            state.setIsDialogVisible(false)
-                            goBack(state.retrieveDescriptionToChange(true))
+                            state.shouldGoBackWithCurrentValue(true)
                         }
                     )
                 )
@@ -57,20 +57,22 @@ fun WorkItemEditDescriptionScreen(
         state.setIsDialogVisible(!state.isDialogVisible)
     }
 
-    if (state.isDialogVisible) {
-        ConfirmActionDialog(
-            description = stringResource(RString.are_you_sure_discarding_changes),
-            onConfirm = {
-                state.setIsDialogVisible(false)
-                goBack(state.retrieveDescriptionToChange(false))
-            },
-            onDismiss = {
-                state.setIsDialogVisible(false)
-            },
-            confirmButtonText = NativeText.Resource(RString.discard),
-            dismissButtonText = NativeText.Resource(RString.keep_editing)
-        )
+    ObserveAsEvents(viewModel.onBackAction, isImmediate = false) {
+        goBack()
     }
+
+    ConfirmActionDialog(
+        isVisible = state.isDialogVisible,
+        description = stringResource(RString.are_you_sure_discarding_changes),
+        onConfirm = {
+            state.shouldGoBackWithCurrentValue(false)
+        },
+        onDismiss = {
+            state.setIsDialogVisible(false)
+        },
+        confirmButtonText = NativeText.Resource(RString.discard),
+        dismissButtonText = NativeText.Resource(RString.keep_editing)
+    )
 
     EditDescriptionContent(state = state)
 }

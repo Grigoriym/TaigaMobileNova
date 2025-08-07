@@ -63,7 +63,7 @@ import com.grappim.taigamobile.uikit.NavigationActions
 import com.grappim.taigamobile.uikit.SimpleEditAction
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
@@ -659,7 +659,7 @@ fun CommonTaskScreenContent(
     }
 }
 
-@PreviewMulti
+@PreviewDarkLight
 @Composable
 private fun CommonTaskScreenPreview() {
     TaigaMobileTheme {

@@ -33,7 +33,7 @@ import com.grappim.taigamobile.uikit.Attachments
 import com.grappim.taigamobile.uikit.EditAction
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
@@ -266,7 +266,7 @@ fun WikiPageScreenContent(
     }
 }
 
-@[Composable PreviewMulti]
+@[Composable PreviewDarkLight]
 private fun WikiPagePreview() {
     TaigaMobileTheme {
         WikiPageScreenContent(

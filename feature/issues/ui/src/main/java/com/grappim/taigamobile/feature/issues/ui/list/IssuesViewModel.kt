@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.grappim.taigamobile.feature.issues.ui.list
 
 import androidx.lifecycle.ViewModel
@@ -16,11 +18,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class IssuesViewModel @Inject constructor(
     private val session: Session,
@@ -31,52 +34,50 @@ class IssuesViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(
         IssuesState(
-            onUpdateData = ::onUpdateData
+            selectFilters = ::selectFilters
         )
     )
     val state = _state.asStateFlow()
 
     val issues = session.issuesFilters.flatMapLatest { filters ->
-        _state.update {
-            it.copy(activeFilters = filters)
-        }
         issuesRepository.getIssuesPaging(filters)
     }.cachedIn(viewModelScope)
 
     init {
-        viewModelScope.launch {
-            combine(taigaStorage.currentProjectIdFlow, session.taskEdit) {
-                issuesRepository.refreshIssues()
-            }.launchIn(viewModelScope)
-
-            launch {
-                filtersRepository.getFiltersDataResultOld(CommonTaskType.Issue)
-                    .onSuccess { filters ->
-                        session.changeIssuesFilters(
-                            filters = _state.value.activeFilters.updateData(filters)
-                        )
-                        _state.update {
-                            it.copy(
-                                filters = filters,
-                                isFiltersError = false
-                            )
-                        }
-                    }.onFailure {
-                        _state.update {
-                            it.copy(isFiltersError = true)
-                        }
-                    }
-            }
-        }
-    }
-
-    private fun onUpdateData() {
-        viewModelScope.launch {
+        combine(taigaStorage.currentProjectIdFlow, session.taskEdit) {
             issuesRepository.refreshIssues()
+        }.launchIn(viewModelScope)
+
+        session.issuesFilters
+            .onEach { filters ->
+                _state.update {
+                    it.copy(activeFilters = filters)
+                }
+            }
+            .launchIn(viewModelScope)
+
+        viewModelScope.launch {
+            filtersRepository.getFiltersDataResultOld(CommonTaskType.Issue)
+                .onSuccess { filters ->
+                    session.changeIssuesFilters(
+                        filters = _state.value.activeFilters.updateData(filters)
+                    )
+                    _state.update {
+                        it.copy(
+                            filters = filters,
+                            isFiltersError = false
+                        )
+                    }
+                }.onFailure { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(isFiltersError = true)
+                    }
+                }
         }
     }
 
-    fun selectFilters(filters: FiltersDataDTO) {
+    private fun selectFilters(filters: FiltersDataDTO) {
         session.changeIssuesFilters(filters)
     }
 }

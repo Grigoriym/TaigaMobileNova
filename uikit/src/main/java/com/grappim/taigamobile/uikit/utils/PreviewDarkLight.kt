@@ -15,4 +15,4 @@ import com.grappim.taigamobile.uikit.theme.DarkBackgroundColorForPreview
     uiMode = Configuration.UI_MODE_NIGHT_YES,
     name = "Dark theme"
 )
-annotation class PreviewMulti
+annotation class PreviewDarkLight

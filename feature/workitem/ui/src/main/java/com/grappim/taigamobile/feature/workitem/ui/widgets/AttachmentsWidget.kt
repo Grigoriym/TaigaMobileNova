@@ -34,7 +34,7 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.LocalFilePicker
 import com.grappim.taigamobile.uikit.R
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
@@ -167,7 +167,7 @@ private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) {
 }
 
 @Composable
-@PreviewMulti
+@PreviewDarkLight
 private fun AttachmentItemPreview() {
     TaigaMobileTheme {
         AttachmentItem(

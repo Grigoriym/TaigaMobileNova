@@ -33,7 +33,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 
@@ -137,7 +137,7 @@ fun SectionTitleExpandable(
 }
 
 @Composable
-@PreviewMulti
+@PreviewDarkLight
 private fun SectionTitleExpandablePreview() {
     TaigaMobileTheme {
         SectionTitleExpandable(

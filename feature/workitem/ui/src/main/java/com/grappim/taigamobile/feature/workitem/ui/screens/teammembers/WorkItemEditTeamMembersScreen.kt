@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.workitem.ui.screens.editassignees
+package com.grappim.taigamobile.feature.workitem.ui.screens.teammembers
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
@@ -40,21 +40,21 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun WorkItemEditAssigneeScreen(
-    goBack: (Boolean) -> Unit,
-    viewModel: EditAssigneeViewModel = hiltViewModel()
+    goBack: () -> Unit,
+    viewModel: EditTeamMemberViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
-
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(RString.edit_tags),
+                title = NativeText.Resource(RString.edit_team_members),
                 showBackButton = true,
                 overrideBackHandlerAction = {
                     state.setIsDialogVisible(!state.isDialogVisible)
@@ -64,8 +64,7 @@ fun WorkItemEditAssigneeScreen(
                         text = NativeText.Resource(RString.save),
                         contentDescription = "",
                         onClick = {
-                            state.setIsDialogVisible(false)
-                            goBack(state.wasItemChanged(true))
+                            state.shouldGoBackWithCurrentValue(true)
                         }
                     )
                 )
@@ -77,26 +76,28 @@ fun WorkItemEditAssigneeScreen(
         state.setIsDialogVisible(!state.isDialogVisible)
     }
 
-    if (state.isDialogVisible) {
-        ConfirmActionDialog(
-            description = stringResource(RString.are_you_sure_discarding_changes),
-            onConfirm = {
-                state.setIsDialogVisible(false)
-                goBack(state.wasItemChanged(false))
-            },
-            onDismiss = {
-                state.setIsDialogVisible(false)
-            },
-            confirmButtonText = NativeText.Resource(RString.discard),
-            dismissButtonText = NativeText.Resource(RString.keep_editing)
-        )
+    ConfirmActionDialog(
+        isVisible = state.isDialogVisible,
+        description = stringResource(RString.are_you_sure_discarding_changes),
+        onConfirm = {
+            state.shouldGoBackWithCurrentValue(false)
+        },
+        onDismiss = {
+            state.setIsDialogVisible(false)
+        },
+        confirmButtonText = NativeText.Resource(RString.discard),
+        dismissButtonText = NativeText.Resource(RString.keep_editing)
+    )
+
+    ObserveAsEvents(viewModel.onBackAction, isImmediate = false) {
+        goBack()
     }
 
     EditAssigneeContent(state = state)
 }
 
 @Composable
-private fun EditAssigneeContent(state: EditAssigneeState) {
+private fun EditAssigneeContent(state: EditTeamMemberState) {
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn {
             itemsIndexed(

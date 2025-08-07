@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.workitem.ui.screens.editassignees
+package com.grappim.taigamobile.feature.workitem.ui.screens.teammembers
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -10,34 +10,47 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class EditAssigneeViewModel @Inject constructor(
+class EditTeamMemberViewModel @Inject constructor(
     private val usersRepository: UsersRepository,
     private val teamMemberUIMapper: TeamMemberUIMapper,
     private val editShared: WorkItemEditShared
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
-        EditAssigneeState(
+        EditTeamMemberState(
             selectedItems = retrieveSelectedItems(),
             originalSelectedItems = retrieveSelectedItems(),
             onTeamMemberClick = ::onTeamMemberClick,
             setIsDialogVisible = ::setIsDialogVisible,
-            wasItemChanged = ::wasItemChanged,
-            isItemSelected = ::isItemSelected
+            isItemSelected = ::isItemSelected,
+            shouldGoBackWithCurrentValue = ::onGoingBack
         )
     )
     val state = _state.asStateFlow()
 
+    private val _onBackAction = Channel<Unit>()
+    val onBackAction = _onBackAction.receiveAsFlow()
+
     init {
         getUsers()
+    }
+
+    private fun onGoingBack(shouldReturnCurrentValue: Boolean) {
+        viewModelScope.launch {
+            setIsDialogVisible(false)
+            notifyChange(shouldReturnCurrentValue)
+            _onBackAction.send(Unit)
+        }
     }
 
     private fun retrieveSelectedItems(): PersistentList<Long> = when (editShared.currentType) {
@@ -52,33 +65,23 @@ class EditAssigneeViewModel @Inject constructor(
         EditType.Watchers -> {
             editShared.currentWatchers.toPersistentList()
         }
-
-        else -> {
-            persistentListOf()
-        }
     }
 
     private fun isItemSelected(id: Long): Boolean = id in state.value.selectedItems
 
-    private fun wasItemChanged(shouldReturnCurrentValue: Boolean): Boolean {
+    private fun notifyChange(shouldReturnCurrentValue: Boolean) {
         val wasStateChanged = _state.value.selectedItems != _state.value.originalSelectedItems
         if (shouldReturnCurrentValue && wasStateChanged) {
             when (editShared.currentType) {
                 EditType.Assignee -> {
-                    editShared.setCurrentAssignee(_state.value.selectedItems.firstOrNull())
+                    editShared.updateAssignee(_state.value.selectedItems.firstOrNull())
                 }
 
                 EditType.Watchers -> {
-                    editShared.setCurrentWatchers(_state.value.selectedItems)
-                }
-
-                else -> {
+                    editShared.updateWatchers(_state.value.selectedItems)
                 }
             }
-            return true
         }
-        editShared.clear()
-        return false
     }
 
     private fun setIsDialogVisible(newValue: Boolean) {
@@ -115,9 +118,6 @@ class EditAssigneeViewModel @Inject constructor(
                     )
                 }
             }
-
-            else -> {
-            }
         }
     }
 
@@ -146,9 +146,6 @@ class EditAssigneeViewModel @Inject constructor(
                         }.onFailure { error ->
                             Timber.e(error)
                         }
-                }
-
-                else -> {
                 }
             }
         }

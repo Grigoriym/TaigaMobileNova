@@ -30,7 +30,7 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
 import com.grappim.taigamobile.uikit.theme.taigaOrange
 import com.grappim.taigamobile.uikit.theme.taigaRed
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
@@ -141,7 +141,7 @@ fun WorkItemDueDateWidget(
 }
 
 @Composable
-@PreviewMulti
+@PreviewDarkLight
 private fun WorkItemDueDateWidgetPreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
@@ -156,7 +156,7 @@ private fun WorkItemDueDateWidgetPreview() {
 }
 
 @Composable
-@PreviewMulti
+@PreviewDarkLight
 private fun WorkItemDueDateWidgetPastDuePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
@@ -171,7 +171,7 @@ private fun WorkItemDueDateWidgetPastDuePreview() {
 }
 
 @Composable
-@PreviewMulti
+@PreviewDarkLight
 private fun WorkItemDueDateWidgetNoLongerApplicablePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
@@ -186,7 +186,7 @@ private fun WorkItemDueDateWidgetNoLongerApplicablePreview() {
 }
 
 @Composable
-@PreviewMulti
+@PreviewDarkLight
 private fun WorkItemDueDateWidgetNoDueDatePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
@@ -201,7 +201,7 @@ private fun WorkItemDueDateWidgetNoDueDatePreview() {
 }
 
 @Composable
-@PreviewMulti
+@PreviewDarkLight
 private fun WorkItemDueDateWidgetLoadingPreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(

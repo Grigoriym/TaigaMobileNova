@@ -18,7 +18,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
-import com.grappim.taigamobile.feature.workitem.ui.screens.EditType
+import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgePriority
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeSeverity
@@ -35,6 +35,8 @@ import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.toHex
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
@@ -47,6 +49,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -93,8 +97,6 @@ class IssueDetailsViewModel @Inject constructor(
             onWorkingItemBadgeClick = ::onWorkItemBadgeClick,
             onBadgeSheetDismiss = ::onBadgeSheetDismiss,
             onBadgeSheetItemClick = ::onBadgeSheetItemClick,
-            onNewDescriptionUpdate = ::onNewDescriptionUpdate,
-            onTagsUpdate = ::onNewTagsUpdate,
             onGoingToEditTags = ::onGoingToEditTags,
             onTagRemove = ::onTagRemove,
             setDueDate = ::setDueDate,
@@ -110,7 +112,6 @@ class IssueDetailsViewModel @Inject constructor(
             onAssignToMe = ::onAssignToMe,
             onUnassign = ::onUnassign,
             onGoingToEditAssignee = ::onGoingToEditAssignee,
-            onUsersUpdate = ::onUsersUpdate,
             onGoingToEditWatchers = ::onGoingToEditWatchers,
             onRemoveMeFromWatchersClick = ::onRemoveMeFromWatchersClick,
             onAddMeToWatchersClick = ::onAddMeToWatchersClick,
@@ -126,6 +127,18 @@ class IssueDetailsViewModel @Inject constructor(
     val deleteTrigger = _deleteTrigger.asSharedFlow()
 
     init {
+        workItemEditShared.teamMemberUpdateState
+            .onEach(::handleTeamMemberUpdate)
+            .launchIn(viewModelScope)
+
+        workItemEditShared.tagsState
+            .onEach(::onNewTagsUpdate)
+            .launchIn(viewModelScope)
+
+        workItemEditShared.descriptionState
+            .onEach(::onNewDescriptionUpdate)
+            .launchIn(viewModelScope)
+
         viewModelScope.launch {
             _state.update {
                 it.copy(isLoading = true)
@@ -358,25 +371,22 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onUsersUpdate() {
-        val type = workItemEditShared.currentType ?: return
-        when (type) {
-            EditType.Assignee -> {
-                onAssigneeUpdated()
+    private fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
+        when (updateState) {
+            TeamMemberUpdate.Clear -> {}
+            is TeamMemberUpdate.Assignee -> {
+                onAssigneeUpdated(updateState.id)
             }
 
-            EditType.Watchers -> {
-                onWatchersUpdated()
+            is TeamMemberUpdate.Watchers -> {
+                onWatchersUpdated(updateState.ids)
             }
         }
     }
 
-    private fun onAssigneeUpdated() {
+    private fun onAssigneeUpdated(newAssignee: Long?) {
         val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            val newAssignee = workItemEditShared.currentAssignee
-            workItemEditShared.clear()
-
             _state.update {
                 it.copy(error = NativeText.Empty, isAssigneesLoading = true)
             }
@@ -410,12 +420,9 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onWatchersUpdated() {
+    private fun onWatchersUpdated(newWatchers: ImmutableList<Long>) {
         val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            val newWatchers = workItemEditShared.currentWatchers
-            workItemEditShared.clear()
-
             _state.update {
                 it.copy(error = NativeText.Empty, isWatchersLoading = true)
             }
@@ -782,10 +789,8 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onNewTagsUpdate() {
+    private fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
         viewModelScope.launch {
-            val newTagsToUse = workItemEditShared.currentTags.toPersistentList()
-            workItemEditShared.clear()
             val preparedTags = newTagsToUse.map { tag ->
                 listOf(tag.name, tag.color.toHex())
             }

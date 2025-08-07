@@ -47,7 +47,7 @@ fun WorkItemTagsWidget(
                 )
             } else {
                 AddButton(
-                    text = stringResource(RString.add_tag),
+                    text = stringResource(RString.edit_tags),
                     onClick = {
                         goToEditTags()
                     }

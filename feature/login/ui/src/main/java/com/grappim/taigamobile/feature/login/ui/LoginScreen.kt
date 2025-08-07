@@ -49,7 +49,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -262,7 +262,7 @@ fun LoginTextField(
     )
 }
 
-@[Composable PreviewMulti]
+@[Composable PreviewDarkLight]
 private fun LoginScreenPreview() {
     TaigaMobileTheme {
         LoginScreenContent(
@@ -288,7 +288,7 @@ private fun LoginScreenPreview() {
     }
 }
 
-@[Composable PreviewMulti]
+@[Composable PreviewDarkLight]
 private fun LoginScreenErrorsPreview() {
     TaigaMobileTheme {
         LoginScreenContent(
@@ -314,7 +314,7 @@ private fun LoginScreenErrorsPreview() {
     }
 }
 
-@[Composable PreviewMulti]
+@[Composable PreviewDarkLight]
 private fun LoginScreenAlertPreview() {
     TaigaMobileTheme {
         LoginScreenContent(

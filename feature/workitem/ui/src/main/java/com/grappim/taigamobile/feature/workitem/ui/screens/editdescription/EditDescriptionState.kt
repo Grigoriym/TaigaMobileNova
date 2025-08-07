@@ -6,5 +6,5 @@ data class EditDescriptionState(
     val onDescriptionChange: (String) -> Unit,
     val isDialogVisible: Boolean = false,
     val setIsDialogVisible: (Boolean) -> Unit,
-    val retrieveDescriptionToChange: (Boolean) -> String?
+    val shouldGoBackWithCurrentValue: (shouldReturnCurrentValue: Boolean) -> Unit
 )

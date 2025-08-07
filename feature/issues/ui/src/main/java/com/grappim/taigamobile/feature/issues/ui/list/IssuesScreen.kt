@@ -1,38 +1,42 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.grappim.taigamobile.feature.issues.ui.list
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.feature.issues.ui.list.IssuesState
-import com.grappim.taigamobile.feature.issues.ui.list.IssuesViewModel
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.filter.TasksFiltersWithLazyList
+import com.grappim.taigamobile.uikit.widgets.filter.TaskFilters
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
+import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 
-@Suppress("LambdaParameterInRestartableEffect")
 @Composable
 fun IssuesScreen(
+    showSnackbar: (message: NativeText) -> Unit,
     showMessage: (message: Int) -> Unit,
     goToCreateTask: (CommonTaskType) -> Unit,
     goToTask: (Long, CommonTaskType, Int) -> Unit,
@@ -64,20 +68,19 @@ fun IssuesScreen(
 
     LaunchedEffect(updateData) {
         if (updateData) {
-            state.onUpdateData()
+            issues.refresh()
         }
     }
 
     LaunchedEffect(state.isFiltersError) {
         if (state.isFiltersError) {
-            showMessage(RString.common_error_message)
+            showSnackbar(NativeText.Resource(RString.common_error_message))
         }
     }
 
     IssuesScreenContent(
         state = state,
         issues = issues,
-        selectFilters = viewModel::selectFilters,
         navigateToTask = goToTask
     )
 }
@@ -86,37 +89,44 @@ fun IssuesScreen(
 fun IssuesScreenContent(
     state: IssuesState,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
-    modifier: Modifier = Modifier,
-    issues: LazyPagingItems<CommonTask>? = null,
-    selectFilters: (FiltersDataDTO) -> Unit = {}
+    issues: LazyPagingItems<CommonTask>,
+    modifier: Modifier = Modifier
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.Start
     ) {
-        TasksFiltersWithLazyList(
-            filters = state.filters,
-            activeFilters = state.activeFilters,
-            selectFilters = selectFilters
+        TaskFilters(
+            selected = state.activeFilters,
+            onSelect = state.selectFilters,
+            data = state.filters
+        )
+        PullToRefreshBox(
+            modifier = Modifier.fillMaxSize(),
+            onRefresh = {
+                issues.refresh()
+            },
+            isRefreshing = issues.loadState.refresh is LoadState.Loading
         ) {
-            simpleTasksListWithTitle(
-                commonTasksLazy = issues,
-                keysHash = state.activeFilters.hashCode(),
-                navigateToTask = navigateToTask,
-                horizontalPadding = mainHorizontalScreenPadding,
-                bottomPadding = commonVerticalPadding
-            )
+            LazyColumn {
+                simpleTasksListWithTitle(
+                    commonTasksLazy = issues,
+                    keysHash = state.activeFilters.hashCode(),
+                    navigateToTask = navigateToTask,
+                    horizontalPadding = mainHorizontalScreenPadding,
+                    bottomPadding = commonVerticalPadding
+                )
+            }
         }
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@PreviewDarkLight
 @Composable
 private fun IssuesScreenPreview() = TaigaMobileTheme {
     IssuesScreenContent(
         navigateToTask = { _, _, _ -> },
-        state = IssuesState(
-            onUpdateData = {}
-        )
+        state = IssuesState(),
+        issues = getPagingPreviewItems()
     )
 }

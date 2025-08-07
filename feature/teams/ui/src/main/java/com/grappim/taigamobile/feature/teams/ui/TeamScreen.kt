@@ -35,7 +35,7 @@ import com.grappim.taigamobile.core.domain.TeamMemberDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -171,7 +171,7 @@ private fun TeamMemberItem(teamMemberDTO: TeamMemberDTO, onUserItemClick: () -> 
     }
 }
 
-@[Composable PreviewMulti]
+@[Composable PreviewDarkLight]
 private fun TeamScreenPreview() = TaigaMobileTheme {
     TeamScreenContent(
         state = TeamState(onRefresh = {})

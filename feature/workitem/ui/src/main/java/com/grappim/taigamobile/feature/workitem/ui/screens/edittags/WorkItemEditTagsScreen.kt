@@ -34,11 +34,12 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun WorkItemEditTagsScreen(
-    goBack: (wasChanged: Boolean) -> Unit,
+    goBack: () -> Unit,
     viewModel: WorkItemEditTagsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -57,31 +58,33 @@ fun WorkItemEditTagsScreen(
                         text = NativeText.Resource(RString.save),
                         contentDescription = "",
                         onClick = {
-                            state.setIsDialogVisible(false)
-                            goBack(state.wereTagsChanged(true))
+                            state.shouldGoBackWithCurrentValue(true)
                         }
                     )
                 )
             )
         )
     }
+
+    ConfirmActionDialog(
+        isVisible = state.isDialogVisible,
+        description = stringResource(RString.are_you_sure_discarding_tags_changes),
+        onConfirm = {
+            state.shouldGoBackWithCurrentValue(false)
+        },
+        onDismiss = {
+            state.setIsDialogVisible(false)
+        },
+        confirmButtonText = NativeText.Resource(RString.discard),
+        dismissButtonText = NativeText.Resource(RString.keep_editing)
+    )
+
     BackHandler {
         state.setIsDialogVisible(!state.isDialogVisible)
     }
 
-    if (state.isDialogVisible) {
-        ConfirmActionDialog(
-            description = stringResource(RString.are_you_sure_discarding_tags_changes),
-            onConfirm = {
-                state.setIsDialogVisible(false)
-                goBack(state.wereTagsChanged(false))
-            },
-            onDismiss = {
-                state.setIsDialogVisible(false)
-            },
-            confirmButtonText = NativeText.Resource(RString.discard),
-            dismissButtonText = NativeText.Resource(RString.keep_editing)
-        )
+    ObserveAsEvents(viewModel.onBackAction, isImmediate = false) {
+        goBack()
     }
 
     EditTagsContent(state)

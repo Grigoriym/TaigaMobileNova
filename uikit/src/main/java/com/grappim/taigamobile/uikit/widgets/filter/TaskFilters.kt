@@ -44,8 +44,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.domain.Filter
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.core.domain.RolesFilter
+import com.grappim.taigamobile.core.domain.StatusesFilter
+import com.grappim.taigamobile.core.domain.TagsFilter
+import com.grappim.taigamobile.core.domain.UsersFilter
 import com.grappim.taigamobile.core.domain.hasData
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import com.grappim.taigamobile.uikit.widgets.Chip
@@ -268,59 +274,59 @@ internal fun FilterChip(
     }
 }
 
-// @Preview(showBackground = true)
-// @Composable
-// private fun TaskFiltersPreview() = TaigaMobileTheme {
-//    var selected by remember { mutableStateOf(FiltersDataDTO()) }
-//
-//    Column {
-//        Text("test")
-//
-//        TaskFilters(
-//            selected = selected,
-//            onSelect = { selected = it },
-//            data = FiltersDataDTO(
-//                assignees = listOf(
-//                    UsersFilter(null, "", 2)
-//                ) + List(10) { UsersFilter(it.toLong(), "Human $it", it % 3) },
-//                roles = listOf(
-//                    RolesFilter(0, "UX", 1),
-//                    RolesFilter(1, "Developer", 4),
-//                    RolesFilter(2, "Stakeholder", 0)
-//                ),
-//                tags = List(10) {
-//                    listOf(
-//                        TagsFilter("#7E57C2", "tag ${it * 3}", 3),
-//                        TagsFilter("#F57C00", "tag ${it * 3 + 1}", 4),
-//                        TagsFilter("#C62828", "tag ${it * 3 + 2}", 0)
-//                    )
-//                }.flatten(),
-//                statuses = listOf(
-//                    StatusesFilter(0, "#B0BEC5", "Backlog", 2),
-//                    StatusesFilter(1, "#1E88E5", "In progress", 1),
-//                    StatusesFilter(2, "#43A047", "Done", 3)
-//                ),
-//                priorities = listOf(
-//                    StatusesFilter(0, "#29B6F6", "Low", 2),
-//                    StatusesFilter(1, "#43A047", "Normal", 1),
-//                    StatusesFilter(2, "#FBC02D", "High", 2)
-//                ),
-//                severities = listOf(
-//                    StatusesFilter(0, "#29B6F6", "Minor", 2),
-//                    StatusesFilter(1, "#43A047", "Normal", 1),
-//                    StatusesFilter(2, "#FBC02D", "Major", 2),
-//                    StatusesFilter(0, "#29B6F6", "Minor", 2),
-//                    StatusesFilter(1, "#43A047", "Normal", 1),
-//                    StatusesFilter(2, "#FBC02D", "Major", 2)
-//                ),
-//                types = listOf(
-//                    StatusesFilter(0, "#F44336", "Bug", 2),
-//                    StatusesFilter(1, "#C8E6C9", "Question", 1),
-//                    StatusesFilter(2, "#C8E6C9", "Enhancement", 2)
-//                )
-//            )
-//        )
-//
-//        Text("Text")
-//    }
-// }
+@PreviewDarkLight
+@Composable
+private fun TaskFiltersPreview() = TaigaMobileTheme {
+    var selected by remember { mutableStateOf(FiltersDataDTO()) }
+
+    Column {
+        Text("test")
+
+        TaskFilters(
+            selected = selected,
+            onSelect = { selected = it },
+            data = FiltersDataDTO(
+                assignees = listOf(
+                    UsersFilter(null, "", 2)
+                ) + List(10) { UsersFilter(it.toLong(), "Human $it", it % 3L) },
+                roles = listOf(
+                    RolesFilter(0, "UX", 1),
+                    RolesFilter(1, "Developer", 4),
+                    RolesFilter(2, "Stakeholder", 0)
+                ),
+                tags = List(10) {
+                    listOf(
+                        TagsFilter("#7E57C2", "tag ${it * 3}", 3),
+                        TagsFilter("#F57C00", "tag ${it * 3 + 1}", 4),
+                        TagsFilter("#C62828", "tag ${it * 3 + 2}", 0)
+                    )
+                }.flatten(),
+                statuses = listOf(
+                    StatusesFilter(0, "#B0BEC5", "Backlog", 2),
+                    StatusesFilter(1, "#1E88E5", "In progress", 1),
+                    StatusesFilter(2, "#43A047", "Done", 3)
+                ),
+                priorities = listOf(
+                    StatusesFilter(0, "#29B6F6", "Low", 2),
+                    StatusesFilter(1, "#43A047", "Normal", 1),
+                    StatusesFilter(2, "#FBC02D", "High", 2)
+                ),
+                severities = listOf(
+                    StatusesFilter(0, "#29B6F6", "Minor", 2),
+                    StatusesFilter(1, "#43A047", "Normal", 1),
+                    StatusesFilter(2, "#FBC02D", "Major", 2),
+                    StatusesFilter(0, "#29B6F6", "Minor", 2),
+                    StatusesFilter(1, "#43A047", "Normal", 1),
+                    StatusesFilter(2, "#FBC02D", "Major", 2)
+                ),
+                types = listOf(
+                    StatusesFilter(0, "#F44336", "Bug", 2),
+                    StatusesFilter(1, "#C8E6C9", "Question", 1),
+                    StatusesFilter(2, "#C8E6C9", "Enhancement", 2)
+                )
+            )
+        )
+
+        Text("Text")
+    }
+}

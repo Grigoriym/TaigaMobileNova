@@ -10,8 +10,10 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -29,23 +31,32 @@ class WorkItemEditTagsViewModel @Inject constructor(
             currentSelectedTags = workItemEditShared.currentTags.toPersistentList(),
             setIsDialogVisible = ::setIsDialogVisible,
             onTagClick = ::onTagClick,
-            wereTagsChanged = ::wereTagsChanged
+            shouldGoBackWithCurrentValue = ::onGoingBack
         )
     )
     val state = _state.asStateFlow()
+
+    private val _onBackAction = Channel<Unit>()
+    val onBackAction = _onBackAction.receiveAsFlow()
 
     init {
         getFiltersData()
     }
 
-    private fun wereTagsChanged(shouldReturnCurrentValue: Boolean): Boolean {
+    private fun onGoingBack(shouldReturnCurrentValue: Boolean) {
+        viewModelScope.launch {
+            setIsDialogVisible(false)
+            notifyChange(shouldReturnCurrentValue)
+            _onBackAction.send(Unit)
+        }
+    }
+
+    private fun notifyChange(shouldReturnCurrentValue: Boolean) {
         val wereTagsChanged =
             _state.value.currentSelectedTags != _state.value.originalSelectedTags
         if (shouldReturnCurrentValue && wereTagsChanged) {
-            workItemEditShared.setTags(_state.value.currentSelectedTags)
-            return true
+            workItemEditShared.updateTags(_state.value.currentSelectedTags)
         }
-        return false
     }
 
     private fun setIsDialogVisible(newValue: Boolean) {

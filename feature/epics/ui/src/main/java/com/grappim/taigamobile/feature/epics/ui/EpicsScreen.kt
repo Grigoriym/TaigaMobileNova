@@ -19,7 +19,7 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.filter.TasksFiltersWithLazyList
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
@@ -30,7 +30,6 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 
-@Suppress("LambdaParameterInRestartableEffect")
 @Composable
 fun EpicsScreen(
     showMessage: (message: Int) -> Unit,
@@ -105,7 +104,7 @@ fun EpicsScreenContent(
     }
 }
 
-@PreviewMulti
+@PreviewDarkLight
 @Composable
 private fun EpicsScreenPreview() {
     TaigaMobileTheme {

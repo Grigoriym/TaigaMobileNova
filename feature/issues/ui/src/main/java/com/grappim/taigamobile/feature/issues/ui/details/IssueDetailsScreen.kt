@@ -2,6 +2,7 @@
 
 package com.grappim.taigamobile.feature.issues.ui.details
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -53,11 +54,8 @@ fun IssueDetailsScreen(
     showSnackbar: (message: NativeText) -> Unit,
     goToProfile: (userId: Long) -> Unit,
     goToEditDescription: (String) -> Unit,
-    editedDescriptionValue: String?,
     goToEditTags: () -> Unit,
-    wereTagsChanged: Boolean,
-    wereUsersChanged: Boolean,
-    goBack: (updateData: Boolean) -> Unit,
+    goBackUpdatingData: (updateData: Boolean) -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
     viewModel: IssueDetailsViewModel = hiltViewModel()
@@ -74,6 +72,9 @@ fun IssueDetailsScreen(
             TopBarConfig(
                 title = state.toolbarTitle,
                 showBackButton = true,
+                overrideBackHandlerAction = {
+                    goBackUpdatingData(true)
+                },
                 actions = listOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_options,
@@ -87,25 +88,8 @@ fun IssueDetailsScreen(
         )
     }
 
-    /**
-     * That means we updated the description and we need to update the value here
-     */
-    LaunchedEffect(editedDescriptionValue) {
-        if (editedDescriptionValue != null) {
-            state.onNewDescriptionUpdate(editedDescriptionValue)
-        }
-    }
-
-    LaunchedEffect(wereTagsChanged) {
-        if (wereTagsChanged) {
-            state.onTagsUpdate()
-        }
-    }
-
-    LaunchedEffect(wereUsersChanged) {
-        if (wereUsersChanged) {
-            state.onUsersUpdate()
-        }
+    BackHandler {
+        goBackUpdatingData(true)
     }
 
     LaunchedEffect(state.error) {
@@ -122,7 +106,7 @@ fun IssueDetailsScreen(
 
     LaunchedEffect(deleteTrigger) {
         if (deleteTrigger) {
-            goBack(true)
+            goBackUpdatingData(true)
         }
     }
 
