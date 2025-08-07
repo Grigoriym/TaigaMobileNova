@@ -12,6 +12,7 @@ import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.issues.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
@@ -36,8 +37,8 @@ import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.toHex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
@@ -68,7 +69,8 @@ class IssueDetailsViewModel @Inject constructor(
     private val workItemEditShared: WorkItemEditShared,
     private val dateTimeUtils: DateTimeUtils,
     private val fileUriManager: FileUriManager,
-    private val session: Session
+    private val session: Session,
+    private val patchDataGenerator: PatchDataGenerator
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -215,9 +217,8 @@ class IssueDetailsViewModel @Inject constructor(
 
     private fun removeAssignee() {
         viewModelScope.launch {
-            val payload = mapOf("assigned_to" to null).toPersistentMap()
             patchData(
-                payload = payload,
+                payload = patchDataGenerator.getAssignedToPatchPayload(null),
                 doOnPreExecute = {
                     _state.update {
                         it.copy(
@@ -261,10 +262,8 @@ class IssueDetailsViewModel @Inject constructor(
             val newWatchers = _state.value.watchers.map { it.actualId }
                 .filterNot { it == _state.value.watcherIdToRemove }
 
-            val payload = mapOf("watchers" to newWatchers).toPersistentMap()
-
             patchData(
-                payload = payload,
+                payload = patchDataGenerator.getWatchersPatchPayload(newWatchers),
                 doOnPreExecute = {
                     _state.update {
                         it.copy(
@@ -613,12 +612,8 @@ class IssueDetailsViewModel @Inject constructor(
 
     private fun onBlockToggle(isBlocked: Boolean, blockNote: String?) {
         viewModelScope.launch {
-            val patchableData = mapOf(
-                "is_blocked" to isBlocked,
-                "blocked_note" to blockNote.orEmpty()
-            ).toPersistentMap()
             patchData(
-                payload = patchableData,
+                payload = patchDataGenerator.getBlockedPatchPayload(isBlocked, blockNote),
                 doOnPreExecute = {
                     _state.update {
                         it.copy(
@@ -667,10 +662,8 @@ class IssueDetailsViewModel @Inject constructor(
                 null
             }
 
-            val patchableData = mapOf("due_date" to jsonLocalDate).toPersistentMap()
-
             patchData(
-                payload = patchableData,
+                payload = patchDataGenerator.getDueDatePatchPayload(jsonLocalDate),
                 doOnPreExecute = {
                     _state.update {
                         it.copy(
@@ -725,10 +718,8 @@ class IssueDetailsViewModel @Inject constructor(
                 listOf(tag.name, tag.color.toHex())
             }
 
-            val patchableData = mapOf("tags" to preparedTags).toPersistentMap()
-
             patchData(
-                payload = patchableData,
+                payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
                 doOnPreExecute = {
                     _state.update {
                         it.copy(
@@ -758,7 +749,7 @@ class IssueDetailsViewModel @Inject constructor(
     }
 
     private suspend fun patchData(
-        payload: PersistentMap<String, Any?>,
+        payload: ImmutableMap<String, Any?>,
         doOnPreExecute: () -> Unit,
         doOnSuccess: (PatchedData, IssueTask) -> Unit,
         doOnError: (Throwable) -> Unit
@@ -795,10 +786,8 @@ class IssueDetailsViewModel @Inject constructor(
                 listOf(tag.name, tag.color.toHex())
             }
 
-            val patchableData = mapOf("tags" to preparedTags).toPersistentMap()
-
             patchData(
-                payload = patchableData,
+                payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
                 doOnPreExecute = {
                     _state.update {
                         it.copy(
@@ -829,10 +818,8 @@ class IssueDetailsViewModel @Inject constructor(
 
     private fun onNewDescriptionUpdate(newDescription: String) {
         viewModelScope.launch {
-            val patchableData = mapOf("description" to newDescription).toPersistentMap()
-
             patchData(
-                payload = patchableData,
+                payload = patchDataGenerator.getDescriptionPatchPayload(newDescription),
                 doOnPreExecute = {
                     _state.update {
                         it.copy(error = NativeText.Empty, isLoading = true)
@@ -1103,12 +1090,10 @@ class IssueDetailsViewModel @Inject constructor(
                 }
             )
 
-            val payload = mapOf("attributes_values" to patchedData).toPersistentMap()
-
             issueDetailsDataUseCase.patchCustomAttributes(
                 issueId = currentIssue.id,
                 version = currentState.customFieldsVersion,
-                payload = payload
+                payload = patchDataGenerator.getAttributesPatchPayload(patchedData)
             ).onSuccess { result ->
                 onCustomFieldEditToggle(item)
                 onCustomFieldSaved(item.getSavedItem())

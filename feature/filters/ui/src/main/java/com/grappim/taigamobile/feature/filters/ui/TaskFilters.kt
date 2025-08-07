@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.uikit.widgets.filter
+package com.grappim.taigamobile.feature.filters.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility

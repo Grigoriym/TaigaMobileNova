@@ -74,6 +74,7 @@ dependencies {
 
     implementation(projects.feature.filters.data)
     implementation(projects.feature.filters.domain)
+    implementation(projects.feature.filters.ui)
 
     implementation(projects.feature.swimlanes.data)
     implementation(projects.feature.swimlanes.domain)

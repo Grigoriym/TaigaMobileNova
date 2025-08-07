@@ -20,7 +20,8 @@ import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
-import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -101,9 +102,9 @@ class IssuesRepositoryImpl @Inject constructor(
     override suspend fun patchData(
         version: Long,
         issueId: Long,
-        payload: PersistentMap<String, Any?>
+        payload: ImmutableMap<String, Any?>
     ): PatchedData {
-        val editedMap = payload.put("version", version)
+        val editedMap = payload.toPersistentMap().put("version", version)
         val result = issuesApi.patchIssue(issueId = issueId, payload = editedMap)
         return patchedDataMapper.toDomain(result)
     }
@@ -111,9 +112,9 @@ class IssuesRepositoryImpl @Inject constructor(
     override suspend fun patchCustomAttributes(
         version: Long,
         issueId: Long,
-        payload: PersistentMap<String, Any?>
+        payload: ImmutableMap<String, Any?>
     ): PatchedCustomAttributes {
-        val editedMap = payload.put("version", version)
+        val editedMap = payload.toPersistentMap().put("version", version)
         val result = issuesApi.patchCustomAttributesValues(taskId = issueId, payload = editedMap)
         return patchedDataMapper.toDomainCustomAttrs(result)
     }

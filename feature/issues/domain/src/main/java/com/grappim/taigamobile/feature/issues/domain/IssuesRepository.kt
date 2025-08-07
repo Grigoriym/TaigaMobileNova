@@ -9,7 +9,7 @@ import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
-import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
 
 interface IssuesRepository {
@@ -26,13 +26,13 @@ interface IssuesRepository {
     suspend fun patchData(
         version: Long,
         issueId: Long,
-        payload: PersistentMap<String, Any?>
+        payload: ImmutableMap<String, Any?>
     ): PatchedData
 
     suspend fun patchCustomAttributes(
         version: Long,
         issueId: Long,
-        payload: PersistentMap<String, Any?>
+        payload: ImmutableMap<String, Any?>
     ): PatchedCustomAttributes
 
     fun getIssuesPaging(filtersDataDTO: FiltersDataDTO): Flow<PagingData<CommonTask>>

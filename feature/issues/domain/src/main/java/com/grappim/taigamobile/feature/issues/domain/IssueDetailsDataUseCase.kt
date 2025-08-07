@@ -11,7 +11,7 @@ import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
@@ -120,7 +120,7 @@ class IssueDetailsDataUseCase @Inject constructor(
     suspend fun patchCustomAttributes(
         version: Long,
         issueId: Long,
-        payload: PersistentMap<String, Any?>
+        payload: ImmutableMap<String, Any?>
     ): Result<PatchedCustomAttributes> = resultOf {
         issuesRepository.patchCustomAttributes(
             version = version,
@@ -136,7 +136,7 @@ class IssueDetailsDataUseCase @Inject constructor(
     suspend fun patchData(
         version: Long,
         issueId: Long,
-        payload: PersistentMap<String, Any?>
+        payload: ImmutableMap<String, Any?>
     ): Result<PatchedData> = resultOf {
         issuesRepository.patchData(version = version, issueId = issueId, payload = payload)
     }
