@@ -1,0 +1,48 @@
+codecov:
+    require_ci_to_pass: yes
+    notify:
+        wait_for_ci: yes
+
+coverage:
+    precision: 2
+    round: down
+    range: "70...100"
+    status:
+        project:
+            default:
+                target: auto
+                threshold: 1%
+                base: auto
+        patch:
+            default:
+                target: 80%
+                threshold: 5%
+
+github_checks:
+    annotations: true
+
+comment:
+    layout: "reach,diff,flags,tree"
+    behavior: default
+    require_changes: false
+    require_base: no
+    require_head: yes
+
+# Branch configuration
+branches:
+    - master
+    - dev
+
+# Ignore paths
+ignore:
+    - "**/*.md"
+    - "**/*.txt"
+    - "**/build/**"
+    - "**/*Test*"
+    - "**/*test*"
+    - "**/test/**"
+    - "**/tests/**"
+    - "**/*Mock*"
+    - "**/*Fake*"
+    - "**/generated/**"
+    - "**/*Generated*"

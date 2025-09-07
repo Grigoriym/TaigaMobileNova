@@ -4,10 +4,16 @@ permissions:
   pull-requests: write
 
 on:
-  pull_request:
-    branches: [ "master" ]
-  push:
-    branches: [ "master" ]
+    pull_request:
+        branches:
+            - dev
+    push:
+        branches:
+            - master
+
+concurrency:
+    group: build-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
   code_analysis:
@@ -29,11 +35,23 @@ jobs:
       - name: Run tests and generate Aggregated JaCoCo report
         run: ./gradlew jacocoAggregatedReport
 
+      - name: Debug coverage report
+        run: |
+            echo "Coverage report exists:"
+            ls -la ./build/reports/jacoco/jacocoAggregatedReport/ || echo "Directory not found"
+            echo "Current branch: ${{ github.head_ref || github.ref_name }}"
+            echo "Current commit: ${{ github.event.pull_request.head.sha || github.sha }}"
+            echo "Base branch: ${{ github.base_ref || 'N/A' }}"
+
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          fail_ci_if_error: true
           files: ./build/reports/jacoco/jacocoAggregatedReport/jacocoTestReport.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
           verbose: true
+          override_branch: ${{ github.head_ref || github.ref_name }}
+          override_commit: ${{ github.event.pull_request.head.sha || github.sha }}

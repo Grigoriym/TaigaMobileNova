@@ -4,8 +4,13 @@ permissions:
   pull-requests: write
 
 on:
-  pull_request:
-    branches: [ "master" ]
+    pull_request:
+        branches:
+            - dev
+
+concurrency:
+    group: build-${{ github.event.pull_request.number || github.ref }}
+    cancel-in-progress: true
 
 jobs:
   build:
