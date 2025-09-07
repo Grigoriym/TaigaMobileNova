@@ -8,7 +8,7 @@ import java.time.LocalDateTime
 /**
  * Tasks related entities
  */
-data class Status(val id: Long, val name: String, val color: String, val type: StatusType)
+data class StatusOld(val id: Long, val name: String, val color: String, val type: StatusType)
 
 enum class StatusType {
     Status,
@@ -29,9 +29,9 @@ data class CommonTask(
     val createdDate: LocalDateTime,
     val title: String,
     val ref: Int,
-    val status: Status,
-    val assignee: User? = null,
-    val projectInfo: Project,
+    val statusOld: StatusOld,
+    val assignee: UserDTO? = null,
+    val projectDTOInfo: ProjectDTO,
     val taskType: CommonTaskType,
     val isClosed: Boolean,
     val tags: List<Tag> = emptyList(),
@@ -41,7 +41,7 @@ data class CommonTask(
 )
 
 @JsonClass(generateAdapter = false)
-enum class DueDateStatus {
+enum class DueDateStatusDTO {
     @Json(name = "not_set")
     NotSet,
 
@@ -60,7 +60,7 @@ enum class DueDateStatus {
 
 data class CommonTaskExtended(
     val id: Long,
-    val status: Status,
+    val statusOld: StatusOld,
     val taskType: CommonTaskType,
     val createdDateTime: LocalDateTime,
     val sprint: Sprint?,
@@ -72,12 +72,12 @@ data class CommonTaskExtended(
     val isClosed: Boolean,
     val description: String,
     val projectSlug: String,
-    val version: Int,
+    val version: Long,
     val epicsShortInfo: List<EpicShortInfo> = emptyList(),
     val tags: List<Tag> = emptyList(),
-    val swimlane: Swimlane?,
+    val swimlaneDTO: SwimlaneDTO?,
     val dueDate: LocalDate?,
-    val dueDateStatus: DueDateStatus?,
+    val dueDateStatusDTO: DueDateStatusDTO?,
     val userStoryShortInfo: UserStoryShortInfo? = null,
     val url: String,
     val blockedNote: String? = null,
@@ -86,9 +86,9 @@ data class CommonTaskExtended(
     val color: String? = null,
 
     // for issue
-    val type: Status? = null,
-    val priority: Status? = null,
-    val severity: Status? = null
+    val type: StatusOld? = null,
+    val priority: StatusOld? = null,
+    val severity: StatusOld? = null
 )
 
 @JsonClass(generateAdapter = true)

@@ -3,7 +3,7 @@ package com.grappim.taigamobile.core.domain
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class FiltersData(
+data class FiltersDataDTO(
     val query: String = "",
     val assignees: List<UsersFilter> = emptyList(),
     val roles: List<RolesFilter> = emptyList(),
@@ -19,7 +19,7 @@ data class FiltersData(
     val severities: List<StatusesFilter> = emptyList(),
     val types: List<StatusesFilter> = emptyList()
 ) {
-    operator fun minus(other: FiltersData) = FiltersData(
+    operator fun minus(other: FiltersDataDTO) = FiltersDataDTO(
         assignees = assignees - other.assignees.toSet(),
         roles = roles - other.roles.toSet(),
         tags = tags - other.tags.toSet(),
@@ -33,7 +33,7 @@ data class FiltersData(
 
     // updates current filters data using other filters data
     // (helpful for updating already selected filters)
-    fun updateData(other: FiltersData): FiltersData {
+    fun updateData(other: FiltersDataDTO): FiltersDataDTO {
         fun List<UsersFilter>.updateUsers(other: List<UsersFilter>) = map { current ->
             other.find { new -> current.id == new.id }?.let {
                 current.copy(name = it.name, count = it.count)
@@ -46,7 +46,7 @@ data class FiltersData(
             } ?: current.copy(count = 0)
         }
 
-        return FiltersData(
+        return FiltersDataDTO(
             assignees = assignees.updateUsers(other.assignees),
             roles = roles.map { current ->
                 other.roles.find { new -> current.id == new.id }?.let {
@@ -89,7 +89,7 @@ fun List<Filter>.hasData() = any { it.count > 0 }
 sealed interface Filter {
     val id: Long?
     val name: String
-    val count: Int
+    val count: Long
     val color: String?
 }
 
@@ -98,17 +98,20 @@ data class StatusesFilter(
     override val id: Long,
     override val color: String,
     override val name: String,
-    override val count: Int
+    override val count: Long
 ) : Filter
 
 @JsonClass(generateAdapter = true)
-data class UsersFilter(override val id: Long?, override val name: String, override val count: Int) :
-    Filter {
+data class UsersFilter(
+    override val id: Long?,
+    override val name: String,
+    override val count: Long
+) : Filter {
     override val color: String? = null
 }
 
 @JsonClass(generateAdapter = true)
-data class RolesFilter(override val id: Long, override val name: String, override val count: Int) :
+data class RolesFilter(override val id: Long, override val name: String, override val count: Long) :
     Filter {
     override val color: String? = null
 }
@@ -117,14 +120,17 @@ data class RolesFilter(override val id: Long, override val name: String, overrid
 data class TagsFilter(
     override val name: String,
     override val color: String,
-    override val count: Int
+    override val count: Long
 ) : Filter {
     override val id: Long? = null
 }
 
 @JsonClass(generateAdapter = true)
-data class EpicsFilter(override val id: Long?, override val name: String, override val count: Int) :
-    Filter {
+data class EpicsFilter(
+    override val id: Long?,
+    override val name: String,
+    override val count: Long
+) : Filter {
     override val color: String? = null
 }
 

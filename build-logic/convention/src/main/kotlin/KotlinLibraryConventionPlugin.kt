@@ -16,6 +16,7 @@ class KotlinLibraryConventionPlugin : Plugin<Project> {
 
             dependencies {
                 "implementation"(libs.findLibrary("kotlinx.coroutines.core").get())
+                "implementation"(libs.findLibrary("kotlinx.collections").get())
             }
         }
     }

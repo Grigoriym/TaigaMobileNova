@@ -10,7 +10,7 @@ ij_kotlin_imports_layout=*,java.**,javax.**,kotlin.**,^
 ##Investigate all this stuff
 ktlint_compose_lambda-param-in-effect=disabled
 ktlint_compose_multiple-emitters-check=disabled
-compose_allowed_composition_locals = LocalTopBarConfig, LocalFilePicker
+compose_allowed_composition_locals = LocalTopBarConfig, LocalFilePicker, LocalFilePickerOld
 
 [**/*Screen.kt]
 ktlint_compose_modifier-missing-check=disabled
@@ -19,6 +19,9 @@ ktlint_compose_modifier-missing-check=disabled
 ktlint_standard_property-naming = disabled
 
 [**/ColorPicker.kt]
+ktlint_compose_modifier-missing-check=disabled
+
+[**/TaigaSpacers.kt]
 ktlint_compose_modifier-missing-check=disabled
 
 [**/Modifiers.kt]

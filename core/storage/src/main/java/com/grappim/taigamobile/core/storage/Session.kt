@@ -2,8 +2,8 @@ package com.grappim.taigamobile.core.storage
 
 import android.content.Context
 import androidx.core.content.edit
-import com.grappim.taigamobile.core.domain.FiltersData
-import com.grappim.taigamobile.core.domain.FiltersDataJsonAdapter
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.core.domain.FiltersDataDTOJsonAdapter
 import com.grappim.taigamobile.core.storage.utils.long
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -87,14 +87,14 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
 //        )
 
     // Filters
-    private val filtersJsonAdapter = FiltersDataJsonAdapter(moshi)
+    private val filtersJsonAdapter = FiltersDataDTOJsonAdapter(moshi)
     private fun getFiltersOrEmpty(key: String) =
         sharedPreferences.getString(key, null)?.takeIf { it.isNotBlank() }
-            ?.let { filtersJsonAdapter.fromJson(it) } ?: FiltersData()
+            ?.let { filtersJsonAdapter.fromJson(it) } ?: FiltersDataDTO()
 
     private val _scrumFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_SCRUM))
-    val scrumFilters: StateFlow<FiltersData> = _scrumFilters
-    fun changeScrumFilters(filters: FiltersData) {
+    val scrumFilters: StateFlow<FiltersDataDTO> = _scrumFilters
+    fun changeScrumFilters(filters: FiltersDataDTO) {
         sharedPreferences.edit {
             putString(FILTERS_SCRUM, filtersJsonAdapter.toJson(filters))
         }
@@ -102,8 +102,8 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
     }
 
     private val _epicsFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_EPICS))
-    val epicsFilters: StateFlow<FiltersData> = _epicsFilters
-    fun changeEpicsFilters(filters: FiltersData) {
+    val epicsFilters: StateFlow<FiltersDataDTO> = _epicsFilters
+    fun changeEpicsFilters(filters: FiltersDataDTO) {
         sharedPreferences.edit {
             putString(FILTERS_EPICS, filtersJsonAdapter.toJson(filters))
         }
@@ -111,8 +111,8 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
     }
 
     private val _issuesFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_ISSUES))
-    val issuesFilters: StateFlow<FiltersData> = _issuesFilters
-    fun changeIssuesFilters(filters: FiltersData) {
+    val issuesFilters: StateFlow<FiltersDataDTO> = _issuesFilters
+    fun changeIssuesFilters(filters: FiltersDataDTO) {
         sharedPreferences.edit {
             putString(FILTERS_ISSUES, filtersJsonAdapter.toJson(filters))
         }
@@ -120,9 +120,9 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
     }
 
     private fun resetFilters() {
-        changeScrumFilters(FiltersData())
-        changeEpicsFilters(FiltersData())
-        changeIssuesFilters(FiltersData())
+        changeScrumFilters(FiltersDataDTO())
+        changeEpicsFilters(FiltersDataDTO())
+        changeIssuesFilters(FiltersDataDTO())
     }
 
     fun reset() {

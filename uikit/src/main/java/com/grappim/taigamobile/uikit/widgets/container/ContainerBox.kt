@@ -25,15 +25,17 @@ fun ContainerBox(
     verticalPadding: Dp = 8.dp,
     onClick: (() -> Unit)? = null,
     content: @Composable BoxScope.() -> Unit = {}
-) = Box(
-    modifier = modifier
-        .fillMaxWidth()
-        .clickable(
-            indication = ripple(),
-            onClick = onClick ?: {},
-            enabled = onClick != null,
-            interactionSource = remember { MutableInteractionSource() }
-        )
-        .padding(horizontalPadding, verticalPadding),
-    content = content
-)
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(
+                indication = ripple(),
+                onClick = onClick ?: {},
+                enabled = onClick != null,
+                interactionSource = remember { MutableInteractionSource() }
+            )
+            .padding(horizontalPadding, verticalPadding),
+        content = content
+    )
+}

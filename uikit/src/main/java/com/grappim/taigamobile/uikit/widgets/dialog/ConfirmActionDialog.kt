@@ -9,55 +9,71 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.asString
 
 /**
  * Standard confirmation alert with "yes" "no" buttons, title and text
  */
 @Composable
 fun ConfirmActionDialog(
-    title: String,
-    text: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    @DrawableRes iconId: Int? = null
+    title: String? = null,
+    description: String? = null,
+    confirmButtonText: NativeText = NativeText.Resource(RString.yes),
+    dismissButtonText: NativeText = NativeText.Resource(RString.no),
+    @DrawableRes iconId: Int? = null,
+    isVisible: Boolean = true
 ) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(
-                    text = stringResource(RString.yes),
-                    style = MaterialTheme.typography.titleMedium
-                )
+    if (isVisible) {
+        val context = LocalContext.current
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            confirmButton = {
+                TextButton(onClick = onConfirm) {
+                    Text(
+                        text = confirmButtonText.asString(context),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text(
+                        text = dismissButtonText.asString(context),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            },
+            title = if (title != null) {
+                {
+                    Text(
+                        text = title,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                }
+            } else {
+                null
+            },
+            text = if (description != null) {
+                { Text(description) }
+            } else {
+                null
+            },
+            icon = iconId?.let {
+                {
+                    Icon(
+                        modifier = Modifier.size(26.dp),
+                        painter = painterResource(it),
+                        contentDescription = null
+                    )
+                }
             }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(
-                    text = stringResource(RString.no),
-                    style = MaterialTheme.typography.titleMedium
-                )
-            }
-        },
-        title = {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge
-            )
-        },
-        text = { Text(text) },
-        icon = iconId?.let {
-            {
-                Icon(
-                    modifier = Modifier.size(26.dp),
-                    painter = painterResource(it),
-                    contentDescription = null
-                )
-            }
-        }
-    )
+        )
+    }
 }

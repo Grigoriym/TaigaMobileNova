@@ -32,7 +32,7 @@ import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
 import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -60,7 +60,7 @@ fun WikiListScreen(
             TopBarConfig(
                 title = NativeText.Resource(RString.wiki),
                 actions = listOf(
-                    TopBarActionResource(
+                    TopBarActionIconButton(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = goToWikiCreatePage

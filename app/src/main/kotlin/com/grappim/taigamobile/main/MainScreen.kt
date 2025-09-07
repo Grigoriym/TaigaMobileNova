@@ -44,6 +44,7 @@ fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isLogged by viewModel.isLogged.collectAsStateWithLifecycle()
+    val isNewUIUsed by viewModel.isNewUIUsed.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(
         LocalTopBarConfig provides topBarController
@@ -53,7 +54,8 @@ fun MainContent(viewModel: MainViewModel) {
             viewModel = viewModel,
             topBarConfig = topBarConfig,
             state = state,
-            isLogged = isLogged
+            isLogged = isLogged,
+            isNewUIUsed = isNewUIUsed
         )
     }
 }
@@ -63,7 +65,8 @@ private fun MainScreenContent(
     viewModel: MainViewModel,
     topBarConfig: TopBarConfig,
     state: MainScreenState,
-    isLogged: Boolean
+    isLogged: Boolean,
+    isNewUIUsed: Boolean
 ) {
     val appState = rememberMainAppState()
 
@@ -96,7 +99,7 @@ private fun MainScreenContent(
     if (state.isLogoutConfirmationVisible) {
         ConfirmActionDialog(
             title = stringResource(RString.logout_title),
-            text = stringResource(RString.logout_text),
+            description = stringResource(RString.logout_text),
             onConfirm = {
                 state.onLogout()
             },
@@ -152,6 +155,7 @@ private fun MainScreenContent(
             content = { paddingValues ->
                 MainNavHost(
                     modifier = Modifier.padding(paddingValues),
+                    isNewUiUsed = isNewUIUsed,
                     isLogged = isLogged,
                     navController = appState.navController,
                     showMessage = { message ->

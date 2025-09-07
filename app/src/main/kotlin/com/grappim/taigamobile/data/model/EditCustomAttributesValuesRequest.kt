@@ -7,5 +7,5 @@ import com.squareup.moshi.JsonClass
 data class EditCustomAttributesValuesRequest(
     @Json(name = "attributes_values")
     val attributesValues: Map<Long, Any?>,
-    val version: Int
+    val version: Long
 )

@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.CommentDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -33,22 +33,22 @@ import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskComments(
-    comments: List<Comment>,
+    commentDTOS: List<CommentDTO>,
     editActions: EditActions,
     navigateToProfile: (userId: Long) -> Unit
 ) {
     item {
-        SectionTitle(stringResource(RString.comments_template).format(comments.size))
+        SectionTitle(stringResource(RString.comments_template).format(commentDTOS.size))
     }
 
-    itemsIndexed(comments) { index, item ->
+    itemsIndexed(commentDTOS) { index, item ->
         CommentItem(
-            comment = item,
+            commentDTO = item,
             onDeleteClick = { editActions.editComments.remove(item) },
             navigateToProfile = navigateToProfile
         )
 
-        if (index < comments.lastIndex) {
+        if (index < commentDTOS.lastIndex) {
             HorizontalDivider(
                 modifier = Modifier.padding(vertical = 12.dp),
                 color = MaterialTheme.colorScheme.outline
@@ -65,49 +65,51 @@ fun LazyListScope.CommonTaskComments(
 
 @Composable
 private fun CommentItem(
-    comment: Comment,
+    commentDTO: CommentDTO,
     onDeleteClick: () -> Unit,
     navigateToProfile: (userId: Long) -> Unit
-) = Column {
-    var isAlertVisible by remember { mutableStateOf(false) }
+) {
+    Column {
+        var isAlertVisible by remember { mutableStateOf(false) }
 
-    if (isAlertVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.delete_comment_title),
-            text = stringResource(RString.delete_comment_text),
-            onConfirm = {
-                isAlertVisible = false
-                onDeleteClick()
-            },
-            onDismiss = { isAlertVisible = false },
-            iconId = RDrawable.ic_delete
-        )
-    }
+        if (isAlertVisible) {
+            ConfirmActionDialog(
+                title = stringResource(RString.delete_comment_title),
+                description = stringResource(RString.delete_comment_text),
+                onConfirm = {
+                    isAlertVisible = false
+                    onDeleteClick()
+                },
+                onDismiss = { isAlertVisible = false },
+                iconId = RDrawable.ic_delete
+            )
+        }
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        UserItem(
-            user = comment.author,
-            dateTime = comment.postDateTime,
-            onUserItemClick = { navigateToProfile(comment.author.actualId) }
-        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            UserItem(
+                userDTO = commentDTO.author,
+                dateTime = commentDTO.postDateTime,
+                onUserItemClick = { navigateToProfile(commentDTO.author.actualId) }
+            )
 
-        if (comment.canDelete) {
-            IconButton(onClick = { isAlertVisible = true }) {
-                Icon(
-                    painter = painterResource(RDrawable.ic_delete),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
+            if (commentDTO.canDelete) {
+                IconButton(onClick = { isAlertVisible = true }) {
+                    Icon(
+                        painter = painterResource(RDrawable.ic_delete),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
-    }
 
-    MarkdownTextWidget(
-        text = comment.text,
-        modifier = Modifier.padding(start = 4.dp)
-    )
+        MarkdownTextWidget(
+            text = commentDTO.text,
+            modifier = Modifier.padding(start = 4.dp)
+        )
+    }
 }

@@ -5,7 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiLink
 import com.grappim.taigamobile.feature.wiki.domain.WikiPage
@@ -45,7 +45,7 @@ class WikiPageViewModel @Inject constructor(
 
     val page = mutableResultFlow<WikiPage>()
     val link = mutableResultFlow<WikiLink>()
-    val attachments = mutableResultFlow<List<Attachment>>()
+    val attachments = mutableResultFlow<List<AttachmentDTO>>()
     val editWikiPageResult = mutableResultFlow<Unit>()
     val deleteWikiPageResult = mutableResultFlow<Unit>()
 
@@ -87,9 +87,9 @@ class WikiPageViewModel @Inject constructor(
                     )
                 }
 
-                val user = userRepository.getUser(page.lastModifier)
+                val user = userRepository.getUserDTO(page.lastModifier)
                 _state.update { state ->
-                    state.copy(user = user)
+                    state.copy(userDTO = user)
                 }
                 joinAll(
                     launch {
@@ -131,10 +131,10 @@ class WikiPageViewModel @Inject constructor(
         }
     }
 
-    fun deletePageAttachment(attachment: Attachment) = viewModelScope.launch {
+    fun deletePageAttachment(attachmentDTO: AttachmentDTO) = viewModelScope.launch {
         attachments.loadOrError(RString.permission_error) {
             wikiRepository.deletePageAttachment(
-                attachmentId = attachment.id
+                attachmentId = attachmentDTO.id
             )
 
             loadData().join()

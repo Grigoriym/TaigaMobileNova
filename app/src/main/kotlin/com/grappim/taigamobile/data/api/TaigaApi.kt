@@ -1,13 +1,13 @@
 package com.grappim.taigamobile.data.api
 
-import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.core.domain.CommonTaskPathPlural
 import com.grappim.taigamobile.core.domain.CommonTaskPathSingular
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
+import com.grappim.taigamobile.core.domain.CustomAttributeResponse
+import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponse
 import com.grappim.taigamobile.data.model.CreateCommentRequest
 import com.grappim.taigamobile.data.model.CreateCommonTaskRequest
-import com.grappim.taigamobile.data.model.CustomAttributeResponse
-import com.grappim.taigamobile.data.model.CustomAttributesValuesResponse
 import com.grappim.taigamobile.data.model.EditCommonTaskRequest
 import com.grappim.taigamobile.data.model.EditCustomAttributesValuesRequest
 import com.grappim.taigamobile.data.model.PromoteToUserStoryRequest
@@ -73,7 +73,7 @@ interface TaigaApi {
         @Path("taskPath") taskPath: CommonTaskPathPlural,
         @Query("object_id") storyId: Long,
         @Query("project") projectId: Long
-    ): List<Attachment>
+    ): List<AttachmentDTO>
 
     @DELETE("{taskPath}/attachments/{id}")
     suspend fun deleteCommonTaskAttachment(

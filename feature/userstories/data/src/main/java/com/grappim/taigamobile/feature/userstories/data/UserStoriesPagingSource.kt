@@ -6,7 +6,7 @@ import com.grappim.taigamobile.core.api.toCommonTask
 import com.grappim.taigamobile.core.api.tryCatchWithPagination
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.commaString
 import com.grappim.taigamobile.core.domain.tagsCommaString
 import com.grappim.taigamobile.core.storage.TaigaStorage
@@ -14,7 +14,7 @@ import kotlinx.coroutines.flow.first
 
 class UserStoriesPagingSource(
     private val userStoriesApi: UserStoriesApi,
-    private val filters: FiltersData,
+    private val filters: FiltersDataDTO,
     private val taigaStorage: TaigaStorage
 ) : PagingSource<Int, CommonTask>() {
     override fun getRefreshKey(state: PagingState<Int, CommonTask>): Int? =

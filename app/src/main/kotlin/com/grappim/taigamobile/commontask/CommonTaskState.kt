@@ -1,14 +1,13 @@
 package com.grappim.taigamobile.commontask
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.utils.ui.NativeText
 
 data class CommonTaskState(
     val commonTaskType: CommonTaskType,
     val url: String = "",
     val isBlocked: Boolean = false,
-    val editActions: EditActions,
+//    val editActions: EditActions,
     val toolbarTitle: NativeText,
     val projectName: String,
 

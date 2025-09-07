@@ -8,7 +8,6 @@ import com.grappim.taigamobile.core.api.BaseUrlProvider
 import com.grappim.taigamobile.core.api.CommonOkHttp
 import com.grappim.taigamobile.core.api.CommonRetrofit
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.data.api.AuthTokenProviderInterceptor
 import com.grappim.taigamobile.data.interceptors.ErrorMappingInterceptor
 import com.grappim.taigamobile.data.interceptors.HostSelectionInterceptor
 import com.grappim.taigamobile.data.interceptors.TaigaBearerTokenAuthenticator
@@ -72,8 +71,8 @@ object NetworkModule {
         MoshiConverterFactory.create(moshi).withNullSerialization()
 
     @[Provides Singleton]
-    fun provideMoshi(): Moshi = Moshi.Builder()
-        .add(LocalDateTypeAdapter())
+    fun provideMoshi(localDateTypeAdapter: LocalDateTypeAdapter): Moshi = Moshi.Builder()
+        .add(localDateTypeAdapter)
         .add(LocalDateTimeTypeAdapter())
         .build()
 

@@ -12,6 +12,7 @@ android {
 dependencies {
     implementation(projects.feature.epics.domain)
     implementation(projects.feature.filters.domain)
+    implementation(projects.feature.filters.ui)
 
     implementation(projects.strings)
     implementation(projects.uikit)

@@ -25,15 +25,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.core.domain.Attachment
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.AttachmentDTO
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.feature.wiki.ui.widgets.WikiPageDropDownMenuWidget
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.Attachments
 import com.grappim.taigamobile.uikit.EditAction
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.utils.PreviewMulti
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
@@ -41,7 +41,7 @@ import com.grappim.taigamobile.uikit.widgets.list.Description
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -106,7 +106,7 @@ fun WikiPageScreen(
                 },
                 actions = listOf(
                     if (state.isEditPageVisible) {
-                        TopBarActionResource(
+                        TopBarActionIconButton(
                             drawable = RDrawable.ic_save,
                             contentDescription = "Save",
                             onClick = {
@@ -115,7 +115,7 @@ fun WikiPageScreen(
                             }
                         )
                     } else {
-                        TopBarActionResource(
+                        TopBarActionIconButton(
                             drawable = RDrawable.ic_options,
                             contentDescription = "More",
                             onClick = {
@@ -131,7 +131,7 @@ fun WikiPageScreen(
     if (state.isDeleteAlertVisible) {
         ConfirmActionDialog(
             title = stringResource(RString.delete_wiki_title),
-            text = stringResource(RString.delete_wiki_text),
+            description = stringResource(RString.delete_wiki_text),
             onConfirm = {
                 state.setDeleteAlertVisible(false)
                 viewModel.deleteWikiPage()
@@ -151,7 +151,7 @@ fun WikiPageScreen(
     WikiPageScreenContent(
         state = state,
         lastModifierDate = page.data?.modifiedDate ?: LocalDateTime.now(),
-        attachments = attachments.data.orEmpty(),
+        attachmentDTOS = attachments.data.orEmpty(),
         isLoading = isLoading,
         onUserItemClick = goToProfile,
         editAttachments = EditAction(
@@ -167,10 +167,10 @@ fun WikiPageScreenContent(
     state: WikiPageState,
     lastModifierDate: LocalDateTime,
     modifier: Modifier = Modifier,
-    attachments: List<Attachment> = emptyList(),
+    attachmentDTOS: List<AttachmentDTO> = emptyList(),
     isLoading: Boolean = false,
     onUserItemClick: (userId: Long) -> Unit = { _ -> },
-    editAttachments: EditAction<Pair<String, InputStream>, Attachment> = EditAction()
+    editAttachments: EditAction<Pair<String, InputStream>, AttachmentDTO> = EditAction()
 ) {
     Box(
         modifier = modifier
@@ -233,12 +233,12 @@ fun WikiPageScreenContent(
 
                         Spacer(Modifier.height(8.dp))
 
-                        if (state.user != null) {
+                        if (state.userDTO != null) {
                             UserItem(
-                                user = state.user!!,
+                                userDTO = state.userDTO!!,
                                 dateTime = lastModifierDate,
                                 onUserItemClick = {
-                                    onUserItemClick(state.user!!.actualId)
+                                    onUserItemClick(state.userDTO!!.actualId)
                                 }
                             )
                         }
@@ -251,7 +251,7 @@ fun WikiPageScreenContent(
                     }
 
                     Attachments(
-                        attachments = attachments,
+                        attachmentDTOS = attachmentDTOS,
                         editAttachments = editAttachments
                     )
 
@@ -266,13 +266,13 @@ fun WikiPageScreenContent(
     }
 }
 
-@[Composable PreviewMulti]
+@[Composable PreviewDarkLight]
 private fun WikiPagePreview() {
     TaigaMobileTheme {
         WikiPageScreenContent(
             lastModifierDate = LocalDateTime.now(),
             state = WikiPageState(
-                user = User(
+                userDTO = UserDTO(
                     id = 0,
                     fullName = "Some cool fullname",
                     photo = null,

@@ -42,71 +42,73 @@ fun Editor(
     showTitle: Boolean = true,
     onSaveClick: (title: String, description: String) -> Unit = { _, _ -> },
     navigateBack: () -> Unit = {}
-) = Column(
-    modifier = modifier
-        .fillMaxSize()
-        .background(MaterialTheme.colorScheme.surface)
-        .imePadding()
 ) {
-    OnBackPressed(navigateBack)
-
-    var titleInput by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue(title)
-        )
-    }
-    var descriptionInput by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(
-            TextFieldValue(description)
-        )
-    }
-
-    AppBarWithBackButton(
-        title = { Text(toolbarText) },
-        actions = {
-            IconButton(
-                onClick = {
-                    titleInput.text.trim().takeIf { it.isNotEmpty() }?.let {
-                        onSaveClick(it, descriptionInput.text.trim())
-                    }
-                }
-            ) {
-                Icon(
-                    painter = painterResource(RDrawable.ic_save),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
-                )
-            }
-        },
-        navigateBack = navigateBack
-    )
-
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = mainHorizontalScreenPadding)
+            .background(MaterialTheme.colorScheme.surface)
+            .imePadding()
     ) {
-        Spacer(Modifier.height(8.dp))
+        OnBackPressed(navigateBack)
 
-        if (showTitle) {
-            TextFieldWithHint(
-                hintId = RString.title_hint,
-                value = titleInput,
-                onValueChange = { titleInput = it },
-                style = MaterialTheme.typography.headlineSmall
+        var titleInput by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+            mutableStateOf(
+                TextFieldValue(title)
             )
-
-            Spacer(Modifier.height(16.dp))
+        }
+        var descriptionInput by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+            mutableStateOf(
+                TextFieldValue(description)
+            )
         }
 
-        TextFieldWithHint(
-            hintId = RString.description_hint,
-            value = descriptionInput,
-            onValueChange = { descriptionInput = it }
+        AppBarWithBackButton(
+            title = { Text(toolbarText) },
+            actions = {
+                IconButton(
+                    onClick = {
+                        titleInput.text.trim().takeIf { it.isNotEmpty() }?.let {
+                            onSaveClick(it, descriptionInput.text.trim())
+                        }
+                    }
+                ) {
+                    Icon(
+                        painter = painterResource(RDrawable.ic_save),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+            },
+            navigateBack = navigateBack
         )
 
-        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = mainHorizontalScreenPadding)
+        ) {
+            Spacer(Modifier.height(8.dp))
+
+            if (showTitle) {
+                TextFieldWithHint(
+                    hintId = RString.title_hint,
+                    value = titleInput,
+                    onValueChange = { titleInput = it },
+                    style = MaterialTheme.typography.headlineSmall
+                )
+
+                Spacer(Modifier.height(16.dp))
+            }
+
+            TextFieldWithHint(
+                hintId = RString.description_hint,
+                value = descriptionInput,
+                onValueChange = { descriptionInput = it }
+            )
+
+            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+        }
     }
 }
 

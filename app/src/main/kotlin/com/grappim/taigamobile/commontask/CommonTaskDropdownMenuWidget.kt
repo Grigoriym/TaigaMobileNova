@@ -14,13 +14,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Composable
 fun CommonTaskDropdownMenuWidget(
+    editActions: EditActions,
     state: CommonTaskState,
     url: String,
+    isBlocked: Boolean,
     showMessage: (message: Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -99,8 +102,8 @@ fun CommonTaskDropdownMenuWidget(
             DropdownMenuItem(
                 onClick = {
                     state.setDropdownMenuExpanded(false)
-                    if (state.isBlocked) {
-                        state.editActions.editBlocked.remove(Unit)
+                    if (isBlocked) {
+                        editActions.editBlocked.remove(Unit)
                     } else {
                         state.setBlockDialogVisible(true)
                     }
@@ -108,7 +111,7 @@ fun CommonTaskDropdownMenuWidget(
                 text = {
                     Text(
                         text = stringResource(
-                            if (state.isBlocked) RString.unblock else RString.block
+                            if (isBlocked) RString.unblock else RString.block
                         ),
                         style = MaterialTheme.typography.bodyLarge
                     )

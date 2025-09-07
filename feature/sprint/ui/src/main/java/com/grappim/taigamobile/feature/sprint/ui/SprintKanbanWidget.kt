@@ -48,10 +48,10 @@ import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.Project
-import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.core.navigation.NavigateToTask
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -68,7 +68,7 @@ import java.time.LocalDateTime
 
 @Composable
 internal fun SprintKanbanWidget(
-    statuses: List<Status>,
+    statusOlds: List<StatusOld>,
     storiesWithTasks: Map<CommonTask, List<CommonTask>>,
     modifier: Modifier = Modifier,
     storylessTasks: List<CommonTask> = emptyList(),
@@ -88,7 +88,7 @@ internal fun SprintKanbanWidget(
             MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
         val totalWidth =
-            cellWidth * statuses.size + userStoryHeadingWidth + cellPadding * statuses.size
+            cellWidth * statusOlds.size + userStoryHeadingWidth + cellPadding * statusOlds.size
 
         Row(Modifier.padding(start = cellPadding, top = cellPadding)) {
             Header(
@@ -99,7 +99,7 @@ internal fun SprintKanbanWidget(
                 backgroundColor = Color.Transparent
             )
 
-            statuses.forEach {
+            statusOlds.forEach {
                 Header(
                     text = it.name,
                     cellWidth = cellWidth,
@@ -134,14 +134,14 @@ internal fun SprintKanbanWidget(
                             }
                         )
 
-                        statuses.forEach { status ->
+                        statusOlds.forEach { status ->
                             Cell(
                                 cellWidth = cellWidth,
                                 cellOuterPadding = cellOuterPadding,
                                 cellPadding = cellPadding,
                                 backgroundCellColor = backgroundCellColor
                             ) {
-                                tasks.filter { it.status == status }.forEach {
+                                tasks.filter { it.statusOld == status }.forEach {
                                     TaskItem(
                                         task = it,
                                         onTaskClick = { navigateToTask(it.id, it.taskType, it.ref) }
@@ -168,14 +168,14 @@ internal fun SprintKanbanWidget(
                         onAddClick = { navigateToCreateTask(CommonTaskType.Task, null) }
                     )
 
-                    statuses.forEach { status ->
+                    statusOlds.forEach { status ->
                         Cell(
                             cellWidth = cellWidth,
                             cellOuterPadding = cellOuterPadding,
                             cellPadding = cellPadding,
                             backgroundCellColor = backgroundCellColor
                         ) {
-                            storylessTasks.filter { it.status == status }.forEach {
+                            storylessTasks.filter { it.statusOld == status }.forEach {
                                 TaskItem(
                                     task = it,
                                     onTaskClick = { navigateToTask(it.id, it.taskType, it.ref) }
@@ -322,8 +322,8 @@ private fun UserStoryItem(
         )
 
         Text(
-            text = userStory.status.name,
-            color = userStory.status.color.toColor(),
+            text = userStory.statusOld.name,
+            color = userStory.statusOld.color.toColor(),
             style = MaterialTheme.typography.bodyMedium
         )
     }
@@ -443,26 +443,26 @@ private fun TaskItem(task: CommonTask, onTaskClick: () -> Unit) = Surface(
 @Composable
 private fun SprintKanbanPreview() = TaigaMobileTheme {
     SprintKanbanWidget(
-        statuses = listOf(
-            Status(
+        statusOlds = listOf(
+            StatusOld(
                 id = 0,
                 name = "New",
                 color = "#70728F",
                 type = StatusType.Status
             ),
-            Status(
+            StatusOld(
                 id = 1,
                 name = "In progress",
                 color = "#E47C40",
                 type = StatusType.Status
             ),
-            Status(
+            StatusOld(
                 id = 1,
                 name = "Done",
                 color = "#A8E440",
                 type = StatusType.Status
             ),
-            Status(
+            StatusOld(
                 id = 1,
                 name = "Archived",
                 color = "#A9AABC",
@@ -475,20 +475,20 @@ private fun SprintKanbanPreview() = TaigaMobileTheme {
                 createdDate = LocalDateTime.now(),
                 title = "Very cool story",
                 ref = 100,
-                status = Status(
+                statusOld = StatusOld(
                     id = 1,
                     name = "In progress",
                     color = "#E47C40",
                     type = StatusType.Status
                 ),
-                assignee = User(
+                assignee = UserDTO(
                     id = it.toLong(),
                     fullName = "Name Name",
                     photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                     bigPhoto = null,
                     username = "username"
                 ),
-                projectInfo = Project(0, "", ""),
+                projectDTOInfo = ProjectDTO(0, "", ""),
                 taskType = CommonTaskType.UserStory,
                 isClosed = false
             ) to listOf(
@@ -497,20 +497,20 @@ private fun SprintKanbanPreview() = TaigaMobileTheme {
                     createdDate = LocalDateTime.now(),
                     title = "Very cool story Very cool story Very cool story",
                     ref = 100,
-                    status = Status(
+                    statusOld = StatusOld(
                         id = 1,
                         name = "In progress",
                         color = "#E47C40",
                         type = StatusType.Status
                     ),
-                    assignee = User(
+                    assignee = UserDTO(
                         id = it.toLong(),
                         fullName = "Name Name",
                         photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                         bigPhoto = null,
                         username = "username"
                     ),
-                    projectInfo = Project(0, "", ""),
+                    projectDTOInfo = ProjectDTO(0, "", ""),
                     taskType = CommonTaskType.Task,
                     isClosed = false
                 ),
@@ -519,20 +519,20 @@ private fun SprintKanbanPreview() = TaigaMobileTheme {
                     createdDate = LocalDateTime.now(),
                     title = "Very cool story",
                     ref = 100,
-                    status = Status(
+                    statusOld = StatusOld(
                         id = 1,
                         name = "In progress",
                         color = "#E47C40",
                         type = StatusType.Status
                     ),
-                    assignee = User(
+                    assignee = UserDTO(
                         id = it.toLong(),
                         fullName = "Name Name",
                         photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                         bigPhoto = null,
                         username = "username"
                     ),
-                    projectInfo = Project(0, "", ""),
+                    projectDTOInfo = ProjectDTO(0, "", ""),
                     taskType = CommonTaskType.Task,
                     isClosed = false
                 ),
@@ -541,20 +541,20 @@ private fun SprintKanbanPreview() = TaigaMobileTheme {
                     createdDate = LocalDateTime.now(),
                     title = "Very cool story",
                     ref = 100,
-                    status = Status(
+                    statusOld = StatusOld(
                         id = 0,
                         name = "New",
                         color = "#70728F",
                         type = StatusType.Status
                     ),
-                    assignee = User(
+                    assignee = UserDTO(
                         id = it.toLong(),
                         fullName = "Name Name",
                         photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                         bigPhoto = null,
                         username = "username"
                     ),
-                    projectInfo = Project(0, "", ""),
+                    projectDTOInfo = ProjectDTO(0, "", ""),
                     taskType = CommonTaskType.Task,
                     isClosed = false
                 )
@@ -566,20 +566,20 @@ private fun SprintKanbanPreview() = TaigaMobileTheme {
                 createdDate = LocalDateTime.now(),
                 title = "Very cool story",
                 ref = 100,
-                status = Status(
+                statusOld = StatusOld(
                     id = 0,
                     name = "New",
                     color = "#70728F",
                     type = StatusType.Status
                 ),
-                assignee = User(
+                assignee = UserDTO(
                     id = it.toLong(),
                     fullName = "Name Name",
                     photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
                     bigPhoto = null,
                     username = "username"
                 ),
-                projectInfo = Project(0, "", ""),
+                projectDTOInfo = ProjectDTO(0, "", ""),
                 taskType = CommonTaskType.Issue,
                 isClosed = false
             )

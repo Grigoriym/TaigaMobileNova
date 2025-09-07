@@ -1,18 +1,18 @@
 package com.grappim.taigamobile.feature.kanban.ui
 
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
-import com.grappim.taigamobile.core.domain.Status
-import com.grappim.taigamobile.core.domain.Swimlane
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.StatusOld
+import com.grappim.taigamobile.core.domain.SwimlaneDTO
+import com.grappim.taigamobile.core.domain.UserDTO
 
 data class KanbanState(
     val isLoading: Boolean = false,
-    val team: List<User> = emptyList(),
-    val statuses: List<Status> = emptyList(),
+    val team: List<UserDTO> = emptyList(),
+    val statusOlds: List<StatusOld> = emptyList(),
     val stories: List<CommonTaskExtended> = emptyList(),
-    val swimlanes: List<Swimlane> = emptyList(),
-    val selectedSwimlane: Swimlane? = null,
+    val swimlaneDTOS: List<SwimlaneDTO> = emptyList(),
+    val selectedSwimlaneDTO: SwimlaneDTO? = null,
     val error: Throwable? = null,
     val onRefresh: () -> Unit,
-    val onSelectSwimlane: (Swimlane?) -> Unit
+    val onSelectSwimlane: (SwimlaneDTO?) -> Unit
 )

@@ -28,6 +28,8 @@ android {
 
 dependencies {
     implementation(projects.utils.ui)
+    implementation(projects.utils.formatter.decimal)
+    implementation(projects.utils.formatter.datetime)
 
     implementation(projects.uikit)
     implementation(projects.strings)
@@ -72,6 +74,7 @@ dependencies {
 
     implementation(projects.feature.filters.data)
     implementation(projects.feature.filters.domain)
+    implementation(projects.feature.filters.ui)
 
     implementation(projects.feature.swimlanes.data)
     implementation(projects.feature.swimlanes.domain)
@@ -101,6 +104,9 @@ dependencies {
     implementation(projects.feature.userstories.data)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.userstories.ui)
+
+    implementation(projects.feature.workitem.ui)
+    implementation(projects.feature.workitem.domain)
 
     implementation(kotlin("reflect"))
 
@@ -141,9 +147,6 @@ dependencies {
     implementation(libs.coil.core)
     implementation(libs.coil.okhttp)
     implementation(libs.coil.compose)
-
-    testImplementation(libs.blockHound)
-    testImplementation(libs.kotlinx.coroutines.debug)
 
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.noop)

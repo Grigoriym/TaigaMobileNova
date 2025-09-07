@@ -6,7 +6,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
@@ -54,7 +54,7 @@ class ScrumViewModel @Inject constructor(
     val closedSprints = sprintsRepository.getSprints(isClosed = true)
         .cachedIn(viewModelScope)
 
-    val filters = mutableResultFlow<FiltersData>()
+    val filters = mutableResultFlow<FiltersDataDTO>()
     val activeFilters by lazy { session.scrumFilters }
     val stories: Flow<PagingData<CommonTask>> = activeFilters.flatMapLatest { filters ->
         userStoriesRepository.getUserStories(filters)
@@ -96,7 +96,7 @@ class ScrumViewModel @Inject constructor(
         if (!shouldReload) return
         viewModelScope.launch {
             filters.loadOrError {
-                filtersRepository.getFiltersData(
+                filtersRepository.getFiltersDataOld(
                     commonTaskType = CommonTaskType.UserStory,
                     isCommonTaskFromBacklog = true
                 )
@@ -109,7 +109,7 @@ class ScrumViewModel @Inject constructor(
         shouldReload = false
     }
 
-    fun selectFilters(filters: FiltersData) {
+    fun selectFilters(filters: FiltersDataDTO) {
         session.changeScrumFilters(filters)
     }
 

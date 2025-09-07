@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.data
 
-import com.grappim.taigamobile.core.api.fixNullColor
+import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.api.toCommonTask
 import com.grappim.taigamobile.core.api.withIO
 import com.grappim.taigamobile.core.domain.CommonTask
@@ -8,8 +8,6 @@ import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskPathPlural
 import com.grappim.taigamobile.core.domain.CommonTaskPathSingular
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.CustomField
-import com.grappim.taigamobile.core.domain.CustomFieldType
 import com.grappim.taigamobile.core.domain.CustomFieldValue
 import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.StatusType
@@ -25,7 +23,6 @@ import com.grappim.taigamobile.data.model.CreateCommonTaskRequest
 import com.grappim.taigamobile.data.model.EditCommonTaskRequest
 import com.grappim.taigamobile.data.model.EditCustomAttributesValuesRequest
 import com.grappim.taigamobile.data.model.PromoteToUserStoryRequest
-import com.grappim.taigamobile.di.toLocalDate
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
@@ -33,7 +30,9 @@ import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.tasks.data.CreateTaskRequest
 import com.grappim.taigamobile.feature.tasks.data.TasksApi
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
+import com.grappim.taigamobile.utils.ui.fixNullColor
 import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
@@ -51,11 +50,12 @@ class TasksRepositoryOldImpl @Inject constructor(
     private val taigaStorage: TaigaStorage,
     private val filtersRepository: FiltersRepository,
     private val swimlanesRepository: SwimlanesRepository,
-    private val issuesRepository: IssuesRepository
+    private val issuesRepository: IssuesRepository,
+    private val customFieldsMapper: CustomFieldsMapper
 ) : TasksRepositoryOld {
 
     override suspend fun getCommonTask(commonTaskId: Long, type: CommonTaskType) = withIO {
-        val filters = async { filtersRepository.getFiltersData(type) }
+        val filters = async { filtersRepository.getFiltersDataOld(type) }
         val swimlanes = async { swimlanesRepository.getSwimlanes() }
 
         val task = taigaApi.getCommonTask(CommonTaskPathPlural(type), commonTaskId)
@@ -65,60 +65,42 @@ class TasksRepositoryOldImpl @Inject constructor(
         task.toCommonTaskExtended(
             commonTaskType = type,
             filters = filters.await(),
-            swimlanes = swimlanes.await(),
+            swimlaneDTOS = swimlanes.await(),
             sprint = sprint,
             tags = task.tags.orEmpty()
                 .map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
-            url = "${serverStorage.server}/project/${task.projectExtraInfo.slug}/${
+            url = "${serverStorage.server}/project/${task.projectDTOExtraInfo.slug}/${
                 transformTaskTypeForCopyLink(type)
             }/${task.ref}"
         )
     }
 
-    override suspend fun getAttachments(commonTaskId: Long, type: CommonTaskType) = withIO {
+    override suspend fun getAttachments(commonTaskId: Long, type: CommonTaskType) =
         taigaApi.getCommonTaskAttachments(
             CommonTaskPathPlural(type),
             commonTaskId,
             taigaStorage.currentProjectIdFlow.first()
         )
-    }
 
-    override suspend fun getCustomFields(commonTaskId: Long, type: CommonTaskType) = withIO {
-        val attributes =
-            async {
-                taigaApi.getCustomAttributes(
-                    CommonTaskPathSingular(type),
-                    taigaStorage.currentProjectIdFlow.first()
-                )
-            }
-        val values = taigaApi.getCustomAttributesValues(CommonTaskPathPlural(type), commonTaskId)
-
-        CustomFields(
-            version = values.version,
-            fields = attributes.await().sortedBy { it.order }
-                .map {
-                    CustomField(
-                        id = it.id,
-                        type = it.type,
-                        name = it.name,
-                        description = it.description?.takeIf { it.isNotEmpty() },
-                        value = values.attributesValues[it.id]?.let { value ->
-                            CustomFieldValue(
-                                when (it.type) {
-                                    CustomFieldType.Date -> (value as? String)?.takeIf {
-                                        it.isNotEmpty()
-                                    }?.toLocalDate()
-
-                                    CustomFieldType.Checkbox -> value as? Boolean
-                                    else -> value
-                                } ?: return@let null
-                            )
-                        },
-                        options = it.extra.orEmpty()
+    override suspend fun getCustomFields(commonTaskId: Long, type: CommonTaskType): CustomFields =
+        coroutineScope {
+            val attributes =
+                async {
+                    taigaApi.getCustomAttributes(
+                        CommonTaskPathSingular(type),
+                        taigaStorage.currentProjectIdFlow.first()
                     )
                 }
-        )
-    }
+            val values = taigaApi.getCustomAttributesValues(
+                taskPath = CommonTaskPathPlural(commonTaskType = type),
+                taskId = commonTaskId
+            )
+
+            customFieldsMapper.toDomain(
+                attributes = attributes.await(),
+                values = values
+            )
+        }
 
     /**
      * Edit related
@@ -131,7 +113,7 @@ class TasksRepositoryOldImpl @Inject constructor(
     private fun CommonTaskExtended.toEditRequest() = EditCommonTaskRequest(
         subject = title,
         description = description,
-        status = status.id,
+        status = statusOld.id,
         type = type?.id,
         severity = severity?.id,
         priority = priority?.id,
@@ -139,7 +121,7 @@ class TasksRepositoryOldImpl @Inject constructor(
         assignedTo = assignedIds.firstOrNull(),
         assignedUsers = assignedIds,
         watchers = watcherIds,
-        swimlane = swimlane?.id,
+        swimlane = swimlaneDTO?.id,
         dueDate = dueDate,
         color = color,
         tags = tags.map { it.toList() },
@@ -249,7 +231,7 @@ class TasksRepositoryOldImpl @Inject constructor(
         commonTaskId: Long,
         commonTaskType: CommonTaskType,
         comment: String,
-        version: Int
+        version: Long
     ) = taigaApi.createCommonTaskComment(
         taskPath = CommonTaskPathPlural(commonTaskType),
         id = commonTaskId,
@@ -343,11 +325,10 @@ class TasksRepositoryOldImpl @Inject constructor(
             filename = fileName,
             body = inputStream.readBytes().toRequestBody("*/*".toMediaType())
         )
-        val project =
-            MultipartBody.Part.createFormData(
-                "project",
-                taigaStorage.currentProjectIdFlow.first().toString()
-            )
+        val project = MultipartBody.Part.createFormData(
+            "project",
+            taigaStorage.currentProjectIdFlow.first().toString()
+        )
         val objectId = MultipartBody.Part.createFormData("object_id", commonTaskId.toString())
 
         inputStream.use {
@@ -371,7 +352,7 @@ class TasksRepositoryOldImpl @Inject constructor(
         commonTaskType: CommonTaskType,
         commonTaskId: Long,
         fields: Map<Long, CustomFieldValue?>,
-        version: Int
+        version: Long
     ) {
         taigaApi.editCustomAttributesValues(
             taskPath = CommonTaskPathPlural(commonTaskType),

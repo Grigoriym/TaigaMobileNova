@@ -96,12 +96,12 @@ fun KanbanScreenContent(
                 }
             } else {
                 KanbanBoardWidget(
-                    statuses = state.statuses,
+                    statusOlds = state.statusOlds,
                     stories = state.stories,
                     team = state.team,
-                    swimlanes = state.swimlanes,
+                    swimlaneDTOS = state.swimlaneDTOS,
                     selectSwimlane = state.onSelectSwimlane,
-                    selectedSwimlane = state.selectedSwimlane,
+                    selectedSwimlaneDTO = state.selectedSwimlaneDTO,
                     navigateToStory = navigateToStory,
                     navigateToCreateTask = navigateToCreateTask
                 )

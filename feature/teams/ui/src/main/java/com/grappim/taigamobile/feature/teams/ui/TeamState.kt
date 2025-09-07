@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.teams.ui
 
-import com.grappim.taigamobile.core.domain.TeamMember
+import com.grappim.taigamobile.core.domain.TeamMemberDTO
 
 data class TeamState(
     val isLoading: Boolean = false,
     val isError: Boolean = false,
-    val teamMembers: List<TeamMember> = emptyList(),
+    val teamMemberDTOS: List<TeamMemberDTO> = emptyList(),
     val onRefresh: () -> Unit
 )

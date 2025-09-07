@@ -2,11 +2,11 @@ package com.grappim.taigamobile.feature.epics.domain
 
 import androidx.paging.PagingData
 import com.grappim.taigamobile.core.domain.CommonTask
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import kotlinx.coroutines.flow.Flow
 
 interface EpicsRepository {
-    fun getEpicsPaging(filters: FiltersData): Flow<PagingData<CommonTask>>
+    fun getEpicsPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>>
     fun refreshEpics()
 
     suspend fun getEpics(

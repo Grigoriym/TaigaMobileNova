@@ -7,6 +7,9 @@ interface TasksRepository {
     suspend fun getTasks(
         assignedId: Long? = null,
         isClosed: Boolean? = null,
-        watcherId: Long? = null
+        watcherId: Long? = null,
+        userStory: Any? = null,
+        project: Long? = null,
+        sprint: Long? = null
     ): List<CommonTask>
 }

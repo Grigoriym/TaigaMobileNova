@@ -1,5 +1,8 @@
 package com.grappim.taigamobile.uikit.widgets.text
 
+import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -13,20 +16,26 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 
 /**
  * Title with optional add button
@@ -78,5 +87,63 @@ fun SectionTitle(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun SectionTitleExpandable(
+    text: String,
+    isExpanded: Boolean,
+    onExpandClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val transitionState = remember { MutableTransitionState(isExpanded) }
+    transitionState.targetState = isExpanded
+    val arrowRotation by rememberTransition(
+        transitionState,
+        "arrow"
+    ).animateFloat { if (it) -180f else 0f }
+
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .background(
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                shape = MaterialTheme.shapes.small
+            )
+            .clickable {
+                onExpandClick()
+            },
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = text,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.padding(horizontal = 10.dp)
+                .weight(1f)
+        )
+
+        Icon(
+            painter = painterResource(RDrawable.ic_arrow_down),
+            contentDescription = null,
+            modifier = Modifier
+                .size(30.dp)
+                .rotate(arrowRotation)
+        )
+        TaigaWidthSpacer(width = 10.dp)
+    }
+}
+
+@Composable
+@PreviewDarkLight
+private fun SectionTitleExpandablePreview() {
+    TaigaMobileTheme {
+        SectionTitleExpandable(
+            text = "3 Attachments",
+            isExpanded = true,
+            onExpandClick = {}
+        )
     }
 }

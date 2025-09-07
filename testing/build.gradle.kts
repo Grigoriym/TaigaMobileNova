@@ -21,7 +21,7 @@ dependencies {
     api(libs.androidx.test.rules)
     api(libs.androidx.test.core)
     api(libs.androidx.compose.ui.test)
-    api(libs.androidx.navigation.compose)
+    implementation(libs.androidx.navigation.compose)
 
     debugApi(libs.androidx.compose.ui.testManifest)
 

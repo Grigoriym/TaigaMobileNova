@@ -21,7 +21,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
@@ -87,7 +86,6 @@ fun LazyListScope.CommonTaskHeader(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(badgesPadding),
             verticalArrangement = Arrangement.spacedBy(badgesPadding)
-//            crossAxisAlignment = FlowCrossAxisAlignment.Center,
         ) {
             // epic color
             if (commonTask.taskType == CommonTaskType.Epic) {
@@ -100,10 +98,10 @@ fun LazyListScope.CommonTaskHeader(
 
             // status
             ClickableBadge(
-                text = commonTask.status.name,
-                colorHex = commonTask.status.color,
+                text = commonTask.statusOld.name,
+                colorHex = commonTask.statusOld.color,
                 onClick = { showStatusSelector() },
-                isLoading = editActions.editStatus.isLoading
+                isLoading = editActions.editStatusOld.isLoading
             )
 
             // sprint
@@ -121,10 +119,10 @@ fun LazyListScope.CommonTaskHeader(
             // swimlane
             if (commonTask.taskType == CommonTaskType.UserStory) {
                 ClickableBadge(
-                    text = commonTask.swimlane?.name ?: stringResource(RString.unclassifed),
-                    color = commonTask.swimlane?.let { MaterialTheme.colorScheme.primary }
+                    text = commonTask.swimlaneDTO?.name ?: stringResource(RString.unclassifed),
+                    color = commonTask.swimlaneDTO?.let { MaterialTheme.colorScheme.primary }
                         ?: MaterialTheme.colorScheme.outline,
-                    isLoading = editActions.editSwimlane.isLoading,
+                    isLoading = editActions.editSwimlaneDTO.isLoading,
                     onClick = { showSwimlaneSelector() }
                 )
             }
@@ -161,11 +159,9 @@ fun LazyListScope.CommonTaskHeader(
             text = commonTask.title,
             style = MaterialTheme.typography.headlineSmall.let {
                 if (commonTask.isClosed) {
-                    it.merge(
-                        SpanStyle(
-                            color = MaterialTheme.colorScheme.outline,
-                            textDecoration = TextDecoration.LineThrough
-                        )
+                    it.copy(
+                        color = MaterialTheme.colorScheme.outline,
+                        textDecoration = TextDecoration.LineThrough
                     )
                 } else {
                     it

@@ -1,6 +1,8 @@
 package com.grappim.taigamobile.uikit.widgets.picker
 
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -26,8 +28,6 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.R
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.utils.clickableUnindicated
-import com.grappim.taigamobile.utils.ui.activity
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -38,6 +38,7 @@ import java.time.format.FormatStyle
  * Date picker with material dialog. Null passed to onDatePicked() means selection was cleared
  */
 @Composable
+@Deprecated("Use composable DatePicker instead")
 fun DatePicker(
     date: LocalDate?,
     onDatePick: (LocalDate?) -> Unit,
@@ -47,63 +48,67 @@ fun DatePicker(
     style: TextStyle = MaterialTheme.typography.bodyLarge,
     onClose: () -> Unit = {},
     onOpen: () -> Unit = {}
-) = Box {
-    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
+) {
+    Box(modifier = modifier) {
+        val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
-    val dialog = MaterialDatePicker.Builder
-        .datePicker()
-        .setTitleText(RString.select_date)
-        .setTheme(R.style.DatePicker)
-        .setSelection(
-            date?.atStartOfDay(ZoneOffset.UTC)
-                ?.toInstant()
-                ?.toEpochMilli()
-        )
-        .build()
-        .apply {
-            addOnDismissListener { onClose() }
-            addOnPositiveButtonClickListener {
-                onDatePick(
-                    Instant.ofEpochMilli(it)
-                        .atOffset(ZoneOffset.UTC)
-                        .toLocalDate()
-                )
+        val dialog = MaterialDatePicker.Builder
+            .datePicker()
+            .setTitleText(RString.select_date)
+            .setTheme(R.style.DatePicker)
+            .setSelection(
+                date?.atStartOfDay(ZoneOffset.UTC)
+                    ?.toInstant()
+                    ?.toEpochMilli()
+            )
+            .build()
+            .apply {
+                addOnDismissListener { onClose() }
+                addOnPositiveButtonClickListener {
+                    onDatePick(
+                        Instant.ofEpochMilli(it)
+                            .atOffset(ZoneOffset.UTC)
+                            .toLocalDate()
+                    )
+                }
             }
-        }
 
-    val fragmentManager = LocalContext.current.activity.supportFragmentManager
+        val context = LocalContext.current
+        val activity = context as AppCompatActivity
+        val fragmentManager = activity.supportFragmentManager
 
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = modifier
-    ) {
-        Text(
-            text = date?.format(dateFormatter) ?: stringResource(hintId),
-            style = style,
-            modifier = Modifier.clickableUnindicated {
-                onOpen()
-                dialog.show(fragmentManager, dialog.toString())
-            },
-            color = date?.let { MaterialTheme.colorScheme.onSurface }
-                ?: MaterialTheme.colorScheme.outline
-        )
+        Row(
+            modifier = Modifier,
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = date?.format(dateFormatter) ?: stringResource(hintId),
+                style = style,
+                modifier = Modifier.clickable {
+                    onOpen()
+                    dialog.show(fragmentManager, dialog.toString())
+                },
+                color = date?.let { MaterialTheme.colorScheme.onSurface }
+                    ?: MaterialTheme.colorScheme.outline
+            )
 
-        // do not show clear button if there is no date (sounds right to me)
-        if (showClearButton && date != null) {
-            Spacer(Modifier.width(4.dp))
+            // do not show clear button if there is no date (sounds right to me)
+            if (showClearButton && date != null) {
+                Spacer(Modifier.width(4.dp))
 
-            IconButton(
-                onClick = { onDatePick(null) },
-                modifier = Modifier
-                    .size(22.dp)
-                    .clip(CircleShape)
-            ) {
-                Icon(
-                    painter = painterResource(RDrawable.ic_remove),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outline
-                )
+                IconButton(
+                    onClick = { onDatePick(null) },
+                    modifier = Modifier
+                        .size(22.dp)
+                        .clip(CircleShape)
+                ) {
+                    Icon(
+                        painter = painterResource(RDrawable.ic_remove),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                }
             }
         }
     }

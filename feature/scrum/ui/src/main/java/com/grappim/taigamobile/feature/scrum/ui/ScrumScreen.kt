@@ -40,9 +40,10 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.navigation.NavigateToTask
+import com.grappim.taigamobile.feature.filters.ui.TasksFiltersWithLazyList
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -52,12 +53,11 @@ import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
 import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
 import com.grappim.taigamobile.uikit.widgets.dialog.EditSprintDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
-import com.grappim.taigamobile.uikit.widgets.filter.TasksFiltersWithLazyList
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -85,7 +85,7 @@ fun ScrumScreen(
             TopBarConfig(
                 title = NativeText.Resource(RString.scrum),
                 actions = listOf(
-                    TopBarActionResource(
+                    TopBarActionIconButton(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = {
@@ -126,7 +126,7 @@ fun ScrumScreen(
         state = state,
         pagerState = pagerState,
         stories = stories,
-        filters = filters.data ?: FiltersData(),
+        filters = filters.data ?: FiltersDataDTO(),
         activeFilters = activeFilters,
         selectFilters = viewModel::selectFilters,
         openSprints = openSprints,
@@ -146,9 +146,9 @@ fun ScrumScreenContent(
     pagerState: PagerState,
     modifier: Modifier = Modifier,
     stories: LazyPagingItems<CommonTask>? = null,
-    filters: FiltersData = FiltersData(),
-    activeFilters: FiltersData = FiltersData(),
-    selectFilters: (FiltersData) -> Unit = {},
+    filters: FiltersDataDTO = FiltersDataDTO(),
+    activeFilters: FiltersDataDTO = FiltersDataDTO(),
+    selectFilters: (FiltersDataDTO) -> Unit = {},
     openSprints: LazyPagingItems<Sprint>? = null,
     closedSprints: LazyPagingItems<Sprint>? = null,
     isCreateSprintLoading: Boolean = false,
@@ -201,9 +201,9 @@ private fun BacklogTabContent(
     navigateToTask: NavigateToTask,
     stories: LazyPagingItems<CommonTask>?,
     modifier: Modifier = Modifier,
-    filters: FiltersData = FiltersData(),
-    activeFilters: FiltersData = FiltersData(),
-    selectFilters: (FiltersData) -> Unit = {}
+    filters: FiltersDataDTO = FiltersDataDTO(),
+    activeFilters: FiltersDataDTO = FiltersDataDTO(),
+    selectFilters: (FiltersDataDTO) -> Unit = {}
 ) = Column(
     horizontalAlignment = Alignment.CenterHorizontally,
     modifier = modifier.fillMaxWidth()

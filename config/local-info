@@ -1,0 +1,10 @@
+This info for my local setup
+
+setup:
+    https://community.taiga.io/t/taiga-30min-setup/170/1
+
+docker compose -f docker-compose.yml -f docker-compose-inits.yml run --rm taiga-manage createsuperuser
+docker compose -f docker-compose.yml -f docker-compose-inits.yml run --rm taiga-manage changepassword
+
+users:
+    admin - admin

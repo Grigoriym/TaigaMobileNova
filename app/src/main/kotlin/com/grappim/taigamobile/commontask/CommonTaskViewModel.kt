@@ -6,8 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import androidx.paging.cachedIn
 import androidx.paging.insertHeaderItem
-import com.grappim.taigamobile.core.domain.Attachment
-import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.AttachmentDTO
+import com.grappim.taigamobile.core.domain.CommentDTO
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskType
@@ -15,25 +15,25 @@ import com.grappim.taigamobile.core.domain.CustomField
 import com.grappim.taigamobile.core.domain.CustomFieldValue
 import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.EpicShortInfo
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.Sprint
-import com.grappim.taigamobile.core.domain.Status
+import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.Swimlane
+import com.grappim.taigamobile.core.domain.SwimlaneDTO
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.TasksRepositoryOld
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
+import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.MutableResultFlow
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -60,6 +60,7 @@ import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
+@Deprecated("a god class must be removed")
 class CommonTaskViewModel @Inject constructor(
     private val session: Session,
     private val tasksRepositoryOld: TasksRepositoryOld,
@@ -68,8 +69,7 @@ class CommonTaskViewModel @Inject constructor(
     sprintsRepository: SprintsRepository,
     private val epicsRepository: EpicsRepository,
     private val filtersRepository: FiltersRepository,
-    private val swimlanesRepository:
-    com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository,
+    private val swimlanesRepository: SwimlanesRepository,
     private val userStoriesRepository: UserStoriesRepository,
     private val tasksRepository: TasksRepository,
     savedStateHandle: SavedStateHandle
@@ -85,7 +85,7 @@ class CommonTaskViewModel @Inject constructor(
             storiesCount = 0,
             isClosed = false
         )
-        val SWIMLANE_HEADER = Swimlane(-1, "HEADER", -1)
+        val SWIMLANE_DTO_HEADER = SwimlaneDTO(-1, "HEADER", -1)
     }
 
     private val route = savedStateHandle.toRoute<CommonTaskNavDestination>()
@@ -106,7 +106,7 @@ class CommonTaskViewModel @Inject constructor(
             url = "",
             projectName = session.currentProjectName.value,
             commonTaskType = route.taskType,
-            editActions = EditActions(),
+//            editActions = EditActions(),
             setDropdownMenuExpanded = ::setDropdownMenuExpanded,
             setDeleteAlertVisible = ::setDeleteAlertVisible,
             setTaskEditorVisible = ::setTaskEditorVisible,
@@ -118,19 +118,19 @@ class CommonTaskViewModel @Inject constructor(
 
     val commonTask = mutableResultFlow<CommonTaskExtended>()
 
-    val creator = mutableResultFlow<User>()
+    val creator = mutableResultFlow<UserDTO>()
     val customFields = mutableResultFlow<CustomFields>()
-    val attachments = mutableResultFlow<List<Attachment>>()
-    val assignees = mutableResultFlow<List<User>>()
-    val watchers = mutableResultFlow<List<User>>()
+    val attachments = mutableResultFlow<List<AttachmentDTO>>()
+    val assignees = mutableResultFlow<List<UserDTO>>()
+    val watchers = mutableResultFlow<List<UserDTO>>()
     val userStories = mutableResultFlow<List<CommonTask>>()
     val tasks = mutableResultFlow<List<CommonTask>>()
-    val comments = mutableResultFlow<List<Comment>>()
+    val comments = mutableResultFlow<List<CommentDTO>>()
 
-    val team = mutableResultFlow<List<User>>()
+    val team = mutableResultFlow<List<UserDTO>>()
     val tags = mutableResultFlow<List<Tag>>()
-    val swimlanes = mutableResultFlow<List<Swimlane>>()
-    val statuses = mutableResultFlow<Map<StatusType, List<Status>>>()
+    val swimlanes = mutableResultFlow<List<SwimlaneDTO>>()
+    val statuses = mutableResultFlow<Map<StatusType, List<StatusOld>>>()
 
     val isAssignedToMe =
         assignees.map { session.userId in it.data?.map { it.actualId }.orEmpty() }
@@ -148,7 +148,7 @@ class CommonTaskViewModel @Inject constructor(
     private val epicsQuery = MutableStateFlow("")
 
     val epics = epicsQuery.flatMapLatest { query ->
-        epicsRepository.getEpicsPaging(FiltersData(query = query))
+        epicsRepository.getEpicsPaging(FiltersDataDTO(query = query))
     }.cachedIn(viewModelScope)
 
     val editBasicInfoResult = mutableResultFlow<Unit>()
@@ -190,11 +190,11 @@ class CommonTaskViewModel @Inject constructor(
     private fun loadData(isReloading: Boolean = true) = viewModelScope.launch {
         commonTask.loadOrError(showLoading = !isReloading) {
             tasksRepositoryOld.getCommonTask(commonTaskId, _state.value.commonTaskType).also {
-                suspend fun MutableResultFlow<List<User>>.loadUsersFromIds(ids: List<Long>) =
+                suspend fun MutableResultFlow<List<UserDTO>>.loadUsersFromIds(ids: List<Long>) =
                     loadOrError(showLoading = false) {
                         coroutineScope {
                             ids.map {
-                                async { usersRepository.getUser(it) }
+                                async { usersRepository.getUserDTO(it) }
                             }.awaitAll()
                         }
                     }
@@ -202,7 +202,7 @@ class CommonTaskViewModel @Inject constructor(
                 val jobsToLoad = arrayOf(
                     launch {
                         creator.loadOrError(showLoading = false) {
-                            usersRepository.getUser(it.creatorId)
+                            usersRepository.getUserDTO(it.creatorId)
                         }
                     },
                     launch {
@@ -239,7 +239,7 @@ class CommonTaskViewModel @Inject constructor(
                     },
                     launch {
                         comments.loadOrError(showLoading = false) {
-                            historyRepository.getComments(
+                            historyRepository.getCommentsDTO(
                                 commonTaskId = commonTaskId,
                                 type = _state.value.commonTaskType
                             )
@@ -255,7 +255,7 @@ class CommonTaskViewModel @Inject constructor(
                     arrayOf(
                         launch {
                             team.loadOrError(showLoading = false) {
-                                usersRepository.getTeamSimple()
+                                usersRepository.getTeamSimpleOld()
                                     .map { it.toUser() }
                                     .also { teamSearched.value = it }
                             }
@@ -263,7 +263,7 @@ class CommonTaskViewModel @Inject constructor(
                         // prepend "unclassified"
                         launch {
                             swimlanes.loadOrError(showLoading = false) {
-                                listOf(SWIMLANE_HEADER) + swimlanesRepository.getSwimlanes()
+                                listOf(SWIMLANE_DTO_HEADER) + swimlanesRepository.getSwimlanes()
                             }
                         },
                         launch {
@@ -303,14 +303,14 @@ class CommonTaskViewModel @Inject constructor(
     // Edit status (and also type, severity, priority)
     val editStatusResult = mutableResultFlow<StatusType>()
 
-    fun editStatus(status: Status) = viewModelScope.launch {
-        editStatusResult.value = LoadingResult(status.type)
+    fun editStatus(statusOld: StatusOld) = viewModelScope.launch {
+        editStatusResult.value = LoadingResult(statusOld.type)
 
         editStatusResult.loadOrError(RString.permission_error) {
-            tasksRepositoryOld.editStatus(commonTask.value.data!!, status.id, status.type)
+            tasksRepositoryOld.editStatus(commonTask.value.data!!, statusOld.id, statusOld.type)
             loadData().join()
             session.taskEdit.postUpdate()
-            status.type
+            statusOld.type
         }
     }
 
@@ -326,7 +326,7 @@ class CommonTaskViewModel @Inject constructor(
     }
 
     // use team for both assignees and watchers
-    val teamSearched = MutableStateFlow(emptyList<User>())
+    val teamSearched = MutableStateFlow(emptyList<UserDTO>())
 
     fun searchTeam(query: String) = viewModelScope.launch {
         val q = query.lowercase()
@@ -416,11 +416,11 @@ class CommonTaskViewModel @Inject constructor(
     fun deleteTag(tag: Tag) = editTag(tag, remove = true)
 
     // Swimlanes
-    fun editSwimlane(swimlane: Swimlane) = viewModelScope.launch {
+    fun editSwimlane(swimlaneDTO: SwimlaneDTO) = viewModelScope.launch {
         swimlanes.loadOrError(RString.permission_error) {
             tasksRepositoryOld.editUserStorySwimlane(
                 commonTask.value.data!!,
-                swimlane.takeIf { it != SWIMLANE_HEADER }?.id
+                swimlaneDTO.takeIf { it != SWIMLANE_DTO_HEADER }?.id
             )
             loadData().join()
             session.taskEdit.postUpdate()
@@ -496,17 +496,21 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    fun deleteComment(comment: Comment) = viewModelScope.launch {
+    fun deleteComment(commentDTO: CommentDTO) = viewModelScope.launch {
         comments.loadOrError(RString.permission_error) {
-            historyRepository.deleteComment(commonTaskId, _state.value.commonTaskType, comment.id)
+            historyRepository.deleteComment(
+                commonTaskId,
+                _state.value.commonTaskType,
+                commentDTO.id
+            )
             loadData().join()
             comments.value.data
         }
     }
 
-    fun deleteAttachment(attachment: Attachment) = viewModelScope.launch {
+    fun deleteAttachment(attachmentDTO: AttachmentDTO) = viewModelScope.launch {
         attachments.loadOrError(RString.permission_error) {
-            tasksRepositoryOld.deleteAttachment(_state.value.commonTaskType, attachment.id)
+            tasksRepositoryOld.deleteAttachment(_state.value.commonTaskType, attachmentDTO.id)
             loadData().join()
             attachments.value.data
         }

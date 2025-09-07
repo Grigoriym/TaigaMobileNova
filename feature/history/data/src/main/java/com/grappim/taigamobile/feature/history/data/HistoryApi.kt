@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.history.data
 
-import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.CommentDTO
 import com.grappim.taigamobile.core.domain.CommonTaskPathSingular
 import retrofit2.http.GET
 import retrofit2.http.POST
@@ -12,7 +12,7 @@ interface HistoryApi {
     suspend fun getCommonTaskComments(
         @Path("taskPath") taskPath: CommonTaskPathSingular,
         @Path("id") id: Long
-    ): List<Comment>
+    ): List<CommentDTO>
 
     @POST("history/{taskPath}/{id}/delete_comment")
     suspend fun deleteCommonTaskComment(

@@ -1,0 +1,132 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
+package com.grappim.taigamobile.feature.issues.ui.list
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.grappim.taigamobile.core.domain.CommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.filters.ui.TaskFilters
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
+import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SubscribeOnError
+import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
+
+@Composable
+fun IssuesScreen(
+    showSnackbar: (message: NativeText) -> Unit,
+    showMessage: (message: Int) -> Unit,
+    goToCreateTask: (CommonTaskType) -> Unit,
+    goToTask: (Long, CommonTaskType, Int) -> Unit,
+    updateData: Boolean,
+    viewModel: IssuesViewModel = hiltViewModel()
+) {
+    val topBarController = LocalTopBarConfig.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        topBarController.update(
+            TopBarConfig(
+                title = NativeText.Resource(RString.issues),
+                actions = listOf(
+                    TopBarActionIconButton(
+                        drawable = RDrawable.ic_add,
+                        contentDescription = "Add",
+                        onClick = {
+                            goToCreateTask(CommonTaskType.Issue)
+                        }
+                    )
+                )
+            )
+        )
+    }
+
+    val issues = viewModel.issues.collectAsLazyPagingItems()
+    issues.SubscribeOnError(showMessage)
+
+    LaunchedEffect(updateData) {
+        if (updateData) {
+            issues.refresh()
+        }
+    }
+
+    LaunchedEffect(state.isFiltersError) {
+        if (state.isFiltersError) {
+            showSnackbar(NativeText.Resource(RString.common_error_message))
+        }
+    }
+
+    IssuesScreenContent(
+        state = state,
+        issues = issues,
+        navigateToTask = goToTask
+    )
+}
+
+@Composable
+fun IssuesScreenContent(
+    state: IssuesState,
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    issues: LazyPagingItems<CommonTask>,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.Start
+    ) {
+        TaskFilters(
+            selected = state.activeFilters,
+            onSelect = state.selectFilters,
+            data = state.filters
+        )
+        PullToRefreshBox(
+            modifier = Modifier.fillMaxSize(),
+            onRefresh = {
+                issues.refresh()
+            },
+            isRefreshing = issues.loadState.refresh is LoadState.Loading
+        ) {
+            LazyColumn {
+                simpleTasksListWithTitle(
+                    commonTasksLazy = issues,
+                    keysHash = state.activeFilters.hashCode(),
+                    navigateToTask = navigateToTask,
+                    horizontalPadding = mainHorizontalScreenPadding,
+                    bottomPadding = commonVerticalPadding
+                )
+            }
+        }
+    }
+}
+
+@PreviewDarkLight
+@Composable
+private fun IssuesScreenPreview() = TaigaMobileTheme {
+    IssuesScreenContent(
+        navigateToTask = { _, _, _ -> },
+        state = IssuesState(),
+        issues = getPagingPreviewItems()
+    )
+}

@@ -4,20 +4,22 @@ import androidx.paging.PagingData
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import kotlinx.coroutines.flow.Flow
 
 interface UserStoriesRepository {
-    fun getUserStories(filters: FiltersData): Flow<PagingData<CommonTask>>
+    fun getUserStories(filters: FiltersDataDTO): Flow<PagingData<CommonTask>>
     suspend fun getAllUserStories(): List<CommonTaskExtended>
-    suspend fun getBacklogUserStories(page: Int, filters: FiltersData): List<CommonTask>
+    suspend fun getBacklogUserStories(page: Int, filters: FiltersDataDTO): List<CommonTask>
 
     suspend fun getUserStories(
         assignedId: Long? = null,
         isClosed: Boolean? = null,
         isDashboard: Boolean? = null,
         watcherId: Long? = null,
-        epicId: Long? = null
+        epicId: Long? = null,
+        project: Long? = null,
+        sprint: Any? = null
     ): List<CommonTask>
 
     suspend fun createUserStory(

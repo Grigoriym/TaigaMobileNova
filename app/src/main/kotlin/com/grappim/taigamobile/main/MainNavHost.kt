@@ -1,6 +1,9 @@
 package com.grappim.taigamobile.main
 
 import KanbanNavDestination
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -18,8 +21,12 @@ import com.grappim.taigamobile.feature.dashboard.ui.DashboardScreen
 import com.grappim.taigamobile.feature.dashboard.ui.navigateToDashboardAsTopDestination
 import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
 import com.grappim.taigamobile.feature.epics.ui.EpicsScreen
-import com.grappim.taigamobile.feature.issues.ui.IssuesNavDestination
-import com.grappim.taigamobile.feature.issues.ui.IssuesScreen
+import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
+import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsScreen
+import com.grappim.taigamobile.feature.issues.ui.details.UPDATE_DATA_ON_BACK
+import com.grappim.taigamobile.feature.issues.ui.details.navigateToIssueDetails
+import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
+import com.grappim.taigamobile.feature.issues.ui.list.IssuesScreen
 import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginScreen
@@ -45,11 +52,21 @@ import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.navigateToWikiPage
 import com.grappim.taigamobile.feature.wiki.ui.page.WikiPageScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navigateToWorkItemEditDescription
+import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
+import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditAssigneeNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditAssigneeScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditAssignee
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun MainNavHost(
     isLogged: Boolean,
+    isNewUiUsed: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
     showSnackbar: (NativeText) -> Unit,
@@ -60,6 +77,12 @@ fun MainNavHost(
         navController = navController,
         startDestination = remember {
             if (isLogged) DashboardNavDestination else LoginNavDestination
+        },
+        enterTransition = {
+            fadeIn(animationSpec = tween(100))
+        },
+        exitTransition = {
+            fadeOut(animationSpec = tween(100))
         }
     ) {
         composable<LoginNavDestination> {
@@ -123,14 +146,78 @@ fun MainNavHost(
             )
         }
 
-        composable<IssuesNavDestination> {
+        composable<IssuesNavDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             IssuesScreen(
+                showSnackbar = showSnackbar,
                 showMessage = showMessage,
                 goToCreateTask = { type ->
                     navController.navigateToCreateTask(type = type)
                 },
+                updateData = updateData,
                 goToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
+                    if (isNewUiUsed) {
+                        navController.navigateToIssueDetails(
+                            taskId = id,
+                            ref = ref
+                        )
+                    } else {
+                        navController.navigateToCommonTask(id, type, ref)
+                    }
+                }
+            )
+        }
+
+        composable<IssueDetailsNavDestination> { navBackStackEntry ->
+            IssueDetailsScreen(
+                showSnackbar = showSnackbar,
+                goToProfile = { creatorId ->
+                    navController.navigateToProfileScreen(creatorId)
+                },
+                goToEditDescription = { description: String ->
+                    navController.navigateToWorkItemEditDescription(
+                        description = description
+                    )
+                },
+                goToEditTags = {
+                    navController.navigateToWorkItemEditTags()
+                },
+                goBackUpdatingData = { updateData ->
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(UPDATE_DATA_ON_BACK, updateData)
+                    navController.popBackStack()
+                },
+                goToEditAssignee = {
+                    navController.navigateToWorkItemEditAssignee()
+                },
+                goToEditWatchers = {
+                    navController.navigateToWorkItemEditAssignee()
+                }
+            )
+        }
+
+        composable<WorkItemEditDescriptionNavDestination> {
+            WorkItemEditDescriptionScreen(
+                goBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<WorkItemEditTagsNavDestination> {
+            WorkItemEditTagsScreen(
+                goBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<WorkItemEditAssigneeNavDestination> {
+            WorkItemEditAssigneeScreen(
+                goBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -193,9 +280,7 @@ fun MainNavHost(
         }
 
         composable<SettingsNavDestination> {
-            SettingsScreen(
-                showSnackbar = showSnackbar
-            )
+            SettingsScreen(showSnackbar = showSnackbar)
         }
 
         composable<SprintNavDestination> {
@@ -232,6 +317,9 @@ fun MainNavHost(
                     navController.navigateToCommonTask(id, taskType, ref)
                 },
                 goBack = {
+                    navController.previousBackStackEntry
+                        ?.savedStateHandle
+                        ?.set(UPDATE_DATA_ON_BACK, true)
                     navController.popBackStack()
                 },
                 navigateToCreateTask = { type, id ->

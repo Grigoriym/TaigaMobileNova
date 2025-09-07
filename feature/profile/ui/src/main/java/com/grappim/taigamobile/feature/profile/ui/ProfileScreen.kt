@@ -31,9 +31,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.core.domain.Stats
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.list.ProjectCard
@@ -62,7 +62,7 @@ fun ProfileScreen(
         )
     }
 
-    val currentUser by viewModel.currentUser.collectAsState()
+    val currentUser by viewModel.currentUserDTO.collectAsState()
     currentUser.SubscribeOnError(showMessage)
     val currentUserStats by viewModel.currentUserStats.collectAsState()
     currentUserStats.SubscribeOnError(showMessage)
@@ -71,9 +71,9 @@ fun ProfileScreen(
     val currentProjectId by viewModel.currentProjectId.collectAsState()
 
     ProfileScreenContent(
-        currentUser = currentUser.data,
+        currentUserDTO = currentUser.data,
         currentUserStats = currentUserStats.data,
-        currentUserProjects = currentUserProjects.data ?: emptyList(),
+        currentUserProjectDTOS = currentUserProjects.data ?: emptyList(),
         currentProjectId = currentProjectId,
         isLoading = currentUser is LoadingResult ||
             currentUserStats is LoadingResult ||
@@ -87,9 +87,9 @@ fun ProfileScreen(
 @Composable
 fun ProfileScreenContent(
     modifier: Modifier = Modifier,
-    currentUser: User? = null,
+    currentUserDTO: UserDTO? = null,
     currentUserStats: Stats? = null,
-    currentUserProjects: List<Project> = emptyList(),
+    currentUserProjectDTOS: List<ProjectDTO> = emptyList(),
     currentProjectId: Long = 0,
     isLoading: Boolean = false,
     isError: Boolean = false
@@ -117,13 +117,13 @@ fun ProfileScreenContent(
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(RDrawable.default_avatar),
                     error = painterResource(RDrawable.default_avatar),
-                    model = currentUser?.avatarUrl
+                    model = currentUserDTO?.avatarUrl
                 )
 
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = currentUser?.fullName.orEmpty(),
+                    text = currentUserDTO?.fullName.orEmpty(),
                     style = MaterialTheme.typography.titleLarge
                 )
 
@@ -132,7 +132,7 @@ fun ProfileScreenContent(
                 Text(
                     text = stringResource(
                         RString.username_template
-                    ).format(currentUser?.username.orEmpty()),
+                    ).format(currentUserDTO?.username.orEmpty()),
                     color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -184,9 +184,9 @@ fun ProfileScreenContent(
                 Spacer(Modifier.height(12.dp))
             }
 
-            items(currentUserProjects) {
+            items(currentUserProjectDTOS) {
                 ProjectCard(
-                    project = it,
+                    projectDTO = it,
                     isCurrent = it.id == currentProjectId
                 )
                 Spacer(Modifier.height(12.dp))
@@ -220,7 +220,7 @@ private fun ColumnTextData(titleText: String, bodyText: String) = Column(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun ProfileScreenPreview() {
-    val currentUser = User(
+    val currentUserDTO = UserDTO(
         id = 123,
         fullName = null,
         photo = null,
@@ -238,8 +238,8 @@ private fun ProfileScreenPreview() {
         totalNumContacts = 48,
         totalNumProjects = 3
     )
-    val currentUserProjects = listOf(
-        Project(
+    val currentUserProjectDTOS = listOf(
+        ProjectDTO(
             id = 1,
             name = "Cool project1",
             slug = "slug",
@@ -247,7 +247,7 @@ private fun ProfileScreenPreview() {
             fansCount = 10,
             watchersCount = 3
         ),
-        Project(
+        ProjectDTO(
             id = 2,
             name = "Cool project2",
             slug = "slug",
@@ -255,7 +255,7 @@ private fun ProfileScreenPreview() {
             fansCount = 1,
             watchersCount = 4
         ),
-        Project(
+        ProjectDTO(
             id = 3,
             name = "Cool project3",
             slug = "slug",
@@ -266,8 +266,8 @@ private fun ProfileScreenPreview() {
     )
 
     ProfileScreenContent(
-        currentUser = currentUser,
+        currentUserDTO = currentUserDTO,
         currentUserStats = currentUserStats,
-        currentUserProjects = currentUserProjects
+        currentUserProjectDTOS = currentUserProjectDTOS
     )
 }

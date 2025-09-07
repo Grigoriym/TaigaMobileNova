@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.wiki.data
 
-import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.feature.wiki.domain.WikiLink
 import com.grappim.taigamobile.feature.wiki.domain.WikiPage
 import okhttp3.MultipartBody
@@ -35,7 +35,7 @@ interface WikiApi {
     suspend fun getPageAttachments(
         @Query("object_id") pageId: Long,
         @Query("project") projectId: Long
-    ): List<Attachment>
+    ): List<AttachmentDTO>
 
     @POST("wiki/attachments")
     @Multipart

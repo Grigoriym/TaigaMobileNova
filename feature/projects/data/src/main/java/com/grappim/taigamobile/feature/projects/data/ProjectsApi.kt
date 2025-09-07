@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.projects.data
 
-import com.grappim.taigamobile.core.domain.Project
+import com.grappim.taigamobile.core.domain.ProjectDTO
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
@@ -14,8 +14,8 @@ interface ProjectsApi {
         @Query("page_size") pageSize: Int? = null,
         @Query("order_by") orderBy: String = "user_order",
         @Query("slight") slight: Boolean = true
-    ): List<Project>
+    ): List<ProjectDTO>
 
     @GET("projects/{id}")
-    suspend fun getProject(@Path("id") projectId: Long): ProjectResponse
+    suspend fun getProject(@Path("id") projectId: Long): ProjectResponseDTO
 }

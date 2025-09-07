@@ -22,5 +22,5 @@ data class EditCommonTaskRequest(
     val tags: List<List<String>>,
     @Json(name = "blocked_note") val blockedNote: String,
     @Json(name = "is_blocked") val isBlocked: Boolean,
-    val version: Int
+    val version: Long
 )

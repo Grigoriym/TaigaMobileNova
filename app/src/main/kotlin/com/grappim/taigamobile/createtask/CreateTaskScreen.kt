@@ -27,7 +27,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionResource
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
@@ -48,7 +48,7 @@ fun CreateTaskScreen(
                 title = state.toolbarTitle,
                 showBackButton = true,
                 actions = listOf(
-                    TopBarActionResource(
+                    TopBarActionIconButton(
                         drawable = RDrawable.ic_save,
                         contentDescription = "Save",
                         onClick = {

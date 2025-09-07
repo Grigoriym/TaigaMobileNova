@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
 
-fun getUser(): User = User(
+fun getUser(): UserDTO = UserDTO(
     id = 7268,
     fullName = "Flossie Howard",
     photo = "indoctum",

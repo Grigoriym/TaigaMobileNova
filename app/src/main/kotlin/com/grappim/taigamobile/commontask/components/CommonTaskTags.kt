@@ -57,7 +57,7 @@ import com.vanpra.composematerialdialogs.color.ColorPalette
 fun LazyListScope.CommonTaskTags(commonTask: CommonTaskExtended, editActions: EditActions) {
     item {
         FlowRow(
-//            crossAxisAlignment = FlowCrossAxisAlignment.Center,
+            itemVerticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {

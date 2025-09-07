@@ -15,25 +15,24 @@ import androidx.compose.material3.Text
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.button.AddButton
-import com.grappim.taigamobile.uikit.widgets.button.TextButton
+import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButton
 import com.grappim.taigamobile.uikit.widgets.list.UserItemWithAction
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskAssignees(
-    assignees: List<User>,
+    assignees: List<UserDTO>,
     isAssignedToMe: Boolean,
     editActions: EditActions,
     showAssigneesSelector: () -> Unit,
     navigateToProfile: (userId: Long) -> Unit
 ) {
     item {
-        // assigned to
         Text(
             text = stringResource(RString.assigned_to),
             style = MaterialTheme.typography.titleMedium
@@ -42,7 +41,7 @@ fun LazyListScope.CommonTaskAssignees(
 
     itemsIndexed(assignees) { index, item ->
         UserItemWithAction(
-            user = item,
+            userDTO = item,
             onRemoveClick = { editActions.editAssignees.remove(item) },
             onUserItemClick = { navigateToProfile(item.actualId) }
         )
@@ -74,7 +73,7 @@ fun LazyListScope.CommonTaskAssignees(
                 RString.assign_to_me to RDrawable.ic_assignee_to_me
             }
 
-            TextButton(
+            TaigaTextButton(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
                 onClick = {

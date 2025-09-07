@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 interface SprintsRepository {
+    suspend fun getSprintData(sprintId: Long): Result<SprintData>
     fun getSprints(isClosed: Boolean = false): Flow<PagingData<Sprint>>
 
     suspend fun getSprints(page: Int, isClosed: Boolean = false): List<Sprint>

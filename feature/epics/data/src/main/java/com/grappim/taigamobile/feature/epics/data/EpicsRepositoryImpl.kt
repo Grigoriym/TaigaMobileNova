@@ -6,7 +6,7 @@ import androidx.paging.PagingData
 import com.grappim.taigamobile.core.api.toCommonTask
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersData
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import kotlinx.coroutines.flow.Flow
@@ -19,7 +19,7 @@ class EpicsRepositoryImpl @Inject constructor(
 
     private var epicsPagingSource: EpicsPagingSource? = null
 
-    override fun getEpicsPaging(filters: FiltersData): Flow<PagingData<CommonTask>> = Pager(
+    override fun getEpicsPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>> = Pager(
         config = PagingConfig(
             pageSize = 10,
             enablePlaceholders = false

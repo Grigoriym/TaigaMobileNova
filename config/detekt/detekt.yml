@@ -125,7 +125,7 @@ complexity:
         active: false
         ignoredLabels: []
     LargeClass:
-        active: true
+        active: false
         threshold: 600
     LongMethod:
         active: false
@@ -800,7 +800,7 @@ Compose:
         # -- You can optionally have a list of types to be treated as lambdas (e.g. typedefs or fun interfaces not picked up automatically)
         # treatAsLambda: MyLambdaType
     CompositionLocalAllowlist:
-        active: true
+        active: false
         # -- You can optionally define a list of CompositionLocals that are allowed here
         allowedCompositionLocals: LocalTopBarConfig, LocalFilePicker
     CompositionLocalNaming:
