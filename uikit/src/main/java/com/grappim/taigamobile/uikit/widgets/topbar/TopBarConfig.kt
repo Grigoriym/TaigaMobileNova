@@ -15,7 +15,7 @@ data class TopBarConfig(
     /**
      * If you need to have your own navigation, just override it and your action will be called
      * when you click the topBar prefix button.
-     * This does affect the BackHandler (when you are clicking the system back button), for that
+     * This does not affect the BackHandler (when you are clicking the system back button), for that
      * you have to manually setup [androidx.activity.compose.BackHandler]
      */
     val overrideBackHandlerAction: (() -> Unit)? = null,
