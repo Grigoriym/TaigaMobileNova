@@ -15,9 +15,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -44,9 +44,10 @@ class IssuesViewModel @Inject constructor(
     }.cachedIn(viewModelScope)
 
     init {
-        combine(taigaStorage.currentProjectIdFlow, session.taskEdit) {
-            issuesRepository.refreshIssues()
-        }.launchIn(viewModelScope)
+        merge(taigaStorage.currentProjectIdFlow, session.taskEdit)
+            .onEach {
+                issuesRepository.refreshIssues()
+            }.launchIn(viewModelScope)
 
         session.issuesFilters
             .onEach { filters ->
