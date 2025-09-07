@@ -5,6 +5,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.rememberTransition
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -53,7 +54,6 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import com.grappim.taigamobile.uikit.widgets.Chip
 import com.grappim.taigamobile.uikit.widgets.badge.Badge
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
@@ -189,7 +189,7 @@ internal fun <T : Filter> Section(
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickableUnindicated { isExpanded = !isExpanded }
+            modifier = Modifier.clickable { isExpanded = !isExpanded }
         ) {
             val arrowRotation by rememberTransition(
                 transitionState,
