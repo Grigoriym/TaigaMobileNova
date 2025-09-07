@@ -1,26 +1,26 @@
 [versions]
-compose-bom = "2025.07.00"
+compose-bom = "2025.08.01"
 
 compileSdk = "36"
 minSdk = "24"
 targetSdk = "36"
 
 detekt = "1.23.8"
-ktlint = "13.0.0"
+ktlint = "13.1.0"
 moduleGraphAssertion = "2.9.0"
-gradleDoctor = "0.11.0"
+gradleDoctor = "0.12.1"
 dependencyAnalysis = "2.19.0"
 jacocoAggregation = "2.4.6"
 composeRules = "0.4.27"
 
-agp = "8.12.0"
-androidTools = "31.12.0"
+agp = "8.11.1"
+androidTools = "31.13.0"
 androidDesugarJdkLibs = "2.1.5"
 
-kotlin = "2.2.0"
+kotlin = "2.2.10"
 coroutines = "1.10.2"
-ksp = "2.2.0-2.0.2"
-kotlin-serialization-plugin = "2.2.0"
+ksp = "2.2.10-2.0.2"
+kotlin-serialization-plugin = "2.2.10"
 kotlin-serialization-json = "1.9.0"
 kotlinx-collections = "0.4.0"
 
