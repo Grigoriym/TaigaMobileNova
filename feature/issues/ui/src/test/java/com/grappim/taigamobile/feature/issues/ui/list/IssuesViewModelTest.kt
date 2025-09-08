@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.issues.ui
+package com.grappim.taigamobile.feature.issues.ui.list
 
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
@@ -7,7 +7,6 @@ import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
-import com.grappim.taigamobile.feature.issues.ui.list.IssuesViewModel
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.getFiltersDataDTO
 import com.grappim.taigamobile.testing.testException

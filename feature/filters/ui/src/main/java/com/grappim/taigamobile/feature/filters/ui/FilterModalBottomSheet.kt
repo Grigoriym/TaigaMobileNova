@@ -135,7 +135,123 @@ private fun FilterErrorContent(onRetry: () -> Unit, isLoading: Boolean) {
                     modifier = Modifier.padding(end = 8.dp)
                 )
             }
-            Text("Retry")
+            Text(stringResource(RString.retry))
+        }
+    }
+}
+
+@Composable
+private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersDataDTO) -> Unit) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        selected.types.forEach {
+            FilterChip(
+                filter = it,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(types = selected.types - it)
+                    )
+                }
+            )
+        }
+
+        selected.severities.forEach {
+            FilterChip(
+                filter = it,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(
+                            severities = selected.severities - it
+                        )
+                    )
+                }
+            )
+        }
+
+        selected.priorities.forEach {
+            FilterChip(
+                filter = it,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(
+                            priorities = selected.priorities - it
+                        )
+                    )
+                }
+            )
+        }
+
+        selected.statuses.forEach {
+            FilterChip(
+                filter = it,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(
+                            statuses = selected.statuses - it
+                        )
+                    )
+                }
+            )
+        }
+
+        selected.tags.forEach {
+            FilterChip(
+                filter = it,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(tags = selected.tags - it)
+                    )
+                }
+            )
+        }
+
+        selected.assignees.forEach {
+            FilterChip(
+                filter = it,
+                noNameId = RString.unassigned,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(
+                            assignees = selected.assignees - it
+                        )
+                    )
+                }
+            )
+        }
+
+        selected.roles.forEach {
+            FilterChip(
+                filter = it,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(roles = selected.roles - it)
+                    )
+                }
+            )
+        }
+
+        selected.createdBy.forEach {
+            FilterChip(
+                filter = it,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(
+                            createdBy = selected.createdBy - it
+                        )
+                    )
+                }
+            )
+        }
+
+        selected.epics.forEach {
+            FilterChip(
+                filter = it,
+                noNameId = RString.not_in_an_epic,
+                onRemoveClick = {
+                    onSelect(
+                        selected.copy(epics = selected.epics - it)
+                    )
+                }
+            )
         }
     }
 }
@@ -148,118 +264,7 @@ private fun FilterNormalContent(
 ) {
     val space = 6.dp
     Column(modifier = Modifier.fillMaxWidth()) {
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            selected.types.forEach {
-                FilterChip(
-                    filter = it,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(types = selected.types - it)
-                        )
-                    }
-                )
-            }
-
-            selected.severities.forEach {
-                FilterChip(
-                    filter = it,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(
-                                severities = selected.severities - it
-                            )
-                        )
-                    }
-                )
-            }
-
-            selected.priorities.forEach {
-                FilterChip(
-                    filter = it,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(
-                                priorities = selected.priorities - it
-                            )
-                        )
-                    }
-                )
-            }
-
-            selected.statuses.forEach {
-                FilterChip(
-                    filter = it,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(
-                                statuses = selected.statuses - it
-                            )
-                        )
-                    }
-                )
-            }
-
-            selected.tags.forEach {
-                FilterChip(
-                    filter = it,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(tags = selected.tags - it)
-                        )
-                    }
-                )
-            }
-
-            selected.assignees.forEach {
-                FilterChip(
-                    filter = it,
-                    noNameId = RString.unassigned,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(
-                                assignees = selected.assignees - it
-                            )
-                        )
-                    }
-                )
-            }
-
-            selected.roles.forEach {
-                FilterChip(
-                    filter = it,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(roles = selected.roles - it)
-                        )
-                    }
-                )
-            }
-
-            selected.createdBy.forEach {
-                FilterChip(
-                    filter = it,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(
-                                createdBy = selected.createdBy - it
-                            )
-                        )
-                    }
-                )
-            }
-
-            selected.epics.forEach {
-                FilterChip(
-                    filter = it,
-                    noNameId = RString.not_in_an_epic,
-                    onRemoveClick = {
-                        onSelect(
-                            selected.copy(epics = selected.epics - it)
-                        )
-                    }
-                )
-            }
-        }
+        SelectedFiltersContent(selected, onSelect)
 
         if (selected.filtersNumber > 0) {
             Spacer(Modifier.height(space))

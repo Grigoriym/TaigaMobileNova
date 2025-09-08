@@ -141,6 +141,10 @@ class IssueDetailsViewModel @Inject constructor(
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
 
+        loadIssue()
+    }
+
+    private fun loadIssue() {
         viewModelScope.launch {
             _state.update {
                 it.copy(isLoading = true)
