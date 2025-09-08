@@ -25,7 +25,24 @@ doctor {
     disallowCleanTaskDependencies.set(true)
     warnWhenJetifierEnabled.set(true)
     javaHome {
+        ensureJavaHomeMatches.set(false)
+        ensureJavaHomeIsSet.set(false)
         failOnError.set(false)
+    }
+}
+
+allprojects {
+    tasks.withType<Test> {
+        failFast = true
+        reports {
+            html.required.set(true)
+        }
+        testLogging {
+            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+            showStandardStreams = true
+            exceptionFormat = TestExceptionFormat.FULL
+            showExceptions = true
+        }
     }
 }
 
@@ -48,7 +65,7 @@ subprojects {
     // ./gradlew ktlintFormat
     // ./gradlew addKtlintCheckGitPreCommitHook
     configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-        version.set("1.5.0")
+        version.set("1.7.1")
         android.set(true)
         ignoreFailures.set(false)
         verbose.set(true)
@@ -62,22 +79,9 @@ subprojects {
         }
     }
 
-    tasks.withType<Test> {
-        failFast = true
-        reports {
-            html.required.set(true)
-        }
-        testLogging {
-            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-            showStandardStreams = true
-            exceptionFormat = TestExceptionFormat.FULL
-            showExceptions = true
-        }
-    }
-
     dependencies {
-        ktlintRuleset("io.nlopez.compose.rules:ktlint:0.4.22")
-        detektPlugins("io.nlopez.compose.rules:detekt:0.4.22")
+        ktlintRuleset("io.nlopez.compose.rules:ktlint:0.4.27")
+        detektPlugins("io.nlopez.compose.rules:detekt:0.4.27")
     }
 }
 

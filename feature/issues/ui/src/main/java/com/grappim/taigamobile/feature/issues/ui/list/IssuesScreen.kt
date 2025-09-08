@@ -28,20 +28,19 @@ import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
-import com.grappim.taigamobile.utils.ui.SubscribeOnError
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 
 @Composable
 fun IssuesScreen(
     showSnackbar: (message: NativeText, actionLabel: String?) -> Unit,
-    showMessage: (message: Int) -> Unit,
-    goToCreateTask: (CommonTaskType) -> Unit,
+    goToCreateTask: () -> Unit,
     goToTask: (Long, CommonTaskType, Int) -> Unit,
     updateData: Boolean,
     viewModel: IssuesViewModel = hiltViewModel()
@@ -49,6 +48,7 @@ fun IssuesScreen(
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
+    val issues = viewModel.issues.collectAsLazyPagingItems()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -60,7 +60,7 @@ fun IssuesScreen(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = {
-                            goToCreateTask(CommonTaskType.Issue)
+                            goToCreateTask()
                         }
                     )
                 )
@@ -68,8 +68,14 @@ fun IssuesScreen(
         )
     }
 
-    val issues = viewModel.issues.collectAsLazyPagingItems()
-    issues.SubscribeOnError(showMessage)
+    LaunchedEffect(issues.loadState.hasError) {
+        if (issues.loadState.hasError) {
+            showSnackbar(
+                NativeText.Resource(RString.error_loading_issues),
+                context.getString(RString.close)
+            )
+        }
+    }
 
     ObserveAsEvents(viewModel.snackBarMessage) { snackbarMessage ->
         if (snackbarMessage !is NativeText.Empty) {
@@ -119,14 +125,25 @@ fun IssuesScreenContent(
             },
             isRefreshing = issues.loadState.refresh is LoadState.Loading || state.isFiltersLoading
         ) {
-            LazyColumn {
-                simpleTasksListWithTitle(
-                    commonTasksLazy = issues,
-                    keysHash = state.activeFilters.hashCode(),
-                    navigateToTask = navigateToTask,
-                    horizontalPadding = mainHorizontalScreenPadding,
-                    bottomPadding = commonVerticalPadding
-                )
+            when {
+                issues.loadState.hasError && issues.itemCount == 0 -> {
+                    ErrorStateWidget(
+                        message = NativeText.Resource(RString.error_loading_issues),
+                        onRetry = { issues.refresh() }
+                    )
+                }
+
+                else -> {
+                    LazyColumn {
+                        simpleTasksListWithTitle(
+                            commonTasksLazy = issues,
+                            keysHash = state.activeFilters.hashCode(),
+                            navigateToTask = navigateToTask,
+                            horizontalPadding = mainHorizontalScreenPadding,
+                            bottomPadding = commonVerticalPadding
+                        )
+                    }
+                }
             }
         }
     }

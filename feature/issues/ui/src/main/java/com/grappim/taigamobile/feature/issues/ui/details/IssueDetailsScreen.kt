@@ -55,7 +55,7 @@ fun IssueDetailsScreen(
     goToProfile: (userId: Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
-    goBackUpdatingData: (updateData: Boolean) -> Unit,
+    goBack: () -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
     viewModel: IssueDetailsViewModel = hiltViewModel()
@@ -73,7 +73,7 @@ fun IssueDetailsScreen(
                 title = state.toolbarTitle,
                 showBackButton = true,
                 overrideBackHandlerAction = {
-                    goBackUpdatingData(true)
+                    goBack()
                 },
                 actions = listOf(
                     TopBarActionIconButton(
@@ -89,7 +89,7 @@ fun IssueDetailsScreen(
     }
 
     BackHandler {
-        goBackUpdatingData(true)
+        goBack()
     }
 
     LaunchedEffect(state.error) {
@@ -106,7 +106,7 @@ fun IssueDetailsScreen(
 
     LaunchedEffect(deleteTrigger) {
         if (deleteTrigger) {
-            goBackUpdatingData(true)
+            goBack()
         }
     }
 
