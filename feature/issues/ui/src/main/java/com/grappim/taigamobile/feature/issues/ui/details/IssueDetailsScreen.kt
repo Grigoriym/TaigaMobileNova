@@ -93,12 +93,6 @@ fun IssueDetailsScreen(
         goBack()
     }
 
-    LaunchedEffect(state.initialLoadError) {
-        if (state.initialLoadError !is NativeText.Empty) {
-            showSnackbar(state.initialLoadError)
-        }
-    }
-
     LaunchedEffect(state.error) {
         if (state.error !is NativeText.Empty) {
             showSnackbar(state.error)
