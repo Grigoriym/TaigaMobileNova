@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.grappim.taigamobile.feature.issues.ui.details
 
 import android.net.Uri
@@ -45,6 +47,7 @@ import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -120,7 +123,8 @@ class IssueDetailsViewModel @Inject constructor(
             onRemoveWatcherClick = ::onRemoveWatcherClick,
             removeWatcher = ::removeWatcher,
             removeAssignee = ::removeAssignee,
-            onRemoveAssigneeClick = ::onRemoveAssigneeClick
+            onRemoveAssigneeClick = ::onRemoveAssigneeClick,
+            retryLoadIssue = ::retryLoadIssue
         )
     )
     val state = _state.asStateFlow()
@@ -144,10 +148,17 @@ class IssueDetailsViewModel @Inject constructor(
         loadIssue()
     }
 
+    private fun retryLoadIssue() {
+        loadIssue()
+    }
+
     private fun loadIssue() {
         viewModelScope.launch {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(
+                    isLoading = true,
+                    initialLoadError = NativeText.Empty
+                )
             }
             issueDetailsDataUseCase.getIssueData(
                 taskId = taskId,
@@ -207,13 +218,18 @@ class IssueDetailsViewModel @Inject constructor(
                         isWatchedByMe = result.isWatchedByMe,
                         customFieldsVersion = result.customFields.version,
                         customFieldStateItems = customFieldsStateItems.await(),
-                        filtersData = result.filtersData
+                        filtersData = result.filtersData,
+                        initialLoadError = NativeText.Empty
                     )
                 }
             }.onFailure { error ->
                 Timber.e(error)
+                val errorToShow = getErrorMessage(error)
                 _state.update {
-                    it.copy(isLoading = false)
+                    it.copy(
+                        isLoading = false,
+                        initialLoadError = errorToShow
+                    )
                 }
             }
         }

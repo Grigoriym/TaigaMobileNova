@@ -171,11 +171,14 @@ private fun MainScreenContent(
                     },
                     showSnackbar = { text ->
                         scope.launch {
-                            snackbarHostState.showSnackbar(
+                            val result = snackbarHostState.showSnackbar(
                                 message = text.asString(context),
-                                actionLabel = null,
+                                actionLabel = context.getString(RString.close),
                                 duration = SnackbarDuration.Short
                             )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                            }
                         }
                     },
                     showSnackbarAction = { text, action ->

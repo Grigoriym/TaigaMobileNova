@@ -42,6 +42,7 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
 import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -90,6 +91,12 @@ fun IssueDetailsScreen(
 
     BackHandler {
         goBack()
+    }
+
+    LaunchedEffect(state.initialLoadError) {
+        if (state.initialLoadError !is NativeText.Empty) {
+            showSnackbar(state.initialLoadError)
+        }
     }
 
     LaunchedEffect(state.error) {
@@ -198,7 +205,15 @@ fun IssueDetailsScreen(
         onDismiss = { state.setIsDeleteDialogVisible(false) }
     )
 
-    if (state.currentIssue != null) {
+    if (state.initialLoadError !is NativeText.Empty) {
+        ErrorStateWidget(
+            modifier = Modifier.fillMaxSize(),
+            message = state.initialLoadError,
+            onRetry = {
+                state.retryLoadIssue()
+            }
+        )
+    } else if (state.currentIssue != null) {
         IssueDetailsScreenContent(
             state = state,
             goToProfile = goToProfile,
