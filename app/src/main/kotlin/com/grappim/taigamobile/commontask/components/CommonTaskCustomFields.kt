@@ -16,7 +16,7 @@ import com.grappim.taigamobile.core.domain.CustomFieldValue
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.widgets.CustomFieldOldWidget
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 @Suppress("FunctionName")
@@ -57,7 +57,7 @@ fun LazyListScope.CommonTaskCustomFields(
     item {
         if (editActions.editCustomField.isLoading) {
             Spacer(Modifier.height(8.dp))
-            DotsLoader()
+            DotsLoaderWidget()
         }
     }
 }

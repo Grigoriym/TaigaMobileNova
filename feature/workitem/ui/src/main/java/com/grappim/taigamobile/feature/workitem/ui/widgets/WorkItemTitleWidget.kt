@@ -20,7 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 
 @Composable
 fun WorkItemTitleWidget(
@@ -71,7 +71,7 @@ fun WorkItemTitleWidget(
                         Text(stringResource(RString.save))
                     }
                     if (isLoading) {
-                        CircularLoader(modifier = Modifier.size(40.dp))
+                        CircularLoaderWidget(modifier = Modifier.size(40.dp))
                     }
                 }
             }

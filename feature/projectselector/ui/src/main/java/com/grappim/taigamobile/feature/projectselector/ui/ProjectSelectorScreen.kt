@@ -33,7 +33,7 @@ import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -116,7 +116,7 @@ fun ProjectSelectorScreenContent(
 
 @Composable
 private fun ItemProject(projectDTO: ProjectDTO, currentProjectId: Long, onClick: () -> Unit = {}) {
-    ContainerBox(
+    ContainerBoxWidget(
         verticalPadding = 16.dp,
         onClick = onClick
     ) {

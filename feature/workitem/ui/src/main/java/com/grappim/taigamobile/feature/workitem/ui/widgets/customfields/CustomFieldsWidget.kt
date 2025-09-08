@@ -41,7 +41,7 @@ import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
 import kotlinx.collections.immutable.ImmutableList
@@ -95,7 +95,7 @@ fun CustomFieldsSectionWidget(
                 }
                 if (isCustomFieldsLoading) {
                     TaigaHeightSpacer(8.dp)
-                    DotsLoader()
+                    DotsLoaderWidget()
                 }
                 TaigaHeightSpacer(10.dp)
             }

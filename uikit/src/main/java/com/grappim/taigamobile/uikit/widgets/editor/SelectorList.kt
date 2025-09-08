@@ -36,7 +36,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import com.grappim.taigamobile.uikit.widgets.AppBarWithBackButton
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.utils.ui.OnBackPressed
 
 /**
@@ -142,7 +142,7 @@ fun <T : Any> SelectorList(
 
                 item {
                     if (isLoading) {
-                        DotsLoader()
+                        DotsLoaderWidget()
                     }
                     Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
                 }

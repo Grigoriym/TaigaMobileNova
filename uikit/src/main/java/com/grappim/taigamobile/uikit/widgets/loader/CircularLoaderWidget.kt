@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
  * Centered circular loader for some screens
  */
 @Composable
-fun CircularLoader(modifier: Modifier = Modifier) {
+fun CircularLoaderWidget(modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxWidth()

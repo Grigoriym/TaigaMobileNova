@@ -19,10 +19,10 @@ import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.button.AddButton
-import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButton
+import com.grappim.taigamobile.uikit.widgets.button.AddButtonWidget
+import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButtonWidget
 import com.grappim.taigamobile.uikit.widgets.list.UserItemWithAction
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 
 @Suppress("FunctionName")
 fun LazyListScope.CommonTaskWatchers(
@@ -54,13 +54,13 @@ fun LazyListScope.CommonTaskWatchers(
     // add watcher & loader
     item {
         if (editActions.editWatchers.isLoading) {
-            DotsLoader()
+            DotsLoaderWidget()
         }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start
         ) {
-            AddButton(
+            AddButtonWidget(
                 text = stringResource(RString.add_watcher),
                 onClick = { showWatchersSelector() }
             )
@@ -73,7 +73,7 @@ fun LazyListScope.CommonTaskWatchers(
                 RString.watch to RDrawable.ic_watch
             }
 
-            TaigaTextButton(
+            TaigaTextButtonWidget(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
                 onClick = {

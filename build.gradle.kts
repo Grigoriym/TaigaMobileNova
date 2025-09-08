@@ -110,6 +110,9 @@ private val coverageExclusions = listOf(
     "**/SavedStateHandleRule*",
     "**/*Api",
 
+    "**/TaigaApp",
+    "**/DrawerDestination",
+
     "**/*Screen",
     "**/*Activity",
     "**/*Screen*",
@@ -125,8 +128,8 @@ private val coverageExclusions = listOf(
     "**/MainNavHost",
 
     "**/testing/*",
-    "**/uikit/theme/*",
-    "**/uikit/widgets/*",
+    "**/uikit/**/*",
+    "**/uikit/*",
     "**/FileLoggingTree"
 ).flatMap {
     listOf(

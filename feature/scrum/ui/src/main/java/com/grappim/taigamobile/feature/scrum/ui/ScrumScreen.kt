@@ -49,12 +49,12 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
-import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
+import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPagerWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.EditSprintDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
@@ -173,7 +173,7 @@ fun ScrumScreenContent(
         LoadingDialog()
     }
 
-    HorizontalTabbedPager(
+    HorizontalTabbedPagerWidget(
         modifier = Modifier.fillMaxSize(),
         tabs = state.tabs.toTypedArray(),
         pagerState = pagerState
@@ -256,7 +256,7 @@ private fun SprintsTabContent(
             if (openSprints.loadState.refresh is LoadState.Loading ||
                 openSprints.loadState.append is LoadState.Loading
             ) {
-                DotsLoader()
+                DotsLoaderWidget()
             }
         }
 
@@ -295,7 +295,7 @@ private fun SprintsTabContent(
                 if (closedSprints.loadState.refresh is LoadState.Loading ||
                     closedSprints.loadState.append is LoadState.Loading
                 ) {
-                    DotsLoader()
+                    DotsLoaderWidget()
                 }
             }
         }
@@ -311,67 +311,68 @@ private fun SprintsTabContent(
 }
 
 @Composable
-private fun SprintItem(sprint: Sprint, navigateToBoard: (Sprint) -> Unit = {}) = ContainerBox {
-    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
+private fun SprintItem(sprint: Sprint, navigateToBoard: (Sprint) -> Unit = {}) =
+    ContainerBoxWidget {
+        val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(Modifier.weight(0.7f)) {
-            Text(
-                text = sprint.name,
-                style = MaterialTheme.typography.titleMedium
-            )
-
-            Text(
-                stringResource(RString.sprint_dates_template).format(
-                    sprint.start.format(dateFormatter),
-                    sprint.end.format(dateFormatter)
-                )
-            )
-
-            Row {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Column(Modifier.weight(0.7f)) {
                 Text(
-                    text = stringResource(
-                        RString.stories_count_template
-                    ).format(sprint.storiesCount),
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyMedium
+                    text = sprint.name,
+                    style = MaterialTheme.typography.titleMedium
                 )
 
-                Spacer(Modifier.width(6.dp))
+                Text(
+                    stringResource(RString.sprint_dates_template).format(
+                        sprint.start.format(dateFormatter),
+                        sprint.end.format(dateFormatter)
+                    )
+                )
 
-                if (sprint.isClosed) {
+                Row {
                     Text(
-                        text = stringResource(RString.closed),
-                        color = MaterialTheme.colorScheme.outline,
+                        text = stringResource(
+                            RString.stories_count_template
+                        ).format(sprint.storiesCount),
+                        color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodyMedium
                     )
+
+                    Spacer(Modifier.width(6.dp))
+
+                    if (sprint.isClosed) {
+                        Text(
+                            text = stringResource(RString.closed),
+                            color = MaterialTheme.colorScheme.outline,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
-        }
 
-        // TODO the only place I had to comment the code since the usage is internal and I couldn't find
-        // anything to change it
-        buttonColors().let {
+            // TODO the only place I had to comment the code since the usage is internal and I couldn't find
+            // anything to change it
+            buttonColors().let {
 //            val containerColor by it.containerColor(!sprint.isClosed)
 //            val contentColor by it.contentColor(!sprint.isClosed)
 
-            Button(
-                onClick = { navigateToBoard(sprint) },
-                modifier = Modifier.weight(0.3f)
+                Button(
+                    onClick = { navigateToBoard(sprint) },
+                    modifier = Modifier.weight(0.3f)
 //                colors = buttonColors(
 //                    containerColor = containerColor,
 //                    contentColor = contentColor
 //                )
-            ) {
-                Text(stringResource(RString.taskboard))
+                ) {
+                    Text(stringResource(RString.taskboard))
+                }
             }
         }
     }
-}
 
 @Preview(showBackground = true)
 @Composable

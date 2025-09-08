@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
-fun PlusButton(
+fun PlusButtonWidget(
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.primary,
     onClick: () -> Unit = {}

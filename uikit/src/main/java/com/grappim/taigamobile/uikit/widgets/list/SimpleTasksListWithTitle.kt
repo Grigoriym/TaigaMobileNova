@@ -20,7 +20,7 @@ import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 /**
@@ -89,7 +89,7 @@ fun LazyListScope.simpleTasksListWithTitle(
 
     item {
         if (isLoading) {
-            DotsLoader()
+            DotsLoaderWidget()
         }
         Spacer(Modifier.height(bottomPadding))
     }

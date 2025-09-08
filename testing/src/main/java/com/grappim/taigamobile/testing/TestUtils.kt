@@ -4,10 +4,13 @@ import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import java.io.File
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import kotlin.random.Random
 
 val nowDate = OffsetDateTime.now()
+
+val nowLocalDate = LocalDate.now()
 
 fun getRandomLong(): Long = Random.nextLong()
 

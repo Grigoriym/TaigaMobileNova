@@ -21,7 +21,7 @@ fun getCommonTaskResponse(): CommonTaskResponse =
             color = "#FF5722",
             name = getRandomString()
         ),
-        projectDTOExtraInfo = getProject(),
+        projectDTOExtraInfo = getProjectDTO(),
         milestone = getRandomLong(),
         assignedUsers = listOf(getRandomLong(), getRandomLong()),
         assignedTo = getRandomLong(),
@@ -59,7 +59,7 @@ fun getCommonTask(newId: Long = getRandomLong()): CommonTask = CommonTask(
         type = StatusType.Status
     ),
     assignee = getUserDTO(),
-    projectDTOInfo = getProject(),
+    projectDTOInfo = getProjectDTO(),
     taskType = CommonTaskType.Issue,
     isClosed = getRandomBoolean(),
     tags = listOf(

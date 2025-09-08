@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.projects.data
 
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
-import com.grappim.taigamobile.testing.getProject
+import com.grappim.taigamobile.testing.getProjectDTO
 import com.grappim.taigamobile.testing.getRandomLong
 import io.mockk.coEvery
 import io.mockk.every
@@ -21,8 +21,8 @@ class ProjectsRepositoryImplTest {
     fun `on getMyProjects return projects from api`() = runTest {
         val userId = getRandomLong()
         val expected = listOf(
-            getProject(),
-            getProject()
+            getProjectDTO(),
+            getProjectDTO()
         )
         every { session.userId } returns userId
         coEvery { projectsApi.getProjects(memberId = userId) } returns expected
@@ -37,8 +37,8 @@ class ProjectsRepositoryImplTest {
     fun `on getUserProjects return projects from api`() = runTest {
         val userId = getRandomLong()
         val expected = listOf(
-            getProject(),
-            getProject()
+            getProjectDTO(),
+            getProjectDTO()
         )
 
         coEvery { projectsApi.getProjects(memberId = userId) } returns expected

@@ -27,7 +27,7 @@ import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
@@ -58,7 +58,7 @@ fun LazyListScope.CommonTaskComments(
 
     item {
         if (editActions.editComments.isLoading) {
-            DotsLoader()
+            DotsLoaderWidget()
         }
     }
 }

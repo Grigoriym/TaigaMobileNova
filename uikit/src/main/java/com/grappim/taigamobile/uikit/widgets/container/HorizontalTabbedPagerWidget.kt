@@ -32,7 +32,7 @@ import kotlinx.coroutines.launch
  * Swipeable tabs
  */
 @Composable
-fun HorizontalTabbedPager(
+fun HorizontalTabbedPagerWidget(
     tabs: Array<out Tab>,
     pagerState: PagerState,
     modifier: Modifier = Modifier,

@@ -22,7 +22,7 @@ import com.grappim.taigamobile.core.navigation.NavigateToTask
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.toColor
 import java.time.LocalDateTime
@@ -40,7 +40,7 @@ fun CommonTaskItem(
     verticalPadding: Dp = 8.dp,
     showExtendedInfo: Boolean = false,
     navigateToTask: NavigateToTask = { _, _, _ -> }
-) = ContainerBox(
+) = ContainerBoxWidget(
     modifier = modifier,
     horizontalPadding = horizontalPadding,
     verticalPadding = verticalPadding,
