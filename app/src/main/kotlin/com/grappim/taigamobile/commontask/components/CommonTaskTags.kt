@@ -43,7 +43,7 @@ import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.Chip
-import com.grappim.taigamobile.uikit.widgets.button.AddButton
+import com.grappim.taigamobile.uikit.widgets.button.AddButtonWidget
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.widgets.picker.ColorPicker
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
@@ -77,7 +77,7 @@ fun LazyListScope.CommonTaskTags(commonTask: CommonTaskExtended, editActions: Ed
                     color = MaterialTheme.colorScheme.primary
                 )
             } else {
-                AddButton(
+                AddButtonWidget(
                     text = stringResource(RString.add_tag),
                     onClick = { isAddTagDialogVisible = true }
                 )

@@ -83,3 +83,15 @@ The project follows a feature-based modular architecture:
 - Requires JDK 17+
 - Use latest Android Studio version
 - Project uses Gradle Version Catalogs (`gradle/libs.versions.toml`) for dependency management
+
+# important-instruction-reminders
+
+Do what has been asked; nothing more, nothing less.
+NEVER create files unless they're absolutely necessary for achieving your goal.
+ALWAYS prefer editing an existing file to creating a new one.
+NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
+
+## Code Style
+
+- DO NOT add comments to code unless explicitly requested by the user
+- Write clean, self-documenting code without unnecessary comments

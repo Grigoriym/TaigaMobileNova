@@ -17,7 +17,7 @@ import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditAction
 import com.grappim.taigamobile.uikit.SimpleEditAction
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.editor.SelectorList
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
@@ -206,7 +206,7 @@ class SelectorEntry<TItem : Any>(
 )
 
 @Composable
-private fun StatusItem(statusOld: StatusOld, onClick: () -> Unit) = ContainerBox(
+private fun StatusItem(statusOld: StatusOld, onClick: () -> Unit) = ContainerBoxWidget(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -217,7 +217,7 @@ private fun StatusItem(statusOld: StatusOld, onClick: () -> Unit) = ContainerBox
 }
 
 @Composable
-private fun SprintItem(sprint: Sprint?, onClick: () -> Unit) = ContainerBox(
+private fun SprintItem(sprint: Sprint?, onClick: () -> Unit) = ContainerBoxWidget(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -258,7 +258,7 @@ private fun SprintItem(sprint: Sprint?, onClick: () -> Unit) = ContainerBox(
 }
 
 @Composable
-private fun MemberItem(member: UserDTO, onClick: () -> Unit) = ContainerBox(
+private fun MemberItem(member: UserDTO, onClick: () -> Unit) = ContainerBoxWidget(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -266,7 +266,7 @@ private fun MemberItem(member: UserDTO, onClick: () -> Unit) = ContainerBox(
 }
 
 @Composable
-private fun EpicItem(epic: CommonTask, onClick: () -> Unit) = ContainerBox(
+private fun EpicItem(epic: CommonTask, onClick: () -> Unit) = ContainerBoxWidget(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
@@ -279,7 +279,7 @@ private fun EpicItem(epic: CommonTask, onClick: () -> Unit) = ContainerBox(
 }
 
 @Composable
-private fun SwimlaneItem(swimlaneDTO: SwimlaneDTO, onClick: () -> Unit) = ContainerBox(
+private fun SwimlaneItem(swimlaneDTO: SwimlaneDTO, onClick: () -> Unit) = ContainerBoxWidget(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {

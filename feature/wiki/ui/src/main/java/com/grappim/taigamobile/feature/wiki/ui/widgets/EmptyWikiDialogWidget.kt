@@ -19,7 +19,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButton
+import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButtonWidget
 
 @Composable
 fun EmptyWikiDialogWidget(
@@ -56,7 +56,7 @@ fun EmptyWikiDialogWidget(
             Spacer(modifier = Modifier.height(24.dp))
 
             if (isButtonAvailable) {
-                TaigaTextButton(
+                TaigaTextButtonWidget(
                     text = stringResource(RString.create_new_page),
                     onClick = createNewPage
                 )

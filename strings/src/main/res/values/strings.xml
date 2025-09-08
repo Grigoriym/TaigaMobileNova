@@ -15,6 +15,9 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="close">Close</string>
+
+    <string name="filters_loading_error">Something went wrong loading filters</string>
 
     <string name="common_error_message">An error has occurred. Check your connection</string>
     <string name="permission_error">Error, you may not have sufficient permissions</string>
@@ -251,4 +254,7 @@
     <string name="connection_failed">Connection error</string>
     <string name="timeout_exceeded">Waiting limit exceeded</string>
     <string name="auth_error_refresh_token_not_passed">For security reasons, your session was closed</string>
+    <string name="error_loading_data">Failed to load data</string>
+    <string name="error_loading_issues">Failed to load issues</string>
+    <string name="retry">Retry</string>
 </resources>

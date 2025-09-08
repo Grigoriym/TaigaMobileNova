@@ -1,13 +1,24 @@
 package com.grappim.taigamobile.testing
 
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.UserDTO
 
-fun getUser(): UserDTO = UserDTO(
-    id = 7268,
-    fullName = "Flossie Howard",
-    photo = "indoctum",
-    bigPhoto = "pericula",
-    username = "Tamika Gallagher",
-    name = "Karla Buck",
-    pk = 6651
+fun getUserDTO(): UserDTO = UserDTO(
+    id = getRandomLong(),
+    fullName = getRandomString(),
+    photo = getRandomString(),
+    bigPhoto = getRandomString(),
+    username = getRandomString(),
+    name = getRandomString(),
+    pk = getRandomLong()
+)
+
+fun getUser(): User = User(
+    id = getRandomLong(),
+    fullName = getRandomString(),
+    photo = getRandomString(),
+    bigPhoto = getRandomString(),
+    username = getRandomString(),
+    name = getRandomString(),
+    pk = getRandomLong()
 )

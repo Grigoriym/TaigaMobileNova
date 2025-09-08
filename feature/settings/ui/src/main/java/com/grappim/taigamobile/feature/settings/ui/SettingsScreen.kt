@@ -52,8 +52,8 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -87,7 +87,7 @@ fun SettingsScreen(
     }
 
     if (state.isLoading) {
-        CircularLoader(modifier = Modifier.fillMaxSize())
+        CircularLoaderWidget(modifier = Modifier.fillMaxSize())
     }
 
     if (state.userDTO != null) {
@@ -247,7 +247,7 @@ private fun SettingItem(
     onClick: () -> Unit = {},
     item: @Composable BoxScope.() -> Unit = {}
 ) {
-    ContainerBox(
+    ContainerBoxWidget(
         verticalPadding = 10.dp,
         onClick = onClick
     ) {

@@ -24,10 +24,10 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
+import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPagerWidget
 import com.grappim.taigamobile.uikit.widgets.list.ProjectCard
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -81,10 +81,10 @@ fun DashboardScreenContent(
                 contentAlignment = Alignment.Center,
                 modifier = Modifier.fillMaxSize()
             ) {
-                CircularLoader()
+                CircularLoaderWidget()
             }
         } else {
-            HorizontalTabbedPager(
+            HorizontalTabbedPagerWidget(
                 modifier = Modifier.fillMaxSize(),
                 tabs = DashboardTabs.entries.toTypedArray(),
                 pagerState = rememberPagerState(pageCount = { DashboardTabs.entries.size })

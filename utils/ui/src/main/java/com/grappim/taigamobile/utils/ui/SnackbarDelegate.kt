@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 
-interface SnackbarStateViewModel {
+interface SnackbarDelegate {
     val snackBarMessage: SharedFlow<NativeText>
     suspend fun showSnackbarSuspend(message: NativeText)
 }
 
-class SnackbarStateViewModelImpl : SnackbarStateViewModel {
+class SnackbarDelegateImpl : SnackbarDelegate {
     private val _snackBarMessage = MutableSharedFlow<NativeText>()
     override val snackBarMessage: SharedFlow<NativeText>
         get() = _snackBarMessage.asSharedFlow()

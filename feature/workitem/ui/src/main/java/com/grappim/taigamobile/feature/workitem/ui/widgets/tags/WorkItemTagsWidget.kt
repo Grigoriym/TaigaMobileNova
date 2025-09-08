@@ -13,7 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.button.AddButton
+import com.grappim.taigamobile.uikit.widgets.button.AddButtonWidget
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -46,7 +46,7 @@ fun WorkItemTagsWidget(
                     color = MaterialTheme.colorScheme.primary
                 )
             } else {
-                AddButton(
+                AddButtonWidget(
                     text = stringResource(RString.edit_tags),
                     onClick = {
                         goToEditTags()

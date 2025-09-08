@@ -22,6 +22,12 @@ import kotlinx.collections.immutable.persistentSetOf
 
 data class IssueDetailsState(
     val isLoading: Boolean = false,
+    /**
+     * We use it on first load, so that we could reload whole issue
+     */
+    val initialLoadError: NativeText = NativeText.Empty,
+    val retryLoadIssue: () -> Unit = {},
+
     val error: NativeText = NativeText.Empty,
 
     val currentIssue: IssueTask? = null,

@@ -19,7 +19,7 @@ import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
  * It is clickable, has padding inside and ripple effect
  */
 @Composable
-fun ContainerBox(
+fun ContainerBoxWidget(
     modifier: Modifier = Modifier,
     horizontalPadding: Dp = mainHorizontalScreenPadding,
     verticalPadding: Dp = 8.dp,

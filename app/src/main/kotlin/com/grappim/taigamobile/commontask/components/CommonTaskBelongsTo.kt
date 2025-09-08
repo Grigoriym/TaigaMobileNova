@@ -32,9 +32,9 @@ import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.NavigationActions
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.clickableUnindicated
-import com.grappim.taigamobile.uikit.widgets.button.AddButton
+import com.grappim.taigamobile.uikit.widgets.button.AddButtonWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 
 @Suppress("FunctionName")
@@ -58,10 +58,10 @@ fun LazyListScope.CommonTaskBelongsTo(
 
         item {
             if (editActions.editEpics.isLoading) {
-                DotsLoader()
+                DotsLoaderWidget()
             }
 
-            AddButton(
+            AddButtonWidget(
                 text = stringResource(RString.link_to_epic),
                 onClick = { showEpicsSelector() }
             )

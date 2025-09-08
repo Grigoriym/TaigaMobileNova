@@ -15,6 +15,7 @@ import com.grappim.taigamobile.commontask.CommonTaskScreen
 import com.grappim.taigamobile.commontask.navigateToCommonTask
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
+import com.grappim.taigamobile.createtask.navigateToCreateIssue
 import com.grappim.taigamobile.createtask.navigateToCreateTask
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardScreen
@@ -25,6 +26,7 @@ import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestinat
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsScreen
 import com.grappim.taigamobile.feature.issues.ui.details.UPDATE_DATA_ON_BACK
 import com.grappim.taigamobile.feature.issues.ui.details.navigateToIssueDetails
+import com.grappim.taigamobile.feature.issues.ui.details.setUpdateDataOnBack
 import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
 import com.grappim.taigamobile.feature.issues.ui.list.IssuesScreen
 import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
@@ -70,6 +72,7 @@ fun MainNavHost(
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
     showSnackbar: (NativeText) -> Unit,
+    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -150,10 +153,9 @@ fun MainNavHost(
             val updateData: Boolean =
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             IssuesScreen(
-                showSnackbar = showSnackbar,
-                showMessage = showMessage,
-                goToCreateTask = { type ->
-                    navController.navigateToCreateTask(type = type)
+                showSnackbar = showSnackbarAction,
+                goToCreateTask = {
+                    navController.navigateToCreateIssue()
                 },
                 updateData = updateData,
                 goToTask = { id, type, ref ->
@@ -183,10 +185,8 @@ fun MainNavHost(
                 goToEditTags = {
                     navController.navigateToWorkItemEditTags()
                 },
-                goBackUpdatingData = { updateData ->
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set(UPDATE_DATA_ON_BACK, updateData)
+                goBack = {
+                    navController.setUpdateDataOnBack()
                     navController.popBackStack()
                 },
                 goToEditAssignee = {

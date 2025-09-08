@@ -36,7 +36,7 @@ import com.grappim.taigamobile.uikit.R
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
 import kotlinx.collections.immutable.ImmutableList
 import timber.log.Timber
@@ -80,7 +80,7 @@ fun AttachmentsSectionWidget(
             Spacer(Modifier.height(10.dp))
 
             if (isAttachmentsLoading) {
-                DotsLoader()
+                DotsLoaderWidget()
             } else {
                 Button(
                     onClick = {

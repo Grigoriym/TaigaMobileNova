@@ -42,6 +42,7 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
 import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -55,7 +56,7 @@ fun IssueDetailsScreen(
     goToProfile: (userId: Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
-    goBackUpdatingData: (updateData: Boolean) -> Unit,
+    goBack: () -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
     viewModel: IssueDetailsViewModel = hiltViewModel()
@@ -73,7 +74,7 @@ fun IssueDetailsScreen(
                 title = state.toolbarTitle,
                 showBackButton = true,
                 overrideBackHandlerAction = {
-                    goBackUpdatingData(true)
+                    goBack()
                 },
                 actions = listOf(
                     TopBarActionIconButton(
@@ -89,7 +90,7 @@ fun IssueDetailsScreen(
     }
 
     BackHandler {
-        goBackUpdatingData(true)
+        goBack()
     }
 
     LaunchedEffect(state.error) {
@@ -106,7 +107,7 @@ fun IssueDetailsScreen(
 
     LaunchedEffect(deleteTrigger) {
         if (deleteTrigger) {
-            goBackUpdatingData(true)
+            goBack()
         }
     }
 
@@ -198,7 +199,15 @@ fun IssueDetailsScreen(
         onDismiss = { state.setIsDeleteDialogVisible(false) }
     )
 
-    if (state.currentIssue != null) {
+    if (state.initialLoadError !is NativeText.Empty) {
+        ErrorStateWidget(
+            modifier = Modifier.fillMaxSize(),
+            message = state.initialLoadError,
+            onRetry = {
+                state.retryLoadIssue()
+            }
+        )
+    } else if (state.currentIssue != null) {
         IssueDetailsScreenContent(
             state = state,
             goToProfile = goToProfile,

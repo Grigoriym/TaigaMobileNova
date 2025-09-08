@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -98,7 +100,10 @@ fun TaskFilters(
     selected: FiltersDataDTO,
     onSelect: (FiltersDataDTO) -> Unit,
     data: FiltersDataDTO,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isFiltersError: Boolean = false,
+    onRetryFilters: () -> Unit = {},
+    isFiltersLoading: Boolean = false
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -153,6 +158,16 @@ fun TaskFilters(
                     Spacer(Modifier.width(space))
                     Badge(it.toString())
                 }
+
+                if (isFiltersError) {
+                    Spacer(Modifier.width(space))
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = "Filter error",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
 
@@ -164,7 +179,10 @@ fun TaskFilters(
             isBottomSheetVisible = isBottomSheetVisible,
             setBottomSheetVisible = { isBottomSheetVisible = it },
             selected = selected,
-            onSelect = onSelect
+            onSelect = onSelect,
+            isFiltersError = isFiltersError,
+            onRetryFilters = onRetryFilters,
+            isFiltersLoading = isFiltersLoading
         )
     }
 }

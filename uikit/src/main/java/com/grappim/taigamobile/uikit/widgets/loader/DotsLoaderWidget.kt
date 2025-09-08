@@ -28,7 +28,7 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
  * Three dots pulsing
  */
 @Composable
-fun DotsLoader(modifier: Modifier = Modifier) {
+fun DotsLoaderWidget(modifier: Modifier = Modifier) {
     val delayUnit = 300
 
     val infiniteTransition = rememberInfiniteTransition()
@@ -82,5 +82,5 @@ private fun Dot(scale: Float) = Spacer(
 @Preview(showBackground = true)
 @Composable
 private fun DotsLoaderPreview() = TaigaMobileTheme {
-    DotsLoader()
+    DotsLoaderWidget()
 }

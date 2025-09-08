@@ -7,7 +7,7 @@ import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getUser
+import com.grappim.taigamobile.testing.getUserDTO
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -34,7 +34,7 @@ class SettingsViewModelTest {
     private val serverStorage = mockk<ServerStorage>()
     private val appInfoProvider = mockk<AppInfoProvider>()
 
-    private val userResult = Result.success(getUser())
+    private val userResult = Result.success(getUserDTO())
     private val appInfo = getRandomString()
     private val server = getRandomString()
 

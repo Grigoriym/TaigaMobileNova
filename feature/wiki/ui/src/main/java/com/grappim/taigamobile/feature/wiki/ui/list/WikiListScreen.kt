@@ -28,9 +28,9 @@ import com.grappim.taigamobile.feature.wiki.ui.widgets.EmptyWikiDialogWidget
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.Tab
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBox
-import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPager
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
+import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPagerWidget
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
@@ -99,7 +99,7 @@ fun WikiListScreenContent(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            CircularLoader()
+            CircularLoaderWidget()
         }
     }
 
@@ -110,7 +110,7 @@ fun WikiListScreenContent(
     }
     val tabs = WikiTabs.entries.toTypedArray()
 
-    HorizontalTabbedPager(
+    HorizontalTabbedPagerWidget(
         modifier = Modifier.fillMaxSize(),
         tabs = tabs,
         pagerState = rememberPagerState(pageCount = { tabs.size })
@@ -177,7 +177,7 @@ private fun WikiSelectorList(
 }
 
 @Composable
-private fun WikiSelectorItem(title: String, onClick: () -> Unit = {}) = ContainerBox(
+private fun WikiSelectorItem(title: String, onClick: () -> Unit = {}) = ContainerBoxWidget(
     verticalPadding = 16.dp,
     onClick = onClick
 ) {

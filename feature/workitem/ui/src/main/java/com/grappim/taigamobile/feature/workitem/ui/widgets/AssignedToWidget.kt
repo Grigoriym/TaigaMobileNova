@@ -19,9 +19,9 @@ import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
-import com.grappim.taigamobile.uikit.widgets.button.AddButton
-import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButton
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.button.AddButtonWidget
+import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButtonWidget
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
@@ -61,14 +61,14 @@ fun AssignedToWidget(
         }
 
         if (isAssigneesLoading) {
-            DotsLoader()
+            DotsLoaderWidget()
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start
         ) {
-            AddButton(
+            AddButtonWidget(
                 text = stringResource(RString.add_assignee),
                 onClick = onAddAssigneeClick
             )
@@ -81,7 +81,7 @@ fun AssignedToWidget(
                 RString.assign_to_me to RDrawable.ic_assignee_to_me
             }
 
-            TaigaTextButton(
+            TaigaTextButtonWidget(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
                 onClick = {

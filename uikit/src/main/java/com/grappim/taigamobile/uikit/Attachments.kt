@@ -30,7 +30,7 @@ import androidx.core.net.toUri
 import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 import com.grappim.taigamobile.utils.ui.activity
 import java.io.InputStream
@@ -59,7 +59,7 @@ fun LazyListScope.Attachments(
 
     item {
         if (editAttachments.isLoading) {
-            DotsLoader()
+            DotsLoaderWidget()
         }
     }
 }

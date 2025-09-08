@@ -13,6 +13,10 @@ data class CreateTaskNavDestination(
     val swimlaneId: Long?
 )
 
+fun NavController.navigateToCreateIssue() {
+    navigateToCreateTask(CommonTaskType.Issue)
+}
+
 fun NavController.navigateToCreateTask(
     type: CommonTaskType,
     parentId: Long? = null,

@@ -59,7 +59,7 @@ import com.grappim.taigamobile.uikit.theme.cardShadowElevation
 import com.grappim.taigamobile.uikit.theme.kanbanBoardTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.clickableUnindicated
-import com.grappim.taigamobile.uikit.widgets.button.PlusButton
+import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.list.CommonTaskItem
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
@@ -282,7 +282,7 @@ private fun IssueHeader(width: Dp, padding: Dp, backgroundColor: Color, onAddCli
             modifier = Modifier.weight(0.8f, fill = false)
         )
 
-        PlusButton(
+        PlusButtonWidget(
             tint = MaterialTheme.colorScheme.outline,
             onClick = onAddClick,
             modifier = Modifier.weight(0.2f)
@@ -328,7 +328,7 @@ private fun UserStoryItem(
         )
     }
 
-    PlusButton(
+    PlusButtonWidget(
         tint = MaterialTheme.colorScheme.outline,
         onClick = onAddClick,
         modifier = Modifier.weight(0.2f)
@@ -359,7 +359,7 @@ private fun CategoryItem(
                 .padding(top = 4.dp)
         )
 
-        PlusButton(
+        PlusButtonWidget(
             tint = MaterialTheme.colorScheme.outline,
             onClick = onAddClick,
             modifier = Modifier.weight(0.2f)
