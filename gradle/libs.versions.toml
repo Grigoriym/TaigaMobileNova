@@ -44,7 +44,7 @@ constraintLayout = "1.1.1"
 paging = "3.3.6"
 
 gson = "2.12.1"
-robolectric = "4.15.1"
+robolectric = "4.16"
 timber = "5.0.1"
 coil = "3.3.0"
 retrofit = "3.0.0"
