@@ -115,6 +115,9 @@ private val coverageExclusions = listOf(
     "**/*NavDestination",
     "**/*Widget",
     "**/*Dialog",
+    "**/*BottomSheet",
+    "**/TaskFilters",
+    "**/MainNavHost",
 
     "**/testing/*",
     "**/uikit/theme/*",
