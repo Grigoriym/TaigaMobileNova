@@ -11,6 +11,7 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -175,6 +176,18 @@ private fun MainScreenContent(
                                 actionLabel = null,
                                 duration = SnackbarDuration.Short
                             )
+                        }
+                    },
+                    showSnackbarAction = { text, action ->
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = text.asString(context),
+                                actionLabel = action,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                            }
                         }
                     }
                 )

@@ -15,6 +15,9 @@
     <string name="ok">OK</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
+    <string name="close">Close</string>
+
+    <string name="filters_loading_error">Something went wrong loading filters</string>
 
     <string name="common_error_message">An error has occurred. Check your connection</string>
     <string name="permission_error">Error, you may not have sufficient permissions</string>

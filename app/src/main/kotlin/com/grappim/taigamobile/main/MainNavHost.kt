@@ -70,6 +70,7 @@ fun MainNavHost(
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
     showSnackbar: (NativeText) -> Unit,
+    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
@@ -150,7 +151,7 @@ fun MainNavHost(
             val updateData: Boolean =
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             IssuesScreen(
-                showSnackbar = showSnackbar,
+                showSnackbar = showSnackbarAction,
                 showMessage = showMessage,
                 goToCreateTask = { type ->
                     navController.navigateToCreateTask(type = type)

@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
@@ -19,6 +20,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.feature.filters.ui.TaskFilters
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -31,12 +33,13 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 
 @Composable
 fun IssuesScreen(
-    showSnackbar: (message: NativeText) -> Unit,
+    showSnackbar: (message: NativeText, actionLabel: String?) -> Unit,
     showMessage: (message: Int) -> Unit,
     goToCreateTask: (CommonTaskType) -> Unit,
     goToTask: (Long, CommonTaskType, Int) -> Unit,
@@ -45,6 +48,8 @@ fun IssuesScreen(
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val filters by viewModel.filters.collectAsStateWithLifecycle()
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -66,20 +71,21 @@ fun IssuesScreen(
     val issues = viewModel.issues.collectAsLazyPagingItems()
     issues.SubscribeOnError(showMessage)
 
+    ObserveAsEvents(viewModel.snackBarMessage) { snackbarMessage ->
+        if (snackbarMessage !is NativeText.Empty) {
+            showSnackbar(snackbarMessage, context.getString(RString.close))
+        }
+    }
+
     LaunchedEffect(updateData) {
         if (updateData) {
             issues.refresh()
         }
     }
 
-    LaunchedEffect(state.isFiltersError) {
-        if (state.isFiltersError) {
-            showSnackbar(NativeText.Resource(RString.common_error_message))
-        }
-    }
-
     IssuesScreenContent(
         state = state,
+        filters = filters,
         issues = issues,
         navigateToTask = goToTask
     )
@@ -88,6 +94,7 @@ fun IssuesScreen(
 @Composable
 fun IssuesScreenContent(
     state: IssuesState,
+    filters: FiltersDataDTO,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
     issues: LazyPagingItems<CommonTask>,
     modifier: Modifier = Modifier
@@ -99,14 +106,18 @@ fun IssuesScreenContent(
         TaskFilters(
             selected = state.activeFilters,
             onSelect = state.selectFilters,
-            data = state.filters
+            data = filters,
+            isFiltersError = state.isFiltersError,
+            onRetryFilters = state.retryLoadFilters,
+            isFiltersLoading = state.isFiltersLoading
         )
         PullToRefreshBox(
             modifier = Modifier.fillMaxSize(),
             onRefresh = {
                 issues.refresh()
+                state.retryLoadFilters()
             },
-            isRefreshing = issues.loadState.refresh is LoadState.Loading
+            isRefreshing = issues.loadState.refresh is LoadState.Loading || state.isFiltersLoading
         ) {
             LazyColumn {
                 simpleTasksListWithTitle(
@@ -127,6 +138,7 @@ private fun IssuesScreenPreview() = TaigaMobileTheme {
     IssuesScreenContent(
         navigateToTask = { _, _, _ -> },
         state = IssuesState(),
-        issues = getPagingPreviewItems()
+        issues = getPagingPreviewItems(),
+        filters = FiltersDataDTO()
     )
 }
