@@ -10,6 +10,7 @@ dependencies {
     implementation(platform(libs.androidx.compose.bom))
 
     implementation(projects.core.domain)
+    implementation(projects.feature.filters.domain)
 
     api(libs.junit4)
     api(libs.kotlinx.coroutines.test)

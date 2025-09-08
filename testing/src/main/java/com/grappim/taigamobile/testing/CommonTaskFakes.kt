@@ -16,7 +16,7 @@ fun getCommonTaskResponse(): CommonTaskResponse =
         createdDate = LocalDateTime.of(2024, 12, 15, 10, 30, 0),
         status = getRandomLong(),
         ref = getRandomInt(),
-        assignedToExtraInfo = getUser(),
+        assignedToExtraInfo = getUserDTO(),
         statusExtraInfo = CommonTaskResponse.StatusExtra(
             color = "#FF5722",
             name = getRandomString()
@@ -58,7 +58,7 @@ fun getCommonTask(newId: Long = getRandomLong()): CommonTask = CommonTask(
         color = "#2196F3",
         type = StatusType.Status
     ),
-    assignee = getUser(),
+    assignee = getUserDTO(),
     projectDTOInfo = getProject(),
     taskType = CommonTaskType.Issue,
     isClosed = getRandomBoolean(),

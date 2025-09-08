@@ -6,6 +6,23 @@ import com.grappim.taigamobile.core.domain.RolesFilter
 import com.grappim.taigamobile.core.domain.StatusesFilter
 import com.grappim.taigamobile.core.domain.TagsFilter
 import com.grappim.taigamobile.core.domain.UsersFilter
+import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
+import com.grappim.taigamobile.feature.filters.domain.model.Statuses
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+
+fun getFiltersData(
+    newStatuses: ImmutableList<Statuses> = persistentListOf()
+): FiltersData = FiltersData(
+    statuses = newStatuses,
+    types = persistentListOf(),
+    severities = persistentListOf(),
+    priorities = persistentListOf(),
+    assignedTo = persistentListOf(),
+    owners = persistentListOf(),
+    tags = persistentListOf(),
+    roles = persistentListOf()
+)
 
 fun getFiltersDataDTO(): FiltersDataDTO = FiltersDataDTO(
     query = getRandomString(),

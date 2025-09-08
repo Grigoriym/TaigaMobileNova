@@ -108,6 +108,7 @@ private val coverageExclusions = listOf(
 
     "**/MainDispatcherRule*",
     "**/SavedStateHandleRule*",
+    "**/*Api",
 
     "**/*Screen",
     "**/*Activity",
