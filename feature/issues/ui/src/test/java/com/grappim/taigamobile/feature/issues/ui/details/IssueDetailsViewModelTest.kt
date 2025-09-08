@@ -69,7 +69,7 @@ class IssueDetailsViewModelTest {
         every { patchDataGenerator.getTagsPatchPayload(any()) } returns persistentMapOf()
         every { patchDataGenerator.getDescriptionPatchPayload(any()) } returns persistentMapOf()
 
-        coEvery { issueDetailsDataUseCase.getIssueData(taskId, ref) } throws testException
+        loadIssueError()
 
         viewModel = IssueDetailsViewModel(
             issueDetailsDataUseCase = issueDetailsDataUseCase,
@@ -84,6 +84,10 @@ class IssueDetailsViewModelTest {
             session = session,
             patchDataGenerator = patchDataGenerator
         )
+    }
+
+    private fun loadIssueError() {
+        coEvery { issueDetailsDataUseCase.getIssueData(taskId, ref) } throws testException
     }
 
     @Test
@@ -198,5 +202,14 @@ class IssueDetailsViewModelTest {
         viewModel.state.value.onRemoveAssigneeClick()
 
         assertTrue(viewModel.state.value.isRemoveAssigneeDialogVisible)
+    }
+
+    @Test
+    fun `on setDueDateDatePickerVisibility, should set isDueDateDatePickerVisible`() {
+        assertFalse(viewModel.state.value.isDueDateDatePickerVisible)
+
+        viewModel.state.value.setIsDueDatePickerVisible(true)
+
+        assertTrue(viewModel.state.value.isDueDateDatePickerVisible)
     }
 }
