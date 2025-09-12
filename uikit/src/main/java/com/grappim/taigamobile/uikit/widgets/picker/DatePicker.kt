@@ -28,6 +28,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.R
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.utils.ui.activity
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -49,6 +50,10 @@ fun DatePicker(
     onClose: () -> Unit = {},
     onOpen: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val activity = context.activity
+    val fragmentManager = activity.supportFragmentManager
+
     Box(modifier = modifier) {
         val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
@@ -72,10 +77,6 @@ fun DatePicker(
                     )
                 }
             }
-
-        val context = LocalContext.current
-        val activity = context as AppCompatActivity
-        val fragmentManager = activity.supportFragmentManager
 
         Row(
             modifier = Modifier,

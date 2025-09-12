@@ -85,7 +85,11 @@ class SprintsRepositoryImpl @Inject constructor(
         sprint = sprintId
     )
 
-    override suspend fun createSprint(name: String, start: LocalDate, end: LocalDate) =
+    override suspend fun createSprint(
+        name: String,
+        start: LocalDate,
+        end: LocalDate
+    ): Result<Unit> = resultOf {
         sprintApi.createSprint(
             CreateSprintRequest(
                 name,
@@ -94,6 +98,7 @@ class SprintsRepositoryImpl @Inject constructor(
                 taigaStorage.currentProjectIdFlow.first()
             )
         )
+    }
 
     override suspend fun editSprint(
         sprintId: Long,
