@@ -16,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults.buttonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
@@ -395,23 +394,11 @@ private fun SprintItem(sprint: Sprint, navigateToBoard: (Sprint) -> Unit = {}) =
                     }
                 }
             }
-
-            // TODO the only place I had to comment the code since the usage is internal and I couldn't find
-            // anything to change it
-            buttonColors().let {
-//            val containerColor by it.containerColor(!sprint.isClosed)
-//            val contentColor by it.contentColor(!sprint.isClosed)
-
-                Button(
-                    onClick = { navigateToBoard(sprint) },
-                    modifier = Modifier.weight(0.3f)
-//                colors = buttonColors(
-//                    containerColor = containerColor,
-//                    contentColor = contentColor
-//                )
-                ) {
-                    Text(stringResource(RString.taskboard))
-                }
+            Button(
+                onClick = { navigateToBoard(sprint) },
+                modifier = Modifier.weight(0.3f)
+            ) {
+                Text(stringResource(RString.taskboard))
             }
         }
     }
