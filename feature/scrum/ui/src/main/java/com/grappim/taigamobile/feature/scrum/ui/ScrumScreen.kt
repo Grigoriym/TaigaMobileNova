@@ -179,13 +179,13 @@ fun ScrumScreen(
 fun ScrumScreenContent(
     state: ScrumState,
     pagerState: PagerState,
-    modifier: Modifier = Modifier,
     stories: LazyPagingItems<CommonTask>,
-    filters: FiltersDataDTO = FiltersDataDTO(),
     openSprints: LazyPagingItems<Sprint>,
     closedSprints: LazyPagingItems<Sprint>,
-    navigateToBoard: (Sprint) -> Unit = {},
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    modifier: Modifier = Modifier,
+    filters: FiltersDataDTO = FiltersDataDTO(),
+    navigateToBoard: (Sprint) -> Unit = {}
 ) {
     Column(
         modifier = modifier.fillMaxSize(),

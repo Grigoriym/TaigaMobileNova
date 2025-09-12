@@ -126,7 +126,7 @@ fun MainNavHost(
             )
         }
 
-        composable<ScrumNavDestination> {navBackStackEntry->
+        composable<ScrumNavDestination> { navBackStackEntry ->
             val updateData: Boolean =
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             ScrumScreen(

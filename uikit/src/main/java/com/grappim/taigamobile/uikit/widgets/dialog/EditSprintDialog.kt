@@ -62,7 +62,7 @@ fun EditSprintDialog(
         confirmButton = {
             TextButton(
                 onClick = {
-                   name.text.trim()
+                    name.text.trim()
                         .takeIf { it.isNotEmpty() }
                         ?.let { onConfirm(it, start, end) }
                 }

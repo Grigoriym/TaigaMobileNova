@@ -71,7 +71,7 @@ class ScrumViewModel @Inject constructor(
     }.cachedIn(viewModelScope)
 
     val closedSprints = merge(
-        taigaStorage.currentProjectIdFlow.distinctUntilChanged(),
+        taigaStorage.currentProjectIdFlow.distinctUntilChanged()
     ).flatMapLatest {
         sprintsRepository.getSprints(isClosed = true)
     }.cachedIn(viewModelScope)
