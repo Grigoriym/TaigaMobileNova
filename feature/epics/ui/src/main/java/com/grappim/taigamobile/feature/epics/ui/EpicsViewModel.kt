@@ -10,6 +10,7 @@ import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
+import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -28,7 +29,7 @@ import javax.inject.Inject
 class EpicsViewModel @Inject constructor(
     private val session: Session,
     private val epicsRepository: EpicsRepository,
-    private val filtersRepository: com.grappim.taigamobile.feature.filters.domain.FiltersRepository,
+    private val filtersRepository: FiltersRepository,
     taigaStorage: TaigaStorage
 ) : ViewModel() {
 

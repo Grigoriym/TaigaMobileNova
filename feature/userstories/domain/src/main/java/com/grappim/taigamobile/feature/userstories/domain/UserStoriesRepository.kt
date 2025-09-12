@@ -8,7 +8,9 @@ import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import kotlinx.coroutines.flow.Flow
 
 interface UserStoriesRepository {
-    fun getUserStories(filters: FiltersDataDTO): Flow<PagingData<CommonTask>>
+    fun getUserStoriesPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>>
+
+    fun refreshUserStories()
     suspend fun getAllUserStories(): List<CommonTaskExtended>
     suspend fun getBacklogUserStories(page: Int, filters: FiltersDataDTO): List<CommonTask>
 

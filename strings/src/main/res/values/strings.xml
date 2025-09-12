@@ -246,6 +246,11 @@
 
     <string name="error_retrieving_due_date">Cannot get the Due Date</string>
 
+    <!--    Sprint-->
+    <string name="error_loading_user_stories">Failed to load user stories</string>
+    <string name="error_loading_closed_stories">Failed to load closed user stories</string>
+    <string name="error_loading_open_user_stories">Failed to load open user stories</string>
+
     <!--    Errors-->
     <string name="error_something_has_gone_wrong">Something went wrong</string>
     <string name="error_no_internet_connection">No Internet connection</string>

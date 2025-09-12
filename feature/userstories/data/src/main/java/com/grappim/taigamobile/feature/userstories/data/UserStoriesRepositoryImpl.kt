@@ -34,14 +34,23 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val serverStorage: ServerStorage,
     private val commonTaskMapper: CommonTaskMapper
 ) : UserStoriesRepository {
-    override fun getUserStories(filters: FiltersDataDTO): Flow<PagingData<CommonTask>> = Pager(
-        PagingConfig(
-            pageSize = 20,
-            enablePlaceholders = false
-        )
-    ) {
-        UserStoriesPagingSource(userStoriesApi, filters, taigaStorage)
-    }.flow
+    private var userStoriesPagingSource: UserStoriesPagingSource? = null
+
+    override fun getUserStoriesPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>> =
+        Pager(
+            PagingConfig(
+                pageSize = 20,
+                enablePlaceholders = false
+            )
+        ) {
+            UserStoriesPagingSource(userStoriesApi, filters, taigaStorage).also {
+                userStoriesPagingSource = it
+            }
+        }.flow
+
+    override fun refreshUserStories() {
+        userStoriesPagingSource?.invalidate()
+    }
 
     override suspend fun getAllUserStories() = withIO {
         val filters = async { filtersRepository.getFiltersDataOld(CommonTaskType.UserStory) }

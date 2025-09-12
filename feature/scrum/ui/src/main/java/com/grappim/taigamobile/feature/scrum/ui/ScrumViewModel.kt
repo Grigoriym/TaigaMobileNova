@@ -10,22 +10,32 @@ import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
+import com.grappim.taigamobile.feature.filters.domain.RetryFiltersSignalDelegate
+import com.grappim.taigamobile.feature.filters.domain.RetryFiltersSignalDelegateImpl
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.utils.ui.NothingResult
-import com.grappim.taigamobile.utils.ui.loadOrError
-import com.grappim.taigamobile.utils.ui.mutableResultFlow
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.mapLatest
+import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -37,51 +47,62 @@ class ScrumViewModel @Inject constructor(
     private val userStoriesRepository: UserStoriesRepository,
     private val filtersRepository: FiltersRepository,
     taigaStorage: TaigaStorage
-) : ViewModel() {
+) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl(),
+    RetryFiltersSignalDelegate by RetryFiltersSignalDelegateImpl() {
 
     private val _state = MutableStateFlow(
         ScrumState(
-            setIsCreateSprintDialogVisible = ::setIsCreateSprintDialogVisible
+            setIsCreateSprintDialogVisible = ::setIsCreateSprintDialogVisible,
+            onSelectFilters = ::selectFilters,
+            retryLoadFilters = ::retryLoadFilters,
+            onCreateSprint = ::createSprint
         )
     )
     val state = _state.asStateFlow()
 
-    private var shouldReload = true
+    private val retryOpenSprints = MutableSharedFlow<Unit>()
 
-    val openSprints = sprintsRepository.getSprints(isClosed = false)
-        .cachedIn(viewModelScope)
-
-    val closedSprints = sprintsRepository.getSprints(isClosed = true)
-        .cachedIn(viewModelScope)
-
-    val filters = mutableResultFlow<FiltersDataDTO>()
-    val activeFilters by lazy { session.scrumFilters }
-    val stories: Flow<PagingData<CommonTask>> = activeFilters.flatMapLatest { filters ->
-        userStoriesRepository.getUserStories(filters)
+    val openSprints = merge(
+        taigaStorage.currentProjectIdFlow.distinctUntilChanged(),
+        retryOpenSprints
+    ).flatMapLatest {
+        sprintsRepository.getSprints(isClosed = false)
     }.cachedIn(viewModelScope)
 
-    val createSprintResult = mutableResultFlow<Unit>(NothingResult())
+    val closedSprints = merge(
+        taigaStorage.currentProjectIdFlow.distinctUntilChanged(),
+    ).flatMapLatest {
+        sprintsRepository.getSprints(isClosed = true)
+    }.cachedIn(viewModelScope)
 
-    // TODO handle refresh
+    val userStories: Flow<PagingData<CommonTask>> = session.scrumFilters.flatMapLatest { filters ->
+        userStoriesRepository.getUserStoriesPaging(filters)
+    }.cachedIn(viewModelScope)
+
+    val filters = merge(
+        taigaStorage.currentProjectIdFlow.distinctUntilChanged(),
+        retryFiltersSignal
+    ).mapLatest {
+        loadFiltersData()
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = FiltersDataDTO()
+    )
+
     init {
-        taigaStorage.currentProjectIdFlow.onEach {
-            createSprintResult.value = NothingResult()
-//            stories.refresh()
-//            openSprints.refresh()
-//            closedSprints.refresh()
-            shouldReload = true
+        session.scrumFilters.onEach { filters ->
+            _state.update {
+                it.copy(activeFilters = filters)
+            }
         }.launchIn(viewModelScope)
+    }
 
-        session.taskEdit.onEach {
-//            stories.refresh()
-//            openSprints.refresh()
-//            closedSprints.refresh()
-        }.launchIn(viewModelScope)
-
-        session.sprintEdit.onEach {
-//            openSprints.refresh()
-//            closedSprints.refresh()
-        }.launchIn(viewModelScope)
+    private fun retryLoadFilters() {
+        viewModelScope.launch {
+            signalRetryFilters()
+        }
     }
 
     private fun setIsCreateSprintDialogVisible(newValue: Boolean) {
@@ -92,31 +113,61 @@ class ScrumViewModel @Inject constructor(
         }
     }
 
-    fun onOpen() {
-        if (!shouldReload) return
-        viewModelScope.launch {
-            filters.loadOrError {
-                filtersRepository.getFiltersDataOld(
-                    commonTaskType = CommonTaskType.UserStory,
-                    isCommonTaskFromBacklog = true
+    private suspend fun loadFiltersData(): FiltersDataDTO {
+        _state.update {
+            it.copy(
+                isFiltersLoading = true,
+                isFiltersError = false
+            )
+        }
+
+        val result = filtersRepository.getFiltersDataResultOld(
+            commonTaskType = CommonTaskType.UserStory,
+            isCommonTaskFromBacklog = true
+        )
+        return if (result.isSuccess) {
+            val filters = result.getOrThrow()
+
+            _state.update {
+                it.copy(
+                    isFiltersLoading = false,
+                    isFiltersError = false
                 )
             }
 
-            filters.value.data?.let {
-                session.changeScrumFilters(activeFilters.value.updateData(it))
+            session.changeScrumFilters(_state.value.activeFilters.updateData(filters))
+
+            filters
+        } else {
+            Timber.e(result.exceptionOrNull())
+            _state.update {
+                it.copy(
+                    isFiltersLoading = false,
+                    isFiltersError = true
+                )
             }
+            showSnackbarSuspend(NativeText.Resource(RString.filters_loading_error))
+
+            FiltersDataDTO()
         }
-        shouldReload = false
     }
 
-    fun selectFilters(filters: FiltersDataDTO) {
+    private fun selectFilters(filters: FiltersDataDTO) {
         session.changeScrumFilters(filters)
     }
 
-    fun createSprint(name: String, start: LocalDate, end: LocalDate) = viewModelScope.launch {
-        createSprintResult.loadOrError(RString.permission_error) {
-            sprintsRepository.createSprint(name, start, end)
-//            openSprints.refresh()
+    private fun createSprint(name: String, start: LocalDate, end: LocalDate) {
+        viewModelScope.launch {
+            setIsCreateSprintDialogVisible(false)
+            _state.update { it.copy(loading = true) }
+            sprintsRepository.createSprint(name, start, end).onSuccess {
+                _state.update { it.copy(loading = false) }
+                retryOpenSprints.emit(Unit)
+            }.onFailure { error ->
+                _state.update { it.copy(loading = false) }
+                Timber.e(error)
+                showSnackbarSuspend(getErrorMessage(error))
+            }
         }
     }
 }

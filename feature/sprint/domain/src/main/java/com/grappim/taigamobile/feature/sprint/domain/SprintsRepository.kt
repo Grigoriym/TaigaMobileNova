@@ -17,7 +17,7 @@ interface SprintsRepository {
     suspend fun getSprintUserStories(sprintId: Long): List<CommonTask>
     suspend fun getSprintTasks(sprintId: Long): List<CommonTask>
 
-    suspend fun createSprint(name: String, start: LocalDate, end: LocalDate)
+    suspend fun createSprint(name: String, start: LocalDate, end: LocalDate): Result<Unit>
     suspend fun editSprint(sprintId: Long, name: String, start: LocalDate, end: LocalDate)
     suspend fun deleteSprint(sprintId: Long)
 }

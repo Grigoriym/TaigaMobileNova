@@ -13,6 +13,7 @@ import androidx.navigation.compose.composable
 import com.grappim.taigamobile.commontask.CommonTaskNavDestination
 import com.grappim.taigamobile.commontask.CommonTaskScreen
 import com.grappim.taigamobile.commontask.navigateToCommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
 import com.grappim.taigamobile.createtask.navigateToCreateIssue
@@ -47,6 +48,9 @@ import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
 import com.grappim.taigamobile.feature.sprint.ui.navigateToSprintScreen
 import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
 import com.grappim.taigamobile.feature.teams.ui.TeamScreen
+import com.grappim.taigamobile.feature.userstories.ui.UserStoryDetailsNavDestination
+import com.grappim.taigamobile.feature.userstories.ui.UserStoryDetailsScreen
+import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
 import com.grappim.taigamobile.feature.wiki.ui.create.WikiCreatePageScreen
 import com.grappim.taigamobile.feature.wiki.ui.list.WikiListScreen
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiCreatePageNavDestination
@@ -122,19 +126,33 @@ fun MainNavHost(
             )
         }
 
-        composable<ScrumNavDestination> {
+        composable<ScrumNavDestination> {navBackStackEntry->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             ScrumScreen(
-                showMessage = showMessage,
-                goToCreateTask = { type ->
-                    navController.navigateToCreateTask(type = type)
+                showSnackbar = showSnackbar,
+                goToCreateUserStory = {
+                    navController.navigateToCreateTask(type = CommonTaskType.UserStory)
                 },
                 goToSprint = { id ->
                     navController.navigateToSprintScreen(id)
                 },
-                goToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
+                updateData = updateData,
+                goToUserStory = { id, type, ref ->
+                    if (isNewUiUsed) {
+                        navController.navigateToUserStory(
+                            taskId = id,
+                            ref = ref
+                        )
+                    } else {
+                        navController.navigateToCommonTask(id, type, ref)
+                    }
                 }
             )
+        }
+
+        composable<UserStoryDetailsNavDestination> {
+            UserStoryDetailsScreen()
         }
 
         composable<EpicsNavDestination> {

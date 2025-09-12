@@ -101,6 +101,9 @@ fun CommonTaskScreen(
             TopBarConfig(
                 title = state.toolbarTitle,
                 showBackButton = true,
+                overrideBackHandlerAction = {
+                    goBack()
+                },
                 actions = listOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_options,
