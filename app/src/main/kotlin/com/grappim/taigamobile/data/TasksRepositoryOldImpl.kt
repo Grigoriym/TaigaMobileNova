@@ -307,7 +307,7 @@ class TasksRepositoryOldImpl @Inject constructor(
             )
         ).first()
             .let {
-                userStoriesRepository.getUserStoryByRef(
+                userStoriesRepository.getUserStoryByRefOld(
                     projectId = taigaStorage.currentProjectIdFlow.first(),
                     ref = it
                 )

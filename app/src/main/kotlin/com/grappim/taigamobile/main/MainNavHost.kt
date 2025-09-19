@@ -7,6 +7,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -25,9 +26,7 @@ import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
 import com.grappim.taigamobile.feature.epics.ui.EpicsScreen
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsScreen
-import com.grappim.taigamobile.feature.issues.ui.details.UPDATE_DATA_ON_BACK
 import com.grappim.taigamobile.feature.issues.ui.details.navigateToIssueDetails
-import com.grappim.taigamobile.feature.issues.ui.details.setUpdateDataOnBack
 import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
 import com.grappim.taigamobile.feature.issues.ui.list.IssuesScreen
 import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
@@ -152,7 +151,30 @@ fun MainNavHost(
         }
 
         composable<UserStoryDetailsNavDestination> {
-            UserStoryDetailsScreen()
+            UserStoryDetailsScreen(
+                showSnackbar = showSnackbar,
+                goBack = {
+                    navController.setUpdateDataOnBack()
+                    navController.popBackStack()
+                },
+                goToEditDescription = { description: String ->
+                    navController.navigateToWorkItemEditDescription(
+                        description = description
+                    )
+                },
+                goToEditTags = {
+                    navController.navigateToWorkItemEditTags()
+                },
+                goToProfile = { creatorId ->
+                    navController.navigateToProfileScreen(creatorId)
+                },
+                goToEditAssignee = {
+                    navController.navigateToWorkItemEditAssignee()
+                },
+                goToEditWatchers = {
+                    navController.navigateToWorkItemEditAssignee()
+                }
+            )
         }
 
         composable<EpicsNavDestination> {
@@ -335,9 +357,7 @@ fun MainNavHost(
                     navController.navigateToCommonTask(id, taskType, ref)
                 },
                 goBack = {
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set(UPDATE_DATA_ON_BACK, true)
+                    navController.setUpdateDataOnBack()
                     navController.popBackStack()
                 },
                 navigateToCreateTask = { type, id ->
@@ -362,4 +382,12 @@ fun MainNavHost(
             )
         }
     }
+}
+
+const val UPDATE_DATA_ON_BACK = "UpdateDataOnBack"
+
+fun NavController.setUpdateDataOnBack() {
+    previousBackStackEntry
+        ?.savedStateHandle
+        ?.set(UPDATE_DATA_ON_BACK, true)
 }

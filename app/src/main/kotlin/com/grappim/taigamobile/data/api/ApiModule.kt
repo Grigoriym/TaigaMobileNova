@@ -12,6 +12,7 @@ import com.grappim.taigamobile.feature.sprint.data.SprintApi
 import com.grappim.taigamobile.feature.swimlanes.data.SwimlanesApi
 import com.grappim.taigamobile.feature.userstories.data.UserStoriesApi
 import com.grappim.taigamobile.feature.wiki.data.WikiApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -65,4 +66,8 @@ object ApiModule {
     @[Provides Singleton]
     fun provideHistoryApi(@CommonRetrofit retrofit: Retrofit): HistoryApi =
         retrofit.create(HistoryApi::class.java)
+
+    @[Provides Singleton]
+    fun provideWorkItemApi(@CommonRetrofit retrofit: Retrofit): WorkItemApi =
+        retrofit.create(WorkItemApi::class.java)
 }

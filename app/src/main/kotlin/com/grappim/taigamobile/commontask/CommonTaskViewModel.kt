@@ -106,7 +106,6 @@ class CommonTaskViewModel @Inject constructor(
             url = "",
             projectName = session.currentProjectName.value,
             commonTaskType = route.taskType,
-//            editActions = EditActions(),
             setDropdownMenuExpanded = ::setDropdownMenuExpanded,
             setDeleteAlertVisible = ::setDeleteAlertVisible,
             setTaskEditorVisible = ::setTaskEditorVisible,

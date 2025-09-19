@@ -14,6 +14,7 @@ dependencies {
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)
     implementation(projects.feature.workitem.ui)
+    implementation(projects.feature.workitem.domain)
     implementation(projects.utils.formatter.datetime)
 
     implementation(projects.strings)

@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.core.domain
+package com.grappim.taigamobile.feature.projects.domain
 
 data class Project(
     val id: Long,

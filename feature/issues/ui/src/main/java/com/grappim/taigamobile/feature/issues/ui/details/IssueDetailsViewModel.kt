@@ -23,6 +23,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
+import com.grappim.taigamobile.feature.workitem.ui.utils.getDueDateText
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgePriority
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeSeverity
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
@@ -210,7 +211,7 @@ class IssueDetailsViewModel @Inject constructor(
                         comments = result.comments.toPersistentList(),
                         sprint = sprint,
                         tags = tags.await(),
-                        dueDateText = getDueDateText(result.issueTask.dueDate),
+                        dueDateText = dateTimeUtils.getDueDateText(result.issueTask.dueDate),
                         creator = result.creator,
                         assignees = result.assignees.toPersistentList(),
                         watchers = result.watchers.toPersistentList(),
@@ -702,7 +703,7 @@ class IssueDetailsViewModel @Inject constructor(
                         currentState.copy(
                             currentIssue = updatedIssue,
                             originalIssue = updatedIssue,
-                            dueDateText = getDueDateText(localDate),
+                            dueDateText = dateTimeUtils.getDueDateText(localDate),
                             isDueDateLoading = false
                         )
                     }
@@ -717,12 +718,6 @@ class IssueDetailsViewModel @Inject constructor(
                 }
             )
         }
-    }
-
-    private fun getDueDateText(dueDate: LocalDate?): NativeText = if (dueDate == null) {
-        NativeText.Resource(id = RString.no_due_date)
-    } else {
-        NativeText.Simple(dateTimeUtils.formatLocalDateUiMedium(dueDate))
     }
 
     private fun onGoingToEditTags() {

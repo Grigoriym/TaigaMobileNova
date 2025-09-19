@@ -5,6 +5,7 @@ import com.squareup.moshi.JsonClass
 import java.time.LocalDate
 import java.time.LocalDateTime
 
+@Deprecated("Use WorkItemResponseDTO")
 @JsonClass(generateAdapter = true)
 data class CommonTaskResponse(
     val id: Long,
