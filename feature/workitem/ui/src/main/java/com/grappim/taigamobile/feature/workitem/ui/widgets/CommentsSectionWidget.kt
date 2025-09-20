@@ -38,9 +38,10 @@ fun CommentsSectionWidget(
     setIsCommentsWidgetExpanded: (Boolean) -> Unit,
     isCommentsLoading: Boolean,
     onCommentRemove: (Comment) -> Unit,
-    goToProfile: (userId: Long) -> Unit
+    goToProfile: (userId: Long) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    Column {
+    Column(modifier = modifier) {
         SectionTitleExpandable(
             text = stringResource(RString.comments_template).format(comments.size),
             isExpanded = isCommentsWidgetExpanded,

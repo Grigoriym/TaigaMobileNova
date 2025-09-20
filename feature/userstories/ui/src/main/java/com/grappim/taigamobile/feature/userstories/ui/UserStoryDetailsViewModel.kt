@@ -71,7 +71,7 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val dateTimeUtils: DateTimeUtils,
     private val session: Session,
     private val fileUriManager: FileUriManager,
-    private val customFieldsUIMapper: CustomFieldsUIMapper,
+    private val customFieldsUIMapper: CustomFieldsUIMapper
 ) : ViewModel() {
 
     private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
@@ -121,7 +121,7 @@ class UserStoryDetailsViewModel @Inject constructor(
             onAttachmentAdd = ::onAttachmentAdd,
             setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
             onCommentRemove = ::deleteComment,
-            onCreateCommentClick = ::createComment,
+            onCreateCommentClick = ::createComment
         )
     )
     val state = _state.asStateFlow()
@@ -995,7 +995,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                             customFieldsVersion = result.customFields.version,
                             customFieldStateItems = customFieldsStateItems.await(),
                             filtersData = result.filtersData,
-                            initialLoadError = NativeText.Empty,
+                            initialLoadError = NativeText.Empty
                         )
                     }
                 }.onFailure { error ->
@@ -1030,7 +1030,9 @@ class UserStoryDetailsViewModel @Inject constructor(
     private fun updateLocalField(field: PatchableField, newValue: Any) {
         _state.update { currentState ->
             val updatedIssue = when (field) {
-                PatchableField.TITLE -> currentState.currentUserStory?.copy(title = newValue as String)
+                PatchableField.TITLE -> currentState.currentUserStory?.copy(
+                    title = newValue as String
+                )
                 else -> currentState.currentUserStory
             }
             currentState.copy(currentUserStory = updatedIssue)

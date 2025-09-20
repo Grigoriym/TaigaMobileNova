@@ -16,7 +16,7 @@ import retrofit2.http.Query
 
 interface WorkItemApi {
 
-    //Work Item
+    // Work Item
     @GET("{taskPath}/{id}")
     suspend fun getWorkItemById(
         @Path("taskPath") taskPath: WorkItemPathPlural,
@@ -41,13 +41,13 @@ interface WorkItemApi {
     @POST("{taskPath}/{workItemId}/unwatch")
     suspend fun unwatchWorkItem(
         @Path("taskPath") taskPath: WorkItemPathPlural,
-        @Path("workItemId") workItemId: Long,
+        @Path("workItemId") workItemId: Long
     )
 
     @POST("{taskPath}/{workItemId}/watch")
     suspend fun watchWorkItem(
         @Path("taskPath") taskPath: WorkItemPathPlural,
-        @Path("workItemId") workItemId: Long,
+        @Path("workItemId") workItemId: Long
     )
 
     @DELETE("{taskPath}/{workItemId}")
@@ -56,7 +56,7 @@ interface WorkItemApi {
         @Path("workItemId") workItemId: Long
     )
 
-    //Attachments
+    // Attachments
     @GET("{taskPath}/attachments")
     suspend fun getAttachments(
         @Path("taskPath") taskPath: WorkItemPathPlural,
@@ -79,7 +79,7 @@ interface WorkItemApi {
         @Part objectId: MultipartBody.Part
     ): AttachmentDTO
 
-    //Custom Attributes
+    // Custom Attributes
     @GET("{taskPath}-custom-attributes")
     suspend fun getCustomAttributes(
         @Path("taskPath") taskPath: WorkItemPathSingular,

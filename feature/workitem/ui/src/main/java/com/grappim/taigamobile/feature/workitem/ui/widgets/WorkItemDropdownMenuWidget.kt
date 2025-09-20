@@ -27,7 +27,7 @@ fun WorkItemDropdownMenuWidget(
     setBlockDialogVisible: (Boolean) -> Unit,
     doOnUnblock: () -> Unit,
     modifier: Modifier = Modifier,
-    setDeleteAlertVisible: ((Boolean) -> Unit)? = null,
+    setDeleteAlertVisible: ((Boolean) -> Unit)? = null
 ) {
     val clipboardManager = LocalClipboard.current
     Box(modifier = modifier) {

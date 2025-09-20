@@ -68,7 +68,6 @@ class IssueTaskMapper @Inject constructor(
         )
     }
 
-
     private fun getType(filtersData: FiltersData, resp: CommonTaskResponse): Type? {
         val typeId = resp.type ?: return null
         val currentItem = filtersData.types.find { typeId == it.id } ?: return null

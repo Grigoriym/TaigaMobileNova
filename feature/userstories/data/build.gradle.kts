@@ -17,7 +17,7 @@ dependencies {
 
     implementation(projects.feature.projects.domain)
     implementation(projects.feature.projects.data)
-    
+
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.data)
 

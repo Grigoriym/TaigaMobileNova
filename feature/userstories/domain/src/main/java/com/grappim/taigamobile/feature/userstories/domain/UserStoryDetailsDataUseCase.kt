@@ -251,7 +251,10 @@ class UserStoryDetailsDataUseCase @Inject constructor(
             userStoriesRepository.watchUserStory(userStoryId)
 
             val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
-            val issue = userStoriesRepository.getUserStory(id = userStoryId, filtersData = filtersData)
+            val issue = userStoriesRepository.getUserStory(
+                id = userStoryId,
+                filtersData = filtersData
+            )
 
             val watchers = usersRepository.getUsersList(issue.watcherUserIds)
 

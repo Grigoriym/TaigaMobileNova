@@ -35,5 +35,5 @@ data class UserStory(
 
     val dueDate: LocalDate?,
     val dueDateStatus: DueDateStatus?,
-    val copyLinkUrl: String,
+    val copyLinkUrl: String
 )

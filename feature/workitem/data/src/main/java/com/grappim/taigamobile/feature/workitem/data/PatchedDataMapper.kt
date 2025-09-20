@@ -42,8 +42,9 @@ class PatchedDataMapper @Inject constructor(
         )
     }
 
-    suspend fun toDomainCustomAttrs(resp: CustomAttributesValuesResponseDTO): PatchedCustomAttributes =
-        withContext(dispatcher) {
-            PatchedCustomAttributes(version = resp.version)
-        }
+    suspend fun toDomainCustomAttrs(
+        resp: CustomAttributesValuesResponseDTO
+    ): PatchedCustomAttributes = withContext(dispatcher) {
+        PatchedCustomAttributes(version = resp.version)
+    }
 }
