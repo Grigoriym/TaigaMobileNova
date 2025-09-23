@@ -111,7 +111,6 @@ fun ScrumScreen(
     }
 
     LaunchedEffect(updateData) {
-        println("gregasd updateData: $updateData")
         if (updateData) {
             userStories.refresh()
         }

@@ -78,13 +78,14 @@ data class UserStoryDetailsState(
     val assignees: PersistentList<User> = persistentListOf(),
     val isAssignedToMe: Boolean = false,
     val onAssignToMe: () -> Unit = {},
-    val onUnassign: () -> Unit = {},
-    val onGoingToEditAssignee: () -> Unit = {},
+    val onGoingToEditAssignees: () -> Unit = {},
     val removeAssignee: () -> Unit = {},
     val isAssigneesLoading: Boolean = false,
     val isRemoveAssigneeDialogVisible: Boolean = false,
+    @Deprecated("change it")
     val setIsRemoveAssigneeDialogVisible: (Boolean) -> Unit = {},
-    val onRemoveAssigneeClick: () -> Unit = {},
+    val onRemoveAssigneeClick: (User) -> Unit = {},
+    val assigneeToRemove: User? = null,
 
     val isCustomFieldsLoading: Boolean = false,
     val customFieldStateItems: ImmutableList<CustomFieldItemState> = persistentListOf(),

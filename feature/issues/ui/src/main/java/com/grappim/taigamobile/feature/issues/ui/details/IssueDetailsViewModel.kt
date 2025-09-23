@@ -14,7 +14,7 @@ import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
-import com.grappim.taigamobile.feature.issues.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
@@ -394,6 +394,7 @@ class IssueDetailsViewModel @Inject constructor(
     private fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
             TeamMemberUpdate.Clear -> {}
+            is TeamMemberUpdate.Assignees -> {}
             is TeamMemberUpdate.Assignee -> {
                 onAssigneeUpdated(updateState.id)
             }

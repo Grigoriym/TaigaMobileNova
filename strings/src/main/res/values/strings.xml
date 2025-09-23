@@ -118,6 +118,7 @@
     <string name="add_attachment">Add attachment</string>
 
     <string name="add_assignee">Add assignee</string>
+    <string name="add_assignees">Add assignees</string>
     <string name="assign_to_me">Assign to me</string>
     <string name="unassign">Unassign</string>
     <string name="add_watcher">Add watcher</string>

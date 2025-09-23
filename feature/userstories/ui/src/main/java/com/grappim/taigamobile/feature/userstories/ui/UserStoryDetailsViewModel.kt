@@ -7,12 +7,13 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.feature.issues.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryDetailsDataUseCase
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
@@ -40,7 +41,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.collections.immutable.toPersistentList
@@ -96,10 +96,9 @@ class UserStoryDetailsViewModel @Inject constructor(
             onGoingToEditTags = ::onGoingToEditTags,
             onBadgeSheetDismiss = ::onBadgeSheetDismiss,
             onBadgeSheetItemClick = ::onBadgeSheetItemClick,
-            onGoingToEditAssignee = ::onGoingToEditAssignee,
+            onGoingToEditAssignees = ::onGoingToEditAssignees,
             onGoingToEditWatchers = ::onGoingToEditWatchers,
             onAssignToMe = ::onAssignToMe,
-            onUnassign = ::onUnassign,
             onRemoveMeFromWatchersClick = ::onRemoveMeFromWatchersClick,
             onAddMeToWatchersClick = ::onAddMeToWatchersClick,
             onRemoveWatcherClick = ::onRemoveWatcherClick,
@@ -364,7 +363,10 @@ class UserStoryDetailsViewModel @Inject constructor(
 
     private fun setIsRemoveAssigneeDialogVisible(isVisible: Boolean) {
         _state.update {
-            it.copy(isRemoveAssigneeDialogVisible = isVisible)
+            it.copy(
+                isRemoveAssigneeDialogVisible = isVisible,
+                assigneeToRemove = null
+            )
         }
     }
 
@@ -548,35 +550,67 @@ class UserStoryDetailsViewModel @Inject constructor(
 
     private fun removeAssignee() {
         viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getAssignedToPatchPayload(null),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            isAssigneesLoading = true,
-                            error = NativeText.Empty
-                        )
-                    }
-                },
-                doOnSuccess = { data: PatchedData, userStory: UserStory ->
-                    _state.update {
-                        it.copy(
-                            isAssigneesLoading = false,
-                            error = NativeText.Empty,
-                            assignees = persistentListOf()
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            isAssigneesLoading = false,
-                            error = getErrorMessage(error)
-                        )
-                    }
-                }
+            _state.update {
+                it.copy(isRemoveAssigneeDialogVisible = false)
+            }
+
+            val assigneeToRemove = _state.value.assigneeToRemove?.actualId ?: return@launch
+            val newAssignees = _state.value.assignees.removeAll {
+                it.actualId == assigneeToRemove
+            }.map { it.actualId }.toImmutableList()
+
+            updateAssignees(newAssignees)
+        }
+    }
+
+    private fun onAssignToMe() {
+        viewModelScope.launch {
+            val assigneesList = _state.value.assignees.mapNotNull { it.id }
+                .toPersistentList()
+                .add(session.userId)
+
+            updateAssignees(assigneesList.toImmutableList())
+        }
+    }
+
+    private suspend fun updateAssignees(newAssignees: ImmutableList<Long>) {
+        val currentUserStory = _state.value.currentUserStory ?: return
+
+        _state.update {
+            it.copy(isAssigneesLoading = true)
+        }
+
+        userStoryDetailsDataUseCase.updateAssigneesData(
+            version = currentUserStory.version,
+            userStoryId = currentUserStory.id,
+            assigneesList = newAssignees.toImmutableList()
+        ).onSuccess { result ->
+            val updatedUserStory = currentUserStory.copy(
+                version = result.newVersion
             )
+            _state.update {
+                it.copy(
+                    isAssigneesLoading = false,
+                    currentUserStory = updatedUserStory,
+                    originalUserStory = updatedUserStory,
+                    isAssignedToMe = result.isAssignedToMe,
+                    assignees = result.assignees.toPersistentList()
+                )
+            }
+        }.onFailure { error ->
+            Timber.e(error)
+            _state.update {
+                it.copy(
+                    error = getErrorMessage(error),
+                    isAssigneesLoading = false
+                )
+            }
+        }
+    }
+
+    private fun onAssigneeUpdated(newAssignees: ImmutableList<Long>) {
+        viewModelScope.launch {
+            updateAssignees(newAssignees)
         }
     }
 
@@ -607,10 +641,11 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onRemoveAssigneeClick() {
+    private fun onRemoveAssigneeClick(user: User) {
         _state.update {
             it.copy(
-                isRemoveAssigneeDialogVisible = true
+                isRemoveAssigneeDialogVisible = true,
+                assigneeToRemove = user
             )
         }
     }
@@ -651,59 +686,15 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onGoingToEditAssignee() {
-        val assigneeId = _state.value.assignees.firstOrNull()?.id
-        workItemEditShared.setCurrentAssignee(assigneeId)
+    private fun onGoingToEditAssignees() {
+        val assigneesIds = _state.value.assignees.mapNotNull { it.id }.toImmutableList()
+        workItemEditShared.setCurrentAssignees(assigneesIds)
     }
 
     private fun onGoingToEditWatchers() {
         val watchersIds = _state.value.watchers.mapNotNull { it.id }
             .toPersistentList()
         workItemEditShared.setCurrentWatchers(watchersIds)
-    }
-
-    private fun onAssignToMe() {
-        patchAssignedToMe(false)
-    }
-
-    private fun onUnassign() {
-        patchAssignedToMe(true)
-    }
-
-    private fun patchAssignedToMe(onUnassign: Boolean) {
-        val currentUserStory = _state.value.currentUserStory ?: return
-        viewModelScope.launch {
-            _state.update {
-                it.copy(error = NativeText.Empty, isAssigneesLoading = true)
-            }
-
-            userStoryDetailsDataUseCase.updateAssigneesData(
-                version = currentUserStory.version,
-                userStoryId = currentUserStory.id,
-                userId = if (onUnassign) null else session.userId
-            ).onSuccess { result ->
-                val updatedUserStory = currentUserStory.copy(
-                    version = result.newVersion
-                )
-                _state.update {
-                    it.copy(
-                        isAssigneesLoading = false,
-                        currentUserStory = updatedUserStory,
-                        originalUserStory = updatedUserStory,
-                        isAssignedToMe = result.isAssignedToMe,
-                        assignees = result.assignees.toPersistentList()
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isAssigneesLoading = false
-                    )
-                }
-            }
-        }
     }
 
     private fun onBadgeSheetDismiss() {
@@ -791,48 +782,13 @@ class UserStoryDetailsViewModel @Inject constructor(
     private fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
             TeamMemberUpdate.Clear -> {}
-            is TeamMemberUpdate.Assignee -> {
-                onAssigneeUpdated(updateState.id)
+            is TeamMemberUpdate.Assignee -> {}
+            is TeamMemberUpdate.Assignees -> {
+                onAssigneeUpdated(updateState.ids)
             }
 
             is TeamMemberUpdate.Watchers -> {
                 onWatchersUpdated(updateState.ids)
-            }
-        }
-    }
-
-    private fun onAssigneeUpdated(newAssignee: Long?) {
-        val currentUserStory = _state.value.currentUserStory ?: return
-        viewModelScope.launch {
-            _state.update {
-                it.copy(error = NativeText.Empty, isAssigneesLoading = true)
-            }
-
-            userStoryDetailsDataUseCase.updateAssigneesData(
-                version = currentUserStory.version,
-                userStoryId = currentUserStory.id,
-                userId = newAssignee
-            ).onSuccess { result ->
-                val updatedUserStory = currentUserStory.copy(
-                    version = result.newVersion
-                )
-                _state.update {
-                    it.copy(
-                        isAssigneesLoading = false,
-                        currentUserStory = updatedUserStory,
-                        originalUserStory = updatedUserStory,
-                        isAssignedToMe = result.isAssignedToMe,
-                        assignees = result.assignees.toPersistentList()
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isAssigneesLoading = false
-                    )
-                }
             }
         }
     }
@@ -1033,6 +989,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                 PatchableField.TITLE -> currentState.currentUserStory?.copy(
                     title = newValue as String
                 )
+
                 else -> currentState.currentUserStory
             }
             currentState.copy(currentUserStory = updatedIssue)

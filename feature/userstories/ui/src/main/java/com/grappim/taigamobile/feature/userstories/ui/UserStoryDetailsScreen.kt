@@ -142,7 +142,6 @@ fun UserStoryDetailsScreen(
         description = stringResource(RString.remove_user_text),
         onConfirm = {
             state.removeAssignee()
-            state.setIsRemoveAssigneeDialogVisible(false)
         },
         onDismiss = { state.setIsRemoveAssigneeDialogVisible(false) }
     )
@@ -312,14 +311,14 @@ private fun UserStoryDetailsScreenContent(
                     goToProfile = goToProfile,
                     assignees = state.assignees,
                     isAssigneesLoading = state.isAssigneesLoading,
-                    onRemoveAssigneeClick = {
-                        state.onRemoveAssigneeClick()
+                    onRemoveAssigneeClick = { user ->
+                        state.onRemoveAssigneeClick(user)
                     },
                     isAssignedToMe = state.isAssignedToMe,
-                    onUnassign = state.onUnassign,
                     onAssignToMe = state.onAssignToMe,
+                    isPlural = true,
                     onAddAssigneeClick = {
-                        state.onGoingToEditAssignee()
+                        state.onGoingToEditAssignees()
                         goToEditAssignee()
                     }
                 )
