@@ -4,8 +4,8 @@ import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.core.domain.CommonTaskPathPlural
 import com.grappim.taigamobile.core.domain.CommonTaskPathSingular
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
-import com.grappim.taigamobile.core.domain.CustomAttributeResponse
-import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponse
+import com.grappim.taigamobile.core.domain.CustomAttributeResponseDTO
+import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.data.model.CreateCommentRequest
 import com.grappim.taigamobile.data.model.CreateCommonTaskRequest
 import com.grappim.taigamobile.data.model.EditCommonTaskRequest
@@ -96,13 +96,13 @@ interface TaigaApi {
     suspend fun getCustomAttributes(
         @Path("taskPath") taskPath: CommonTaskPathSingular,
         @Query("project") projectId: Long
-    ): List<CustomAttributeResponse>
+    ): List<CustomAttributeResponseDTO>
 
     @GET("{taskPath}/custom-attributes-values/{id}")
     suspend fun getCustomAttributesValues(
         @Path("taskPath") taskPath: CommonTaskPathPlural,
         @Path("id") taskId: Long
-    ): CustomAttributesValuesResponse
+    ): CustomAttributesValuesResponseDTO
 
     @PATCH("{taskPath}/custom-attributes-values/{id}")
     suspend fun editCustomAttributesValues(

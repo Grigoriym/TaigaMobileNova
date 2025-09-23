@@ -18,4 +18,10 @@ class AttachmentMapper @Inject constructor(
             url = dto.url
         )
     }
+
+    suspend fun toDomain(list: List<AttachmentDTO>): List<Attachment> = withContext(dispatcher) {
+        list.map { dto ->
+            toDomain(dto)
+        }
+    }
 }

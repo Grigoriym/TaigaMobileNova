@@ -65,6 +65,10 @@ class EditTeamMemberViewModel @Inject constructor(
         EditType.Watchers -> {
             editShared.currentWatchers.toPersistentList()
         }
+
+        EditType.Assignees -> {
+            editShared.currentAssignees.toPersistentList()
+        }
     }
 
     private fun isItemSelected(id: Long): Boolean = id in state.value.selectedItems
@@ -79,6 +83,9 @@ class EditTeamMemberViewModel @Inject constructor(
 
                 EditType.Watchers -> {
                     editShared.updateWatchers(_state.value.selectedItems)
+                }
+                EditType.Assignees -> {
+                    editShared.updateAssignees(_state.value.selectedItems)
                 }
             }
         }
@@ -118,6 +125,18 @@ class EditTeamMemberViewModel @Inject constructor(
                     )
                 }
             }
+            EditType.Assignees -> {
+                val newList = if (clickedTheSame) {
+                    _state.value.selectedItems.remove(id)
+                } else {
+                    _state.value.selectedItems.add(id)
+                }
+                _state.update {
+                    it.copy(
+                        selectedItems = newList
+                    )
+                }
+            }
         }
     }
 
@@ -137,6 +156,17 @@ class EditTeamMemberViewModel @Inject constructor(
                 }
 
                 EditType.Watchers -> {
+                    usersRepository.getCurrentTeamResult()
+                        .onSuccess { result ->
+                            val teamMembers = teamMemberUIMapper.toUI(result)
+                            _state.update {
+                                it.copy(itemsToShow = teamMembers)
+                            }
+                        }.onFailure { error ->
+                            Timber.e(error)
+                        }
+                }
+                EditType.Assignees -> {
                     usersRepository.getCurrentTeamResult()
                         .onSuccess { result ->
                             val teamMembers = teamMemberUIMapper.toUI(result)

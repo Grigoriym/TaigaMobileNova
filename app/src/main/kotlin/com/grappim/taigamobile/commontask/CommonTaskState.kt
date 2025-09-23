@@ -7,7 +7,6 @@ data class CommonTaskState(
     val commonTaskType: CommonTaskType,
     val url: String = "",
     val isBlocked: Boolean = false,
-//    val editActions: EditActions,
     val toolbarTitle: NativeText,
     val projectName: String,
 

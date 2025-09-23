@@ -1,6 +1,7 @@
-package com.grappim.taigamobile.feature.issues.data
+package com.grappim.taigamobile.feature.workitem.data
 
-import com.grappim.taigamobile.feature.issues.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableMap
 import javax.inject.Inject
@@ -19,6 +20,10 @@ class PatchDataGeneratorImpl @Inject constructor() : PatchDataGenerator {
         "is_blocked" to isBlocked,
         "blocked_note" to blockNote.orEmpty()
     ).toImmutableMap()
+
+    override fun getAssignedUsersPatchPayload(
+        assignees: ImmutableList<Long>
+    ): ImmutableMap<String, Any?> = mapOf("assigned_users" to assignees).toImmutableMap()
 
     override fun getDueDatePatchPayload(dueDate: String?): ImmutableMap<String, Any?> =
         mapOf("due_date" to dueDate).toImmutableMap()

@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.core.api
 
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.domain.CustomAttributeResponse
-import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponse
+import com.grappim.taigamobile.core.domain.CustomAttributeResponseDTO
+import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.core.domain.CustomField
 import com.grappim.taigamobile.core.domain.CustomFieldType
 import com.grappim.taigamobile.core.domain.CustomFieldValue
@@ -16,8 +16,8 @@ class CustomFieldsMapper @Inject constructor(
 ) {
 
     suspend fun toDomain(
-        attributes: List<CustomAttributeResponse>,
-        values: CustomAttributesValuesResponse
+        attributes: List<CustomAttributeResponseDTO>,
+        values: CustomAttributesValuesResponseDTO
     ): CustomFields = withContext(ioDispatcher) {
         CustomFields(
             version = values.version,
@@ -27,8 +27,8 @@ class CustomFieldsMapper @Inject constructor(
     }
 
     suspend fun toDomain(
-        values: CustomAttributesValuesResponse,
-        resp: CustomAttributeResponse
+        values: CustomAttributesValuesResponseDTO,
+        resp: CustomAttributeResponseDTO
     ): CustomField = withContext(ioDispatcher) {
         CustomField(
             id = resp.id,

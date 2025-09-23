@@ -30,11 +30,12 @@ fun AssignedToWidget(
     isAssigneesLoading: Boolean,
     goToProfile: (Long) -> Unit,
     isAssignedToMe: Boolean,
-    onRemoveAssigneeClick: () -> Unit,
-    onUnassign: () -> Unit,
+    onRemoveAssigneeClick: (User) -> Unit,
     onAssignToMe: () -> Unit,
     onAddAssigneeClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isPlural: Boolean = false,
+    onUnassign: (() -> Unit)? = null
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -51,7 +52,7 @@ fun AssignedToWidget(
                     goToProfile(item.actualId)
                 },
                 onRemoveUserClick = {
-                    onRemoveAssigneeClick()
+                    onRemoveAssigneeClick(item)
                 }
             )
 
@@ -68,30 +69,41 @@ fun AssignedToWidget(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start
         ) {
+            val addText = if (isPlural) {
+                RString.add_assignees
+            } else {
+                RString.add_assignee
+            }
             AddButtonWidget(
-                text = stringResource(RString.add_assignee),
+                text = stringResource(addText),
                 onClick = onAddAssigneeClick
             )
 
-            Spacer(modifier = Modifier.width(16.dp))
+            // todo maybe make it more understandable, i.e. the condition
+            if (onUnassign != null || !isAssignedToMe) {
+                Spacer(modifier = Modifier.width(16.dp))
 
-            val (@StringRes buttonText: Int, @DrawableRes buttonIcon: Int) = if (isAssignedToMe) {
-                RString.unassign to RDrawable.ic_unassigned
-            } else {
-                RString.assign_to_me to RDrawable.ic_assignee_to_me
-            }
-
-            TaigaTextButtonWidget(
-                text = stringResource(buttonText),
-                icon = buttonIcon,
-                onClick = {
-                    if (isAssignedToMe) {
-                        onUnassign()
-                    } else {
-                        onAssignToMe()
-                    }
+                val (
+                    @StringRes buttonText: Int,
+                    @DrawableRes buttonIcon: Int
+                ) = if (isAssignedToMe) {
+                    RString.unassign to RDrawable.ic_unassigned
+                } else {
+                    RString.assign_to_me to RDrawable.ic_assignee_to_me
                 }
-            )
+
+                TaigaTextButtonWidget(
+                    text = stringResource(buttonText),
+                    icon = buttonIcon,
+                    onClick = {
+                        if (isAssignedToMe) {
+                            onUnassign?.invoke()
+                        } else {
+                            onAssignToMe()
+                        }
+                    }
+                )
+            }
         }
     }
 }

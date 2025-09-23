@@ -10,6 +10,7 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.kotlin
 import org.gradle.kotlin.dsl.project
+import java.util.Properties
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -26,6 +27,14 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         isDebuggable = true
                         isMinifyEnabled = false
                         isShrinkResources = false
+
+                        val localProperties = Properties()
+                        val localPropertiesFile = rootProject.file("local.properties")
+                        if (localPropertiesFile.exists()) {
+                            localProperties.load(localPropertiesFile.inputStream())
+                        }
+                        val debugLocalHost = localProperties.getProperty("debug.local.host")
+                        buildConfigField("String", "DEBUG_LOCAL_HOST", "\"$debugLocalHost\"")
                     }
 //                    release {
 //                        applicationIdSuffix = AppBuildTypes.RELEASE.applicationIdSuffix

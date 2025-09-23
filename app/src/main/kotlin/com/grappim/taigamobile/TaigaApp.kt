@@ -8,6 +8,7 @@ import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
+import coil3.util.DebugLogger
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.data.interceptors.DebugLocalHostImageManager
 import com.grappim.taigamobile.utils.FileLoggingTree
@@ -82,7 +83,7 @@ class TaigaApp :
                             )
                         )
                     }
-//                    logger(DebugLogger())
+                    logger(DebugLogger())
                 }
             }
             .crossfade(true)

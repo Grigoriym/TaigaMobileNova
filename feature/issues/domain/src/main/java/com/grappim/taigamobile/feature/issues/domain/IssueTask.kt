@@ -2,10 +2,10 @@ package com.grappim.taigamobile.feature.issues.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.DueDateStatus
-import com.grappim.taigamobile.core.domain.Project
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
+import com.grappim.taigamobile.feature.projects.domain.Project
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
@@ -27,6 +27,7 @@ data class IssueTask(
     val dueDateStatus: DueDateStatus?,
 
     val project: Project,
+    @Deprecated("check whether it is needed")
     val taskType: CommonTaskType = CommonTaskType.Issue,
     val isClosed: Boolean,
     @Deprecated("should be moved out of here and be a separate field")

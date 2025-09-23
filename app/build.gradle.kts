@@ -107,6 +107,7 @@ dependencies {
 
     implementation(projects.feature.workitem.ui)
     implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.workitem.data)
 
     implementation(kotlin("reflect"))
 

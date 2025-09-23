@@ -31,6 +31,50 @@ import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
 import kotlinx.collections.immutable.ImmutableList
 
+@Composable
+fun CommentsSectionWidget(
+    comments: ImmutableList<Comment>,
+    isCommentsWidgetExpanded: Boolean,
+    setIsCommentsWidgetExpanded: (Boolean) -> Unit,
+    isCommentsLoading: Boolean,
+    onCommentRemove: (Comment) -> Unit,
+    goToProfile: (userId: Long) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(modifier = modifier) {
+        SectionTitleExpandable(
+            text = stringResource(RString.comments_template).format(comments.size),
+            isExpanded = isCommentsWidgetExpanded,
+            onExpandClick = {
+                setIsCommentsWidgetExpanded(!isCommentsWidgetExpanded)
+            }
+        )
+
+        if (isCommentsWidgetExpanded) {
+            comments.forEachIndexed { index, item ->
+                CommentItem(
+                    comment = item,
+                    onDeleteClick = {
+                        onCommentRemove(item)
+                    },
+                    navigateToProfile = goToProfile
+                )
+
+                if (index < comments.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 12.dp),
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+            }
+
+            if (isCommentsLoading) {
+                DotsLoaderWidget()
+            }
+        }
+    }
+}
+
 fun LazyListScope.commentsSectionWidget(
     comments: ImmutableList<Comment>,
     isCommentsWidgetExpanded: Boolean,

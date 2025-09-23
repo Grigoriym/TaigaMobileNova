@@ -17,6 +17,7 @@ dependencies {
     implementation(projects.core.async)
     implementation(projects.utils.ui)
     implementation(projects.utils.formatter.decimal)
+    implementation(projects.utils.formatter.datetime)
     implementation(projects.uikit)
 
     implementation(projects.feature.filters.domain)

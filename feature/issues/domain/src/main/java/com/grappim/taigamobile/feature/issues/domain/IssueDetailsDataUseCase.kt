@@ -10,6 +10,10 @@ import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.domain.AssigneesData
+import com.grappim.taigamobile.feature.workitem.domain.CreatedCommentData
+import com.grappim.taigamobile.feature.workitem.domain.WatchersData
+import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf

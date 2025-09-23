@@ -23,11 +23,11 @@ fun WorkItemDropdownMenuWidget(
     onDismissRequest: () -> Unit,
     showSnackbar: (NativeText) -> Unit,
     url: String,
-    setDeleteAlertVisible: (Boolean) -> Unit,
     isBlocked: Boolean,
     setBlockDialogVisible: (Boolean) -> Unit,
     doOnUnblock: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    setDeleteAlertVisible: ((Boolean) -> Unit)? = null
 ) {
     val clipboardManager = LocalClipboard.current
     Box(modifier = modifier) {
@@ -58,18 +58,20 @@ fun WorkItemDropdownMenuWidget(
                 }
             )
 
-            DropdownMenuItem(
-                onClick = {
-                    onDismissRequest()
-                    setDeleteAlertVisible(true)
-                },
-                text = {
-                    Text(
-                        text = stringResource(RString.delete),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            )
+            if (setDeleteAlertVisible != null) {
+                DropdownMenuItem(
+                    onClick = {
+                        onDismissRequest()
+                        setDeleteAlertVisible(true)
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(RString.delete),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                )
+            }
 
             DropdownMenuItem(
                 onClick = {

@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.issues.ui.details
 
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
-import com.grappim.taigamobile.feature.issues.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper

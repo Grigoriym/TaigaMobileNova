@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.widgets
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,7 +21,7 @@ fun CreatedByWidget(
     modifier: Modifier = Modifier
 ) {
     if (creator != null) {
-        Column(modifier = modifier) {
+        Column(modifier = modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(RString.created_by),
                 style = MaterialTheme.typography.titleMedium

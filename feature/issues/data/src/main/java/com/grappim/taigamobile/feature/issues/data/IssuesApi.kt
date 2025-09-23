@@ -2,8 +2,8 @@ package com.grappim.taigamobile.feature.issues.data
 
 import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
-import com.grappim.taigamobile.core.domain.CustomAttributeResponse
-import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponse
+import com.grappim.taigamobile.core.domain.CustomAttributeResponseDTO
+import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -78,12 +78,12 @@ interface IssuesApi {
     @GET("issue-custom-attributes")
     suspend fun getIssueCustomAttributes(
         @Query("project") projectId: Long
-    ): List<CustomAttributeResponse>
+    ): List<CustomAttributeResponseDTO>
 
     @GET("issues/custom-attributes-values/{id}")
     suspend fun getIssueCustomAttributesValues(
         @Path("id") taskId: Long
-    ): CustomAttributesValuesResponse
+    ): CustomAttributesValuesResponseDTO
 
     @DELETE("issues/{id}")
     suspend fun deleteCommonTask(@Path("id") id: Long)
@@ -93,7 +93,7 @@ interface IssuesApi {
     suspend fun patchCustomAttributesValues(
         @Path("id") taskId: Long,
         @Body payload: Map<String, Any?>
-    ): CustomAttributesValuesResponse
+    ): CustomAttributesValuesResponseDTO
 
     @POST("issues/attachments")
     @Multipart

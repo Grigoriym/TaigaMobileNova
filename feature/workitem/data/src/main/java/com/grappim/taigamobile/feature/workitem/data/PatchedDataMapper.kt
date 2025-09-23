@@ -1,8 +1,8 @@
-package com.grappim.taigamobile.core.api
+package com.grappim.taigamobile.feature.workitem.data
 
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
-import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponse
+import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.core.domain.DueDateStatus
 import com.grappim.taigamobile.core.domain.DueDateStatusDTO
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
@@ -28,8 +28,23 @@ class PatchedDataMapper @Inject constructor(
         )
     }
 
-    suspend fun toDomainCustomAttrs(resp: CustomAttributesValuesResponse): PatchedCustomAttributes =
-        withContext(dispatcher) {
-            PatchedCustomAttributes(version = resp.version)
-        }
+    suspend fun toDomain(resp: WorkItemResponseDTO): PatchedData = withContext(dispatcher) {
+        PatchedData(
+            newVersion = resp.version,
+            dueDateStatus = when (resp.dueDateStatusDTO) {
+                DueDateStatusDTO.Set -> DueDateStatus.Set
+                DueDateStatusDTO.DueSoon -> DueDateStatus.DueSoon
+                DueDateStatusDTO.PastDue -> DueDateStatus.PastDue
+                DueDateStatusDTO.NoLongerApplicable -> DueDateStatus.NoLongerApplicable
+                DueDateStatusDTO.NotSet -> DueDateStatus.NotSet
+                else -> null
+            }
+        )
+    }
+
+    suspend fun toDomainCustomAttrs(
+        resp: CustomAttributesValuesResponseDTO
+    ): PatchedCustomAttributes = withContext(dispatcher) {
+        PatchedCustomAttributes(version = resp.version)
+    }
 }
