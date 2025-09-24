@@ -7,7 +7,6 @@ import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.data.StatusMapper
 import com.grappim.taigamobile.feature.filters.data.TagsMapper
-import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.projects.data.ProjectMapper
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.data.DueDateStatusMapper
@@ -26,7 +25,7 @@ class UserStoryMapper @Inject constructor(
     private val serverStorage: ServerStorage
 ) {
 
-    suspend fun toDomain(resp: WorkItemResponseDTO, filters: FiltersData): UserStory =
+    suspend fun toDomain(resp: WorkItemResponseDTO): UserStory =
         withContext(ioDispatcher) {
             val creatorId = resp.owner ?: error("Owner field is null")
 
@@ -41,7 +40,7 @@ class UserStoryMapper @Inject constructor(
                 createdDateTime = resp.createdDate,
                 title = resp.subject,
                 ref = resp.ref,
-                status = statusMapper.getStatus(filtersData = filters, resp = resp),
+                status = statusMapper.getStatus(resp = resp),
                 assignee = resp.assignedToExtraInfo?.let { assigned ->
                     userMapper.toUser(assigned)
                 },

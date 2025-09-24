@@ -44,6 +44,9 @@ import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
+private val userStoryPlural = WorkItemPathPlural(CommonTaskType.UserStory)
+private val userStorySingular = WorkItemPathSingular(CommonTaskType.UserStory)
+
 class UserStoriesRepositoryImpl @Inject constructor(
     private val userStoriesApi: UserStoriesApi,
     private val taigaStorage: TaigaStorage,
@@ -73,6 +76,14 @@ class UserStoriesRepositoryImpl @Inject constructor(
 
     override fun refreshUserStories() {
         userStoriesPagingSource?.invalidate()
+    }
+
+    override suspend fun getUserStory(id: Long): UserStory {
+        val response = workItemApi.getWorkItemById(
+            taskPath = userStoryPlural,
+            id = id
+        )
+        return userStoryMapper.toDomain(resp = response)
     }
 
     override suspend fun getAllUserStories() = withIO {
@@ -153,19 +164,11 @@ class UserStoriesRepositoryImpl @Inject constructor(
         return commonTaskMapper.toDomain(response, CommonTaskType.UserStory)
     }
 
-    override suspend fun getUserStory(id: Long, filtersData: FiltersData): UserStory {
-        val response = workItemApi.getWorkItemById(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
-            id = id
-        )
-        return userStoryMapper.toDomain(resp = response, filters = filtersData)
-    }
-
     override suspend fun getUserStoryAttachments(taskId: Long): List<Attachment> {
         val projectId = taigaStorage.currentProjectIdFlow.first()
 
         val result = workItemApi.getAttachments(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            taskPath = userStoryPlural,
             objectId = taskId,
             projectId = projectId
         )
@@ -175,13 +178,13 @@ class UserStoriesRepositoryImpl @Inject constructor(
     override suspend fun getCustomFields(id: Long): CustomFields = coroutineScope {
         val attributes = async {
             workItemApi.getCustomAttributes(
-                taskPath = WorkItemPathSingular(CommonTaskType.UserStory),
+                taskPath = userStorySingular,
                 projectId = taigaStorage.currentProjectIdFlow.first()
             )
         }
         val values = async {
             workItemApi.getCustomAttributesValues(
-                taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+                taskPath = userStoryPlural,
                 id = id
             )
         }
@@ -199,7 +202,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     ): PatchedData {
         val editedMap = payload.toPersistentMap().put("version", version)
         val result = workItemApi.patchWorkItem(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            taskPath = userStoryPlural,
             id = userStoryId,
             payload = editedMap
         )
@@ -213,7 +216,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     ): PatchedCustomAttributes {
         val editedMap = payload.toPersistentMap().put("version", version)
         val result = workItemApi.patchCustomAttributesValues(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            taskPath = userStoryPlural,
             taskId = userStoryId,
             payload = editedMap
         )
@@ -222,28 +225,28 @@ class UserStoriesRepositoryImpl @Inject constructor(
 
     override suspend fun unwatchUserStory(userStoryId: Long) {
         workItemApi.unwatchWorkItem(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            taskPath = userStoryPlural,
             workItemId = userStoryId
         )
     }
 
     override suspend fun watchUserStory(userStoryId: Long) {
         workItemApi.watchWorkItem(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            taskPath = userStoryPlural,
             workItemId = userStoryId
         )
     }
 
     override suspend fun deleteIssue(id: Long) {
         workItemApi.deleteWorkItem(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            taskPath = userStoryPlural,
             workItemId = id
         )
     }
 
     override suspend fun deleteAttachment(attachment: Attachment) {
         workItemApi.deleteAttachment(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            taskPath = userStoryPlural,
             attachmentId = attachment.id
         )
     }
@@ -265,7 +268,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
         val objectId = MultipartBody.Part.createFormData("object_id", id.toString())
 
         val dto = workItemApi.uploadCommonTaskAttachment(
-            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            taskPath = userStoryPlural,
             file = file,
             project = project,
             objectId = objectId

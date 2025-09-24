@@ -46,9 +46,7 @@ class FiltersMapper @Inject constructor(
                 Priority(
                     id = dto.id,
                     name = dto.name,
-                    color = dto.color.fixNullColor(),
-                    count = dto.count,
-                    order = dto.order
+                    color = dto.color.fixNullColor()
                 )
             }.toImmutableList(),
             roles = response.roles.orEmpty().map { dto ->
@@ -64,18 +62,14 @@ class FiltersMapper @Inject constructor(
                 Severity(
                     id = dto.id,
                     name = dto.name,
-                    color = dto.color.fixNullColor(),
-                    count = dto.count,
-                    order = dto.order
+                    color = dto.color.fixNullColor()
                 )
             }.toImmutableList(),
             statuses = response.statuses.map { dto ->
                 Status(
                     id = dto.id,
                     name = dto.name,
-                    color = dto.color.fixNullColor(),
-                    count = dto.count,
-                    order = dto.order
+                    color = dto.color.fixNullColor()
                 )
             }.toImmutableList(),
             tags = response.tags.orEmpty().map { dto ->
@@ -89,9 +83,7 @@ class FiltersMapper @Inject constructor(
                 Type(
                     id = dto.id,
                     name = dto.name,
-                    color = dto.color.fixNullColor(),
-                    count = dto.count,
-                    order = dto.order
+                    color = dto.color.fixNullColor()
                 )
             }.toImmutableList()
         )

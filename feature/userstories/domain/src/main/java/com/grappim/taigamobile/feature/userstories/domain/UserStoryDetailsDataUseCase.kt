@@ -38,10 +38,10 @@ class UserStoryDetailsDataUseCase @Inject constructor(
     suspend fun getUserStoryData(id: Long) = resultOf {
         coroutineScope {
             val taskType = CommonTaskType.UserStory
-            val filtersData = filtersRepository.getFiltersData(taskType)
+            val filtersData = async { filtersRepository.getFiltersData(taskType) }
 
             val userStoryDeferred = async {
-                userStoriesRepository.getUserStory(id = id, filtersData = filtersData)
+                userStoriesRepository.getUserStory(id = id)
             }
 
             val attachments = async { userStoriesRepository.getUserStoryAttachments(taskId = id) }
@@ -84,7 +84,7 @@ class UserStoryDetailsDataUseCase @Inject constructor(
                 watchers = watchers.toImmutableList(),
                 isAssignedToMe = isAssignedToMe.await(),
                 isWatchedByMe = isWatchedByMe.await(),
-                filtersData = filtersData
+                filtersData = filtersData.await()
             )
         }
     }
@@ -230,11 +230,7 @@ class UserStoryDetailsDataUseCase @Inject constructor(
         coroutineScope {
             userStoriesRepository.unwatchUserStory(userStoryId)
 
-            val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
-            val userStory = userStoriesRepository.getUserStory(
-                id = userStoryId,
-                filtersData = filtersData
-            )
+            val userStory = userStoriesRepository.getUserStory(id = userStoryId)
 
             val watchers = usersRepository.getUsersList(userStory.watcherUserIds)
 
@@ -251,11 +247,7 @@ class UserStoryDetailsDataUseCase @Inject constructor(
         coroutineScope {
             userStoriesRepository.watchUserStory(userStoryId)
 
-            val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
-            val issue = userStoriesRepository.getUserStory(
-                id = userStoryId,
-                filtersData = filtersData
-            )
+            val issue = userStoriesRepository.getUserStory(id = userStoryId)
 
             val watchers = usersRepository.getUsersList(issue.watcherUserIds)
 

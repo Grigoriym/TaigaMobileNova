@@ -9,7 +9,6 @@ import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
-import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
 
@@ -40,7 +39,7 @@ interface UserStoriesRepository {
 
     suspend fun getUserStoryByRefOld(projectId: Long, ref: Int): CommonTask
 
-    suspend fun getUserStory(id: Long, filtersData: FiltersData): UserStory
+    suspend fun getUserStory(id: Long): UserStory
     suspend fun getUserStoryAttachments(taskId: Long): List<Attachment>
 
     suspend fun getCustomFields(id: Long): CustomFields

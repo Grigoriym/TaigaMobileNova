@@ -61,7 +61,7 @@ class IssueTaskMapper @Inject constructor(
             watcherUserIds = resp.watchers.orEmpty(),
             milestone = resp.milestone,
             copyLinkUrl = url,
-            status = statusMapper.getStatus(filtersData = filters, resp = resp),
+            status = statusMapper.getStatus(resp = resp),
             type = getType(filtersData = filters, resp = resp),
             severity = getSeverity(filtersData = filters, resp = resp),
             priority = getPriority(filtersData = filters, resp = resp)
@@ -74,9 +74,7 @@ class IssueTaskMapper @Inject constructor(
         return Type(
             id = typeId,
             name = currentItem.name,
-            color = currentItem.color,
-            count = currentItem.count,
-            order = currentItem.order
+            color = currentItem.color
         )
     }
 
@@ -86,9 +84,7 @@ class IssueTaskMapper @Inject constructor(
         return Severity(
             id = severityId,
             name = currentItem.name,
-            color = currentItem.color,
-            count = currentItem.count,
-            order = currentItem.order
+            color = currentItem.color
         )
     }
 
@@ -98,9 +94,7 @@ class IssueTaskMapper @Inject constructor(
         return Priority(
             id = priorityId,
             name = currentItem.name,
-            color = currentItem.color,
-            count = currentItem.count,
-            order = currentItem.order
+            color = currentItem.color
         )
     }
 }
