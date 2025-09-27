@@ -5,7 +5,6 @@ import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
@@ -28,6 +27,8 @@ data class UserStoryDetailsState(
     val sprint: Sprint? = null,
     val filtersData: FiltersData? = null,
 
+    val onTitleSave: () -> Unit = {},
+
     val error: NativeText = NativeText.Empty,
 
     val isDropdownMenuExpanded: Boolean = false,
@@ -35,13 +36,6 @@ data class UserStoryDetailsState(
 
     val currentUserStory: UserStory? = null,
     val originalUserStory: UserStory? = null,
-
-    val savingFields: PersistentSet<PatchableField> = persistentSetOf(),
-    val editableFields: PersistentSet<PatchableField> = persistentSetOf(),
-    val onFieldSetIsEditable: (PatchableField, Boolean) -> Unit = { _, _ -> },
-    val onFieldChanged: (field: PatchableField, newValue: Any) -> Unit = { _, _ -> },
-    val onSaveField: (field: PatchableField) -> Unit = {},
-    val patchableFieldError: NativeText = NativeText.Empty,
 
     val activeBadge: SelectableWorkItemBadgeState? = null,
     val workItemBadges: ImmutableSet<SelectableWorkItemBadgeState> = persistentSetOf(),

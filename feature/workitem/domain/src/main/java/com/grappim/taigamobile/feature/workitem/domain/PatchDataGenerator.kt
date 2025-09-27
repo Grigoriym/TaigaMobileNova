@@ -4,6 +4,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 
 interface PatchDataGenerator {
+    fun getTitle(title: String): ImmutableMap<String, Any?>
     fun getWatchersPatchPayload(watchers: List<Long>): ImmutableMap<String, Any?>
     fun getAssignedToPatchPayload(assignee: Long?): ImmutableMap<String, Any?>
     fun getAssignedUsersPatchPayload(assignees: ImmutableList<Long>): ImmutableMap<String, Any?>

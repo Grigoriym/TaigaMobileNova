@@ -247,10 +247,6 @@ private fun IssueDetailsScreenContent(
                 item {
                     WorkItemTitleWidget(
                         currentTitle = state.currentIssue.title,
-                        originalTitle = state.originalIssue?.title ?: "",
-                        // todo maybe remove it, on front they don't do strikethrough
-                        // todo if we try to change the status rn, this one won't be changed
-                        isClosed = state.currentIssue.isClosed,
                         onTitleChange = {
                             state.onFieldChanged(PatchableField.TITLE, it)
                         },
@@ -261,6 +257,13 @@ private fun IssueDetailsScreenContent(
                         isEditable = PatchableField.TITLE in state.editableFields,
                         setIsEditable = { isEditable ->
                             state.onFieldSetIsEditable(PatchableField.TITLE, isEditable)
+                        },
+                        onCancelClick = {
+                            state.onFieldSetIsEditable(PatchableField.TITLE, false)
+                            state.onFieldChanged(
+                                PatchableField.TITLE,
+                                state.originalIssue?.title ?: ""
+                            )
                         }
                     )
                 }

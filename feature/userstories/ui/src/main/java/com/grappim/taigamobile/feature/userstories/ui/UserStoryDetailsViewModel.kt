@@ -8,12 +8,13 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryDetailsDataUseCase
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.ui.delegates.WorkItemTitleDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.WorkItemTitleDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
@@ -72,7 +73,8 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val session: Session,
     private val fileUriManager: FileUriManager,
     private val customFieldsUIMapper: CustomFieldsUIMapper
-) : ViewModel() {
+) : ViewModel(),
+    WorkItemTitleDelegate by WorkItemTitleDelegateImpl() {
 
     private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
     private val ref = route.ref
@@ -86,9 +88,6 @@ class UserStoryDetailsViewModel @Inject constructor(
             ),
             setDropdownMenuExpanded = ::setDropdownMenuExpanded,
             retryLoadUserStory = ::retryLoadUserStory,
-            onFieldSetIsEditable = ::setFieldIsEditable,
-            onFieldChanged = ::updateLocalField,
-            onSaveField = ::saveField,
             onWorkingItemBadgeClick = ::onWorkItemBadgeClick,
             setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setDueDate = ::setDueDate,
@@ -120,7 +119,8 @@ class UserStoryDetailsViewModel @Inject constructor(
             onAttachmentAdd = ::onAttachmentAdd,
             setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
             onCommentRemove = ::deleteComment,
-            onCreateCommentClick = ::createComment
+            onCreateCommentClick = ::createComment,
+            onTitleSave = ::handleTitleSave
         )
     )
     val state = _state.asStateFlow()
@@ -142,6 +142,96 @@ class UserStoryDetailsViewModel @Inject constructor(
             .launchIn(viewModelScope)
 
         loadUserStory()
+    }
+
+    private fun loadUserStory() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    initialLoadError = NativeText.Empty
+                )
+            }
+
+            userStoryDetailsDataUseCase.getUserStoryData(id = userStoryId)
+                .onSuccess { result ->
+                    val statusUi = result.userStory.status?.let {
+                        statusUIMapper.toUI(statuses = it)
+                    }
+                    val workItemBadges = async {
+                        workItemsGenerator.getItems(
+                            statusUI = statusUi,
+                            filtersData = result.filtersData,
+                            sprint = result.sprint
+                        )
+                    }
+                    val tags = async {
+                        tagUIMapper.toUI(result.userStory.tags).toPersistentList()
+                    }
+                    val dueDateText = dateTimeUtils.getDueDateText(
+                        dueDate = result.userStory.dueDate
+                    )
+                    val customFieldsStateItems = async {
+                        customFieldsUIMapper.toUI(result.customFields)
+                    }
+
+                    _state.update {
+                        it.copy(
+                            workItemBadges = workItemBadges.await(),
+                            isLoading = false,
+                            currentUserStory = result.userStory,
+                            originalUserStory = result.userStory,
+                            attachments = result.attachments.toPersistentList(),
+                            comments = result.comments.toPersistentList(),
+                            sprint = result.sprint,
+                            tags = tags.await(),
+                            dueDateText = dueDateText,
+                            creator = result.creator,
+                            assignees = result.assignees.toPersistentList(),
+                            watchers = result.watchers.toPersistentList(),
+                            isAssignedToMe = result.isAssignedToMe,
+                            isWatchedByMe = result.isWatchedByMe,
+                            customFieldsVersion = result.customFields.version,
+                            customFieldStateItems = customFieldsStateItems.await(),
+                            filtersData = result.filtersData,
+                            initialLoadError = NativeText.Empty
+                        )
+                    }
+                    setInitialTitle(result.userStory.title)
+                }.onFailure { error ->
+                    Timber.e(error)
+                    val errorToShow = getErrorMessage(error)
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            initialLoadError = errorToShow
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun handleTitleSave() {
+        onTitleSave(onSaveTitleToBackend = ::saveTitleToBackend)
+    }
+
+    private fun saveTitleToBackend() {
+        val currentTitle = titleState.value.currentTitle
+
+        viewModelScope.launch {
+            val patchableData = patchDataGenerator.getTitle(currentTitle)
+
+            patchData(
+                payload = patchableData,
+                doOnSuccess = { data: PatchedData, userStory: UserStory ->
+                    onTitleSaveSuccess()
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    onTitleError(getErrorMessage(error))
+                }
+            )
+        }
     }
 
     private fun createComment(newComment: String) {
@@ -901,148 +991,21 @@ class UserStoryDetailsViewModel @Inject constructor(
         loadUserStory()
     }
 
-    private fun loadUserStory() {
-        viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isLoading = true,
-                    initialLoadError = NativeText.Empty
-                )
-            }
-
-            userStoryDetailsDataUseCase.getUserStoryData(id = userStoryId)
-                .onSuccess { result ->
-                    val statusUi = result.userStory.status?.let {
-                        statusUIMapper.toUI(statuses = it)
-                    }
-                    val workItemBadges = async {
-                        workItemsGenerator.getItems(
-                            statusUI = statusUi,
-                            filtersData = result.filtersData,
-                            sprint = result.sprint
-                        )
-                    }
-                    val tags = async {
-                        tagUIMapper.toUI(result.userStory.tags).toPersistentList()
-                    }
-                    val dueDateText = dateTimeUtils.getDueDateText(
-                        dueDate = result.userStory.dueDate
-                    )
-                    val customFieldsStateItems = async {
-                        customFieldsUIMapper.toUI(result.customFields)
-                    }
-
-                    _state.update {
-                        it.copy(
-                            workItemBadges = workItemBadges.await(),
-                            isLoading = false,
-                            currentUserStory = result.userStory,
-                            originalUserStory = result.userStory,
-                            attachments = result.attachments.toPersistentList(),
-                            comments = result.comments.toPersistentList(),
-                            sprint = result.sprint,
-                            tags = tags.await(),
-                            dueDateText = dueDateText,
-                            creator = result.creator,
-                            assignees = result.assignees.toPersistentList(),
-                            watchers = result.watchers.toPersistentList(),
-                            isAssignedToMe = result.isAssignedToMe,
-                            isWatchedByMe = result.isWatchedByMe,
-                            customFieldsVersion = result.customFields.version,
-                            customFieldStateItems = customFieldsStateItems.await(),
-                            filtersData = result.filtersData,
-                            initialLoadError = NativeText.Empty
-                        )
-                    }
-                }.onFailure { error ->
-                    Timber.e(error)
-                    val errorToShow = getErrorMessage(error)
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            initialLoadError = errorToShow
-                        )
-                    }
-                }
-        }
-    }
-
     private fun setDropdownMenuExpanded(isExpanded: Boolean) {
         _state.update {
             it.copy(isDropdownMenuExpanded = isExpanded)
         }
     }
 
-    private fun setFieldIsEditable(field: PatchableField, isEditable: Boolean) {
-        _state.update { currentState ->
-            if (isEditable) {
-                currentState.copy(editableFields = currentState.editableFields.add(field))
-            } else {
-                currentState.copy(editableFields = currentState.editableFields.remove(field))
-            }
-        }
-    }
-
-    private fun updateLocalField(field: PatchableField, newValue: Any) {
-        _state.update { currentState ->
-            val updatedIssue = when (field) {
-                PatchableField.TITLE -> currentState.currentUserStory?.copy(
-                    title = newValue as String
-                )
-
-                else -> currentState.currentUserStory
-            }
-            currentState.copy(currentUserStory = updatedIssue)
-        }
-    }
-
-    private fun saveField(field: PatchableField) {
-        val currentIssue = _state.value.currentUserStory ?: return
-        viewModelScope.launch {
-            val patchableData = when (field) {
-                PatchableField.TITLE -> mapOf("subject" to currentIssue.title)
-            }.toPersistentMap()
-
-            patchData(
-                payload = patchableData,
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            savingFields = it.savingFields.add(field),
-                            patchableFieldError = NativeText.Empty
-                        )
-                    }
-                },
-                doOnSuccess = { data: PatchedData, userStory: UserStory ->
-                    setFieldIsEditable(field, false)
-                    _state.update {
-                        it.copy(
-                            savingFields = it.savingFields.remove(field)
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            patchableFieldError = getErrorMessage(error),
-                            savingFields = it.savingFields.remove(field)
-                        )
-                    }
-                }
-            )
-        }
-    }
-
     private suspend fun patchData(
         payload: ImmutableMap<String, Any?>,
-        doOnPreExecute: () -> Unit,
+        doOnPreExecute: (() -> Unit)? = null,
         doOnSuccess: (PatchedData, UserStory) -> Unit,
         doOnError: (Throwable) -> Unit
     ) {
         val currentUserStory = _state.value.currentUserStory ?: return
 
-        doOnPreExecute()
+        doOnPreExecute?.invoke()
 
         userStoryDetailsDataUseCase.patchData(
             userStoryId = currentUserStory.id,

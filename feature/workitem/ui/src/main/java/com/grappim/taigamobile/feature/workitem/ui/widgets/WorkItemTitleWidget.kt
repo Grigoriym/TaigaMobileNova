@@ -17,7 +17,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
@@ -25,13 +24,12 @@ import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 @Composable
 fun WorkItemTitleWidget(
     currentTitle: String,
-    originalTitle: String,
     onTitleChange: (String) -> Unit,
-    isClosed: Boolean,
     onTitleSave: () -> Unit,
     isLoading: Boolean,
     isEditable: Boolean,
     setIsEditable: (Boolean) -> Unit,
+    onCancelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
@@ -55,12 +53,7 @@ fun WorkItemTitleWidget(
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(
-                        onClick = {
-                            setIsEditable(false)
-                            onTitleChange(originalTitle)
-                        }
-                    ) {
+                    TextButton(onClick = onCancelClick) {
                         Text(stringResource(RString.cancel))
                     }
                     TextButton(
@@ -88,16 +81,7 @@ fun WorkItemTitleWidget(
                             setIsEditable(true)
                         },
                     text = currentTitle,
-                    style = MaterialTheme.typography.headlineSmall.let { textStyle ->
-                        if (isClosed) {
-                            textStyle.copy(
-                                color = MaterialTheme.colorScheme.outline,
-                                textDecoration = TextDecoration.LineThrough
-                            )
-                        } else {
-                            textStyle
-                        }
-                    },
+                    style = MaterialTheme.typography.headlineSmall,
                     maxLines = 2
                 )
             }

@@ -3,10 +3,15 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import javax.inject.Inject
 
 class PatchDataGeneratorImpl @Inject constructor() : PatchDataGenerator {
+
+    override fun getTitle(title: String): ImmutableMap<String, Any?> =
+        persistentMapOf("subject" to title)
+
     override fun getWatchersPatchPayload(watchers: List<Long>): ImmutableMap<String, Any?> =
         mapOf("watchers" to watchers).toImmutableMap()
 

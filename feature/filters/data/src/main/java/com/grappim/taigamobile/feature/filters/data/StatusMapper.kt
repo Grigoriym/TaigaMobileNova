@@ -12,21 +12,19 @@ class StatusMapper @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) {
     @Deprecated("use another one")
-    suspend fun getStatus(resp: CommonTaskResponse): Status? =
-        withContext(ioDispatcher) {
-            Status(
-                id = resp.status,
-                name = resp.statusExtraInfo.name,
-                color = resp.statusExtraInfo.color
-            )
-        }
+    suspend fun getStatus(resp: CommonTaskResponse): Status? = withContext(ioDispatcher) {
+        Status(
+            id = resp.status,
+            name = resp.statusExtraInfo.name,
+            color = resp.statusExtraInfo.color
+        )
+    }
 
-    suspend fun getStatus(resp: WorkItemResponseDTO): Status? =
-        withContext(ioDispatcher) {
-            Status(
-                id = resp.status,
-                name = resp.statusExtraInfo.name,
-                color = resp.statusExtraInfo.color
-            )
-        }
+    suspend fun getStatus(resp: WorkItemResponseDTO): Status? = withContext(ioDispatcher) {
+        Status(
+            id = resp.status,
+            name = resp.statusExtraInfo.name,
+            color = resp.statusExtraInfo.color
+        )
+    }
 }

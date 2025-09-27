@@ -23,7 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.core.domain.patch.PatchableField
+import com.grappim.taigamobile.feature.workitem.ui.delegates.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
@@ -68,6 +68,7 @@ fun UserStoryDetailsScreen(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val titleState by viewModel.titleState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -102,9 +103,9 @@ fun UserStoryDetailsScreen(
         }
     }
 
-    LaunchedEffect(state.patchableFieldError) {
-        if (state.patchableFieldError !is NativeText.Empty) {
-            showSnackbar(state.patchableFieldError)
+    LaunchedEffect(titleState.titleError) {
+        if (titleState.titleError !is NativeText.Empty) {
+            showSnackbar(titleState.titleError)
         }
     }
 
@@ -210,6 +211,7 @@ fun UserStoryDetailsScreen(
 
         UserStoryDetailsScreenContent(
             state = state,
+            titleState = titleState,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
             goToProfile = goToProfile,
@@ -222,6 +224,7 @@ fun UserStoryDetailsScreen(
 @Composable
 private fun UserStoryDetailsScreenContent(
     state: UserStoryDetailsState,
+    titleState: WorkItemTitleState,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
     goToProfile: (Long) -> Unit,
@@ -247,20 +250,13 @@ private fun UserStoryDetailsScreenContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 WorkItemTitleWidget(
-                    currentTitle = state.currentUserStory.title,
-                    originalTitle = state.originalUserStory.title,
-                    onTitleChange = {
-                        state.onFieldChanged(PatchableField.TITLE, it)
-                    },
-                    isClosed = state.currentUserStory.isClosed,
-                    onTitleSave = {
-                        state.onSaveField(PatchableField.TITLE)
-                    },
-                    isLoading = PatchableField.TITLE in state.savingFields,
-                    isEditable = PatchableField.TITLE in state.editableFields,
-                    setIsEditable = { isEditable ->
-                        state.onFieldSetIsEditable(PatchableField.TITLE, isEditable)
-                    }
+                    currentTitle = titleState.currentTitle,
+                    onTitleChange = titleState.onTitleChange,
+                    onTitleSave = state.onTitleSave,
+                    isLoading = titleState.isTitleLoading,
+                    isEditable = titleState.isTitleEditable,
+                    setIsEditable = titleState.setIsTitleEditable,
+                    onCancelClick = titleState.onCancelClick
                 )
 
                 WorkItemBlockedBannerWidget(blockedNote = state.currentUserStory.blockedNote)
