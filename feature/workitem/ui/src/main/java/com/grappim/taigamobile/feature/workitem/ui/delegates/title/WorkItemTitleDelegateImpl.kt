@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.workitem.ui.delegates
+package com.grappim.taigamobile.feature.workitem.ui.delegates.title
 
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.flow.MutableStateFlow

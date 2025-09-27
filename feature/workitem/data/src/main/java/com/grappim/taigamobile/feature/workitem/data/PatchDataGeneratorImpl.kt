@@ -42,4 +42,12 @@ class PatchDataGeneratorImpl @Inject constructor() : PatchDataGenerator {
     override fun getAttributesPatchPayload(
         attributes: Map<String, Any?>
     ): ImmutableMap<String, Any?> = mapOf("attributes_values" to attributes).toImmutableMap()
+
+    override fun getStatus(id: Long): ImmutableMap<String, Any?> = persistentMapOf("status" to id)
+    override fun getType(id: Long): ImmutableMap<String, Any?> = persistentMapOf("type" to id)
+    override fun getSeverity(id: Long): ImmutableMap<String, Any?> =
+        persistentMapOf("severity" to id)
+
+    override fun getPriority(id: Long): ImmutableMap<String, Any?> =
+        persistentMapOf("priority" to id)
 }

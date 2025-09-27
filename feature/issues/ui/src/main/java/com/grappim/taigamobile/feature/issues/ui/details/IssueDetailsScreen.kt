@@ -28,12 +28,12 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWid
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CreatedByWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WatchersWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBadgesBottomSheet
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBlockedBannerWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDescriptionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDropdownMenuWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
-import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemsBottomSheet
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.commentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
@@ -111,7 +111,7 @@ fun IssueDetailsScreen(
         }
     }
 
-    WorkItemsBottomSheet(
+    WorkItemBadgesBottomSheet(
         activeBadge = state.activeBadge,
         bottomSheetState = bottomSheetState,
         onDismiss = {
@@ -276,7 +276,7 @@ private fun IssueDetailsScreenContent(
                     WorkItemBadgesWidget(
                         updatingBadges = state.updatingBadges,
                         items = state.workItemBadges,
-                        onWorkingItemBadgeClick = state.onWorkingItemBadgeClick
+                        onBadgeClick = state.onWorkingItemBadgeClick
                     )
                 }
 

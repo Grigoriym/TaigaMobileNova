@@ -18,4 +18,9 @@ interface PatchDataGenerator {
     fun getDescriptionPatchPayload(description: String): ImmutableMap<String, Any?>
 
     fun getAttributesPatchPayload(attributes: Map<String, Any?>): ImmutableMap<String, Any?>
+
+    fun getStatus(id: Long): ImmutableMap<String, Any?>
+    fun getType(id: Long): ImmutableMap<String, Any?>
+    fun getSeverity(id: Long): ImmutableMap<String, Any?>
+    fun getPriority(id: Long): ImmutableMap<String, Any?>
 }

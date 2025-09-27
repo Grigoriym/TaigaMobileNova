@@ -15,7 +15,6 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 
@@ -28,6 +27,7 @@ data class UserStoryDetailsState(
     val filtersData: FiltersData? = null,
 
     val onTitleSave: () -> Unit = {},
+    val onBadgeSave: (SelectableWorkItemBadgeState, StatusUI) -> Unit = { _, _ -> },
 
     val error: NativeText = NativeText.Empty,
 
@@ -36,13 +36,6 @@ data class UserStoryDetailsState(
 
     val currentUserStory: UserStory? = null,
     val originalUserStory: UserStory? = null,
-
-    val activeBadge: SelectableWorkItemBadgeState? = null,
-    val workItemBadges: ImmutableSet<SelectableWorkItemBadgeState> = persistentSetOf(),
-    val onWorkingItemBadgeClick: (SelectableWorkItemBadgeState) -> Unit = {},
-    val updatingBadges: PersistentSet<SelectableWorkItemBadgeState> = persistentSetOf(),
-    val onBadgeSheetDismiss: () -> Unit = {},
-    val onBadgeSheetItemClick: (SelectableWorkItemBadgeState, StatusUI) -> Unit = { _, _ -> },
 
     val tags: PersistentList<TagUI> = persistentListOf(),
     val onTagRemove: (TagUI) -> Unit = {},
@@ -76,7 +69,6 @@ data class UserStoryDetailsState(
     val removeAssignee: () -> Unit = {},
     val isAssigneesLoading: Boolean = false,
     val isRemoveAssigneeDialogVisible: Boolean = false,
-    @Deprecated("change it")
     val setIsRemoveAssigneeDialogVisible: (Boolean) -> Unit = {},
     val onRemoveAssigneeClick: (User) -> Unit = {},
     val assigneeToRemove: User? = null,

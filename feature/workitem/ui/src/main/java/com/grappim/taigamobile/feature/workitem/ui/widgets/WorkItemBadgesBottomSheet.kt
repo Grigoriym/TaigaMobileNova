@@ -27,7 +27,7 @@ import com.grappim.taigamobile.utils.ui.asString
 import kotlinx.collections.immutable.ImmutableList
 
 @Composable
-fun WorkItemsBottomSheet(
+fun WorkItemBadgesBottomSheet(
     activeBadge: SelectableWorkItemBadgeState?,
     bottomSheetState: SheetState,
     onBottomSheetItemSelect: (SelectableWorkItemBadgeState, StatusUI) -> Unit,

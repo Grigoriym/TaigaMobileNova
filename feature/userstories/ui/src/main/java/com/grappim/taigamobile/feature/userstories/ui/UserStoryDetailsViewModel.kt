@@ -13,8 +13,10 @@ import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryDetailsDataUseCase
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.ui.delegates.WorkItemTitleDelegate
-import com.grappim.taigamobile.feature.workitem.ui.delegates.WorkItemTitleDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
@@ -24,11 +26,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import com.grappim.taigamobile.feature.workitem.ui.utils.getDueDateText
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgePriority
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeSeverity
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeStatus
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeType
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.DateItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.NumberItemState
@@ -45,8 +43,6 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.collections.immutable.toPersistentMap
-import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -74,7 +70,8 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val fileUriManager: FileUriManager,
     private val customFieldsUIMapper: CustomFieldsUIMapper
 ) : ViewModel(),
-    WorkItemTitleDelegate by WorkItemTitleDelegateImpl() {
+    WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator) {
 
     private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
     private val ref = route.ref
@@ -88,13 +85,10 @@ class UserStoryDetailsViewModel @Inject constructor(
             ),
             setDropdownMenuExpanded = ::setDropdownMenuExpanded,
             retryLoadUserStory = ::retryLoadUserStory,
-            onWorkingItemBadgeClick = ::onWorkItemBadgeClick,
             setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setDueDate = ::setDueDate,
             onTagRemove = ::onTagRemove,
             onGoingToEditTags = ::onGoingToEditTags,
-            onBadgeSheetDismiss = ::onBadgeSheetDismiss,
-            onBadgeSheetItemClick = ::onBadgeSheetItemClick,
             onGoingToEditAssignees = ::onGoingToEditAssignees,
             onGoingToEditWatchers = ::onGoingToEditWatchers,
             onAssignToMe = ::onAssignToMe,
@@ -120,7 +114,8 @@ class UserStoryDetailsViewModel @Inject constructor(
             setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
-            onTitleSave = ::handleTitleSave
+            onTitleSave = ::handleTitleSave,
+            onBadgeSave = ::handleBadgeSave
         )
     )
     val state = _state.asStateFlow()
@@ -177,7 +172,6 @@ class UserStoryDetailsViewModel @Inject constructor(
 
                     _state.update {
                         it.copy(
-                            workItemBadges = workItemBadges.await(),
                             isLoading = false,
                             currentUserStory = result.userStory,
                             originalUserStory = result.userStory,
@@ -198,6 +192,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                         )
                     }
                     setInitialTitle(result.userStory.title)
+                    setWorkItemBadges(workItemBadges.await())
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -787,80 +782,34 @@ class UserStoryDetailsViewModel @Inject constructor(
         workItemEditShared.setCurrentWatchers(watchersIds)
     }
 
-    private fun onBadgeSheetDismiss() {
-        _state.update {
-            it.copy(activeBadge = null)
-        }
+    private fun handleBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
+        onBadgeSave(
+            type = type,
+            onSaveBadgeToBackend = {
+                onBadgeSheetItemClick(type, item)
+            }
+        )
     }
 
     private fun onBadgeSheetItemClick(type: SelectableWorkItemBadgeState, item: StatusUI) {
         viewModelScope.launch {
-            val patchableData = when (type) {
-                is SelectableWorkItemBadgeStatus -> {
-                    mapOf("status" to item.id)
-                }
-
-                is SelectableWorkItemBadgeType -> {
-                    mapOf("type" to item.id)
-                }
-
-                is SelectableWorkItemBadgeSeverity -> {
-                    mapOf("severity" to item.id)
-                }
-
-                is SelectableWorkItemBadgePriority -> {
-                    mapOf("priority" to item.id)
-                }
-            }.toPersistentMap()
-
             patchData(
-                payload = patchableData,
+                payload = getBadgePatchPayload(type, item),
                 doOnPreExecute = {
-                    _state.update { currentState ->
-                        currentState.copy(
-                            updatingBadges = currentState.updatingBadges.add(type),
+                    _state.update {
+                        it.copy(
                             error = NativeText.Empty
                         )
                     }
                 },
                 doOnSuccess = { data: PatchedData, updatedUserStory: UserStory ->
-                    _state.update { currentState ->
-                        val updatedWorkItemBadges = currentState.workItemBadges.map { badge ->
-                            if (badge == type) {
-                                when (badge) {
-                                    is SelectableWorkItemBadgeStatus -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgeType -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgeSeverity -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgePriority -> {
-                                        badge.copy(currentValue = item)
-                                    }
-                                }
-                            } else {
-                                badge
-                            }
-                        }
-
-                        currentState.copy(
-                            activeBadge = null,
-                            workItemBadges = updatedWorkItemBadges.toPersistentSet(),
-                            updatingBadges = currentState.updatingBadges.remove(type)
-                        )
-                    }
+                    onBadgeSaveSuccess(type, item)
                 },
                 doOnError = { error ->
                     Timber.e(error)
+                    onBadgeSaveError()
                     _state.update {
                         it.copy(
-                            activeBadge = null,
                             error = getErrorMessage(error)
                         )
                     }
@@ -1026,12 +975,6 @@ class UserStoryDetailsViewModel @Inject constructor(
         }.onFailure { error ->
             Timber.e(error)
             doOnError(error)
-        }
-    }
-
-    private fun onWorkItemBadgeClick(type: SelectableWorkItemBadgeState) {
-        _state.update {
-            it.copy(activeBadge = type)
         }
     }
 

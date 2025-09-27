@@ -23,19 +23,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.feature.workitem.ui.delegates.WorkItemTitleState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CommentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CreatedByWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WatchersWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBadgesBottomSheet
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBlockedBannerWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDescriptionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDropdownMenuWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
-import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemsBottomSheet
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.WorkItemTagsWidget
@@ -69,6 +70,7 @@ fun UserStoryDetailsScreen(
         skipPartiallyExpanded = true
     )
     val titleState by viewModel.titleState.collectAsStateWithLifecycle()
+    val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -115,15 +117,14 @@ fun UserStoryDetailsScreen(
 
     TaigaLoadingDialog(isVisible = state.isLoading)
 
-    WorkItemsBottomSheet(
-        activeBadge = state.activeBadge,
+    WorkItemBadgesBottomSheet(
+        activeBadge = badgeState.activeBadge,
         bottomSheetState = bottomSheetState,
         onDismiss = {
-            state.onBadgeSheetDismiss()
+            badgeState.onBadgeSheetDismiss()
         },
         onBottomSheetItemSelect = { badgeState, option ->
-            state.onBadgeSheetDismiss()
-            state.onBadgeSheetItemClick(badgeState, option)
+            state.onBadgeSave(badgeState, option)
         }
     )
 
@@ -212,6 +213,7 @@ fun UserStoryDetailsScreen(
         UserStoryDetailsScreenContent(
             state = state,
             titleState = titleState,
+            badgeState = badgeState,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
             goToProfile = goToProfile,
@@ -225,6 +227,7 @@ fun UserStoryDetailsScreen(
 private fun UserStoryDetailsScreenContent(
     state: UserStoryDetailsState,
     titleState: WorkItemTitleState,
+    badgeState: WorkItemBadgeState,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
     goToProfile: (Long) -> Unit,
@@ -262,9 +265,9 @@ private fun UserStoryDetailsScreenContent(
                 WorkItemBlockedBannerWidget(blockedNote = state.currentUserStory.blockedNote)
 
                 WorkItemBadgesWidget(
-                    updatingBadges = state.updatingBadges,
-                    items = state.workItemBadges,
-                    onWorkingItemBadgeClick = state.onWorkingItemBadgeClick
+                    updatingBadges = badgeState.updatingBadges,
+                    items = badgeState.workItemBadges,
+                    onBadgeClick = badgeState.onBadgeClick
                 )
 
                 WorkItemDescriptionWidget(
