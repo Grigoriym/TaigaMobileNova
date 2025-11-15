@@ -80,33 +80,25 @@ fun getTag(): Tag = Tag(
 fun getStatus(): Status = Status(
     color = getRandomString(),
     id = getRandomLong(),
-    name = getRandomString(),
-    count = getRandomLong(),
-    order = getRandomLong()
+    name = getRandomString()
 )
 
 fun getType(): Type = Type(
     color = getRandomString(),
     id = getRandomLong(),
-    name = getRandomString(),
-    count = getRandomLong(),
-    order = getRandomLong()
+    name = getRandomString()
 )
 
 fun getPriority(): Priority = Priority(
     color = getRandomString(),
     id = getRandomLong(),
-    name = getRandomString(),
-    count = getRandomLong(),
-    order = getRandomLong()
+    name = getRandomString()
 )
 
 fun getSeverity(): Severity = Severity(
     color = getRandomString(),
     id = getRandomLong(),
-    name = getRandomString(),
-    count = getRandomLong(),
-    order = getRandomLong()
+    name = getRandomString()
 )
 
 fun getCustomFields(): CustomFields = CustomFields(

@@ -15,6 +15,7 @@ dependencies {
     implementation(projects.utils.ui)
 
     implementation(projects.feature.filters.domain)
+    implementation(projects.feature.workitem.data)
 
     implementation(libs.moshi)
     ksp(libs.moshi.kotlin.codegen)

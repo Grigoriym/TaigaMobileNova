@@ -117,6 +117,8 @@ fun LazyListScope.CommonTaskHeader(
             }
 
             // swimlane
+            // todo I don't see it on frontend, though I can set it up in settings, but no way
+            //  to change it on a specific user story, for now can be omitted
             if (commonTask.taskType == CommonTaskType.UserStory) {
                 ClickableBadge(
                     text = commonTask.swimlaneDTO?.name ?: stringResource(RString.unclassifed),

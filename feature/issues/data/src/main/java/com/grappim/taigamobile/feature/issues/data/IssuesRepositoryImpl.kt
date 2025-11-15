@@ -6,7 +6,6 @@ import androidx.paging.PagingData
 import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.api.CustomFieldsMapper
-import com.grappim.taigamobile.core.api.PatchedDataMapper
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
@@ -20,6 +19,7 @@ import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
+import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async

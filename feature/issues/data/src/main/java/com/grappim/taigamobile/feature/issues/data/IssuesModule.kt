@@ -1,7 +1,8 @@
 package com.grappim.taigamobile.feature.issues.data
 
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
-import com.grappim.taigamobile.feature.issues.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn

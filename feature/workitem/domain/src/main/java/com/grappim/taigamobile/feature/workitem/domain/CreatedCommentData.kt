@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.issues.domain
+package com.grappim.taigamobile.feature.workitem.domain
 
 import com.grappim.taigamobile.core.domain.Comment
 import kotlinx.collections.immutable.ImmutableList

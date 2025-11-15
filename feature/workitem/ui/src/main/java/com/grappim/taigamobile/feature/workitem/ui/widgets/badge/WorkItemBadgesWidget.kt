@@ -20,7 +20,7 @@ import kotlinx.collections.immutable.ImmutableSet
 fun WorkItemBadgesWidget(
     updatingBadges: ImmutableSet<SelectableWorkItemBadgeState>,
     items: ImmutableSet<SelectableWorkItemBadgeState>,
-    onWorkingItemBadgeClick: (SelectableWorkItemBadgeState) -> Unit,
+    onBadgeClick: (SelectableWorkItemBadgeState) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -44,7 +44,7 @@ fun WorkItemBadgesWidget(
                     title = item.currentValue.title.asString(context),
                     color = item.currentValue.color.asColor(),
                     onClick = {
-                        onWorkingItemBadgeClick(item)
+                        onBadgeClick(item)
                     },
                     isLoading = item in updatingBadges,
                     isClickable = true

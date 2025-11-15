@@ -48,6 +48,10 @@ class WorkItemEditShared @Inject constructor() {
     val currentAssignee: Long?
         get() = _currentAssignee
 
+    private var _currentAssignees: PersistentList<Long> = persistentListOf()
+    val currentAssignees: ImmutableList<Long>
+        get() = _currentAssignees
+
     private var _currentWatchers: PersistentList<Long> = persistentListOf()
     val currentWatchers: ImmutableList<Long>
         get() = _currentWatchers
@@ -85,6 +89,13 @@ class WorkItemEditShared @Inject constructor() {
         clear()
     }
 
+    fun updateAssignees(ids: PersistentList<Long>) {
+        scope.launch {
+            _teamMemberUpdateState.send(TeamMemberUpdate.Assignees(ids))
+        }
+        clear()
+    }
+
     fun setCurrentWatchers(ids: PersistentList<Long>?) {
         _currentType = EditType.Watchers
         _currentWatchers = ids ?: persistentListOf()
@@ -95,22 +106,30 @@ class WorkItemEditShared @Inject constructor() {
         _currentAssignee = id
     }
 
+    fun setCurrentAssignees(ids: ImmutableList<Long>) {
+        _currentType = EditType.Assignees
+        _currentAssignees = ids.toPersistentList()
+    }
+
     fun clear() {
         _originalTags = _originalTags.clear()
         _currentTags = _currentTags.clear()
         _currentAssignee = null
         _currentWatchers = _currentWatchers.clear()
+        _currentAssignees = _currentAssignees.clear()
         _currentType = null
     }
 }
 
 sealed interface EditType {
     data object Assignee : EditType
+    data object Assignees : EditType
     data object Watchers : EditType
 }
 
 sealed interface TeamMemberUpdate {
     data class Assignee(val id: Long?) : TeamMemberUpdate
+    data class Assignees(val ids: ImmutableList<Long>) : TeamMemberUpdate
     data class Watchers(val ids: ImmutableList<Long>) : TeamMemberUpdate
     data object Clear : TeamMemberUpdate
 }

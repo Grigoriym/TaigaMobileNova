@@ -38,8 +38,6 @@ fun WorkItemDescriptionWidget(
 
         if (currentDescription?.isNotEmpty() == true) {
             MarkdownTextWidget(
-                modifier = Modifier
-                    .fillMaxSize(),
                 text = currentDescription,
                 isSelectable = false
             )

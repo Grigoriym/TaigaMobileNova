@@ -28,12 +28,12 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWid
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CreatedByWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WatchersWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBadgesBottomSheet
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBlockedBannerWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDescriptionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDropdownMenuWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
-import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemsBottomSheet
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.commentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
@@ -111,7 +111,7 @@ fun IssueDetailsScreen(
         }
     }
 
-    WorkItemsBottomSheet(
+    WorkItemBadgesBottomSheet(
         activeBadge = state.activeBadge,
         bottomSheetState = bottomSheetState,
         onDismiss = {
@@ -247,10 +247,6 @@ private fun IssueDetailsScreenContent(
                 item {
                     WorkItemTitleWidget(
                         currentTitle = state.currentIssue.title,
-                        originalTitle = state.originalIssue?.title ?: "",
-                        // todo maybe remove it, on front they don't do strikethrough
-                        // todo if we try to change the status rn, this one won't be changed
-                        isClosed = state.currentIssue.isClosed,
                         onTitleChange = {
                             state.onFieldChanged(PatchableField.TITLE, it)
                         },
@@ -261,6 +257,13 @@ private fun IssueDetailsScreenContent(
                         isEditable = PatchableField.TITLE in state.editableFields,
                         setIsEditable = { isEditable ->
                             state.onFieldSetIsEditable(PatchableField.TITLE, isEditable)
+                        },
+                        onCancelClick = {
+                            state.onFieldSetIsEditable(PatchableField.TITLE, false)
+                            state.onFieldChanged(
+                                PatchableField.TITLE,
+                                state.originalIssue?.title ?: ""
+                            )
                         }
                     )
                 }
@@ -273,7 +276,7 @@ private fun IssueDetailsScreenContent(
                     WorkItemBadgesWidget(
                         updatingBadges = state.updatingBadges,
                         items = state.workItemBadges,
-                        onWorkingItemBadgeClick = state.onWorkingItemBadgeClick
+                        onBadgeClick = state.onWorkingItemBadgeClick
                     )
                 }
 
