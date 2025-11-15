@@ -42,7 +42,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.collections.immutable.toPersistentList
@@ -237,37 +236,7 @@ class IssueDetailsViewModel @Inject constructor(
     }
 
     private fun removeAssignee() {
-        viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getAssignedToPatchPayload(null),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            isAssigneesLoading = true,
-                            error = NativeText.Empty
-                        )
-                    }
-                },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
-                    _state.update {
-                        it.copy(
-                            isAssigneesLoading = false,
-                            error = NativeText.Empty,
-                            assignees = persistentListOf()
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            isAssigneesLoading = false,
-                            error = getErrorMessage(error)
-                        )
-                    }
-                }
-            )
-        }
+        patchAssignedToMe(true)
     }
 
     private fun onRemoveAssigneeClick() {
