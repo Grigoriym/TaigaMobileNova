@@ -802,7 +802,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                         )
                     }
                 },
-                doOnSuccess = { data: PatchedData, updatedUserStory: UserStory ->
+                doOnSuccess = { _: PatchedData, _: UserStory ->
                     onBadgeSaveSuccess(type, item)
                 },
                 doOnError = { error ->

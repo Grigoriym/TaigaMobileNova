@@ -9,12 +9,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
-import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
@@ -24,11 +27,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import com.grappim.taigamobile.feature.workitem.ui.utils.getDueDateText
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgePriority
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeSeverity
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeStatus
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeType
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.DateItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.NumberItemState
@@ -45,8 +44,6 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.collections.immutable.toPersistentMap
-import kotlinx.collections.immutable.toPersistentSet
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -74,7 +71,9 @@ class IssueDetailsViewModel @Inject constructor(
     private val fileUriManager: FileUriManager,
     private val session: Session,
     private val patchDataGenerator: PatchDataGenerator
-) : ViewModel() {
+) : ViewModel(),
+    WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
 
@@ -95,13 +94,6 @@ class IssueDetailsViewModel @Inject constructor(
             onCustomFieldSave = ::onCustomFieldSave,
             onCustomFieldEditToggle = ::onCustomFieldEditToggle,
             setIsCustomFieldsWidgetExpanded = ::setIsCustomFieldsWidgetExpanded,
-            setIsCommentsWidgetExpanded = ::setIsCommentsWidgetExpanded,
-            onFieldChanged = ::updateLocalField,
-            onSaveField = ::saveField,
-            onFieldSetIsEditable = ::setFieldIsEditable,
-            onWorkingItemBadgeClick = ::onWorkItemBadgeClick,
-            onBadgeSheetDismiss = ::onBadgeSheetDismiss,
-            onBadgeSheetItemClick = ::onBadgeSheetItemClick,
             onGoingToEditTags = ::onGoingToEditTags,
             onTagRemove = ::onTagRemove,
             setDueDate = ::setDueDate,
@@ -124,7 +116,9 @@ class IssueDetailsViewModel @Inject constructor(
             removeWatcher = ::removeWatcher,
             removeAssignee = ::removeAssignee,
             onRemoveAssigneeClick = ::onRemoveAssigneeClick,
-            retryLoadIssue = ::retryLoadIssue
+            retryLoadIssue = ::retryLoadIssue,
+            onTitleSave = ::handleTitleSave,
+            onBadgeSave = ::handleBadgeSave
         )
     )
     val state = _state.asStateFlow()
@@ -148,6 +142,38 @@ class IssueDetailsViewModel @Inject constructor(
         loadIssue()
     }
 
+    private fun handleTitleSave() {
+        onTitleSave(onSaveTitleToBackend = ::saveTitleToBackend)
+    }
+
+    private fun saveTitleToBackend() {
+        val currentTitle = titleState.value.currentTitle
+
+        viewModelScope.launch {
+            val patchableData = patchDataGenerator.getTitle(currentTitle)
+
+            patchData(
+                payload = patchableData,
+                doOnSuccess = { _: PatchedData, _: IssueTask ->
+                    onTitleSaveSuccess()
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    onTitleError(getErrorMessage(error))
+                }
+            )
+        }
+    }
+
+    private fun handleBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
+        onBadgeSave(
+            type = type,
+            onSaveBadgeToBackend = {
+                onBadgeSheetItemClick(type, item)
+            }
+        )
+    }
+
     private fun retryLoadIssue() {
         loadIssue()
     }
@@ -164,45 +190,43 @@ class IssueDetailsViewModel @Inject constructor(
                 taskId = taskId,
                 ref = ref
             ).onSuccess { result ->
+                val typeUiDeferred = result.issueTask.type?.let { type ->
+                    async { statusUIMapper.toUI(type) }
+                }
+                val severityUiDeferred = result.issueTask.severity?.let { task ->
+                    async { statusUIMapper.toUI(task) }
+                }
+
+                val priorityUiDeferred = result.issueTask.priority?.let { prio ->
+                    async { statusUIMapper.toUI(prio) }
+                }
+                val statusUiDeferred = result.issueTask.status?.let { status ->
+                    async { statusUIMapper.toUI(status) }
+                }
+
+                val tags = async {
+                    result.issueTask.tags.map { tag ->
+                        tagUIMapper.toUI(tag)
+                    }.toPersistentList()
+                }
+                val customFieldsStateItems = async {
+                    customFieldsUIMapper.toUI(result.customFields)
+                }
+
+                val statusUi = statusUiDeferred?.await()
+                val sprint = result.sprint
+                val typeUI = typeUiDeferred?.await()
+                val severityUI = severityUiDeferred?.await()
+                val priorityUi = priorityUiDeferred?.await()
+                val workItemBadges = workItemsGenerator.getItems(
+                    statusUI = statusUi,
+                    typeUI = typeUI,
+                    severityUI = severityUI,
+                    priorityUi = priorityUi,
+                    filtersData = result.filtersData
+                )
                 _state.update {
-                    val typeUiDeferred = result.issueTask.type?.let { type ->
-                        async { statusUIMapper.toUI(type) }
-                    }
-                    val severityUiDeferred = result.issueTask.severity?.let { task ->
-                        async { statusUIMapper.toUI(task) }
-                    }
-
-                    val priorityUiDeferred = result.issueTask.priority?.let { prio ->
-                        async { statusUIMapper.toUI(prio) }
-                    }
-                    val statusUiDeferred = result.issueTask.status?.let { status ->
-                        async { statusUIMapper.toUI(status) }
-                    }
-
-                    val tags = async {
-                        result.issueTask.tags.map { tag ->
-                            tagUIMapper.toUI(tag)
-                        }.toPersistentList()
-                    }
-                    val customFieldsStateItems = async {
-                        customFieldsUIMapper.toUI(result.customFields)
-                    }
-
-                    val statusUi = statusUiDeferred?.await()
-                    val sprint = result.sprint
-                    val typeUI = typeUiDeferred?.await()
-                    val severityUI = severityUiDeferred?.await()
-                    val priorityUi = priorityUiDeferred?.await()
-                    val workItemBadges = workItemsGenerator.getItems(
-                        statusUI = statusUi,
-                        typeUI = typeUI,
-                        severityUI = severityUI,
-                        priorityUi = priorityUi,
-                        filtersData = result.filtersData
-                    )
-
                     it.copy(
-                        workItemBadges = workItemBadges,
                         isLoading = false,
                         currentIssue = result.issueTask,
                         originalIssue = result.issueTask,
@@ -222,6 +246,9 @@ class IssueDetailsViewModel @Inject constructor(
                         initialLoadError = NativeText.Empty
                     )
                 }
+
+                setInitialTitle(result.issueTask.title)
+                setWorkItemBadges(workItemBadges)
             }.onFailure { error ->
                 Timber.e(error)
                 val errorToShow = getErrorMessage(error)
@@ -735,13 +762,13 @@ class IssueDetailsViewModel @Inject constructor(
 
     private suspend fun patchData(
         payload: ImmutableMap<String, Any?>,
-        doOnPreExecute: () -> Unit,
+        doOnPreExecute: (() -> Unit)? = null,
         doOnSuccess: (PatchedData, IssueTask) -> Unit,
         doOnError: (Throwable) -> Unit
     ) {
         val currentIssue = _state.value.currentIssue ?: return
 
-        doOnPreExecute()
+        doOnPreExecute?.invoke()
 
         issueDetailsDataUseCase.patchData(
             issueId = currentIssue.id,
@@ -833,145 +860,26 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onBadgeSheetDismiss() {
-        _state.update {
-            it.copy(activeBadge = null)
-        }
-    }
-
     private fun onBadgeSheetItemClick(type: SelectableWorkItemBadgeState, item: StatusUI) {
         viewModelScope.launch {
-            val patchableData = when (type) {
-                is SelectableWorkItemBadgeStatus -> {
-                    mapOf("status" to item.id)
-                }
-
-                is SelectableWorkItemBadgeType -> {
-                    mapOf("type" to item.id)
-                }
-
-                is SelectableWorkItemBadgeSeverity -> {
-                    mapOf("severity" to item.id)
-                }
-
-                is SelectableWorkItemBadgePriority -> {
-                    mapOf("priority" to item.id)
-                }
-            }.toPersistentMap()
-
             patchData(
-                payload = patchableData,
+                payload = getBadgePatchPayload(type, item),
                 doOnPreExecute = {
                     _state.update { currentState ->
                         currentState.copy(
-                            updatingBadges = currentState.updatingBadges.add(type),
                             error = NativeText.Empty
                         )
                     }
                 },
-                doOnSuccess = { data: PatchedData, updatedIssue: IssueTask ->
-                    _state.update { currentState ->
-                        val updatedWorkItemBadges = currentState.workItemBadges.map { badge ->
-                            if (badge == type) {
-                                when (badge) {
-                                    is SelectableWorkItemBadgeStatus -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgeType -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgeSeverity -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgePriority -> {
-                                        badge.copy(currentValue = item)
-                                    }
-                                }
-                            } else {
-                                badge
-                            }
-                        }
-
-                        currentState.copy(
-                            activeBadge = null,
-                            workItemBadges = updatedWorkItemBadges.toPersistentSet(),
-                            updatingBadges = currentState.updatingBadges.remove(type)
-                        )
-                    }
+                doOnSuccess = { _: PatchedData, _: IssueTask ->
+                    onBadgeSaveSuccess(type, item)
                 },
                 doOnError = { error ->
                     Timber.e(error)
+                    onBadgeSaveError()
                     _state.update {
                         it.copy(
-                            activeBadge = null,
                             error = getErrorMessage(error)
-                        )
-                    }
-                }
-            )
-        }
-    }
-
-    private fun onWorkItemBadgeClick(type: SelectableWorkItemBadgeState) {
-        _state.update {
-            it.copy(activeBadge = type)
-        }
-    }
-
-    private fun updateLocalField(field: PatchableField, newValue: Any) {
-        _state.update { currentState ->
-            val updatedIssue = when (field) {
-                PatchableField.TITLE -> currentState.currentIssue?.copy(title = newValue as String)
-                else -> currentState.currentIssue
-            }
-            currentState.copy(currentIssue = updatedIssue)
-        }
-    }
-
-    private fun setFieldIsEditable(field: PatchableField, isEditable: Boolean) {
-        _state.update { currentState ->
-            if (isEditable) {
-                currentState.copy(editableFields = currentState.editableFields.add(field))
-            } else {
-                currentState.copy(editableFields = currentState.editableFields.remove(field))
-            }
-        }
-    }
-
-    private fun saveField(field: PatchableField) {
-        val currentIssue = _state.value.currentIssue ?: return
-        viewModelScope.launch {
-            val patchableData = when (field) {
-                PatchableField.TITLE -> mapOf("subject" to currentIssue.title)
-            }.toPersistentMap()
-
-            patchData(
-                payload = patchableData,
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            savingFields = it.savingFields.add(field),
-                            patchableFieldError = NativeText.Empty
-                        )
-                    }
-                },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
-                    setFieldIsEditable(field, false)
-                    _state.update {
-                        it.copy(
-                            savingFields = it.savingFields.remove(field)
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            patchableFieldError = getErrorMessage(error),
-                            savingFields = it.savingFields.remove(field)
                         )
                     }
                 }
@@ -1158,7 +1066,7 @@ class IssueDetailsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             issueDetailsDataUseCase.deleteAttachment(attachment)
-                .onSuccess { result ->
+                .onSuccess { _ ->
                     val currentAttachments = _state.value.attachments
                     _state.update {
                         it.copy(

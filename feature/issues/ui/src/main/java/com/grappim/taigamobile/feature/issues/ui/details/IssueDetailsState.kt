@@ -5,7 +5,6 @@ import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.core.domain.patch.PatchableField
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
@@ -16,7 +15,6 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.PersistentSet
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 
@@ -33,20 +31,8 @@ data class IssueDetailsState(
     val currentIssue: IssueTask? = null,
     val originalIssue: IssueTask? = null,
 
-    val savingFields: PersistentSet<PatchableField> = persistentSetOf(),
-    val editableFields: PersistentSet<PatchableField> = persistentSetOf(),
-
-    val updatingBadges: PersistentSet<SelectableWorkItemBadgeState> = persistentSetOf(),
-    val activeBadge: SelectableWorkItemBadgeState? = null,
-    val workItemBadges: ImmutableSet<SelectableWorkItemBadgeState> = persistentSetOf(),
-    val onWorkingItemBadgeClick: (SelectableWorkItemBadgeState) -> Unit = {},
-    val onBadgeSheetDismiss: () -> Unit = {},
-    val onBadgeSheetItemClick: (SelectableWorkItemBadgeState, StatusUI) -> Unit,
-
-    val onFieldSetIsEditable: (PatchableField, Boolean) -> Unit,
-    val onFieldChanged: (field: PatchableField, newValue: Any) -> Unit,
-    val onSaveField: (field: PatchableField) -> Unit,
-    val patchableFieldError: NativeText = NativeText.Empty,
+    val onTitleSave: () -> Unit = {},
+    val onBadgeSave: (SelectableWorkItemBadgeState, StatusUI) -> Unit = { _, _ -> },
 
     val sprint: Sprint? = null,
 
