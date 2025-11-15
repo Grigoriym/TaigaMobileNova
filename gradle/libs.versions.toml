@@ -24,7 +24,7 @@ kotlin-serialization-plugin = "2.2.10"
 kotlin-serialization-json = "1.9.0"
 kotlinx-collections = "0.4.0"
 
-dagger = "2.57"
+dagger = "2.57.2"
 androidx-hilt = "1.2.0"
 
 core-ktx = "1.17.0"
