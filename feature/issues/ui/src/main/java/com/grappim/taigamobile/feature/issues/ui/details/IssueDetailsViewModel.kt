@@ -118,7 +118,8 @@ class IssueDetailsViewModel @Inject constructor(
             onRemoveAssigneeClick = ::onRemoveAssigneeClick,
             retryLoadIssue = ::retryLoadIssue,
             onTitleSave = ::handleTitleSave,
-            onBadgeSave = ::handleBadgeSave
+            onBadgeSave = ::handleBadgeSave,
+            setIsCommentsWidgetExpanded = ::setIsCommentsWidgetExpanded
         )
     )
     val state = _state.asStateFlow()
