@@ -3,11 +3,11 @@ package com.grappim.taigamobile.feature.issues.data
 import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.api.CustomFieldsMapper
-import com.grappim.taigamobile.core.api.PatchedDataMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
+import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
 import com.grappim.taigamobile.testing.getAttachment
 import com.grappim.taigamobile.testing.getCommonTask
 import com.grappim.taigamobile.testing.getCommonTaskResponse
