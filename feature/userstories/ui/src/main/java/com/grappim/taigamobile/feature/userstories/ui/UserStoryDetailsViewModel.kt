@@ -156,8 +156,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     val workItemBadges = async {
                         workItemsGenerator.getItems(
                             statusUI = statusUi,
-                            filtersData = result.filtersData,
-                            sprint = result.sprint
+                            filtersData = result.filtersData
                         )
                     }
                     val tags = async {
