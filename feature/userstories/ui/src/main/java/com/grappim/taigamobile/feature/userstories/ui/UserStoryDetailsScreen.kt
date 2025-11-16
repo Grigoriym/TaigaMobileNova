@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
@@ -71,6 +72,7 @@ fun UserStoryDetailsScreen(
     )
     val titleState by viewModel.titleState.collectAsStateWithLifecycle()
     val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
+    val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -214,6 +216,7 @@ fun UserStoryDetailsScreen(
             state = state,
             titleState = titleState,
             badgeState = badgeState,
+            tagsState = tagsState,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
             goToProfile = goToProfile,
@@ -228,6 +231,7 @@ private fun UserStoryDetailsScreenContent(
     state: UserStoryDetailsState,
     titleState: WorkItemTitleState,
     badgeState: WorkItemBadgeState,
+    tagsState: WorkItemTagsState,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
     goToProfile: (Long) -> Unit,
@@ -278,11 +282,11 @@ private fun UserStoryDetailsScreenContent(
                 )
 
                 WorkItemTagsWidget(
-                    tags = state.tags,
+                    tags = tagsState.tags,
                     onTagRemoveClick = state.onTagRemove,
-                    areTagsLoading = state.areTagsLoading,
+                    areTagsLoading = tagsState.areTagsLoading,
                     goToEditTags = {
-                        state.onGoingToEditTags()
+                        tagsState.onGoingToEditTags()
                         goToEditTags()
                     }
                 )

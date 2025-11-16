@@ -16,6 +16,8 @@ import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
@@ -73,7 +75,8 @@ class IssueDetailsViewModel @Inject constructor(
     private val patchDataGenerator: PatchDataGenerator
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
-    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator) {
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
+    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
 
@@ -94,7 +97,6 @@ class IssueDetailsViewModel @Inject constructor(
             onCustomFieldSave = ::onCustomFieldSave,
             onCustomFieldEditToggle = ::onCustomFieldEditToggle,
             setIsCustomFieldsWidgetExpanded = ::setIsCustomFieldsWidgetExpanded,
-            onGoingToEditTags = ::onGoingToEditTags,
             onTagRemove = ::onTagRemove,
             setDueDate = ::setDueDate,
             onBlockToggle = ::onBlockToggle,
@@ -234,7 +236,6 @@ class IssueDetailsViewModel @Inject constructor(
                         attachments = result.attachments.toPersistentList(),
                         comments = result.comments.toPersistentList(),
                         sprint = sprint,
-                        tags = tags.await(),
                         dueDateText = dateTimeUtils.getDueDateText(result.issueTask.dueDate),
                         creator = result.creator,
                         assignees = result.assignees.toPersistentList(),
@@ -250,6 +251,7 @@ class IssueDetailsViewModel @Inject constructor(
 
                 setInitialTitle(result.issueTask.title)
                 setWorkItemBadges(workItemBadges)
+                setInitialTags(tags.await())
             }.onFailure { error ->
                 Timber.e(error)
                 val errorToShow = getErrorMessage(error)
@@ -290,7 +292,7 @@ class IssueDetailsViewModel @Inject constructor(
                         )
                     }
                 },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
+                doOnSuccess = { _: PatchedData, _: IssueTask ->
                     val isWatchedByMe = session.userId in newWatchers
                     val watchersToSave = _state.value.watchers.removeAll {
                         it.actualId == _state.value.watcherIdToRemove
@@ -574,7 +576,7 @@ class IssueDetailsViewModel @Inject constructor(
             issueDetailsDataUseCase.deleteComment(
                 issueId = currentIssue.id,
                 commentId = comment.id
-            ).onSuccess { result ->
+            ).onSuccess { _ ->
                 _state.update { currentState ->
                     currentState.copy(
                         isCommentsLoading = false,
@@ -640,7 +642,7 @@ class IssueDetailsViewModel @Inject constructor(
                         )
                     }
                 },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
+                doOnSuccess = { _: PatchedData, task: IssueTask ->
                     val updatedIssue = task.copy(blockedNote = blockNote)
                     _state.update {
                         it.copy(
@@ -718,47 +720,47 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onGoingToEditTags() {
-        workItemEditShared.setTags(_state.value.tags)
+    private fun onTagRemove(tag: TagUI) {
+        val currentTags = tagsState.value.tags
+        val newTagsToUse = currentTags.removeAll { it.name == tag.name }
+
+        handleTagRemove(
+            tag = tag,
+            onRemoveTagFromBackend = {
+                patchTagsToBackend(newTagsToUse)
+            }
+        )
     }
 
-    private fun onTagRemove(tag: TagUI) {
+    private fun patchTagsToBackend(newTags: PersistentList<TagUI>) {
         viewModelScope.launch {
-            val currentTags = _state.value.tags
-            val newTagsToUse = currentTags.removeAll { it.name == tag.name }
-
-            val preparedTags = newTagsToUse.map { tag ->
+            val preparedTags = newTags.map { tag ->
                 listOf(tag.name, tag.color.toHex())
             }
 
             patchData(
                 payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            areTagsLoading = true
-                        )
-                    }
-                },
                 doOnSuccess = { _, _ ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            tags = newTagsToUse,
-                            areTagsLoading = false
-                        )
-                    }
+                    onTagsUpdateSuccess(newTags)
                 },
                 doOnError = { error ->
+                    Timber.e(error)
+                    onTagsUpdateError()
                     _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            areTagsLoading = false
-                        )
+                        it.copy(error = getErrorMessage(error))
                     }
                 }
             )
         }
+    }
+
+    private fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
+        handleNewTagsUpdate(
+            newTags = newTagsToUse,
+            onUpdateTagsToBackend = {
+                patchTagsToBackend(newTagsToUse)
+            }
+        )
     }
 
     private suspend fun patchData(
@@ -790,42 +792,6 @@ class IssueDetailsViewModel @Inject constructor(
         }.onFailure { error ->
             Timber.e(error)
             doOnError(error)
-        }
-    }
-
-    private fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
-        viewModelScope.launch {
-            val preparedTags = newTagsToUse.map { tag ->
-                listOf(tag.name, tag.color.toHex())
-            }
-
-            patchData(
-                payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            areTagsLoading = true
-                        )
-                    }
-                },
-                doOnSuccess = { _, _ ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            tags = newTagsToUse,
-                            areTagsLoading = false
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            areTagsLoading = false
-                        )
-                    }
-                }
-            )
         }
     }
 

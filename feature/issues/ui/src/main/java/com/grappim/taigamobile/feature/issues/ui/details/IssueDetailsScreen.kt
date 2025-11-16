@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
@@ -71,6 +72,7 @@ fun IssueDetailsScreen(
     val deleteTrigger by viewModel.deleteTrigger.collectAsStateWithLifecycle(false)
     val titleState by viewModel.titleState.collectAsStateWithLifecycle()
     val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
+    val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -209,6 +211,7 @@ fun IssueDetailsScreen(
             state = state,
             titleState = titleState,
             badgeState = badgeState,
+            tagsState = tagsState,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -223,6 +226,7 @@ private fun IssueDetailsScreenContent(
     state: IssueDetailsState,
     titleState: WorkItemTitleState,
     badgeState: WorkItemBadgeState,
+    tagsState: WorkItemTagsState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
@@ -273,11 +277,11 @@ private fun IssueDetailsScreenContent(
                 )
 
                 WorkItemTagsWidget(
-                    tags = state.tags,
+                    tags = tagsState.tags,
                     onTagRemoveClick = state.onTagRemove,
-                    areTagsLoading = state.areTagsLoading,
+                    areTagsLoading = tagsState.areTagsLoading,
                     goToEditTags = {
-                        state.onGoingToEditTags()
+                        tagsState.onGoingToEditTags()
                         goToEditTags()
                     }
                 )

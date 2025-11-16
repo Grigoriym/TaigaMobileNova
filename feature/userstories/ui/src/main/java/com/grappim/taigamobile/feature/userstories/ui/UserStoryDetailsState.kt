@@ -37,10 +37,10 @@ data class UserStoryDetailsState(
     val currentUserStory: UserStory? = null,
     val originalUserStory: UserStory? = null,
 
-    val tags: PersistentList<TagUI> = persistentListOf(),
+//    val tags: PersistentList<TagUI> = persistentListOf(),
     val onTagRemove: (TagUI) -> Unit = {},
-    val onGoingToEditTags: () -> Unit = {},
-    val areTagsLoading: Boolean = false,
+//    val onGoingToEditTags: () -> Unit = {},
+//    val areTagsLoading: Boolean = false,
 
     val isDueDateDatePickerVisible: Boolean = false,
     val setIsDueDatePickerVisible: (Boolean) -> Unit = {},

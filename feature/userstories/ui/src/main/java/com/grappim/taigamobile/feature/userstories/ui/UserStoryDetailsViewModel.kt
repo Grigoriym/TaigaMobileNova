@@ -15,6 +15,8 @@ import com.grappim.taigamobile.feature.userstories.domain.UserStoryDetailsDataUs
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
@@ -71,7 +73,8 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val customFieldsUIMapper: CustomFieldsUIMapper
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
-    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator) {
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
+    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared) {
 
     private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
     private val ref = route.ref
@@ -88,7 +91,6 @@ class UserStoryDetailsViewModel @Inject constructor(
             setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setDueDate = ::setDueDate,
             onTagRemove = ::onTagRemove,
-            onGoingToEditTags = ::onGoingToEditTags,
             onGoingToEditAssignees = ::onGoingToEditAssignees,
             onGoingToEditWatchers = ::onGoingToEditWatchers,
             onAssignToMe = ::onAssignToMe,
@@ -177,7 +179,6 @@ class UserStoryDetailsViewModel @Inject constructor(
                             attachments = result.attachments.toPersistentList(),
                             comments = result.comments.toPersistentList(),
                             sprint = result.sprint,
-                            tags = tags.await(),
                             dueDateText = dueDateText,
                             creator = result.creator,
                             assignees = result.assignees.toPersistentList(),
@@ -192,6 +193,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     }
                     setInitialTitle(result.userStory.title)
                     setWorkItemBadges(workItemBadges.await())
+                    setInitialTags(tags.await())
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -217,7 +219,7 @@ class UserStoryDetailsViewModel @Inject constructor(
 
             patchData(
                 payload = patchableData,
-                doOnSuccess = { data: PatchedData, userStory: UserStory ->
+                doOnSuccess = { _: PatchedData, _: UserStory ->
                     onTitleSaveSuccess()
                 },
                 doOnError = { error ->
@@ -279,7 +281,7 @@ class UserStoryDetailsViewModel @Inject constructor(
             userStoryDetailsDataUseCase.deleteComment(
                 id = currentIssue.id,
                 commentId = comment.id
-            ).onSuccess { result ->
+            ).onSuccess { _ ->
                 _state.update { currentState ->
                     currentState.copy(
                         isCommentsLoading = false,
@@ -349,7 +351,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
         viewModelScope.launch {
             userStoryDetailsDataUseCase.deleteAttachment(attachment)
-                .onSuccess { result ->
+                .onSuccess { _ ->
                     val currentAttachments = _state.value.attachments
                     _state.update {
                         it.copy(
@@ -417,7 +419,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                         )
                     }
                 },
-                doOnSuccess = { data: PatchedData, userStory: UserStory ->
+                doOnSuccess = { _: PatchedData, userStory: UserStory ->
                     val updatedUserStory = userStory.copy(blockedNote = blockNote)
                     _state.update {
                         it.copy(
@@ -603,7 +605,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                         )
                     }
                 },
-                doOnSuccess = { data: PatchedData, userStory: UserStory ->
+                doOnSuccess = { _: PatchedData, _: UserStory ->
                     val isWatchedByMe = session.userId in newWatchers
                     val watchersToSave = _state.value.watchers.removeAll {
                         it.actualId == _state.value.watcherIdToRemove
@@ -867,42 +869,6 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
-        viewModelScope.launch {
-            val preparedTags = newTagsToUse.map { tag ->
-                listOf(tag.name, tag.color.toHex())
-            }
-
-            patchData(
-                payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            areTagsLoading = true
-                        )
-                    }
-                },
-                doOnSuccess = { _, _ ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            tags = newTagsToUse,
-                            areTagsLoading = false
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            areTagsLoading = false
-                        )
-                    }
-                }
-            )
-        }
-    }
-
     private fun onNewDescriptionUpdate(newDescription: String) {
         viewModelScope.launch {
             patchData(
@@ -1033,43 +999,43 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onGoingToEditTags() {
-        workItemEditShared.setTags(_state.value.tags)
+    private fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
+        handleNewTagsUpdate(
+            newTags = newTagsToUse,
+            onUpdateTagsToBackend = {
+                patchTagsToBackend(newTagsToUse)
+            }
+        )
     }
 
     private fun onTagRemove(tag: TagUI) {
-        viewModelScope.launch {
-            val currentTags = _state.value.tags
-            val newTagsToUse = currentTags.removeAll { it.name == tag.name }
+        val currentTags = tagsState.value.tags
+        val newTagsToUse = currentTags.removeAll { it.name == tag.name }
 
-            val preparedTags = newTagsToUse.map { tag ->
+        handleTagRemove(
+            tag = tag,
+            onRemoveTagFromBackend = {
+                patchTagsToBackend(newTagsToUse)
+            }
+        )
+    }
+
+    private fun patchTagsToBackend(newTags: PersistentList<TagUI>) {
+        viewModelScope.launch {
+            val preparedTags = newTags.map { tag ->
                 listOf(tag.name, tag.color.toHex())
             }
 
             patchData(
                 payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            areTagsLoading = true
-                        )
-                    }
-                },
                 doOnSuccess = { _, _ ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            tags = newTagsToUse,
-                            areTagsLoading = false
-                        )
-                    }
+                    onTagsUpdateSuccess(newTags)
                 },
                 doOnError = { error ->
+                    Timber.e(error)
+                    onTagsUpdateError()
                     _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            areTagsLoading = false
-                        )
+                        it.copy(error = getErrorMessage(error))
                     }
                 }
             )

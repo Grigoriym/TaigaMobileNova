@@ -62,8 +62,8 @@ data class IssueDetailsState(
     val areAttachmentsExpanded: Boolean = false,
     val setAreAttachmentsExpanded: (Boolean) -> Unit = {},
 
-    val tags: PersistentList<TagUI> = persistentListOf(),
-    val areTagsLoading: Boolean = false,
+//    val tags: PersistentList<TagUI> = persistentListOf(),
+//    val areTagsLoading: Boolean = false,
 
     val toolbarTitle: NativeText,
     val isDropdownMenuExpanded: Boolean = false,
@@ -103,7 +103,7 @@ data class IssueDetailsState(
     val onGoingToEditAssignee: () -> Unit = {},
 
     val onTagRemove: (TagUI) -> Unit,
-    val onGoingToEditTags: () -> Unit,
+//    val onGoingToEditTags: () -> Unit,
 
     val onBlockToggle: (isBlocked: Boolean, blockNote: String?) -> Unit,
     val isBlockDialogVisible: Boolean = false,
