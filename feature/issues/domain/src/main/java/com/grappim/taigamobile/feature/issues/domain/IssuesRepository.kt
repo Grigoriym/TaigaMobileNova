@@ -35,13 +35,13 @@ interface IssuesRepository {
         payload: ImmutableMap<String, Any?>
     ): PatchedCustomAttributes
 
+    suspend fun getIssue(id: Long, filtersData: FiltersData): IssueTask
+
     fun getIssuesPaging(filtersDataDTO: FiltersDataDTO): Flow<PagingData<CommonTask>>
 
     fun refreshIssues()
 
-    suspend fun getIssueByRef(ref: Int, filtersData: FiltersData): IssueTask
-
-    suspend fun getCustomFields(commonTaskId: Long): CustomFields
+    suspend fun getCustomFields(id: Long): CustomFields
 
     suspend fun getIssueAttachments(taskId: Long): List<Attachment>
 

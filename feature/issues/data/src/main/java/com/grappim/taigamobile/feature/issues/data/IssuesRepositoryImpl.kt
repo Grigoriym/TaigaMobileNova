@@ -20,6 +20,9 @@ import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.data.WorkItemPathSingular
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
@@ -37,9 +40,9 @@ class IssuesRepositoryImpl @Inject constructor(
     private val commonTaskMapper: CommonTaskMapper,
     private val issueTaskMapper: IssueTaskMapper,
     private val attachmentMapper: AttachmentMapper,
-    private val serverStorage: ServerStorage,
     private val customFieldsMapper: CustomFieldsMapper,
-    private val patchedDataMapper: PatchedDataMapper
+    private val patchedDataMapper: PatchedDataMapper,
+    private val workItemApi: WorkItemApi
 ) : IssuesRepository {
     private var issuesPagingSource: IssuesPagingSource? = null
 
@@ -60,11 +63,17 @@ class IssuesRepositoryImpl @Inject constructor(
     }
 
     override suspend fun watchIssue(issueId: Long) {
-        issuesApi.watchIssue(issueId = issueId)
+        workItemApi.watchWorkItem(
+            workItemId = issueId,
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue)
+        )
     }
 
     override suspend fun unwatchIssue(issueId: Long) {
-        issuesApi.unwatchIssue(issueId = issueId)
+        workItemApi.unwatchWorkItem(
+            workItemId = issueId,
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue)
+        )
     }
 
     override suspend fun deleteIssue(id: Long) {
@@ -105,7 +114,11 @@ class IssuesRepositoryImpl @Inject constructor(
         payload: ImmutableMap<String, Any?>
     ): PatchedData {
         val editedMap = payload.toPersistentMap().put("version", version)
-        val result = issuesApi.patchIssue(issueId = issueId, payload = editedMap)
+        val result = workItemApi.patchWorkItem(
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
+            id = issueId,
+            payload = editedMap
+        )
         return patchedDataMapper.toDomain(result)
     }
 
@@ -115,31 +128,34 @@ class IssuesRepositoryImpl @Inject constructor(
         payload: ImmutableMap<String, Any?>
     ): PatchedCustomAttributes {
         val editedMap = payload.toPersistentMap().put("version", version)
-        val result = issuesApi.patchCustomAttributesValues(taskId = issueId, payload = editedMap)
+        val result = workItemApi.patchCustomAttributesValues(
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
+            taskId = issueId,
+            payload = editedMap
+        )
+
         return patchedDataMapper.toDomainCustomAttrs(result)
     }
 
-    override suspend fun getIssueByRef(ref: Int, filtersData: FiltersData): IssueTask =
-        coroutineScope {
-            val projectId = taigaStorage.currentProjectIdFlow.first()
-            val resp = issuesApi.getIssueByRef(projectId, ref)
+    override suspend fun getIssue(id: Long, filtersData: FiltersData): IssueTask {
+        val response = workItemApi.getWorkItemById(
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
+            id = id
+        )
+        return issueTaskMapper.toDomain(resp = response, filters = filtersData)
+    }
 
-            issueTaskMapper.toDomain(
-                resp = resp,
-                server = serverStorage.server,
-                filters = filtersData
-            )
-        }
-
-    override suspend fun getCustomFields(commonTaskId: Long): CustomFields = coroutineScope {
+    override suspend fun getCustomFields(id: Long): CustomFields = coroutineScope {
         val attributes = async {
-            issuesApi.getIssueCustomAttributes(
+            workItemApi.getCustomAttributes(
+                taskPath = WorkItemPathSingular(CommonTaskType.Issue),
                 projectId = taigaStorage.currentProjectIdFlow.first()
             )
         }
         val values = async {
-            issuesApi.getIssueCustomAttributesValues(
-                taskId = commonTaskId
+            workItemApi.getCustomAttributesValues(
+                id = id,
+                taskPath = WorkItemPathPlural(CommonTaskType.Issue),
             )
         }
 

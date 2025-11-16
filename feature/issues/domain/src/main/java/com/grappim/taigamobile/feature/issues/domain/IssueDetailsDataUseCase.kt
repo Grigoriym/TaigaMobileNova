@@ -38,7 +38,7 @@ class IssueDetailsDataUseCase @Inject constructor(
             issuesRepository.unwatchIssue(issueId)
 
             val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
-            val issue = issuesRepository.getIssueByRef(ref = ref, filtersData = filtersData)
+            val issue = issuesRepository.getIssue(id = issueId, filtersData = filtersData)
 
             val watchers = usersRepository.getUsersList(issue.watcherUserIds)
 
@@ -56,7 +56,7 @@ class IssueDetailsDataUseCase @Inject constructor(
             issuesRepository.watchIssue(issueId)
 
             val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
-            val issue = issuesRepository.getIssueByRef(ref = ref, filtersData = filtersData)
+            val issue = issuesRepository.getIssue(id = issueId, filtersData = filtersData)
 
             val watchers = usersRepository.getUsersList(issue.watcherUserIds)
 
@@ -212,22 +212,22 @@ class IssueDetailsDataUseCase @Inject constructor(
      * 5. history/issue/8?type=comment
      * 6. history/issue/8?page=1&type=activity <- It is the Activities tab
      */
-    suspend fun getIssueData(taskId: Long, ref: Int): Result<IssueDetailsData> = resultOf {
+    suspend fun getIssueData(issueId: Long): Result<IssueDetailsData> = resultOf {
         coroutineScope {
             val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
 
             val issueDeferred = async {
-                issuesRepository.getIssueByRef(ref = ref, filtersData = filtersData)
+                issuesRepository.getIssue(id = issueId, filtersData = filtersData)
             }
 
-            val attachments = async { issuesRepository.getIssueAttachments(taskId = taskId) }
+            val attachments = async { issuesRepository.getIssueAttachments(taskId = issueId) }
 
             val customFields = async {
-                issuesRepository.getCustomFields(commonTaskId = taskId)
+                issuesRepository.getCustomFields(id = issueId)
             }
             val commentsDeferred = async {
                 historyRepository.getComments(
-                    commonTaskId = taskId,
+                    commonTaskId = issueId,
                     type = CommonTaskType.Issue
                 )
             }

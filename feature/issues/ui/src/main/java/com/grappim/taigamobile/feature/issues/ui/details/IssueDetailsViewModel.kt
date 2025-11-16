@@ -189,79 +189,77 @@ class IssueDetailsViewModel @Inject constructor(
                     initialLoadError = NativeText.Empty
                 )
             }
-            issueDetailsDataUseCase.getIssueData(
-                taskId = taskId,
-                ref = ref
-            ).onSuccess { result ->
-                val typeUiDeferred = result.issueTask.type?.let { type ->
-                    async { statusUIMapper.toUI(type) }
-                }
-                val severityUiDeferred = result.issueTask.severity?.let { task ->
-                    async { statusUIMapper.toUI(task) }
-                }
+            issueDetailsDataUseCase.getIssueData(issueId = taskId)
+                .onSuccess { result ->
+                    val typeUiDeferred = result.issueTask.type?.let { type ->
+                        async { statusUIMapper.toUI(type) }
+                    }
+                    val severityUiDeferred = result.issueTask.severity?.let { task ->
+                        async { statusUIMapper.toUI(task) }
+                    }
 
-                val priorityUiDeferred = result.issueTask.priority?.let { prio ->
-                    async { statusUIMapper.toUI(prio) }
-                }
-                val statusUiDeferred = result.issueTask.status?.let { status ->
-                    async { statusUIMapper.toUI(status) }
-                }
+                    val priorityUiDeferred = result.issueTask.priority?.let { prio ->
+                        async { statusUIMapper.toUI(prio) }
+                    }
+                    val statusUiDeferred = result.issueTask.status?.let { status ->
+                        async { statusUIMapper.toUI(status) }
+                    }
 
-                val tags = async {
-                    result.issueTask.tags.map { tag ->
-                        tagUIMapper.toUI(tag)
-                    }.toPersistentList()
-                }
-                val customFieldsStateItems = async {
-                    customFieldsUIMapper.toUI(result.customFields)
-                }
+                    val tags = async {
+                        result.issueTask.tags.map { tag ->
+                            tagUIMapper.toUI(tag)
+                        }.toPersistentList()
+                    }
+                    val customFieldsStateItems = async {
+                        customFieldsUIMapper.toUI(result.customFields)
+                    }
 
-                val statusUi = statusUiDeferred?.await()
-                val sprint = result.sprint
-                val typeUI = typeUiDeferred?.await()
-                val severityUI = severityUiDeferred?.await()
-                val priorityUi = priorityUiDeferred?.await()
-                val workItemBadges = workItemsGenerator.getItems(
-                    statusUI = statusUi,
-                    typeUI = typeUI,
-                    severityUI = severityUI,
-                    priorityUi = priorityUi,
-                    filtersData = result.filtersData
-                )
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        currentIssue = result.issueTask,
-                        originalIssue = result.issueTask,
-                        attachments = result.attachments.toPersistentList(),
-                        comments = result.comments.toPersistentList(),
-                        sprint = sprint,
-                        dueDateText = dateTimeUtils.getDueDateText(result.issueTask.dueDate),
-                        creator = result.creator,
-                        assignees = result.assignees.toPersistentList(),
-                        watchers = result.watchers.toPersistentList(),
-                        isAssignedToMe = result.isAssignedToMe,
-                        isWatchedByMe = result.isWatchedByMe,
-                        customFieldsVersion = result.customFields.version,
-                        customFieldStateItems = customFieldsStateItems.await(),
-                        filtersData = result.filtersData,
-                        initialLoadError = NativeText.Empty
+                    val statusUi = statusUiDeferred?.await()
+                    val sprint = result.sprint
+                    val typeUI = typeUiDeferred?.await()
+                    val severityUI = severityUiDeferred?.await()
+                    val priorityUi = priorityUiDeferred?.await()
+                    val workItemBadges = workItemsGenerator.getItems(
+                        statusUI = statusUi,
+                        typeUI = typeUI,
+                        severityUI = severityUI,
+                        priorityUi = priorityUi,
+                        filtersData = result.filtersData
                     )
-                }
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            currentIssue = result.issueTask,
+                            originalIssue = result.issueTask,
+                            attachments = result.attachments.toPersistentList(),
+                            comments = result.comments.toPersistentList(),
+                            sprint = sprint,
+                            dueDateText = dateTimeUtils.getDueDateText(result.issueTask.dueDate),
+                            creator = result.creator,
+                            assignees = result.assignees.toPersistentList(),
+                            watchers = result.watchers.toPersistentList(),
+                            isAssignedToMe = result.isAssignedToMe,
+                            isWatchedByMe = result.isWatchedByMe,
+                            customFieldsVersion = result.customFields.version,
+                            customFieldStateItems = customFieldsStateItems.await(),
+                            filtersData = result.filtersData,
+                            initialLoadError = NativeText.Empty
+                        )
+                    }
 
-                setInitialTitle(result.issueTask.title)
-                setWorkItemBadges(workItemBadges)
-                setInitialTags(tags.await())
-            }.onFailure { error ->
-                Timber.e(error)
-                val errorToShow = getErrorMessage(error)
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        initialLoadError = errorToShow
-                    )
+                    setInitialTitle(result.issueTask.title)
+                    setWorkItemBadges(workItemBadges)
+                    setInitialTags(tags.await())
+                }.onFailure { error ->
+                    Timber.e(error)
+                    val errorToShow = getErrorMessage(error)
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            initialLoadError = errorToShow
+                        )
+                    }
                 }
-            }
         }
     }
 
