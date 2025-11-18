@@ -77,11 +77,17 @@ class IssuesRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteIssue(id: Long) {
-        issuesApi.deleteCommonTask(id)
+        workItemApi.deleteWorkItem(
+            workItemId = id,
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue)
+        )
     }
 
     override suspend fun deleteAttachment(attachment: Attachment) {
-        issuesApi.deleteAttachment(attachment.id)
+        workItemApi.deleteAttachment(
+            attachmentId = attachment.id,
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue)
+        )
     }
 
     override suspend fun addAttachment(
@@ -100,7 +106,8 @@ class IssuesRepositoryImpl @Inject constructor(
         )
         val objectId = MultipartBody.Part.createFormData("object_id", issueId.toString())
 
-        val dto = issuesApi.uploadCommonTaskAttachment(
+        val dto = workItemApi.uploadCommonTaskAttachment(
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
             file = file,
             project = project,
             objectId = objectId
@@ -168,8 +175,9 @@ class IssuesRepositoryImpl @Inject constructor(
     override suspend fun getIssueAttachments(taskId: Long): List<Attachment> {
         val projectId = taigaStorage.currentProjectIdFlow.first()
 
-        return issuesApi.getIssueAttachments(
-            storyId = taskId,
+        return workItemApi.getAttachments(
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
+            objectId = taskId,
             projectId = projectId
         ).map { attachmentDTO ->
             attachmentMapper.toDomain(attachmentDTO)
