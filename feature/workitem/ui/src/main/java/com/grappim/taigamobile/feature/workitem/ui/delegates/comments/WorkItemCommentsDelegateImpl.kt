@@ -52,9 +52,9 @@ class WorkItemCommentsDelegateImpl(
                 val patchedData = async {
                     workItemRepository.patchData(
                         version = version,
-                        id = id,
+                        workItemId = id,
                         payload = payload,
-                        taskPath = WorkItemPathPlural(commonTaskType)
+                        commonTaskType = commonTaskType
                     )
                 }
 

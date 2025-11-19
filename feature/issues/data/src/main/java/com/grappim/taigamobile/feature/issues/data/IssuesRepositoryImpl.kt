@@ -108,8 +108,8 @@ class IssuesRepositoryImpl @Inject constructor(
         payload: ImmutableMap<String, Any?>
     ): PatchedData {
         return workItemRepository.patchData(
-            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
-            id = issueId,
+            commonTaskType = CommonTaskType.Issue,
+            workItemId = issueId,
             payload = payload,
             version = version
         )

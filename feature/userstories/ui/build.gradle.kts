@@ -16,6 +16,7 @@ dependencies {
     implementation(projects.feature.workitem.ui)
     implementation(projects.feature.workitem.domain)
     implementation(projects.feature.history.domain)
+    implementation(projects.feature.users.domain)
 
     implementation(projects.feature.userstories.domain)
 

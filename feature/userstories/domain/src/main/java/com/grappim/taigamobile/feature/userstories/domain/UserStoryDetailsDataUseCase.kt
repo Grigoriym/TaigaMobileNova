@@ -170,38 +170,4 @@ class UserStoryDetailsDataUseCase @Inject constructor(
             )
         }
     }
-
-    suspend fun removeMeFromWatchers(userStoryId: Long) = resultOf {
-        coroutineScope {
-            userStoriesRepository.unwatchUserStory(userStoryId)
-
-            val userStory = userStoriesRepository.getUserStory(id = userStoryId)
-
-            val watchers = usersRepository.getUsersList(userStory.watcherUserIds)
-
-            val isWatchedByMe = usersRepository.isAnyAssignedToMe(watchers)
-
-            WatchersData(
-                watchers = watchers.toImmutableList(),
-                isWatchedByMe = isWatchedByMe
-            )
-        }
-    }
-
-    suspend fun addMeToWatchers(userStoryId: Long) = resultOf {
-        coroutineScope {
-            userStoriesRepository.watchUserStory(userStoryId)
-
-            val issue = userStoriesRepository.getUserStory(id = userStoryId)
-
-            val watchers = usersRepository.getUsersList(issue.watcherUserIds)
-
-            val isWatchedByMe = usersRepository.isAnyAssignedToMe(watchers)
-
-            WatchersData(
-                watchers = watchers.toImmutableList(),
-                isWatchedByMe = isWatchedByMe
-            )
-        }
-    }
 }

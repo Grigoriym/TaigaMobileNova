@@ -28,6 +28,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadge
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
@@ -77,6 +78,7 @@ fun IssueDetailsScreen(
     val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
     val commentsState by viewModel.commentsState.collectAsStateWithLifecycle()
     val attachmentState by viewModel.attachmentsState.collectAsStateWithLifecycle()
+    val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -181,14 +183,14 @@ fun IssueDetailsScreen(
     )
 
     ConfirmActionDialog(
-        isVisible = state.isRemoveWatcherDialogVisible,
+        isVisible = watchersState.isRemoveWatcherDialogVisible,
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
             state.removeWatcher()
-            state.setIsRemoveWatcherDialogVisible(false)
+            watchersState.setIsRemoveWatcherDialogVisible(false)
         },
-        onDismiss = { state.setIsRemoveWatcherDialogVisible(false) }
+        onDismiss = { watchersState.setIsRemoveWatcherDialogVisible(false) }
     )
 
     ConfirmActionDialog(
@@ -218,6 +220,7 @@ fun IssueDetailsScreen(
             tagsState = tagsState,
             commentsState = commentsState,
             attachmentsState = attachmentState,
+            watchersState = watchersState,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -235,6 +238,7 @@ private fun IssueDetailsScreenContent(
     tagsState: WorkItemTagsState,
     commentsState: WorkItemCommentsState,
     attachmentsState: WorkItemAttachmentsState,
+    watchersState: WorkItemWatchersState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
@@ -331,16 +335,16 @@ private fun IssueDetailsScreenContent(
 
                 WatchersWidget(
                     goToProfile = goToProfile,
-                    watchers = state.watchers,
+                    watchers = watchersState.watchers,
                     onRemoveWatcherClick = { watcherId ->
-                        state.onRemoveWatcherClick(watcherId)
+                        watchersState.onRemoveWatcherClick(watcherId)
                     },
-                    isWatchersLoading = state.isWatchersLoading,
+                    isWatchersLoading = watchersState.areWatchersLoading,
                     onAddWatcherClick = {
-                        state.onGoingToEditWatchers()
+                        watchersState.onGoingToEditWatchers()
                         goToEditWatchers()
                     },
-                    isWatchedByMe = state.isWatchedByMe,
+                    isWatchedByMe = watchersState.isWatchedByMe,
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
                     onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
                 )

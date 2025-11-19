@@ -16,6 +16,7 @@ import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
@@ -28,6 +29,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDe
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
@@ -83,7 +86,8 @@ class IssueDetailsViewModel @Inject constructor(
     private val patchDataGenerator: PatchDataGenerator,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
-    private val taigaStorage: TaigaStorage
+    private val taigaStorage: TaigaStorage,
+    private val usersRepository: UsersRepository,
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
@@ -95,9 +99,17 @@ class IssueDetailsViewModel @Inject constructor(
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         workItemRepository = workItemRepository,
-        commonTaskType = CommonTaskType.UserStory,
+        commonTaskType = CommonTaskType.Issue,
         fileUriManager = fileUriManager,
         taigaStorage = taigaStorage
+    ),
+    WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        usersRepository = usersRepository,
+        patchDataGenerator = patchDataGenerator,
+        session = session,
+        workItemEditShared = workItemEditShared
     ) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -114,7 +126,6 @@ class IssueDetailsViewModel @Inject constructor(
             ),
             setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
-            setIsRemoveWatcherDialogVisible = ::setIsRemoveWatcherDialogVisible,
             onCustomFieldChange = ::onCustomFieldChange,
             onCustomFieldSave = ::onCustomFieldSave,
             onCustomFieldEditToggle = ::onCustomFieldEditToggle,
@@ -132,10 +143,8 @@ class IssueDetailsViewModel @Inject constructor(
             onAssignToMe = ::onAssignToMe,
             onUnassign = ::onUnassign,
             onGoingToEditAssignee = ::onGoingToEditAssignee,
-            onGoingToEditWatchers = ::onGoingToEditWatchers,
             onRemoveMeFromWatchersClick = ::onRemoveMeFromWatchersClick,
             onAddMeToWatchersClick = ::onAddMeToWatchersClick,
-            onRemoveWatcherClick = ::onRemoveWatcherClick,
             removeWatcher = ::removeWatcher,
             removeAssignee = ::removeAssignee,
             onRemoveAssigneeClick = ::onRemoveAssigneeClick,
@@ -258,9 +267,7 @@ class IssueDetailsViewModel @Inject constructor(
                             dueDateText = dateTimeUtils.getDueDateText(result.issueTask.dueDate),
                             creator = result.creator,
                             assignees = result.assignees.toPersistentList(),
-                            watchers = result.watchers.toPersistentList(),
                             isAssignedToMe = result.isAssignedToMe,
-                            isWatchedByMe = result.isWatchedByMe,
                             customFieldsVersion = result.customFields.version,
                             customFieldStateItems = customFieldsStateItems.await(),
                             filtersData = result.filtersData,
@@ -273,6 +280,10 @@ class IssueDetailsViewModel @Inject constructor(
                     setInitialTags(tags.await())
                     setInitialComments(result.comments)
                     setInitialAttachments(result.attachments.toPersistentList())
+                    setInitialWatchers(
+                        watchers = result.watchers.toPersistentList(),
+                        isWatchedByMe = result.isWatchedByMe
+                    )
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -306,42 +317,35 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
+    private fun updateVersion(newVersion: Long) {
+        val updatedIssue = currentIssue.copy(
+            version = newVersion
+        )
+        _state.update {
+            it.copy(
+                currentIssue = updatedIssue,
+                originalIssue = updatedIssue,
+            )
+        }
+    }
+
+    // Watchers segment
+
     private fun removeWatcher() {
         viewModelScope.launch {
-            val newWatchers = _state.value.watchers.map { it.actualId }
-                .filterNot { it == _state.value.watcherIdToRemove }
-
-            patchData(
-                payload = patchDataGenerator.getWatchersPatchPayload(newWatchers),
+            handleRemoveWatcher(
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            isWatchersLoading = true,
-                            error = NativeText.Empty
-                        )
-                    }
+                    emptyError()
                 },
-                doOnSuccess = { _: PatchedData, _: IssueTask ->
-                    val isWatchedByMe = session.userId in newWatchers
-                    val watchersToSave = _state.value.watchers.removeAll {
-                        it.actualId == _state.value.watcherIdToRemove
-                    }
-
-                    _state.update {
-                        it.copy(
-                            isWatchersLoading = false,
-                            error = NativeText.Empty,
-                            watcherIdToRemove = null,
-                            isWatchedByMe = isWatchedByMe,
-                            watchers = watchersToSave
-                        )
-                    }
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 },
                 doOnError = { error ->
                     Timber.e(error)
                     _state.update {
                         it.copy(
-                            isWatchersLoading = false,
                             error = getErrorMessage(error)
                         )
                     }
@@ -350,72 +354,65 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onRemoveWatcherClick(watcherId: Long) {
-        _state.update {
-            it.copy(
-                watcherIdToRemove = watcherId,
-                isRemoveWatcherDialogVisible = true
+    private fun onRemoveMeFromWatchersClick() {
+        viewModelScope.launch {
+            handleRemoveMeFromWatchers(
+                workItemId = currentIssue.id,
+                doOnPreExecute = {
+                    emptyError()
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error),
+                        )
+                    }
+                }
             )
         }
     }
 
-    private fun onGoingToEditWatchers() {
-        val watchersIds = _state.value.watchers.mapNotNull { it.id }
-            .toPersistentList()
-        workItemEditShared.setCurrentWatchers(watchersIds)
-    }
-
-    private fun onRemoveMeFromWatchersClick() {
-        val currentIssue = _state.value.currentIssue ?: return
+    private fun onAddMeToWatchersClick() {
         viewModelScope.launch {
-            _state.update {
-                it.copy(isLoading = true)
-            }
-            issueDetailsDataUseCase.removeMeFromWatchers(issueId = currentIssue.id)
-                .onSuccess { result ->
-                    _state.update {
-                        it.copy(
-                            isWatchedByMe = result.isWatchedByMe,
-                            watchers = result.watchers.toPersistentList(),
-                            isLoading = false
-                        )
-                    }
-                }.onFailure { error ->
+            handleAddMeToWatchers(
+                workItemId = currentIssue.id,
+                doOnPreExecute = {
+                    emptyError()
+                },
+                doOnError = { error ->
                     Timber.e(error)
                     _state.update {
                         it.copy(
                             error = getErrorMessage(error),
-                            isLoading = false
                         )
                     }
                 }
+            )
         }
     }
 
-    private fun onAddMeToWatchersClick() {
-        val currentIssue = _state.value.currentIssue ?: return
+    private fun onWatchersUpdated(newWatchers: ImmutableList<Long>) {
         viewModelScope.launch {
-            _state.update {
-                it.copy(isLoading = true)
-            }
-            issueDetailsDataUseCase.addMeToWatchers(issueId = currentIssue.id)
-                .onSuccess { result ->
-                    _state.update {
-                        it.copy(
-                            isWatchedByMe = result.isWatchedByMe,
-                            watchers = result.watchers.toPersistentList(),
-                            isLoading = false
-                        )
-                    }
-                }.onFailure { error ->
+            handleUpdateWatchers(
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
+                newWatchers = newWatchers,
+                doOnPreExecute = {
+                    emptyError()
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                },
+                doOnError = { error ->
                     Timber.e(error)
                     _state.update {
                         it.copy(
-                            error = getErrorMessage(error),
-                            isLoading = false
+                            error = getErrorMessage(error)
                         )
                     }
                 }
+            )
         }
     }
 
@@ -463,42 +460,6 @@ class IssueDetailsViewModel @Inject constructor(
                     it.copy(
                         error = getErrorMessage(error),
                         isAssigneesLoading = false
-                    )
-                }
-            }
-        }
-    }
-
-    private fun onWatchersUpdated(newWatchers: ImmutableList<Long>) {
-        val currentIssue = _state.value.currentIssue ?: return
-        viewModelScope.launch {
-            _state.update {
-                it.copy(error = NativeText.Empty, isWatchersLoading = true)
-            }
-
-            issueDetailsDataUseCase.updateWatchersData(
-                version = currentIssue.version,
-                issueId = currentIssue.id,
-                newList = newWatchers
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.version
-                )
-                _state.update {
-                    it.copy(
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        isWatchersLoading = false,
-                        isWatchedByMe = result.isWatchedByMe,
-                        watchers = result.watchers.toPersistentList()
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isWatchersLoading = false
                     )
                 }
             }
@@ -1033,12 +994,6 @@ class IssueDetailsViewModel @Inject constructor(
                     }
                 }
             )
-        }
-    }
-
-    private fun setIsRemoveWatcherDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isRemoveWatcherDialogVisible = isVisible)
         }
     }
 

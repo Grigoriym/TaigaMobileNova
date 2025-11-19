@@ -199,8 +199,8 @@ class UserStoriesRepositoryImpl @Inject constructor(
         payload: ImmutableMap<String, Any?>
     ): PatchedData {
         return workItemRepository.patchData(
-            taskPath = userStoryPlural,
-            id = userStoryId,
+            commonTaskType = CommonTaskType.UserStory,
+            workItemId = userStoryId,
             payload = payload,
             version = version
         )
@@ -228,9 +228,9 @@ class UserStoriesRepositoryImpl @Inject constructor(
     }
 
     override suspend fun watchUserStory(userStoryId: Long) {
-        workItemApi.watchWorkItem(
-            taskPath = userStoryPlural,
-            workItemId = userStoryId
+        workItemRepository.watchWorkItem(
+            workItemId = userStoryId,
+            commonTaskType = CommonTaskType.UserStory
         )
     }
 

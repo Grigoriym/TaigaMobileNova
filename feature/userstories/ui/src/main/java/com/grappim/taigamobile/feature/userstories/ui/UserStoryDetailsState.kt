@@ -47,15 +47,7 @@ data class UserStoryDetailsState(
 
     val creator: User? = null,
 
-    val watchers: PersistentList<User> = persistentListOf(),
-    val isWatchedByMe: Boolean = false,
-    val isWatchersLoading: Boolean = false,
-    val isRemoveWatcherDialogVisible: Boolean = false,
-    val watcherIdToRemove: Long? = null,
     val removeWatcher: () -> Unit = {},
-    val setIsRemoveWatcherDialogVisible: (Boolean) -> Unit = {},
-    val onRemoveWatcherClick: (Long) -> Unit = {},
-    val onGoingToEditWatchers: () -> Unit = {},
     val onRemoveMeFromWatchersClick: () -> Unit = {},
     val onAddMeToWatchersClick: () -> Unit = {},
 
