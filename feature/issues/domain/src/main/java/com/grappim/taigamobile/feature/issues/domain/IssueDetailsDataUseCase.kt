@@ -68,34 +68,6 @@ class IssueDetailsDataUseCase @Inject constructor(
         }
     }
 
-    suspend fun createComment(
-        version: Long,
-        issueId: Long,
-        comment: String
-    ): Result<CreatedCommentData> = resultOf {
-        coroutineScope {
-            val payload = persistentMapOf(
-                "comment" to comment
-            )
-
-            val patchedData = issuesRepository.patchData(
-                version = version,
-                issueId = issueId,
-                payload = payload
-            )
-
-            val newComments = historyRepository.getComments(
-                commonTaskId = issueId,
-                type = CommonTaskType.Issue
-            )
-
-            CreatedCommentData(
-                newVersion = patchedData.newVersion,
-                comments = newComments
-            )
-        }
-    }
-
     suspend fun patchCustomAttributes(
         version: Long,
         issueId: Long,
