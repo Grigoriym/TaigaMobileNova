@@ -39,9 +39,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 private val userStoryPlural = WorkItemPathPlural(CommonTaskType.UserStory)
@@ -245,9 +242,9 @@ class UserStoriesRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteAttachment(attachment: Attachment) {
-        workItemApi.deleteAttachment(
-            taskPath = userStoryPlural,
-            attachmentId = attachment.id
+        workItemRepository.deleteAttachment(
+            commonTaskType = CommonTaskType.UserStory,
+            attachment = attachment
         )
     }
 
@@ -256,23 +253,12 @@ class UserStoriesRepositoryImpl @Inject constructor(
         fileName: String,
         fileByteArray: ByteArray
     ): Attachment {
-        val file = MultipartBody.Part.createFormData(
-            name = "attached_file",
-            filename = fileName,
-            body = fileByteArray.toRequestBody("*/*".toMediaType())
+        return workItemRepository.addAttachment(
+            workItemId = id,
+            fileName = fileName,
+            fileByteArray = fileByteArray,
+            projectId = taigaStorage.currentProjectIdFlow.first(),
+            commonTaskType = CommonTaskType.UserStory
         )
-        val project = MultipartBody.Part.createFormData(
-            "project",
-            taigaStorage.currentProjectIdFlow.first().toString()
-        )
-        val objectId = MultipartBody.Part.createFormData("object_id", id.toString())
-
-        val dto = workItemApi.uploadCommonTaskAttachment(
-            taskPath = userStoryPlural,
-            file = file,
-            project = project,
-            objectId = objectId
-        )
-        return attachmentMapper.toDomain(dto)
     }
 }

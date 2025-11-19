@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.userstories.domain
 
-import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
@@ -11,14 +10,12 @@ import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.AssigneesData
-import com.grappim.taigamobile.feature.workitem.domain.CreatedCommentData
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WatchersData
 import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
@@ -87,50 +84,6 @@ class UserStoryDetailsDataUseCase @Inject constructor(
                 filtersData = filtersData.await()
             )
         }
-    }
-
-    suspend fun createComment(
-        version: Long,
-        id: Long,
-        comment: String
-    ): Result<CreatedCommentData> = resultOf {
-        coroutineScope {
-            val payload = persistentMapOf(
-                "comment" to comment
-            )
-
-            val patchedData = userStoriesRepository.patchData(
-                version = version,
-                userStoryId = id,
-                payload = payload
-            )
-
-            val newComments = historyRepository.getComments(
-                commonTaskId = id,
-                type = CommonTaskType.UserStory
-            )
-
-            CreatedCommentData(
-                newVersion = patchedData.newVersion,
-                comments = newComments
-            )
-        }
-    }
-
-    suspend fun addAttachment(
-        id: Long,
-        fileName: String,
-        fileByteArray: ByteArray
-    ): Result<Attachment> = resultOf {
-        userStoriesRepository.addAttachment(
-            id = id,
-            fileName = fileName,
-            fileByteArray = fileByteArray
-        )
-    }
-
-    suspend fun deleteAttachment(attachment: Attachment): Result<Unit> = resultOf {
-        userStoriesRepository.deleteAttachment(attachment)
     }
 
     suspend fun deleteIssue(id: Long) = resultOf {

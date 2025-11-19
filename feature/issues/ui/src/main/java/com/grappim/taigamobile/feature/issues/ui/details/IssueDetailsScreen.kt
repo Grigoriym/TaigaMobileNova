@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
@@ -75,6 +76,7 @@ fun IssueDetailsScreen(
     val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
     val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
     val commentsState by viewModel.commentsState.collectAsStateWithLifecycle()
+    val attachmentState by viewModel.attachmentsState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -215,6 +217,7 @@ fun IssueDetailsScreen(
             badgeState = badgeState,
             tagsState = tagsState,
             commentsState = commentsState,
+            attachmentsState = attachmentState,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -231,6 +234,7 @@ private fun IssueDetailsScreenContent(
     badgeState: WorkItemBadgeState,
     tagsState: WorkItemTagsState,
     commentsState: WorkItemCommentsState,
+    attachmentsState: WorkItemAttachmentsState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
@@ -353,13 +357,13 @@ private fun IssueDetailsScreenContent(
                 )
 
                 AttachmentsSectionWidget(
-                    attachments = state.attachments,
-                    isAttachmentsLoading = state.isAttachmentsLoading,
+                    attachments = attachmentsState.attachments,
+                    isAttachmentsLoading = attachmentsState.areAttachmentsLoading,
                     onAttachmentAdd = { uri ->
                         state.onAttachmentAdd(uri)
                     },
-                    areAttachmentsExpanded = state.areAttachmentsExpanded,
-                    setAreAttachmentsExpanded = state.setAreAttachmentsExpanded,
+                    areAttachmentsExpanded = attachmentsState.areAttachmentsExpanded,
+                    setAreAttachmentsExpanded = attachmentsState.setAreAttachmentsExpanded,
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
                     }

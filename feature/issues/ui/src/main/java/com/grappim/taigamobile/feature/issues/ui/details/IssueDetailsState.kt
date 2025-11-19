@@ -51,12 +51,8 @@ data class IssueDetailsState(
     val onCustomFieldEditToggle: (CustomFieldItemState) -> Unit = {},
     val editingItemIds: ImmutableSet<Long> = persistentSetOf(),
 
-    val attachments: PersistentList<Attachment> = persistentListOf(),
-    val isAttachmentsLoading: Boolean = false,
     val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},
-    val areAttachmentsExpanded: Boolean = false,
-    val setAreAttachmentsExpanded: (Boolean) -> Unit = {},
 
     val toolbarTitle: NativeText,
     val isDropdownMenuExpanded: Boolean = false,

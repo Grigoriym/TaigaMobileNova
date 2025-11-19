@@ -11,11 +11,14 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryDetailsDataUseCase
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
@@ -77,7 +80,8 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val fileUriManager: FileUriManager,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val historyRepository: HistoryRepository,
-    private val workItemRepository: WorkItemRepository
+    private val workItemRepository: WorkItemRepository,
+    private val taigaStorage: TaigaStorage
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
@@ -86,6 +90,12 @@ class UserStoryDetailsViewModel @Inject constructor(
         historyRepository = historyRepository,
         commonTaskType = CommonTaskType.UserStory,
         workItemRepository = workItemRepository
+    ),
+    WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
+        workItemRepository = workItemRepository,
+        commonTaskType = CommonTaskType.UserStory,
+        fileUriManager = fileUriManager,
+        taigaStorage = taigaStorage
     ) {
 
     private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
@@ -124,7 +134,6 @@ class UserStoryDetailsViewModel @Inject constructor(
             onDelete = ::doOnDelete,
             onAttachmentRemove = ::onAttachmentRemove,
             onAttachmentAdd = ::onAttachmentAdd,
-            setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onTitleSave = ::handleTitleSave,
@@ -190,7 +199,6 @@ class UserStoryDetailsViewModel @Inject constructor(
                             isLoading = false,
                             currentUserStory = result.userStory,
                             originalUserStory = result.userStory,
-                            attachments = result.attachments.toPersistentList(),
                             sprint = result.sprint,
                             dueDateText = dueDateText,
                             creator = result.creator,
@@ -208,6 +216,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     setWorkItemBadges(workItemBadges.await())
                     setInitialTags(tags.await())
                     setInitialComments(result.comments)
+                    setInitialAttachments(result.attachments.toPersistentList())
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -297,75 +306,59 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun setAreAttachmentsExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(areAttachmentsExpanded = isExpanded)
-        }
-    }
-
     private fun onAttachmentAdd(uri: Uri?) {
-        val currentUserStory = _state.value.currentUserStory ?: return
-        viewModelScope.launch {
-            if (uri == null) {
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = true,
-                        error = NativeText.Resource(RString.common_error_message)
-                    )
-                }
-                return@launch
+        if (uri == null) {
+            _state.update {
+                it.copy(
+                    error = NativeText.Resource(RString.common_error_message)
+                )
             }
-
-            val attachmentInfoToSend = fileUriManager.retrieveAttachmentInfo(uri)
-
-            userStoryDetailsDataUseCase.addAttachment(
-                id = currentUserStory.id,
-                fileName = attachmentInfoToSend.name,
-                fileByteArray = attachmentInfoToSend.fileBytes.toByteArray()
-            ).onSuccess { result ->
-                val currentAttachments = _state.value.attachments
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = false,
-                        attachments = currentAttachments.add(result)
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
-            }
+            return
         }
-    }
 
-    private fun onAttachmentRemove(attachment: Attachment) {
-        _state.update {
-            it.copy(isAttachmentsLoading = true)
-        }
         viewModelScope.launch {
-            userStoryDetailsDataUseCase.deleteAttachment(attachment)
-                .onSuccess { _ ->
-                    val currentAttachments = _state.value.attachments
+            handleAddAttachment(
+                workItemId = currentUserStory.id,
+                uri = uri,
+                doOnPreExecute = {
                     _state.update {
                         it.copy(
-                            isAttachmentsLoading = false,
-                            attachments = currentAttachments.remove(attachment)
+                            error = NativeText.Empty
                         )
                     }
-                }
-                .onFailure { error ->
+                },
+                doOnError = { error ->
                     Timber.e(error)
                     _state.update {
                         it.copy(
-                            isAttachmentsLoading = false,
                             error = getErrorMessage(error)
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun onAttachmentRemove(attachment: Attachment) {
+        viewModelScope.launch {
+            handleRemoveAttachment(
+                attachment = attachment,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(
+                            error = NativeText.Empty
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error)
+                        )
+                    }
+                }
+            )
         }
     }
 

@@ -29,9 +29,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 class IssuesRepositoryImpl @Inject constructor(
@@ -96,24 +93,13 @@ class IssuesRepositoryImpl @Inject constructor(
         fileName: String,
         fileByteArray: ByteArray
     ): Attachment {
-        val file = MultipartBody.Part.createFormData(
-            name = "attached_file",
-            filename = fileName,
-            body = fileByteArray.toRequestBody("*/*".toMediaType())
+        return workItemRepository.addAttachment(
+            workItemId = issueId,
+            fileName = fileName,
+            fileByteArray = fileByteArray,
+            projectId = taigaStorage.currentProjectIdFlow.first(),
+            commonTaskType = CommonTaskType.Issue
         )
-        val project = MultipartBody.Part.createFormData(
-            "project",
-            taigaStorage.currentProjectIdFlow.first().toString()
-        )
-        val objectId = MultipartBody.Part.createFormData("object_id", issueId.toString())
-
-        val dto = workItemApi.uploadCommonTaskAttachment(
-            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
-            file = file,
-            project = project,
-            objectId = objectId
-        )
-        return attachmentMapper.toDomain(dto)
     }
 
     override suspend fun patchData(

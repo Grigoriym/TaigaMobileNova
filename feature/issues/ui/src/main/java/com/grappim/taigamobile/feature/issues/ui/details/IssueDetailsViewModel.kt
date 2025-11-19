@@ -12,11 +12,14 @@ import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
@@ -79,7 +82,8 @@ class IssueDetailsViewModel @Inject constructor(
     private val session: Session,
     private val patchDataGenerator: PatchDataGenerator,
     private val historyRepository: HistoryRepository,
-    private val workItemRepository: WorkItemRepository
+    private val workItemRepository: WorkItemRepository,
+    private val taigaStorage: TaigaStorage
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
@@ -88,6 +92,12 @@ class IssueDetailsViewModel @Inject constructor(
         commonTaskType = CommonTaskType.Issue,
         historyRepository = historyRepository,
         workItemRepository = workItemRepository
+    ),
+    WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
+        workItemRepository = workItemRepository,
+        commonTaskType = CommonTaskType.UserStory,
+        fileUriManager = fileUriManager,
+        taigaStorage = taigaStorage
     ) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -117,7 +127,6 @@ class IssueDetailsViewModel @Inject constructor(
             onDelete = ::doOnDelete,
             onAttachmentRemove = ::onAttachmentRemove,
             onAttachmentAdd = ::onAttachmentAdd,
-            setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onAssignToMe = ::onAssignToMe,
@@ -245,7 +254,6 @@ class IssueDetailsViewModel @Inject constructor(
                             isLoading = false,
                             currentIssue = result.issueTask,
                             originalIssue = result.issueTask,
-                            attachments = result.attachments.toPersistentList(),
                             sprint = sprint,
                             dueDateText = dateTimeUtils.getDueDateText(result.issueTask.dueDate),
                             creator = result.creator,
@@ -264,6 +272,7 @@ class IssueDetailsViewModel @Inject constructor(
                     setWorkItemBadges(workItemBadges)
                     setInitialTags(tags.await())
                     setInitialComments(result.comments)
+                    setInitialAttachments(result.attachments.toPersistentList())
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -274,6 +283,14 @@ class IssueDetailsViewModel @Inject constructor(
                         )
                     }
                 }
+        }
+    }
+
+    private fun emptyError() {
+        _state.update {
+            it.copy(
+                error = NativeText.Empty
+            )
         }
     }
 
@@ -855,12 +872,6 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun setAreAttachmentsExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(areAttachmentsExpanded = isExpanded)
-        }
-    }
-
     private fun onCustomFieldEditToggle(item: CustomFieldItemState) {
         _state.update { currentState ->
             val currentIds = _state.value.editingItemIds
@@ -978,68 +989,50 @@ class IssueDetailsViewModel @Inject constructor(
     }
 
     private fun onAttachmentAdd(uri: Uri?) {
-        val currentIssue = _state.value.currentIssue ?: return
-        viewModelScope.launch {
-            if (uri == null) {
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = true,
-                        error = NativeText.Resource(RString.common_error_message)
-                    )
-                }
-                return@launch
+        if (uri == null) {
+            _state.update {
+                it.copy(
+                    error = NativeText.Resource(RString.common_error_message)
+                )
             }
-
-            val attachmentInfoToSend = fileUriManager.retrieveAttachmentInfo(uri)
-
-            issueDetailsDataUseCase.addAttachment(
-                issueId = currentIssue.id,
-                fileName = attachmentInfoToSend.name,
-                fileByteArray = attachmentInfoToSend.fileBytes.toByteArray()
-            ).onSuccess { result ->
-                val currentAttachments = _state.value.attachments
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = false,
-                        attachments = currentAttachments.add(result)
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
-            }
+            return
         }
-    }
 
-    private fun onAttachmentRemove(attachment: Attachment) {
-        _state.update {
-            it.copy(isAttachmentsLoading = true)
-        }
         viewModelScope.launch {
-            issueDetailsDataUseCase.deleteAttachment(attachment)
-                .onSuccess { _ ->
-                    val currentAttachments = _state.value.attachments
-                    _state.update {
-                        it.copy(
-                            isAttachmentsLoading = false,
-                            attachments = currentAttachments.remove(attachment)
-                        )
-                    }
-                }
-                .onFailure { error ->
+            handleAddAttachment(
+                workItemId = currentIssue.id,
+                uri = uri,
+                doOnPreExecute = {
+                    emptyError()
+                },
+                doOnError = { error ->
                     Timber.e(error)
                     _state.update {
                         it.copy(
-                            isAttachmentsLoading = false,
                             error = getErrorMessage(error)
                         )
                     }
                 }
+            )
+        }
+    }
+
+    private fun onAttachmentRemove(attachment: Attachment) {
+        viewModelScope.launch {
+            handleRemoveAttachment(
+                attachment = attachment,
+                doOnPreExecute = {
+                    emptyError()
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error)
+                        )
+                    }
+                }
+            )
         }
     }
 
