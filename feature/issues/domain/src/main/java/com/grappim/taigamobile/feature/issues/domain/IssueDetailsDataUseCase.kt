@@ -97,14 +97,6 @@ class IssueDetailsDataUseCase @Inject constructor(
         }
     }
 
-    suspend fun deleteComment(issueId: Long, commentId: String) = resultOf {
-        historyRepository.deleteComment(
-            commonTaskId = issueId,
-            commentId = commentId,
-            commonTaskType = CommonTaskType.Issue
-        )
-    }
-
     suspend fun deleteAttachment(attachment: Attachment): Result<Unit> = resultOf {
         issuesRepository.deleteAttachment(attachment)
     }

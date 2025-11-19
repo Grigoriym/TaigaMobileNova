@@ -24,14 +24,14 @@ import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
-import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemPathPlural
-import com.grappim.taigamobile.feature.workitem.data.WorkItemPathSingular
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.fixNullColor
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toPersistentMap
@@ -58,7 +58,8 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val attachmentMapper: AttachmentMapper,
     private val workItemApi: WorkItemApi,
     private val customFieldsMapper: CustomFieldsMapper,
-    private val patchedDataMapper: PatchedDataMapper
+    private val patchedDataMapper: PatchedDataMapper,
+    private val workItemRepository: WorkItemRepository
 ) : UserStoriesRepository {
     private var userStoriesPagingSource: UserStoriesPagingSource? = null
 
@@ -200,13 +201,12 @@ class UserStoriesRepositoryImpl @Inject constructor(
         userStoryId: Long,
         payload: ImmutableMap<String, Any?>
     ): PatchedData {
-        val editedMap = payload.toPersistentMap().put("version", version)
-        val result = workItemApi.patchWorkItem(
+        return workItemRepository.patchData(
             taskPath = userStoryPlural,
             id = userStoryId,
-            payload = editedMap
+            payload = payload,
+            version = version
         )
-        return patchedDataMapper.toDomain(result)
     }
 
     override suspend fun patchCustomAttributes(

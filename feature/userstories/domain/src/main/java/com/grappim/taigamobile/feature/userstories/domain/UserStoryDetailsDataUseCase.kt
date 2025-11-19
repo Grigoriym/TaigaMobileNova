@@ -117,14 +117,6 @@ class UserStoryDetailsDataUseCase @Inject constructor(
         }
     }
 
-    suspend fun deleteComment(id: Long, commentId: String) = resultOf {
-        historyRepository.deleteComment(
-            commonTaskId = id,
-            commentId = commentId,
-            commonTaskType = CommonTaskType.UserStory
-        )
-    }
-
     suspend fun addAttachment(
         id: Long,
         fileName: String,

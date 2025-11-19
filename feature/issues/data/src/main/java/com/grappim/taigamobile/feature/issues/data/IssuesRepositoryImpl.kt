@@ -15,14 +15,14 @@ import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemPathPlural
-import com.grappim.taigamobile.feature.workitem.data.WorkItemPathSingular
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
@@ -42,7 +42,8 @@ class IssuesRepositoryImpl @Inject constructor(
     private val attachmentMapper: AttachmentMapper,
     private val customFieldsMapper: CustomFieldsMapper,
     private val patchedDataMapper: PatchedDataMapper,
-    private val workItemApi: WorkItemApi
+    private val workItemApi: WorkItemApi,
+    private val workItemRepository: WorkItemRepository
 ) : IssuesRepository {
     private var issuesPagingSource: IssuesPagingSource? = null
 
@@ -120,13 +121,12 @@ class IssuesRepositoryImpl @Inject constructor(
         issueId: Long,
         payload: ImmutableMap<String, Any?>
     ): PatchedData {
-        val editedMap = payload.toPersistentMap().put("version", version)
-        val result = workItemApi.patchWorkItem(
+        return workItemRepository.patchData(
             taskPath = WorkItemPathPlural(CommonTaskType.Issue),
             id = issueId,
-            payload = editedMap
+            payload = payload,
+            version = version
         )
-        return patchedDataMapper.toDomain(result)
     }
 
     override suspend fun patchCustomAttributes(

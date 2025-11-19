@@ -34,7 +34,7 @@ fun CommentsSectionWidget(
     comments: ImmutableList<Comment>,
     isCommentsWidgetExpanded: Boolean,
     setIsCommentsWidgetExpanded: (Boolean) -> Unit,
-    isCommentsLoading: Boolean,
+    areCommentsLoading: Boolean,
     onCommentRemove: (Comment) -> Unit,
     goToProfile: (userId: Long) -> Unit,
     modifier: Modifier = Modifier
@@ -66,7 +66,7 @@ fun CommentsSectionWidget(
                 }
             }
 
-            if (isCommentsLoading) {
+            if (areCommentsLoading) {
                 DotsLoaderWidget()
             }
         }

@@ -9,13 +9,18 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -72,11 +77,18 @@ class IssueDetailsViewModel @Inject constructor(
     private val dateTimeUtils: DateTimeUtils,
     private val fileUriManager: FileUriManager,
     private val session: Session,
-    private val patchDataGenerator: PatchDataGenerator
+    private val patchDataGenerator: PatchDataGenerator,
+    private val historyRepository: HistoryRepository,
+    private val workItemRepository: WorkItemRepository
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
-    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared) {
+    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared),
+    WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        historyRepository = historyRepository,
+        workItemRepository = workItemRepository
+    ) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
 
@@ -121,10 +133,12 @@ class IssueDetailsViewModel @Inject constructor(
             retryLoadIssue = ::retryLoadIssue,
             onTitleSave = ::handleTitleSave,
             onBadgeSave = ::handleBadgeSave,
-            setIsCommentsWidgetExpanded = ::setIsCommentsWidgetExpanded
         )
     )
     val state = _state.asStateFlow()
+
+    private val currentIssue: IssueTask
+        get() = requireNotNull(_state.value.currentIssue)
 
     private val _deleteTrigger = MutableSharedFlow<Boolean>()
     val deleteTrigger = _deleteTrigger.asSharedFlow()
@@ -232,7 +246,6 @@ class IssueDetailsViewModel @Inject constructor(
                             currentIssue = result.issueTask,
                             originalIssue = result.issueTask,
                             attachments = result.attachments.toPersistentList(),
-                            comments = result.comments.toPersistentList(),
                             sprint = sprint,
                             dueDateText = dateTimeUtils.getDueDateText(result.issueTask.dueDate),
                             creator = result.creator,
@@ -250,6 +263,7 @@ class IssueDetailsViewModel @Inject constructor(
                     setInitialTitle(result.issueTask.title)
                     setWorkItemBadges(workItemBadges)
                     setInitialTags(tags.await())
+                    setInitialComments(result.comments)
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -524,72 +538,55 @@ class IssueDetailsViewModel @Inject constructor(
     }
 
     private fun createComment(newComment: String) {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isCommentsLoading = true,
-                    error = NativeText.Empty
-                )
-            }
-
-            issueDetailsDataUseCase.createComment(
+            handleCreateComment(
                 version = currentIssue.version,
-                issueId = currentIssue.id,
-                comment = newComment
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.newVersion
-                )
+                id = currentIssue.id,
+                comment = newComment,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(error = NativeText.Empty)
+                    }
+                },
+                doOnSuccess = { result ->
+                    val updatedUserStory = currentIssue.copy(
+                        version = result.newVersion
+                    )
 
-                _state.update {
-                    it.copy(
-                        isCommentsLoading = false,
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        comments = result.comments.toPersistentList()
-                    )
+                    _state.update {
+                        it.copy(
+                            currentIssue = updatedUserStory,
+                            originalIssue = updatedUserStory
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(error = getErrorMessage(error))
+                    }
                 }
-            }.onFailure { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isCommentsLoading = false
-                    )
-                }
-            }
+            )
         }
     }
 
     private fun deleteComment(comment: Comment) {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isCommentsLoading = true,
-                    error = NativeText.Empty
-                )
-            }
-
-            issueDetailsDataUseCase.deleteComment(
-                issueId = currentIssue.id,
-                commentId = comment.id
-            ).onSuccess { _ ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        isCommentsLoading = false,
-                        comments = _state.value.comments.removeAll { it.id == comment.id }
-                    )
+            handleDeleteComment(
+                id = currentIssue.id,
+                commentId = comment.id,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(error = NativeText.Empty)
+                    }
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(error = getErrorMessage(error))
+                    }
                 }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        isCommentsLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
-            }
+            )
         }
     }
 
@@ -886,12 +883,6 @@ class IssueDetailsViewModel @Inject constructor(
                 }
             }.toImmutableList()
             currentState.copy(customFieldStateItems = updatedList)
-        }
-    }
-
-    private fun setIsCommentsWidgetExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(isCommentsWidgetExpanded = isExpanded)
         }
     }
 

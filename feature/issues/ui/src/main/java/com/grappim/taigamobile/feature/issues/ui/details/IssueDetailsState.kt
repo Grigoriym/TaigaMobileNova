@@ -38,11 +38,7 @@ data class IssueDetailsState(
 
     val filtersData: FiltersData? = null,
 
-    val comments: PersistentList<Comment> = persistentListOf(),
-    val isCommentsLoading: Boolean = false,
     val onCommentRemove: (Comment) -> Unit = {},
-    val isCommentsWidgetExpanded: Boolean = false,
-    val setIsCommentsWidgetExpanded: (Boolean) -> Unit = {},
     val onCreateCommentClick: (String) -> Unit = {},
 
     val isCustomFieldsLoading: Boolean = false,
@@ -61,9 +57,6 @@ data class IssueDetailsState(
     val onAttachmentRemove: (Attachment) -> Unit = {},
     val areAttachmentsExpanded: Boolean = false,
     val setAreAttachmentsExpanded: (Boolean) -> Unit = {},
-
-//    val tags: PersistentList<TagUI> = persistentListOf(),
-//    val areTagsLoading: Boolean = false,
 
     val toolbarTitle: NativeText,
     val isDropdownMenuExpanded: Boolean = false,
@@ -103,7 +96,6 @@ data class IssueDetailsState(
     val onGoingToEditAssignee: () -> Unit = {},
 
     val onTagRemove: (TagUI) -> Unit,
-//    val onGoingToEditTags: () -> Unit,
 
     val onBlockToggle: (isBlocked: Boolean, blockNote: String?) -> Unit,
     val isBlockDialogVisible: Boolean = false,

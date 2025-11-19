@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
@@ -73,6 +74,7 @@ fun IssueDetailsScreen(
     val titleState by viewModel.titleState.collectAsStateWithLifecycle()
     val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
     val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
+    val commentsState by viewModel.commentsState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -212,6 +214,7 @@ fun IssueDetailsScreen(
             titleState = titleState,
             badgeState = badgeState,
             tagsState = tagsState,
+            commentsState = commentsState,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -227,6 +230,7 @@ private fun IssueDetailsScreenContent(
     titleState: WorkItemTitleState,
     badgeState: WorkItemBadgeState,
     tagsState: WorkItemTagsState,
+    commentsState: WorkItemCommentsState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
@@ -362,13 +366,13 @@ private fun IssueDetailsScreenContent(
                 )
 
                 CommentsSectionWidget(
-                    comments = state.comments,
+                    comments = commentsState.comments,
                     goToProfile = goToProfile,
-                    isCommentsWidgetExpanded = state.isCommentsWidgetExpanded,
+                    isCommentsWidgetExpanded = commentsState.isCommentsWidgetExpanded,
                     setIsCommentsWidgetExpanded = { value ->
-                        state.setIsCommentsWidgetExpanded(value)
+                        commentsState.setIsCommentsWidgetExpanded(value)
                     },
-                    isCommentsLoading = state.isCommentsLoading,
+                    areCommentsLoading = commentsState.areCommentsLoading,
                     onCommentRemove = { value ->
                         state.onCommentRemove(value)
                     }

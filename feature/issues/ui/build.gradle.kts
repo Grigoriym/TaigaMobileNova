@@ -11,6 +11,7 @@ android {
 
 dependencies {
     implementation(projects.feature.issues.domain)
+    implementation(projects.feature.history.domain)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)
     implementation(projects.feature.workitem.ui)

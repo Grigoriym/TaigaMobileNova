@@ -37,10 +37,7 @@ data class UserStoryDetailsState(
     val currentUserStory: UserStory? = null,
     val originalUserStory: UserStory? = null,
 
-//    val tags: PersistentList<TagUI> = persistentListOf(),
     val onTagRemove: (TagUI) -> Unit = {},
-//    val onGoingToEditTags: () -> Unit = {},
-//    val areTagsLoading: Boolean = false,
 
     val isDueDateDatePickerVisible: Boolean = false,
     val setIsDueDatePickerVisible: (Boolean) -> Unit = {},
@@ -90,11 +87,7 @@ data class UserStoryDetailsState(
     val areAttachmentsExpanded: Boolean = false,
     val setAreAttachmentsExpanded: (Boolean) -> Unit = {},
 
-    val comments: PersistentList<Comment> = persistentListOf(),
-    val isCommentsLoading: Boolean = false,
     val onCommentRemove: (Comment) -> Unit = {},
-    val isCommentsWidgetExpanded: Boolean = false,
-    val setIsCommentsWidgetExpanded: (Boolean) -> Unit = {},
     val onCreateCommentClick: (String) -> Unit = {},
 
     val onBlockToggle: (isBlocked: Boolean, blockNote: String?) -> Unit = { _, _ -> },

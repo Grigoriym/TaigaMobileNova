@@ -7,14 +7,19 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryDetailsDataUseCase
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -70,11 +75,18 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val dateTimeUtils: DateTimeUtils,
     private val session: Session,
     private val fileUriManager: FileUriManager,
-    private val customFieldsUIMapper: CustomFieldsUIMapper
+    private val customFieldsUIMapper: CustomFieldsUIMapper,
+    private val historyRepository: HistoryRepository,
+    private val workItemRepository: WorkItemRepository
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
-    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared) {
+    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared),
+    WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
+        historyRepository = historyRepository,
+        commonTaskType = CommonTaskType.UserStory,
+        workItemRepository = workItemRepository
+    ) {
 
     private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
     private val ref = route.ref
@@ -104,7 +116,6 @@ class UserStoryDetailsViewModel @Inject constructor(
             onCustomFieldSave = ::onCustomFieldSave,
             onCustomFieldEditToggle = ::onCustomFieldEditToggle,
             setIsCustomFieldsWidgetExpanded = ::setIsCustomFieldsWidgetExpanded,
-            setIsCommentsWidgetExpanded = ::setIsCommentsWidgetExpanded,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
             setIsRemoveWatcherDialogVisible = ::setIsRemoveWatcherDialogVisible,
             onBlockToggle = ::onBlockToggle,
@@ -121,6 +132,9 @@ class UserStoryDetailsViewModel @Inject constructor(
         )
     )
     val state = _state.asStateFlow()
+
+    private val currentUserStory: UserStory
+        get() = requireNotNull(_state.value.currentUserStory)
 
     private val _deleteTrigger = MutableSharedFlow<Boolean>()
     val deleteTrigger = _deleteTrigger.asSharedFlow()
@@ -177,7 +191,6 @@ class UserStoryDetailsViewModel @Inject constructor(
                             currentUserStory = result.userStory,
                             originalUserStory = result.userStory,
                             attachments = result.attachments.toPersistentList(),
-                            comments = result.comments.toPersistentList(),
                             sprint = result.sprint,
                             dueDateText = dueDateText,
                             creator = result.creator,
@@ -194,6 +207,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     setInitialTitle(result.userStory.title)
                     setWorkItemBadges(workItemBadges.await())
                     setInitialTags(tags.await())
+                    setInitialComments(result.comments)
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -231,72 +245,55 @@ class UserStoryDetailsViewModel @Inject constructor(
     }
 
     private fun createComment(newComment: String) {
-        val currentUserStory = _state.value.currentUserStory ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isCommentsLoading = true,
-                    error = NativeText.Empty
-                )
-            }
-
-            userStoryDetailsDataUseCase.createComment(
+            handleCreateComment(
                 version = currentUserStory.version,
                 id = currentUserStory.id,
-                comment = newComment
-            ).onSuccess { result ->
-                val updatedUserStory = currentUserStory.copy(
-                    version = result.newVersion
-                )
+                comment = newComment,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(error = NativeText.Empty)
+                    }
+                },
+                doOnSuccess = { result ->
+                    val updatedUserStory = currentUserStory.copy(
+                        version = result.newVersion
+                    )
 
-                _state.update {
-                    it.copy(
-                        isCommentsLoading = false,
-                        currentUserStory = updatedUserStory,
-                        originalUserStory = updatedUserStory,
-                        comments = result.comments.toPersistentList()
-                    )
+                    _state.update {
+                        it.copy(
+                            currentUserStory = updatedUserStory,
+                            originalUserStory = updatedUserStory
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(error = getErrorMessage(error))
+                    }
                 }
-            }.onFailure { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isCommentsLoading = false
-                    )
-                }
-            }
+            )
         }
     }
 
     private fun deleteComment(comment: Comment) {
-        val currentIssue = _state.value.currentUserStory ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isCommentsLoading = true,
-                    error = NativeText.Empty
-                )
-            }
-
-            userStoryDetailsDataUseCase.deleteComment(
-                id = currentIssue.id,
-                commentId = comment.id
-            ).onSuccess { _ ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        isCommentsLoading = false,
-                        comments = _state.value.comments.removeAll { it.id == comment.id }
-                    )
+            handleDeleteComment(
+                id = currentUserStory.id,
+                commentId = comment.id,
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(error = NativeText.Empty)
+                    }
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(error = getErrorMessage(error))
+                    }
                 }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        isCommentsLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
-            }
+            )
         }
     }
 
@@ -459,12 +456,6 @@ class UserStoryDetailsViewModel @Inject constructor(
     private fun setIsRemoveWatcherDialogVisible(isVisible: Boolean) {
         _state.update {
             it.copy(isRemoveWatcherDialogVisible = isVisible)
-        }
-    }
-
-    private fun setIsCommentsWidgetExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(isCommentsWidgetExpanded = isExpanded)
         }
     }
 
