@@ -371,7 +371,7 @@ class IssueDetailsViewModel @Inject constructor(
             _state.update {
                 it.copy(isLoading = true)
             }
-            issueDetailsDataUseCase.removeMeFromWatchers(issueId = currentIssue.id, ref = ref)
+            issueDetailsDataUseCase.removeMeFromWatchers(issueId = currentIssue.id)
                 .onSuccess { result ->
                     _state.update {
                         it.copy(
@@ -398,7 +398,7 @@ class IssueDetailsViewModel @Inject constructor(
             _state.update {
                 it.copy(isLoading = true)
             }
-            issueDetailsDataUseCase.addMeToWatchers(issueId = currentIssue.id, ref = ref)
+            issueDetailsDataUseCase.addMeToWatchers(issueId = currentIssue.id)
                 .onSuccess { result ->
                     _state.update {
                         it.copy(

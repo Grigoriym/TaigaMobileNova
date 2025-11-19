@@ -32,7 +32,7 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val filtersRepository: FiltersRepository
 ) {
 
-    suspend fun removeMeFromWatchers(issueId: Long, ref: Int) = resultOf {
+    suspend fun removeMeFromWatchers(issueId: Long) = resultOf {
         coroutineScope {
             issuesRepository.unwatchIssue(issueId)
 
@@ -50,7 +50,7 @@ class IssueDetailsDataUseCase @Inject constructor(
         }
     }
 
-    suspend fun addMeToWatchers(issueId: Long, ref: Int) = resultOf {
+    suspend fun addMeToWatchers(issueId: Long) = resultOf {
         coroutineScope {
             issuesRepository.watchIssue(issueId)
 
