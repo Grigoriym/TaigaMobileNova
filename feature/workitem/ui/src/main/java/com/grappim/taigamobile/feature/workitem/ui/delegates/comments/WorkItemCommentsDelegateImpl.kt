@@ -2,7 +2,6 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.comments
 
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.workitem.domain.CreatedCommentData
@@ -11,6 +10,7 @@ import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -49,24 +49,28 @@ class WorkItemCommentsDelegateImpl(
                     "comment" to comment
                 )
 
-                val patchedData = workItemRepository.patchData(
-                    version = version,
-                    id = id,
-                    payload = payload,
-                    taskPath = WorkItemPathPlural(commonTaskType)
-                )
+                val patchedData = async {
+                    workItemRepository.patchData(
+                        version = version,
+                        id = id,
+                        payload = payload,
+                        taskPath = WorkItemPathPlural(commonTaskType)
+                    )
+                }
 
-                val newComments = historyRepository.getComments(
-                    commonTaskId = id,
-                    type = commonTaskType
-                )
+                val newComments = async {
+                    historyRepository.getComments(
+                        commonTaskId = id,
+                        type = commonTaskType
+                    )
+                }
 
                 CreatedCommentData(
-                    newVersion = patchedData.newVersion,
-                    comments = newComments
+                    newVersion = patchedData.await().newVersion,
+                    comments = newComments.await()
                 )
             }
-        }.onSuccess { result->
+        }.onSuccess { result ->
             doOnSuccess?.invoke(result)
 
             _commentsState.update {
@@ -75,7 +79,7 @@ class WorkItemCommentsDelegateImpl(
                     comments = result.comments.toPersistentList()
                 )
             }
-        }.onFailure { error->
+        }.onFailure { error ->
             _commentsState.update {
                 it.copy(areCommentsLoading = false)
             }
@@ -89,7 +93,7 @@ class WorkItemCommentsDelegateImpl(
         doOnPreExecute: (() -> Unit)?,
         doOnSuccess: (() -> Unit)?,
         doOnError: (Throwable) -> Unit
-    )  {
+    ) {
         doOnPreExecute?.invoke()
         _commentsState.update {
             it.copy(areCommentsLoading = true)
@@ -109,7 +113,7 @@ class WorkItemCommentsDelegateImpl(
                     comments = currentState.comments.removeAll { it.id == commentId }
                 )
             }
-        }.onFailure { error->
+        }.onFailure { error ->
             _commentsState.update {
                 it.copy(areCommentsLoading = false)
             }
