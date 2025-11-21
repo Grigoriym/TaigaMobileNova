@@ -64,8 +64,6 @@ data class UserStoryDetailsState(
     val onCreateCommentClick: (String) -> Unit = {},
 
     val onBlockToggle: (isBlocked: Boolean, blockNote: String?) -> Unit = { _, _ -> },
-    val isBlockDialogVisible: Boolean = false,
-    val setIsBlockDialogVisible: (Boolean) -> Unit = {},
 
     val setIsDeleteDialogVisible: (Boolean) -> Unit = {},
     val isDeleteDialogVisible: Boolean = false,

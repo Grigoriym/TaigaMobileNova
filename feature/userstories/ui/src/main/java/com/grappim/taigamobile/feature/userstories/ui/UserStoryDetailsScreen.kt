@@ -83,6 +83,7 @@ fun UserStoryDetailsScreen(
     val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
     val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
     val dueDateState by viewModel.dueDateState.collectAsStateWithLifecycle()
+    val blockState by viewModel.blockState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -172,13 +173,13 @@ fun UserStoryDetailsScreen(
     )
 
     BlockDialog(
-        isVisible = state.isBlockDialogVisible,
+        isVisible = blockState.isBlockDialogVisible,
         onConfirm = { blockNote ->
             state.onBlockToggle(true, blockNote)
-            state.setIsBlockDialogVisible(false)
+            blockState.setIsBlockDialogVisible(false)
         },
         onDismiss = {
-            state.setIsBlockDialogVisible(false)
+            blockState.setIsBlockDialogVisible(false)
         }
     )
 
@@ -215,7 +216,7 @@ fun UserStoryDetailsScreen(
                 state.setIsDeleteDialogVisible(it)
             },
             setBlockDialogVisible = {
-                state.setIsBlockDialogVisible(it)
+                blockState.setIsBlockDialogVisible(it)
             },
             doOnUnblock = {
                 state.onBlockToggle(false, null)

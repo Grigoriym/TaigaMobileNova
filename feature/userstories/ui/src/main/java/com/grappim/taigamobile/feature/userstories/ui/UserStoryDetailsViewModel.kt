@@ -22,6 +22,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
@@ -120,6 +122,11 @@ class UserStoryDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
+        commonTaskType = CommonTaskType.UserStory,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ) {
 
     private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
@@ -146,7 +153,6 @@ class UserStoryDetailsViewModel @Inject constructor(
             onCustomFieldSave = ::onCustomFieldSave,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
             onBlockToggle = ::onBlockToggle,
-            setIsBlockDialogVisible = ::setIsBlockDialogVisible,
             setIsDeleteDialogVisible = ::setIsDeleteDialogVisible,
             onDelete = ::doOnDelete,
             onAttachmentRemove = ::onAttachmentRemove,
@@ -438,17 +444,32 @@ class UserStoryDetailsViewModel @Inject constructor(
 
     private fun onBlockToggle(isBlocked: Boolean, blockNote: String?) {
         viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getBlockedPatchPayload(isBlocked, blockNote),
+            handleBlockToggle(
+                isBlocked = isBlocked,
+                blockNote = blockNote,
+                workItemId = currentUserStory.id,
+                version = currentUserStory.version,
                 doOnPreExecute = {
+                    clearError()
                     _state.update {
                         it.copy(
                             isLoading = true
                         )
                     }
                 },
-                doOnSuccess = { _: PatchedData, userStory: UserStory ->
-                    val updatedUserStory = userStory.copy(blockedNote = blockNote)
+                doOnError = { error ->
+                    emitError(error)
+                    _state.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
+                },
+                doOnSuccess = { result ->
+                    val updatedUserStory = currentUserStory.copy(
+                        blockedNote = result.blockNote,
+                        version = result.patchedData.newVersion
+                    )
                     _state.update {
                         it.copy(
                             currentUserStory = updatedUserStory,
@@ -456,22 +477,8 @@ class UserStoryDetailsViewModel @Inject constructor(
                             isLoading = false
                         )
                     }
-                },
-                doOnError = { error ->
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            isLoading = false
-                        )
-                    }
                 }
             )
-        }
-    }
-
-    private fun setIsBlockDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isBlockDialogVisible = isVisible)
         }
     }
 
