@@ -647,22 +647,20 @@ class IssueDetailsViewModel @Inject constructor(
 
     private fun onTagRemove(tag: TagUI) {
         viewModelScope.launch {
-            viewModelScope.launch {
-                handleTagRemove(
-                    tag = tag,
-                    version = currentIssue.version,
-                    workItemId = currentIssue.id,
-                    doOnPreExecute = {
-                        clearError()
-                    },
-                    doOnError = { error ->
-                        emitError(error)
-                    },
-                    doOnSuccess = { version ->
-                        updateVersion(version)
-                    }
-                )
-            }
+            handleTagRemove(
+                tag = tag,
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
         }
     }
 

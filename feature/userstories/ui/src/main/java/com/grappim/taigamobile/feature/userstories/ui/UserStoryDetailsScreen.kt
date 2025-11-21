@@ -268,7 +268,6 @@ private fun UserStoryDetailsScreenContent(
     goToEditWatchers: () -> Unit
 ) {
     requireNotNull(state.currentUserStory)
-    requireNotNull(state.originalUserStory)
 
     Column(
         modifier = Modifier.fillMaxSize()
