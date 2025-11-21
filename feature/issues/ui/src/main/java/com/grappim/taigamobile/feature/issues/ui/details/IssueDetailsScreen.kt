@@ -27,6 +27,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
@@ -81,6 +82,7 @@ fun IssueDetailsScreen(
     val attachmentState by viewModel.attachmentsState.collectAsStateWithLifecycle()
     val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
     val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
+    val dueDateState by viewModel.dueDateState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -164,12 +166,12 @@ fun IssueDetailsScreen(
     )
 
     DatePickerDialogWidget(
-        isVisible = state.isDueDateDatePickerVisible,
-        onDismissRequest = { state.setIsDueDatePickerVisible(false) },
-        onDismissButonClick = { state.setIsDueDatePickerVisible(false) },
+        isVisible = dueDateState.isDueDateDatePickerVisible,
+        onDismissRequest = { dueDateState.setDueDateDatePickerVisibility(false) },
+        onDismissButonClick = { dueDateState.setDueDateDatePickerVisibility(false) },
         onConfirmButtonClick = { dateMillis ->
             state.setDueDate(dateMillis)
-            state.setIsDueDatePickerVisible(false)
+            dueDateState.setDueDateDatePickerVisibility(false)
         }
     )
 
@@ -224,6 +226,7 @@ fun IssueDetailsScreen(
             attachmentsState = attachmentState,
             watchersState = watchersState,
             customFieldsState = customFieldsState,
+            dueDateState = dueDateState,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -243,6 +246,7 @@ private fun IssueDetailsScreenContent(
     attachmentsState: WorkItemAttachmentsState,
     watchersState: WorkItemWatchersState,
     customFieldsState: WorkItemCustomFieldsState,
+    dueDateState: WorkItemDueDateState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
@@ -303,12 +307,12 @@ private fun IssueDetailsScreenContent(
                 )
 
                 WorkItemDueDateWidget(
-                    dueDateText = state.dueDateText,
+                    dueDateText = dueDateState.dueDateText,
                     dueDateStatus = state.currentIssue.dueDateStatus,
-                    isLoading = state.isDueDateLoading,
+                    isLoading = dueDateState.isDueDateLoading,
                     dueDate = state.currentIssue.dueDate,
                     setIsDueDatePickerVisible = { value ->
-                        state.setIsDueDatePickerVisible(value)
+                        dueDateState.setDueDateDatePickerVisibility(value)
                     },
                     setDueDate = { value ->
                         state.setDueDate(value)

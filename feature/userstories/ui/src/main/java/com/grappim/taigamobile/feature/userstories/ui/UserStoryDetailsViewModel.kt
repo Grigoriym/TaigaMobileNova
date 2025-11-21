@@ -26,6 +26,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCo
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -106,7 +108,14 @@ class UserStoryDetailsViewModel @Inject constructor(
         patchDataGenerator = patchDataGenerator,
         session = session,
         workItemEditShared = workItemEditShared
-    ), WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
+    ),
+    WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
+        commonTaskType = CommonTaskType.UserStory,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemDueDateDelegate by WorkItemDueDateDelegateImpl(
         commonTaskType = CommonTaskType.UserStory,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
@@ -125,7 +134,6 @@ class UserStoryDetailsViewModel @Inject constructor(
             ),
             setDropdownMenuExpanded = ::setDropdownMenuExpanded,
             retryLoadUserStory = ::retryLoadUserStory,
-            setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setDueDate = ::setDueDate,
             onTagRemove = ::onTagRemove,
             onGoingToEditAssignees = ::onGoingToEditAssignees,
@@ -209,7 +217,6 @@ class UserStoryDetailsViewModel @Inject constructor(
                             currentUserStory = result.userStory,
                             originalUserStory = result.userStory,
                             sprint = result.sprint,
-                            dueDateText = dueDateText,
                             creator = result.creator,
                             assignees = result.assignees.toPersistentList(),
                             isAssignedToMe = result.isAssignedToMe,
@@ -230,6 +237,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                         version = result.customFields.version,
                         customFieldStateItems = customFieldsStateItems.await(),
                     )
+                    setInitialDueDate(dueDateText = dueDateText)
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -247,6 +255,15 @@ class UserStoryDetailsViewModel @Inject constructor(
         _state.update {
             it.copy(
                 error = NativeText.Empty
+            )
+        }
+    }
+
+    private fun emitError(error: Throwable) {
+        Timber.e(error)
+        _state.update {
+            it.copy(
+                error = getErrorMessage(error),
             )
         }
     }
@@ -791,57 +808,32 @@ class UserStoryDetailsViewModel @Inject constructor(
 
     private fun setDueDate(newDate: Long?) {
         viewModelScope.launch {
-            val localDate = if (newDate != null) {
-                dateTimeUtils.fromMillisToLocalDate(newDate)
-            } else {
-                null
-            }
-            val jsonLocalDate = if (localDate != null) {
-                dateTimeUtils.parseLocalDateToString(localDate)
-            } else {
-                null
-            }
-
-            patchData(
-                payload = patchDataGenerator.getDueDatePatchPayload(jsonLocalDate),
+            handleDueDateSave(
+                newDate = newDate,
+                workItemId = currentUserStory.id,
+                version = currentUserStory.version,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            isDueDateLoading = true
-                        )
-                    }
+                    clearError()
                 },
-                doOnSuccess = { data: PatchedData, userStory: UserStory ->
-                    val updatedUserStory = userStory.copy(
-                        dueDate = localDate,
-                        dueDateStatus = data.dueDateStatus
+                doOnSuccess = { result ->
+                    val updatedUserStory = currentUserStory.copy(
+                        dueDate = result.dueDate,
+                        dueDateStatus = result.patchedData.dueDateStatus,
+                        version = result.patchedData.newVersion
                     )
 
-                    _state.update { currentState ->
-                        currentState.copy(
-                            currentUserStory = updatedUserStory,
-                            originalUserStory = updatedUserStory,
-                            dueDateText = dateTimeUtils.getDueDateText(localDate),
-                            isDueDateLoading = false
-                        )
-                    }
-                },
-                doOnError = { error ->
                     _state.update {
                         it.copy(
-                            error = getErrorMessage(error),
-                            isDueDateLoading = false
+                            currentUserStory = updatedUserStory,
+                            originalUserStory = updatedUserStory,
                         )
                     }
+
+                },
+                doOnError = { error ->
+                    emitError(error)
                 }
             )
-        }
-    }
-
-    private fun setDueDateDatePickerVisibility(isVisible: Boolean) {
-        _state.update {
-            it.copy(isDueDateDatePickerVisible = isVisible)
         }
     }
 

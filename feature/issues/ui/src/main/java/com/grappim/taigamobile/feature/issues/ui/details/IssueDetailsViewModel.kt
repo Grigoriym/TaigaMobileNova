@@ -27,6 +27,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCo
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -107,7 +109,14 @@ class IssueDetailsViewModel @Inject constructor(
         patchDataGenerator = patchDataGenerator,
         session = session,
         workItemEditShared = workItemEditShared
-    ), WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
+    ),
+    WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemDueDateDelegate by WorkItemDueDateDelegateImpl(
         commonTaskType = CommonTaskType.Issue,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
@@ -126,7 +135,6 @@ class IssueDetailsViewModel @Inject constructor(
                 id = RString.issue_slug,
                 args = listOf(ref)
             ),
-            setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
             onCustomFieldSave = ::onCustomFieldSave,
             onTagRemove = ::onTagRemove,
@@ -257,13 +265,15 @@ class IssueDetailsViewModel @Inject constructor(
                         priorityUi = priorityUi,
                         filtersData = result.filtersData
                     )
+                    val dueDateText = dateTimeUtils.getDueDateText(
+                        dueDate = result.issueTask.dueDate
+                    )
                     _state.update {
                         it.copy(
                             isLoading = false,
                             currentIssue = result.issueTask,
                             originalIssue = result.issueTask,
                             sprint = sprint,
-                            dueDateText = dateTimeUtils.getDueDateText(result.issueTask.dueDate),
                             creator = result.creator,
                             assignees = result.assignees.toPersistentList(),
                             isAssignedToMe = result.isAssignedToMe,
@@ -285,6 +295,7 @@ class IssueDetailsViewModel @Inject constructor(
                         version = result.customFields.version,
                         customFieldStateItems = customFieldsStateItems.await(),
                     )
+                    setInitialDueDate(dueDateText = dueDateText)
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -302,6 +313,15 @@ class IssueDetailsViewModel @Inject constructor(
         _state.update {
             it.copy(
                 error = NativeText.Empty
+            )
+        }
+    }
+
+    private fun emitError(error: Throwable) {
+        Timber.e(error)
+        _state.update {
+            it.copy(
+                error = getErrorMessage(error),
             )
         }
     }
@@ -646,49 +666,30 @@ class IssueDetailsViewModel @Inject constructor(
 
     private fun setDueDate(newDate: Long?) {
         viewModelScope.launch {
-            val localDate = if (newDate != null) {
-                dateTimeUtils.fromMillisToLocalDate(newDate)
-            } else {
-                null
-            }
-            val jsonLocalDate = if (localDate != null) {
-                dateTimeUtils.parseLocalDateToString(localDate)
-            } else {
-                null
-            }
-
-            patchData(
-                payload = patchDataGenerator.getDueDatePatchPayload(jsonLocalDate),
+            handleDueDateSave(
+                newDate = newDate,
+                workItemId = currentIssue.id,
+                version = currentIssue.version,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            isDueDateLoading = true
-                        )
-                    }
+                    clearError()
                 },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
-                    val updatedIssue = task.copy(
-                        dueDate = localDate,
-                        dueDateStatus = data.dueDateStatus
+                doOnSuccess = { result ->
+                    val updatedIssue = currentIssue.copy(
+                        dueDate = result.dueDate,
+                        dueDateStatus = result.patchedData.dueDateStatus,
+                        version = result.patchedData.newVersion
                     )
 
-                    _state.update { currentState ->
-                        currentState.copy(
-                            currentIssue = updatedIssue,
-                            originalIssue = updatedIssue,
-                            dueDateText = dateTimeUtils.getDueDateText(localDate),
-                            isDueDateLoading = false
-                        )
-                    }
-                },
-                doOnError = { error ->
                     _state.update {
                         it.copy(
-                            error = getErrorMessage(error),
-                            isDueDateLoading = false
+                            currentIssue = updatedIssue,
+                            originalIssue = updatedIssue,
                         )
                     }
+
+                },
+                doOnError = { error ->
+                    emitError(error)
                 }
             )
         }
@@ -900,12 +901,6 @@ class IssueDetailsViewModel @Inject constructor(
     private fun setIsRemoveAssigneeDialogVisible(isVisible: Boolean) {
         _state.update {
             it.copy(isRemoveAssigneeDialogVisible = isVisible)
-        }
-    }
-
-    private fun setDueDateDatePickerVisibility(isVisible: Boolean) {
-        _state.update {
-            it.copy(isDueDateDatePickerVisible = isVisible)
         }
     }
 

@@ -50,11 +50,7 @@ data class IssueDetailsState(
     val isDropdownMenuExpanded: Boolean = false,
     val setDropdownMenuExpanded: (Boolean) -> Unit,
 
-    val isDueDateDatePickerVisible: Boolean = false,
-    val setIsDueDatePickerVisible: (Boolean) -> Unit = {},
     val setDueDate: (Long?) -> Unit = {},
-    val isDueDateLoading: Boolean = false,
-    val dueDateText: NativeText = NativeText.Empty,
 
     val creator: User? = null,
 

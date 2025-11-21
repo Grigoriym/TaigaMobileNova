@@ -27,7 +27,6 @@ import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
-import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
@@ -54,7 +53,6 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val attachmentMapper: AttachmentMapper,
     private val workItemApi: WorkItemApi,
     private val customFieldsMapper: CustomFieldsMapper,
-    private val patchedDataMapper: PatchedDataMapper,
     private val workItemRepository: WorkItemRepository
 ) : UserStoriesRepository {
     private var userStoriesPagingSource: UserStoriesPagingSource? = null

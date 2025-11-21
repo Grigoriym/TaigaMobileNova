@@ -2,7 +2,6 @@ package com.grappim.taigamobile.feature.issues.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
@@ -27,18 +26,6 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val usersRepository: UsersRepository,
     private val filtersRepository: FiltersRepository
 ) {
-
-    suspend fun patchCustomAttributes(
-        version: Long,
-        issueId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): Result<PatchedCustomAttributes> = resultOf {
-        issuesRepository.patchCustomAttributes(
-            version = version,
-            issueId = issueId,
-            payload = payload
-        )
-    }
 
     suspend fun deleteIssue(id: Long) = resultOf {
         issuesRepository.deleteIssue(id)

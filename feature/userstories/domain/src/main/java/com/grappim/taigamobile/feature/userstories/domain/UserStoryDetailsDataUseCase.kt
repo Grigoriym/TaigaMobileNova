@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.userstories.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
@@ -90,18 +89,6 @@ class UserStoryDetailsDataUseCase @Inject constructor(
         payload: ImmutableMap<String, Any?>
     ): Result<PatchedData> = resultOf {
         userStoriesRepository.patchData(
-            version = version,
-            userStoryId = userStoryId,
-            payload = payload
-        )
-    }
-
-    suspend fun patchCustomAttributes(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): Result<PatchedCustomAttributes> = resultOf {
-        userStoriesRepository.patchCustomAttributes(
             version = version,
             userStoryId = userStoryId,
             payload = payload
