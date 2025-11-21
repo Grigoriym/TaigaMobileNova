@@ -10,7 +10,6 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -31,6 +30,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCo
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
@@ -57,7 +58,6 @@ import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -149,6 +149,11 @@ class IssueDetailsViewModel @Inject constructor(
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
         workItemEditShared = workItemEditShared
+    ),
+    WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -308,6 +313,7 @@ class IssueDetailsViewModel @Inject constructor(
                         assignees = result.assignees.toPersistentList(),
                         isAssignedToMe = result.isAssignedToMe
                     )
+                    setInitialDescription(result.issueTask.description)
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -422,7 +428,7 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
+    private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
             TeamMemberUpdate.Clear -> {}
             is TeamMemberUpdate.Assignees -> {}
@@ -677,63 +683,30 @@ class IssueDetailsViewModel @Inject constructor(
         )
     }
 
-    private suspend fun patchData(
-        payload: ImmutableMap<String, Any?>,
-        doOnPreExecute: (() -> Unit)? = null,
-        doOnSuccess: (PatchedData, IssueTask) -> Unit,
-        doOnError: (Throwable) -> Unit
-    ) {
-        val currentIssue = _state.value.currentIssue ?: return
+    private suspend fun onNewDescriptionUpdate(newDescription: String) {
+        handleDescriptionUpdate(
+            version = currentIssue.version,
+            workItemId = currentIssue.id,
+            newDescription = newDescription,
+            doOnPreExecute = {
+                clearError()
+            },
+            doOnError = { error ->
+                emitError(error)
+            },
+            doOnSuccess = { version ->
+                updateVersion(version)
 
-        doOnPreExecute?.invoke()
+                val updatedIssue = currentIssue.copy(description = newDescription)
 
-        issueDetailsDataUseCase.patchData(
-            issueId = currentIssue.id,
-            payload = payload,
-            version = currentIssue.version
-        ).onSuccess { result ->
-            val updatedIssue = currentIssue.copy(
-                version = result.newVersion
-            )
-            updateVersion(result.newVersion)
-
-            doOnSuccess(result, updatedIssue)
-        }.onFailure { error ->
-            Timber.e(error)
-            doOnError(error)
-        }
-    }
-
-    private fun onNewDescriptionUpdate(newDescription: String) {
-        viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getDescriptionPatchPayload(newDescription),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(error = NativeText.Empty, isLoading = true)
-                    }
-                },
-                doOnSuccess = { _, issue ->
-                    val updatedIssue = issue.copy(description = newDescription)
-
-                    _state.update { currentState ->
-                        currentState.copy(
-                            isLoading = false,
-                            currentIssue = updatedIssue,
-                            originalIssue = updatedIssue
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    emitError(error)
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                        )
-                    }
+                _state.update { currentState ->
+                    currentState.copy(
+                        currentIssue = updatedIssue,
+                        originalIssue = updatedIssue
+                    )
                 }
-            )
-        }
+            }
+        )
     }
 
     private fun onBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {

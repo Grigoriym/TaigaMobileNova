@@ -4,6 +4,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -12,12 +13,14 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 
 @Composable
 fun WorkItemDescriptionWidget(
     currentDescription: String?,
     onDescriptionClick: () -> Unit,
+    isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -47,6 +50,10 @@ fun WorkItemDescriptionWidget(
                 color = MaterialTheme.colorScheme.outline,
                 style = MaterialTheme.typography.bodyLarge
             )
+        }
+
+        if (isLoading) {
+            CircularLoaderWidget(modifier = Modifier.size(40.dp))
         }
 
         TaigaHeightSpacer(8.dp)

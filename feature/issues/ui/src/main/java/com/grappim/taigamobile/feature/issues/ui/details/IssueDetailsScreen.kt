@@ -28,6 +28,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
@@ -86,6 +87,7 @@ fun IssueDetailsScreen(
     val dueDateState by viewModel.dueDateState.collectAsStateWithLifecycle()
     val blockState by viewModel.blockState.collectAsStateWithLifecycle()
     val assigneesState by viewModel.singleAssigneeState.collectAsStateWithLifecycle()
+    val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -231,6 +233,7 @@ fun IssueDetailsScreen(
             customFieldsState = customFieldsState,
             dueDateState = dueDateState,
             assigneesState = assigneesState,
+            descriptionState = descriptionState,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -252,6 +255,7 @@ private fun IssueDetailsScreenContent(
     customFieldsState: WorkItemCustomFieldsState,
     dueDateState: WorkItemDueDateState,
     assigneesState: WorkItemSingleAssigneeState,
+    descriptionState: WorkItemDescriptionState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
@@ -298,7 +302,8 @@ private fun IssueDetailsScreenContent(
                     currentDescription = state.currentIssue.description,
                     onDescriptionClick = {
                         goToEditDescription(state.currentIssue.description)
-                    }
+                    },
+                    isLoading = descriptionState.isDescriptionLoading
                 )
 
                 WorkItemTagsWidget(

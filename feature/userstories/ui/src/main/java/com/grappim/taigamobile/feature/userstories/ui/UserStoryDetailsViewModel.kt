@@ -8,7 +8,6 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -29,6 +28,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCo
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
@@ -55,7 +56,6 @@ import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.async
@@ -147,6 +147,11 @@ class UserStoryDetailsViewModel @Inject constructor(
         usersRepository = usersRepository,
         workItemEditShared = workItemEditShared,
         session = session
+    ),
+    WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
+        commonTaskType = CommonTaskType.UserStory,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ) {
 
     private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
@@ -263,6 +268,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                         assignees = result.assignees.toPersistentList(),
                         isAssignedToMe = result.isAssignedToMe
                     )
+                    setInitialDescription(result.userStory.description)
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -630,7 +636,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
+    private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
             TeamMemberUpdate.Clear -> {}
             is TeamMemberUpdate.Assignee -> {}
@@ -644,35 +650,30 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onNewDescriptionUpdate(newDescription: String) {
-        viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getDescriptionPatchPayload(newDescription),
-                doOnPreExecute = {
-                    clearError()
-                    _state.update {
-                        it.copy(isLoading = true)
-                    }
-                },
-                doOnSuccess = { _, issue ->
-                    val updatedUserStory = issue.copy(description = newDescription)
+    private suspend fun onNewDescriptionUpdate(newDescription: String) {
+        handleDescriptionUpdate(
+            version = currentUserStory.version,
+            workItemId = currentUserStory.id,
+            newDescription = newDescription,
+            doOnPreExecute = {
+                clearError()
+            },
+            doOnError = { error ->
+                emitError(error)
+            },
+            doOnSuccess = { version ->
+                updateVersion(version)
 
-                    _state.update { currentState ->
-                        currentState.copy(
-                            isLoading = false,
-                            currentUserStory = updatedUserStory,
-                            originalUserStory = updatedUserStory
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    emitError(error)
-                    _state.update {
-                        it.copy(isLoading = false)
-                    }
+                val updatedUserStory = currentUserStory.copy(description = newDescription)
+
+                _state.update { currentState ->
+                    currentState.copy(
+                        currentUserStory = updatedUserStory,
+                        originalUserStory = updatedUserStory
+                    )
                 }
-            )
-        }
+            }
+        )
     }
 
     private fun retryLoadUserStory() {
@@ -682,31 +683,6 @@ class UserStoryDetailsViewModel @Inject constructor(
     private fun setDropdownMenuExpanded(isExpanded: Boolean) {
         _state.update {
             it.copy(isDropdownMenuExpanded = isExpanded)
-        }
-    }
-
-    private suspend fun patchData(
-        payload: ImmutableMap<String, Any?>,
-        doOnPreExecute: (() -> Unit)? = null,
-        doOnSuccess: (PatchedData, UserStory) -> Unit,
-        doOnError: (Throwable) -> Unit
-    ) {
-        doOnPreExecute?.invoke()
-
-        userStoryDetailsDataUseCase.patchData(
-            userStoryId = currentUserStory.id,
-            payload = payload,
-            version = currentUserStory.version
-        ).onSuccess { result ->
-            updateVersion(result.newVersion)
-            val updatedUserStory = currentUserStory.copy(
-                version = result.newVersion
-            )
-
-            doOnSuccess(result, updatedUserStory)
-        }.onFailure { error ->
-            Timber.e(error)
-            doOnError(error)
         }
     }
 
