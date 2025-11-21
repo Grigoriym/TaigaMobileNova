@@ -5,7 +5,7 @@ The previous author archived the project. I have since updated it to be ready fo
 Kotlin, Jetpack Compose, Coroutines and all that basic stuff.
 Ktlint, Detekt, Codacy, Codecov, Renovate, and CI are in place
 
-[I create a board to monitor tasks](https://tasks.gregstuff.click/project/taigamobilenova/kanban)
+[I created a board to monitor tasks](https://tasks.gregstuff.click/project/taigamobilenova/kanban)
 
 # TaigaMobile
 
