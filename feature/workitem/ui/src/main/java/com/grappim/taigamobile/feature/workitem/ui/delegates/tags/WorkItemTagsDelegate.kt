@@ -9,10 +9,26 @@ interface WorkItemTagsDelegate {
     val tagsState: StateFlow<WorkItemTagsState>
 
     fun setInitialTags(tags: PersistentList<TagUI>)
-    fun handleTagRemove(tag: TagUI, onRemoveTagFromBackend: () -> Unit)
-    fun handleNewTagsUpdate(newTags: PersistentList<TagUI>, onUpdateTagsToBackend: () -> Unit)
-    fun onTagsUpdateSuccess(newTags: PersistentList<TagUI>)
-    fun onTagsUpdateError()
+
+    suspend fun handleTagRemove(
+        tag: TagUI,
+        version: Long,
+        workItemId: Long,
+        doOnPreExecute: (() -> Unit)? = null,
+        doOnSuccess: ((Long) -> Unit)? = null,
+        doOnError: (Throwable) -> Unit
+    )
+
+    suspend fun handleTagsUpdate(
+        newTags: PersistentList<TagUI>,
+        version: Long,
+        workItemId: Long,
+        doOnPreExecute: (() -> Unit)? = null,
+        doOnSuccess: ((Long) -> Unit)? = null,
+        doOnError: (Throwable) -> Unit
+    )
+
+    fun onGoingToEditTags()
 }
 
 data class WorkItemTagsState(

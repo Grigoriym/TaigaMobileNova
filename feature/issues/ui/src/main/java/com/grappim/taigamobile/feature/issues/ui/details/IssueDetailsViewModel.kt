@@ -55,7 +55,6 @@ import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
-import com.grappim.taigamobile.utils.ui.toHex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -102,7 +101,12 @@ class IssueDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared),
+    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        workItemEditShared = workItemEditShared
+    ),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         commonTaskType = CommonTaskType.Issue,
         historyRepository = historyRepository,
@@ -636,41 +640,39 @@ class IssueDetailsViewModel @Inject constructor(
     }
 
     private fun onTagRemove(tag: TagUI) {
-        val currentTags = tagsState.value.tags
-        val newTagsToUse = currentTags.removeAll { it.name == tag.name }
-
-        handleTagRemove(
-            tag = tag,
-            onRemoveTagFromBackend = {
-                patchTagsToBackend(newTagsToUse)
-            }
-        )
-    }
-
-    private fun patchTagsToBackend(newTags: PersistentList<TagUI>) {
         viewModelScope.launch {
-            val preparedTags = newTags.map { tag ->
-                listOf(tag.name, tag.color.toHex())
+            viewModelScope.launch {
+                handleTagRemove(
+                    tag = tag,
+                    version = currentIssue.version,
+                    workItemId = currentIssue.id,
+                    doOnPreExecute = {
+                        clearError()
+                    },
+                    doOnError = { error ->
+                        emitError(error)
+                    },
+                    doOnSuccess = { version ->
+                        updateVersion(version)
+                    }
+                )
             }
-
-            patchData(
-                payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
-                doOnSuccess = { _, _ ->
-                    onTagsUpdateSuccess(newTags)
-                },
-                doOnError = { error ->
-                    onTagsUpdateError()
-                    emitError(error)
-                }
-            )
         }
     }
 
-    private fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
-        handleNewTagsUpdate(
+    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
+        handleTagsUpdate(
             newTags = newTagsToUse,
-            onUpdateTagsToBackend = {
-                patchTagsToBackend(newTagsToUse)
+            version = currentIssue.version,
+            workItemId = currentIssue.id,
+            doOnPreExecute = {
+                clearError()
+            },
+            doOnError = { error ->
+                emitError(error)
+            },
+            doOnSuccess = { version ->
+                updateVersion(version)
             }
         )
     }
