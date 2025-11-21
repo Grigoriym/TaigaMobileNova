@@ -97,7 +97,11 @@ class IssueDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
     WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         commonTaskType = CommonTaskType.Issue,
@@ -173,7 +177,7 @@ class IssueDetailsViewModel @Inject constructor(
             removeAssignee = ::removeAssignee,
             retryLoadIssue = ::retryLoadIssue,
             onTitleSave = ::onTitleSave,
-            onBadgeSave = ::handleBadgeSave,
+            onBadgeSave = ::onBadgeSave,
         )
     )
     val state = _state.asStateFlow()
@@ -216,15 +220,6 @@ class IssueDetailsViewModel @Inject constructor(
                 }
             )
         }
-    }
-
-    private fun handleBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
-        onBadgeSave(
-            type = type,
-            onSaveBadgeToBackend = {
-                onBadgeSheetItemClick(type, item)
-            }
-        )
     }
 
     private fun retryLoadIssue() {
@@ -739,19 +734,21 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onBadgeSheetItemClick(type: SelectableWorkItemBadgeState, item: StatusUI) {
+    private fun onBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
         viewModelScope.launch {
-            patchData(
-                payload = getBadgePatchPayload(type, item),
+            handleBadgeSave(
+                type = type,
+                item = item,
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
                 doOnPreExecute = {
                     clearError()
                 },
-                doOnSuccess = { _: PatchedData, _: IssueTask ->
-                    onBadgeSaveSuccess(type, item)
-                },
                 doOnError = { error ->
                     emitError(error)
-                    onBadgeSaveError()
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
             )
         }

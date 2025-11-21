@@ -94,7 +94,11 @@ class UserStoryDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
+        commonTaskType = CommonTaskType.UserStory,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
     WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         historyRepository = historyRepository,
@@ -169,7 +173,7 @@ class UserStoryDetailsViewModel @Inject constructor(
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
-            onBadgeSave = ::handleBadgeSave
+            onBadgeSave = ::onBadgeSave
         )
     )
     val state = _state.asStateFlow()
@@ -602,28 +606,21 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun handleBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
-        onBadgeSave(
-            type = type,
-            onSaveBadgeToBackend = {
-                onBadgeSheetItemClick(type, item)
-            }
-        )
-    }
-
-    private fun onBadgeSheetItemClick(type: SelectableWorkItemBadgeState, item: StatusUI) {
+    private fun onBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
         viewModelScope.launch {
-            patchData(
-                payload = getBadgePatchPayload(type, item),
+            handleBadgeSave(
+                type = type,
+                item = item,
+                version = currentUserStory.version,
+                workItemId = currentUserStory.id,
                 doOnPreExecute = {
                     clearError()
                 },
-                doOnSuccess = { _: PatchedData, _: UserStory ->
-                    onBadgeSaveSuccess(type, item)
-                },
                 doOnError = { error ->
-                    onBadgeSaveError()
                     emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
             )
         }
