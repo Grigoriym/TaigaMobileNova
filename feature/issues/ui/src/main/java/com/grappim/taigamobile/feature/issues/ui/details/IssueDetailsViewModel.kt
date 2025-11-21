@@ -23,6 +23,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
@@ -121,6 +123,11 @@ class IssueDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -140,7 +147,6 @@ class IssueDetailsViewModel @Inject constructor(
             onTagRemove = ::onTagRemove,
             setDueDate = ::setDueDate,
             onBlockToggle = ::onBlockToggle,
-            setIsBlockDialogVisible = ::setIsBlockDialogVisible,
             setIsDeleteDialogVisible = ::setIsDeleteDialogVisible,
             onDelete = ::doOnDelete,
             onAttachmentRemove = ::onAttachmentRemove,
@@ -627,40 +633,41 @@ class IssueDetailsViewModel @Inject constructor(
 
     private fun onBlockToggle(isBlocked: Boolean, blockNote: String?) {
         viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getBlockedPatchPayload(isBlocked, blockNote),
+            handleBlockToggle(
+                isBlocked = isBlocked,
+                blockNote = blockNote,
+                workItemId = currentIssue.id,
+                version = currentIssue.version,
                 doOnPreExecute = {
+                    clearError()
                     _state.update {
                         it.copy(
                             isLoading = true
                         )
                     }
                 },
-                doOnSuccess = { _: PatchedData, task: IssueTask ->
-                    val updatedIssue = task.copy(blockedNote = blockNote)
+                doOnError = { error ->
+                    emitError(error)
                     _state.update {
                         it.copy(
-                            currentIssue = updatedIssue,
-                            originalIssue = updatedIssue,
                             isLoading = false
                         )
                     }
                 },
-                doOnError = { error ->
+                doOnSuccess = { result ->
+                    val patchedIssue = currentIssue.copy(
+                        blockedNote = result.blockNote,
+                        version = result.patchedData.newVersion
+                    )
                     _state.update {
                         it.copy(
-                            error = getErrorMessage(error),
+                            currentIssue = patchedIssue,
+                            originalIssue = patchedIssue,
                             isLoading = false
                         )
                     }
                 }
             )
-        }
-    }
-
-    private fun setIsBlockDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isBlockDialogVisible = isVisible)
         }
     }
 

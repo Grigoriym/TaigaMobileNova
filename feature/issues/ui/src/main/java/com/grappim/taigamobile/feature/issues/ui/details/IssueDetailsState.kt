@@ -74,8 +74,6 @@ data class IssueDetailsState(
     val onTagRemove: (TagUI) -> Unit,
 
     val onBlockToggle: (isBlocked: Boolean, blockNote: String?) -> Unit,
-    val isBlockDialogVisible: Boolean = false,
-    val setIsBlockDialogVisible: (Boolean) -> Unit = {},
 
     val setIsDeleteDialogVisible: (Boolean) -> Unit = {},
     val isDeleteDialogVisible: Boolean = false,

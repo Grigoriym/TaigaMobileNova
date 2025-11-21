@@ -83,6 +83,7 @@ fun IssueDetailsScreen(
     val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
     val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
     val dueDateState by viewModel.dueDateState.collectAsStateWithLifecycle()
+    val blockState by viewModel.blockState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -145,7 +146,7 @@ fun IssueDetailsScreen(
         },
         isBlocked = state.currentIssue?.blockedNote != null,
         setBlockDialogVisible = {
-            state.setIsBlockDialogVisible(it)
+            blockState.setIsBlockDialogVisible(it)
         },
         doOnUnblock = {
             state.onBlockToggle(false, null)
@@ -155,13 +156,13 @@ fun IssueDetailsScreen(
     TaigaLoadingDialog(isVisible = state.isLoading)
 
     BlockDialog(
-        isVisible = state.isBlockDialogVisible,
+        isVisible = blockState.isBlockDialogVisible,
         onConfirm = { blockNote ->
             state.onBlockToggle(true, blockNote)
-            state.setIsBlockDialogVisible(false)
+            blockState.setIsBlockDialogVisible(false)
         },
         onDismiss = {
-            state.setIsBlockDialogVisible(false)
+            blockState.setIsBlockDialogVisible(false)
         }
     )
 
