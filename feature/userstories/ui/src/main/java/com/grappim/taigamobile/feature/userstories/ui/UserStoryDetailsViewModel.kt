@@ -89,7 +89,11 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val taigaStorage: TaigaStorage,
     private val usersRepository: UsersRepository
 ) : ViewModel(),
-    WorkItemTitleDelegate by WorkItemTitleDelegateImpl(),
+    WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
+        commonTaskType = CommonTaskType.UserStory,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(patchDataGenerator),
     WorkItemTagsDelegate by WorkItemTagsDelegateImpl(workItemEditShared),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
@@ -164,7 +168,7 @@ class UserStoryDetailsViewModel @Inject constructor(
             onAttachmentAdd = ::onAttachmentAdd,
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
-            onTitleSave = ::handleTitleSave,
+            onTitleSave = ::onTitleSave,
             onBadgeSave = ::handleBadgeSave
         )
     )
@@ -293,24 +297,19 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun handleTitleSave() {
-        onTitleSave(onSaveTitleToBackend = ::saveTitleToBackend)
-    }
-
-    private fun saveTitleToBackend() {
-        val currentTitle = titleState.value.currentTitle
-
+    private fun onTitleSave() {
         viewModelScope.launch {
-            val patchableData = patchDataGenerator.getTitle(currentTitle)
-
-            patchData(
-                payload = patchableData,
-                doOnSuccess = { _: PatchedData, _: UserStory ->
-                    onTitleSaveSuccess()
+            handleTitleSave(
+                version = currentUserStory.version,
+                workItemId = currentUserStory.id,
+                doOnPreExecute = {
+                    clearError()
                 },
                 doOnError = { error ->
                     Timber.e(error)
-                    onTitleError(getErrorMessage(error))
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
             )
         }
