@@ -323,27 +323,13 @@ class UserStoryDetailsViewModel @Inject constructor(
                 id = currentUserStory.id,
                 comment = newComment,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(error = NativeText.Empty)
-                    }
+                    clearError()
                 },
                 doOnSuccess = { result ->
-                    val updatedUserStory = currentUserStory.copy(
-                        version = result.newVersion
-                    )
-
-                    _state.update {
-                        it.copy(
-                            currentUserStory = updatedUserStory,
-                            originalUserStory = updatedUserStory
-                        )
-                    }
+                    updateVersion(result.newVersion)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(error = getErrorMessage(error))
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -355,15 +341,10 @@ class UserStoryDetailsViewModel @Inject constructor(
                 id = currentUserStory.id,
                 commentId = comment.id,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(error = NativeText.Empty)
-                    }
+                    clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(error = getErrorMessage(error))
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -384,19 +365,10 @@ class UserStoryDetailsViewModel @Inject constructor(
                 workItemId = currentUserStory.id,
                 uri = uri,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty
-                        )
-                    }
+                    clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -407,19 +379,10 @@ class UserStoryDetailsViewModel @Inject constructor(
             handleRemoveAttachment(
                 attachment = attachment,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty
-                        )
-                    }
+                    clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -511,12 +474,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -592,12 +550,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     updateVersion(version)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -611,12 +564,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -630,12 +578,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -654,12 +597,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     updateVersion(version)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -679,23 +617,14 @@ class UserStoryDetailsViewModel @Inject constructor(
             patchData(
                 payload = getBadgePatchPayload(type, item),
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty
-                        )
-                    }
+                    clearError()
                 },
                 doOnSuccess = { _: PatchedData, _: UserStory ->
                     onBadgeSaveSuccess(type, item)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
                     onBadgeSaveError()
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -720,8 +649,9 @@ class UserStoryDetailsViewModel @Inject constructor(
             patchData(
                 payload = patchDataGenerator.getDescriptionPatchPayload(newDescription),
                 doOnPreExecute = {
+                    clearError()
                     _state.update {
-                        it.copy(error = NativeText.Empty, isLoading = true)
+                        it.copy(isLoading = true)
                     }
                 },
                 doOnSuccess = { _, issue ->
@@ -736,11 +666,9 @@ class UserStoryDetailsViewModel @Inject constructor(
                     }
                 },
                 doOnError = { error ->
+                    emitError(error)
                     _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = getErrorMessage(error)
-                        )
+                        it.copy(isLoading = false)
                     }
                 }
             )
@@ -770,15 +698,10 @@ class UserStoryDetailsViewModel @Inject constructor(
             payload = payload,
             version = currentUserStory.version
         ).onSuccess { result ->
+            updateVersion(result.newVersion)
             val updatedUserStory = currentUserStory.copy(
                 version = result.newVersion
             )
-            _state.update {
-                it.copy(
-                    currentUserStory = updatedUserStory,
-                    originalUserStory = updatedUserStory
-                )
-            }
 
             doOnSuccess(result, updatedUserStory)
         }.onFailure { error ->
@@ -851,11 +774,8 @@ class UserStoryDetailsViewModel @Inject constructor(
                     onTagsUpdateSuccess(newTags)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
                     onTagsUpdateError()
-                    _state.update {
-                        it.copy(error = getErrorMessage(error))
-                    }
+                    emitError(error)
                 }
             )
         }

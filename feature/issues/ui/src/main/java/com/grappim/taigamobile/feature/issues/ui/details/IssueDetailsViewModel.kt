@@ -385,12 +385,7 @@ class IssueDetailsViewModel @Inject constructor(
                     clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -404,12 +399,7 @@ class IssueDetailsViewModel @Inject constructor(
                     clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -428,12 +418,7 @@ class IssueDetailsViewModel @Inject constructor(
                     updateVersion(version)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -522,18 +507,13 @@ class IssueDetailsViewModel @Inject constructor(
                 id = currentIssue.id,
                 comment = newComment,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(error = NativeText.Empty)
-                    }
+                    clearError()
                 },
                 doOnSuccess = { result ->
                     updateVersion(result.newVersion)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(error = getErrorMessage(error))
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -545,15 +525,10 @@ class IssueDetailsViewModel @Inject constructor(
                 id = currentIssue.id,
                 commentId = comment.id,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(error = NativeText.Empty)
-                    }
+                    clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(error = getErrorMessage(error))
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -690,11 +665,8 @@ class IssueDetailsViewModel @Inject constructor(
                     onTagsUpdateSuccess(newTags)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
                     onTagsUpdateError()
-                    _state.update {
-                        it.copy(error = getErrorMessage(error))
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -727,12 +699,7 @@ class IssueDetailsViewModel @Inject constructor(
             val updatedIssue = currentIssue.copy(
                 version = result.newVersion
             )
-            _state.update {
-                it.copy(
-                    currentIssue = updatedIssue,
-                    originalIssue = updatedIssue
-                )
-            }
+            updateVersion(result.newVersion)
 
             doOnSuccess(result, updatedIssue)
         }.onFailure { error ->
@@ -762,10 +729,10 @@ class IssueDetailsViewModel @Inject constructor(
                     }
                 },
                 doOnError = { error ->
+                    emitError(error)
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            error = getErrorMessage(error)
                         )
                     }
                 }
@@ -778,23 +745,14 @@ class IssueDetailsViewModel @Inject constructor(
             patchData(
                 payload = getBadgePatchPayload(type, item),
                 doOnPreExecute = {
-                    _state.update { currentState ->
-                        currentState.copy(
-                            error = NativeText.Empty
-                        )
-                    }
+                    clearError()
                 },
                 doOnSuccess = { _: PatchedData, _: IssueTask ->
                     onBadgeSaveSuccess(type, item)
                 },
                 doOnError = { error ->
-                    Timber.e(error)
+                    emitError(error)
                     onBadgeSaveError()
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
                 }
             )
         }
@@ -810,12 +768,7 @@ class IssueDetailsViewModel @Inject constructor(
                     clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -839,12 +792,7 @@ class IssueDetailsViewModel @Inject constructor(
                     clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
@@ -858,22 +806,11 @@ class IssueDetailsViewModel @Inject constructor(
                     clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
     }
-
-//    private fun setIsRemoveAssigneeDialogVisible(isVisible: Boolean) {
-//        _state.update {
-//            it.copy(isRemoveAssigneeDialogVisible = isVisible)
-//        }
-//    }
 
     private fun setDropdownMenuExpanded(isExpanded: Boolean) {
         _state.update {
