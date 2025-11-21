@@ -25,6 +25,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadge
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -42,8 +44,6 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import com.grappim.taigamobile.feature.workitem.ui.utils.getDueDateText
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
-import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.DateItemState
-import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.NumberItemState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -54,8 +54,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
@@ -68,7 +66,6 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
@@ -110,6 +107,11 @@ class IssueDetailsViewModel @Inject constructor(
         patchDataGenerator = patchDataGenerator,
         session = session,
         workItemEditShared = workItemEditShared
+    ), WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        dateTimeUtils = dateTimeUtils
     ) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -126,10 +128,7 @@ class IssueDetailsViewModel @Inject constructor(
             ),
             setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
-            onCustomFieldChange = ::onCustomFieldChange,
             onCustomFieldSave = ::onCustomFieldSave,
-            onCustomFieldEditToggle = ::onCustomFieldEditToggle,
-            setIsCustomFieldsWidgetExpanded = ::setIsCustomFieldsWidgetExpanded,
             onTagRemove = ::onTagRemove,
             setDueDate = ::setDueDate,
             onBlockToggle = ::onBlockToggle,
@@ -268,8 +267,6 @@ class IssueDetailsViewModel @Inject constructor(
                             creator = result.creator,
                             assignees = result.assignees.toPersistentList(),
                             isAssignedToMe = result.isAssignedToMe,
-                            customFieldsVersion = result.customFields.version,
-                            customFieldStateItems = customFieldsStateItems.await(),
                             filtersData = result.filtersData,
                             initialLoadError = NativeText.Empty
                         )
@@ -284,6 +281,10 @@ class IssueDetailsViewModel @Inject constructor(
                         watchers = result.watchers.toPersistentList(),
                         isWatchedByMe = result.isWatchedByMe
                     )
+                    setInitialCustomFields(
+                        version = result.customFields.version,
+                        customFieldStateItems = customFieldsStateItems.await(),
+                    )
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -297,7 +298,7 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun emptyError() {
+    private fun clearError() {
         _state.update {
             it.copy(
                 error = NativeText.Empty
@@ -337,7 +338,7 @@ class IssueDetailsViewModel @Inject constructor(
                 version = currentIssue.version,
                 workItemId = currentIssue.id,
                 doOnPreExecute = {
-                    emptyError()
+                    clearError()
                 },
                 doOnSuccess = { version ->
                     updateVersion(version)
@@ -359,7 +360,7 @@ class IssueDetailsViewModel @Inject constructor(
             handleRemoveMeFromWatchers(
                 workItemId = currentIssue.id,
                 doOnPreExecute = {
-                    emptyError()
+                    clearError()
                 },
                 doOnError = { error ->
                     Timber.e(error)
@@ -378,7 +379,7 @@ class IssueDetailsViewModel @Inject constructor(
             handleAddMeToWatchers(
                 workItemId = currentIssue.id,
                 doOnPreExecute = {
-                    emptyError()
+                    clearError()
                 },
                 doOnError = { error ->
                     Timber.e(error)
@@ -399,7 +400,7 @@ class IssueDetailsViewModel @Inject constructor(
                 workItemId = currentIssue.id,
                 newWatchers = newWatchers,
                 doOnPreExecute = {
-                    emptyError()
+                    clearError()
                 },
                 doOnSuccess = { version ->
                     updateVersion(version)
@@ -827,125 +828,24 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun setIsCustomFieldsWidgetExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(isCustomFieldsWidgetExpanded = isExpanded)
-        }
-    }
-
-    private fun onCustomFieldEditToggle(item: CustomFieldItemState) {
-        _state.update { currentState ->
-            val currentIds = _state.value.editingItemIds
-            val newIds = if (item.id in currentIds) {
-                currentIds - item.id
-            } else {
-                currentIds + item.id
-            }.toImmutableSet()
-            currentState.copy(editingItemIds = newIds)
-        }
-    }
-
-    private fun onCustomFieldSaved(newItem: CustomFieldItemState) {
-        _state.update { currentState ->
-            val updatedList = currentState.customFieldStateItems.map { item ->
-                if (item.id == newItem.id) {
-                    newItem
-                } else {
-                    item
-                }
-            }.toImmutableList()
-            currentState.copy(customFieldStateItems = updatedList)
-        }
-    }
-
-    private fun getCustomFieldValue(
-        stateItem: CustomFieldItemState,
-        takeCurrentValue: Boolean
-    ): Any? {
-        val valueToUse = if (takeCurrentValue) {
-            stateItem.currentValue
-        } else {
-            stateItem.originalValue
-        }
-        return when (stateItem) {
-            is DateItemState -> {
-                if (valueToUse != null) {
-                    dateTimeUtils.parseLocalDateToString(valueToUse as LocalDate)
-                } else {
-                    null
-                }
-            }
-
-            is NumberItemState -> {
-                valueToUse?.toString()?.toLongOrNull()
-            }
-
-            else -> valueToUse
-        }
-    }
-
     private fun onCustomFieldSave(item: CustomFieldItemState) {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    error = NativeText.Empty,
-                    isCustomFieldsLoading = true
-                )
-            }
-
-            val currentState = _state.value
-
-            val patchedData = currentState.customFieldStateItems.associateBy(
-                keySelector = { stateItem ->
-                    stateItem.id.toString()
+            handleCustomFieldSave(
+                item = item,
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
+                doOnPreExecute = {
+                    clearError()
                 },
-                valueTransform = { stateItem ->
-                    if (stateItem.id == item.id) {
-                        getCustomFieldValue(stateItem, true)
-                    } else if (stateItem.isModified) {
-                        getCustomFieldValue(stateItem, false)
-                    } else {
-                        getCustomFieldValue(stateItem, true)
+                doOnError = { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            error = getErrorMessage(error)
+                        )
                     }
                 }
             )
-
-            issueDetailsDataUseCase.patchCustomAttributes(
-                issueId = currentIssue.id,
-                version = currentState.customFieldsVersion,
-                payload = patchDataGenerator.getAttributesPatchPayload(patchedData)
-            ).onSuccess { result ->
-                onCustomFieldEditToggle(item)
-                onCustomFieldSaved(item.getSavedItem())
-                _state.update {
-                    it.copy(
-                        error = NativeText.Empty,
-                        isCustomFieldsLoading = false,
-                        customFieldsVersion = result.version
-                    )
-                }
-            }.onFailure { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isCustomFieldsLoading = false
-                    )
-                }
-            }
-        }
-    }
-
-    private fun onCustomFieldChange(updatedItem: CustomFieldItemState) {
-        _state.update { currentState ->
-            val updatedList = currentState.customFieldStateItems.map { item ->
-                if (item.id == updatedItem.id) {
-                    updatedItem
-                } else {
-                    item
-                }
-            }.toImmutableList()
-            currentState.copy(customFieldStateItems = updatedList)
         }
     }
 
@@ -964,7 +864,7 @@ class IssueDetailsViewModel @Inject constructor(
                 workItemId = currentIssue.id,
                 uri = uri,
                 doOnPreExecute = {
-                    emptyError()
+                    clearError()
                 },
                 doOnError = { error ->
                     Timber.e(error)
@@ -983,7 +883,7 @@ class IssueDetailsViewModel @Inject constructor(
             handleRemoveAttachment(
                 attachment = attachment,
                 doOnPreExecute = {
-                    emptyError()
+                    clearError()
                 },
                 doOnError = { error ->
                     Timber.e(error)

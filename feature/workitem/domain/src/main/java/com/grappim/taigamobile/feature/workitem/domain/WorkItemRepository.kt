@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.workitem.domain
 
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -13,6 +14,13 @@ interface WorkItemRepository {
         payload: ImmutableMap<String, Any?>,
         commonTaskType: CommonTaskType
     ): PatchedData
+
+    suspend fun patchCustomAttributes(
+        version: Long,
+        workItemId: Long,
+        payload: ImmutableMap<String, Any?>,
+        commonTaskType: CommonTaskType
+    ): PatchedCustomAttributes
 
     suspend fun addAttachment(
         workItemId: Long,

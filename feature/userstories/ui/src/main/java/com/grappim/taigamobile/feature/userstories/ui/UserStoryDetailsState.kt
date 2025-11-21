@@ -12,11 +12,8 @@ import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.utils.ui.NativeText
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentSetOf
 
 data class UserStoryDetailsState(
     val toolbarTitle: NativeText = NativeText.Empty,
@@ -62,15 +59,7 @@ data class UserStoryDetailsState(
     val onRemoveAssigneeClick: (User) -> Unit = {},
     val assigneeToRemove: User? = null,
 
-    val isCustomFieldsLoading: Boolean = false,
-    val customFieldStateItems: ImmutableList<CustomFieldItemState> = persistentListOf(),
-    val onCustomFieldChange: (CustomFieldItemState) -> Unit = {},
     val onCustomFieldSave: (CustomFieldItemState) -> Unit = {},
-    val customFieldsVersion: Long = 0,
-    val isCustomFieldsWidgetExpanded: Boolean = false,
-    val setIsCustomFieldsWidgetExpanded: (Boolean) -> Unit = {},
-    val onCustomFieldEditToggle: (CustomFieldItemState) -> Unit = {},
-    val editingItemIds: ImmutableSet<Long> = persistentSetOf(),
 
     val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},

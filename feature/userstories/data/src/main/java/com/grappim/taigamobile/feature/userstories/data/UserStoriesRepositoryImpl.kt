@@ -34,7 +34,6 @@ import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.fixNullColor
 import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -211,13 +210,12 @@ class UserStoriesRepositoryImpl @Inject constructor(
         userStoryId: Long,
         payload: ImmutableMap<String, Any?>
     ): PatchedCustomAttributes {
-        val editedMap = payload.toPersistentMap().put("version", version)
-        val result = workItemApi.patchCustomAttributesValues(
-            taskPath = userStoryPlural,
-            taskId = userStoryId,
-            payload = editedMap
+        return workItemRepository.patchCustomAttributes(
+            commonTaskType = CommonTaskType.UserStory,
+            workItemId = userStoryId,
+            payload = payload,
+            version = version
         )
-        return patchedDataMapper.toDomainCustomAttrs(result)
     }
 
     override suspend fun unwatchUserStory(userStoryId: Long) {

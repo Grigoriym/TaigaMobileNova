@@ -41,15 +41,7 @@ data class IssueDetailsState(
     val onCommentRemove: (Comment) -> Unit = {},
     val onCreateCommentClick: (String) -> Unit = {},
 
-    val isCustomFieldsLoading: Boolean = false,
-    val customFieldStateItems: ImmutableList<CustomFieldItemState> = persistentListOf(),
-    val onCustomFieldChange: (CustomFieldItemState) -> Unit = {},
     val onCustomFieldSave: (CustomFieldItemState) -> Unit = {},
-    val customFieldsVersion: Long = 0,
-    val isCustomFieldsWidgetExpanded: Boolean = false,
-    val setIsCustomFieldsWidgetExpanded: (Boolean) -> Unit = {},
-    val onCustomFieldEditToggle: (CustomFieldItemState) -> Unit = {},
-    val editingItemIds: ImmutableSet<Long> = persistentSetOf(),
 
     val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},

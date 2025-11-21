@@ -4,6 +4,7 @@ import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
@@ -42,6 +43,21 @@ class WorkItemRepositoryImpl @Inject constructor(
             payload = editedMap
         )
         return patchedDataMapper.toDomain(result)
+    }
+
+    override suspend fun patchCustomAttributes(
+        version: Long,
+        workItemId: Long,
+        payload: ImmutableMap<String, Any?>,
+        commonTaskType: CommonTaskType
+    ): PatchedCustomAttributes {
+        val editedMap = payload.toPersistentMap().put("version", version)
+        val result = workItemApi.patchCustomAttributesValues(
+            taskPath = WorkItemPathPlural(commonTaskType),
+            taskId = workItemId,
+            payload = editedMap
+        )
+        return patchedDataMapper.toDomainCustomAttrs(result)
     }
 
     override suspend fun addAttachment(

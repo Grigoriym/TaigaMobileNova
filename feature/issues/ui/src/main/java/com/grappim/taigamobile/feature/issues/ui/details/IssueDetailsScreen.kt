@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
@@ -79,6 +80,7 @@ fun IssueDetailsScreen(
     val commentsState by viewModel.commentsState.collectAsStateWithLifecycle()
     val attachmentState by viewModel.attachmentsState.collectAsStateWithLifecycle()
     val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
+    val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -221,6 +223,7 @@ fun IssueDetailsScreen(
             commentsState = commentsState,
             attachmentsState = attachmentState,
             watchersState = watchersState,
+            customFieldsState = customFieldsState,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -239,6 +242,7 @@ private fun IssueDetailsScreenContent(
     commentsState: WorkItemCommentsState,
     attachmentsState: WorkItemAttachmentsState,
     watchersState: WorkItemWatchersState,
+    customFieldsState: WorkItemCustomFieldsState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
@@ -350,14 +354,14 @@ private fun IssueDetailsScreenContent(
                 )
 
                 CustomFieldsSectionWidget(
-                    customFieldStateItems = state.customFieldStateItems,
-                    isCustomFieldsLoading = state.isCustomFieldsLoading,
-                    isCustomFieldsWidgetExpanded = state.isCustomFieldsWidgetExpanded,
-                    setIsCustomFieldsWidgetExpanded = state.setIsCustomFieldsWidgetExpanded,
-                    onCustomFieldChange = state.onCustomFieldChange,
+                    customFieldStateItems = customFieldsState.customFieldStateItems,
+                    isCustomFieldsLoading = customFieldsState.isCustomFieldsLoading,
+                    isCustomFieldsWidgetExpanded = customFieldsState.isCustomFieldsWidgetExpanded,
+                    setIsCustomFieldsWidgetExpanded = customFieldsState.setIsCustomFieldsWidgetExpanded,
+                    onCustomFieldChange = customFieldsState.onCustomFieldChange,
                     onCustomFieldSave = state.onCustomFieldSave,
-                    onCustomFieldEditToggle = state.onCustomFieldEditToggle,
-                    editingItemIds = state.editingItemIds
+                    onCustomFieldEditToggle = customFieldsState.onCustomFieldEditToggle,
+                    editingItemIds = customFieldsState.editingItemIds
                 )
 
                 AttachmentsSectionWidget(
