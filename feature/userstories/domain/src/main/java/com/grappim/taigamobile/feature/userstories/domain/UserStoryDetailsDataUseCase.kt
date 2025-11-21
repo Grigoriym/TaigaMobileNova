@@ -7,9 +7,6 @@ import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
-import com.grappim.taigamobile.feature.workitem.domain.AssigneesData
-import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.async
@@ -21,8 +18,7 @@ class UserStoryDetailsDataUseCase @Inject constructor(
     private val userStoriesRepository: UserStoriesRepository,
     private val historyRepository: HistoryRepository,
     private val sprintsRepository: SprintsRepository,
-    private val usersRepository: UsersRepository,
-    private val patchDataGenerator: PatchDataGenerator
+    private val usersRepository: UsersRepository
 ) {
 
     suspend fun getUserStoryData(id: Long) = resultOf {
@@ -93,31 +89,5 @@ class UserStoryDetailsDataUseCase @Inject constructor(
             userStoryId = userStoryId,
             payload = payload
         )
-    }
-
-    suspend fun updateAssigneesData(
-        version: Long,
-        userStoryId: Long,
-        assigneesList: ImmutableList<Long>
-    ) = resultOf {
-        coroutineScope {
-            val payload = patchDataGenerator.getAssignedUsersPatchPayload(
-                assignees = assigneesList
-            )
-            val patchedData = userStoriesRepository.patchData(
-                version = version,
-                userStoryId = userStoryId,
-                payload = payload
-            )
-
-            val assignees = usersRepository.getUsersList(assigneesList)
-            val isAssignedToMe = usersRepository.isAnyAssignedToMe(assignees)
-
-            AssigneesData(
-                assignees = assignees,
-                isAssignedToMe = isAssignedToMe,
-                newVersion = patchedData.newVersion
-            )
-        }
     }
 }

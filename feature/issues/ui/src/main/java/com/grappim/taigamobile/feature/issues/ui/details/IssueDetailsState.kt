@@ -54,22 +54,13 @@ data class IssueDetailsState(
 
     val creator: User? = null,
 
-    val assignees: PersistentList<User> = persistentListOf(),
-
-    val isAssigneesLoading: Boolean = false,
-    val isRemoveAssigneeDialogVisible: Boolean = false,
-    val setIsRemoveAssigneeDialogVisible: (Boolean) -> Unit = {},
-    val onRemoveAssigneeClick: () -> Unit = {},
+    val onUnassign: () -> Unit = {},
+    val onAssignToMe: () -> Unit = {},
+    val removeAssignee: () -> Unit = {},
 
     val removeWatcher: () -> Unit = {},
     val onRemoveMeFromWatchersClick: () -> Unit = {},
     val onAddMeToWatchersClick: () -> Unit = {},
-
-    val isAssignedToMe: Boolean = false,
-    val removeAssignee: () -> Unit = {},
-    val onAssignToMe: () -> Unit = {},
-    val onUnassign: () -> Unit = {},
-    val onGoingToEditAssignee: () -> Unit = {},
 
     val onTagRemove: (TagUI) -> Unit,
 

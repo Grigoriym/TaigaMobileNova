@@ -19,6 +19,8 @@ import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
@@ -128,6 +130,13 @@ class IssueDetailsViewModel @Inject constructor(
         commonTaskType = CommonTaskType.Issue,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        usersRepository = usersRepository,
+        patchDataGenerator = patchDataGenerator,
+        workItemEditShared = workItemEditShared
     ) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
@@ -142,7 +151,6 @@ class IssueDetailsViewModel @Inject constructor(
                 id = RString.issue_slug,
                 args = listOf(ref)
             ),
-            setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
             onCustomFieldSave = ::onCustomFieldSave,
             onTagRemove = ::onTagRemove,
             setDueDate = ::setDueDate,
@@ -155,12 +163,10 @@ class IssueDetailsViewModel @Inject constructor(
             onCreateCommentClick = ::createComment,
             onAssignToMe = ::onAssignToMe,
             onUnassign = ::onUnassign,
-            onGoingToEditAssignee = ::onGoingToEditAssignee,
             onRemoveMeFromWatchersClick = ::onRemoveMeFromWatchersClick,
             onAddMeToWatchersClick = ::onAddMeToWatchersClick,
             removeWatcher = ::removeWatcher,
             removeAssignee = ::removeAssignee,
-            onRemoveAssigneeClick = ::onRemoveAssigneeClick,
             retryLoadIssue = ::retryLoadIssue,
             onTitleSave = ::handleTitleSave,
             onBadgeSave = ::handleBadgeSave,
@@ -281,8 +287,6 @@ class IssueDetailsViewModel @Inject constructor(
                             originalIssue = result.issueTask,
                             sprint = sprint,
                             creator = result.creator,
-                            assignees = result.assignees.toPersistentList(),
-                            isAssignedToMe = result.isAssignedToMe,
                             filtersData = result.filtersData,
                             initialLoadError = NativeText.Empty
                         )
@@ -302,6 +306,10 @@ class IssueDetailsViewModel @Inject constructor(
                         customFieldStateItems = customFieldsStateItems.await(),
                     )
                     setInitialDueDate(dueDateText = dueDateText)
+                    setInitialAssignees(
+                        assignees = result.assignees.toPersistentList(),
+                        isAssignedToMe = result.isAssignedToMe
+                    )
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -328,18 +336,6 @@ class IssueDetailsViewModel @Inject constructor(
         _state.update {
             it.copy(
                 error = getErrorMessage(error),
-            )
-        }
-    }
-
-    private fun removeAssignee() {
-        patchAssignedToMe(true)
-    }
-
-    private fun onRemoveAssigneeClick() {
-        _state.update {
-            it.copy(
-                isRemoveAssigneeDialogVisible = true
             )
         }
     }
@@ -457,88 +453,65 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onAssigneeUpdated(newAssignee: Long?) {
-        val currentIssue = _state.value.currentIssue ?: return
-        viewModelScope.launch {
-            _state.update {
-                it.copy(error = NativeText.Empty, isAssigneesLoading = true)
-            }
+    // Assignees section
 
-            issueDetailsDataUseCase.updateAssigneesData(
+    private fun onAssigneeUpdated(newAssigneeId: Long?) {
+        viewModelScope.launch {
+            handleUpdateAssignee(
+                newAssigneeId = newAssigneeId,
+                workItemId = currentIssue.id,
                 version = currentIssue.version,
-                issueId = currentIssue.id,
-                userId = newAssignee
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.newVersion
-                )
-                _state.update {
-                    it.copy(
-                        isAssigneesLoading = false,
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        isAssignedToMe = result.isAssignedToMe,
-                        assignees = result.assignees.toPersistentList()
-                    )
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isAssigneesLoading = false
-                    )
-                }
-            }
+            )
         }
     }
 
-    private fun onGoingToEditAssignee() {
-        val assigneeId = _state.value.assignees.firstOrNull()?.id
-        workItemEditShared.setCurrentAssignee(assigneeId)
+    private fun removeAssignee() {
+        onUnassign()
     }
 
     private fun onAssignToMe() {
-        patchAssignedToMe(false)
+        viewModelScope.launch {
+            handleAssignToMe(
+                workItemId = currentIssue.id,
+                version = currentIssue.version,
+                currentUserId = session.userId,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
     }
 
     private fun onUnassign() {
-        patchAssignedToMe(true)
-    }
-
-    private fun patchAssignedToMe(onUnassign: Boolean) {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(error = NativeText.Empty, isAssigneesLoading = true)
-            }
-
-            issueDetailsDataUseCase.updateAssigneesData(
+            handleUnassign(
+                workItemId = currentIssue.id,
                 version = currentIssue.version,
-                issueId = currentIssue.id,
-                userId = if (onUnassign) null else session.userId
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.newVersion
-                )
-                _state.update {
-                    it.copy(
-                        isAssigneesLoading = false,
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        isAssignedToMe = result.isAssignedToMe,
-                        assignees = result.assignees.toPersistentList()
-                    )
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isAssigneesLoading = false
-                    )
-                }
-            }
+            )
         }
     }
 
@@ -554,16 +527,7 @@ class IssueDetailsViewModel @Inject constructor(
                     }
                 },
                 doOnSuccess = { result ->
-                    val updatedUserStory = currentIssue.copy(
-                        version = result.newVersion
-                    )
-
-                    _state.update {
-                        it.copy(
-                            currentIssue = updatedUserStory,
-                            originalIssue = updatedUserStory
-                        )
-                    }
+                    updateVersion(result.newVersion)
                 },
                 doOnError = { error ->
                     Timber.e(error)
@@ -905,11 +869,11 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun setIsRemoveAssigneeDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isRemoveAssigneeDialogVisible = isVisible)
-        }
-    }
+//    private fun setIsRemoveAssigneeDialogVisible(isVisible: Boolean) {
+//        _state.update {
+//            it.copy(isRemoveAssigneeDialogVisible = isVisible)
+//        }
+//    }
 
     private fun setDropdownMenuExpanded(isExpanded: Boolean) {
         _state.update {

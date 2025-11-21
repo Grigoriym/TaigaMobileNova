@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
@@ -84,6 +85,7 @@ fun UserStoryDetailsScreen(
     val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
     val dueDateState by viewModel.dueDateState.collectAsStateWithLifecycle()
     val blockState by viewModel.blockState.collectAsStateWithLifecycle()
+    val assigneesState by viewModel.multipleAssigneesState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -152,13 +154,13 @@ fun UserStoryDetailsScreen(
     )
 
     ConfirmActionDialog(
-        isVisible = state.isRemoveAssigneeDialogVisible,
+        isVisible = assigneesState.isRemoveAssigneeDialogVisible,
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
             state.removeAssignee()
         },
-        onDismiss = { state.setIsRemoveAssigneeDialogVisible(false) }
+        onDismiss = { assigneesState.setIsRemoveAssigneeDialogVisible(false) }
     )
 
     ConfirmActionDialog(
@@ -233,6 +235,7 @@ fun UserStoryDetailsScreen(
             watchersState = watchersState,
             customFieldsState = customFieldsState,
             dueDateState = dueDateState,
+            assigneesState = assigneesState,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
             goToProfile = goToProfile,
@@ -253,6 +256,7 @@ private fun UserStoryDetailsScreenContent(
     customFieldsState: WorkItemCustomFieldsState,
     watchersState: WorkItemWatchersState,
     dueDateState: WorkItemDueDateState,
+    assigneesState: WorkItemMultipleAssigneesState,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
     goToProfile: (Long) -> Unit,
@@ -333,16 +337,16 @@ private fun UserStoryDetailsScreenContent(
 
                 AssignedToWidget(
                     goToProfile = goToProfile,
-                    assignees = state.assignees,
-                    isAssigneesLoading = state.isAssigneesLoading,
+                    assignees = assigneesState.assignees,
+                    isAssigneesLoading = assigneesState.isAssigneesLoading,
                     onRemoveAssigneeClick = { user ->
-                        state.onRemoveAssigneeClick(user)
+                        assigneesState.onRemoveAssigneeClick(user)
                     },
-                    isAssignedToMe = state.isAssignedToMe,
+                    isAssignedToMe = assigneesState.isAssignedToMe,
                     onAssignToMe = state.onAssignToMe,
                     isPlural = true,
                     onAddAssigneeClick = {
-                        state.onGoingToEditAssignees()
+                        assigneesState.onGoingToEditAssignees()
                         goToEditAssignee()
                     }
                 )
