@@ -50,24 +50,21 @@ class UsersRepositoryImpl @Inject constructor(
         }.awaitAll().toImmutableList()
     }
 
-    override suspend fun isAnyAssignedToMe(list: ImmutableList<User>): Boolean =
-        withContext(dispatcher) {
-            session.userId in list.map { it.actualId }
-        }
+    override suspend fun isAnyAssignedToMe(list: ImmutableList<User>): Boolean = withContext(dispatcher) {
+        session.userId in list.map { it.actualId }
+    }
 
     override suspend fun getUserStats(userId: Long): Stats = usersApi.getUserStats(userId)
 
-    override suspend fun getTeamByProjectIdOld(projectId: Long): Result<List<TeamMemberDTO>> =
-        resultOf {
-            getTeamOld(projectId)
-        }
+    override suspend fun getTeamByProjectIdOld(projectId: Long): Result<List<TeamMemberDTO>> = resultOf {
+        getTeamOld(projectId)
+    }
 
     override suspend fun getTeamOld(): Result<List<TeamMemberDTO>> = resultOf {
         getTeamOld(taigaStorage.currentProjectIdFlow.first())
     }
 
-    override suspend fun getTeamSimpleOld(): List<TeamMemberDTO> =
-        getTeamOld(taigaStorage.currentProjectIdFlow.first())
+    override suspend fun getTeamSimpleOld(): List<TeamMemberDTO> = getTeamOld(taigaStorage.currentProjectIdFlow.first())
 
     private suspend fun getTeamOld(projectId: Long): List<TeamMemberDTO> = coroutineScope {
         val team = async { projectsApi.getProject(projectId).members }
@@ -88,24 +85,22 @@ class UsersRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getCurrentTeam(generateMemberStats: Boolean): ImmutableList<TeamMember> =
-        coroutineScope {
-            val currentProjectId = taigaStorage.currentProjectIdFlow.first()
+    override suspend fun getCurrentTeam(generateMemberStats: Boolean): ImmutableList<TeamMember> = coroutineScope {
+        val currentProjectId = taigaStorage.currentProjectIdFlow.first()
 
-            val team = projectsApi.getProject(currentProjectId).members
-            val stats: Map<Long, Int> = if (generateMemberStats) {
-                retrieveMembersStats()
-            } else {
-                emptyMap()
-            }
-            teamMemberMapper.toDomain(team, stats)
+        val team = projectsApi.getProject(currentProjectId).members
+        val stats: Map<Long, Int> = if (generateMemberStats) {
+            retrieveMembersStats()
+        } else {
+            emptyMap()
         }
-
-    override suspend fun getCurrentTeamResult(
-        generateMemberStats: Boolean
-    ): Result<ImmutableList<TeamMember>> = resultOf {
-        getCurrentTeam(generateMemberStats)
+        teamMemberMapper.toDomain(team, stats)
     }
+
+    override suspend fun getCurrentTeamResult(generateMemberStats: Boolean): Result<ImmutableList<TeamMember>> =
+        resultOf {
+            getCurrentTeam(generateMemberStats)
+        }
 
     /**
      * This one calculates the "Total power" of team members

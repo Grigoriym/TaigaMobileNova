@@ -22,10 +22,8 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    serverStorage: ServerStorage
-) : ViewModel(),
+class LoginViewModel @Inject constructor(private val authRepository: AuthRepository, serverStorage: ServerStorage) :
+    ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl() {
 
     companion object {

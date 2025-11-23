@@ -23,8 +23,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
@@ -71,6 +79,15 @@ fun UserStoryDetailsScreen(
     )
     val titleState by viewModel.titleState.collectAsStateWithLifecycle()
     val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
+    val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
+    val commentsState by viewModel.commentsState.collectAsStateWithLifecycle()
+    val attachmentsState by viewModel.attachmentsState.collectAsStateWithLifecycle()
+    val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
+    val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
+    val dueDateState by viewModel.dueDateState.collectAsStateWithLifecycle()
+    val blockState by viewModel.blockState.collectAsStateWithLifecycle()
+    val assigneesState by viewModel.multipleAssigneesState.collectAsStateWithLifecycle()
+    val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -129,44 +146,44 @@ fun UserStoryDetailsScreen(
     )
 
     DatePickerDialogWidget(
-        isVisible = state.isDueDateDatePickerVisible,
-        onDismissRequest = { state.setIsDueDatePickerVisible(false) },
-        onDismissButonClick = { state.setIsDueDatePickerVisible(false) },
+        isVisible = dueDateState.isDueDateDatePickerVisible,
+        onDismissRequest = { dueDateState.setDueDateDatePickerVisibility(false) },
+        onDismissButonClick = { dueDateState.setDueDateDatePickerVisibility(false) },
         onConfirmButtonClick = { dateMillis ->
             state.setDueDate(dateMillis)
-            state.setIsDueDatePickerVisible(false)
+            dueDateState.setDueDateDatePickerVisibility(false)
         }
     )
 
     ConfirmActionDialog(
-        isVisible = state.isRemoveAssigneeDialogVisible,
+        isVisible = assigneesState.isRemoveAssigneeDialogVisible,
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
             state.removeAssignee()
         },
-        onDismiss = { state.setIsRemoveAssigneeDialogVisible(false) }
+        onDismiss = { assigneesState.setIsRemoveAssigneeDialogVisible(false) }
     )
 
     ConfirmActionDialog(
-        isVisible = state.isRemoveWatcherDialogVisible,
+        isVisible = watchersState.isRemoveWatcherDialogVisible,
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
             state.removeWatcher()
-            state.setIsRemoveWatcherDialogVisible(false)
+            watchersState.setIsRemoveWatcherDialogVisible(false)
         },
-        onDismiss = { state.setIsRemoveWatcherDialogVisible(false) }
+        onDismiss = { watchersState.setIsRemoveWatcherDialogVisible(false) }
     )
 
     BlockDialog(
-        isVisible = state.isBlockDialogVisible,
+        isVisible = blockState.isBlockDialogVisible,
         onConfirm = { blockNote ->
             state.onBlockToggle(true, blockNote)
-            state.setIsBlockDialogVisible(false)
+            blockState.setIsBlockDialogVisible(false)
         },
         onDismiss = {
-            state.setIsBlockDialogVisible(false)
+            blockState.setIsBlockDialogVisible(false)
         }
     )
 
@@ -203,7 +220,7 @@ fun UserStoryDetailsScreen(
                 state.setIsDeleteDialogVisible(it)
             },
             setBlockDialogVisible = {
-                state.setIsBlockDialogVisible(it)
+                blockState.setIsBlockDialogVisible(it)
             },
             doOnUnblock = {
                 state.onBlockToggle(false, null)
@@ -214,6 +231,14 @@ fun UserStoryDetailsScreen(
             state = state,
             titleState = titleState,
             badgeState = badgeState,
+            tagsState = tagsState,
+            commentsState = commentsState,
+            attachmentsState = attachmentsState,
+            watchersState = watchersState,
+            customFieldsState = customFieldsState,
+            dueDateState = dueDateState,
+            assigneesState = assigneesState,
+            descriptionState = descriptionState,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
             goToProfile = goToProfile,
@@ -228,6 +253,14 @@ private fun UserStoryDetailsScreenContent(
     state: UserStoryDetailsState,
     titleState: WorkItemTitleState,
     badgeState: WorkItemBadgeState,
+    tagsState: WorkItemTagsState,
+    commentsState: WorkItemCommentsState,
+    attachmentsState: WorkItemAttachmentsState,
+    customFieldsState: WorkItemCustomFieldsState,
+    watchersState: WorkItemWatchersState,
+    dueDateState: WorkItemDueDateState,
+    assigneesState: WorkItemMultipleAssigneesState,
+    descriptionState: WorkItemDescriptionState,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
     goToProfile: (Long) -> Unit,
@@ -235,7 +268,6 @@ private fun UserStoryDetailsScreenContent(
     goToEditWatchers: () -> Unit
 ) {
     requireNotNull(state.currentUserStory)
-    requireNotNull(state.originalUserStory)
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -274,26 +306,27 @@ private fun UserStoryDetailsScreenContent(
                     currentDescription = state.currentUserStory.description,
                     onDescriptionClick = {
                         goToEditDescription(state.currentUserStory.description)
-                    }
+                    },
+                    isLoading = descriptionState.isDescriptionLoading
                 )
 
                 WorkItemTagsWidget(
-                    tags = state.tags,
+                    tags = tagsState.tags,
                     onTagRemoveClick = state.onTagRemove,
-                    areTagsLoading = state.areTagsLoading,
+                    areTagsLoading = tagsState.areTagsLoading,
                     goToEditTags = {
-                        state.onGoingToEditTags()
+                        tagsState.onGoingToEditTags()
                         goToEditTags()
                     }
                 )
 
                 WorkItemDueDateWidget(
-                    dueDateText = state.dueDateText,
+                    dueDateText = dueDateState.dueDateText,
                     dueDateStatus = state.currentUserStory.dueDateStatus,
-                    isLoading = state.isDueDateLoading,
+                    isLoading = dueDateState.isDueDateLoading,
                     dueDate = state.currentUserStory.dueDate,
                     setIsDueDatePickerVisible = { value ->
-                        state.setIsDueDatePickerVisible(value)
+                        dueDateState.setDueDateDatePickerVisibility(value)
                     },
                     setDueDate = { value ->
                         state.setDueDate(value)
@@ -308,68 +341,68 @@ private fun UserStoryDetailsScreenContent(
 
                 AssignedToWidget(
                     goToProfile = goToProfile,
-                    assignees = state.assignees,
-                    isAssigneesLoading = state.isAssigneesLoading,
+                    assignees = assigneesState.assignees,
+                    isAssigneesLoading = assigneesState.isAssigneesLoading,
                     onRemoveAssigneeClick = { user ->
-                        state.onRemoveAssigneeClick(user)
+                        assigneesState.onRemoveAssigneeClick(user)
                     },
-                    isAssignedToMe = state.isAssignedToMe,
+                    isAssignedToMe = assigneesState.isAssignedToMe,
                     onAssignToMe = state.onAssignToMe,
                     isPlural = true,
                     onAddAssigneeClick = {
-                        state.onGoingToEditAssignees()
+                        assigneesState.onGoingToEditAssignees()
                         goToEditAssignee()
                     }
                 )
 
                 WatchersWidget(
                     goToProfile = goToProfile,
-                    watchers = state.watchers,
+                    watchers = watchersState.watchers,
                     onRemoveWatcherClick = { watcherId ->
-                        state.onRemoveWatcherClick(watcherId)
+                        watchersState.onRemoveWatcherClick(watcherId)
                     },
-                    isWatchersLoading = state.isWatchersLoading,
+                    isWatchersLoading = watchersState.areWatchersLoading,
                     onAddWatcherClick = {
-                        state.onGoingToEditWatchers()
+                        watchersState.onGoingToEditWatchers()
                         goToEditWatchers()
                     },
-                    isWatchedByMe = state.isWatchedByMe,
+                    isWatchedByMe = watchersState.isWatchedByMe,
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
                     onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
                 )
 
                 CustomFieldsSectionWidget(
-                    customFieldStateItems = state.customFieldStateItems,
-                    isCustomFieldsLoading = state.isCustomFieldsLoading,
-                    isCustomFieldsWidgetExpanded = state.isCustomFieldsWidgetExpanded,
-                    setIsCustomFieldsWidgetExpanded = state.setIsCustomFieldsWidgetExpanded,
-                    onCustomFieldChange = state.onCustomFieldChange,
+                    customFieldStateItems = customFieldsState.customFieldStateItems,
+                    isCustomFieldsLoading = customFieldsState.isCustomFieldsLoading,
+                    isCustomFieldsWidgetExpanded = customFieldsState.isCustomFieldsWidgetExpanded,
+                    setIsCustomFieldsWidgetExpanded = customFieldsState.setIsCustomFieldsWidgetExpanded,
+                    onCustomFieldChange = customFieldsState.onCustomFieldChange,
                     onCustomFieldSave = state.onCustomFieldSave,
-                    onCustomFieldEditToggle = state.onCustomFieldEditToggle,
-                    editingItemIds = state.editingItemIds
+                    onCustomFieldEditToggle = customFieldsState.onCustomFieldEditToggle,
+                    editingItemIds = customFieldsState.editingItemIds
                 )
 
                 AttachmentsSectionWidget(
-                    attachments = state.attachments,
-                    isAttachmentsLoading = state.isAttachmentsLoading,
+                    attachments = attachmentsState.attachments,
+                    isAttachmentsLoading = attachmentsState.areAttachmentsLoading,
                     onAttachmentAdd = { uri ->
                         state.onAttachmentAdd(uri)
                     },
-                    areAttachmentsExpanded = state.areAttachmentsExpanded,
-                    setAreAttachmentsExpanded = state.setAreAttachmentsExpanded,
+                    areAttachmentsExpanded = attachmentsState.areAttachmentsExpanded,
+                    setAreAttachmentsExpanded = attachmentsState.setAreAttachmentsExpanded,
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
                     }
                 )
 
                 CommentsSectionWidget(
-                    comments = state.comments,
+                    comments = commentsState.comments,
                     goToProfile = goToProfile,
-                    isCommentsWidgetExpanded = state.isCommentsWidgetExpanded,
+                    isCommentsWidgetExpanded = commentsState.isCommentsWidgetExpanded,
                     setIsCommentsWidgetExpanded = { value ->
-                        state.setIsCommentsWidgetExpanded(value)
+                        commentsState.setIsCommentsWidgetExpanded(value)
                     },
-                    isCommentsLoading = state.isCommentsLoading,
+                    areCommentsLoading = commentsState.areCommentsLoading,
                     onCommentRemove = { value ->
                         state.onCommentRemove(value)
                     }

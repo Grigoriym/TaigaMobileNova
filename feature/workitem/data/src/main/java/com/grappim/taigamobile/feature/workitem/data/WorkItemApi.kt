@@ -3,6 +3,8 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.core.domain.CustomAttributeResponseDTO
 import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -39,22 +41,13 @@ interface WorkItemApi {
     ): WorkItemResponseDTO
 
     @POST("{taskPath}/{workItemId}/unwatch")
-    suspend fun unwatchWorkItem(
-        @Path("taskPath") taskPath: WorkItemPathPlural,
-        @Path("workItemId") workItemId: Long
-    )
+    suspend fun unwatchWorkItem(@Path("taskPath") taskPath: WorkItemPathPlural, @Path("workItemId") workItemId: Long)
 
     @POST("{taskPath}/{workItemId}/watch")
-    suspend fun watchWorkItem(
-        @Path("taskPath") taskPath: WorkItemPathPlural,
-        @Path("workItemId") workItemId: Long
-    )
+    suspend fun watchWorkItem(@Path("taskPath") taskPath: WorkItemPathPlural, @Path("workItemId") workItemId: Long)
 
     @DELETE("{taskPath}/{workItemId}")
-    suspend fun deleteWorkItem(
-        @Path("taskPath") taskPath: WorkItemPathPlural,
-        @Path("workItemId") workItemId: Long
-    )
+    suspend fun deleteWorkItem(@Path("taskPath") taskPath: WorkItemPathPlural, @Path("workItemId") workItemId: Long)
 
     // Attachments
     @GET("{taskPath}/attachments")
@@ -65,10 +58,7 @@ interface WorkItemApi {
     ): List<AttachmentDTO>
 
     @DELETE("{taskPath}/attachments/{id}")
-    suspend fun deleteAttachment(
-        @Path("taskPath") taskPath: WorkItemPathPlural,
-        @Path("id") attachmentId: Long
-    )
+    suspend fun deleteAttachment(@Path("taskPath") taskPath: WorkItemPathPlural, @Path("id") attachmentId: Long)
 
     @POST("{taskPath}/attachments")
     @Multipart

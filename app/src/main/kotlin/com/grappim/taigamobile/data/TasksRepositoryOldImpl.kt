@@ -75,32 +75,30 @@ class TasksRepositoryOldImpl @Inject constructor(
         )
     }
 
-    override suspend fun getAttachments(commonTaskId: Long, type: CommonTaskType) =
-        taigaApi.getCommonTaskAttachments(
-            CommonTaskPathPlural(type),
-            commonTaskId,
-            taigaStorage.currentProjectIdFlow.first()
+    override suspend fun getAttachments(commonTaskId: Long, type: CommonTaskType) = taigaApi.getCommonTaskAttachments(
+        CommonTaskPathPlural(type),
+        commonTaskId,
+        taigaStorage.currentProjectIdFlow.first()
+    )
+
+    override suspend fun getCustomFields(commonTaskId: Long, type: CommonTaskType): CustomFields = coroutineScope {
+        val attributes =
+            async {
+                taigaApi.getCustomAttributes(
+                    CommonTaskPathSingular(type),
+                    taigaStorage.currentProjectIdFlow.first()
+                )
+            }
+        val values = taigaApi.getCustomAttributesValues(
+            taskPath = CommonTaskPathPlural(commonTaskType = type),
+            taskId = commonTaskId
         )
 
-    override suspend fun getCustomFields(commonTaskId: Long, type: CommonTaskType): CustomFields =
-        coroutineScope {
-            val attributes =
-                async {
-                    taigaApi.getCustomAttributes(
-                        CommonTaskPathSingular(type),
-                        taigaStorage.currentProjectIdFlow.first()
-                    )
-                }
-            val values = taigaApi.getCustomAttributesValues(
-                taskPath = CommonTaskPathPlural(commonTaskType = type),
-                taskId = commonTaskId
-            )
-
-            customFieldsMapper.toDomain(
-                attributes = attributes.await(),
-                values = values
-            )
-        }
+        customFieldsMapper.toDomain(
+            attributes = attributes.await(),
+            values = values
+        )
+    }
 
     /**
      * Edit related
@@ -130,18 +128,11 @@ class TasksRepositoryOldImpl @Inject constructor(
         version = version
     )
 
-    private suspend fun editCommonTask(
-        commonTask: CommonTaskExtended,
-        request: EditCommonTaskRequest
-    ) {
+    private suspend fun editCommonTask(commonTask: CommonTaskExtended, request: EditCommonTaskRequest) {
         taigaApi.editCommonTask(CommonTaskPathPlural(commonTask.taskType), commonTask.id, request)
     }
 
-    override suspend fun editStatus(
-        commonTask: CommonTaskExtended,
-        statusId: Long,
-        statusType: StatusType
-    ) = withIO {
+    override suspend fun editStatus(commonTask: CommonTaskExtended, statusId: Long, statusType: StatusType) = withIO {
         if (commonTask.taskType != CommonTaskType.Issue && statusType != StatusType.Status) {
             throw UnsupportedOperationException(
                 "Cannot change $statusType for ${commonTask.taskType}"
@@ -168,18 +159,17 @@ class TasksRepositoryOldImpl @Inject constructor(
         editCommonTask(commonTask, commonTask.toEditRequest().copy(milestone = sprintId))
     }
 
-    override suspend fun editAssignees(commonTask: CommonTaskExtended, assignees: List<Long>) =
-        withIO {
-            val request = commonTask.toEditRequest().let {
-                if (commonTask.taskType == CommonTaskType.UserStory) {
-                    it.copy(assignedTo = assignees.firstOrNull(), assignedUsers = assignees)
-                } else {
-                    it.copy(assignedTo = assignees.lastOrNull())
-                }
+    override suspend fun editAssignees(commonTask: CommonTaskExtended, assignees: List<Long>) = withIO {
+        val request = commonTask.toEditRequest().let {
+            if (commonTask.taskType == CommonTaskType.UserStory) {
+                it.copy(assignedTo = assignees.firstOrNull(), assignedUsers = assignees)
+            } else {
+                it.copy(assignedTo = assignees.lastOrNull())
             }
-
-            editCommonTask(commonTask, request)
         }
+
+        editCommonTask(commonTask, request)
+    }
 
     override suspend fun editWatchers(commonTask: CommonTaskExtended, watchers: List<Long>) =
         editCommonTask(commonTask, commonTask.toEditRequest().copy(watchers = watchers))
@@ -187,30 +177,26 @@ class TasksRepositoryOldImpl @Inject constructor(
     override suspend fun editDueDate(commonTask: CommonTaskExtended, date: LocalDate?) =
         editCommonTask(commonTask, commonTask.toEditRequest().copy(dueDate = date))
 
-    override suspend fun editCommonTaskBasicInfo(
-        commonTask: CommonTaskExtended,
-        title: String,
-        description: String
-    ) = withIO {
-        editCommonTask(
-            commonTask,
-            commonTask.toEditRequest().copy(subject = title, description = description)
-        )
-    }
+    override suspend fun editCommonTaskBasicInfo(commonTask: CommonTaskExtended, title: String, description: String) =
+        withIO {
+            editCommonTask(
+                commonTask,
+                commonTask.toEditRequest().copy(subject = title, description = description)
+            )
+        }
 
     override suspend fun editTags(commonTask: CommonTaskExtended, tags: List<Tag>) =
         editCommonTask(commonTask, commonTask.toEditRequest().copy(tags = tags.map { it.toList() }))
 
-    override suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?) =
-        withIO {
-            if (commonTask.taskType != CommonTaskType.UserStory) {
-                throw UnsupportedOperationException(
-                    "Cannot change swimlane for ${commonTask.taskType}"
-                )
-            }
-
-            editCommonTask(commonTask, commonTask.toEditRequest().copy(swimlane = swimlaneId))
+    override suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?) = withIO {
+        if (commonTask.taskType != CommonTaskType.UserStory) {
+            throw UnsupportedOperationException(
+                "Cannot change swimlane for ${commonTask.taskType}"
+            )
         }
+
+        editCommonTask(commonTask, commonTask.toEditRequest().copy(swimlane = swimlaneId))
+    }
 
     override suspend fun editEpicColor(commonTask: CommonTaskExtended, color: String) = withIO {
         if (commonTask.taskType != CommonTaskType.Epic) {
@@ -220,12 +206,11 @@ class TasksRepositoryOldImpl @Inject constructor(
         editCommonTask(commonTask, commonTask.toEditRequest().copy(color = color))
     }
 
-    override suspend fun editBlocked(commonTask: CommonTaskExtended, blockedNote: String?) =
-        editCommonTask(
-            commonTask,
-            commonTask.toEditRequest()
-                .copy(isBlocked = blockedNote != null, blockedNote = blockedNote.orEmpty())
-        )
+    override suspend fun editBlocked(commonTask: CommonTaskExtended, blockedNote: String?) = editCommonTask(
+        commonTask,
+        commonTask.toEditRequest()
+            .copy(isBlocked = blockedNote != null, blockedNote = blockedNote.orEmpty())
+    )
 
     override suspend fun createComment(
         commonTaskId: Long,
@@ -291,28 +276,26 @@ class TasksRepositoryOldImpl @Inject constructor(
         )
     }
 
-    override suspend fun promoteCommonTaskToUserStory(
-        commonTaskId: Long,
-        commonTaskType: CommonTaskType
-    ): CommonTask = withIO {
-        if (commonTaskType in listOf(CommonTaskType.Epic, CommonTaskType.UserStory)) {
-            throw UnsupportedOperationException("Cannot promote to user story $commonTaskType")
-        }
-
-        taigaApi.promoteCommonTaskToUserStory(
-            taskPath = CommonTaskPathPlural(commonTaskType),
-            taskId = commonTaskId,
-            promoteToUserStoryRequest = PromoteToUserStoryRequest(
-                taigaStorage.currentProjectIdFlow.first()
-            )
-        ).first()
-            .let {
-                userStoriesRepository.getUserStoryByRefOld(
-                    projectId = taigaStorage.currentProjectIdFlow.first(),
-                    ref = it
-                )
+    override suspend fun promoteCommonTaskToUserStory(commonTaskId: Long, commonTaskType: CommonTaskType): CommonTask =
+        withIO {
+            if (commonTaskType in listOf(CommonTaskType.Epic, CommonTaskType.UserStory)) {
+                throw UnsupportedOperationException("Cannot promote to user story $commonTaskType")
             }
-    }
+
+            taigaApi.promoteCommonTaskToUserStory(
+                taskPath = CommonTaskPathPlural(commonTaskType),
+                taskId = commonTaskId,
+                promoteToUserStoryRequest = PromoteToUserStoryRequest(
+                    taigaStorage.currentProjectIdFlow.first()
+                )
+            ).first()
+                .let {
+                    userStoriesRepository.getUserStoryByRefOld(
+                        projectId = taigaStorage.currentProjectIdFlow.first(),
+                        ref = it
+                    )
+                }
+        }
 
     override suspend fun addAttachment(
         commonTaskId: Long,

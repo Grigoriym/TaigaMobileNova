@@ -36,7 +36,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         val debugLocalHost = localProperties.getProperty("debug.local.host")
                         buildConfigField("String", "DEBUG_LOCAL_HOST", "\"$debugLocalHost\"")
                     }
-//                    release {
+                    release {
 //                        applicationIdSuffix = AppBuildTypes.RELEASE.applicationIdSuffix
 //
 //                        isDebuggable = false
@@ -47,7 +47,9 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 //                            getDefaultProguardFile("proguard-android-optimize.txt"),
 //                            "proguard-rules.pro"
 //                        )
-//                    }
+
+                        buildConfigField("String", "DEBUG_LOCAL_HOST", "\"not_defined\"")
+                    }
                 }
 
                 bundle {

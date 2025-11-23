@@ -75,11 +75,7 @@ fun WikiCreatePageScreen(
 }
 
 @Composable
-fun WikiCreatePageScreenContent(
-    state: WikiCreatePageState,
-    modifier: Modifier = Modifier,
-    isLoading: Boolean = false
-) {
+fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier = Modifier, isLoading: Boolean = false) {
     Box(
         modifier = modifier
             .fillMaxSize()

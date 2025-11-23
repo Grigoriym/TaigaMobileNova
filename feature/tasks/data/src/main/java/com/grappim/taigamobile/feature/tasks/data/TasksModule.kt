@@ -17,7 +17,6 @@ interface TasksModule {
 
     companion object {
         @[Provides Singleton]
-        fun provideTasksApi(@CommonRetrofit retrofit: Retrofit): TasksApi =
-            retrofit.create(TasksApi::class.java)
+        fun provideTasksApi(@CommonRetrofit retrofit: Retrofit): TasksApi = retrofit.create(TasksApi::class.java)
     }
 }

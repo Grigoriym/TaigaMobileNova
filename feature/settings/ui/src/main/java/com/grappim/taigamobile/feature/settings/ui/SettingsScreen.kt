@@ -64,10 +64,7 @@ import timber.log.Timber
 private const val ANIMATION_DURATION = 500
 
 @Composable
-fun SettingsScreen(
-    showSnackbar: (message: NativeText) -> Unit,
-    viewModel: SettingsViewModel = hiltViewModel()
-) {
+fun SettingsScreen(showSnackbar: (message: NativeText) -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarMsg by viewModel.snackBarMessage.collectSnackbarMessage()

@@ -44,10 +44,7 @@ import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun WorkItemEditAssigneeScreen(
-    goBack: () -> Unit,
-    viewModel: EditTeamMemberViewModel = hiltViewModel()
-) {
+fun WorkItemEditAssigneeScreen(goBack: () -> Unit, viewModel: EditTeamMemberViewModel = hiltViewModel()) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -121,11 +118,7 @@ private fun EditAssigneeContent(state: EditTeamMemberState) {
 }
 
 @Composable
-private fun TeamMemberItem(
-    teamMemberUI: TeamMemberUI,
-    isSelected: Boolean,
-    onItemClick: (TeamMemberUI) -> Unit
-) {
+private fun TeamMemberItem(teamMemberUI: TeamMemberUI, isSelected: Boolean, onItemClick: (TeamMemberUI) -> Unit) {
     ListItem(
         modifier = Modifier.clickable {
             onItemClick(teamMemberUI)

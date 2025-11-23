@@ -61,11 +61,10 @@ class SprintsRepositoryImpl @Inject constructor(
         SprintPagingSource(sprintApi, isClosed, taigaStorage)
     }.flow
 
-    override suspend fun getSprintUserStories(sprintId: Long): List<CommonTask> =
-        userStoriesRepository.getUserStories(
-            project = taigaStorage.currentProjectIdFlow.first(),
-            sprint = sprintId
-        )
+    override suspend fun getSprintUserStories(sprintId: Long): List<CommonTask> = userStoriesRepository.getUserStories(
+        project = taigaStorage.currentProjectIdFlow.first(),
+        sprint = sprintId
+    )
 
     override suspend fun getSprints(page: Int, isClosed: Boolean) = handle404 {
         sprintApi.getSprints(taigaStorage.currentProjectIdFlow.first(), page, isClosed)
@@ -85,11 +84,7 @@ class SprintsRepositoryImpl @Inject constructor(
         sprint = sprintId
     )
 
-    override suspend fun createSprint(
-        name: String,
-        start: LocalDate,
-        end: LocalDate
-    ): Result<Unit> = resultOf {
+    override suspend fun createSprint(name: String, start: LocalDate, end: LocalDate): Result<Unit> = resultOf {
         sprintApi.createSprint(
             CreateSprintRequest(
                 name,
@@ -100,15 +95,11 @@ class SprintsRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun editSprint(
-        sprintId: Long,
-        name: String,
-        start: LocalDate,
-        end: LocalDate
-    ) = sprintApi.editSprint(
-        id = sprintId,
-        request = EditSprintRequest(name, start, end)
-    )
+    override suspend fun editSprint(sprintId: Long, name: String, start: LocalDate, end: LocalDate) =
+        sprintApi.editSprint(
+            id = sprintId,
+            request = EditSprintRequest(name, start, end)
+        )
 
     override suspend fun deleteSprint(sprintId: Long) {
         sprintApi.deleteSprint(sprintId)

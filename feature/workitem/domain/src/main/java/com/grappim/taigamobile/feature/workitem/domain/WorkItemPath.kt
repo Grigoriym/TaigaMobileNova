@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.workitem.data
+package com.grappim.taigamobile.feature.workitem.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 
