@@ -23,38 +23,37 @@ class UserStoriesPagingSource(
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
         }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CommonTask> =
-        tryCatchWithPagination(
-            block = {
-                val nextPageNumber = params.key ?: 1
-                val response = userStoriesApi.getUserStories(
-                    project = taigaStorage.currentProjectIdFlow.first(),
-                    sprint = "null",
-                    page = nextPageNumber,
-                    query = filters.query,
-                    assignedIds = filters.assignees.commaString(),
-                    ownerIds = filters.createdBy.commaString(),
-                    roles = filters.roles.commaString(),
-                    statuses = filters.statuses.commaString(),
-                    epics = filters.epics.commaString(),
-                    tags = filters.tags.tagsCommaString()
-                ).map { it.toCommonTask(CommonTaskType.UserStory) }
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CommonTask> = tryCatchWithPagination(
+        block = {
+            val nextPageNumber = params.key ?: 1
+            val response = userStoriesApi.getUserStories(
+                project = taigaStorage.currentProjectIdFlow.first(),
+                sprint = "null",
+                page = nextPageNumber,
+                query = filters.query,
+                assignedIds = filters.assignees.commaString(),
+                ownerIds = filters.createdBy.commaString(),
+                roles = filters.roles.commaString(),
+                statuses = filters.statuses.commaString(),
+                epics = filters.epics.commaString(),
+                tags = filters.tags.tagsCommaString()
+            ).map { it.toCommonTask(CommonTaskType.UserStory) }
 
-                LoadResult.Page(
-                    data = response,
-                    prevKey = null,
-                    nextKey = if (response.isNotEmpty()) nextPageNumber + 1 else null
-                )
-            },
-            catchBlock = { e ->
-                LoadResult.Error(e)
-            },
-            onPaginationEnd = {
-                LoadResult.Page(
-                    data = emptyList(),
-                    prevKey = null,
-                    nextKey = null
-                )
-            }
-        )
+            LoadResult.Page(
+                data = response,
+                prevKey = null,
+                nextKey = if (response.isNotEmpty()) nextPageNumber + 1 else null
+            )
+        },
+        catchBlock = { e ->
+            LoadResult.Error(e)
+        },
+        onPaginationEnd = {
+            LoadResult.Page(
+                data = emptyList(),
+                prevKey = null,
+                nextKey = null
+            )
+        }
+    )
 }

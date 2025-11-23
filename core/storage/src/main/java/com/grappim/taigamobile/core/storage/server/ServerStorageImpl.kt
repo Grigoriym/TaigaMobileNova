@@ -5,8 +5,7 @@ import com.grappim.taigamobile.core.storage.utils.string
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 
-class ServerStorageImpl @Inject constructor(@ApplicationContext private val context: Context) :
-    ServerStorage {
+class ServerStorageImpl @Inject constructor(@ApplicationContext private val context: Context) : ServerStorage {
 
     companion object {
         private const val SERVER_STORAGE_NAME = "taiga server storage name"

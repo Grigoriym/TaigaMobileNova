@@ -92,12 +92,7 @@ data class CommonTaskExtended(
 )
 
 @JsonClass(generateAdapter = true)
-data class EpicShortInfo(
-    val id: Long,
-    @Json(name = "subject") val title: String,
-    val ref: Int,
-    val color: String
-)
+data class EpicShortInfo(val id: Long, @Json(name = "subject") val title: String, val ref: Int, val color: String)
 
 @JsonClass(generateAdapter = true)
 data class UserStoryShortInfo(

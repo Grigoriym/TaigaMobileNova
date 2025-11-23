@@ -25,10 +25,7 @@ import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun WorkItemEditDescriptionScreen(
-    goBack: () -> Unit,
-    viewModel: EditDescriptionViewModel = hiltViewModel()
-) {
+fun WorkItemEditDescriptionScreen(goBack: () -> Unit, viewModel: EditDescriptionViewModel = hiltViewModel()) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 

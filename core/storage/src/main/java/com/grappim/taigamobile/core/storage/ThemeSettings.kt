@@ -6,8 +6,7 @@ enum class ThemeSettings(val value: String) {
     Dark("dark");
 
     companion object {
-        fun fromValue(value: String?): ThemeSettings? =
-            ThemeSettings.entries.firstOrNull { it.value == value }
+        fun fromValue(value: String?): ThemeSettings? = ThemeSettings.entries.firstOrNull { it.value == value }
 
         fun default() = System
     }

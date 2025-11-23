@@ -21,11 +21,7 @@ interface TasksRepositoryOld {
     suspend fun editAssignees(commonTask: CommonTaskExtended, assignees: List<Long>)
     suspend fun editWatchers(commonTask: CommonTaskExtended, watchers: List<Long>)
     suspend fun editDueDate(commonTask: CommonTaskExtended, date: LocalDate?)
-    suspend fun editCommonTaskBasicInfo(
-        commonTask: CommonTaskExtended,
-        title: String,
-        description: String
-    )
+    suspend fun editCommonTaskBasicInfo(commonTask: CommonTaskExtended, title: String, description: String)
 
     suspend fun editTags(commonTask: CommonTaskExtended, tags: List<Tag>)
     suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?)
@@ -33,12 +29,7 @@ interface TasksRepositoryOld {
     suspend fun editBlocked(commonTask: CommonTaskExtended, blockedNote: String?)
 
     // related edits
-    suspend fun createComment(
-        commonTaskId: Long,
-        commonTaskType: CommonTaskType,
-        comment: String,
-        version: Long
-    )
+    suspend fun createComment(commonTaskId: Long, commonTaskType: CommonTaskType, comment: String, version: Long)
 
     suspend fun createCommonTask(
         commonTaskType: CommonTaskType,
@@ -52,10 +43,7 @@ interface TasksRepositoryOld {
 
     suspend fun deleteCommonTask(commonTaskType: CommonTaskType, commonTaskId: Long)
 
-    suspend fun promoteCommonTaskToUserStory(
-        commonTaskId: Long,
-        commonTaskType: CommonTaskType
-    ): CommonTask
+    suspend fun promoteCommonTaskToUserStory(commonTaskId: Long, commonTaskType: CommonTaskType): CommonTask
 
     suspend fun addAttachment(
         commonTaskId: Long,

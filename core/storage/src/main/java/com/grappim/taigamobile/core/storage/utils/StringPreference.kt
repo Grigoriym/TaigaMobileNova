@@ -21,7 +21,5 @@ class StringPreference(
         }
 }
 
-fun SharedPreferences.string(
-    key: String,
-    defaultValue: String? = null
-): ReadWriteProperty<Any, String> = StringPreference(this, key, defaultValue)
+fun SharedPreferences.string(key: String, defaultValue: String? = null): ReadWriteProperty<Any, String> =
+    StringPreference(this, key, defaultValue)
