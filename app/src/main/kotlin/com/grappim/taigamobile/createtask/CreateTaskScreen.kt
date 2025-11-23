@@ -76,11 +76,7 @@ fun CreateTaskScreen(
 }
 
 @Composable
-fun CreateTaskScreenContent(
-    state: CreateTaskState,
-    modifier: Modifier = Modifier,
-    isLoading: Boolean = false
-) {
+fun CreateTaskScreenContent(state: CreateTaskState, modifier: Modifier = Modifier, isLoading: Boolean = false) {
     Box(
         modifier = modifier
             .fillMaxSize()

@@ -15,12 +15,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun TaigaTextButtonWidget(
-    text: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    icon: Int? = null
-) {
+fun TaigaTextButtonWidget(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, icon: Int? = null) {
     FilledTonalButton(modifier = modifier, onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             icon?.let {

@@ -45,10 +45,7 @@ interface TaigaApi {
     ): CommonTaskResponse
 
     @DELETE("{taskPath}/{id}")
-    suspend fun deleteCommonTask(
-        @Path("taskPath") taskPath: CommonTaskPathPlural,
-        @Path("id") id: Long
-    ): Response<Void>
+    suspend fun deleteCommonTask(@Path("taskPath") taskPath: CommonTaskPathPlural, @Path("id") id: Long): Response<Void>
 
     @POST("{taskPath}/{id}/promote_to_user_story")
     suspend fun promoteCommonTaskToUserStory(

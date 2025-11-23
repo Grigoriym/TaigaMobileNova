@@ -9,22 +9,18 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class TeamMemberMapper @Inject constructor(
-    @IoDispatcher private val dispatcher: CoroutineDispatcher
-) {
-    suspend fun toDomain(
-        list: List<ProjectMemberDTO>,
-        stats: Map<Long, Int>
-    ): ImmutableList<TeamMember> = withContext(dispatcher) {
-        list.map { dto ->
-            TeamMember(
-                id = dto.id,
-                avatarUrl = dto.photo,
-                name = dto.fullNameDisplay,
-                role = dto.roleName,
-                username = dto.username,
-                totalPower = stats[dto.id]
-            )
-        }.toImmutableList()
-    }
+class TeamMemberMapper @Inject constructor(@IoDispatcher private val dispatcher: CoroutineDispatcher) {
+    suspend fun toDomain(list: List<ProjectMemberDTO>, stats: Map<Long, Int>): ImmutableList<TeamMember> =
+        withContext(dispatcher) {
+            list.map { dto ->
+                TeamMember(
+                    id = dto.id,
+                    avatarUrl = dto.photo,
+                    name = dto.fullNameDisplay,
+                    role = dto.roleName,
+                    username = dto.username,
+                    totalPower = stats[dto.id]
+                )
+            }.toImmutableList()
+        }
 }

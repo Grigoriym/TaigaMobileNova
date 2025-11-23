@@ -11,18 +11,15 @@ class DateTimeUtilsImpl @Inject constructor(
     @LocalDateUIMedium private val localDateUiMediumFormatter: DateTimeFormatter
 ) : DateTimeUtils {
 
-    override fun retrieveEpochMillisAtStartOfDay(localDate: LocalDate): Long =
-        localDate.atStartOfDay(ZoneOffset.UTC)
-            .toInstant()
-            .toEpochMilli()
+    override fun retrieveEpochMillisAtStartOfDay(localDate: LocalDate): Long = localDate.atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()
 
     override fun fromMillisToLocalDate(millis: Long): LocalDate = Instant.ofEpochMilli(millis)
         .atOffset(ZoneOffset.UTC)
         .toLocalDate()
 
-    override fun formatLocalDateUiMedium(localDate: LocalDate): String =
-        localDateUiMediumFormatter.format(localDate)
+    override fun formatLocalDateUiMedium(localDate: LocalDate): String = localDateUiMediumFormatter.format(localDate)
 
-    override fun parseLocalDateToString(localDate: LocalDate): String =
-        isoDateFormatter.format(localDate)
+    override fun parseLocalDateToString(localDate: LocalDate): String = isoDateFormatter.format(localDate)
 }

@@ -7,9 +7,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class ProjectMapper @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) {
+class ProjectMapper @Inject constructor(@IoDispatcher private val ioDispatcher: CoroutineDispatcher) {
     suspend fun toProject(dto: ProjectDTO): Project = withContext(ioDispatcher) {
         Project(
             id = dto.id,

@@ -14,15 +14,14 @@ class FileUriManagerImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher
 ) : FileUriManager {
-    override suspend fun retrieveAttachmentInfo(uri: Uri): AttachmentInfo =
-        withContext(ioDispatcher) {
-            val fileName = getFileName(uri)
-            val bytes = getByteList(uri)
-            AttachmentInfo(
-                name = fileName,
-                fileBytes = bytes
-            )
-        }
+    override suspend fun retrieveAttachmentInfo(uri: Uri): AttachmentInfo = withContext(ioDispatcher) {
+        val fileName = getFileName(uri)
+        val bytes = getByteList(uri)
+        AttachmentInfo(
+            name = fileName,
+            fileBytes = bytes
+        )
+    }
 
     private suspend fun getByteList(uri: Uri): List<Byte> = withContext(ioDispatcher) {
         val contentResolver = context.contentResolver

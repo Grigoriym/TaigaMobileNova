@@ -3,14 +3,16 @@ package com.grappim.taigamobile.feature.issues.data
 import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.api.CustomFieldsMapper
-import com.grappim.taigamobile.core.api.PatchedDataMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.core.storage.server.ServerStorage
+import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
-import com.grappim.taigamobile.testing.getAttachment
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.testing.getCommonTask
 import com.grappim.taigamobile.testing.getCommonTaskResponse
+import com.grappim.taigamobile.testing.getFiltersData
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import io.mockk.Runs
@@ -32,11 +34,12 @@ class IssuesRepositoryImplTest {
     private val commonTaskMapper: CommonTaskMapper = mockk()
     private val issueTaskMapper: IssueTaskMapper = mockk()
     private val attachmentMapper: AttachmentMapper = mockk()
-    private val serverStorage: ServerStorage = mockk()
     private val customFieldsMapper: CustomFieldsMapper = mockk()
-    private val patchedDataMapper: PatchedDataMapper = mockk()
+    private val workItemApi: WorkItemApi = mockk()
 
     private lateinit var sut: IssuesRepository
+
+    private val taskPath = WorkItemPathPlural(CommonTaskType.Issue)
 
     @Before
     fun setup() {
@@ -46,50 +49,19 @@ class IssuesRepositoryImplTest {
             commonTaskMapper = commonTaskMapper,
             issueTaskMapper = issueTaskMapper,
             attachmentMapper = attachmentMapper,
-            serverStorage = serverStorage,
             customFieldsMapper = customFieldsMapper,
-            patchedDataMapper = patchedDataMapper
+            workItemApi = workItemApi
         )
-    }
-
-    @Test
-    fun `watchIssue should call issuesApi watchIssue`() = runTest {
-        val issueId = getRandomLong()
-        coEvery { issuesApi.watchIssue(issueId) } just Runs
-
-        sut.watchIssue(issueId)
-
-        coVerify { issuesApi.watchIssue(issueId) }
-    }
-
-    @Test
-    fun `unwatchIssue should call issuesApi unwatchIssue`() = runTest {
-        val issueId = getRandomLong()
-        coEvery { issuesApi.unwatchIssue(issueId) } just Runs
-
-        sut.unwatchIssue(issueId)
-
-        coVerify { issuesApi.unwatchIssue(issueId) }
     }
 
     @Test
     fun `deleteIssue should call issuesApi deleteCommonTask`() = runTest {
         val issueId = getRandomLong()
-        coEvery { issuesApi.deleteCommonTask(issueId) } just Runs
+        coEvery { workItemApi.deleteWorkItem(workItemId = issueId, taskPath = taskPath) } just Runs
 
         sut.deleteIssue(issueId)
 
-        coVerify { issuesApi.deleteCommonTask(issueId) }
-    }
-
-    @Test
-    fun `deleteAttachment should call issuesApi deleteAttachment`() = runTest {
-        val attachment = getAttachment()
-        coEvery { issuesApi.deleteAttachment(attachment.id) } just Runs
-
-        sut.deleteAttachment(attachment)
-
-        coVerify { issuesApi.deleteAttachment(attachment.id) }
+        coVerify { workItemApi.deleteWorkItem(workItemId = issueId, taskPath = taskPath) }
     }
 
     @Test
@@ -132,5 +104,27 @@ class IssuesRepositoryImplTest {
             val actual = actuals[i]
             assertEquals(response.id, actual.id)
         }
+    }
+
+    @Test
+    fun `getIssue should return correct IssueTask`() = runTest {
+        val issueId = getRandomLong()
+        val filtersData = getFiltersData()
+        val mockResponse = mockk<WorkItemResponseDTO>()
+        val expectedIssueTask = mockk<IssueTask>()
+
+        coEvery {
+            workItemApi.getWorkItemById(
+                taskPath = taskPath,
+                id = issueId
+            )
+        } returns mockResponse
+        coEvery { issueTaskMapper.toDomain(mockResponse, filtersData) } returns expectedIssueTask
+
+        val actual = sut.getIssue(issueId, filtersData)
+
+        assertEquals(expectedIssueTask, actual)
+        coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = issueId) }
+        coVerify { issueTaskMapper.toDomain(mockResponse, filtersData) }
     }
 }

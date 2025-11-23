@@ -24,10 +24,7 @@ interface FiltersRepository {
     ): Result<FiltersDataDTO>
 
     suspend fun getStatuses(commonTaskType: CommonTaskType): List<StatusOld>
-    suspend fun getStatusByType(
-        commonTaskType: CommonTaskType,
-        statusType: StatusType
-    ): List<StatusOld>
+    suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType): List<StatusOld>
 
     suspend fun getAllTags(commonTaskType: CommonTaskType): List<Tag>
 }

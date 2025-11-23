@@ -20,11 +20,7 @@ fun DrawerDestination.navigate(navController: NavHostController, navOptions: Nav
     navController.navigate(route = route, navOptions = navOptions)
 }
 
-enum class DrawerDestination(
-    val route: Any,
-    @StringRes val label: Int,
-    @DrawableRes val icon: Int
-) {
+enum class DrawerDestination(val route: Any, @StringRes val label: Int, @DrawableRes val icon: Int) {
     ProjectSelector(
         ProjectSelectorNavDestination(),
         RString.project_selector,

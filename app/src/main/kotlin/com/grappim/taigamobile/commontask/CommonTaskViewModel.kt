@@ -552,19 +552,18 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    fun editCustomField(customField: CustomField, value: CustomFieldValue?) =
-        viewModelScope.launch {
-            customFields.loadOrError(RString.permission_error) {
-                tasksRepositoryOld.editCustomFields(
-                    commonTaskType = _state.value.commonTaskType,
-                    commonTaskId = commonTaskId,
-                    fields = customFields.value.data?.fields.orEmpty().map {
-                        it.id to (if (it.id == customField.id) value else it.value)
-                    }.toMap(),
-                    version = customFields.value.data?.version ?: 0
-                )
-                loadData().join()
-                customFields.value.data
-            }
+    fun editCustomField(customField: CustomField, value: CustomFieldValue?) = viewModelScope.launch {
+        customFields.loadOrError(RString.permission_error) {
+            tasksRepositoryOld.editCustomFields(
+                commonTaskType = _state.value.commonTaskType,
+                commonTaskId = commonTaskId,
+                fields = customFields.value.data?.fields.orEmpty().map {
+                    it.id to (if (it.id == customField.id) value else it.value)
+                }.toMap(),
+                version = customFields.value.data?.version ?: 0
+            )
+            loadData().join()
+            customFields.value.data
         }
+    }
 }

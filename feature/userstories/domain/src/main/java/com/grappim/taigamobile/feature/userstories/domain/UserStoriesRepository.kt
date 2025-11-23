@@ -7,7 +7,6 @@ import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
@@ -44,25 +43,7 @@ interface UserStoriesRepository {
 
     suspend fun getCustomFields(id: Long): CustomFields
 
-    suspend fun patchData(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedData
+    suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): PatchedData
 
-    suspend fun patchCustomAttributes(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedCustomAttributes
-
-    suspend fun unwatchUserStory(userStoryId: Long)
-
-    suspend fun watchUserStory(userStoryId: Long)
-
-    suspend fun deleteIssue(id: Long)
-
-    suspend fun deleteAttachment(attachment: Attachment)
-
-    suspend fun addAttachment(id: Long, fileName: String, fileByteArray: ByteArray): Attachment
+    suspend fun deleteUserStory(id: Long)
 }
