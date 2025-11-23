@@ -1,13 +1,11 @@
 package com.grappim.taigamobile.feature.userstories.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
-import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -75,16 +73,7 @@ class UserStoryDetailsDataUseCase @Inject constructor(
         }
     }
 
-    suspend fun deleteIssue(id: Long) = resultOf {
-        userStoriesRepository.deleteIssue(id)
+    suspend fun deleteUserStory(id: Long) = resultOf {
+        userStoriesRepository.deleteUserStory(id)
     }
-
-    suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): Result<PatchedData> =
-        resultOf {
-            userStoriesRepository.patchData(
-                version = version,
-                userStoryId = userStoryId,
-                payload = payload
-            )
-        }
 }

@@ -16,7 +16,6 @@ import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.commaString
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.tagsCommaString
 import com.grappim.taigamobile.core.domain.toCommonTaskExtended
@@ -197,51 +196,10 @@ class UserStoriesRepositoryImpl @Inject constructor(
             version = version
         )
 
-    override suspend fun patchCustomAttributes(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedCustomAttributes = workItemRepository.patchCustomAttributes(
-        commonTaskType = CommonTaskType.UserStory,
-        workItemId = userStoryId,
-        payload = payload,
-        version = version
-    )
-
-    override suspend fun unwatchUserStory(userStoryId: Long) {
-        workItemApi.unwatchWorkItem(
-            taskPath = userStoryPlural,
-            workItemId = userStoryId
-        )
-    }
-
-    override suspend fun watchUserStory(userStoryId: Long) {
-        workItemRepository.watchWorkItem(
-            workItemId = userStoryId,
-            commonTaskType = CommonTaskType.UserStory
-        )
-    }
-
-    override suspend fun deleteIssue(id: Long) {
+    override suspend fun deleteUserStory(id: Long) {
         workItemApi.deleteWorkItem(
             taskPath = userStoryPlural,
             workItemId = id
         )
     }
-
-    override suspend fun deleteAttachment(attachment: Attachment) {
-        workItemRepository.deleteAttachment(
-            commonTaskType = CommonTaskType.UserStory,
-            attachment = attachment
-        )
-    }
-
-    override suspend fun addAttachment(id: Long, fileName: String, fileByteArray: ByteArray): Attachment =
-        workItemRepository.addAttachment(
-            workItemId = id,
-            fileName = fileName,
-            fileByteArray = fileByteArray,
-            projectId = taigaStorage.currentProjectIdFlow.first(),
-            commonTaskType = CommonTaskType.UserStory
-        )
 }

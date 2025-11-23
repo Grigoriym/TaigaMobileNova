@@ -1,13 +1,11 @@
 package com.grappim.taigamobile.feature.issues.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
-import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -24,11 +22,6 @@ class IssueDetailsDataUseCase @Inject constructor(
     suspend fun deleteIssue(id: Long) = resultOf {
         issuesRepository.deleteIssue(id)
     }
-
-    suspend fun patchData(version: Long, issueId: Long, payload: ImmutableMap<String, Any?>): Result<PatchedData> =
-        resultOf {
-            issuesRepository.patchData(version = version, issueId = issueId, payload = payload)
-        }
 
     /**
      * What they do on taiga-front:

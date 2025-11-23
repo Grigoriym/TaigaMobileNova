@@ -4,7 +4,6 @@ import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
@@ -16,7 +15,6 @@ import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.testing.getAttachment
 import com.grappim.taigamobile.testing.getCommonTask
 import com.grappim.taigamobile.testing.getCommonTaskResponse
 import com.grappim.taigamobile.testing.getRandomLong
@@ -25,7 +23,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -91,63 +88,13 @@ class UserStoriesRepositoryImplTest {
     }
 
     @Test
-    fun `unwatchUserStory should call workItemApi unwatchWorkItem`() = runTest {
-        val userStoryId = getRandomLong()
-        coEvery { workItemApi.unwatchWorkItem(workItemId = userStoryId, taskPath = taskPath) } just Runs
-
-        sut.unwatchUserStory(userStoryId)
-
-        coVerify { workItemApi.unwatchWorkItem(workItemId = userStoryId, taskPath = taskPath) }
-    }
-
-    @Test
-    fun `watchUserStory should call workItemRepository watchWorkItem`() = runTest {
-        val userStoryId = getRandomLong()
-        coEvery {
-            workItemRepository.watchWorkItem(
-                workItemId = userStoryId,
-                commonTaskType = CommonTaskType.UserStory
-            )
-        } just Runs
-
-        sut.watchUserStory(userStoryId)
-
-        coVerify {
-            workItemRepository.watchWorkItem(
-                workItemId = userStoryId,
-                commonTaskType = CommonTaskType.UserStory
-            )
-        }
-    }
-
-    @Test
     fun `deleteIssue should call workItemApi deleteWorkItem`() = runTest {
         val userStoryId = getRandomLong()
         coEvery { workItemApi.deleteWorkItem(workItemId = userStoryId, taskPath = taskPath) } just Runs
 
-        sut.deleteIssue(userStoryId)
+        sut.deleteUserStory(userStoryId)
 
         coVerify { workItemApi.deleteWorkItem(workItemId = userStoryId, taskPath = taskPath) }
-    }
-
-    @Test
-    fun `deleteAttachment should call workItemRepository deleteAttachment`() = runTest {
-        val attachment = getAttachment()
-        coEvery {
-            workItemRepository.deleteAttachment(
-                commonTaskType = CommonTaskType.UserStory,
-                attachment = attachment
-            )
-        } just Runs
-
-        sut.deleteAttachment(attachment)
-
-        coVerify {
-            workItemRepository.deleteAttachment(
-                commonTaskType = CommonTaskType.UserStory,
-                attachment = attachment
-            )
-        }
     }
 
     @Test
@@ -171,35 +118,6 @@ class UserStoriesRepositoryImplTest {
         assertEquals(expectedPatchedData, actual)
         coVerify {
             workItemRepository.patchData(
-                commonTaskType = CommonTaskType.UserStory,
-                workItemId = userStoryId,
-                payload = payload,
-                version = version
-            )
-        }
-    }
-
-    @Test
-    fun `patchCustomAttributes should delegate to workItemRepository`() = runTest {
-        val version = getRandomLong()
-        val userStoryId = getRandomLong()
-        val payload = mapOf("1" to "value1").toPersistentMap()
-        val expectedPatchedCustomAttrs = mockk<PatchedCustomAttributes>()
-
-        coEvery {
-            workItemRepository.patchCustomAttributes(
-                commonTaskType = CommonTaskType.UserStory,
-                workItemId = userStoryId,
-                payload = payload,
-                version = version
-            )
-        } returns expectedPatchedCustomAttrs
-
-        val actual = sut.patchCustomAttributes(version, userStoryId, payload)
-
-        assertEquals(expectedPatchedCustomAttrs, actual)
-        coVerify {
-            workItemRepository.patchCustomAttributes(
                 commonTaskType = CommonTaskType.UserStory,
                 workItemId = userStoryId,
                 payload = payload,

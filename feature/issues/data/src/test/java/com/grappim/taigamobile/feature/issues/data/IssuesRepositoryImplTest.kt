@@ -4,18 +4,12 @@ import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
-import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.testing.getAttachment
 import com.grappim.taigamobile.testing.getCommonTask
 import com.grappim.taigamobile.testing.getCommonTaskResponse
 import com.grappim.taigamobile.testing.getFiltersData
@@ -26,7 +20,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
-import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -42,9 +35,7 @@ class IssuesRepositoryImplTest {
     private val issueTaskMapper: IssueTaskMapper = mockk()
     private val attachmentMapper: AttachmentMapper = mockk()
     private val customFieldsMapper: CustomFieldsMapper = mockk()
-    private val patchedDataMapper: PatchedDataMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
-    private val workItemRepository: WorkItemRepository = mockk()
 
     private lateinit var sut: IssuesRepository
 
@@ -59,30 +50,8 @@ class IssuesRepositoryImplTest {
             issueTaskMapper = issueTaskMapper,
             attachmentMapper = attachmentMapper,
             customFieldsMapper = customFieldsMapper,
-            patchedDataMapper = patchedDataMapper,
-            workItemApi = workItemApi,
-            workItemRepository = workItemRepository
+            workItemApi = workItemApi
         )
-    }
-
-    @Test
-    fun `watchIssue should call issuesApi watchIssue`() = runTest {
-        val issueId = getRandomLong()
-        coEvery { workItemApi.watchWorkItem(workItemId = issueId, taskPath = taskPath) } just Runs
-
-        sut.watchIssue(issueId)
-
-        coVerify { workItemApi.watchWorkItem(workItemId = issueId, taskPath = taskPath) }
-    }
-
-    @Test
-    fun `unwatchIssue should call issuesApi unwatchIssue`() = runTest {
-        val issueId = getRandomLong()
-        coEvery { workItemApi.unwatchWorkItem(workItemId = issueId, taskPath = taskPath) } just Runs
-
-        sut.unwatchIssue(issueId)
-
-        coVerify { workItemApi.unwatchWorkItem(workItemId = issueId, taskPath = taskPath) }
     }
 
     @Test
@@ -93,21 +62,6 @@ class IssuesRepositoryImplTest {
         sut.deleteIssue(issueId)
 
         coVerify { workItemApi.deleteWorkItem(workItemId = issueId, taskPath = taskPath) }
-    }
-
-    @Test
-    fun `deleteAttachment should call issuesApi deleteAttachment`() = runTest {
-        val attachment = getAttachment()
-        coEvery {
-            workItemApi.deleteAttachment(
-                attachmentId = attachment.id,
-                taskPath = taskPath
-            )
-        } just Runs
-
-        sut.deleteAttachment(attachment)
-
-        coVerify { workItemApi.deleteAttachment(attachmentId = attachment.id, taskPath = taskPath) }
     }
 
     @Test
@@ -150,70 +104,6 @@ class IssuesRepositoryImplTest {
             val actual = actuals[i]
             assertEquals(response.id, actual.id)
         }
-    }
-
-    @Test
-    fun `patchData should delegate to workItemRepository`() = runTest {
-        val version = getRandomLong()
-        val issueId = getRandomLong()
-        val payload = mapOf("subject" to "New Subject").toPersistentMap()
-        val expectedPatchedData = mockk<PatchedData>()
-
-        coEvery {
-            workItemRepository.patchData(
-                commonTaskType = CommonTaskType.Issue,
-                workItemId = issueId,
-                payload = payload,
-                version = version
-            )
-        } returns expectedPatchedData
-
-        val actual = sut.patchData(version, issueId, payload)
-
-        assertEquals(expectedPatchedData, actual)
-        coVerify {
-            workItemRepository.patchData(
-                commonTaskType = CommonTaskType.Issue,
-                workItemId = issueId,
-                payload = payload,
-                version = version
-            )
-        }
-    }
-
-    @Test
-    fun `patchCustomAttributes should call API and map result`() = runTest {
-        val version = getRandomLong()
-        val issueId = getRandomLong()
-        val payload = mapOf<String, Any?>("1" to "value1").toPersistentMap()
-        val expectedVersion = getRandomLong()
-        val mockResponse = CustomAttributesValuesResponseDTO(
-            attributesValues = emptyMap(),
-            version = expectedVersion
-        )
-        val expectedPatchedCustomAttrs = PatchedCustomAttributes(version = expectedVersion)
-        val editedMap = payload.put("version", version)
-
-        coEvery {
-            workItemApi.patchCustomAttributesValues(
-                taskPath = taskPath,
-                taskId = issueId,
-                payload = editedMap
-            )
-        } returns mockResponse
-        coEvery { patchedDataMapper.toDomainCustomAttrs(mockResponse) } returns expectedPatchedCustomAttrs
-
-        val actual = sut.patchCustomAttributes(version, issueId, payload)
-
-        assertEquals(expectedPatchedCustomAttrs, actual)
-        coVerify {
-            workItemApi.patchCustomAttributesValues(
-                taskPath = taskPath,
-                taskId = issueId,
-                payload = editedMap
-            )
-        }
-        coVerify { patchedDataMapper.toDomainCustomAttrs(mockResponse) }
     }
 
     @Test

@@ -424,7 +424,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                 it.copy(isLoading = true)
             }
 
-            userStoryDetailsDataUseCase.deleteIssue(
+            userStoryDetailsDataUseCase.deleteUserStory(
                 id = id
             ).onSuccess {
                 _deleteTrigger.emit(true)

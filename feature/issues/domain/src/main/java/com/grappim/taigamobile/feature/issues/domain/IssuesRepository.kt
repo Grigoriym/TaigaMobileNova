@@ -6,30 +6,12 @@ import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
-import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
 
 interface IssuesRepository {
 
-    suspend fun watchIssue(issueId: Long)
-    suspend fun unwatchIssue(issueId: Long)
-
     suspend fun deleteIssue(id: Long)
-
-    suspend fun addAttachment(issueId: Long, fileName: String, fileByteArray: ByteArray): Attachment
-
-    suspend fun deleteAttachment(attachment: Attachment)
-
-    suspend fun patchData(version: Long, issueId: Long, payload: ImmutableMap<String, Any?>): PatchedData
-
-    suspend fun patchCustomAttributes(
-        version: Long,
-        issueId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedCustomAttributes
 
     suspend fun getIssue(id: Long, filtersData: FiltersData): IssueTask
 
