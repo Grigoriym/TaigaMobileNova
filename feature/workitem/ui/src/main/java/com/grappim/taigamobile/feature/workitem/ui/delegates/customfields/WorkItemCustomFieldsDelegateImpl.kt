@@ -34,10 +34,7 @@ class WorkItemCustomFieldsDelegateImpl(
     override val customFieldsState: StateFlow<WorkItemCustomFieldsState> =
         _customFieldsState.asStateFlow()
 
-    override fun setInitialCustomFields(
-        customFieldStateItems: ImmutableList<CustomFieldItemState>,
-        version: Long
-    ) {
+    override fun setInitialCustomFields(customFieldStateItems: ImmutableList<CustomFieldItemState>, version: Long) {
         _customFieldsState.update {
             it.copy(
                 customFieldStateItems = customFieldStateItems,
@@ -142,10 +139,7 @@ class WorkItemCustomFieldsDelegateImpl(
         }
     }
 
-    private fun getCustomFieldValue(
-        stateItem: CustomFieldItemState,
-        takeCurrentValue: Boolean
-    ): Any? {
+    private fun getCustomFieldValue(stateItem: CustomFieldItemState, takeCurrentValue: Boolean): Any? {
         val valueToUse = if (takeCurrentValue) {
             stateItem.currentValue
         } else {

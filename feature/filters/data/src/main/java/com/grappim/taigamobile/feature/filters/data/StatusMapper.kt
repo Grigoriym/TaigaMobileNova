@@ -7,9 +7,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class StatusMapper @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) {
+class StatusMapper @Inject constructor(@IoDispatcher private val ioDispatcher: CoroutineDispatcher) {
 
     suspend fun getStatus(resp: WorkItemResponseDTO): Status = withContext(ioDispatcher) {
         Status(

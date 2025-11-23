@@ -34,5 +34,5 @@ interface WorkItemTagsDelegate {
 data class WorkItemTagsState(
     val tags: PersistentList<TagUI> = persistentListOf(),
     val areTagsLoading: Boolean = false,
-    val onGoingToEditTags: () -> Unit = {},
+    val onGoingToEditTags: () -> Unit = {}
 )

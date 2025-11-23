@@ -24,50 +24,40 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object ApiModule {
     @[Provides Singleton]
-    fun provideAuthApi(@AuthRetrofit retrofit: Retrofit): AuthApi =
-        retrofit.create(AuthApi::class.java)
+    fun provideAuthApi(@AuthRetrofit retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
 
     @[Provides Singleton]
-    fun provideTaigaApi(@CommonRetrofit retrofit: Retrofit): TaigaApi =
-        retrofit.create(TaigaApi::class.java)
+    fun provideTaigaApi(@CommonRetrofit retrofit: Retrofit): TaigaApi = retrofit.create(TaigaApi::class.java)
 
     @[Provides Singleton]
-    fun provideProjectsApi(@CommonRetrofit retrofit: Retrofit): ProjectsApi =
-        retrofit.create(ProjectsApi::class.java)
+    fun provideProjectsApi(@CommonRetrofit retrofit: Retrofit): ProjectsApi = retrofit.create(ProjectsApi::class.java)
 
     @[Provides Singleton]
-    fun provideEpicsApi(@CommonRetrofit retrofit: Retrofit): EpicsApi =
-        retrofit.create(EpicsApi::class.java)
+    fun provideEpicsApi(@CommonRetrofit retrofit: Retrofit): EpicsApi = retrofit.create(EpicsApi::class.java)
 
     @[Provides Singleton]
     fun provideUserStoriesApi(@CommonRetrofit retrofit: Retrofit): UserStoriesApi =
         retrofit.create(UserStoriesApi::class.java)
 
     @[Provides Singleton]
-    fun provideSprintApi(@CommonRetrofit retrofit: Retrofit): SprintApi =
-        retrofit.create(SprintApi::class.java)
+    fun provideSprintApi(@CommonRetrofit retrofit: Retrofit): SprintApi = retrofit.create(SprintApi::class.java)
 
     @[Provides Singleton]
-    fun provideIssuesApi(@CommonRetrofit retrofit: Retrofit): IssuesApi =
-        retrofit.create(IssuesApi::class.java)
+    fun provideIssuesApi(@CommonRetrofit retrofit: Retrofit): IssuesApi = retrofit.create(IssuesApi::class.java)
 
     @[Provides Singleton]
-    fun provideWikiApi(@CommonRetrofit retrofit: Retrofit): WikiApi =
-        retrofit.create(WikiApi::class.java)
+    fun provideWikiApi(@CommonRetrofit retrofit: Retrofit): WikiApi = retrofit.create(WikiApi::class.java)
 
     @[Provides Singleton]
-    fun provideFiltersApi(@CommonRetrofit retrofit: Retrofit): FiltersApi =
-        retrofit.create(FiltersApi::class.java)
+    fun provideFiltersApi(@CommonRetrofit retrofit: Retrofit): FiltersApi = retrofit.create(FiltersApi::class.java)
 
     @[Provides Singleton]
     fun provideSwimlanesApi(@CommonRetrofit retrofit: Retrofit): SwimlanesApi =
         retrofit.create(SwimlanesApi::class.java)
 
     @[Provides Singleton]
-    fun provideHistoryApi(@CommonRetrofit retrofit: Retrofit): HistoryApi =
-        retrofit.create(HistoryApi::class.java)
+    fun provideHistoryApi(@CommonRetrofit retrofit: Retrofit): HistoryApi = retrofit.create(HistoryApi::class.java)
 
     @[Provides Singleton]
-    fun provideWorkItemApi(@CommonRetrofit retrofit: Retrofit): WorkItemApi =
-        retrofit.create(WorkItemApi::class.java)
+    fun provideWorkItemApi(@CommonRetrofit retrofit: Retrofit): WorkItemApi = retrofit.create(WorkItemApi::class.java)
 }

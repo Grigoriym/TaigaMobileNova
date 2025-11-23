@@ -14,6 +14,4 @@ import kotlinx.collections.immutable.ImmutableList
  *
  * In all other cases please use the specific work item.
  */
-data class WorkItem(
-    val watcherUserIds: ImmutableList<Long>
-)
+data class WorkItem(val watcherUserIds: ImmutableList<Long>)

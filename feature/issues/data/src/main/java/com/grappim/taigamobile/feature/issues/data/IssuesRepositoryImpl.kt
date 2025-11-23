@@ -44,17 +44,16 @@ class IssuesRepositoryImpl @Inject constructor(
 ) : IssuesRepository {
     private var issuesPagingSource: IssuesPagingSource? = null
 
-    override fun getIssuesPaging(filtersDataDTO: FiltersDataDTO): Flow<PagingData<CommonTask>> =
-        Pager(
-            PagingConfig(
-                pageSize = 20,
-                enablePlaceholders = false
-            )
-        ) {
-            IssuesPagingSource(issuesApi, filtersDataDTO, taigaStorage).also {
-                issuesPagingSource = it
-            }
-        }.flow
+    override fun getIssuesPaging(filtersDataDTO: FiltersDataDTO): Flow<PagingData<CommonTask>> = Pager(
+        PagingConfig(
+            pageSize = 20,
+            enablePlaceholders = false
+        )
+    ) {
+        IssuesPagingSource(issuesApi, filtersDataDTO, taigaStorage).also {
+            issuesPagingSource = it
+        }
+    }.flow
 
     override fun refreshIssues() {
         issuesPagingSource?.invalidate()
@@ -88,32 +87,22 @@ class IssuesRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun addAttachment(
-        issueId: Long,
-        fileName: String,
-        fileByteArray: ByteArray
-    ): Attachment {
-        return workItemRepository.addAttachment(
+    override suspend fun addAttachment(issueId: Long, fileName: String, fileByteArray: ByteArray): Attachment =
+        workItemRepository.addAttachment(
             workItemId = issueId,
             fileName = fileName,
             fileByteArray = fileByteArray,
             projectId = taigaStorage.currentProjectIdFlow.first(),
             commonTaskType = CommonTaskType.Issue
         )
-    }
 
-    override suspend fun patchData(
-        version: Long,
-        issueId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedData {
-        return workItemRepository.patchData(
+    override suspend fun patchData(version: Long, issueId: Long, payload: ImmutableMap<String, Any?>): PatchedData =
+        workItemRepository.patchData(
             commonTaskType = CommonTaskType.Issue,
             workItemId = issueId,
             payload = payload,
             version = version
         )
-    }
 
     override suspend fun patchCustomAttributes(
         version: Long,
@@ -148,7 +137,7 @@ class IssuesRepositoryImpl @Inject constructor(
         val values = async {
             workItemApi.getCustomAttributesValues(
                 id = id,
-                taskPath = WorkItemPathPlural(CommonTaskType.Issue),
+                taskPath = WorkItemPathPlural(CommonTaskType.Issue)
             )
         }
 
@@ -170,18 +159,15 @@ class IssuesRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun createIssue(
-        title: String,
-        description: String,
-        sprintId: Long?
-    ): CommonTaskResponse = issuesApi.createIssue(
-        createIssueRequest = CreateIssueRequest(
-            project = taigaStorage.currentProjectIdFlow.first(),
-            subject = title,
-            description = description,
-            milestone = sprintId
+    override suspend fun createIssue(title: String, description: String, sprintId: Long?): CommonTaskResponse =
+        issuesApi.createIssue(
+            createIssueRequest = CreateIssueRequest(
+                project = taigaStorage.currentProjectIdFlow.first(),
+                subject = title,
+                description = description,
+                milestone = sprintId
+            )
         )
-    )
 
     override suspend fun getIssues(
         isClosed: Boolean,

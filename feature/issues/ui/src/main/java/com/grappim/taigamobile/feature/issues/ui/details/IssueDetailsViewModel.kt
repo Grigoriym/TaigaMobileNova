@@ -89,7 +89,7 @@ class IssueDetailsViewModel @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
     private val taigaStorage: TaigaStorage,
-    private val usersRepository: UsersRepository,
+    private val usersRepository: UsersRepository
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = CommonTaskType.Issue,
@@ -186,7 +186,7 @@ class IssueDetailsViewModel @Inject constructor(
             removeAssignee = ::removeAssignee,
             retryLoadIssue = ::retryLoadIssue,
             onTitleSave = ::onTitleSave,
-            onBadgeSave = ::onBadgeSave,
+            onBadgeSave = ::onBadgeSave
         )
     )
     val state = _state.asStateFlow()
@@ -198,6 +198,8 @@ class IssueDetailsViewModel @Inject constructor(
     val deleteTrigger = _deleteTrigger.asSharedFlow()
 
     init {
+        loadIssue()
+
         workItemEditShared.teamMemberUpdateState
             .onEach(::handleTeamMemberUpdate)
             .launchIn(viewModelScope)
@@ -209,8 +211,6 @@ class IssueDetailsViewModel @Inject constructor(
         workItemEditShared.descriptionState
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
-
-        loadIssue()
     }
 
     private fun onTitleSave() {
@@ -260,9 +260,7 @@ class IssueDetailsViewModel @Inject constructor(
                     }
 
                     val tags = async {
-                        result.issueTask.tags.map { tag ->
-                            tagUIMapper.toUI(tag)
-                        }.toPersistentList()
+                        tagUIMapper.toUI(result.issueTask.tags).toPersistentList()
                     }
                     val customFieldsStateItems = async {
                         customFieldsUIMapper.toUI(result.customFields)
@@ -306,7 +304,7 @@ class IssueDetailsViewModel @Inject constructor(
                     )
                     setInitialCustomFields(
                         version = result.customFields.version,
-                        customFieldStateItems = customFieldsStateItems.await(),
+                        customFieldStateItems = customFieldsStateItems.await()
                     )
                     setInitialDueDate(dueDateText = dueDateText)
                     setInitialAssignees(
@@ -339,7 +337,7 @@ class IssueDetailsViewModel @Inject constructor(
         Timber.e(error)
         _state.update {
             it.copy(
-                error = getErrorMessage(error),
+                error = getErrorMessage(error)
             )
         }
     }
@@ -351,7 +349,7 @@ class IssueDetailsViewModel @Inject constructor(
         _state.update {
             it.copy(
                 currentIssue = updatedIssue,
-                originalIssue = updatedIssue,
+                originalIssue = updatedIssue
             )
         }
     }
@@ -633,10 +631,9 @@ class IssueDetailsViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             currentIssue = updatedIssue,
-                            originalIssue = updatedIssue,
+                            originalIssue = updatedIssue
                         )
                     }
-
                 },
                 doOnError = { error ->
                     emitError(error)

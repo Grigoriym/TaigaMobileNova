@@ -57,17 +57,16 @@ class UserStoriesRepositoryImpl @Inject constructor(
 ) : UserStoriesRepository {
     private var userStoriesPagingSource: UserStoriesPagingSource? = null
 
-    override fun getUserStoriesPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>> =
-        Pager(
-            PagingConfig(
-                pageSize = 20,
-                enablePlaceholders = false
-            )
-        ) {
-            UserStoriesPagingSource(userStoriesApi, filters, taigaStorage).also {
-                userStoriesPagingSource = it
-            }
-        }.flow
+    override fun getUserStoriesPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>> = Pager(
+        PagingConfig(
+            pageSize = 20,
+            enablePlaceholders = false
+        )
+    ) {
+        UserStoriesPagingSource(userStoriesApi, filters, taigaStorage).also {
+            userStoriesPagingSource = it
+        }
+    }.flow
 
     override fun refreshUserStories() {
         userStoriesPagingSource?.invalidate()
@@ -190,31 +189,24 @@ class UserStoriesRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun patchData(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedData {
-        return workItemRepository.patchData(
+    override suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): PatchedData =
+        workItemRepository.patchData(
             commonTaskType = CommonTaskType.UserStory,
             workItemId = userStoryId,
             payload = payload,
             version = version
         )
-    }
 
     override suspend fun patchCustomAttributes(
         version: Long,
         userStoryId: Long,
         payload: ImmutableMap<String, Any?>
-    ): PatchedCustomAttributes {
-        return workItemRepository.patchCustomAttributes(
-            commonTaskType = CommonTaskType.UserStory,
-            workItemId = userStoryId,
-            payload = payload,
-            version = version
-        )
-    }
+    ): PatchedCustomAttributes = workItemRepository.patchCustomAttributes(
+        commonTaskType = CommonTaskType.UserStory,
+        workItemId = userStoryId,
+        payload = payload,
+        version = version
+    )
 
     override suspend fun unwatchUserStory(userStoryId: Long) {
         workItemApi.unwatchWorkItem(
@@ -244,17 +236,12 @@ class UserStoriesRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun addAttachment(
-        id: Long,
-        fileName: String,
-        fileByteArray: ByteArray
-    ): Attachment {
-        return workItemRepository.addAttachment(
+    override suspend fun addAttachment(id: Long, fileName: String, fileByteArray: ByteArray): Attachment =
+        workItemRepository.addAttachment(
             workItemId = id,
             fileName = fileName,
             fileByteArray = fileByteArray,
             projectId = taigaStorage.currentProjectIdFlow.first(),
             commonTaskType = CommonTaskType.UserStory
         )
-    }
 }

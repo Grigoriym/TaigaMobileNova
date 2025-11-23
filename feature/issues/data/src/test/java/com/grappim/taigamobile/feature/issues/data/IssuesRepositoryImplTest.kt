@@ -5,9 +5,11 @@ import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.testing.getAttachment
 import com.grappim.taigamobile.testing.getCommonTask
 import com.grappim.taigamobile.testing.getCommonTaskResponse
@@ -32,11 +34,14 @@ class IssuesRepositoryImplTest {
     private val commonTaskMapper: CommonTaskMapper = mockk()
     private val issueTaskMapper: IssueTaskMapper = mockk()
     private val attachmentMapper: AttachmentMapper = mockk()
-    private val serverStorage: ServerStorage = mockk()
     private val customFieldsMapper: CustomFieldsMapper = mockk()
     private val patchedDataMapper: PatchedDataMapper = mockk()
+    private val workItemApi: WorkItemApi = mockk()
+    private val workItemRepository: WorkItemRepository = mockk()
 
     private lateinit var sut: IssuesRepository
+
+    private val taskPath = WorkItemPathPlural(CommonTaskType.Issue)
 
     @Before
     fun setup() {
@@ -46,50 +51,56 @@ class IssuesRepositoryImplTest {
             commonTaskMapper = commonTaskMapper,
             issueTaskMapper = issueTaskMapper,
             attachmentMapper = attachmentMapper,
-            serverStorage = serverStorage,
             customFieldsMapper = customFieldsMapper,
-            patchedDataMapper = patchedDataMapper
+            patchedDataMapper = patchedDataMapper,
+            workItemApi = workItemApi,
+            workItemRepository = workItemRepository
         )
     }
 
     @Test
     fun `watchIssue should call issuesApi watchIssue`() = runTest {
         val issueId = getRandomLong()
-        coEvery { issuesApi.watchIssue(issueId) } just Runs
+        coEvery { workItemApi.watchWorkItem(workItemId = issueId, taskPath = taskPath) } just Runs
 
         sut.watchIssue(issueId)
 
-        coVerify { issuesApi.watchIssue(issueId) }
+        coVerify { workItemApi.watchWorkItem(workItemId = issueId, taskPath = taskPath) }
     }
 
     @Test
     fun `unwatchIssue should call issuesApi unwatchIssue`() = runTest {
         val issueId = getRandomLong()
-        coEvery { issuesApi.unwatchIssue(issueId) } just Runs
+        coEvery { workItemApi.unwatchWorkItem(workItemId = issueId, taskPath = taskPath) } just Runs
 
         sut.unwatchIssue(issueId)
 
-        coVerify { issuesApi.unwatchIssue(issueId) }
+        coVerify { workItemApi.unwatchWorkItem(workItemId = issueId, taskPath = taskPath) }
     }
 
     @Test
     fun `deleteIssue should call issuesApi deleteCommonTask`() = runTest {
         val issueId = getRandomLong()
-        coEvery { issuesApi.deleteCommonTask(issueId) } just Runs
+        coEvery { workItemApi.deleteWorkItem(workItemId = issueId, taskPath = taskPath) } just Runs
 
         sut.deleteIssue(issueId)
 
-        coVerify { issuesApi.deleteCommonTask(issueId) }
+        coVerify { workItemApi.deleteWorkItem(workItemId = issueId, taskPath = taskPath) }
     }
 
     @Test
     fun `deleteAttachment should call issuesApi deleteAttachment`() = runTest {
         val attachment = getAttachment()
-        coEvery { issuesApi.deleteAttachment(attachment.id) } just Runs
+        coEvery {
+            workItemApi.deleteAttachment(
+                attachmentId = attachment.id,
+                taskPath = taskPath
+            )
+        } just Runs
 
         sut.deleteAttachment(attachment)
 
-        coVerify { issuesApi.deleteAttachment(attachment.id) }
+        coVerify { workItemApi.deleteAttachment(attachmentId = attachment.id, taskPath = taskPath) }
     }
 
     @Test

@@ -74,11 +74,7 @@ fun CommentsSectionWidget(
 }
 
 @Composable
-private fun CommentItem(
-    comment: Comment,
-    onDeleteClick: () -> Unit,
-    navigateToProfile: (userId: Long) -> Unit
-) {
+private fun CommentItem(comment: Comment, onDeleteClick: () -> Unit, navigateToProfile: (userId: Long) -> Unit) {
     Column {
         var isAlertVisible by remember { mutableStateOf(false) }
 

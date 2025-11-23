@@ -13,8 +13,7 @@ import javax.inject.Singleton
  * Dynamic usage of the host interceptor
  */
 @Singleton
-class HostSelectionInterceptor @Inject constructor(private val baseUrlProvider: BaseUrlProvider) :
-    Interceptor {
+class HostSelectionInterceptor @Inject constructor(private val baseUrlProvider: BaseUrlProvider) : Interceptor {
 
     private val lock = Any()
 

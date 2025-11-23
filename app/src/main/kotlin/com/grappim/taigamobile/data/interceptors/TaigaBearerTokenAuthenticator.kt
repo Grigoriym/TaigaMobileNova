@@ -62,9 +62,8 @@ class TaigaBearerTokenAuthenticator @Inject constructor(
         }
     }
 
-    private fun extractToken(response: Response): String? =
-        response.request.header(ApiConstants.AUTHORIZATION)
-            ?.removePrefix("${ApiConstants.BEARER} ")
+    private fun extractToken(response: Response): String? = response.request.header(ApiConstants.AUTHORIZATION)
+        ?.removePrefix("${ApiConstants.BEARER} ")
 
     private fun handleTokenRefresh(oldToken: String, response: Response): Request? {
         val latestToken = session.token.value
@@ -93,8 +92,7 @@ class TaigaBearerTokenAuthenticator @Inject constructor(
     /**
      * Prevent endless loops
      */
-    private fun hasExceededRetryLimit(response: Response): Boolean =
-        response.responseCount >= MAX_AUTHENTICATOR_RETRIES
+    private fun hasExceededRetryLimit(response: Response): Boolean = response.responseCount >= MAX_AUTHENTICATOR_RETRIES
 
     private fun Response.withBearerToken(newToken: String): Request = request.newBuilder()
         .header(

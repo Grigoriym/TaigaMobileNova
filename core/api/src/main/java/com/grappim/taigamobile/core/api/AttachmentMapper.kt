@@ -7,9 +7,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class AttachmentMapper @Inject constructor(
-    @IoDispatcher private val dispatcher: CoroutineDispatcher
-) {
+class AttachmentMapper @Inject constructor(@IoDispatcher private val dispatcher: CoroutineDispatcher) {
     suspend fun toDomain(dto: AttachmentDTO): Attachment = withContext(dispatcher) {
         Attachment(
             id = dto.id,

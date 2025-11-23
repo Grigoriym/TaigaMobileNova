@@ -17,7 +17,4 @@ interface WorkItemDescriptionDelegate {
     fun setInitialDescription(description: String)
 }
 
-data class WorkItemDescriptionState(
-    val isDescriptionLoading: Boolean = false,
-    val currentDescription: String = ""
-)
+data class WorkItemDescriptionState(val isDescriptionLoading: Boolean = false, val currentDescription: String = "")

@@ -23,7 +23,7 @@ class WorkItemTagsDelegateImpl(
 
     private val _tagsState = MutableStateFlow(
         WorkItemTagsState(
-            onGoingToEditTags = ::onGoingToEditTags,
+            onGoingToEditTags = ::onGoingToEditTags
         )
     )
     override val tagsState: StateFlow<WorkItemTagsState> = _tagsState.asStateFlow()

@@ -24,7 +24,4 @@ data class WorkItemBlockState(
     val setIsBlockDialogVisible: (Boolean) -> Unit = {}
 )
 
-data class BlockToggleResult(
-    val blockNote: String?,
-    val patchedData: PatchedData
-)
+data class BlockToggleResult(val blockNote: String?, val patchedData: PatchedData)

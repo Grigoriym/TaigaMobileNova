@@ -23,11 +23,7 @@ interface IssuesRepository {
 
     suspend fun deleteAttachment(attachment: Attachment)
 
-    suspend fun patchData(
-        version: Long,
-        issueId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedData
+    suspend fun patchData(version: Long, issueId: Long, payload: ImmutableMap<String, Any?>): PatchedData
 
     suspend fun patchCustomAttributes(
         version: Long,

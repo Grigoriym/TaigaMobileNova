@@ -52,5 +52,5 @@ data class WorkItemWatchersState(
     val setIsRemoveWatcherDialogVisible: (Boolean) -> Unit = {},
     val onGoingToEditWatchers: () -> Unit = {},
     val watcherIdToRemove: Long? = null,
-    val onRemoveWatcherClick: (Long) -> Unit = {},
+    val onRemoveWatcherClick: (Long) -> Unit = {}
 )

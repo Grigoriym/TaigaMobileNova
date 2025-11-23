@@ -87,10 +87,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         return attachmentMapper.toDomain(dto)
     }
 
-    override suspend fun deleteAttachment(
-        attachment: Attachment,
-        commonTaskType: CommonTaskType
-    ) {
+    override suspend fun deleteAttachment(attachment: Attachment, commonTaskType: CommonTaskType) {
         workItemApi.deleteAttachment(
             taskPath = WorkItemPathPlural(commonTaskType),
             attachmentId = attachment.id

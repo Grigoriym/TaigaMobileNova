@@ -261,7 +261,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                     )
                     setInitialCustomFields(
                         version = result.customFields.version,
-                        customFieldStateItems = customFieldsStateItems.await(),
+                        customFieldStateItems = customFieldsStateItems.await()
                     )
                     setInitialDueDate(dueDateText = dueDateText)
                     setInitialAssignees(
@@ -294,7 +294,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         Timber.e(error)
         _state.update {
             it.copy(
-                error = getErrorMessage(error),
+                error = getErrorMessage(error)
             )
         }
     }
@@ -306,7 +306,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         _state.update {
             it.copy(
                 currentUserStory = updatedUserStory,
-                originalUserStory = updatedUserStory,
+                originalUserStory = updatedUserStory
             )
         }
     }
@@ -705,10 +705,9 @@ class UserStoryDetailsViewModel @Inject constructor(
                     _state.update {
                         it.copy(
                             currentUserStory = updatedUserStory,
-                            originalUserStory = updatedUserStory,
+                            originalUserStory = updatedUserStory
                         )
                     }
-
                 },
                 doOnError = { error ->
                     emitError(error)

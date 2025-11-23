@@ -10,15 +10,10 @@ import retrofit2.http.Query
 interface UserStoriesApi {
 
     @POST("userstories")
-    suspend fun createUserStory(
-        @Body createUserStoryRequest: CreateUserStoryRequest
-    ): CommonTaskResponse
+    suspend fun createUserStory(@Body createUserStoryRequest: CreateUserStoryRequest): CommonTaskResponse
 
     @GET("userstories/by_ref")
-    suspend fun getUserStoryByRef(
-        @Query("project") projectId: Long,
-        @Query("ref") ref: Int
-    ): CommonTaskResponse
+    suspend fun getUserStoryByRef(@Query("project") projectId: Long, @Query("ref") ref: Int): CommonTaskResponse
 
     @GET("userstories")
     suspend fun getUserStories(

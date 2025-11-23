@@ -10,10 +10,7 @@ import kotlinx.coroutines.flow.StateFlow
 interface WorkItemCustomFieldsDelegate {
     val customFieldsState: StateFlow<WorkItemCustomFieldsState>
 
-    fun setInitialCustomFields(
-        customFieldStateItems: ImmutableList<CustomFieldItemState>,
-        version: Long
-    )
+    fun setInitialCustomFields(customFieldStateItems: ImmutableList<CustomFieldItemState>, version: Long)
 
     suspend fun handleCustomFieldSave(
         item: CustomFieldItemState,
@@ -35,5 +32,5 @@ data class WorkItemCustomFieldsState(
     val isCustomFieldsLoading: Boolean = false,
     val setIsCustomFieldsWidgetExpanded: (Boolean) -> Unit = {},
     val onCustomFieldChange: (CustomFieldItemState) -> Unit = {},
-    val onCustomFieldEditToggle: (CustomFieldItemState) -> Unit = {},
+    val onCustomFieldEditToggle: (CustomFieldItemState) -> Unit = {}
 )

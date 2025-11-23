@@ -30,10 +30,7 @@ interface WorkItemRepository {
         commonTaskType: CommonTaskType
     ): Attachment
 
-    suspend fun deleteAttachment(
-        attachment: Attachment,
-        commonTaskType: CommonTaskType
-    )
+    suspend fun deleteAttachment(attachment: Attachment, commonTaskType: CommonTaskType)
 
     suspend fun watchWorkItem(workItemId: Long, commonTaskType: CommonTaskType)
 

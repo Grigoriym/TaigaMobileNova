@@ -25,13 +25,10 @@ class IssueDetailsDataUseCase @Inject constructor(
         issuesRepository.deleteIssue(id)
     }
 
-    suspend fun patchData(
-        version: Long,
-        issueId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): Result<PatchedData> = resultOf {
-        issuesRepository.patchData(version = version, issueId = issueId, payload = payload)
-    }
+    suspend fun patchData(version: Long, issueId: Long, payload: ImmutableMap<String, Any?>): Result<PatchedData> =
+        resultOf {
+            issuesRepository.patchData(version = version, issueId = issueId, payload = payload)
+        }
 
     /**
      * What they do on taiga-front:

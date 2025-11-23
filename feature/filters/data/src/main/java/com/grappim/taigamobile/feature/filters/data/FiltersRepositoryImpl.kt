@@ -28,10 +28,9 @@ class FiltersRepositoryImpl @Inject constructor(
         return filtersMapper.toDomain(response)
     }
 
-    override suspend fun getFiltersDataResult(commonTaskType: CommonTaskType): Result<FiltersData> =
-        resultOf {
-            getFiltersData(commonTaskType)
-        }
+    override suspend fun getFiltersDataResult(commonTaskType: CommonTaskType): Result<FiltersData> = resultOf {
+        getFiltersData(commonTaskType)
+    }
 
     override suspend fun getFiltersDataOld(
         commonTaskType: CommonTaskType,
@@ -58,21 +57,20 @@ class FiltersRepositoryImpl @Inject constructor(
     override suspend fun getStatuses(commonTaskType: CommonTaskType) =
         getFiltersDataOld(commonTaskType).statuses.map { it.toStatus(StatusType.Status) }
 
-    override suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType) =
-        withIO {
-            if (commonTaskType != CommonTaskType.Issue && statusType != StatusType.Status) {
-                throw UnsupportedOperationException("Cannot get $statusType for $commonTaskType")
-            }
+    override suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType) = withIO {
+        if (commonTaskType != CommonTaskType.Issue && statusType != StatusType.Status) {
+            throw UnsupportedOperationException("Cannot get $statusType for $commonTaskType")
+        }
 
-            getFiltersDataOld(commonTaskType).let {
-                when (statusType) {
-                    StatusType.Status -> it.statuses.map { it.toStatus(statusType) }
-                    StatusType.Type -> it.types.map { it.toStatus(statusType) }
-                    StatusType.Severity -> it.severities.map { it.toStatus(statusType) }
-                    StatusType.Priority -> it.priorities.map { it.toStatus(statusType) }
-                }
+        getFiltersDataOld(commonTaskType).let {
+            when (statusType) {
+                StatusType.Status -> it.statuses.map { it.toStatus(statusType) }
+                StatusType.Type -> it.types.map { it.toStatus(statusType) }
+                StatusType.Severity -> it.severities.map { it.toStatus(statusType) }
+                StatusType.Priority -> it.priorities.map { it.toStatus(statusType) }
             }
         }
+    }
 
     override suspend fun getAllTags(commonTaskType: CommonTaskType) =
         getFiltersDataOld(commonTaskType).tags.map { Tag(it.name, it.color) }

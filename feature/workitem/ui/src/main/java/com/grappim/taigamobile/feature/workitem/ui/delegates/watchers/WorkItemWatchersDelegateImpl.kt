@@ -22,7 +22,7 @@ class WorkItemWatchersDelegateImpl(
     private val usersRepository: UsersRepository,
     private val patchDataGenerator: PatchDataGenerator,
     private val session: Session,
-    private val workItemEditShared: WorkItemEditShared,
+    private val workItemEditShared: WorkItemEditShared
 ) : WorkItemWatchersDelegate {
 
     private val _watchersState = MutableStateFlow(
@@ -33,7 +33,6 @@ class WorkItemWatchersDelegateImpl(
         )
     )
     override val watchersState: StateFlow<WorkItemWatchersState> = _watchersState.asStateFlow()
-
 
     private fun onRemoveWatcherClick(watcherId: Long) {
         _watchersState.update {

@@ -20,16 +20,10 @@ interface WikiApi {
     suspend fun getProjectWikiPages(@Query("project") projectId: Long): List<WikiPage>
 
     @GET("wiki/by_slug")
-    suspend fun getProjectWikiPageBySlug(
-        @Query("project") projectId: Long,
-        @Query("slug") slug: String
-    ): WikiPage
+    suspend fun getProjectWikiPageBySlug(@Query("project") projectId: Long, @Query("slug") slug: String): WikiPage
 
     @PATCH("wiki/{id}")
-    suspend fun editWikiPage(
-        @Path("id") pageId: Long,
-        @Body editWikiPageRequest: EditWikiPageRequest
-    )
+    suspend fun editWikiPage(@Path("id") pageId: Long, @Body editWikiPageRequest: EditWikiPageRequest)
 
     @GET("wiki/attachments")
     suspend fun getPageAttachments(

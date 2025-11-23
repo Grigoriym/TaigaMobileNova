@@ -13,6 +13,9 @@ dependencies {
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.issues.domain)
     implementation(projects.feature.projects.domain)
+    implementation(projects.feature.workitem.data)
+    implementation(projects.feature.workitem.ui)
+    implementation(projects.utils.ui)
 
     api(libs.junit4)
     api(libs.kotlinx.coroutines.test)

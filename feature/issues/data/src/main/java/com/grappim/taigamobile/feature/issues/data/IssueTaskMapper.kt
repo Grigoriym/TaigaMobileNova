@@ -28,43 +28,42 @@ class IssueTaskMapper @Inject constructor(
     private val dueDateStatusMapper: DueDateStatusMapper,
     private val serverStorage: ServerStorage
 ) {
-    suspend fun toDomain(resp: WorkItemResponseDTO, filters: FiltersData): IssueTask =
-        withContext(ioDispatcher) {
-            val creatorId = resp.owner ?: error("Owner field is null")
+    suspend fun toDomain(resp: WorkItemResponseDTO, filters: FiltersData): IssueTask = withContext(ioDispatcher) {
+        val creatorId = resp.owner ?: error("Owner field is null")
 
-            val server = serverStorage.server
-            val url = "$server/project/${resp.projectDTOExtraInfo.slug}/${
-                transformTaskTypeForCopyLink(CommonTaskType.Issue)
-            }/${resp.ref}"
+        val server = serverStorage.server
+        val url = "$server/project/${resp.projectDTOExtraInfo.slug}/${
+            transformTaskTypeForCopyLink(CommonTaskType.Issue)
+        }/${resp.ref}"
 
-            IssueTask(
-                id = resp.id,
-                version = resp.version,
-                createdDateTime = resp.createdDate,
-                title = resp.subject,
-                dueDate = resp.dueDate,
-                creatorId = creatorId,
-                dueDateStatus = dueDateStatusMapper.toDomain(resp.dueDateStatusDTO),
-                description = resp.description ?: "",
-                ref = resp.ref,
-                project = projectMapper.toProject(resp.projectDTOExtraInfo),
-                colors = resp.color?.let { listOf(it) } ?: resp.epics.orEmpty().map { it.color },
-                isClosed = resp.isClosed,
-                tags = tagsMapper.toTags(resp.tags),
-                blockedNote = resp.blockedNote.takeIf { resp.isBlocked },
-                assignee = resp.assignedToExtraInfo?.let { assigned ->
-                    userMapper.toUser(assigned)
-                },
-                assignedUserIds = resp.assignedUsers ?: listOfNotNull(resp.assignedTo),
-                watcherUserIds = resp.watchers.orEmpty(),
-                milestone = resp.milestone,
-                copyLinkUrl = url,
-                status = statusMapper.getStatus(resp = resp),
-                type = getType(filtersData = filters, resp = resp),
-                severity = getSeverity(filtersData = filters, resp = resp),
-                priority = getPriority(filtersData = filters, resp = resp)
-            )
-        }
+        IssueTask(
+            id = resp.id,
+            version = resp.version,
+            createdDateTime = resp.createdDate,
+            title = resp.subject,
+            dueDate = resp.dueDate,
+            creatorId = creatorId,
+            dueDateStatus = dueDateStatusMapper.toDomain(resp.dueDateStatusDTO),
+            description = resp.description ?: "",
+            ref = resp.ref,
+            project = projectMapper.toProject(resp.projectDTOExtraInfo),
+            colors = resp.color?.let { listOf(it) } ?: resp.epics.orEmpty().map { it.color },
+            isClosed = resp.isClosed,
+            tags = tagsMapper.toTags(resp.tags),
+            blockedNote = resp.blockedNote.takeIf { resp.isBlocked },
+            assignee = resp.assignedToExtraInfo?.let { assigned ->
+                userMapper.toUser(assigned)
+            },
+            assignedUserIds = resp.assignedUsers ?: listOfNotNull(resp.assignedTo),
+            watcherUserIds = resp.watchers.orEmpty(),
+            milestone = resp.milestone,
+            copyLinkUrl = url,
+            status = statusMapper.getStatus(resp = resp),
+            type = getType(filtersData = filters, resp = resp),
+            severity = getSeverity(filtersData = filters, resp = resp),
+            priority = getPriority(filtersData = filters, resp = resp)
+        )
+    }
 
     private fun getType(filtersData: FiltersData, resp: WorkItemResponseDTO): Type? {
         val typeId = resp.type ?: return null

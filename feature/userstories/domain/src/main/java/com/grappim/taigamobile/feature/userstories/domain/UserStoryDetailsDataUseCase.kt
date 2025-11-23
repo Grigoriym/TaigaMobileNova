@@ -79,15 +79,12 @@ class UserStoryDetailsDataUseCase @Inject constructor(
         userStoriesRepository.deleteIssue(id)
     }
 
-    suspend fun patchData(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): Result<PatchedData> = resultOf {
-        userStoriesRepository.patchData(
-            version = version,
-            userStoryId = userStoryId,
-            payload = payload
-        )
-    }
+    suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): Result<PatchedData> =
+        resultOf {
+            userStoriesRepository.patchData(
+                version = version,
+                userStoryId = userStoryId,
+                payload = payload
+            )
+        }
 }

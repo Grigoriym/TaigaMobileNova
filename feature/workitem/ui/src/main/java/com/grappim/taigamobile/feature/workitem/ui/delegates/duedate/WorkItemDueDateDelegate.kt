@@ -29,7 +29,4 @@ data class WorkItemDueDateState(
     val setDueDateDatePickerVisibility: (Boolean) -> Unit = {}
 )
 
-data class DueDateSaveResult(
-    val dueDate: LocalDate?,
-    val patchedData: PatchedData
-)
+data class DueDateSaveResult(val dueDate: LocalDate?, val patchedData: PatchedData)

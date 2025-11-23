@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.testing
 
 import com.grappim.taigamobile.core.domain.Comment
-import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.CustomField
 import com.grappim.taigamobile.core.domain.CustomFieldType
 import com.grappim.taigamobile.core.domain.CustomFieldValue
@@ -55,7 +54,6 @@ fun getIssueTask(): IssueTask = IssueTask(
     dueDate = LocalDate.now().plusDays(getRandomLong() % 30),
     dueDateStatus = DueDateStatus.Set,
     project = getProject(),
-    taskType = CommonTaskType.Issue,
     isClosed = getRandomBoolean(),
     tags = persistentListOf(getTag()),
     colors = listOf(getRandomString()),

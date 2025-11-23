@@ -44,11 +44,7 @@ interface UserStoriesRepository {
 
     suspend fun getCustomFields(id: Long): CustomFields
 
-    suspend fun patchData(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedData
+    suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): PatchedData
 
     suspend fun patchCustomAttributes(
         version: Long,

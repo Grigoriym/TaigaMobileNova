@@ -19,7 +19,6 @@ class WorkItemDescriptionDelegateImpl(
     override val descriptionState: StateFlow<WorkItemDescriptionState> =
         _descriptionState.asStateFlow()
 
-
     override suspend fun handleDescriptionUpdate(
         newDescription: String,
         version: Long,
