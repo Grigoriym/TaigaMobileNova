@@ -194,6 +194,8 @@ class UserStoryDetailsViewModel @Inject constructor(
     val deleteTrigger = _deleteTrigger.asSharedFlow()
 
     init {
+        loadUserStory()
+
         workItemEditShared.teamMemberUpdateState
             .onEach(::handleTeamMemberUpdate)
             .launchIn(viewModelScope)
@@ -205,8 +207,6 @@ class UserStoryDetailsViewModel @Inject constructor(
         workItemEditShared.descriptionState
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
-
-        loadUserStory()
     }
 
     private fun loadUserStory() {
