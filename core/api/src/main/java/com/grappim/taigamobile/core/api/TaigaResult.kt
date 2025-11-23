@@ -11,7 +11,6 @@ sealed interface TaigaResult<out T> {
     data object Loading : TaigaResult<Nothing>
 }
 
-fun <T> Flow<T>.asResult(): Flow<TaigaResult<T>> =
-    map<T, TaigaResult<T>> { TaigaResult.Success(it) }
-        .onStart { emit(TaigaResult.Loading) }
-        .catch { emit(TaigaResult.Error(it)) }
+fun <T> Flow<T>.asResult(): Flow<TaigaResult<T>> = map<T, TaigaResult<T>> { TaigaResult.Success(it) }
+    .onStart { emit(TaigaResult.Loading) }
+    .catch { emit(TaigaResult.Error(it)) }

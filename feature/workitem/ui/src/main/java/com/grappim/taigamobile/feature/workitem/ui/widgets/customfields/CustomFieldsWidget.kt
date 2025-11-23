@@ -522,11 +522,7 @@ private fun CustomFieldDropdownItemWidget(
 }
 
 @Composable
-private fun CustomFieldBoxParent(
-    isFocused: Boolean,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
+private fun CustomFieldBoxParent(isFocused: Boolean, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxWidth()

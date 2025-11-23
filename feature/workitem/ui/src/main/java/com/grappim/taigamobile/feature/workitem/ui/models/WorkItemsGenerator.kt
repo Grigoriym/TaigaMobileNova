@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.models
 
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgePriority
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeSeverity
@@ -24,7 +23,6 @@ class WorkItemsGenerator @Inject constructor(
         typeUI: StatusUI? = null,
         severityUI: StatusUI? = null,
         priorityUi: StatusUI? = null,
-        sprint: Sprint? = null,
         filtersData: FiltersData
     ): ImmutableSet<SelectableWorkItemBadgeState> = withContext(dispatcher) {
         val workItemBadges = mutableSetOf<SelectableWorkItemBadgeState>()

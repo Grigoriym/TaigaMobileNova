@@ -70,22 +70,21 @@ class TaigaApp :
     }
 
     // todo refactor before release
-    override fun newImageLoader(context: PlatformContext): ImageLoader =
-        ImageLoader.Builder(context)
-            .apply {
-                if (appInfoProvider.isDebug()) {
-                    components {
-                        add(
-                            OkHttpNetworkFetcherFactory(
-                                OkHttpClient.Builder()
-                                    .addInterceptor(debugLocalHostImageManager)
-                                    .build()
-                            )
+    override fun newImageLoader(context: PlatformContext): ImageLoader = ImageLoader.Builder(context)
+        .apply {
+            if (appInfoProvider.isDebug()) {
+                components {
+                    add(
+                        OkHttpNetworkFetcherFactory(
+                            OkHttpClient.Builder()
+                                .addInterceptor(debugLocalHostImageManager)
+                                .build()
                         )
-                    }
-                    logger(DebugLogger())
+                    )
                 }
+                logger(DebugLogger())
             }
-            .crossfade(true)
-            .build()
+        }
+        .crossfade(true)
+        .build()
 }

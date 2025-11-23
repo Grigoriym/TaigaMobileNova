@@ -8,9 +8,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class StatusUIMapper @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) {
+class StatusUIMapper @Inject constructor(@IoDispatcher private val ioDispatcher: CoroutineDispatcher) {
     suspend fun toUI(statuses: Statuses): StatusUI = withContext(ioDispatcher) {
         StatusUI(
             id = statuses.id,

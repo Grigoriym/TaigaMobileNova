@@ -6,11 +6,12 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -22,10 +23,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.core.domain.patch.PatchableField
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
+import com.grappim.taigamobile.feature.workitem.ui.widgets.CommentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CreatedByWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WatchersWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBadgesBottomSheet
@@ -35,7 +46,6 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDropdownMenuW
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
-import com.grappim.taigamobile.feature.workitem.ui.widgets.commentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.WorkItemTagsWidget
 import com.grappim.taigamobile.strings.RString
@@ -67,6 +77,17 @@ fun IssueDetailsScreen(
         skipPartiallyExpanded = true
     )
     val deleteTrigger by viewModel.deleteTrigger.collectAsStateWithLifecycle(false)
+    val titleState by viewModel.titleState.collectAsStateWithLifecycle()
+    val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
+    val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
+    val commentsState by viewModel.commentsState.collectAsStateWithLifecycle()
+    val attachmentState by viewModel.attachmentsState.collectAsStateWithLifecycle()
+    val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
+    val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
+    val dueDateState by viewModel.dueDateState.collectAsStateWithLifecycle()
+    val blockState by viewModel.blockState.collectAsStateWithLifecycle()
+    val assigneesState by viewModel.singleAssigneeState.collectAsStateWithLifecycle()
+    val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -99,12 +120,6 @@ fun IssueDetailsScreen(
         }
     }
 
-    LaunchedEffect(state.patchableFieldError) {
-        if (state.patchableFieldError !is NativeText.Empty) {
-            showSnackbar(state.patchableFieldError)
-        }
-    }
-
     LaunchedEffect(deleteTrigger) {
         if (deleteTrigger) {
             goBack()
@@ -112,14 +127,13 @@ fun IssueDetailsScreen(
     }
 
     WorkItemBadgesBottomSheet(
-        activeBadge = state.activeBadge,
+        activeBadge = badgeState.activeBadge,
         bottomSheetState = bottomSheetState,
         onDismiss = {
-            state.onBadgeSheetDismiss()
+            badgeState.onBadgeSheetDismiss()
         },
         onBottomSheetItemSelect = { badgeState, option ->
-            state.onBadgeSheetDismiss()
-            state.onBadgeSheetItemClick(badgeState, option)
+            state.onBadgeSave(badgeState, option)
         }
     )
 
@@ -136,7 +150,7 @@ fun IssueDetailsScreen(
         },
         isBlocked = state.currentIssue?.blockedNote != null,
         setBlockDialogVisible = {
-            state.setIsBlockDialogVisible(it)
+            blockState.setIsBlockDialogVisible(it)
         },
         doOnUnblock = {
             state.onBlockToggle(false, null)
@@ -146,46 +160,46 @@ fun IssueDetailsScreen(
     TaigaLoadingDialog(isVisible = state.isLoading)
 
     BlockDialog(
-        isVisible = state.isBlockDialogVisible,
+        isVisible = blockState.isBlockDialogVisible,
         onConfirm = { blockNote ->
             state.onBlockToggle(true, blockNote)
-            state.setIsBlockDialogVisible(false)
+            blockState.setIsBlockDialogVisible(false)
         },
         onDismiss = {
-            state.setIsBlockDialogVisible(false)
+            blockState.setIsBlockDialogVisible(false)
         }
     )
 
     DatePickerDialogWidget(
-        isVisible = state.isDueDateDatePickerVisible,
-        onDismissRequest = { state.setIsDueDatePickerVisible(false) },
-        onDismissButonClick = { state.setIsDueDatePickerVisible(false) },
+        isVisible = dueDateState.isDueDateDatePickerVisible,
+        onDismissRequest = { dueDateState.setDueDateDatePickerVisibility(false) },
+        onDismissButonClick = { dueDateState.setDueDateDatePickerVisibility(false) },
         onConfirmButtonClick = { dateMillis ->
             state.setDueDate(dateMillis)
-            state.setIsDueDatePickerVisible(false)
+            dueDateState.setDueDateDatePickerVisibility(false)
         }
     )
 
     ConfirmActionDialog(
-        isVisible = state.isRemoveAssigneeDialogVisible,
+        isVisible = assigneesState.isRemoveAssigneeDialogVisible,
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
             state.removeAssignee()
-            state.setIsRemoveAssigneeDialogVisible(false)
+            assigneesState.setIsRemoveAssigneeDialogVisible(false)
         },
-        onDismiss = { state.setIsRemoveAssigneeDialogVisible(false) }
+        onDismiss = { assigneesState.setIsRemoveAssigneeDialogVisible(false) }
     )
 
     ConfirmActionDialog(
-        isVisible = state.isRemoveWatcherDialogVisible,
+        isVisible = watchersState.isRemoveWatcherDialogVisible,
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
             state.removeWatcher()
-            state.setIsRemoveWatcherDialogVisible(false)
+            watchersState.setIsRemoveWatcherDialogVisible(false)
         },
-        onDismiss = { state.setIsRemoveWatcherDialogVisible(false) }
+        onDismiss = { watchersState.setIsRemoveWatcherDialogVisible(false) }
     )
 
     ConfirmActionDialog(
@@ -210,6 +224,16 @@ fun IssueDetailsScreen(
     } else if (state.currentIssue != null) {
         IssueDetailsScreenContent(
             state = state,
+            titleState = titleState,
+            badgeState = badgeState,
+            tagsState = tagsState,
+            commentsState = commentsState,
+            attachmentsState = attachmentState,
+            watchersState = watchersState,
+            customFieldsState = customFieldsState,
+            dueDateState = dueDateState,
+            assigneesState = assigneesState,
+            descriptionState = descriptionState,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -222,6 +246,16 @@ fun IssueDetailsScreen(
 @Composable
 private fun IssueDetailsScreenContent(
     state: IssueDetailsState,
+    titleState: WorkItemTitleState,
+    badgeState: WorkItemBadgeState,
+    tagsState: WorkItemTagsState,
+    commentsState: WorkItemCommentsState,
+    attachmentsState: WorkItemAttachmentsState,
+    watchersState: WorkItemWatchersState,
+    customFieldsState: WorkItemCustomFieldsState,
+    dueDateState: WorkItemDueDateState,
+    assigneesState: WorkItemSingleAssigneeState,
+    descriptionState: WorkItemDescriptionState,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
@@ -238,164 +272,133 @@ private fun IssueDetailsScreenContent(
             modifier = Modifier.weight(1f),
             contentAlignment = Alignment.Center
         ) {
-            LazyColumn(
+            Column(
                 modifier = Modifier
-                    .fillMaxSize(),
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 4.dp)
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.spacedBy(10.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                item {
-                    WorkItemTitleWidget(
-                        currentTitle = state.currentIssue.title,
-                        onTitleChange = {
-                            state.onFieldChanged(PatchableField.TITLE, it)
-                        },
-                        onTitleSave = {
-                            state.onSaveField(PatchableField.TITLE)
-                        },
-                        isLoading = PatchableField.TITLE in state.savingFields,
-                        isEditable = PatchableField.TITLE in state.editableFields,
-                        setIsEditable = { isEditable ->
-                            state.onFieldSetIsEditable(PatchableField.TITLE, isEditable)
-                        },
-                        onCancelClick = {
-                            state.onFieldSetIsEditable(PatchableField.TITLE, false)
-                            state.onFieldChanged(
-                                PatchableField.TITLE,
-                                state.originalIssue?.title ?: ""
-                            )
-                        }
-                    )
-                }
+                WorkItemTitleWidget(
+                    currentTitle = titleState.currentTitle,
+                    onTitleChange = titleState.onTitleChange,
+                    onTitleSave = state.onTitleSave,
+                    isLoading = titleState.isTitleLoading,
+                    isEditable = titleState.isTitleEditable,
+                    setIsEditable = titleState.setIsTitleEditable,
+                    onCancelClick = titleState.onCancelClick
+                )
 
-                item {
-                    WorkItemBlockedBannerWidget(blockedNote = state.currentIssue.blockedNote)
-                }
+                WorkItemBlockedBannerWidget(blockedNote = state.currentIssue.blockedNote)
 
-                item {
-                    WorkItemBadgesWidget(
-                        updatingBadges = state.updatingBadges,
-                        items = state.workItemBadges,
-                        onBadgeClick = state.onWorkingItemBadgeClick
-                    )
-                }
+                WorkItemBadgesWidget(
+                    updatingBadges = badgeState.updatingBadges,
+                    items = badgeState.workItemBadges,
+                    onBadgeClick = badgeState.onBadgeClick
+                )
 
-                item {
-                    WorkItemDescriptionWidget(
-                        currentDescription = state.currentIssue.description,
-                        onDescriptionClick = {
-                            goToEditDescription(state.currentIssue.description)
-                        }
-                    )
-                }
-
-                item {
-                    WorkItemTagsWidget(
-                        tags = state.tags,
-                        onTagRemoveClick = state.onTagRemove,
-                        areTagsLoading = state.areTagsLoading,
-                        goToEditTags = {
-                            state.onGoingToEditTags()
-                            goToEditTags()
-                        }
-                    )
-                }
-
-                item {
-                    WorkItemDueDateWidget(
-                        dueDateText = state.dueDateText,
-                        dueDateStatus = state.currentIssue.dueDateStatus,
-                        isLoading = state.isDueDateLoading,
-                        dueDate = state.currentIssue.dueDate,
-                        setIsDueDatePickerVisible = { value ->
-                            state.setIsDueDatePickerVisible(value)
-                        },
-                        setDueDate = { value ->
-                            state.setDueDate(value)
-                        }
-                    )
-                }
-
-                item {
-                    CreatedByWidget(
-                        goToProfile = goToProfile,
-                        creator = state.creator,
-                        createdDateTime = state.currentIssue.createdDateTime
-                    )
-                }
-
-                item {
-                    AssignedToWidget(
-                        goToProfile = goToProfile,
-                        assignees = state.assignees,
-                        isAssigneesLoading = state.isAssigneesLoading,
-                        onRemoveAssigneeClick = {
-                            state.onRemoveAssigneeClick()
-                        },
-                        isAssignedToMe = state.isAssignedToMe,
-                        onUnassign = state.onUnassign,
-                        onAssignToMe = state.onAssignToMe,
-                        onAddAssigneeClick = {
-                            state.onGoingToEditAssignee()
-                            goToEditAssignee()
-                        }
-                    )
-                }
-
-                item {
-                    WatchersWidget(
-                        goToProfile = goToProfile,
-                        watchers = state.watchers,
-                        onRemoveWatcherClick = { watcherId ->
-                            state.onRemoveWatcherClick(watcherId)
-                        },
-                        isWatchersLoading = state.isWatchersLoading,
-                        onAddWatcherClick = {
-                            state.onGoingToEditWatchers()
-                            goToEditWatchers()
-                        },
-                        isWatchedByMe = state.isWatchedByMe,
-                        onAddMeToWatchersClick = state.onAddMeToWatchersClick,
-                        onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
-                    )
-                }
-
-                item {
-                    CustomFieldsSectionWidget(
-                        customFieldStateItems = state.customFieldStateItems,
-                        isCustomFieldsLoading = state.isCustomFieldsLoading,
-                        isCustomFieldsWidgetExpanded = state.isCustomFieldsWidgetExpanded,
-                        setIsCustomFieldsWidgetExpanded = state.setIsCustomFieldsWidgetExpanded,
-                        onCustomFieldChange = state.onCustomFieldChange,
-                        onCustomFieldSave = state.onCustomFieldSave,
-                        onCustomFieldEditToggle = state.onCustomFieldEditToggle,
-                        editingItemIds = state.editingItemIds
-                    )
-                }
-
-                item {
-                    AttachmentsSectionWidget(
-                        attachments = state.attachments,
-                        isAttachmentsLoading = state.isAttachmentsLoading,
-                        onAttachmentAdd = { uri ->
-                            state.onAttachmentAdd(uri)
-                        },
-                        areAttachmentsExpanded = state.areAttachmentsExpanded,
-                        setAreAttachmentsExpanded = state.setAreAttachmentsExpanded,
-                        onAttachmentRemove = {
-                            state.onAttachmentRemove(it)
-                        }
-                    )
-                }
-
-                commentsSectionWidget(
-                    comments = state.comments,
-                    goToProfile = goToProfile,
-                    isCommentsWidgetExpanded = state.isCommentsWidgetExpanded,
-                    setIsCommentsWidgetExpanded = { value ->
-                        state.setIsCommentsWidgetExpanded(value)
+                WorkItemDescriptionWidget(
+                    currentDescription = state.currentIssue.description,
+                    onDescriptionClick = {
+                        goToEditDescription(state.currentIssue.description)
                     },
-                    isCommentsLoading = state.isCommentsLoading,
+                    isLoading = descriptionState.isDescriptionLoading
+                )
+
+                WorkItemTagsWidget(
+                    tags = tagsState.tags,
+                    onTagRemoveClick = state.onTagRemove,
+                    areTagsLoading = tagsState.areTagsLoading,
+                    goToEditTags = {
+                        tagsState.onGoingToEditTags()
+                        goToEditTags()
+                    }
+                )
+
+                WorkItemDueDateWidget(
+                    dueDateText = dueDateState.dueDateText,
+                    dueDateStatus = state.currentIssue.dueDateStatus,
+                    isLoading = dueDateState.isDueDateLoading,
+                    dueDate = state.currentIssue.dueDate,
+                    setIsDueDatePickerVisible = { value ->
+                        dueDateState.setDueDateDatePickerVisibility(value)
+                    },
+                    setDueDate = { value ->
+                        state.setDueDate(value)
+                    }
+                )
+
+                CreatedByWidget(
+                    goToProfile = goToProfile,
+                    creator = state.creator,
+                    createdDateTime = state.currentIssue.createdDateTime
+                )
+
+                AssignedToWidget(
+                    goToProfile = goToProfile,
+                    assignees = assigneesState.assignees,
+                    isAssigneesLoading = assigneesState.isAssigneesLoading,
+                    onRemoveAssigneeClick = {
+                        assigneesState.onRemoveAssigneeClick()
+                    },
+                    isAssignedToMe = assigneesState.isAssignedToMe,
+                    onUnassign = state.onUnassign,
+                    onAssignToMe = state.onAssignToMe,
+                    onAddAssigneeClick = {
+                        assigneesState.onGoingToEditAssignee()
+                        goToEditAssignee()
+                    }
+                )
+
+                WatchersWidget(
+                    goToProfile = goToProfile,
+                    watchers = watchersState.watchers,
+                    onRemoveWatcherClick = { watcherId ->
+                        watchersState.onRemoveWatcherClick(watcherId)
+                    },
+                    isWatchersLoading = watchersState.areWatchersLoading,
+                    onAddWatcherClick = {
+                        watchersState.onGoingToEditWatchers()
+                        goToEditWatchers()
+                    },
+                    isWatchedByMe = watchersState.isWatchedByMe,
+                    onAddMeToWatchersClick = state.onAddMeToWatchersClick,
+                    onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
+                )
+
+                CustomFieldsSectionWidget(
+                    customFieldStateItems = customFieldsState.customFieldStateItems,
+                    isCustomFieldsLoading = customFieldsState.isCustomFieldsLoading,
+                    isCustomFieldsWidgetExpanded = customFieldsState.isCustomFieldsWidgetExpanded,
+                    setIsCustomFieldsWidgetExpanded = customFieldsState.setIsCustomFieldsWidgetExpanded,
+                    onCustomFieldChange = customFieldsState.onCustomFieldChange,
+                    onCustomFieldSave = state.onCustomFieldSave,
+                    onCustomFieldEditToggle = customFieldsState.onCustomFieldEditToggle,
+                    editingItemIds = customFieldsState.editingItemIds
+                )
+
+                AttachmentsSectionWidget(
+                    attachments = attachmentsState.attachments,
+                    isAttachmentsLoading = attachmentsState.areAttachmentsLoading,
+                    onAttachmentAdd = { uri ->
+                        state.onAttachmentAdd(uri)
+                    },
+                    areAttachmentsExpanded = attachmentsState.areAttachmentsExpanded,
+                    setAreAttachmentsExpanded = attachmentsState.setAreAttachmentsExpanded,
+                    onAttachmentRemove = {
+                        state.onAttachmentRemove(it)
+                    }
+                )
+
+                CommentsSectionWidget(
+                    comments = commentsState.comments,
+                    goToProfile = goToProfile,
+                    isCommentsWidgetExpanded = commentsState.isCommentsWidgetExpanded,
+                    setIsCommentsWidgetExpanded = { value ->
+                        commentsState.setIsCommentsWidgetExpanded(value)
+                    },
+                    areCommentsLoading = commentsState.areCommentsLoading,
                     onCommentRemove = { value ->
                         state.onCommentRemove(value)
                     }

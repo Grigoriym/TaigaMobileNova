@@ -46,10 +46,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
 
 @Composable
-fun ProfileScreen(
-    viewModel: ProfileViewModel = hiltViewModel(),
-    showMessage: (message: Int) -> Unit = {}
-) {
+fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel(), showMessage: (message: Int) -> Unit = {}) {
     val topBarController = LocalTopBarConfig.current
     LaunchedEffect(Unit) {
         viewModel.onOpen()

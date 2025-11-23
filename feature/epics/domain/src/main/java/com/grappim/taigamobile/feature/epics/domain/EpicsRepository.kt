@@ -9,11 +9,7 @@ interface EpicsRepository {
     fun getEpicsPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>>
     fun refreshEpics()
 
-    suspend fun getEpics(
-        assignedId: Long? = null,
-        isClosed: Boolean? = null,
-        watcherId: Long? = null
-    ): List<CommonTask>
+    suspend fun getEpics(assignedId: Long? = null, isClosed: Boolean? = null, watcherId: Long? = null): List<CommonTask>
 
     suspend fun linkToEpic(epicId: Long, userStoryId: Long)
     suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long)

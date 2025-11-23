@@ -16,7 +16,6 @@ import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.commaString
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.tagsCommaString
 import com.grappim.taigamobile.core.domain.toCommonTaskExtended
@@ -24,24 +23,19 @@ import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
-import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
-import com.grappim.taigamobile.feature.workitem.data.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemPathPlural
-import com.grappim.taigamobile.feature.workitem.data.WorkItemPathSingular
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.fixNullColor
 import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
 import javax.inject.Inject
 
 private val userStoryPlural = WorkItemPathPlural(CommonTaskType.UserStory)
@@ -58,21 +52,20 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val attachmentMapper: AttachmentMapper,
     private val workItemApi: WorkItemApi,
     private val customFieldsMapper: CustomFieldsMapper,
-    private val patchedDataMapper: PatchedDataMapper
+    private val workItemRepository: WorkItemRepository
 ) : UserStoriesRepository {
     private var userStoriesPagingSource: UserStoriesPagingSource? = null
 
-    override fun getUserStoriesPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>> =
-        Pager(
-            PagingConfig(
-                pageSize = 20,
-                enablePlaceholders = false
-            )
-        ) {
-            UserStoriesPagingSource(userStoriesApi, filters, taigaStorage).also {
-                userStoriesPagingSource = it
-            }
-        }.flow
+    override fun getUserStoriesPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>> = Pager(
+        PagingConfig(
+            pageSize = 20,
+            enablePlaceholders = false
+        )
+    ) {
+        UserStoriesPagingSource(userStoriesApi, filters, taigaStorage).also {
+            userStoriesPagingSource = it
+        }
+    }.flow
 
     override fun refreshUserStories() {
         userStoriesPagingSource?.invalidate()
@@ -195,84 +188,18 @@ class UserStoriesRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun patchData(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedData {
-        val editedMap = payload.toPersistentMap().put("version", version)
-        val result = workItemApi.patchWorkItem(
-            taskPath = userStoryPlural,
-            id = userStoryId,
-            payload = editedMap
+    override suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): PatchedData =
+        workItemRepository.patchData(
+            commonTaskType = CommonTaskType.UserStory,
+            workItemId = userStoryId,
+            payload = payload,
+            version = version
         )
-        return patchedDataMapper.toDomain(result)
-    }
 
-    override suspend fun patchCustomAttributes(
-        version: Long,
-        userStoryId: Long,
-        payload: ImmutableMap<String, Any?>
-    ): PatchedCustomAttributes {
-        val editedMap = payload.toPersistentMap().put("version", version)
-        val result = workItemApi.patchCustomAttributesValues(
-            taskPath = userStoryPlural,
-            taskId = userStoryId,
-            payload = editedMap
-        )
-        return patchedDataMapper.toDomainCustomAttrs(result)
-    }
-
-    override suspend fun unwatchUserStory(userStoryId: Long) {
-        workItemApi.unwatchWorkItem(
-            taskPath = userStoryPlural,
-            workItemId = userStoryId
-        )
-    }
-
-    override suspend fun watchUserStory(userStoryId: Long) {
-        workItemApi.watchWorkItem(
-            taskPath = userStoryPlural,
-            workItemId = userStoryId
-        )
-    }
-
-    override suspend fun deleteIssue(id: Long) {
+    override suspend fun deleteUserStory(id: Long) {
         workItemApi.deleteWorkItem(
             taskPath = userStoryPlural,
             workItemId = id
         )
-    }
-
-    override suspend fun deleteAttachment(attachment: Attachment) {
-        workItemApi.deleteAttachment(
-            taskPath = userStoryPlural,
-            attachmentId = attachment.id
-        )
-    }
-
-    override suspend fun addAttachment(
-        id: Long,
-        fileName: String,
-        fileByteArray: ByteArray
-    ): Attachment {
-        val file = MultipartBody.Part.createFormData(
-            name = "attached_file",
-            filename = fileName,
-            body = fileByteArray.toRequestBody("*/*".toMediaType())
-        )
-        val project = MultipartBody.Part.createFormData(
-            "project",
-            taigaStorage.currentProjectIdFlow.first().toString()
-        )
-        val objectId = MultipartBody.Part.createFormData("object_id", id.toString())
-
-        val dto = workItemApi.uploadCommonTaskAttachment(
-            taskPath = userStoryPlural,
-            file = file,
-            project = project,
-            objectId = objectId
-        )
-        return attachmentMapper.toDomain(dto)
     }
 }

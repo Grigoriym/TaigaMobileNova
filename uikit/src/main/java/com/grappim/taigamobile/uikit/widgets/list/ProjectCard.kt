@@ -33,12 +33,7 @@ import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
-fun ProjectCard(
-    projectDTO: ProjectDTO,
-    isCurrent: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit = {}
-) {
+fun ProjectCard(projectDTO: ProjectDTO, isCurrent: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     Surface(
         modifier = modifier
             .fillMaxWidth()

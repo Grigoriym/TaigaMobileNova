@@ -9,17 +9,14 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class TeamMemberUIMapper @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) {
-    suspend fun toUI(list: ImmutableList<TeamMember>): PersistentList<TeamMemberUI> =
-        withContext(ioDispatcher) {
-            list.map { teamMember ->
-                TeamMemberUI(
-                    id = teamMember.id,
-                    name = teamMember.name,
-                    avatarUrl = teamMember.avatarUrl
-                )
-            }.toPersistentList()
-        }
+class TeamMemberUIMapper @Inject constructor(@IoDispatcher private val ioDispatcher: CoroutineDispatcher) {
+    suspend fun toUI(list: ImmutableList<TeamMember>): PersistentList<TeamMemberUI> = withContext(ioDispatcher) {
+        list.map { teamMember ->
+            TeamMemberUI(
+                id = teamMember.id,
+                name = teamMember.name,
+                avatarUrl = teamMember.avatarUrl
+            )
+        }.toPersistentList()
+    }
 }

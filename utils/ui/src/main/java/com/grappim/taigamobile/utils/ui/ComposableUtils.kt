@@ -56,9 +56,7 @@ inline fun Result<*>.SubscribeOnError(crossinline onError: (message: Int) -> Uni
     }
 
 @Composable
-inline fun <T : Any> LazyPagingItems<T>.SubscribeOnError(
-    crossinline onError: (message: Int) -> Unit
-) {
+inline fun <T : Any> LazyPagingItems<T>.SubscribeOnError(crossinline onError: (message: Int) -> Unit) {
     LaunchedEffect(loadState.hasError) {
         if (loadState.hasError) {
             onError(RString.common_error_message)

@@ -12,8 +12,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class WikiListViewModel @Inject constructor(private val wikiRepository: WikiRepository) :
-    ViewModel() {
+class WikiListViewModel @Inject constructor(private val wikiRepository: WikiRepository) : ViewModel() {
 
     val wikiPages = mutableResultFlow<List<WikiPage>>()
     val wikiLinks = mutableResultFlow<List<WikiLink>>()
