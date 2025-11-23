@@ -10,7 +10,7 @@ ktlint = "13.1.0"
 moduleGraphAssertion = "2.9.0"
 gradleDoctor = "0.12.1"
 dependencyAnalysis = "2.19.0"
-jacocoAggregation = "2.4.6"
+jacocoAggregation = "2.4.7"
 composeRules = "0.4.27"
 
 agp = "8.13.1"
