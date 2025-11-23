@@ -84,11 +84,7 @@ fun LazyListScope.CommonTaskBelongsTo(
 }
 
 @Composable
-private fun EpicItemWithAction(
-    epic: EpicShortInfo,
-    onClick: () -> Unit,
-    onRemoveClick: () -> Unit
-) = Row(
+private fun EpicItemWithAction(epic: EpicShortInfo, onClick: () -> Unit, onRemoveClick: () -> Unit) = Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
 ) {

@@ -11,9 +11,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class PatchedDataMapper @Inject constructor(
-    @IoDispatcher private val dispatcher: CoroutineDispatcher
-) {
+class PatchedDataMapper @Inject constructor(@IoDispatcher private val dispatcher: CoroutineDispatcher) {
     suspend fun toDomain(resp: CommonTaskResponse): PatchedData = withContext(dispatcher) {
         PatchedData(
             newVersion = resp.version,
@@ -42,9 +40,8 @@ class PatchedDataMapper @Inject constructor(
         )
     }
 
-    suspend fun toDomainCustomAttrs(
-        resp: CustomAttributesValuesResponseDTO
-    ): PatchedCustomAttributes = withContext(dispatcher) {
-        PatchedCustomAttributes(version = resp.version)
-    }
+    suspend fun toDomainCustomAttrs(resp: CustomAttributesValuesResponseDTO): PatchedCustomAttributes =
+        withContext(dispatcher) {
+            PatchedCustomAttributes(version = resp.version)
+        }
 }

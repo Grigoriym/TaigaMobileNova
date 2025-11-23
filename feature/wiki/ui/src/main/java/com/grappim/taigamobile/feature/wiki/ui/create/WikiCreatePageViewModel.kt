@@ -15,8 +15,7 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class WikiCreatePageViewModel @Inject constructor(private val wikiRepository: WikiRepository) :
-    ViewModel() {
+class WikiCreatePageViewModel @Inject constructor(private val wikiRepository: WikiRepository) : ViewModel() {
 
     private val _state = MutableStateFlow(
         WikiCreatePageState(
