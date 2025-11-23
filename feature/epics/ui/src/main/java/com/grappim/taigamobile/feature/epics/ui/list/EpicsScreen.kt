@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.epics.ui
+package com.grappim.taigamobile.feature.epics.ui.list
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api

@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.epics.ui
+package com.grappim.taigamobile.feature.epics.ui.list
 
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 

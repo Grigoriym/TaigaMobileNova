@@ -22,8 +22,8 @@ import com.grappim.taigamobile.createtask.navigateToCreateTask
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardScreen
 import com.grappim.taigamobile.feature.dashboard.ui.navigateToDashboardAsTopDestination
-import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
-import com.grappim.taigamobile.feature.epics.ui.EpicsScreen
+import com.grappim.taigamobile.feature.epics.ui.list.EpicsNavDestination
+import com.grappim.taigamobile.feature.epics.ui.list.EpicsScreen
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsScreen
 import com.grappim.taigamobile.feature.issues.ui.details.navigateToIssueDetails
