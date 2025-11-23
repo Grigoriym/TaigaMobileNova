@@ -11,9 +11,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class CustomFieldsMapper @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) {
+class CustomFieldsMapper @Inject constructor(@IoDispatcher private val ioDispatcher: CoroutineDispatcher) {
 
     suspend fun toDomain(
         attributes: List<CustomAttributeResponseDTO>,
@@ -26,28 +24,26 @@ class CustomFieldsMapper @Inject constructor(
         )
     }
 
-    suspend fun toDomain(
-        values: CustomAttributesValuesResponseDTO,
-        resp: CustomAttributeResponseDTO
-    ): CustomField = withContext(ioDispatcher) {
-        CustomField(
-            id = resp.id,
-            type = resp.type,
-            name = resp.name,
-            description = resp.description?.takeIf { it.isNotEmpty() },
-            value = values.attributesValues[resp.id]?.let { value ->
-                CustomFieldValue(
-                    when (resp.type) {
-                        CustomFieldType.Date -> (value as? String)?.takeIf {
-                            it.isNotEmpty()
-                        }?.toLocalDate()
+    suspend fun toDomain(values: CustomAttributesValuesResponseDTO, resp: CustomAttributeResponseDTO): CustomField =
+        withContext(ioDispatcher) {
+            CustomField(
+                id = resp.id,
+                type = resp.type,
+                name = resp.name,
+                description = resp.description?.takeIf { it.isNotEmpty() },
+                value = values.attributesValues[resp.id]?.let { value ->
+                    CustomFieldValue(
+                        when (resp.type) {
+                            CustomFieldType.Date -> (value as? String)?.takeIf {
+                                it.isNotEmpty()
+                            }?.toLocalDate()
 
-                        CustomFieldType.Checkbox -> value as? Boolean
-                        else -> value
-                    } ?: return@let null
-                )
-            },
-            options = resp.extra.orEmpty()
-        )
-    }
+                            CustomFieldType.Checkbox -> value as? Boolean
+                            else -> value
+                        } ?: return@let null
+                    )
+                },
+                options = resp.extra.orEmpty()
+            )
+        }
 }

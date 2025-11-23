@@ -24,36 +24,35 @@ class EpicsPagingSource(
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
         }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CommonTask> =
-        tryCatchWithPagination(
-            block = {
-                val nextPageNumber = params.key ?: 1
-                val response = epicsApi.getEpics(
-                    page = nextPageNumber,
-                    pageSize = params.loadSize,
-                    project = taigaStorage.currentProjectIdFlow.first(),
-                    query = filters.query,
-                    assignedIds = filters.assignees.commaString(),
-                    ownerIds = filters.createdBy.commaString(),
-                    statuses = filters.statuses.commaString(),
-                    tags = filters.tags.tagsCommaString()
-                ).map { it.toCommonTask(CommonTaskType.Epic) }
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CommonTask> = tryCatchWithPagination(
+        block = {
+            val nextPageNumber = params.key ?: 1
+            val response = epicsApi.getEpics(
+                page = nextPageNumber,
+                pageSize = params.loadSize,
+                project = taigaStorage.currentProjectIdFlow.first(),
+                query = filters.query,
+                assignedIds = filters.assignees.commaString(),
+                ownerIds = filters.createdBy.commaString(),
+                statuses = filters.statuses.commaString(),
+                tags = filters.tags.tagsCommaString()
+            ).map { it.toCommonTask(CommonTaskType.Epic) }
 
-                LoadResult.Page(
-                    data = response,
-                    prevKey = null,
-                    nextKey = if (response.isNotEmpty()) nextPageNumber + 1 else null
-                )
-            },
-            catchBlock = { e ->
-                LoadResult.Error(e)
-            },
-            onPaginationEnd = {
-                LoadResult.Page(
-                    data = emptyList(),
-                    prevKey = null,
-                    nextKey = null
-                )
-            }
-        )
+            LoadResult.Page(
+                data = response,
+                prevKey = null,
+                nextKey = if (response.isNotEmpty()) nextPageNumber + 1 else null
+            )
+        },
+        catchBlock = { e ->
+            LoadResult.Error(e)
+        },
+        onPaginationEnd = {
+            LoadResult.Page(
+                data = emptyList(),
+                prevKey = null,
+                nextKey = null
+            )
+        }
+    )
 }

@@ -102,35 +102,22 @@ data class StatusesFilter(
 ) : Filter
 
 @JsonClass(generateAdapter = true)
-data class UsersFilter(
-    override val id: Long?,
-    override val name: String,
-    override val count: Long
-) : Filter {
+data class UsersFilter(override val id: Long?, override val name: String, override val count: Long) : Filter {
     override val color: String? = null
 }
 
 @JsonClass(generateAdapter = true)
-data class RolesFilter(override val id: Long, override val name: String, override val count: Long) :
-    Filter {
+data class RolesFilter(override val id: Long, override val name: String, override val count: Long) : Filter {
     override val color: String? = null
 }
 
 @JsonClass(generateAdapter = true)
-data class TagsFilter(
-    override val name: String,
-    override val color: String,
-    override val count: Long
-) : Filter {
+data class TagsFilter(override val name: String, override val color: String, override val count: Long) : Filter {
     override val id: Long? = null
 }
 
 @JsonClass(generateAdapter = true)
-data class EpicsFilter(
-    override val id: Long?,
-    override val name: String,
-    override val count: Long
-) : Filter {
+data class EpicsFilter(override val id: Long?, override val name: String, override val count: Long) : Filter {
     override val color: String? = null
 }
 

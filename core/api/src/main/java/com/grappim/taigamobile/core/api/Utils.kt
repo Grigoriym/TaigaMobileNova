@@ -35,8 +35,7 @@ fun CommonTaskResponse.toCommonTask(commonTaskType: CommonTaskType) = CommonTask
 )
 
 @Deprecated("for the most cases we don't need it")
-suspend fun <T> withIO(block: suspend CoroutineScope.() -> T): T =
-    withContext(Dispatchers.IO, block)
+suspend fun <T> withIO(block: suspend CoroutineScope.() -> T): T = withContext(Dispatchers.IO, block)
 
 inline fun <T> handle404(action: () -> List<T>): List<T> = try {
     action()

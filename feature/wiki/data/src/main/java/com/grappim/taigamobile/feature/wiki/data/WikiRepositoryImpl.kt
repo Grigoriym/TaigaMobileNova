@@ -12,26 +12,22 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.InputStream
 import javax.inject.Inject
 
-class WikiRepositoryImpl @Inject constructor(
-    private val wikiApi: WikiApi,
-    private val taigaStorage: TaigaStorage
-) : WikiRepository {
+class WikiRepositoryImpl @Inject constructor(private val wikiApi: WikiApi, private val taigaStorage: TaigaStorage) :
+    WikiRepository {
 
     override suspend fun getProjectWikiPages(): List<WikiPage> = wikiApi.getProjectWikiPages(
         projectId = taigaStorage.currentProjectIdFlow.first()
     )
 
-    override suspend fun getProjectWikiPageBySlug(slug: String): WikiPage =
-        wikiApi.getProjectWikiPageBySlug(
-            projectId = taigaStorage.currentProjectIdFlow.first(),
-            slug = slug
-        )
+    override suspend fun getProjectWikiPageBySlug(slug: String): WikiPage = wikiApi.getProjectWikiPageBySlug(
+        projectId = taigaStorage.currentProjectIdFlow.first(),
+        slug = slug
+    )
 
-    override suspend fun editWikiPage(pageId: Long, content: String, version: Int) =
-        wikiApi.editWikiPage(
-            pageId = pageId,
-            editWikiPageRequest = EditWikiPageRequest(content, version)
-        )
+    override suspend fun editWikiPage(pageId: Long, content: String, version: Int) = wikiApi.editWikiPage(
+        pageId = pageId,
+        editWikiPageRequest = EditWikiPageRequest(content, version)
+    )
 
     override suspend fun deleteWikiPage(pageId: Long) {
         wikiApi.deleteWikiPage(
@@ -39,17 +35,12 @@ class WikiRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getPageAttachments(pageId: Long): List<AttachmentDTO> =
-        wikiApi.getPageAttachments(
-            pageId = pageId,
-            projectId = taigaStorage.currentProjectIdFlow.first()
-        )
+    override suspend fun getPageAttachments(pageId: Long): List<AttachmentDTO> = wikiApi.getPageAttachments(
+        pageId = pageId,
+        projectId = taigaStorage.currentProjectIdFlow.first()
+    )
 
-    override suspend fun addPageAttachment(
-        pageId: Long,
-        fileName: String,
-        inputStream: InputStream
-    ) {
+    override suspend fun addPageAttachment(pageId: Long, fileName: String, inputStream: InputStream) {
         val file = MultipartBody.Part.createFormData(
             name = "attached_file",
             filename = fileName,

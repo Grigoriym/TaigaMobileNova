@@ -18,9 +18,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class CommonTaskMapper @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) {
+class CommonTaskMapper @Inject constructor(@IoDispatcher private val ioDispatcher: CoroutineDispatcher) {
 
     suspend fun toDomain(resp: CommonTaskResponse, commonTaskType: CommonTaskType): CommonTask =
         withContext(ioDispatcher) {

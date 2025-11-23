@@ -342,8 +342,7 @@ private fun CustomFieldNumber(
     changeFieldState: (FieldState) -> Unit
 ) {
     // do not display trailing zeros, like 1.0
-    fun Double?.prettyDisplay() =
-        this?.let { if (floor(it) != it) toString() else "%.0f".format(it) }.orEmpty()
+    fun Double?.prettyDisplay() = this?.let { if (floor(it) != it) toString() else "%.0f".format(it) }.orEmpty()
 
     var text by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
@@ -515,10 +514,7 @@ private fun CustomFieldDropdown(
 }
 
 @Composable
-private fun CustomFieldCheckbox(
-    value: CustomFieldValue?,
-    onValueChange: (CustomFieldValue?) -> Unit
-) {
+private fun CustomFieldCheckbox(value: CustomFieldValue?, onValueChange: (CustomFieldValue?) -> Unit) {
     val state = value?.booleanValue ?: false
 
     Checkbox(

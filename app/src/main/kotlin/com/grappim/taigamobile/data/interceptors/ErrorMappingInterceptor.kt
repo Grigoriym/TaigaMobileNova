@@ -43,6 +43,5 @@ class ErrorMappingInterceptor @Inject constructor(
         else -> NetworkException(NetworkException.ERROR_UNDEFINED)
     }
 
-    private fun Response.isPaginationEnd(): Boolean =
-        code == 404 && body.string().contains("Page is not 'last'")
+    private fun Response.isPaginationEnd(): Boolean = code == 404 && body.string().contains("Page is not 'last'")
 }
