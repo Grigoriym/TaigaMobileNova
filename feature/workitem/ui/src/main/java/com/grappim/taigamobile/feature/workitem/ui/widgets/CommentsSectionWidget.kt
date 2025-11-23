@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +34,7 @@ fun CommentsSectionWidget(
     comments: ImmutableList<Comment>,
     isCommentsWidgetExpanded: Boolean,
     setIsCommentsWidgetExpanded: (Boolean) -> Unit,
-    isCommentsLoading: Boolean,
+    areCommentsLoading: Boolean,
     onCommentRemove: (Comment) -> Unit,
     goToProfile: (userId: Long) -> Unit,
     modifier: Modifier = Modifier
@@ -68,50 +66,7 @@ fun CommentsSectionWidget(
                 }
             }
 
-            if (isCommentsLoading) {
-                DotsLoaderWidget()
-            }
-        }
-    }
-}
-
-fun LazyListScope.commentsSectionWidget(
-    comments: ImmutableList<Comment>,
-    isCommentsWidgetExpanded: Boolean,
-    setIsCommentsWidgetExpanded: (Boolean) -> Unit,
-    isCommentsLoading: Boolean,
-    onCommentRemove: (Comment) -> Unit,
-    goToProfile: (userId: Long) -> Unit
-) {
-    item {
-        SectionTitleExpandable(
-            text = stringResource(RString.comments_template).format(comments.size),
-            isExpanded = isCommentsWidgetExpanded,
-            onExpandClick = {
-                setIsCommentsWidgetExpanded(!isCommentsWidgetExpanded)
-            }
-        )
-    }
-    if (isCommentsWidgetExpanded) {
-        itemsIndexed(comments) { index, item ->
-            CommentItem(
-                comment = item,
-                onDeleteClick = {
-                    onCommentRemove(item)
-                },
-                navigateToProfile = goToProfile
-            )
-
-            if (index < comments.lastIndex) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
-        }
-
-        item {
-            if (isCommentsLoading) {
+            if (areCommentsLoading) {
                 DotsLoaderWidget()
             }
         }
@@ -119,11 +74,7 @@ fun LazyListScope.commentsSectionWidget(
 }
 
 @Composable
-private fun CommentItem(
-    comment: Comment,
-    onDeleteClick: () -> Unit,
-    navigateToProfile: (userId: Long) -> Unit
-) {
+private fun CommentItem(comment: Comment, onDeleteClick: () -> Unit, navigateToProfile: (userId: Long) -> Unit) {
     Column {
         var isAlertVisible by remember { mutableStateOf(false) }
 

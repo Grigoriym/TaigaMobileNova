@@ -230,11 +230,7 @@ private fun Header(
 
 @ExperimentalLayoutApi
 @Composable
-private fun StoryItem(
-    story: CommonTaskExtended,
-    assignees: List<UserDTO>,
-    onTaskClick: () -> Unit
-) {
+private fun StoryItem(story: CommonTaskExtended, assignees: List<UserDTO>, onTaskClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()

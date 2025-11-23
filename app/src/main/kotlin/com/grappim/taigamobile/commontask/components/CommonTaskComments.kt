@@ -64,11 +64,7 @@ fun LazyListScope.CommonTaskComments(
 }
 
 @Composable
-private fun CommentItem(
-    commentDTO: CommentDTO,
-    onDeleteClick: () -> Unit,
-    navigateToProfile: (userId: Long) -> Unit
-) {
+private fun CommentItem(commentDTO: CommentDTO, onDeleteClick: () -> Unit, navigateToProfile: (userId: Long) -> Unit) {
     Column {
         var isAlertVisible by remember { mutableStateOf(false) }
 

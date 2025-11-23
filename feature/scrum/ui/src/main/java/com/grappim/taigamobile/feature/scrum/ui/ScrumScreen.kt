@@ -351,56 +351,55 @@ private fun SprintsTabContent(
 }
 
 @Composable
-private fun SprintItem(sprint: Sprint, navigateToBoard: (Sprint) -> Unit = {}) =
-    ContainerBoxWidget {
-        val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
+private fun SprintItem(sprint: Sprint, navigateToBoard: (Sprint) -> Unit = {}) = ContainerBoxWidget {
+    val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Column(Modifier.weight(0.7f)) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(Modifier.weight(0.7f)) {
+            Text(
+                text = sprint.name,
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            Text(
+                stringResource(RString.sprint_dates_template).format(
+                    sprint.start.format(dateFormatter),
+                    sprint.end.format(dateFormatter)
+                )
+            )
+
+            Row {
                 Text(
-                    text = sprint.name,
-                    style = MaterialTheme.typography.titleMedium
+                    text = stringResource(
+                        RString.stories_count_template
+                    ).format(sprint.storiesCount),
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium
                 )
 
-                Text(
-                    stringResource(RString.sprint_dates_template).format(
-                        sprint.start.format(dateFormatter),
-                        sprint.end.format(dateFormatter)
-                    )
-                )
+                Spacer(Modifier.width(6.dp))
 
-                Row {
+                if (sprint.isClosed) {
                     Text(
-                        text = stringResource(
-                            RString.stories_count_template
-                        ).format(sprint.storiesCount),
-                        color = MaterialTheme.colorScheme.primary,
+                        text = stringResource(RString.closed),
+                        color = MaterialTheme.colorScheme.outline,
                         style = MaterialTheme.typography.bodyMedium
                     )
-
-                    Spacer(Modifier.width(6.dp))
-
-                    if (sprint.isClosed) {
-                        Text(
-                            text = stringResource(RString.closed),
-                            color = MaterialTheme.colorScheme.outline,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
                 }
             }
-            Button(
-                onClick = { navigateToBoard(sprint) },
-                modifier = Modifier.weight(0.3f)
-            ) {
-                Text(stringResource(RString.taskboard))
-            }
+        }
+        Button(
+            onClick = { navigateToBoard(sprint) },
+            modifier = Modifier.weight(0.3f)
+        ) {
+            Text(stringResource(RString.taskboard))
         }
     }
+}
 
 @Preview(showBackground = true)
 @Composable

@@ -22,7 +22,5 @@ interface UsersRepository {
 
     suspend fun getCurrentTeam(generateMemberStats: Boolean = false): ImmutableList<TeamMember>
 
-    suspend fun getCurrentTeamResult(
-        generateMemberStats: Boolean = false
-    ): Result<ImmutableList<TeamMember>>
+    suspend fun getCurrentTeamResult(generateMemberStats: Boolean = false): Result<ImmutableList<TeamMember>>
 }

@@ -230,13 +230,7 @@ internal fun SprintKanbanWidget(
 }
 
 @Composable
-private fun Header(
-    text: String,
-    cellWidth: Dp,
-    cellPadding: Dp,
-    stripeColor: Color,
-    backgroundColor: Color
-) = Column(
+private fun Header(text: String, cellWidth: Dp, cellPadding: Dp, stripeColor: Color, backgroundColor: Color) = Column(
     modifier = Modifier
         .padding(end = cellPadding, bottom = cellPadding)
         .width(cellWidth)
@@ -266,28 +260,27 @@ private fun Header(
 }
 
 @Composable
-private fun IssueHeader(width: Dp, padding: Dp, backgroundColor: Color, onAddClick: () -> Unit) =
-    Row(
-        modifier = Modifier
-            .width(width)
-            .padding(padding)
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(backgroundColor)
-            .padding(horizontal = 6.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(RString.sprint_issues).uppercase(),
-            modifier = Modifier.weight(0.8f, fill = false)
-        )
+private fun IssueHeader(width: Dp, padding: Dp, backgroundColor: Color, onAddClick: () -> Unit) = Row(
+    modifier = Modifier
+        .width(width)
+        .padding(padding)
+        .clip(MaterialTheme.shapes.extraSmall)
+        .background(backgroundColor)
+        .padding(horizontal = 6.dp, vertical = 4.dp),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
+) {
+    Text(
+        text = stringResource(RString.sprint_issues).uppercase(),
+        modifier = Modifier.weight(0.8f, fill = false)
+    )
 
-        PlusButtonWidget(
-            tint = MaterialTheme.colorScheme.outline,
-            onClick = onAddClick,
-            modifier = Modifier.weight(0.2f)
-        )
-    }
+    PlusButtonWidget(
+        tint = MaterialTheme.colorScheme.outline,
+        onClick = onAddClick,
+        modifier = Modifier.weight(0.2f)
+    )
+}
 
 @Composable
 private fun UserStoryItem(

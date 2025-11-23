@@ -12,6 +12,7 @@ dependencies {
     implementation(projects.core.api)
     implementation(projects.core.domain)
     implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.users.domain)
     implementation(projects.core.async)
 
     implementation(libs.retrofit)
