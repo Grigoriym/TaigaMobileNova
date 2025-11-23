@@ -1,21 +1,28 @@
 package com.grappim.taigamobile.feature.issues.ui.details
 
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeStatus
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.SavedStateHandleRule
+import com.grappim.taigamobile.testing.getCustomFieldItemState
+import com.grappim.taigamobile.testing.getIssueDetailsData
 import com.grappim.taigamobile.testing.getRandomInt
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.testException
+import com.grappim.taigamobile.testing.getSelectableWorkItemBadgeState
+import com.grappim.taigamobile.testing.getStatusUI
+import com.grappim.taigamobile.testing.getTagUI
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import io.mockk.coEvery
@@ -23,14 +30,13 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.flowOf
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import kotlin.test.assertEquals
 import kotlin.test.assertFalse
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -57,11 +63,19 @@ class IssueDetailsViewModelTest {
     private val fileUriManager: FileUriManager = mockk()
     private val session: Session = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
+    private val usersRepository: UsersRepository = mockk()
+    private val historyRepository: HistoryRepository = mockk()
+    private val workItemRepository: WorkItemRepository = mockk()
+    private val taigaStorage: TaigaStorage = mockk()
 
     private lateinit var viewModel: IssueDetailsViewModel
 
+    private val issueDetails = getIssueDetailsData()
+
     @Before
     fun setup() {
+        every { dateTimeUtils.formatLocalDateUiMedium(any()) } returns getRandomString()
+
         every { workItemEditShared.teamMemberUpdateState } returns flowOf(TeamMemberUpdate.Clear)
         every { workItemEditShared.tagsState } returns flowOf(persistentListOf())
         every { workItemEditShared.descriptionState } returns flowOf(getRandomString())
@@ -69,7 +83,37 @@ class IssueDetailsViewModelTest {
         every { patchDataGenerator.getTagsPatchPayload(any()) } returns persistentMapOf()
         every { patchDataGenerator.getDescriptionPatchPayload(any()) } returns persistentMapOf()
 
-        loadIssueError()
+        coEvery { issueDetailsDataUseCase.getIssueData(taskId) } returns Result.success(
+            issueDetails
+        )
+
+        every { session.userId } returns getRandomLong()
+
+        val type = getStatusUI()
+        val severity = getStatusUI()
+        val priority = getStatusUI()
+        val status = getStatusUI()
+
+        coEvery { statusUIMapper.toUI(issueDetails.issueTask.type!!) } returns type
+        coEvery { statusUIMapper.toUI(issueDetails.issueTask.severity!!) } returns severity
+        coEvery { statusUIMapper.toUI(issueDetails.issueTask.priority!!) } returns priority
+        coEvery { statusUIMapper.toUI(issueDetails.issueTask.status!!) } returns status
+
+        coEvery { tagUIMapper.toUI(issueDetails.issueTask.tags) } returns persistentListOf(getTagUI())
+
+        coEvery { customFieldsUIMapper.toUI(issueDetails.customFields) } returns persistentListOf(
+            getCustomFieldItemState()
+        )
+
+        coEvery {
+            workItemsGenerator.getItems(
+                statusUI = status,
+                typeUI = type,
+                severityUI = severity,
+                priorityUi = priority,
+                filtersData = issueDetails.filtersData
+            )
+        } returns persistentSetOf(getSelectableWorkItemBadgeState())
 
         viewModel = IssueDetailsViewModel(
             issueDetailsDataUseCase = issueDetailsDataUseCase,
@@ -82,12 +126,12 @@ class IssueDetailsViewModelTest {
             dateTimeUtils = dateTimeUtils,
             fileUriManager = fileUriManager,
             session = session,
-            patchDataGenerator = patchDataGenerator
+            patchDataGenerator = patchDataGenerator,
+            usersRepository = usersRepository,
+            historyRepository = historyRepository,
+            workItemRepository = workItemRepository,
+            taigaStorage = taigaStorage
         )
-    }
-
-    private fun loadIssueError() {
-        coEvery { issueDetailsDataUseCase.getIssueData(taskId, ref) } throws testException
     }
 
     @Test
@@ -100,116 +144,11 @@ class IssueDetailsViewModelTest {
     }
 
     @Test
-    fun `on setIsRemoveAssigneeDialogVisible, should update field`() {
-        assertFalse(viewModel.state.value.isRemoveAssigneeDialogVisible)
-
-        viewModel.state.value.setIsRemoveAssigneeDialogVisible(true)
-
-        assertTrue(viewModel.state.value.isRemoveAssigneeDialogVisible)
-    }
-
-    @Test
-    fun `on setIsRemoveWatcherDialogVisible, should update field`() {
-        assertFalse(viewModel.state.value.isRemoveWatcherDialogVisible)
-
-        viewModel.state.value.setIsRemoveWatcherDialogVisible(true)
-
-        assertTrue(viewModel.state.value.isRemoveWatcherDialogVisible)
-    }
-
-    @Test
-    fun `on setIsBlockDialogVisible, should update field`() {
-        assertFalse(viewModel.state.value.isBlockDialogVisible)
-
-        viewModel.state.value.setIsBlockDialogVisible(true)
-
-        assertTrue(viewModel.state.value.isBlockDialogVisible)
-    }
-
-    @Test
     fun `on setIsDeleteDialogVisible, should update field`() {
         assertFalse(viewModel.state.value.isDeleteDialogVisible)
 
         viewModel.state.value.setIsDeleteDialogVisible(true)
 
         assertTrue(viewModel.state.value.isDeleteDialogVisible)
-    }
-
-    @Test
-    fun `on setAreAttachmentsExpanded, should update field`() {
-        assertFalse(viewModel.state.value.areAttachmentsExpanded)
-
-        viewModel.state.value.setAreAttachmentsExpanded(true)
-
-        assertTrue(viewModel.state.value.areAttachmentsExpanded)
-    }
-
-    @Test
-    fun `on setIsCustomFieldsWidgetExpanded, should update field`() {
-        assertFalse(viewModel.state.value.isCustomFieldsWidgetExpanded)
-
-        viewModel.state.value.setIsCustomFieldsWidgetExpanded(true)
-
-        assertTrue(viewModel.state.value.isCustomFieldsWidgetExpanded)
-    }
-
-    @Test
-    fun `on setIsCommentsWidgetExpanded, should update field`() {
-        assertFalse(viewModel.state.value.isCommentsWidgetExpanded)
-
-        viewModel.state.value.setIsCommentsWidgetExpanded(true)
-
-        assertTrue(viewModel.state.value.isCommentsWidgetExpanded)
-    }
-
-    @Test
-    fun `on onWorkItemBadgeClick, should set active badge`() {
-        val badge = mockk<SelectableWorkItemBadgeStatus>()
-        assertNull(viewModel.state.value.activeBadge)
-
-        viewModel.state.value.onWorkingItemBadgeClick(badge)
-
-        assertEquals(badge, viewModel.state.value.activeBadge)
-    }
-
-    @Test
-    fun `on onBadgeSheetDismiss, should clear active badge`() {
-        val badge = mockk<SelectableWorkItemBadgeStatus>()
-        viewModel.state.value.onWorkingItemBadgeClick(badge)
-        assertEquals(badge, viewModel.state.value.activeBadge)
-
-        viewModel.state.value.onBadgeSheetDismiss()
-
-        assertNull(viewModel.state.value.activeBadge)
-    }
-
-    @Test
-    fun `on onRemoveWatcherClick, should set watcherIdToRemove and show dialog`() {
-        val watcherId = getRandomLong()
-        assertNull(viewModel.state.value.watcherIdToRemove)
-        assertFalse(viewModel.state.value.isRemoveWatcherDialogVisible)
-
-        viewModel.state.value.onRemoveWatcherClick(watcherId)
-
-        assertEquals(watcherId, viewModel.state.value.watcherIdToRemove)
-        assertTrue(viewModel.state.value.isRemoveWatcherDialogVisible)
-    }
-
-    @Test
-    fun `on onRemoveAssigneeClick, should show remove assignee dialog`() {
-        assertFalse(viewModel.state.value.isRemoveAssigneeDialogVisible)
-
-        viewModel.state.value.onRemoveAssigneeClick()
-
-        assertTrue(viewModel.state.value.isRemoveAssigneeDialogVisible)
-    }
-
-    @Test
-    fun `on setDueDateDatePickerVisibility, should set isDueDateDatePickerVisible`() {
-        assertFalse(viewModel.state.value.isDueDateDatePickerVisible)
-
-        viewModel.state.value.setIsDueDatePickerVisible(true)
-
-        assertTrue(viewModel.state.value.isDueDateDatePickerVisible)
     }
 }

@@ -22,9 +22,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class FiltersMapper @Inject constructor(
-    @param:DefaultDispatcher private val dispatcher: CoroutineDispatcher
-) {
+class FiltersMapper @Inject constructor(@param:DefaultDispatcher private val dispatcher: CoroutineDispatcher) {
 
     suspend fun toDomain(response: FiltersDataResponse): FiltersData = withContext(dispatcher) {
         FiltersData(
@@ -89,76 +87,75 @@ class FiltersMapper @Inject constructor(
         )
     }
 
-    suspend fun toFiltersDataDTO(response: FiltersDataResponse): FiltersDataDTO =
-        withContext(dispatcher) {
-            FiltersDataDTO(
-                assignees = response.assignedTo.map {
-                    UsersFilter(
-                        id = it.id,
-                        name = it.fullName,
-                        count = it.count
-                    )
-                },
-                roles = response.roles.orEmpty().map {
-                    RolesFilter(
-                        id = it.id,
-                        name = it.name,
-                        count = it.count
-                    )
-                },
-                tags = response.tags.orEmpty().map {
-                    TagsFilter(
-                        name = it.name,
-                        color = it.color.fixNullColor(),
-                        count = it.count
-                    )
-                },
-                statuses = response.statuses.map {
-                    StatusesFilter(
-                        id = it.id,
-                        color = it.color.fixNullColor(),
-                        name = it.name,
-                        count = it.count
-                    )
-                },
-                createdBy = response.owners.map {
-                    UsersFilter(
-                        id = it.id,
-                        name = it.fullName,
-                        count = it.count
-                    )
-                },
-                priorities = response.priorities.orEmpty().map {
-                    StatusesFilter(
-                        id = it.id,
-                        color = it.color.fixNullColor(),
-                        name = it.name,
-                        count = it.count
-                    )
-                },
-                severities = response.severities.orEmpty().map {
-                    StatusesFilter(
-                        id = it.id,
-                        color = it.color.fixNullColor(),
-                        name = it.name,
-                        count = it.count
-                    )
-                },
-                types = response.types.orEmpty().map {
-                    StatusesFilter(
-                        id = it.id,
-                        color = it.color.fixNullColor(),
-                        name = it.name,
-                        count = it.count
-                    )
-                },
-                epics = response.epics.orEmpty().map {
-                    EpicsFilter(
-                        id = it.id,
-                        name = it.subject?.let { s -> "#${it.ref} $s" }.orEmpty(),
-                        count = it.count
-                    )
-                }
-            )
-        }
+    suspend fun toFiltersDataDTO(response: FiltersDataResponse): FiltersDataDTO = withContext(dispatcher) {
+        FiltersDataDTO(
+            assignees = response.assignedTo.map {
+                UsersFilter(
+                    id = it.id,
+                    name = it.fullName,
+                    count = it.count
+                )
+            },
+            roles = response.roles.orEmpty().map {
+                RolesFilter(
+                    id = it.id,
+                    name = it.name,
+                    count = it.count
+                )
+            },
+            tags = response.tags.orEmpty().map {
+                TagsFilter(
+                    name = it.name,
+                    color = it.color.fixNullColor(),
+                    count = it.count
+                )
+            },
+            statuses = response.statuses.map {
+                StatusesFilter(
+                    id = it.id,
+                    color = it.color.fixNullColor(),
+                    name = it.name,
+                    count = it.count
+                )
+            },
+            createdBy = response.owners.map {
+                UsersFilter(
+                    id = it.id,
+                    name = it.fullName,
+                    count = it.count
+                )
+            },
+            priorities = response.priorities.orEmpty().map {
+                StatusesFilter(
+                    id = it.id,
+                    color = it.color.fixNullColor(),
+                    name = it.name,
+                    count = it.count
+                )
+            },
+            severities = response.severities.orEmpty().map {
+                StatusesFilter(
+                    id = it.id,
+                    color = it.color.fixNullColor(),
+                    name = it.name,
+                    count = it.count
+                )
+            },
+            types = response.types.orEmpty().map {
+                StatusesFilter(
+                    id = it.id,
+                    color = it.color.fixNullColor(),
+                    name = it.name,
+                    count = it.count
+                )
+            },
+            epics = response.epics.orEmpty().map {
+                EpicsFilter(
+                    id = it.id,
+                    name = it.subject?.let { s -> "#${it.ref} $s" }.orEmpty(),
+                    count = it.count
+                )
+            }
+        )
+    }
 }

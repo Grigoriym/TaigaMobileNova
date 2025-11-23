@@ -1,12 +1,22 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.title
 
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import timber.log.Timber
 
-class WorkItemTitleDelegateImpl : WorkItemTitleDelegate {
+class WorkItemTitleDelegateImpl(
+    private val commonTaskType: CommonTaskType,
+    private val workItemRepository: WorkItemRepository,
+    private val patchDataGenerator: PatchDataGenerator
+) : WorkItemTitleDelegate {
 
     private val _titleState = MutableStateFlow(
         WorkItemTitleState(
@@ -17,14 +27,20 @@ class WorkItemTitleDelegateImpl : WorkItemTitleDelegate {
     )
     override val titleState: StateFlow<WorkItemTitleState> = _titleState.asStateFlow()
 
-    override fun onTitleSave(onSaveTitleToBackend: () -> Unit) {
+    override suspend fun handleTitleSave(
+        version: Long,
+        workItemId: Long,
+        doOnPreExecute: (() -> Unit)?,
+        doOnSuccess: ((Long) -> Unit)?,
+        doOnError: (Throwable) -> Unit
+    ) {
+        doOnPreExecute?.invoke()
         val currentState = _titleState.value
 
         if (currentState.originalTitle == currentState.currentTitle) {
             onTitleSaveCancel()
             return
         }
-
         _titleState.update {
             it.copy(
                 isTitleLoading = true,
@@ -32,15 +48,33 @@ class WorkItemTitleDelegateImpl : WorkItemTitleDelegate {
             )
         }
 
-        onSaveTitleToBackend()
-    }
-
-    override fun onTitleError(error: NativeText) {
-        _titleState.update {
-            it.copy(
-                titleError = error,
-                isTitleLoading = false
+        resultOf {
+            val payload = patchDataGenerator.getTitle(currentState.currentTitle)
+            workItemRepository.patchData(
+                version = version,
+                workItemId = workItemId,
+                payload = payload,
+                commonTaskType = commonTaskType
             )
+        }.onSuccess { patchedData ->
+            doOnSuccess?.invoke(patchedData.newVersion)
+
+            _titleState.update { state ->
+                state.copy(
+                    originalTitle = state.currentTitle,
+                    isTitleEditable = false,
+                    isTitleLoading = false,
+                    titleError = NativeText.Empty
+                )
+            }
+        }.onFailure { error ->
+            _titleState.update {
+                it.copy(
+                    titleError = getErrorMessage(error),
+                    isTitleLoading = false
+                )
+            }
+            doOnError(error)
         }
     }
 
@@ -49,17 +83,6 @@ class WorkItemTitleDelegateImpl : WorkItemTitleDelegate {
             currentState.copy(
                 currentTitle = title,
                 originalTitle = title
-            )
-        }
-    }
-
-    override fun onTitleSaveSuccess() {
-        _titleState.update { currentState ->
-            currentState.copy(
-                originalTitle = currentState.currentTitle,
-                isTitleEditable = false,
-                isTitleLoading = false,
-                titleError = NativeText.Empty
             )
         }
     }

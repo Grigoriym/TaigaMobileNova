@@ -19,9 +19,4 @@ data class WikiPage(
 )
 
 @JsonClass(generateAdapter = true)
-data class WikiLink(
-    @Json(name = "href") val ref: String,
-    val id: Long,
-    val order: Long,
-    val title: String
-)
+data class WikiLink(@Json(name = "href") val ref: String, val id: Long, val order: Long, val title: String)

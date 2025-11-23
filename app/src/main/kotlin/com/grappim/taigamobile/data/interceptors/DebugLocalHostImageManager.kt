@@ -13,8 +13,7 @@ import javax.inject.Singleton
  * Why? Because images are downloaded with "localhost" as a host, while I need another host
  */
 @Singleton
-class DebugLocalHostImageManager @Inject constructor(private val appInfoProvider: AppInfoProvider) :
-    Interceptor {
+class DebugLocalHostImageManager @Inject constructor(private val appInfoProvider: AppInfoProvider) : Interceptor {
 
     private val lock = Any()
 
