@@ -81,7 +81,7 @@ subprojects {
 
     dependencies {
         ktlintRuleset("io.nlopez.compose.rules:ktlint:0.4.27")
-        detektPlugins("io.nlopez.compose.rules:detekt:0.4.27")
+        detektPlugins("io.nlopez.compose.rules:detekt:0.4.28")
     }
 }
 
