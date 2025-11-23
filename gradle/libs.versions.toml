@@ -11,7 +11,7 @@ moduleGraphAssertion = "2.9.0"
 gradleDoctor = "0.12.1"
 dependencyAnalysis = "2.19.0"
 jacocoAggregation = "2.4.7"
-composeRules = "0.4.27"
+composeRules = "0.4.28"
 
 agp = "8.13.1"
 androidTools = "31.13.0"
