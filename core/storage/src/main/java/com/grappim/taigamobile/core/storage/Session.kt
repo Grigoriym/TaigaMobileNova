@@ -67,8 +67,7 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
         resetFilters()
     }
 
-    private fun checkLogged(token: String, refresh: String) =
-        listOf(token, refresh).all { it.isNotEmpty() }
+    private fun checkLogged(token: String, refresh: String) = listOf(token, refresh).all { it.isNotEmpty() }
 
     @Deprecated("find another way of checking that")
     val isLogged = combine(token, refreshToken, ::checkLogged)
@@ -88,9 +87,8 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
 
     // Filters
     private val filtersJsonAdapter = FiltersDataDTOJsonAdapter(moshi)
-    private fun getFiltersOrEmpty(key: String) =
-        sharedPreferences.getString(key, null)?.takeIf { it.isNotBlank() }
-            ?.let { filtersJsonAdapter.fromJson(it) } ?: FiltersDataDTO()
+    private fun getFiltersOrEmpty(key: String) = sharedPreferences.getString(key, null)?.takeIf { it.isNotBlank() }
+        ?.let { filtersJsonAdapter.fromJson(it) } ?: FiltersDataDTO()
 
     private val _scrumFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_SCRUM))
     val scrumFilters: StateFlow<FiltersDataDTO> = _scrumFilters

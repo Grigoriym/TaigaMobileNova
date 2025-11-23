@@ -13,31 +13,30 @@ class ProjectsPagingSource(private val projectsApi: ProjectsApi, private val que
             anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
         }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ProjectDTO> =
-        tryCatchWithPagination(
-            block = {
-                val nextPageNumber = params.key ?: 1
-                val response = projectsApi.getProjects(
-                    query = query,
-                    page = nextPageNumber,
-                    pageSize = params.loadSize
-                )
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, ProjectDTO> = tryCatchWithPagination(
+        block = {
+            val nextPageNumber = params.key ?: 1
+            val response = projectsApi.getProjects(
+                query = query,
+                page = nextPageNumber,
+                pageSize = params.loadSize
+            )
 
-                LoadResult.Page(
-                    data = response,
-                    prevKey = null,
-                    nextKey = if (response.isNotEmpty()) nextPageNumber + 1 else null
-                )
-            },
-            catchBlock = { e ->
-                LoadResult.Error(e)
-            },
-            onPaginationEnd = {
-                LoadResult.Page(
-                    data = emptyList(),
-                    prevKey = null,
-                    nextKey = null
-                )
-            }
-        )
+            LoadResult.Page(
+                data = response,
+                prevKey = null,
+                nextKey = if (response.isNotEmpty()) nextPageNumber + 1 else null
+            )
+        },
+        catchBlock = { e ->
+            LoadResult.Error(e)
+        },
+        onPaginationEnd = {
+            LoadResult.Page(
+                data = emptyList(),
+                prevKey = null,
+                nextKey = null
+            )
+        }
+    )
 }

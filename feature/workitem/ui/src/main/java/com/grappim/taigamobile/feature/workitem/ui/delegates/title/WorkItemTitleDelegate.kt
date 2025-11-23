@@ -6,10 +6,15 @@ import kotlinx.coroutines.flow.StateFlow
 interface WorkItemTitleDelegate {
     val titleState: StateFlow<WorkItemTitleState>
 
-    fun onTitleSave(onSaveTitleToBackend: () -> Unit)
-    fun onTitleError(error: NativeText)
+    suspend fun handleTitleSave(
+        version: Long,
+        workItemId: Long,
+        doOnPreExecute: (() -> Unit)? = null,
+        doOnSuccess: ((Long) -> Unit)? = null,
+        doOnError: (Throwable) -> Unit
+    )
+
     fun setInitialTitle(title: String)
-    fun onTitleSaveSuccess()
 }
 
 data class WorkItemTitleState(

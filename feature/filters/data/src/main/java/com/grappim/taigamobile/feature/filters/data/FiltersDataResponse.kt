@@ -21,13 +21,7 @@ data class FiltersDataResponse(
     val types: List<Filter>?
 ) {
     @JsonClass(generateAdapter = true)
-    data class Filter(
-        val id: Long,
-        val name: String,
-        val color: String?,
-        val count: Long,
-        val order: Long
-    )
+    data class Filter(val id: Long, val name: String, val color: String?, val count: Long, val order: Long)
 
     @JsonClass(generateAdapter = true)
     data class UserFilter(

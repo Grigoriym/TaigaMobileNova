@@ -16,35 +16,28 @@ class HistoryRepositoryImpl @Inject constructor(
     private val commentsMapper: CommentsMapper
 ) : HistoryRepository {
     @Deprecated("use getComments")
-    override suspend fun getCommentsDTO(
-        commonTaskId: Long,
-        type: CommonTaskType
-    ): List<CommentDTO> = historyApi.getCommonTaskComments(
-        taskPath = CommonTaskPathSingular(commonTaskType = type),
-        id = commonTaskId
-    ).sortedBy { it.postDateTime }
-        .filter { it.deleteDate == null }
-        .map { it.also { it.canDelete = it.author.actualId == session.userId } }
+    override suspend fun getCommentsDTO(commonTaskId: Long, type: CommonTaskType): List<CommentDTO> =
+        historyApi.getCommonTaskComments(
+            taskPath = CommonTaskPathSingular(commonTaskType = type),
+            id = commonTaskId
+        ).sortedBy { it.postDateTime }
+            .filter { it.deleteDate == null }
+            .map { it.also { it.canDelete = it.author.actualId == session.userId } }
 
-    override suspend fun getComments(
-        commonTaskId: Long,
-        type: CommonTaskType
-    ): ImmutableList<Comment> = historyApi.getCommonTaskComments(
-        taskPath = CommonTaskPathSingular(commonTaskType = type),
-        id = commonTaskId
-    ).sortedBy { it.postDateTime }
-        .filter { it.deleteDate == null }
-        .map { dto ->
-            commentsMapper.toDomain(dto = dto, currentUserId = session.userId)
-        }.toImmutableList()
+    override suspend fun getComments(commonTaskId: Long, type: CommonTaskType): ImmutableList<Comment> =
+        historyApi.getCommonTaskComments(
+            taskPath = CommonTaskPathSingular(commonTaskType = type),
+            id = commonTaskId
+        ).sortedBy { it.postDateTime }
+            .filter { it.deleteDate == null }
+            .map { dto ->
+                commentsMapper.toDomain(dto = dto, currentUserId = session.userId)
+            }.toImmutableList()
 
-    override suspend fun deleteComment(
-        commonTaskId: Long,
-        commonTaskType: CommonTaskType,
-        commentId: String
-    ) = historyApi.deleteCommonTaskComment(
-        taskPath = CommonTaskPathSingular(commonTaskType),
-        id = commonTaskId,
-        commentId = commentId
-    )
+    override suspend fun deleteComment(commonTaskId: Long, commonTaskType: CommonTaskType, commentId: String) =
+        historyApi.deleteCommonTaskComment(
+            taskPath = CommonTaskPathSingular(commonTaskType),
+            id = commonTaskId,
+            commentId = commentId
+        )
 }

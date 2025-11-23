@@ -187,8 +187,7 @@ fun TaskFilters(
     }
 }
 
-internal inline fun <T : Filter> List<T>.ifHasData(action: (List<T>) -> Unit) =
-    takeIf { it.hasData() }?.let(action)
+internal inline fun <T : Filter> List<T>.ifHasData(action: (List<T>) -> Unit) = takeIf { it.hasData() }?.let(action)
 
 @Composable
 internal fun <T : Filter> Section(

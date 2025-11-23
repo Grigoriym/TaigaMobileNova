@@ -5,6 +5,8 @@ The previous author archived the project. I have since updated it to be ready fo
 Kotlin, Jetpack Compose, Coroutines and all that basic stuff.
 Ktlint, Detekt, Codacy, Codecov, Renovate, and CI are in place
 
+[I created a board to monitor tasks](https://tasks.gregstuff.click/project/taigamobilenova/kanban)
+
 # TaigaMobile
 
 This is the **unofficial** android app for the agile project management system [taiga.io](https://www.taiga.io/).

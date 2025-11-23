@@ -12,10 +12,8 @@ import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class EpicsRepositoryImpl @Inject constructor(
-    private val epicsApi: EpicsApi,
-    private val taigaStorage: TaigaStorage
-) : EpicsRepository {
+class EpicsRepositoryImpl @Inject constructor(private val epicsApi: EpicsApi, private val taigaStorage: TaigaStorage) :
+    EpicsRepository {
 
     private var epicsPagingSource: EpicsPagingSource? = null
 
@@ -37,15 +35,12 @@ class EpicsRepositoryImpl @Inject constructor(
         epicsPagingSource?.invalidate()
     }
 
-    override suspend fun getEpics(
-        assignedId: Long?,
-        isClosed: Boolean?,
-        watcherId: Long?
-    ): List<CommonTask> = epicsApi.getEpics(
-        assignedId = assignedId,
-        isClosed = isClosed,
-        watcherId = watcherId
-    ).map { it.toCommonTask(CommonTaskType.Epic) }
+    override suspend fun getEpics(assignedId: Long?, isClosed: Boolean?, watcherId: Long?): List<CommonTask> =
+        epicsApi.getEpics(
+            assignedId = assignedId,
+            isClosed = isClosed,
+            watcherId = watcherId
+        ).map { it.toCommonTask(CommonTaskType.Epic) }
 
     override suspend fun linkToEpic(epicId: Long, userStoryId: Long) = epicsApi.linkToEpic(
         epicId = epicId,

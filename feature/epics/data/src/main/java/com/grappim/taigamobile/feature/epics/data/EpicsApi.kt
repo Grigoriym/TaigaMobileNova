@@ -38,8 +38,5 @@ interface EpicsApi {
     suspend fun linkToEpic(@Path("id") epicId: Long, @Body linkToEpicRequest: LinkToEpicRequest)
 
     @DELETE("epics/{epicId}/related_userstories/{userStoryId}")
-    suspend fun unlinkFromEpic(
-        @Path("epicId") epicId: Long,
-        @Path("userStoryId") userStoryId: Long
-    ): Response<Void>
+    suspend fun unlinkFromEpic(@Path("epicId") epicId: Long, @Path("userStoryId") userStoryId: Long): Response<Void>
 }
