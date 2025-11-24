@@ -79,9 +79,10 @@ subprojects {
         }
     }
 
+    // https://stackoverflow.com/questions/77527617/using-version-catalog-in-gradle-kotlin-build-for-subprojects
     dependencies {
-        ktlintRuleset("io.nlopez.compose.rules:ktlint:0.4.28")
-        detektPlugins("io.nlopez.compose.rules:detekt:0.4.28")
+        ktlintRuleset(rootProject.libs.composeRules.ktlint)
+        detektPlugins(rootProject.libs.composeRules.detekt)
     }
 }
 
@@ -127,9 +128,6 @@ private val coverageExclusions = listOf(
     "**/TaskFilters",
     "**/MainNavHost",
 
-    "**/testing/*",
-    "**/uikit/**/*",
-    "**/uikit/*",
     "**/FileLoggingTree"
 ).flatMap {
     listOf(
@@ -142,6 +140,8 @@ private val coverageExclusions = listOf(
 testAggregation {
     modules {
         exclude(rootProject)
+        exclude(projects.testing)
+        exclude(projects.uikit)
     }
     coverage {
         exclude(coverageExclusions)
@@ -157,11 +157,4 @@ tasks.jacocoAggregatedReport {
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
-}
-
-// taken from https://github.com/reactor/BlockHound
-tasks.withType<Test>().all {
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
-        jvmArgs("-XX:+AllowRedefinitionToAddDeleteMethods")
-    }
 }
