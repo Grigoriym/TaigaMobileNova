@@ -12,7 +12,7 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.uikit.FilePicker
 import com.grappim.taigamobile.uikit.FilePickerOld

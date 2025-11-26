@@ -3,16 +3,12 @@ package com.grappim.taigamobile.feature.userstories.data
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
-import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.api.handle404
 import com.grappim.taigamobile.core.api.withIO
-import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.commaString
@@ -28,18 +24,15 @@ import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.fixNullColor
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 private val userStoryPlural = WorkItemPathPlural(CommonTaskType.UserStory)
-private val userStorySingular = WorkItemPathSingular(CommonTaskType.UserStory)
 
 class UserStoriesRepositoryImpl @Inject constructor(
     private val userStoriesApi: UserStoriesApi,
@@ -49,9 +42,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val serverStorage: ServerStorage,
     private val commonTaskMapper: CommonTaskMapper,
     private val userStoryMapper: UserStoryMapper,
-    private val attachmentMapper: AttachmentMapper,
     private val workItemApi: WorkItemApi,
-    private val customFieldsMapper: CustomFieldsMapper,
     private val workItemRepository: WorkItemRepository
 ) : UserStoriesRepository {
     private var userStoriesPagingSource: UserStoriesPagingSource? = null
@@ -155,37 +146,6 @@ class UserStoriesRepositoryImpl @Inject constructor(
             ref = ref
         )
         return commonTaskMapper.toDomain(response, CommonTaskType.UserStory)
-    }
-
-    override suspend fun getUserStoryAttachments(taskId: Long): List<Attachment> {
-        val projectId = taigaStorage.currentProjectIdFlow.first()
-
-        val result = workItemApi.getAttachments(
-            taskPath = userStoryPlural,
-            objectId = taskId,
-            projectId = projectId
-        )
-        return attachmentMapper.toDomain(result)
-    }
-
-    override suspend fun getCustomFields(id: Long): CustomFields = coroutineScope {
-        val attributes = async {
-            workItemApi.getCustomAttributes(
-                taskPath = userStorySingular,
-                projectId = taigaStorage.currentProjectIdFlow.first()
-            )
-        }
-        val values = async {
-            workItemApi.getCustomAttributesValues(
-                taskPath = userStoryPlural,
-                id = id
-            )
-        }
-
-        customFieldsMapper.toDomain(
-            attributes = attributes.await(),
-            values = values.await()
-        )
     }
 
     override suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): PatchedData =

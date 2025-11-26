@@ -1,8 +1,10 @@
 package com.grappim.taigamobile.feature.epics.domain
 
 import androidx.paging.PagingData
+import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 interface EpicsRepository {
@@ -13,4 +15,5 @@ interface EpicsRepository {
 
     suspend fun linkToEpic(epicId: Long, userStoryId: Long)
     suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long)
+    suspend fun getEpic(id: Long): Epic
 }

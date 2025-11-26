@@ -22,6 +22,9 @@ import com.grappim.taigamobile.createtask.navigateToCreateTask
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardScreen
 import com.grappim.taigamobile.feature.dashboard.ui.navigateToDashboardAsTopDestination
+import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsNavDestination
+import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsScreen
+import com.grappim.taigamobile.feature.epics.ui.details.navigateToEpicDetails
 import com.grappim.taigamobile.feature.epics.ui.list.EpicsNavDestination
 import com.grappim.taigamobile.feature.epics.ui.list.EpicsScreen
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
@@ -184,7 +187,41 @@ fun MainNavHost(
                     navController.navigateToCreateTask(type = type)
                 },
                 goToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
+                    if (isNewUiUsed) {
+                        navController.navigateToEpicDetails(
+                            epicId = id,
+                            ref = ref
+                        )
+                    } else {
+                        navController.navigateToCommonTask(id, type, ref)
+                    }
+                }
+            )
+        }
+
+        composable<EpicDetailsNavDestination> { _ ->
+            EpicDetailsScreen(
+                showSnackbar = showSnackbar,
+                goToProfile = { creatorId ->
+                    navController.navigateToProfileScreen(creatorId)
+                },
+                goToEditDescription = { description: String ->
+                    navController.navigateToWorkItemEditDescription(
+                        description = description
+                    )
+                },
+                goToEditTags = {
+                    navController.navigateToWorkItemEditTags()
+                },
+                goBack = {
+                    navController.setUpdateDataOnBack()
+                    navController.popBackStack()
+                },
+                goToEditAssignee = {
+                    navController.navigateToWorkItemEditAssignee()
+                },
+                goToEditWatchers = {
+                    navController.navigateToWorkItemEditAssignee()
                 }
             )
         }
@@ -211,7 +248,7 @@ fun MainNavHost(
             )
         }
 
-        composable<IssueDetailsNavDestination> { navBackStackEntry ->
+        composable<IssueDetailsNavDestination> { _ ->
             IssueDetailsScreen(
                 showSnackbar = showSnackbar,
                 goToProfile = { creatorId ->

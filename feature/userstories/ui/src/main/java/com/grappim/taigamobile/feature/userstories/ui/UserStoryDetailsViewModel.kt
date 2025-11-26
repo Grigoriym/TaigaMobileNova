@@ -247,7 +247,8 @@ class UserStoryDetailsViewModel @Inject constructor(
                             sprint = result.sprint,
                             creator = result.creator,
                             filtersData = result.filtersData,
-                            initialLoadError = NativeText.Empty
+                            initialLoadError = NativeText.Empty,
+                            customFieldsVersion = result.customFields.version
                         )
                     }
                     setInitialTitle(result.userStory.title)
@@ -481,7 +482,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             handleCustomFieldSave(
                 item = item,
-                version = currentUserStory.version,
+                customAttributesVersion = _state.value.customFieldsVersion,
                 workItemId = currentUserStory.id,
                 doOnPreExecute = {
                     clearError()

@@ -1,73 +1,59 @@
-package com.grappim.taigamobile.feature.issues.domain
+package com.grappim.taigamobile.feature.epics.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
-import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
 
-class IssueDetailsDataUseCase @Inject constructor(
-    private val issuesRepository: IssuesRepository,
-    private val sprintsRepository: SprintsRepository,
-    private val historyRepository: HistoryRepository,
-    private val usersRepository: UsersRepository,
+class EpicDetailsDataUseCase @Inject constructor(
     private val filtersRepository: FiltersRepository,
-    private val workItemRepository: WorkItemRepository
+    private val epicsRepository: EpicsRepository,
+    private val historyRepository: HistoryRepository,
+    private val workItemRepository: WorkItemRepository,
+    private val usersRepository: UsersRepository
 ) {
 
-    /**
-     * What they do on taiga-front:
-     * 1. issues/by_ref?project=1&ref=19
-     * 2. issues/attachments?object_id=8&project=1
-     * 3. milestones/2
-     * 4. issues/custom-attributes-values/8
-     * 5. history/issue/8?type=comment
-     * 6. history/issue/8?page=1&type=activity <- It is the Activities tab
-     */
-    suspend fun getIssueData(issueId: Long): Result<IssueDetailsData> = resultOf {
+    suspend fun getEpicData(epicId: Long): Result<EpicDetailsData> = resultOf {
         coroutineScope {
-            val taskType = CommonTaskType.Issue
+            val taskType = CommonTaskType.Epic
             val filtersData = filtersRepository.getFiltersData(taskType)
 
-            val issueDeferred = async {
-                issuesRepository.getIssue(id = issueId, filtersData = filtersData)
+            val epicDeferred = async {
+                epicsRepository.getEpic(epicId)
             }
 
             val attachments = async {
                 workItemRepository.getWorkItemAttachments(
-                    workItemId = issueId,
+                    workItemId = epicId,
                     commonTaskType = taskType
                 )
             }
 
             val customFields = async {
                 workItemRepository.getCustomFields(
-                    workItemId = issueId,
+                    workItemId = epicId,
                     commonTaskType = taskType
                 )
             }
             val commentsDeferred = async {
                 historyRepository.getComments(
-                    commonTaskId = issueId,
+                    commonTaskId = epicId,
                     type = taskType
                 )
             }
 
-            val issue = issueDeferred.await()
+            val epic = epicDeferred.await()
 
-            val sprint = async {
-                issue.milestone?.let { sprintsRepository.getSprint(sprintId = it) }
-            }
+            val creator = async { usersRepository.getUser(epic.creatorId) }
 
-            val creator = async { usersRepository.getUser(issue.creatorId) }
-
-            val assigneesDeferred = async { usersRepository.getUsersList(issue.assignedUserIds) }
-            val watchersDeferred = async { usersRepository.getUsersList(issue.watcherUserIds) }
+            val assigneesDeferred =
+                async { usersRepository.getUsersList(epic.assignedUserIds) }
+            val watchersDeferred = async { usersRepository.getUsersList(epic.watcherUserIds) }
 
             val assignees = assigneesDeferred.await()
             val watchers = watchersDeferred.await()
@@ -75,18 +61,17 @@ class IssueDetailsDataUseCase @Inject constructor(
             val isAssignedToMe = async { usersRepository.isAnyAssignedToMe(assignees) }
             val isWatchedByMe = async { usersRepository.isAnyAssignedToMe(watchers) }
 
-            IssueDetailsData(
-                issueTask = issue,
+            EpicDetailsData(
+                epic = epic,
                 attachments = attachments.await(),
-                sprint = sprint.await(),
                 customFields = customFields.await(),
                 comments = commentsDeferred.await(),
+                filtersData = filtersData,
                 creator = creator.await(),
                 assignees = assignees,
                 watchers = watchers,
                 isAssignedToMe = isAssignedToMe.await(),
-                isWatchedByMe = isWatchedByMe.await(),
-                filtersData = filtersData
+                isWatchedByMe = isWatchedByMe.await()
             )
         }
     }

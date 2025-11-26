@@ -15,6 +15,11 @@ dependencies {
 
     implementation(projects.feature.epics.domain)
     implementation(projects.feature.filters.data)
+    implementation(projects.feature.filters.domain)
+    implementation(projects.feature.workitem.data)
+    implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.projects.data)
+    implementation(projects.feature.projects.domain)
 
     implementation(libs.retrofit)
 

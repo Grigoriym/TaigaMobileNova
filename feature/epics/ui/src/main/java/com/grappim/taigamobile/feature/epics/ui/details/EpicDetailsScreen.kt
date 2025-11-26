@@ -1,6 +1,6 @@
 @file:OptIn(ExperimentalMaterial3Api::class)
 
-package com.grappim.taigamobile.feature.userstories.ui
+package com.grappim.taigamobile.feature.epics.ui.details
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
@@ -10,9 +10,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,13 +25,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState
-import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
@@ -43,7 +44,6 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBadgesBottomS
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBlockedBannerWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDescriptionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDropdownMenuWidget
-import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
@@ -51,42 +51,42 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.WorkItemTagsWidg
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
-import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 
 @Composable
-fun UserStoryDetailsScreen(
-    goBack: () -> Unit,
+fun EpicDetailsScreen(
+    showSnackbar: (message: NativeText) -> Unit,
+    goToProfile: (userId: Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
-    goToProfile: (Long) -> Unit,
-    showSnackbar: (message: NativeText) -> Unit,
+    goBack: () -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
-    viewModel: UserStoryDetailsViewModel = hiltViewModel()
+    viewModel: EpicDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+
     val titleState by viewModel.titleState.collectAsStateWithLifecycle()
     val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
+    val deleteTrigger by viewModel.deleteTrigger.collectAsStateWithLifecycle(false)
+    val blockState by viewModel.blockState.collectAsStateWithLifecycle()
+    val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
+    val assigneesState by viewModel.singleAssigneeState.collectAsStateWithLifecycle()
     val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
     val commentsState by viewModel.commentsState.collectAsStateWithLifecycle()
-    val attachmentsState by viewModel.attachmentsState.collectAsStateWithLifecycle()
-    val watchersState by viewModel.watchersState.collectAsStateWithLifecycle()
+    val attachmentState by viewModel.attachmentsState.collectAsStateWithLifecycle()
     val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
-    val dueDateState by viewModel.dueDateState.collectAsStateWithLifecycle()
-    val blockState by viewModel.blockState.collectAsStateWithLifecycle()
-    val assigneesState by viewModel.multipleAssigneesState.collectAsStateWithLifecycle()
     val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -110,10 +110,8 @@ fun UserStoryDetailsScreen(
         )
     }
 
-    ObserveAsEvents(viewModel.deleteTrigger) { isDelete ->
-        if (isDelete) {
-            goBack()
-        }
+    BackHandler {
+        goBack()
     }
 
     LaunchedEffect(state.error) {
@@ -122,17 +120,11 @@ fun UserStoryDetailsScreen(
         }
     }
 
-    LaunchedEffect(titleState.titleError) {
-        if (titleState.titleError !is NativeText.Empty) {
-            showSnackbar(titleState.titleError)
+    LaunchedEffect(deleteTrigger) {
+        if (deleteTrigger) {
+            goBack()
         }
     }
-
-    BackHandler {
-        goBack()
-    }
-
-    TaigaLoadingDialog(isVisible = state.isLoading)
 
     WorkItemBadgesBottomSheet(
         activeBadge = badgeState.activeBadge,
@@ -145,22 +137,13 @@ fun UserStoryDetailsScreen(
         }
     )
 
-    DatePickerDialogWidget(
-        isVisible = dueDateState.isDueDateDatePickerVisible,
-        onDismissRequest = { dueDateState.setDueDateDatePickerVisibility(false) },
-        onDismissButonClick = { dueDateState.setDueDateDatePickerVisibility(false) },
-        onConfirmButtonClick = { dateMillis ->
-            state.setDueDate(dateMillis)
-            dueDateState.setDueDateDatePickerVisibility(false)
-        }
-    )
-
     ConfirmActionDialog(
         isVisible = assigneesState.isRemoveAssigneeDialogVisible,
         title = stringResource(RString.remove_user_title),
         description = stringResource(RString.remove_user_text),
         onConfirm = {
             state.removeAssignee()
+            assigneesState.setIsRemoveAssigneeDialogVisible(false)
         },
         onDismiss = { assigneesState.setIsRemoveAssigneeDialogVisible(false) }
     )
@@ -176,17 +159,6 @@ fun UserStoryDetailsScreen(
         onDismiss = { watchersState.setIsRemoveWatcherDialogVisible(false) }
     )
 
-    BlockDialog(
-        isVisible = blockState.isBlockDialogVisible,
-        onConfirm = { blockNote ->
-            state.onBlockToggle(true, blockNote)
-            blockState.setIsBlockDialogVisible(false)
-        },
-        onDismiss = {
-            blockState.setIsBlockDialogVisible(false)
-        }
-    )
-
     ConfirmActionDialog(
         isVisible = state.isDeleteDialogVisible,
         title = stringResource(RString.delete_task_title),
@@ -198,15 +170,28 @@ fun UserStoryDetailsScreen(
         onDismiss = { state.setIsDeleteDialogVisible(false) }
     )
 
+    BlockDialog(
+        isVisible = blockState.isBlockDialogVisible,
+        onConfirm = { blockNote ->
+            state.onBlockToggle(true, blockNote)
+            blockState.setIsBlockDialogVisible(false)
+        },
+        onDismiss = {
+            blockState.setIsBlockDialogVisible(false)
+        }
+    )
+
+    TaigaLoadingDialog(isVisible = state.isLoading)
+
     if (state.initialLoadError !is NativeText.Empty) {
         ErrorStateWidget(
             modifier = Modifier.fillMaxSize(),
             message = state.initialLoadError,
             onRetry = {
-                state.retryLoadUserStory()
+                state.retryLoadEpic()
             }
         )
-    } else if (state.currentUserStory != null) {
+    } else if (state.currentEpic != null) {
         WorkItemDropdownMenuWidget(
             modifier = Modifier
                 .fillMaxWidth()
@@ -214,11 +199,11 @@ fun UserStoryDetailsScreen(
             isExpanded = state.isDropdownMenuExpanded,
             onDismissRequest = { state.setDropdownMenuExpanded(false) },
             showSnackbar = showSnackbar,
-            url = state.currentUserStory?.copyLinkUrl ?: "",
-            isBlocked = state.currentUserStory?.blockedNote != null,
+            url = state.currentEpic?.copyLinkUrl ?: "",
             setDeleteAlertVisible = {
                 state.setIsDeleteDialogVisible(it)
             },
+            isBlocked = state.currentEpic?.blockedNote != null,
             setBlockDialogVisible = {
                 blockState.setIsBlockDialogVisible(it)
             },
@@ -227,20 +212,19 @@ fun UserStoryDetailsScreen(
             }
         )
 
-        UserStoryDetailsScreenContent(
+        EpicDetailsScreenContent(
             state = state,
             titleState = titleState,
             badgeState = badgeState,
             tagsState = tagsState,
             commentsState = commentsState,
-            attachmentsState = attachmentsState,
+            attachmentsState = attachmentState,
             watchersState = watchersState,
             customFieldsState = customFieldsState,
-            dueDateState = dueDateState,
             assigneesState = assigneesState,
             descriptionState = descriptionState,
-            goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
+            goToEditDescription = goToEditDescription,
             goToProfile = goToProfile,
             goToEditAssignee = goToEditAssignee,
             goToEditWatchers = goToEditWatchers
@@ -249,28 +233,28 @@ fun UserStoryDetailsScreen(
 }
 
 @Composable
-private fun UserStoryDetailsScreenContent(
-    state: UserStoryDetailsState,
+private fun EpicDetailsScreenContent(
+    state: EpicDetailsState,
     titleState: WorkItemTitleState,
     badgeState: WorkItemBadgeState,
     tagsState: WorkItemTagsState,
     commentsState: WorkItemCommentsState,
     attachmentsState: WorkItemAttachmentsState,
-    customFieldsState: WorkItemCustomFieldsState,
     watchersState: WorkItemWatchersState,
-    dueDateState: WorkItemDueDateState,
-    assigneesState: WorkItemMultipleAssigneesState,
+    customFieldsState: WorkItemCustomFieldsState,
+    assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
+    goToProfile: (Long) -> Unit,
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
-    goToProfile: (Long) -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit
 ) {
-    requireNotNull(state.currentUserStory)
+    requireNotNull(state.currentEpic)
 
     Column(
-        modifier = Modifier.fillMaxSize()
+        modifier = Modifier
+            .fillMaxSize()
     ) {
         Box(
             modifier = Modifier.weight(1f),
@@ -293,8 +277,7 @@ private fun UserStoryDetailsScreenContent(
                     setIsEditable = titleState.setIsTitleEditable,
                     onCancelClick = titleState.onCancelClick
                 )
-
-                WorkItemBlockedBannerWidget(blockedNote = state.currentUserStory.blockedNote)
+                WorkItemBlockedBannerWidget(blockedNote = state.currentEpic.blockedNote)
 
                 WorkItemBadgesWidget(
                     updatingBadges = badgeState.updatingBadges,
@@ -303,9 +286,9 @@ private fun UserStoryDetailsScreenContent(
                 )
 
                 WorkItemDescriptionWidget(
-                    currentDescription = state.currentUserStory.description,
+                    currentDescription = state.currentEpic.description,
                     onDescriptionClick = {
-                        goToEditDescription(state.currentUserStory.description)
+                        goToEditDescription(state.currentEpic.description)
                     },
                     isLoading = descriptionState.isDescriptionLoading
                 )
@@ -320,37 +303,24 @@ private fun UserStoryDetailsScreenContent(
                     }
                 )
 
-                WorkItemDueDateWidget(
-                    dueDateText = dueDateState.dueDateText,
-                    dueDateStatus = state.currentUserStory.dueDateStatus,
-                    isLoading = dueDateState.isDueDateLoading,
-                    dueDate = state.currentUserStory.dueDate,
-                    setIsDueDatePickerVisible = { value ->
-                        dueDateState.setDueDateDatePickerVisibility(value)
-                    },
-                    setDueDate = { value ->
-                        state.setDueDate(value)
-                    }
-                )
-
                 CreatedByWidget(
                     goToProfile = goToProfile,
                     creator = state.creator,
-                    createdDateTime = state.currentUserStory.createdDateTime
+                    createdDateTime = state.currentEpic.createdDateTime
                 )
 
                 AssignedToWidget(
                     goToProfile = goToProfile,
                     assignees = assigneesState.assignees,
                     isAssigneesLoading = assigneesState.isAssigneesLoading,
-                    onRemoveAssigneeClick = { user ->
-                        assigneesState.onRemoveAssigneeClick(user)
+                    onRemoveAssigneeClick = {
+                        assigneesState.onRemoveAssigneeClick()
                     },
                     isAssignedToMe = assigneesState.isAssignedToMe,
+                    onUnassign = state.onUnassign,
                     onAssignToMe = state.onAssignToMe,
-                    isPlural = true,
                     onAddAssigneeClick = {
-                        assigneesState.onGoingToEditAssignees()
+                        assigneesState.onGoingToEditAssignee()
                         goToEditAssignee()
                     }
                 )
@@ -382,6 +352,17 @@ private fun UserStoryDetailsScreenContent(
                     editingItemIds = customFieldsState.editingItemIds
                 )
 
+//                LazyColumn {
+//                    simpleTasksListWithTitle(
+//                        titleText = RString.userstories,
+//                        bottomPadding = 16.dp,
+//                        commonTasks = emptyList(),
+//                        navigateToTask = { _, _, _ ->
+//
+//                        }
+//                    )
+//                }
+
                 AttachmentsSectionWidget(
                     attachments = attachmentsState.attachments,
                     isAttachmentsLoading = attachmentsState.areAttachmentsLoading,
@@ -394,6 +375,7 @@ private fun UserStoryDetailsScreenContent(
                         state.onAttachmentRemove(it)
                     }
                 )
+
 
                 CommentsSectionWidget(
                     comments = commentsState.comments,
