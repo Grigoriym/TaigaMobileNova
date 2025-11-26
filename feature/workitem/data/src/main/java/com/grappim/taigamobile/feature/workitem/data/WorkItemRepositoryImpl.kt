@@ -155,28 +155,26 @@ class WorkItemRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getCustomFields(
-        workItemId: Long,
-        commonTaskType: CommonTaskType
-    ): CustomFields = coroutineScope {
-        val attributes = async {
-            workItemApi.getCustomAttributes(
-                taskPath = WorkItemPathSingular(commonTaskType),
-                projectId = taigaStorage.currentProjectIdFlow.first()
-            )
-        }
-        val values = async {
-            workItemApi.getCustomAttributesValues(
-                id = workItemId,
-                taskPath = WorkItemPathPlural(commonTaskType)
-            )
-        }
+    override suspend fun getCustomFields(workItemId: Long, commonTaskType: CommonTaskType): CustomFields =
+        coroutineScope {
+            val attributes = async {
+                workItemApi.getCustomAttributes(
+                    taskPath = WorkItemPathSingular(commonTaskType),
+                    projectId = taigaStorage.currentProjectIdFlow.first()
+                )
+            }
+            val values = async {
+                workItemApi.getCustomAttributesValues(
+                    id = workItemId,
+                    taskPath = WorkItemPathPlural(commonTaskType)
+                )
+            }
 
-        customFieldsMapper.toDomain(
-            attributes = attributes.await(),
-            values = values.await()
-        )
-    }
+            customFieldsMapper.toDomain(
+                attributes = attributes.await(),
+                values = values.await()
+            )
+        }
 
     override suspend fun getWorkItemAttachments(
         workItemId: Long,

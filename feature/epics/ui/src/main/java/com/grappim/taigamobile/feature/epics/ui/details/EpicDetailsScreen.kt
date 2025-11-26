@@ -376,7 +376,6 @@ private fun EpicDetailsScreenContent(
                     }
                 )
 
-
                 CommentsSectionWidget(
                     comments = commentsState.comments,
                     goToProfile = goToProfile,

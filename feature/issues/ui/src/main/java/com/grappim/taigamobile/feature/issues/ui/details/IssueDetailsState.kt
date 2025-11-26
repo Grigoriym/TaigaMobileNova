@@ -69,5 +69,5 @@ data class IssueDetailsState(
     val setIsDeleteDialogVisible: (Boolean) -> Unit = {},
     val isDeleteDialogVisible: Boolean = false,
     val onDelete: () -> Unit = {},
-    val customFieldsVersion: Long = 0,
+    val customFieldsVersion: Long = 0
 )

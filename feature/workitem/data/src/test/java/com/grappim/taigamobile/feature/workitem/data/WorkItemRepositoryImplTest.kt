@@ -1,11 +1,13 @@
 package com.grappim.taigamobile.feature.workitem.data
 
 import com.grappim.taigamobile.core.api.AttachmentMapper
+import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.core.domain.DueDateStatus
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
@@ -37,6 +39,8 @@ class WorkItemRepositoryImplTest {
     private val attachmentMapper: AttachmentMapper = mockk()
     private val workItemMapper: WorkItemMapper = mockk()
     private val usersRepository: UsersRepository = mockk()
+    private val customFieldsMapper: CustomFieldsMapper = mockk()
+    private val taigaStorage: TaigaStorage = mockk()
 
     private lateinit var sut: WorkItemRepository
 
@@ -47,7 +51,9 @@ class WorkItemRepositoryImplTest {
             patchedDataMapper = patchedDataMapper,
             attachmentMapper = attachmentMapper,
             workItemMapper = workItemMapper,
-            usersRepository = usersRepository
+            usersRepository = usersRepository,
+            customFieldsMapper = customFieldsMapper,
+            taigaStorage = taigaStorage
         )
     }
 

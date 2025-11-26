@@ -19,7 +19,7 @@ data class TopBarConfig(
      * you have to manually setup [androidx.activity.compose.BackHandler]
      */
     val overrideBackHandlerAction: (() -> Unit)? = null,
-    //todo make it eventually an immutableList
+    // todo make it eventually an immutableList
     val actions: List<TopBarAction> = emptyList()
 )
 

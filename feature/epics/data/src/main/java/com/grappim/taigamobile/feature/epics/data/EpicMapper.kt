@@ -20,7 +20,7 @@ class EpicMapper @Inject constructor(
     private val statusMapper: StatusMapper,
     private val userMapper: UserMapper,
     private val projectMapper: ProjectMapper,
-    private val tagsMapper: TagsMapper,
+    private val tagsMapper: TagsMapper
 ) {
     suspend fun toDomain(resp: WorkItemResponseDTO): Epic = withContext(ioDispatcher) {
         val creatorId = resp.owner ?: error("Owner field is null")

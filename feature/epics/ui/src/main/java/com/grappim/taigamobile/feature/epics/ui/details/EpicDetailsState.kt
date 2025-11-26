@@ -54,5 +54,5 @@ data class EpicDetailsState(
     val onCreateCommentClick: (String) -> Unit = {},
 
     val onCustomFieldSave: (CustomFieldItemState) -> Unit = {},
-    val customFieldsVersion: Long = 0,
+    val customFieldsVersion: Long = 0
 )

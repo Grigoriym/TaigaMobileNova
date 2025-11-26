@@ -20,8 +20,7 @@ class EpicsRepositoryImpl @Inject constructor(
     private val taigaStorage: TaigaStorage,
     private val workItemApi: WorkItemApi,
     private val epicMapper: EpicMapper
-) :
-    EpicsRepository {
+) : EpicsRepository {
 
     private var epicsPagingSource: EpicsPagingSource? = null
 

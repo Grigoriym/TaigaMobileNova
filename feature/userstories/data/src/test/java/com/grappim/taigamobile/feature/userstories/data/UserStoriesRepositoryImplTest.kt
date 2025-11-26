@@ -1,8 +1,6 @@
 package com.grappim.taigamobile.feature.userstories.data
 
-import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
-import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
@@ -40,9 +38,7 @@ class UserStoriesRepositoryImplTest {
     private val serverStorage: ServerStorage = mockk()
     private val commonTaskMapper: CommonTaskMapper = mockk()
     private val userStoryMapper: UserStoryMapper = mockk()
-    private val attachmentMapper: AttachmentMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
-    private val customFieldsMapper: CustomFieldsMapper = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
 
     private lateinit var sut: UserStoriesRepository
@@ -59,9 +55,7 @@ class UserStoriesRepositoryImplTest {
             serverStorage = serverStorage,
             commonTaskMapper = commonTaskMapper,
             userStoryMapper = userStoryMapper,
-            attachmentMapper = attachmentMapper,
             workItemApi = workItemApi,
-            customFieldsMapper = customFieldsMapper,
             workItemRepository = workItemRepository
         )
     }
