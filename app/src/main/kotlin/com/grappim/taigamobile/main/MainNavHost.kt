@@ -180,13 +180,16 @@ fun MainNavHost(
             )
         }
 
-        composable<EpicsNavDestination> {
+        composable<EpicsNavDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             EpicsScreen(
-                showMessage = showMessage,
-                goToCreateTask = { type ->
-                    navController.navigateToCreateTask(type = type)
+                showSnackbar = showSnackbarAction,
+                goToCreateEpic = {
+                    navController.navigateToCreateTask(type = CommonTaskType.Epic)
                 },
-                goToTask = { id, type, ref ->
+                updateData = updateData,
+                goToEpic = { id, type, ref ->
                     if (isNewUiUsed) {
                         navController.navigateToEpicDetails(
                             epicId = id,

@@ -3,9 +3,9 @@ package com.grappim.taigamobile.feature.epics.ui.list
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 
 data class EpicsState(
-    val isLoading: Boolean = false,
-    val isError: Boolean = false,
-    val onRefresh: () -> Unit,
-    val filters: FiltersDataDTO = FiltersDataDTO(),
-    val activeFilters: FiltersDataDTO = FiltersDataDTO()
+    val retryLoadFilters: () -> Unit = {},
+    val isFiltersError: Boolean = false,
+    val isFiltersLoading: Boolean = false,
+    val activeFilters: FiltersDataDTO = FiltersDataDTO(),
+    val selectFilters: (filters: FiltersDataDTO) -> Unit = {},
 )
