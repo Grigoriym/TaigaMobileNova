@@ -66,7 +66,6 @@ fun EpicsScreen(
         )
     }
 
-
     LaunchedEffect(epics.loadState.hasError) {
         if (epics.loadState.hasError) {
             showSnackbar(

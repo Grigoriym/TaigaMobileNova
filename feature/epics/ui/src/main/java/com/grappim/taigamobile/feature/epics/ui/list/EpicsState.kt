@@ -7,5 +7,5 @@ data class EpicsState(
     val isFiltersError: Boolean = false,
     val isFiltersLoading: Boolean = false,
     val activeFilters: FiltersDataDTO = FiltersDataDTO(),
-    val selectFilters: (filters: FiltersDataDTO) -> Unit = {},
+    val selectFilters: (filters: FiltersDataDTO) -> Unit = {}
 )
