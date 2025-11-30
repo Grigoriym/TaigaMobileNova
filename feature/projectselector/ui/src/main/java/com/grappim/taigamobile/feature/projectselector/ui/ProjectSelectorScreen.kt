@@ -35,6 +35,7 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
@@ -53,7 +54,11 @@ fun ProjectSelectorScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.project_selector),
-                showBackButton = state.isFromLogin
+                navigationIcon = if (state.isFromLogin) {
+                    NavigationIconConfig.Back()
+                } else {
+                    NavigationIconConfig.Menu
+                }
             )
         )
     }

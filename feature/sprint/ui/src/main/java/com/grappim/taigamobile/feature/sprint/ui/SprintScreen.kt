@@ -30,12 +30,14 @@ import com.grappim.taigamobile.uikit.widgets.dialog.EditSprintDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
 import com.grappim.taigamobile.utils.ui.SuccessResult
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
+import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
 
 @Composable
@@ -65,8 +67,8 @@ fun SprintScreen(
             TopBarConfig(
                 title = state.sprintToolbarTitle,
                 subtitle = state.sprintToolbarSubtitle,
-                showBackButton = true,
-                actions = listOf(
+                navigationIcon = NavigationIconConfig.Back(),
+                actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_options,
                         contentDescription = "",

@@ -56,9 +56,11 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun IssueDetailsScreen(
@@ -93,14 +95,13 @@ fun IssueDetailsScreen(
         topBarController.update(
             TopBarConfig(
                 title = state.toolbarTitle,
-                showBackButton = true,
-                overrideBackHandlerAction = {
-                    goBack()
-                },
-                actions = listOf(
+                navigationIcon = NavigationIconConfig.Back(
+                    onBackClick = { goBack() }
+                ),
+                actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_options,
-                        contentDescription = "Task options",
+                        contentDescription = "Issue options",
                         onClick = {
                             state.setDropdownMenuExpanded(true)
                         }

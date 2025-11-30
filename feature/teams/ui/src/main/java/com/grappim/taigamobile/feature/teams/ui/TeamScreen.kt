@@ -39,6 +39,7 @@ import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 
@@ -54,7 +55,8 @@ fun TeamScreen(
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(RString.team)
+                title = NativeText.Resource(RString.team),
+                navigationIcon = NavigationIconConfig.Menu
             )
         )
     }

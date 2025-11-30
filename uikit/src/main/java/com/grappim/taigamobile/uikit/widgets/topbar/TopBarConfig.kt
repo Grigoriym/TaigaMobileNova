@@ -2,6 +2,8 @@ package com.grappim.taigamobile.uikit.widgets.topbar
 
 import androidx.annotation.DrawableRes
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 /**
  * A config file to control the global state of the top bar.
@@ -10,35 +12,29 @@ import com.grappim.taigamobile.utils.ui.NativeText
 data class TopBarConfig(
     val title: NativeText = NativeText.Empty,
     val subtitle: NativeText = NativeText.Empty,
-    // Maybe instead of a bool flag, it is better to use a state?
-    val showBackButton: Boolean = false,
-    /**
-     * If you need to have your own navigation, just override it and your action will be called
-     * when you click the topBar prefix button.
-     * This does not affect the BackHandler (when you are clicking the system back button), for that
-     * you have to manually setup [androidx.activity.compose.BackHandler]
-     */
-    val overrideBackHandlerAction: (() -> Unit)? = null,
-    // todo make it eventually an immutableList
-    val actions: List<TopBarAction> = emptyList()
+    val navigationIcon: NavigationIconConfig = NavigationIconConfig.Back(),
+    val actions: ImmutableList<TopBarAction> = persistentListOf()
 )
 
 sealed interface TopBarAction {
-    @Deprecated("should move to a icon actions")
-    val contentDescription: String
     val onClick: () -> Unit
 }
 
 data class TopBarActionIconButton(
     @DrawableRes val drawable: Int,
-    @Deprecated("should move to a icon actions")
-    override val contentDescription: String = "",
+    val contentDescription: String = "",
     override val onClick: () -> Unit
 ) : TopBarAction
 
-data class TopBarActionTextButton(
-    val text: NativeText,
-    @Deprecated("should move to a icon actions")
-    override val contentDescription: String = "",
-    override val onClick: () -> Unit
-) : TopBarAction
+data class TopBarActionTextButton(val text: NativeText, override val onClick: () -> Unit) : TopBarAction
+
+sealed interface NavigationIconConfig {
+    object None : NavigationIconConfig
+
+    data class Back(val onBackClick: (() -> Unit)? = null) : NavigationIconConfig
+
+    object Menu : NavigationIconConfig
+
+    data class Custom(@DrawableRes val icon: Int, val contentDescription: String, val onClick: () -> Unit) :
+        NavigationIconConfig
+}

@@ -35,8 +35,7 @@ fun TaigaTopAppBar(
     isVisible: Boolean,
     drawerState: DrawerState,
     topBarConfig: TopBarConfig,
-    isMenuButton: Boolean,
-    goBack: () -> Unit,
+    defaultGoBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -64,9 +63,9 @@ fun TaigaTopAppBar(
             },
             navigationIcon = {
                 NavigationIcon(
+                    navigationIconConfig = topBarConfig.navigationIcon,
                     drawerState = drawerState,
-                    showMenuButton = isMenuButton,
-                    goBack = goBack
+                    defaultGoBack = defaultGoBack
                 )
             },
             actions = {
@@ -94,25 +93,48 @@ fun TaigaTopAppBar(
 }
 
 @Composable
-private fun NavigationIcon(drawerState: DrawerState, showMenuButton: Boolean, goBack: () -> Unit) {
+private fun NavigationIcon(
+    navigationIconConfig: NavigationIconConfig,
+    drawerState: DrawerState,
+    defaultGoBack: () -> Unit
+) {
     val scope = rememberCoroutineScope()
     val keyboardController = LocalSoftwareKeyboardController.current
-    if (showMenuButton) {
-        IconButton(onClick = {
-            keyboardController?.hide()
-            scope.launch {
-                if (drawerState.isClosed) {
-                    drawerState.open()
-                } else {
-                    drawerState.close()
-                }
-            }
-        }) {
-            Icon(Icons.Default.Menu, contentDescription = "Menu")
+
+    when (navigationIconConfig) {
+        is NavigationIconConfig.None -> {
         }
-    } else {
-        IconButton(onClick = goBack) {
-            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+
+        is NavigationIconConfig.Back -> {
+            IconButton(
+                onClick = navigationIconConfig.onBackClick ?: defaultGoBack
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        }
+
+        is NavigationIconConfig.Menu -> {
+            IconButton(onClick = {
+                keyboardController?.hide()
+                scope.launch {
+                    if (drawerState.isClosed) {
+                        drawerState.open()
+                    } else {
+                        drawerState.close()
+                    }
+                }
+            }) {
+                Icon(Icons.Default.Menu, contentDescription = "Menu")
+            }
+        }
+
+        is NavigationIconConfig.Custom -> {
+            IconButton(onClick = navigationIconConfig.onClick) {
+                Icon(
+                    painter = painterResource(navigationIconConfig.icon),
+                    contentDescription = navigationIconConfig.contentDescription
+                )
+            }
         }
     }
 }

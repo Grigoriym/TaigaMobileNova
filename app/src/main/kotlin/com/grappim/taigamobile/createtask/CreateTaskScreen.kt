@@ -27,11 +27,13 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
 import com.grappim.taigamobile.utils.ui.SuccessResult
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun CreateTaskScreen(
@@ -46,8 +48,8 @@ fun CreateTaskScreen(
         topBarController.update(
             TopBarConfig(
                 title = state.toolbarTitle,
-                showBackButton = true,
-                actions = listOf(
+                navigationIcon = NavigationIconConfig.Back(),
+                actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_save,
                         contentDescription = "Save",

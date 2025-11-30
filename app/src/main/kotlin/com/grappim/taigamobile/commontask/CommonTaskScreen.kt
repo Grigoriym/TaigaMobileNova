@@ -73,12 +73,14 @@ import com.grappim.taigamobile.uikit.widgets.list.Description
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
 import com.grappim.taigamobile.utils.ui.SuccessResult
+import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDateTime
 
 @Composable
@@ -100,11 +102,10 @@ fun CommonTaskScreen(
         topBarController.update(
             TopBarConfig(
                 title = state.toolbarTitle,
-                showBackButton = true,
-                overrideBackHandlerAction = {
-                    goBack()
-                },
-                actions = listOf(
+                navigationIcon = NavigationIconConfig.Back(
+                    onBackClick = { goBack() }
+                ),
+                actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_options,
                         contentDescription = "Task options",

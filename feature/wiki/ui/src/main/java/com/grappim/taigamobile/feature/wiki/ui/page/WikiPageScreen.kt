@@ -41,12 +41,14 @@ import com.grappim.taigamobile.uikit.widgets.list.Description
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
 import com.grappim.taigamobile.utils.ui.SuccessResult
+import kotlinx.collections.immutable.persistentListOf
 import java.io.InputStream
 import java.time.LocalDateTime
 
@@ -96,15 +98,16 @@ fun WikiPageScreen(
                 } else {
                     NativeText.Simple(link.data?.title ?: viewModel.pageSlug)
                 },
-                showBackButton = true,
-                overrideBackHandlerAction = {
-                    if (state.isEditPageVisible) {
-                        state.setEditPageVisible(false)
-                    } else {
-                        goBack()
+                navigationIcon = NavigationIconConfig.Back(
+                    onBackClick = {
+                        if (state.isEditPageVisible) {
+                            state.setEditPageVisible(false)
+                        } else {
+                            goBack()
+                        }
                     }
-                },
-                actions = listOf(
+                ),
+                actions = persistentListOf(
                     if (state.isEditPageVisible) {
                         TopBarActionIconButton(
                             drawable = RDrawable.ic_save,

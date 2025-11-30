@@ -18,11 +18,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ListItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.HighlightOff
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -55,6 +55,7 @@ import com.grappim.taigamobile.uikit.widgets.DropdownSelector
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
@@ -72,7 +73,8 @@ fun SettingsScreen(showSnackbar: (message: NativeText) -> Unit, viewModel: Setti
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(RString.settings)
+                title = NativeText.Resource(RString.settings),
+                navigationIcon = NavigationIconConfig.Menu
             )
         )
     }
@@ -177,10 +179,10 @@ fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
                     .clickable {
                         state.onNewUIToggle()
                     },
-                text = {
+                headlineContent = {
                     Text(text = stringResource(id = RString.is_new_ui_used))
                 },
-                trailing = {
+                trailingContent = {
                     FeatureEnabledIcon(state.isNewUIUsed)
                 }
             )

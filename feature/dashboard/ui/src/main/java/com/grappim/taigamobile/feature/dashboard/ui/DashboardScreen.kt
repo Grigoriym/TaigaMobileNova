@@ -29,6 +29,7 @@ import com.grappim.taigamobile.uikit.widgets.list.ProjectCard
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 
@@ -44,7 +45,8 @@ fun DashboardScreen(
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(RString.dashboard)
+                title = NativeText.Resource(RString.dashboard),
+                navigationIcon = NavigationIconConfig.Menu
             )
         )
     }

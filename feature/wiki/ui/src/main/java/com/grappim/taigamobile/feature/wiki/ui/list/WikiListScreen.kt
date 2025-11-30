@@ -32,11 +32,13 @@ import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPagerWidget
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun WikiListScreen(
@@ -59,7 +61,8 @@ fun WikiListScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.wiki),
-                actions = listOf(
+                navigationIcon = NavigationIconConfig.Menu,
+                actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",

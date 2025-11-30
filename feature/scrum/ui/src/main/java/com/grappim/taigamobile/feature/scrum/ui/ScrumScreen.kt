@@ -59,11 +59,13 @@ import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
+import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -89,7 +91,8 @@ fun ScrumScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.scrum),
-                actions = listOf(
+                navigationIcon = NavigationIconConfig.Menu,
+                actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",
