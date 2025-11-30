@@ -46,7 +46,7 @@ class DashboardRepositoryImpl @Inject constructor(
         }
 
         val stories = async {
-            userStoriesRepository.getUserStories(
+            userStoriesRepository.getUserStoriesOld(
                 assignedId = session.userId,
                 isClosed = false,
                 isDashboard = true
@@ -75,7 +75,7 @@ class DashboardRepositoryImpl @Inject constructor(
         }
 
         val stories = async {
-            userStoriesRepository.getUserStories(
+            userStoriesRepository.getUserStoriesOld(
                 watcherId = session.userId,
                 isClosed = false,
                 isDashboard = true

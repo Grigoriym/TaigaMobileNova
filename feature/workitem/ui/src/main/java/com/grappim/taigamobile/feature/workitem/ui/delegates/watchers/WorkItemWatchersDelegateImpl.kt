@@ -72,7 +72,7 @@ class WorkItemWatchersDelegateImpl(
                 commonTaskType = commonTaskType
             )
 
-            val workItem = workItemRepository.getWorkItem(
+            val workItem = workItemRepository.getUpdateWorkItem(
                 workItemId = workItemId,
                 commonTaskType = commonTaskType
             )
@@ -120,7 +120,7 @@ class WorkItemWatchersDelegateImpl(
                 commonTaskType = commonTaskType
             )
 
-            val workItem = workItemRepository.getWorkItem(
+            val workItem = workItemRepository.getUpdateWorkItem(
                 workItemId = workItemId,
                 commonTaskType = commonTaskType
             )

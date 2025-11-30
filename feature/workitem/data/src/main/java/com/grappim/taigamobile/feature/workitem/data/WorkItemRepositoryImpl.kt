@@ -10,8 +10,8 @@ import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.domain.UpdateWorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
-import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
@@ -116,12 +116,12 @@ class WorkItemRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getWorkItem(workItemId: Long, commonTaskType: CommonTaskType): WorkItem {
+    override suspend fun getUpdateWorkItem(workItemId: Long, commonTaskType: CommonTaskType): UpdateWorkItem {
         val response = workItemApi.getWorkItemById(
             taskPath = WorkItemPathPlural(commonTaskType),
             id = workItemId
         )
-        return workItemMapper.toDomain(response)
+        return workItemMapper.toUpdateDomain(response)
     }
 
     override suspend fun updateWatchersData(

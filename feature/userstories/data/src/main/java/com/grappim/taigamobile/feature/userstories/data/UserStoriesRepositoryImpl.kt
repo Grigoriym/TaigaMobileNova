@@ -4,6 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.grappim.taigamobile.core.api.CommonTaskMapper
+import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.api.handle404
 import com.grappim.taigamobile.core.api.withIO
 import com.grappim.taigamobile.core.domain.CommonTask
@@ -18,15 +19,23 @@ import com.grappim.taigamobile.core.domain.toCommonTaskExtended
 import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
+import com.grappim.taigamobile.feature.filters.data.StatusMapper
+import com.grappim.taigamobile.feature.filters.data.TagsMapper
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.fixNullColor
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -43,7 +52,10 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val commonTaskMapper: CommonTaskMapper,
     private val userStoryMapper: UserStoryMapper,
     private val workItemApi: WorkItemApi,
-    private val workItemRepository: WorkItemRepository
+    private val workItemRepository: WorkItemRepository,
+    private val statusMapper: StatusMapper,
+    private val userMapper: UserMapper,
+    private val tagsMapper: TagsMapper
 ) : UserStoriesRepository {
     private var userStoriesPagingSource: UserStoriesPagingSource? = null
 
@@ -74,7 +86,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
         val filters = async { filtersRepository.getFiltersDataOld(CommonTaskType.UserStory) }
         val swimlanes = async { swimlanesRepository.getSwimlanes() }
 
-        userStoriesApi.getUserStories(project = taigaStorage.currentProjectIdFlow.first())
+        userStoriesApi.getUserStoriesOld(project = taigaStorage.currentProjectIdFlow.first())
             .map { response ->
                 response.toCommonTaskExtended(
                     commonTaskType = CommonTaskType.UserStory,
@@ -92,7 +104,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getBacklogUserStories(page: Int, filters: FiltersDataDTO) = handle404 {
-        userStoriesApi.getUserStories(
+        userStoriesApi.getUserStoriesOld(
             project = taigaStorage.currentProjectIdFlow.first(),
             sprint = "null",
             page = page,
@@ -106,7 +118,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
         ).map { commonTaskMapper.toDomain(it, CommonTaskType.UserStory) }
     }
 
-    override suspend fun getUserStories(
+    override suspend fun getUserStoriesOld(
         assignedId: Long?,
         isClosed: Boolean?,
         isDashboard: Boolean?,
@@ -114,7 +126,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
         epicId: Long?,
         project: Long?,
         sprint: Any?
-    ): List<CommonTask> = userStoriesApi.getUserStories(
+    ): List<CommonTask> = userStoriesApi.getUserStoriesOld(
         assignedId = assignedId,
         isClosed = isClosed,
         isDashboard = isDashboard,
@@ -123,6 +135,32 @@ class UserStoriesRepositoryImpl @Inject constructor(
         project = project,
         sprint = sprint
     ).map { commonTaskMapper.toDomain(it, CommonTaskType.UserStory) }
+
+    override suspend fun getUserStories(epicId: Long): ImmutableList<WorkItem> = userStoriesApi.getUserStories(
+        epic = epicId
+    ).map {
+        toDomain(it, CommonTaskType.UserStory)
+    }.toImmutableList()
+
+    private suspend fun toDomain(dto: WorkItemResponseDTO, taskType: CommonTaskType): WorkItem = WorkItem(
+        id = dto.id,
+        taskType = taskType,
+        createdDate = dto.createdDate,
+        status = statusMapper.getStatus(dto),
+        ref = dto.ref,
+        title = dto.subject,
+        isBlocked = dto.isBlocked,
+        tags = tagsMapper.toTags(dto.tags),
+        isClosed = dto.isClosed,
+        colors = dto.color?.let {
+            persistentListOf(it)
+        } ?: dto.epics.orEmpty().map {
+            it.color
+        }.toPersistentList(),
+        assignee = dto.assignedToExtraInfo?.let { assigned ->
+            userMapper.toUser(assigned)
+        }
+    )
 
     override suspend fun createUserStory(
         project: Long,

@@ -224,7 +224,7 @@ class CommonTaskViewModel @Inject constructor(
                     launch { watchers.loadUsersFromIds(it.watcherIds) },
                     launch {
                         userStories.loadOrError(showLoading = false) {
-                            userStoriesRepository.getUserStories(
+                            userStoriesRepository.getUserStoriesOld(
                                 epicId = commonTaskId
                             )
                         }

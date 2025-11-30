@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -25,6 +23,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.epics.ui.widgets.WorkItemsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
@@ -54,7 +54,6 @@ import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
@@ -69,6 +68,7 @@ fun EpicDetailsScreen(
     goBack: () -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
+    goToUserStory: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
     viewModel: EpicDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -227,7 +227,8 @@ fun EpicDetailsScreen(
             goToEditDescription = goToEditDescription,
             goToProfile = goToProfile,
             goToEditAssignee = goToEditAssignee,
-            goToEditWatchers = goToEditWatchers
+            goToEditWatchers = goToEditWatchers,
+            goToUserStory = goToUserStory
         )
     }
 }
@@ -248,7 +249,8 @@ private fun EpicDetailsScreenContent(
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
     goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit
+    goToEditWatchers: () -> Unit,
+    goToUserStory: (id: Long, type: CommonTaskType, ref: Int) -> Unit
 ) {
     requireNotNull(state.currentEpic)
 
@@ -352,16 +354,13 @@ private fun EpicDetailsScreenContent(
                     editingItemIds = customFieldsState.editingItemIds
                 )
 
-//                LazyColumn {
-//                    simpleTasksListWithTitle(
-//                        titleText = RString.userstories,
-//                        bottomPadding = 16.dp,
-//                        commonTasks = emptyList(),
-//                        navigateToTask = { _, _, _ ->
-//
-//                        }
-//                    )
-//                }
+                WorkItemsSectionWidget(
+                    workItemUIS = state.userStories,
+                    workItemsType = CommonTaskType.UserStory,
+                    areWorkItemsExpanded = state.areWorkItemsExpanded,
+                    setAreWorkItemsExpanded = state.setAreWorkItemsExpanded,
+                    goToWorkItem = goToUserStory
+                )
 
                 AttachmentsSectionWidget(
                     attachments = attachmentsState.attachments,

@@ -5,6 +5,7 @@ import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.ImmutableList
 
 data class EpicDetailsData(
@@ -17,5 +18,6 @@ data class EpicDetailsData(
     val watchers: ImmutableList<User>,
     val isAssignedToMe: Boolean,
     val isWatchedByMe: Boolean,
-    val filtersData: FiltersData
+    val filtersData: FiltersData,
+    val userStories: ImmutableList<WorkItem>
 )

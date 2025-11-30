@@ -61,10 +61,11 @@ class SprintsRepositoryImpl @Inject constructor(
         SprintPagingSource(sprintApi, isClosed, taigaStorage)
     }.flow
 
-    override suspend fun getSprintUserStories(sprintId: Long): List<CommonTask> = userStoriesRepository.getUserStories(
-        project = taigaStorage.currentProjectIdFlow.first(),
-        sprint = sprintId
-    )
+    override suspend fun getSprintUserStories(sprintId: Long): List<CommonTask> =
+        userStoriesRepository.getUserStoriesOld(
+            project = taigaStorage.currentProjectIdFlow.first(),
+            sprint = sprintId
+        )
 
     override suspend fun getSprints(page: Int, isClosed: Boolean) = handle404 {
         sprintApi.getSprints(taigaStorage.currentProjectIdFlow.first(), page, isClosed)

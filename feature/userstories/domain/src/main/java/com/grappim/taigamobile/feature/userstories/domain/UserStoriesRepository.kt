@@ -6,6 +6,8 @@ import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.coroutines.flow.Flow
 
@@ -16,7 +18,7 @@ interface UserStoriesRepository {
     suspend fun getAllUserStories(): List<CommonTaskExtended>
     suspend fun getBacklogUserStories(page: Int, filters: FiltersDataDTO): List<CommonTask>
 
-    suspend fun getUserStories(
+    suspend fun getUserStoriesOld(
         assignedId: Long? = null,
         isClosed: Boolean? = null,
         isDashboard: Boolean? = null,
@@ -25,6 +27,8 @@ interface UserStoriesRepository {
         project: Long? = null,
         sprint: Any? = null
     ): List<CommonTask>
+
+    suspend fun getUserStories(epicId: Long): ImmutableList<WorkItem>
 
     suspend fun createUserStory(
         project: Long,

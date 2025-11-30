@@ -10,6 +10,7 @@ dependencies {
     implementation(projects.feature.history.domain)
     implementation(projects.feature.workitem.domain)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.userstories.domain)
 
     implementation(libs.androidx.paging.common)
 }

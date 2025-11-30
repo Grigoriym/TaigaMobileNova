@@ -42,6 +42,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
@@ -84,7 +85,8 @@ class EpicDetailsViewModel @Inject constructor(
     private val statusUIMapper: StatusUIMapper,
     private val workItemsGenerator: WorkItemsGenerator,
     private val tagUIMapper: TagUIMapper,
-    private val customFieldsUIMapper: CustomFieldsUIMapper
+    private val customFieldsUIMapper: CustomFieldsUIMapper,
+    private val workItemUIMapper: WorkItemUIMapper
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = epicTaskType,
@@ -183,7 +185,8 @@ class EpicDetailsViewModel @Inject constructor(
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
-            onBadgeSave = ::onBadgeSave
+            onBadgeSave = ::onBadgeSave,
+            setAreWorkItemsExpanded = ::setAreWorkItemsExpanded
         )
     )
     val state = _state.asStateFlow()
@@ -347,7 +350,8 @@ class EpicDetailsViewModel @Inject constructor(
                             creator = result.creator,
                             filtersData = result.filtersData,
                             initialLoadError = NativeText.Empty,
-                            customFieldsVersion = result.customFields.version
+                            customFieldsVersion = result.customFields.version,
+                            userStories = workItemUIMapper.toUI(result.userStories)
                         )
                     }
                     setInitialTitle(result.epic.title)
@@ -384,6 +388,12 @@ class EpicDetailsViewModel @Inject constructor(
     private fun setDropdownMenuExpanded(isExpanded: Boolean) {
         _state.update {
             it.copy(isDropdownMenuExpanded = isExpanded)
+        }
+    }
+
+    private fun setAreWorkItemsExpanded(isExpanded: Boolean) {
+        _state.update {
+            it.copy(areWorkItemsExpanded = isExpanded)
         }
     }
 

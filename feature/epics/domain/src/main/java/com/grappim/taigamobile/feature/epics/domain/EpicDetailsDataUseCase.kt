@@ -5,6 +5,7 @@ import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -15,7 +16,8 @@ class EpicDetailsDataUseCase @Inject constructor(
     private val epicsRepository: EpicsRepository,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val userStoriesRepository: UserStoriesRepository
 ) {
 
     suspend fun getEpicData(epicId: Long): Result<EpicDetailsData> = resultOf {
@@ -47,6 +49,10 @@ class EpicDetailsDataUseCase @Inject constructor(
                 )
             }
 
+            val userStories = async {
+                userStoriesRepository.getUserStories(epicId = epicId)
+            }
+
             val epic = epicDeferred.await()
 
             val creator = async { usersRepository.getUser(epic.creatorId) }
@@ -71,7 +77,8 @@ class EpicDetailsDataUseCase @Inject constructor(
                 assignees = assignees,
                 watchers = watchers,
                 isAssignedToMe = isAssignedToMe.await(),
-                isWatchedByMe = isWatchedByMe.await()
+                isWatchedByMe = isWatchedByMe.await(),
+                userStories = userStories.await()
             )
         }
     }

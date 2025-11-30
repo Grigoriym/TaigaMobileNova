@@ -1,22 +1,23 @@
-package com.grappim.taigamobile.feature.workitem.domain
+package com.grappim.taigamobile.feature.workitem.ui.models
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.User
-import com.grappim.taigamobile.feature.filters.domain.model.Status
-import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import java.time.LocalDateTime
 
-data class WorkItem(
+/**
+ * This one should be used on UI when we have a list of work items, e.g.
+ * Epic can show user stories in the details screen
+ */
+data class WorkItemUI(
     val id: Long,
     val taskType: CommonTaskType,
-    val createdDate: LocalDateTime,
-    val status: Status,
+    val createdDate: String,
+    val status: StatusUI,
     val ref: Int,
     val title: String,
     val isBlocked: Boolean,
-    val tags: ImmutableList<Tag>,
+    val tags: ImmutableList<TagUI>,
     val isClosed: Boolean,
     val colors: ImmutableList<String> = persistentListOf(),
     val assignee: User? = null

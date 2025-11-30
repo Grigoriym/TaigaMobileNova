@@ -123,7 +123,28 @@ fun MainNavHost(
             DashboardScreen(
                 showMessage = showMessage,
                 navigateToTaskScreen = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
+                    if (isNewUiUsed) {
+                        when (type) {
+                            CommonTaskType.UserStory -> navController.navigateToUserStory(
+                                taskId = id,
+                                ref = ref
+                            )
+
+                            CommonTaskType.Epic -> navController.navigateToEpicDetails(
+                                epicId = id,
+                                ref = ref
+                            )
+
+                            CommonTaskType.Issue -> navController.navigateToIssueDetails(
+                                taskId = id,
+                                ref = ref
+                            )
+
+                            else -> navController.navigateToCommonTask(id, type, ref)
+                        }
+                    } else {
+                        navController.navigateToCommonTask(id, type, ref)
+                    }
                 }
             )
         }
@@ -225,6 +246,12 @@ fun MainNavHost(
                 },
                 goToEditWatchers = {
                     navController.navigateToWorkItemEditAssignee()
+                },
+                goToUserStory = { id, _, ref ->
+                    navController.navigateToUserStory(
+                        taskId = id,
+                        ref = ref
+                    )
                 }
             )
         }

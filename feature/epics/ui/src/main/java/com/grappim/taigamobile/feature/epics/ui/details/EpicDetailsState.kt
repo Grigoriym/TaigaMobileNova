@@ -8,9 +8,12 @@ import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 data class EpicDetailsState(
     val currentEpic: Epic? = null,
@@ -54,5 +57,9 @@ data class EpicDetailsState(
     val onCreateCommentClick: (String) -> Unit = {},
 
     val onCustomFieldSave: (CustomFieldItemState) -> Unit = {},
-    val customFieldsVersion: Long = 0
+    val customFieldsVersion: Long = 0,
+
+    val userStories: ImmutableList<WorkItemUI> = persistentListOf(),
+    val areWorkItemsExpanded: Boolean = false,
+    val setAreWorkItemsExpanded: (Boolean) -> Unit
 )

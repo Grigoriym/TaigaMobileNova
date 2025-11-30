@@ -37,7 +37,11 @@ interface WorkItemRepository {
 
     suspend fun unwatchWorkItem(workItemId: Long, commonTaskType: CommonTaskType)
 
-    suspend fun getWorkItem(workItemId: Long, commonTaskType: CommonTaskType): WorkItem
+    /**
+     * The name can be changed, but for now it is what it is
+     * Mostly we will use  this function in delegates to retrieve some specific data
+     */
+    suspend fun getUpdateWorkItem(workItemId: Long, commonTaskType: CommonTaskType): UpdateWorkItem
 
     suspend fun updateWatchersData(
         version: Long,
