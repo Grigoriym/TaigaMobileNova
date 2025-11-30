@@ -23,4 +23,6 @@ interface PatchDataGenerator {
     fun getType(id: Long): ImmutableMap<String, Any?>
     fun getSeverity(id: Long): ImmutableMap<String, Any?>
     fun getPriority(id: Long): ImmutableMap<String, Any?>
+
+    fun getColor(color: String): ImmutableMap<String, Any?>
 }

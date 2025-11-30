@@ -20,7 +20,6 @@ data class UserStory(
     val assignee: User? = null,
     val project: Project,
     val isClosed: Boolean,
-    val colors: List<String> = emptyList(),
     val blockedNote: String? = null,
 
     val description: String,

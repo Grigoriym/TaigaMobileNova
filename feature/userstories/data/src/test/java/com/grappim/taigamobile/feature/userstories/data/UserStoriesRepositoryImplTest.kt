@@ -1,12 +1,13 @@
 package com.grappim.taigamobile.feature.userstories.data
 
-import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
-import com.grappim.taigamobile.core.api.CustomFieldsMapper
+import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
+import com.grappim.taigamobile.feature.filters.data.StatusMapper
+import com.grappim.taigamobile.feature.filters.data.TagsMapper
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
@@ -40,10 +41,12 @@ class UserStoriesRepositoryImplTest {
     private val serverStorage: ServerStorage = mockk()
     private val commonTaskMapper: CommonTaskMapper = mockk()
     private val userStoryMapper: UserStoryMapper = mockk()
-    private val attachmentMapper: AttachmentMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
-    private val customFieldsMapper: CustomFieldsMapper = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
+
+    private val statusMapper: StatusMapper = mockk()
+    private val userMapper: UserMapper = mockk()
+    private val tagsMapper: TagsMapper = mockk()
 
     private lateinit var sut: UserStoriesRepository
 
@@ -59,10 +62,11 @@ class UserStoriesRepositoryImplTest {
             serverStorage = serverStorage,
             commonTaskMapper = commonTaskMapper,
             userStoryMapper = userStoryMapper,
-            attachmentMapper = attachmentMapper,
             workItemApi = workItemApi,
-            customFieldsMapper = customFieldsMapper,
-            workItemRepository = workItemRepository
+            workItemRepository = workItemRepository,
+            statusMapper = statusMapper,
+            userMapper = userMapper,
+            tagsMapper = tagsMapper
         )
     }
 
@@ -138,7 +142,7 @@ class UserStoriesRepositoryImplTest {
         val sprint = getRandomLong()
 
         coEvery {
-            userStoriesApi.getUserStories(
+            userStoriesApi.getUserStoriesOld(
                 assignedId = assignedId,
                 isClosed = isClosed,
                 isDashboard = isDashboard,
@@ -157,7 +161,7 @@ class UserStoriesRepositoryImplTest {
             } returns getCommonTask(it.id)
         }
 
-        val actuals = sut.getUserStories(
+        val actuals = sut.getUserStoriesOld(
             assignedId = assignedId,
             isClosed = isClosed,
             isDashboard = isDashboard,

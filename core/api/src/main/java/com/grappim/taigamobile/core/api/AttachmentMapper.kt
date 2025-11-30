@@ -3,6 +3,8 @@ package com.grappim.taigamobile.core.api
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.AttachmentDTO
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -17,9 +19,9 @@ class AttachmentMapper @Inject constructor(@IoDispatcher private val dispatcher:
         )
     }
 
-    suspend fun toDomain(list: List<AttachmentDTO>): List<Attachment> = withContext(dispatcher) {
+    suspend fun toDomain(list: List<AttachmentDTO>): ImmutableList<Attachment> = withContext(dispatcher) {
         list.map { dto ->
             toDomain(dto)
-        }
+        }.toImmutableList()
     }
 }

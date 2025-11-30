@@ -6,7 +6,7 @@ import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
-import kotlinx.collections.immutable.toImmutableList
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
@@ -16,12 +16,9 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val sprintsRepository: SprintsRepository,
     private val historyRepository: HistoryRepository,
     private val usersRepository: UsersRepository,
-    private val filtersRepository: FiltersRepository
+    private val filtersRepository: FiltersRepository,
+    private val workItemRepository: WorkItemRepository
 ) {
-
-    suspend fun deleteIssue(id: Long) = resultOf {
-        issuesRepository.deleteIssue(id)
-    }
 
     /**
      * What they do on taiga-front:
@@ -34,21 +31,30 @@ class IssueDetailsDataUseCase @Inject constructor(
      */
     suspend fun getIssueData(issueId: Long): Result<IssueDetailsData> = resultOf {
         coroutineScope {
-            val filtersData = filtersRepository.getFiltersData(CommonTaskType.Issue)
+            val taskType = CommonTaskType.Issue
+            val filtersData = filtersRepository.getFiltersData(taskType)
 
             val issueDeferred = async {
                 issuesRepository.getIssue(id = issueId, filtersData = filtersData)
             }
 
-            val attachments = async { issuesRepository.getIssueAttachments(taskId = issueId) }
+            val attachments = async {
+                workItemRepository.getWorkItemAttachments(
+                    workItemId = issueId,
+                    commonTaskType = taskType
+                )
+            }
 
             val customFields = async {
-                issuesRepository.getCustomFields(id = issueId)
+                workItemRepository.getCustomFields(
+                    workItemId = issueId,
+                    commonTaskType = taskType
+                )
             }
             val commentsDeferred = async {
                 historyRepository.getComments(
                     commonTaskId = issueId,
-                    type = CommonTaskType.Issue
+                    type = taskType
                 )
             }
 
@@ -71,13 +77,13 @@ class IssueDetailsDataUseCase @Inject constructor(
 
             IssueDetailsData(
                 issueTask = issue,
-                attachments = attachments.await().toImmutableList(),
+                attachments = attachments.await(),
                 sprint = sprint.await(),
                 customFields = customFields.await(),
                 comments = commentsDeferred.await(),
                 creator = creator.await(),
-                assignees = assignees.toImmutableList(),
-                watchers = watchers.toImmutableList(),
+                assignees = assignees,
+                watchers = watchers,
                 isAssignedToMe = isAssignedToMe.await(),
                 isWatchedByMe = isWatchedByMe.await(),
                 filtersData = filtersData

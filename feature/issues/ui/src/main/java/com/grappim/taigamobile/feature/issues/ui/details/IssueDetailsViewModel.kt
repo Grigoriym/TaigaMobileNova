@@ -10,6 +10,7 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -289,7 +290,8 @@ class IssueDetailsViewModel @Inject constructor(
                             sprint = sprint,
                             creator = result.creator,
                             filtersData = result.filtersData,
-                            initialLoadError = NativeText.Empty
+                            initialLoadError = NativeText.Empty,
+                            customFieldsVersion = result.customFields.version
                         )
                     }
 
@@ -559,9 +561,12 @@ class IssueDetailsViewModel @Inject constructor(
                 it.copy(isLoading = true)
             }
 
-            issueDetailsDataUseCase.deleteIssue(
-                id = id
-            ).onSuccess {
+            resultOf {
+                workItemRepository.deleteWorkItem(
+                    workItemId = id,
+                    commonTaskType = CommonTaskType.Issue
+                )
+            }.onSuccess {
                 _deleteTrigger.emit(true)
             }.onFailure { error ->
                 Timber.e(error)
@@ -728,7 +733,7 @@ class IssueDetailsViewModel @Inject constructor(
         viewModelScope.launch {
             handleCustomFieldSave(
                 item = item,
-                version = currentIssue.version,
+                customAttributesVersion = _state.value.customFieldsVersion,
                 workItemId = currentIssue.id,
                 doOnPreExecute = {
                     clearError()

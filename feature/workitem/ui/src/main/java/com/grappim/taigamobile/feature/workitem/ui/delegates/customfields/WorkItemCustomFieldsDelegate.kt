@@ -14,7 +14,7 @@ interface WorkItemCustomFieldsDelegate {
 
     suspend fun handleCustomFieldSave(
         item: CustomFieldItemState,
-        version: Long,
+        customAttributesVersion: Long,
         workItemId: Long,
         doOnPreExecute: (() -> Unit)? = null,
         doOnSuccess: (() -> Unit)? = null,

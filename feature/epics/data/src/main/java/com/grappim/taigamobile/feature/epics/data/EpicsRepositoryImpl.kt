@@ -8,12 +8,19 @@ import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class EpicsRepositoryImpl @Inject constructor(private val epicsApi: EpicsApi, private val taigaStorage: TaigaStorage) :
-    EpicsRepository {
+class EpicsRepositoryImpl @Inject constructor(
+    private val epicsApi: EpicsApi,
+    private val taigaStorage: TaigaStorage,
+    private val workItemApi: WorkItemApi,
+    private val epicMapper: EpicMapper
+) : EpicsRepository {
 
     private var epicsPagingSource: EpicsPagingSource? = null
 
@@ -49,5 +56,13 @@ class EpicsRepositoryImpl @Inject constructor(private val epicsApi: EpicsApi, pr
 
     override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
         epicsApi.unlinkFromEpic(epicId, userStoryId)
+    }
+
+    override suspend fun getEpic(id: Long): Epic {
+        val response = workItemApi.getWorkItemById(
+            taskPath = WorkItemPathPlural(CommonTaskType.Epic),
+            id = id
+        )
+        return epicMapper.toDomain(resp = response)
     }
 }

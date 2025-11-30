@@ -1,8 +1,6 @@
 package com.grappim.taigamobile.feature.issues.data
 
-import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
-import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.issues.domain.IssueTask
@@ -15,10 +13,8 @@ import com.grappim.taigamobile.testing.getCommonTaskResponse
 import com.grappim.taigamobile.testing.getFiltersData
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
-import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -33,8 +29,6 @@ class IssuesRepositoryImplTest {
     private val taigaStorage: TaigaStorage = mockk()
     private val commonTaskMapper: CommonTaskMapper = mockk()
     private val issueTaskMapper: IssueTaskMapper = mockk()
-    private val attachmentMapper: AttachmentMapper = mockk()
-    private val customFieldsMapper: CustomFieldsMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
 
     private lateinit var sut: IssuesRepository
@@ -48,20 +42,8 @@ class IssuesRepositoryImplTest {
             taigaStorage = taigaStorage,
             commonTaskMapper = commonTaskMapper,
             issueTaskMapper = issueTaskMapper,
-            attachmentMapper = attachmentMapper,
-            customFieldsMapper = customFieldsMapper,
             workItemApi = workItemApi
         )
-    }
-
-    @Test
-    fun `deleteIssue should call issuesApi deleteCommonTask`() = runTest {
-        val issueId = getRandomLong()
-        coEvery { workItemApi.deleteWorkItem(workItemId = issueId, taskPath = taskPath) } just Runs
-
-        sut.deleteIssue(issueId)
-
-        coVerify { workItemApi.deleteWorkItem(workItemId = issueId, taskPath = taskPath) }
     }
 
     @Test

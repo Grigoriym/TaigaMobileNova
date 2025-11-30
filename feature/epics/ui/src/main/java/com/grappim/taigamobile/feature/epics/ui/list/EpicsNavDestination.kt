@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.epics.ui
+package com.grappim.taigamobile.feature.epics.ui.list
 
 import androidx.navigation.NavController
 import androidx.navigation.NavOptions

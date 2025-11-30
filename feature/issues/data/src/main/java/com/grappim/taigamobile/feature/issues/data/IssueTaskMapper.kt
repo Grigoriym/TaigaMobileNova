@@ -47,7 +47,6 @@ class IssueTaskMapper @Inject constructor(
             description = resp.description ?: "",
             ref = resp.ref,
             project = projectMapper.toProject(resp.projectDTOExtraInfo),
-            colors = resp.color?.let { listOf(it) } ?: resp.epics.orEmpty().map { it.color },
             isClosed = resp.isClosed,
             tags = tagsMapper.toTags(resp.tags),
             blockedNote = resp.blockedNote.takeIf { resp.isBlocked },

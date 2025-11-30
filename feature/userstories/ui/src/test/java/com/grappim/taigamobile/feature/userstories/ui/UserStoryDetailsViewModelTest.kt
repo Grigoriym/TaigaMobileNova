@@ -91,7 +91,7 @@ class UserStoryDetailsViewModelTest {
 
     @Before
     fun setup() {
-        every { dateTimeUtils.formatLocalDateUiMedium(any()) } returns getRandomString()
+        every { dateTimeUtils.formatToMediumFormat(localDate = any()) } returns getRandomString()
 
         every { workItemEditShared.teamMemberUpdateState } returns flowOf(TeamMemberUpdate.Clear)
         every { workItemEditShared.tagsState } returns flowOf(persistentListOf())

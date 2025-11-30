@@ -1,22 +1,28 @@
 package com.grappim.taigamobile.feature.workitem.data
 
 import com.grappim.taigamobile.core.api.AttachmentMapper
+import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.domain.UpdateWorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
-import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -27,7 +33,9 @@ class WorkItemRepositoryImpl @Inject constructor(
     private val patchedDataMapper: PatchedDataMapper,
     private val attachmentMapper: AttachmentMapper,
     private val workItemMapper: WorkItemMapper,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val customFieldsMapper: CustomFieldsMapper,
+    private val taigaStorage: TaigaStorage
 ) : WorkItemRepository {
 
     override suspend fun patchData(
@@ -46,12 +54,12 @@ class WorkItemRepositoryImpl @Inject constructor(
     }
 
     override suspend fun patchCustomAttributes(
-        version: Long,
+        customAttributesVersion: Long,
         workItemId: Long,
         payload: ImmutableMap<String, Any?>,
         commonTaskType: CommonTaskType
     ): PatchedCustomAttributes {
-        val editedMap = payload.toPersistentMap().put("version", version)
+        val editedMap = payload.toPersistentMap().put("version", customAttributesVersion)
         val result = workItemApi.patchCustomAttributesValues(
             taskPath = WorkItemPathPlural(commonTaskType),
             taskId = workItemId,
@@ -108,12 +116,12 @@ class WorkItemRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getWorkItem(workItemId: Long, commonTaskType: CommonTaskType): WorkItem {
+    override suspend fun getUpdateWorkItem(workItemId: Long, commonTaskType: CommonTaskType): UpdateWorkItem {
         val response = workItemApi.getWorkItemById(
             taskPath = WorkItemPathPlural(commonTaskType),
             id = workItemId
         )
-        return workItemMapper.toDomain(response)
+        return workItemMapper.toUpdateDomain(response)
     }
 
     override suspend fun updateWatchersData(
@@ -144,6 +152,49 @@ class WorkItemRepositoryImpl @Inject constructor(
             version = patchedData.newVersion,
             isWatchedByMe = isWatchedByMe,
             watchers = watchers
+        )
+    }
+
+    override suspend fun getCustomFields(workItemId: Long, commonTaskType: CommonTaskType): CustomFields =
+        coroutineScope {
+            val attributes = async {
+                workItemApi.getCustomAttributes(
+                    taskPath = WorkItemPathSingular(commonTaskType),
+                    projectId = taigaStorage.currentProjectIdFlow.first()
+                )
+            }
+            val values = async {
+                workItemApi.getCustomAttributesValues(
+                    id = workItemId,
+                    taskPath = WorkItemPathPlural(commonTaskType)
+                )
+            }
+
+            customFieldsMapper.toDomain(
+                attributes = attributes.await(),
+                values = values.await()
+            )
+        }
+
+    override suspend fun getWorkItemAttachments(
+        workItemId: Long,
+        commonTaskType: CommonTaskType
+    ): ImmutableList<Attachment> {
+        val projectId = taigaStorage.currentProjectIdFlow.first()
+
+        val attachments = workItemApi.getAttachments(
+            taskPath = WorkItemPathPlural(commonTaskType),
+            objectId = workItemId,
+            projectId = projectId
+        )
+
+        return attachmentMapper.toDomain(attachments)
+    }
+
+    override suspend fun deleteWorkItem(workItemId: Long, commonTaskType: CommonTaskType) {
+        workItemApi.deleteWorkItem(
+            workItemId = workItemId,
+            taskPath = WorkItemPathPlural(commonTaskType)
         )
     }
 }

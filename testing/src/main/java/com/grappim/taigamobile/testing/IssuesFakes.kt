@@ -56,7 +56,6 @@ fun getIssueTask(): IssueTask = IssueTask(
     project = getProject(),
     isClosed = getRandomBoolean(),
     tags = persistentListOf(getTag()),
-    colors = listOf(getRandomString()),
     blockedNote = getRandomString(),
     assignee = getUser(),
     assignedUserIds = listOf(getRandomLong()),

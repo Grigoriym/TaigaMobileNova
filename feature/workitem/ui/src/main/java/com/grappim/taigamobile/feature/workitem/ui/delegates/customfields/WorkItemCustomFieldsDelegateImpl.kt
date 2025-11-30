@@ -70,7 +70,7 @@ class WorkItemCustomFieldsDelegateImpl(
 
     override suspend fun handleCustomFieldSave(
         item: CustomFieldItemState,
-        version: Long,
+        customAttributesVersion: Long,
         workItemId: Long,
         doOnPreExecute: (() -> Unit)?,
         doOnSuccess: (() -> Unit)?,
@@ -96,7 +96,7 @@ class WorkItemCustomFieldsDelegateImpl(
         resultOf {
             val payload = patchDataGenerator.getAttributesPatchPayload(patchedData)
             workItemRepository.patchCustomAttributes(
-                version = version,
+                customAttributesVersion = customAttributesVersion,
                 workItemId = workItemId,
                 payload = payload,
                 commonTaskType = commonTaskType

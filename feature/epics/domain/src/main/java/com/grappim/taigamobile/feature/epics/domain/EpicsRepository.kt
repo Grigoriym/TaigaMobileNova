@@ -13,4 +13,5 @@ interface EpicsRepository {
 
     suspend fun linkToEpic(epicId: Long, userStoryId: Long)
     suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long)
+    suspend fun getEpic(id: Long): Epic
 }

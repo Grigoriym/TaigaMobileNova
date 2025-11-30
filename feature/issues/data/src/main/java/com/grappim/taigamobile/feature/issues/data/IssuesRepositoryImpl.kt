@@ -3,14 +3,10 @@ package com.grappim.taigamobile.feature.issues.data
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.api.CommonTaskMapper
-import com.grappim.taigamobile.core.api.CustomFieldsMapper
-import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
@@ -18,9 +14,6 @@ import com.grappim.taigamobile.feature.issues.domain.IssueTask
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -30,8 +23,6 @@ class IssuesRepositoryImpl @Inject constructor(
     private val taigaStorage: TaigaStorage,
     private val commonTaskMapper: CommonTaskMapper,
     private val issueTaskMapper: IssueTaskMapper,
-    private val attachmentMapper: AttachmentMapper,
-    private val customFieldsMapper: CustomFieldsMapper,
     private val workItemApi: WorkItemApi
 ) : IssuesRepository {
     private var issuesPagingSource: IssuesPagingSource? = null
@@ -51,51 +42,12 @@ class IssuesRepositoryImpl @Inject constructor(
         issuesPagingSource?.invalidate()
     }
 
-    override suspend fun deleteIssue(id: Long) {
-        workItemApi.deleteWorkItem(
-            workItemId = id,
-            taskPath = WorkItemPathPlural(CommonTaskType.Issue)
-        )
-    }
-
     override suspend fun getIssue(id: Long, filtersData: FiltersData): IssueTask {
         val response = workItemApi.getWorkItemById(
             taskPath = WorkItemPathPlural(CommonTaskType.Issue),
             id = id
         )
         return issueTaskMapper.toDomain(resp = response, filters = filtersData)
-    }
-
-    override suspend fun getCustomFields(id: Long): CustomFields = coroutineScope {
-        val attributes = async {
-            workItemApi.getCustomAttributes(
-                taskPath = WorkItemPathSingular(CommonTaskType.Issue),
-                projectId = taigaStorage.currentProjectIdFlow.first()
-            )
-        }
-        val values = async {
-            workItemApi.getCustomAttributesValues(
-                id = id,
-                taskPath = WorkItemPathPlural(CommonTaskType.Issue)
-            )
-        }
-
-        customFieldsMapper.toDomain(
-            attributes = attributes.await(),
-            values = values.await()
-        )
-    }
-
-    override suspend fun getIssueAttachments(taskId: Long): List<Attachment> {
-        val projectId = taigaStorage.currentProjectIdFlow.first()
-
-        return workItemApi.getAttachments(
-            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
-            objectId = taskId,
-            projectId = projectId
-        ).map { attachmentDTO ->
-            attachmentMapper.toDomain(attachmentDTO)
-        }
     }
 
     override suspend fun createIssue(title: String, description: String, sprintId: Long?): CommonTaskResponse =

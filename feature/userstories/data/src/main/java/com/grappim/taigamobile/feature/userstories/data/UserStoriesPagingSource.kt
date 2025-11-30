@@ -26,7 +26,7 @@ class UserStoriesPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CommonTask> = tryCatchWithPagination(
         block = {
             val nextPageNumber = params.key ?: 1
-            val response = userStoriesApi.getUserStories(
+            val response = userStoriesApi.getUserStoriesOld(
                 project = taigaStorage.currentProjectIdFlow.first(),
                 sprint = "null",
                 page = nextPageNumber,

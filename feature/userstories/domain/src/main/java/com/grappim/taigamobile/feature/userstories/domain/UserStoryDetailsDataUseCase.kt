@@ -6,7 +6,7 @@ import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
-import kotlinx.collections.immutable.toImmutableList
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
@@ -16,7 +16,8 @@ class UserStoryDetailsDataUseCase @Inject constructor(
     private val userStoriesRepository: UserStoriesRepository,
     private val historyRepository: HistoryRepository,
     private val sprintsRepository: SprintsRepository,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val workItemRepository: WorkItemRepository
 ) {
 
     suspend fun getUserStoryData(id: Long) = resultOf {
@@ -28,9 +29,17 @@ class UserStoryDetailsDataUseCase @Inject constructor(
                 userStoriesRepository.getUserStory(id = id)
             }
 
-            val attachments = async { userStoriesRepository.getUserStoryAttachments(taskId = id) }
+            val attachments = async {
+                workItemRepository.getWorkItemAttachments(
+                    workItemId = id,
+                    commonTaskType = taskType
+                )
+            }
             val customFields = async {
-                userStoriesRepository.getCustomFields(id = id)
+                workItemRepository.getCustomFields(
+                    workItemId = id,
+                    commonTaskType = taskType
+                )
             }
             val commentsDeferred = async {
                 historyRepository.getComments(
@@ -59,13 +68,13 @@ class UserStoryDetailsDataUseCase @Inject constructor(
 
             UserStoryDetailsData(
                 userStory = userStory,
-                attachments = attachments.await().toImmutableList(),
+                attachments = attachments.await(),
                 sprint = sprint.await(),
                 customFields = customFields.await(),
                 comments = commentsDeferred.await(),
                 creator = creator.await(),
-                assignees = assignees.toImmutableList(),
-                watchers = watchers.toImmutableList(),
+                assignees = assignees,
+                watchers = watchers,
                 isAssignedToMe = isAssignedToMe.await(),
                 isWatchedByMe = isWatchedByMe.await(),
                 filtersData = filtersData.await()

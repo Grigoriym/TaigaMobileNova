@@ -1,17 +1,23 @@
 package com.grappim.taigamobile.feature.workitem.domain
 
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.filters.domain.model.Status
+import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import java.time.LocalDateTime
 
-/**
- * Sometimes we don't need a specific work item, e.g. issue, user story, etc.
- * because we need only some general info from the item not tailored to a
- * specific work item.
- *
- * Ideally it shouldn't be big, it should only include fields that are really required
- *
- * Initially it was created to be used in the delegates since there we need only
- * specific info from the work item
- *
- * In all other cases please use the specific work item.
- */
-data class WorkItem(val watcherUserIds: ImmutableList<Long>)
+data class WorkItem(
+    val id: Long,
+    val taskType: CommonTaskType,
+    val createdDate: LocalDateTime,
+    val status: Status,
+    val ref: Int,
+    val title: String,
+    val isBlocked: Boolean,
+    val tags: ImmutableList<Tag>,
+    val isClosed: Boolean,
+    val colors: ImmutableList<String> = persistentListOf(),
+    val assignee: User? = null
+)

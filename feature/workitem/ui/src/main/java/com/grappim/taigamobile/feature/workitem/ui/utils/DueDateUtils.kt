@@ -8,5 +8,5 @@ import java.time.LocalDate
 fun DateTimeUtils.getDueDateText(dueDate: LocalDate?): NativeText = if (dueDate == null) {
     NativeText.Resource(id = RString.no_due_date)
 } else {
-    NativeText.Simple(formatLocalDateUiMedium(dueDate))
+    NativeText.Simple(formatToMediumFormat(dueDate))
 }
