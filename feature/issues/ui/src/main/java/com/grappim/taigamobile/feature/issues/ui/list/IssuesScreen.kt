@@ -31,11 +31,13 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun IssuesScreen(
@@ -55,7 +57,8 @@ fun IssuesScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.issues),
-                actions = listOf(
+                navigationIcon = NavigationIconConfig.Menu,
+                actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",

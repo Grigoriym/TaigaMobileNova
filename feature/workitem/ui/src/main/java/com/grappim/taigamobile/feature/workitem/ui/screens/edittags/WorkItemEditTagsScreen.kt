@@ -31,6 +31,7 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -46,14 +47,12 @@ fun WorkItemEditTagsScreen(goBack: () -> Unit, viewModel: WorkItemEditTagsViewMo
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.edit_tags),
-                showBackButton = true,
-                overrideBackHandlerAction = {
-                    state.setIsDialogVisible(!state.isDialogVisible)
-                },
+                navigationIcon = NavigationIconConfig.Back(
+                    onBackClick = { state.setIsDialogVisible(!state.isDialogVisible) }
+                ),
                 actions = persistentListOf(
                     TopBarActionTextButton(
                         text = NativeText.Resource(RString.save),
-                        contentDescription = "",
                         onClick = {
                             state.shouldGoBackWithCurrentValue(true)
                         }

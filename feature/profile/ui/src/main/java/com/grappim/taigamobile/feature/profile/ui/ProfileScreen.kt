@@ -39,6 +39,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.list.ProjectCard
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.ErrorResult
 import com.grappim.taigamobile.utils.ui.LoadingResult
@@ -54,7 +55,7 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel(), showMessage: (m
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.profile),
-                showBackButton = true
+                navigationIcon = NavigationIconConfig.Back()
             )
         )
     }

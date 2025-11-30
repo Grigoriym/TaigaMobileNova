@@ -126,18 +126,13 @@ private fun MainScreenContent(
         gesturesEnabled = appState.areDrawerGesturesEnabled
     ) {
         Scaffold(
-            modifier = Modifier
-                .imePadding(),
+            modifier = Modifier.imePadding(),
             topBar = {
                 TaigaTopAppBar(
                     isVisible = appState.isTopBarVisible,
                     topBarConfig = topBarConfig,
                     drawerState = drawerState,
-                    isMenuButton = !topBarConfig.showBackButton,
-                    goBack = {
-                        topBarConfig.overrideBackHandlerAction?.invoke()
-                            ?: appState.navController.popBackStack()
-                    }
+                    defaultGoBack = { appState.navController.popBackStack() }
                 )
             },
             snackbarHost = {
