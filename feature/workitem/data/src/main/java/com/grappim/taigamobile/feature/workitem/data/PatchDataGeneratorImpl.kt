@@ -42,4 +42,6 @@ class PatchDataGeneratorImpl @Inject constructor() : PatchDataGenerator {
     override fun getSeverity(id: Long): ImmutableMap<String, Any?> = persistentMapOf("severity" to id)
 
     override fun getPriority(id: Long): ImmutableMap<String, Any?> = persistentMapOf("priority" to id)
+
+    override fun getColor(color: String): ImmutableMap<String, Any?> = persistentMapOf("color" to color)
 }

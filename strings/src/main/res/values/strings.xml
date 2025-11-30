@@ -263,4 +263,6 @@
     <string name="error_loading_data">Failed to load data</string>
     <string name="error_loading_issues">Failed to load issues</string>
     <string name="retry">Retry</string>
+
+    <string name="epic_color">Epic Color:</string>
 </resources>

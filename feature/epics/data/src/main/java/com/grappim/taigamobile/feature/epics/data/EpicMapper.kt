@@ -42,7 +42,7 @@ class EpicMapper @Inject constructor(
             },
             project = projectMapper.toProject(resp.projectDTOExtraInfo),
             isClosed = resp.isClosed,
-            colors = resp.color?.let { listOf(it) } ?: resp.epics.orEmpty().map { it.color },
+            epicColor = resp.color,
             blockedNote = resp.blockedNote.takeIf { resp.isBlocked },
             milestone = resp.milestone,
             creatorId = creatorId,

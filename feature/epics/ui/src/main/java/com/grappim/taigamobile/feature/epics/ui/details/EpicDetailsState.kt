@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
 import android.net.Uri
+import androidx.compose.ui.graphics.Color
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.User
@@ -61,5 +62,8 @@ data class EpicDetailsState(
 
     val userStories: ImmutableList<WorkItemUI> = persistentListOf(),
     val areWorkItemsExpanded: Boolean = false,
-    val setAreWorkItemsExpanded: (Boolean) -> Unit
+    val setAreWorkItemsExpanded: (Boolean) -> Unit,
+
+    val onEpicColorPick: (Color) -> Unit = {},
+    val isEpicColorLoading: Boolean = false
 )

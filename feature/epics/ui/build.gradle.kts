@@ -30,5 +30,7 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.paging.compose)
 
+    implementation(libs.vanpra.color)
+
     implementation(libs.androidx.compose.material.icons.core)
 }

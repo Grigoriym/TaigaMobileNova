@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
 import android.net.Uri
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -53,6 +54,7 @@ import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import com.grappim.taigamobile.utils.ui.toHex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -186,7 +188,8 @@ class EpicDetailsViewModel @Inject constructor(
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
             onBadgeSave = ::onBadgeSave,
-            setAreWorkItemsExpanded = ::setAreWorkItemsExpanded
+            setAreWorkItemsExpanded = ::setAreWorkItemsExpanded,
+            onEpicColorPick = ::onEpicColorPick
         )
     )
     val state = _state.asStateFlow()
@@ -731,6 +734,46 @@ class EpicDetailsViewModel @Inject constructor(
                     updateVersion(version)
                 }
             )
+        }
+    }
+
+    private fun onEpicColorPick(color: Color) {
+        viewModelScope.launch {
+            clearError()
+            _state.update {
+                it.copy(
+                    isEpicColorLoading = true
+                )
+            }
+
+            val hexColor = color.toHex()
+            epicDetailsDataUseCase.changeEpicColor(
+                color = hexColor,
+                version = currentEpic.version,
+                epicId = currentEpic.id
+            ).onSuccess { result ->
+                val updatedEpic = currentEpic.copy(
+                    epicColor = hexColor,
+                    version = result.patchedData.newVersion
+                )
+
+                _state.update {
+                    it.copy(
+                        isEpicColorLoading = false,
+                        currentEpic = updatedEpic,
+                        originalEpic = updatedEpic,
+                        userStories = workItemUIMapper.toUI(result.userStories)
+                    )
+                }
+            }.onFailure { error ->
+                emitError(error)
+
+                _state.update {
+                    it.copy(
+                        isEpicColorLoading = false
+                    )
+                }
+            }
         }
     }
 }

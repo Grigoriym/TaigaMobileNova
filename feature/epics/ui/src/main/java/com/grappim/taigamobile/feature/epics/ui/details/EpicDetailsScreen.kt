@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.epics.ui.widgets.EpicColorWidget
 import com.grappim.taigamobile.feature.epics.ui.widgets.WorkItemsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
@@ -285,6 +286,12 @@ private fun EpicDetailsScreenContent(
                     updatingBadges = badgeState.updatingBadges,
                     items = badgeState.workItemBadges,
                     onBadgeClick = badgeState.onBadgeClick
+                )
+
+                EpicColorWidget(
+                    isEpicColorLoading = state.isEpicColorLoading,
+                    epicColor = state.currentEpic.epicColor,
+                    onColorPick = state.onEpicColorPick
                 )
 
                 WorkItemDescriptionWidget(

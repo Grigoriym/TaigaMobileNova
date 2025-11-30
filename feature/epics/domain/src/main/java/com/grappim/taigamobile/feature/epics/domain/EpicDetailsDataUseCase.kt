@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -17,7 +18,8 @@ class EpicDetailsDataUseCase @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
     private val usersRepository: UsersRepository,
-    private val userStoriesRepository: UserStoriesRepository
+    private val userStoriesRepository: UserStoriesRepository,
+    private val patchDataGenerator: PatchDataGenerator
 ) {
 
     suspend fun getEpicData(epicId: Long): Result<EpicDetailsData> = resultOf {
@@ -81,5 +83,27 @@ class EpicDetailsDataUseCase @Inject constructor(
                 userStories = userStories.await()
             )
         }
+    }
+
+    /**
+     * When we update the epic color, if there are any user stories, they also change the color
+     * that is why there are two requests
+     */
+    suspend fun changeEpicColor(color: String, version: Long, epicId: Long): Result<EpicColorUpdateData> = resultOf {
+        val patchData = workItemRepository.patchData(
+            version = version,
+            workItemId = epicId,
+            commonTaskType = CommonTaskType.Epic,
+            payload = patchDataGenerator.getColor(
+                color = color
+            )
+        )
+
+        val userStories = userStoriesRepository.getUserStories(epicId = epicId)
+
+        EpicColorUpdateData(
+            patchedData = patchData,
+            userStories = userStories
+        )
     }
 }
