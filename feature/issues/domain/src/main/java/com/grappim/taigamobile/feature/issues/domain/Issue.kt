@@ -10,7 +10,7 @@ import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
 import java.time.LocalDateTime
 
-data class IssueTask(
+data class Issue(
     val id: Long,
     val version: Long,
     val createdDateTime: LocalDateTime,

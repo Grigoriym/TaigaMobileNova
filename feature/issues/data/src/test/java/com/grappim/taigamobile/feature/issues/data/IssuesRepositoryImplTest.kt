@@ -3,7 +3,7 @@ package com.grappim.taigamobile.feature.issues.data
 import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
@@ -28,7 +28,7 @@ class IssuesRepositoryImplTest {
     private val issuesApi: IssuesApi = mockk()
     private val taigaStorage: TaigaStorage = mockk()
     private val commonTaskMapper: CommonTaskMapper = mockk()
-    private val issueTaskMapper: IssueTaskMapper = mockk()
+    private val issueMapper: IssueMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
 
     private lateinit var sut: IssuesRepository
@@ -41,7 +41,7 @@ class IssuesRepositoryImplTest {
             issuesApi = issuesApi,
             taigaStorage = taigaStorage,
             commonTaskMapper = commonTaskMapper,
-            issueTaskMapper = issueTaskMapper,
+            issueMapper = issueMapper,
             workItemApi = workItemApi
         )
     }
@@ -93,7 +93,7 @@ class IssuesRepositoryImplTest {
         val issueId = getRandomLong()
         val filtersData = getFiltersData()
         val mockResponse = mockk<WorkItemResponseDTO>()
-        val expectedIssueTask = mockk<IssueTask>()
+        val expectedIssue = mockk<Issue>()
 
         coEvery {
             workItemApi.getWorkItemById(
@@ -101,12 +101,12 @@ class IssuesRepositoryImplTest {
                 id = issueId
             )
         } returns mockResponse
-        coEvery { issueTaskMapper.toDomain(mockResponse, filtersData) } returns expectedIssueTask
+        coEvery { issueMapper.toDomain(mockResponse, filtersData) } returns expectedIssue
 
         val actual = sut.getIssue(issueId, filtersData)
 
-        assertEquals(expectedIssueTask, actual)
+        assertEquals(expectedIssue, actual)
         coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = issueId) }
-        coVerify { issueTaskMapper.toDomain(mockResponse, filtersData) }
+        coVerify { issueMapper.toDomain(mockResponse, filtersData) }
     }
 }

@@ -12,6 +12,7 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.issues.domain)
+    implementation(projects.feature.issues.ui)
     implementation(projects.feature.projects.domain)
     implementation(projects.feature.workitem.data)
     implementation(projects.feature.workitem.ui)

@@ -12,13 +12,14 @@ import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.filters.domain.model.Type
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsData
-import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.issues.domain.Issue
+import com.grappim.taigamobile.feature.issues.ui.model.IssueUI
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 fun getIssueDetailsData(): IssueDetailsData = IssueDetailsData(
-    issueTask = getIssueTask(),
+    issue = getIssueTask(),
     attachments = persistentListOf(
         getAttachment(),
         getAttachment()
@@ -43,7 +44,7 @@ fun getIssueDetailsData(): IssueDetailsData = IssueDetailsData(
     filtersData = getFiltersData()
 )
 
-fun getIssueTask(): IssueTask = IssueTask(
+fun getIssueTask(): Issue = Issue(
     id = getRandomLong(),
     version = getRandomLong(),
     ref = getRandomInt(),
@@ -66,6 +67,24 @@ fun getIssueTask(): IssueTask = IssueTask(
     type = getType(),
     priority = getPriority(),
     severity = getSeverity()
+)
+
+fun getIssueUI(): IssueUI = IssueUI(
+    id = getRandomLong(),
+    version = getRandomLong(),
+    ref = getRandomInt(),
+    creatorId = getRandomLong(),
+    title = getRandomString(),
+    description = getRandomString(),
+    createdDateTime = LocalDateTime.now(),
+    dueDate = LocalDate.now().plusDays(getRandomLong() % 30),
+    dueDateStatus = DueDateStatus.Set,
+    isClosed = getRandomBoolean(),
+    blockedNote = getRandomString(),
+    assignedUserIds = listOf(getRandomLong()),
+    watcherUserIds = listOf(getRandomLong()),
+    copyLinkUrl = getRandomString(),
+    status = getStatusUI(),
 )
 
 fun getTag(): Tag = Tag(

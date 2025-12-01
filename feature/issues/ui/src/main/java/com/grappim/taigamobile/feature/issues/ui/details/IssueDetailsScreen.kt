@@ -47,6 +47,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.sprint.WorkItemSprintInfoWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.WorkItemTagsWidget
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -71,6 +72,7 @@ fun IssueDetailsScreen(
     goBack: () -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
+    goToSprints: () -> Unit,
     viewModel: IssueDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -239,7 +241,8 @@ fun IssueDetailsScreen(
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
             goToEditAssignee = goToEditAssignee,
-            goToEditWatchers = goToEditWatchers
+            goToEditWatchers = goToEditWatchers,
+            goToSprints = goToSprints
         )
     }
 }
@@ -261,7 +264,8 @@ private fun IssueDetailsScreenContent(
     goToEditDescription: (String) -> Unit,
     goToEditTags: () -> Unit,
     goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit
+    goToEditWatchers: () -> Unit,
+    goToSprints: () -> Unit
 ) {
     requireNotNull(state.currentIssue)
 
@@ -305,6 +309,15 @@ private fun IssueDetailsScreenContent(
                         goToEditDescription(state.currentIssue.description)
                     },
                     isLoading = descriptionState.isDescriptionLoading
+                )
+
+                WorkItemSprintInfoWidget(
+                    sprint = state.sprint,
+                    isSprintLoading = state.isSprintLoading,
+                    onClick = {
+                        state.onGoingToEditSprint()
+                        goToSprints()
+                    }
                 )
 
                 WorkItemTagsWidget(

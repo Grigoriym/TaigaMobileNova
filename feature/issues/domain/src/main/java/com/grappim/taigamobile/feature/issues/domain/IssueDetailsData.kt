@@ -9,7 +9,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import kotlinx.collections.immutable.ImmutableList
 
 data class IssueDetailsData(
-    val issueTask: IssueTask,
+    val issue: Issue,
     val attachments: ImmutableList<Attachment>,
     val sprint: Sprint?,
     val customFields: CustomFields,

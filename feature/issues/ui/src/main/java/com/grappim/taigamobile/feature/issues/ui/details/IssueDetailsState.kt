@@ -6,17 +6,12 @@ import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
-import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.issues.ui.model.IssueUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.utils.ui.NativeText
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableSet
-import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentSetOf
 
 data class IssueDetailsState(
     val isLoading: Boolean = false,
@@ -28,13 +23,15 @@ data class IssueDetailsState(
 
     val error: NativeText = NativeText.Empty,
 
-    val currentIssue: IssueTask? = null,
-    val originalIssue: IssueTask? = null,
+    val currentIssue: IssueUI? = null,
+    val originalIssue: IssueUI? = null,
 
     val onTitleSave: () -> Unit = {},
     val onBadgeSave: (SelectableWorkItemBadgeState, StatusUI) -> Unit = { _, _ -> },
 
     val sprint: Sprint? = null,
+    val onGoingToEditSprint: () -> Unit = {},
+    val isSprintLoading: Boolean = false,
 
     val filtersData: FiltersData? = null,
 

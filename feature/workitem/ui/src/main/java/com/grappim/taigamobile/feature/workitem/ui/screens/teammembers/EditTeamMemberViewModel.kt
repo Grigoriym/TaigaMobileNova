@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.TeamMemberUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.screens.EditType
+import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberEditType
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.PersistentList
@@ -54,7 +54,7 @@ class EditTeamMemberViewModel @Inject constructor(
     }
 
     private fun retrieveSelectedItems(): PersistentList<Long> = when (editShared.currentType) {
-        EditType.Assignee -> {
+        TeamMemberEditType.Assignee -> {
             if (editShared.currentAssignee != null) {
                 persistentListOf(editShared.currentAssignee!!)
             } else {
@@ -62,11 +62,11 @@ class EditTeamMemberViewModel @Inject constructor(
             }
         }
 
-        EditType.Watchers -> {
+        TeamMemberEditType.Watchers -> {
             editShared.currentWatchers.toPersistentList()
         }
 
-        EditType.Assignees -> {
+        TeamMemberEditType.Assignees -> {
             editShared.currentAssignees.toPersistentList()
         }
     }
@@ -77,14 +77,14 @@ class EditTeamMemberViewModel @Inject constructor(
         val wasStateChanged = _state.value.selectedItems != _state.value.originalSelectedItems
         if (shouldReturnCurrentValue && wasStateChanged) {
             when (editShared.currentType) {
-                EditType.Assignee -> {
+                TeamMemberEditType.Assignee -> {
                     editShared.updateAssignee(_state.value.selectedItems.firstOrNull())
                 }
 
-                EditType.Watchers -> {
+                TeamMemberEditType.Watchers -> {
                     editShared.updateWatchers(_state.value.selectedItems)
                 }
-                EditType.Assignees -> {
+                TeamMemberEditType.Assignees -> {
                     editShared.updateAssignees(_state.value.selectedItems)
                 }
             }
@@ -100,7 +100,7 @@ class EditTeamMemberViewModel @Inject constructor(
     private fun onTeamMemberClick(id: Long) {
         val clickedTheSame = id in _state.value.selectedItems
         when (editShared.currentType) {
-            EditType.Assignee -> {
+            TeamMemberEditType.Assignee -> {
                 val newList = if (clickedTheSame) {
                     _state.value.selectedItems.remove(id)
                 } else {
@@ -113,7 +113,7 @@ class EditTeamMemberViewModel @Inject constructor(
                 }
             }
 
-            EditType.Watchers -> {
+            TeamMemberEditType.Watchers -> {
                 val newList = if (clickedTheSame) {
                     _state.value.selectedItems.remove(id)
                 } else {
@@ -125,7 +125,7 @@ class EditTeamMemberViewModel @Inject constructor(
                     )
                 }
             }
-            EditType.Assignees -> {
+            TeamMemberEditType.Assignees -> {
                 val newList = if (clickedTheSame) {
                     _state.value.selectedItems.remove(id)
                 } else {
@@ -143,7 +143,7 @@ class EditTeamMemberViewModel @Inject constructor(
     private fun getUsers() {
         viewModelScope.launch {
             when (editShared.currentType) {
-                EditType.Assignee -> {
+                TeamMemberEditType.Assignee -> {
                     usersRepository.getCurrentTeamResult()
                         .onSuccess { result ->
                             val teamMembers = teamMemberUIMapper.toUI(result)
@@ -155,7 +155,7 @@ class EditTeamMemberViewModel @Inject constructor(
                         }
                 }
 
-                EditType.Watchers -> {
+                TeamMemberEditType.Watchers -> {
                     usersRepository.getCurrentTeamResult()
                         .onSuccess { result ->
                             val teamMembers = teamMemberUIMapper.toUI(result)
@@ -166,7 +166,7 @@ class EditTeamMemberViewModel @Inject constructor(
                             Timber.e(error)
                         }
                 }
-                EditType.Assignees -> {
+                TeamMemberEditType.Assignees -> {
                     usersRepository.getCurrentTeamResult()
                         .onSuccess { result ->
                             val teamMembers = teamMemberUIMapper.toUI(result)

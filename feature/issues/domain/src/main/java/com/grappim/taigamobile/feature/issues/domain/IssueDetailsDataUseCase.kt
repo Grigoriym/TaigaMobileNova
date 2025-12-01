@@ -1,11 +1,14 @@
 package com.grappim.taigamobile.feature.issues.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
@@ -17,7 +20,8 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val usersRepository: UsersRepository,
     private val filtersRepository: FiltersRepository,
-    private val workItemRepository: WorkItemRepository
+    private val workItemRepository: WorkItemRepository,
+    private val patchDataGenerator: PatchDataGenerator
 ) {
 
     /**
@@ -76,7 +80,7 @@ class IssueDetailsDataUseCase @Inject constructor(
             val isWatchedByMe = async { usersRepository.isAnyAssignedToMe(watchers) }
 
             IssueDetailsData(
-                issueTask = issue,
+                issue = issue,
                 attachments = attachments.await(),
                 sprint = sprint.await(),
                 customFields = customFields.await(),
@@ -90,4 +94,26 @@ class IssueDetailsDataUseCase @Inject constructor(
             )
         }
     }
+
+    suspend fun updateSprint(sprintId: Long?, version: Long, workItemId: Long, commonTaskType: CommonTaskType) =
+        resultOf {
+            val patchedData = workItemRepository.patchData(
+                version = version,
+                workItemId = workItemId,
+                commonTaskType = commonTaskType,
+                payload = patchDataGenerator.getSprint(
+                    sprintId = sprintId
+                )
+            )
+            var sprint: Sprint? = null
+            if (sprintId != null) {
+                sprint = sprintsRepository.getSprint(sprintId)
+            }
+            UpdateSprintData(
+                patchedData = patchedData,
+                sprint = sprint
+            )
+        }
 }
+
+data class UpdateSprintData(val patchedData: PatchedData, val sprint: Sprint?)
