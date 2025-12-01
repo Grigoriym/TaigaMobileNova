@@ -11,7 +11,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.Priority
 import com.grappim.taigamobile.feature.filters.domain.model.Severity
 import com.grappim.taigamobile.feature.filters.domain.model.Type
-import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.projects.data.ProjectMapper
 import com.grappim.taigamobile.feature.workitem.data.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
@@ -19,7 +19,7 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class IssueTaskMapper @Inject constructor(
+class IssueMapper @Inject constructor(
     @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val userMapper: UserMapper,
     private val statusMapper: StatusMapper,
@@ -28,7 +28,7 @@ class IssueTaskMapper @Inject constructor(
     private val dueDateStatusMapper: DueDateStatusMapper,
     private val serverStorage: ServerStorage
 ) {
-    suspend fun toDomain(resp: WorkItemResponseDTO, filters: FiltersData): IssueTask = withContext(ioDispatcher) {
+    suspend fun toDomain(resp: WorkItemResponseDTO, filters: FiltersData): Issue = withContext(ioDispatcher) {
         val creatorId = resp.owner ?: error("Owner field is null")
 
         val server = serverStorage.server
@@ -36,7 +36,7 @@ class IssueTaskMapper @Inject constructor(
             transformTaskTypeForCopyLink(CommonTaskType.Issue)
         }/${resp.ref}"
 
-        IssueTask(
+        Issue(
             id = resp.id,
             version = resp.version,
             createdDateTime = resp.createdDate,

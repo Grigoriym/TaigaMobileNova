@@ -50,6 +50,7 @@
     <string name="edit_tags">Edit Tags</string>
 
     <string name="edit_team_members">Edit Team Members</string>
+    <string name="edit_sprint">Edit Sprint</string>
 
     <string name="choose_project_title">Choose project</string>
 
@@ -82,6 +83,7 @@
     <string name="closed_user_story">Closed US</string>
     <string name="tasks_without_story">Storyless tasks</string>
     <string name="sprint_issues">Sprint issues</string>
+    <string name="sprint">Sprint</string>
 
     <string name="userstory_slug">User story #%d</string>
     <string name="task_slug">Task #%d</string>

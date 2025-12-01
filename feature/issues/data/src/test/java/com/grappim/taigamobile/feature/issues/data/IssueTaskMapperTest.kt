@@ -39,13 +39,13 @@ class IssueTaskMapperTest {
 
     private val serverStorage: ServerStorage = mockk()
 
-    private lateinit var sut: IssueTaskMapper
+    private lateinit var sut: IssueMapper
 
     @Before
     fun setup() {
         coEvery { serverStorage.server } returns "https://taiga.example.com"
 
-        sut = IssueTaskMapper(
+        sut = IssueMapper(
             ioDispatcher = testDispatcher,
             userMapper = userMapper,
             statusMapper = statusMapper,

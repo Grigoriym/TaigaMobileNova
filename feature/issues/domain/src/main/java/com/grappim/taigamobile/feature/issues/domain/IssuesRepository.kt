@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface IssuesRepository {
 
-    suspend fun getIssue(id: Long, filtersData: FiltersData): IssueTask
+    suspend fun getIssue(id: Long, filtersData: FiltersData): Issue
 
     fun getIssuesPaging(filtersDataDTO: FiltersDataDTO): Flow<PagingData<CommonTask>>
 

@@ -10,7 +10,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
-import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
@@ -22,7 +22,7 @@ class IssuesRepositoryImpl @Inject constructor(
     private val issuesApi: IssuesApi,
     private val taigaStorage: TaigaStorage,
     private val commonTaskMapper: CommonTaskMapper,
-    private val issueTaskMapper: IssueTaskMapper,
+    private val issueMapper: IssueMapper,
     private val workItemApi: WorkItemApi
 ) : IssuesRepository {
     private var issuesPagingSource: IssuesPagingSource? = null
@@ -42,12 +42,12 @@ class IssuesRepositoryImpl @Inject constructor(
         issuesPagingSource?.invalidate()
     }
 
-    override suspend fun getIssue(id: Long, filtersData: FiltersData): IssueTask {
+    override suspend fun getIssue(id: Long, filtersData: FiltersData): Issue {
         val response = workItemApi.getWorkItemById(
             taskPath = WorkItemPathPlural(CommonTaskType.Issue),
             id = id
         )
-        return issueTaskMapper.toDomain(resp = response, filters = filtersData)
+        return issueMapper.toDomain(resp = response, filters = filtersData)
     }
 
     override suspend fun createIssue(title: String, description: String, sprintId: Long?): CommonTaskResponse =

@@ -4,8 +4,8 @@ import androidx.navigation.NavController
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object WorkItemEditAssigneeNavDestination
+data object WorkItemEditTeamMemberNavDestination
 
-fun NavController.navigateToWorkItemEditAssignee() {
-    navigate(route = WorkItemEditAssigneeNavDestination)
+fun NavController.navigateToWorkItemEditTeamMember() {
+    navigate(route = WorkItemEditTeamMemberNavDestination)
 }

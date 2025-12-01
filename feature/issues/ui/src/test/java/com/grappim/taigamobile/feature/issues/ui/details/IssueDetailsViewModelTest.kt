@@ -94,12 +94,12 @@ class IssueDetailsViewModelTest {
         val priority = getStatusUI()
         val status = getStatusUI()
 
-        coEvery { statusUIMapper.toUI(issueDetails.issueTask.type!!) } returns type
-        coEvery { statusUIMapper.toUI(issueDetails.issueTask.severity!!) } returns severity
-        coEvery { statusUIMapper.toUI(issueDetails.issueTask.priority!!) } returns priority
-        coEvery { statusUIMapper.toUI(issueDetails.issueTask.status!!) } returns status
+        coEvery { statusUIMapper.toUI(issueDetails.issue.type!!) } returns type
+        coEvery { statusUIMapper.toUI(issueDetails.issue.severity!!) } returns severity
+        coEvery { statusUIMapper.toUI(issueDetails.issue.priority!!) } returns priority
+        coEvery { statusUIMapper.toUI(issueDetails.issue.status!!) } returns status
 
-        coEvery { tagUIMapper.toUI(issueDetails.issueTask.tags) } returns persistentListOf(getTagUI())
+        coEvery { tagUIMapper.toUI(issueDetails.issue.tags) } returns persistentListOf(getTagUI())
 
         coEvery { customFieldsUIMapper.toUI(issueDetails.customFields) } returns persistentListOf(
             getCustomFieldItemState()

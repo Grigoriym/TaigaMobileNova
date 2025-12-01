@@ -25,4 +25,6 @@ interface PatchDataGenerator {
     fun getPriority(id: Long): ImmutableMap<String, Any?>
 
     fun getColor(color: String): ImmutableMap<String, Any?>
+
+    fun getSprint(sprintId: Long?): ImmutableMap<String, Any?>
 }

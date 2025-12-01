@@ -97,6 +97,7 @@ class WorkItemEditTagsViewModel @Inject constructor(
 
     private fun getFiltersData() {
         viewModelScope.launch {
+            // todo remove hard-coded task type
             filtersRepository.getFiltersDataResult(CommonTaskType.Issue)
                 .onSuccess { result ->
                     val tags = tagUIMapper.toUI(list = result.tags).toPersistentList()

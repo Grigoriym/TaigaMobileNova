@@ -30,8 +30,11 @@ class WorkItemEditShared @Inject constructor() {
     private val _descriptionState = Channel<String>()
     val descriptionState = _descriptionState.receiveAsFlow()
 
-    private var _currentType: EditType? = null
-    val currentType: EditType
+    private val _sprintState = Channel<Long?>()
+    val sprintState = _sprintState.receiveAsFlow()
+
+    private var _currentType: TeamMemberEditType? = null
+    val currentType: TeamMemberEditType
         get() = requireNotNull(_currentType)
 
     private var _originalTags: PersistentList<TagUI> = persistentListOf()
@@ -55,6 +58,10 @@ class WorkItemEditShared @Inject constructor() {
     private var _currentWatchers: PersistentList<Long> = persistentListOf()
     val currentWatchers: ImmutableList<Long>
         get() = _currentWatchers
+
+    private var _currentSprint: Long? = null
+    val currentSprint: Long?
+        get() = _currentSprint
 
     fun setTags(tags: ImmutableList<TagUI>) {
         _originalTags = tags.toPersistentList()
@@ -97,18 +104,29 @@ class WorkItemEditShared @Inject constructor() {
     }
 
     fun setCurrentWatchers(ids: PersistentList<Long>?) {
-        _currentType = EditType.Watchers
+        _currentType = TeamMemberEditType.Watchers
         _currentWatchers = ids ?: persistentListOf()
     }
 
     fun setCurrentAssignee(id: Long?) {
-        _currentType = EditType.Assignee
+        _currentType = TeamMemberEditType.Assignee
         _currentAssignee = id
     }
 
     fun setCurrentAssignees(ids: ImmutableList<Long>) {
-        _currentType = EditType.Assignees
+        _currentType = TeamMemberEditType.Assignees
         _currentAssignees = ids.toPersistentList()
+    }
+
+    fun setCurrentSprint(id: Long?) {
+        _currentSprint = id
+    }
+
+    fun updateSprint(id: Long?) {
+        scope.launch {
+            _sprintState.send(id)
+        }
+        clear()
     }
 
     fun clear() {
@@ -117,14 +135,15 @@ class WorkItemEditShared @Inject constructor() {
         _currentAssignee = null
         _currentWatchers = _currentWatchers.clear()
         _currentAssignees = _currentAssignees.clear()
+        _currentSprint = null
         _currentType = null
     }
 }
 
-sealed interface EditType {
-    data object Assignee : EditType
-    data object Assignees : EditType
-    data object Watchers : EditType
+sealed interface TeamMemberEditType {
+    data object Assignee : TeamMemberEditType
+    data object Assignees : TeamMemberEditType
+    data object Watchers : TeamMemberEditType
 }
 
 sealed interface TeamMemberUpdate {

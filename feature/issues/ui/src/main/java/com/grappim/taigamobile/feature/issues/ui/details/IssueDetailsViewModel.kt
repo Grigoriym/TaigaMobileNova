@@ -15,7 +15,8 @@ import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
-import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.issues.ui.model.IssueUI
+import com.grappim.taigamobile.feature.issues.ui.model.IssueUIMapper
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
@@ -43,9 +44,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWa
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
@@ -78,8 +77,6 @@ import javax.inject.Inject
 class IssueDetailsViewModel @Inject constructor(
     private val issueDetailsDataUseCase: IssueDetailsDataUseCase,
     savedStateHandle: SavedStateHandle,
-    private val statusUIMapper: StatusUIMapper,
-    private val tagUIMapper: TagUIMapper,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val workItemsGenerator: WorkItemsGenerator,
     private val workItemEditShared: WorkItemEditShared,
@@ -90,7 +87,8 @@ class IssueDetailsViewModel @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
     private val taigaStorage: TaigaStorage,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val issueUIMapper: IssueUIMapper
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = CommonTaskType.Issue,
@@ -187,12 +185,13 @@ class IssueDetailsViewModel @Inject constructor(
             removeAssignee = ::removeAssignee,
             retryLoadIssue = ::retryLoadIssue,
             onTitleSave = ::onTitleSave,
-            onBadgeSave = ::onBadgeSave
+            onBadgeSave = ::onBadgeSave,
+            onGoingToEditSprint = ::onGoingToEditSprint
         )
     )
     val state = _state.asStateFlow()
 
-    private val currentIssue: IssueTask
+    private val currentIssue: IssueUI
         get() = requireNotNull(_state.value.currentIssue)
 
     private val _deleteTrigger = MutableSharedFlow<Boolean>()
@@ -211,6 +210,10 @@ class IssueDetailsViewModel @Inject constructor(
 
         workItemEditShared.descriptionState
             .onEach(::onNewDescriptionUpdate)
+            .launchIn(viewModelScope)
+
+        workItemEditShared.sprintState
+            .onEach(::onNewSprintUpdate)
             .launchIn(viewModelScope)
     }
 
@@ -246,47 +249,28 @@ class IssueDetailsViewModel @Inject constructor(
             }
             issueDetailsDataUseCase.getIssueData(issueId = taskId)
                 .onSuccess { result ->
-                    val typeUiDeferred = result.issueTask.type?.let { type ->
-                        async { statusUIMapper.toUI(type) }
-                    }
-                    val severityUiDeferred = result.issueTask.severity?.let { task ->
-                        async { statusUIMapper.toUI(task) }
-                    }
-
-                    val priorityUiDeferred = result.issueTask.priority?.let { prio ->
-                        async { statusUIMapper.toUI(prio) }
-                    }
-                    val statusUiDeferred = result.issueTask.status?.let { status ->
-                        async { statusUIMapper.toUI(status) }
-                    }
-
-                    val tags = async {
-                        tagUIMapper.toUI(result.issueTask.tags).toPersistentList()
-                    }
+                    val issueUI = issueUIMapper.toUI(result.issue)
                     val customFieldsStateItems = async {
                         customFieldsUIMapper.toUI(result.customFields)
                     }
 
-                    val statusUi = statusUiDeferred?.await()
                     val sprint = result.sprint
-                    val typeUI = typeUiDeferred?.await()
-                    val severityUI = severityUiDeferred?.await()
-                    val priorityUi = priorityUiDeferred?.await()
+
                     val workItemBadges = workItemsGenerator.getItems(
-                        statusUI = statusUi,
-                        typeUI = typeUI,
-                        severityUI = severityUI,
-                        priorityUi = priorityUi,
+                        statusUI = issueUI.status,
+                        typeUI = issueUI.type,
+                        severityUI = issueUI.severity,
+                        priorityUi = issueUI.priority,
                         filtersData = result.filtersData
                     )
                     val dueDateText = dateTimeUtils.getDueDateText(
-                        dueDate = result.issueTask.dueDate
+                        dueDate = result.issue.dueDate
                     )
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            currentIssue = result.issueTask,
-                            originalIssue = result.issueTask,
+                            currentIssue = issueUI,
+                            originalIssue = issueUI,
                             sprint = sprint,
                             creator = result.creator,
                             filtersData = result.filtersData,
@@ -295,9 +279,9 @@ class IssueDetailsViewModel @Inject constructor(
                         )
                     }
 
-                    setInitialTitle(result.issueTask.title)
+                    setInitialTitle(result.issue.title)
                     setWorkItemBadges(workItemBadges)
-                    setInitialTags(tags.await())
+                    setInitialTags(issueUI.tags.toPersistentList())
                     setInitialComments(result.comments)
                     setInitialAttachments(result.attachments.toPersistentList())
                     setInitialWatchers(
@@ -313,7 +297,7 @@ class IssueDetailsViewModel @Inject constructor(
                         assignees = result.assignees.toPersistentList(),
                         isAssignedToMe = result.isAssignedToMe
                     )
-                    setInitialDescription(result.issueTask.description)
+                    setInitialDescription(result.issue.description)
                 }.onFailure { error ->
                     Timber.e(error)
                     val errorToShow = getErrorMessage(error)
@@ -709,6 +693,36 @@ class IssueDetailsViewModel @Inject constructor(
         )
     }
 
+    private fun onNewSprintUpdate(newSprintId: Long?) {
+        viewModelScope.launch {
+            clearError()
+
+            _state.update {
+                it.copy(isSprintLoading = true)
+            }
+
+            issueDetailsDataUseCase.updateSprint(
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
+                commonTaskType = CommonTaskType.Issue,
+                sprintId = newSprintId
+            ).onSuccess { result ->
+                updateVersion(result.patchedData.newVersion)
+                _state.update {
+                    it.copy(
+                        sprint = result.sprint,
+                        isSprintLoading = false
+                    )
+                }
+            }.onFailure { error ->
+                emitError(error)
+                _state.update {
+                    it.copy(isSprintLoading = false)
+                }
+            }
+        }
+    }
+
     private fun onBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
         viewModelScope.launch {
             handleBadgeSave(
@@ -787,5 +801,9 @@ class IssueDetailsViewModel @Inject constructor(
         _state.update {
             it.copy(isDropdownMenuExpanded = isExpanded)
         }
+    }
+
+    private fun onGoingToEditSprint() {
+        workItemEditShared.setCurrentSprint(_state.value.sprint?.id)
     }
 }

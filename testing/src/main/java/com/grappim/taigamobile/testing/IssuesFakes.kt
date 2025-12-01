@@ -12,13 +12,13 @@ import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.filters.domain.model.Type
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsData
-import com.grappim.taigamobile.feature.issues.domain.IssueTask
+import com.grappim.taigamobile.feature.issues.domain.Issue
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
 import java.time.LocalDateTime
 
 fun getIssueDetailsData(): IssueDetailsData = IssueDetailsData(
-    issueTask = getIssueTask(),
+    issue = getIssueTask(),
     attachments = persistentListOf(
         getAttachment(),
         getAttachment()
@@ -43,7 +43,7 @@ fun getIssueDetailsData(): IssueDetailsData = IssueDetailsData(
     filtersData = getFiltersData()
 )
 
-fun getIssueTask(): IssueTask = IssueTask(
+fun getIssueTask(): Issue = Issue(
     id = getRandomLong(),
     version = getRandomLong(),
     ref = getRandomInt(),

@@ -66,9 +66,12 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navig
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsNavDestination
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsScreen
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditAssigneeNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditAssigneeScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditAssignee
+import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSprintNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSprintScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.navigateToWorkItemEditSprint
+import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditTeamMemberNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditTeamMemberScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditTeamMember
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
@@ -193,10 +196,10 @@ fun MainNavHost(
                     navController.navigateToProfileScreen(creatorId)
                 },
                 goToEditAssignee = {
-                    navController.navigateToWorkItemEditAssignee()
+                    navController.navigateToWorkItemEditTeamMember()
                 },
                 goToEditWatchers = {
-                    navController.navigateToWorkItemEditAssignee()
+                    navController.navigateToWorkItemEditTeamMember()
                 }
             )
         }
@@ -242,10 +245,10 @@ fun MainNavHost(
                     navController.popBackStack()
                 },
                 goToEditAssignee = {
-                    navController.navigateToWorkItemEditAssignee()
+                    navController.navigateToWorkItemEditTeamMember()
                 },
                 goToEditWatchers = {
-                    navController.navigateToWorkItemEditAssignee()
+                    navController.navigateToWorkItemEditTeamMember()
                 },
                 goToUserStory = { id, _, ref ->
                     navController.navigateToUserStory(
@@ -297,10 +300,21 @@ fun MainNavHost(
                     navController.popBackStack()
                 },
                 goToEditAssignee = {
-                    navController.navigateToWorkItemEditAssignee()
+                    navController.navigateToWorkItemEditTeamMember()
                 },
                 goToEditWatchers = {
-                    navController.navigateToWorkItemEditAssignee()
+                    navController.navigateToWorkItemEditTeamMember()
+                },
+                goToSprints = {
+                    navController.navigateToWorkItemEditSprint()
+                }
+            )
+        }
+
+        composable<WorkItemEditSprintNavDestination> {
+            WorkItemEditSprintScreen(
+                goBack = {
+                    navController.popBackStack()
                 }
             )
         }
@@ -321,8 +335,8 @@ fun MainNavHost(
             )
         }
 
-        composable<WorkItemEditAssigneeNavDestination> {
-            WorkItemEditAssigneeScreen(
+        composable<WorkItemEditTeamMemberNavDestination> {
+            WorkItemEditTeamMemberScreen(
                 goBack = {
                     navController.popBackStack()
                 }
