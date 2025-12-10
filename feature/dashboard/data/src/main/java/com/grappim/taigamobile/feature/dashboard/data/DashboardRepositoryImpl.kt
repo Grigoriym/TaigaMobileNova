@@ -39,7 +39,7 @@ class DashboardRepositoryImpl @Inject constructor(
 
     private suspend fun getWorkingOn(): List<CommonTask> = coroutineScope {
         val epics = async {
-            epicsRepository.getEpics(
+            epicsRepository.getEpicsOld(
                 assignedId = session.userId,
                 isClosed = false
             )
@@ -68,7 +68,7 @@ class DashboardRepositoryImpl @Inject constructor(
 
     private suspend fun getWatching(): List<CommonTask> = coroutineScope {
         val epics = async {
-            epicsRepository.getEpics(
+            epicsRepository.getEpicsOld(
                 watcherId = session.userId,
                 isClosed = false
             )

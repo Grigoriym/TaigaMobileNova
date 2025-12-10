@@ -23,6 +23,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.feature.userstories.widgets.WorkItemEpicInfoWidget
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
@@ -72,6 +73,8 @@ fun UserStoryDetailsScreen(
     showSnackbar: (message: NativeText) -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
+    goToEpic: (epicId: Long, ref: Int) -> Unit,
+    goToEditEpics: () -> Unit,
     viewModel: UserStoryDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -244,7 +247,9 @@ fun UserStoryDetailsScreen(
             goToEditTags = goToEditTags,
             goToProfile = goToProfile,
             goToEditAssignee = goToEditAssignee,
-            goToEditWatchers = goToEditWatchers
+            goToEditWatchers = goToEditWatchers,
+            goToEpic = goToEpic,
+            goToEditEpics = goToEditEpics
         )
     }
 }
@@ -266,7 +271,9 @@ private fun UserStoryDetailsScreenContent(
     goToEditTags: () -> Unit,
     goToProfile: (Long) -> Unit,
     goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit
+    goToEditWatchers: () -> Unit,
+    goToEpic: (epicId: Long, ref: Int) -> Unit,
+    goToEditEpics: () -> Unit
 ) {
     requireNotNull(state.currentUserStory)
 
@@ -301,6 +308,21 @@ private fun UserStoryDetailsScreenContent(
                     updatingBadges = badgeState.updatingBadges,
                     items = badgeState.workItemBadges,
                     onBadgeClick = badgeState.onBadgeClick
+                )
+
+                WorkItemEpicInfoWidget(
+                    areUserStoryEpicsLoading = state.areUserStoryEpicsLoading,
+                    userStoryEpics = state.currentUserStory.userStoryEpics,
+                    onEpicClick = { epic ->
+                        goToEpic(epic.id, epic.ref)
+                    },
+                    onEpicRemoveClick = { epic ->
+                        state.onEpicRemoveClick(epic.id)
+                    },
+                    onLinkToEpicClick = {
+                        state.onGoingToEditEpics()
+                        goToEditEpics()
+                    }
                 )
 
                 WorkItemDescriptionWidget(

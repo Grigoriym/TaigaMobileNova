@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.userstories.ui
 
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
@@ -71,6 +72,7 @@ class UserStoryDetailsViewModelTest {
     private val historyRepository: HistoryRepository = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
     private val taigaStorage: TaigaStorage = mockk()
+    private val epicsRepository: EpicsRepository = mockk()
 
     private lateinit var viewModel: UserStoryDetailsViewModel
 
@@ -96,6 +98,7 @@ class UserStoryDetailsViewModelTest {
         every { workItemEditShared.teamMemberUpdateState } returns flowOf(TeamMemberUpdate.Clear)
         every { workItemEditShared.tagsState } returns flowOf(persistentListOf())
         every { workItemEditShared.descriptionState } returns flowOf(getRandomString())
+        every { workItemEditShared.epicsState } returns flowOf(persistentListOf())
 
         every { patchDataGenerator.getTagsPatchPayload(any()) } returns persistentMapOf()
         every { patchDataGenerator.getDescriptionPatchPayload(any()) } returns persistentMapOf()
@@ -145,7 +148,8 @@ class UserStoryDetailsViewModelTest {
             usersRepository = usersRepository,
             historyRepository = historyRepository,
             workItemRepository = workItemRepository,
-            taigaStorage = taigaStorage
+            taigaStorage = taigaStorage,
+            epicsRepository = epicsRepository
         )
     }
 

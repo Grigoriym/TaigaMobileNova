@@ -3,14 +3,18 @@ package com.grappim.taigamobile.feature.userstories.data
 import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.EpicShortInfo
 import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.data.StatusMapper
 import com.grappim.taigamobile.feature.filters.data.TagsMapper
 import com.grappim.taigamobile.feature.projects.data.ProjectMapper
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
+import com.grappim.taigamobile.feature.userstories.domain.UserStoryEpic
 import com.grappim.taigamobile.feature.workitem.data.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -54,7 +58,17 @@ class UserStoryMapper @Inject constructor(
             tags = tagsMapper.toTags(resp.tags),
             dueDate = resp.dueDate,
             dueDateStatus = dueDateStatusMapper.toDomain(resp.dueDateStatusDTO),
-            copyLinkUrl = url
+            copyLinkUrl = url,
+            userStoryEpics = epicsToDomain(resp.epics)
         )
     }
+
+    private fun epicsToDomain(epics: List<EpicShortInfo>?): ImmutableList<UserStoryEpic> = epics?.map {
+        UserStoryEpic(
+            id = it.id,
+            title = it.title,
+            ref = it.ref,
+            color = it.color
+        )
+    }.orEmpty().toImmutableList()
 }

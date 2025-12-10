@@ -12,6 +12,8 @@ import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
@@ -42,12 +44,20 @@ class EpicsRepositoryImpl @Inject constructor(
         epicsPagingSource?.invalidate()
     }
 
-    override suspend fun getEpics(assignedId: Long?, isClosed: Boolean?, watcherId: Long?): List<CommonTask> =
+    override suspend fun getEpicsOld(assignedId: Long?, isClosed: Boolean?, watcherId: Long?): List<CommonTask> =
         epicsApi.getEpics(
             assignedId = assignedId,
             isClosed = isClosed,
             watcherId = watcherId
         ).map { it.toCommonTask(CommonTaskType.Epic) }
+
+    override suspend fun getEpics(isClosed: Boolean?): ImmutableList<Epic> {
+        val response = epicsApi.getEpics(isClosed = isClosed)
+        val result = response.map { dto ->
+            epicMapper.toDomainOld(dto)
+        }
+        return result.toImmutableList()
+    }
 
     override suspend fun linkToEpic(epicId: Long, userStoryId: Long) = epicsApi.linkToEpic(
         epicId = epicId,

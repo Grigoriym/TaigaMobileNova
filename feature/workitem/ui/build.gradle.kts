@@ -25,6 +25,7 @@ dependencies {
     implementation(projects.feature.workitem.domain)
     implementation(projects.feature.history.domain)
     implementation(projects.feature.sprint.domain)
+    implementation(projects.feature.epics.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.paging.compose)
