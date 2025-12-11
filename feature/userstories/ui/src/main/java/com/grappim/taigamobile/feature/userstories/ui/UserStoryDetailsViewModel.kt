@@ -8,8 +8,10 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
@@ -57,8 +59,11 @@ import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -86,7 +91,8 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
     private val taigaStorage: TaigaStorage,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val epicsRepository: EpicsRepository
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = CommonTaskType.UserStory,
@@ -182,7 +188,9 @@ class UserStoryDetailsViewModel @Inject constructor(
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
-            onBadgeSave = ::onBadgeSave
+            onBadgeSave = ::onBadgeSave,
+            onGoingToEditEpics = ::onGoingToEditEpics,
+            onEpicRemoveClick = ::onEpicRemoveClick
         )
     )
     val state = _state.asStateFlow()
@@ -206,6 +214,10 @@ class UserStoryDetailsViewModel @Inject constructor(
 
         workItemEditShared.descriptionState
             .onEach(::onNewDescriptionUpdate)
+            .launchIn(viewModelScope)
+
+        workItemEditShared.epicsState
+            .onEach(::onEpicsUpdate)
             .launchIn(viewModelScope)
     }
 
@@ -750,6 +762,103 @@ class UserStoryDetailsViewModel @Inject constructor(
                     updateVersion(version)
                 }
             )
+        }
+    }
+
+    private fun onGoingToEditEpics() {
+        val currentEpicsIds = _state.value.currentUserStory?.userStoryEpics
+            ?.map { it.id }?.toImmutableList()
+        workItemEditShared.setCurrentEpics(currentEpicsIds)
+    }
+
+    private fun onEpicRemoveClick(id: Long) {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(areUserStoryEpicsLoading = true)
+            }
+
+            resultOf {
+                epicsRepository.unlinkFromEpic(
+                    epicId = id,
+                    userStoryId = userStoryId
+                )
+                userStoryDetailsDataUseCase.getUserStory(userStoryId)
+            }.onSuccess { result ->
+                _state.update {
+                    it.copy(
+                        currentUserStory = result,
+                        originalUserStory = result,
+                        areUserStoryEpicsLoading = false
+                    )
+                }
+            }.onFailure { error ->
+                emitError(error)
+                _state.update {
+                    it.copy(areUserStoryEpicsLoading = false)
+                }
+            }
+        }
+    }
+
+    private fun onEpicsUpdate(ids: PersistentList<Long>) {
+        viewModelScope.launch {
+            val previousIds = currentUserStory.userStoryEpics.map { it.id }.toSet()
+            val newIds = ids.toSet()
+
+            val idsToAdd = newIds - previousIds
+            val idsToRemove = previousIds - newIds
+
+            if (idsToAdd.isEmpty() && idsToRemove.isEmpty()) {
+                return@launch
+            }
+
+            _state.update {
+                it.copy(areUserStoryEpicsLoading = true)
+            }
+
+            resultOf {
+                coroutineScope {
+                    val operations = buildList {
+                        idsToRemove.forEach { epicId ->
+                            add(
+                                async {
+                                    epicsRepository.unlinkFromEpic(
+                                        epicId = epicId,
+                                        userStoryId = userStoryId
+                                    )
+                                }
+                            )
+                        }
+                        idsToAdd.forEach { epicId ->
+                            add(
+                                async {
+                                    epicsRepository.linkToEpic(
+                                        epicId = epicId,
+                                        userStoryId = userStoryId
+                                    )
+                                }
+                            )
+                        }
+                    }
+
+                    operations.awaitAll()
+                }
+
+                userStoryDetailsDataUseCase.getUserStory(userStoryId)
+            }.onSuccess { result ->
+                _state.update {
+                    it.copy(
+                        currentUserStory = result,
+                        originalUserStory = result,
+                        areUserStoryEpicsLoading = false
+                    )
+                }
+            }.onFailure { error ->
+                emitError(error)
+                _state.update {
+                    it.copy(areUserStoryEpicsLoading = false)
+                }
+            }
         }
     }
 }

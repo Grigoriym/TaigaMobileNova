@@ -1,9 +1,11 @@
 package com.grappim.taigamobile.feature.issues.ui.details
 
+import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
+import com.grappim.taigamobile.feature.issues.domain.UpdateSprintData
 import com.grappim.taigamobile.feature.issues.ui.model.IssueUIMapper
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
@@ -21,7 +23,6 @@ import com.grappim.taigamobile.testing.getRandomInt
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getSelectableWorkItemBadgeState
-import com.grappim.taigamobile.testing.getStatusUI
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import io.mockk.coEvery
@@ -75,11 +76,6 @@ class IssueDetailsViewModelTest {
     fun setup() {
         every { dateTimeUtils.formatToMediumFormat(localDate = any()) } returns getRandomString()
 
-        every { workItemEditShared.teamMemberUpdateState } returns flowOf(TeamMemberUpdate.Clear)
-        every { workItemEditShared.tagsState } returns flowOf(persistentListOf())
-        every { workItemEditShared.descriptionState } returns flowOf(getRandomString())
-        every { workItemEditShared.sprintState } returns flowOf(getRandomLong())
-
         every { patchDataGenerator.getTagsPatchPayload(any()) } returns persistentMapOf()
         every { patchDataGenerator.getDescriptionPatchPayload(any()) } returns persistentMapOf()
 
@@ -91,10 +87,22 @@ class IssueDetailsViewModelTest {
 
         coEvery { issueUIMapper.toUI(issueDetails.issue) } returns getIssueUI()
 
-        val type = getStatusUI()
-        val severity = getStatusUI()
-        val priority = getStatusUI()
-        val status = getStatusUI()
+        coEvery {
+            issueDetailsDataUseCase.updateSprint(
+                version = any(),
+                workItemId = any(),
+                commonTaskType = any(),
+                sprintId = any()
+            )
+        } returns Result.success(
+            UpdateSprintData(
+                PatchedData(
+                    newVersion = getRandomLong(),
+                    dueDateStatus = null
+                ),
+                sprint = null
+            )
+        )
 
         coEvery { customFieldsUIMapper.toUI(issueDetails.customFields) } returns persistentListOf(
             getCustomFieldItemState()
@@ -102,13 +110,18 @@ class IssueDetailsViewModelTest {
 
         coEvery {
             workItemsGenerator.getItems(
-                statusUI = status,
-                typeUI = type,
-                severityUI = severity,
-                priorityUi = priority,
-                filtersData = issueDetails.filtersData
+                statusUI = any(),
+                typeUI = any(),
+                severityUI = any(),
+                priorityUi = any(),
+                filtersData = any()
             )
         } returns persistentSetOf(getSelectableWorkItemBadgeState())
+
+        every { workItemEditShared.teamMemberUpdateState } returns flowOf(TeamMemberUpdate.Clear)
+        every { workItemEditShared.tagsState } returns flowOf(persistentListOf())
+        every { workItemEditShared.descriptionState } returns flowOf(getRandomString())
+        every { workItemEditShared.sprintState } returns flowOf(getRandomLong())
 
         viewModel = IssueDetailsViewModel(
             issueDetailsDataUseCase = issueDetailsDataUseCase,

@@ -33,6 +33,9 @@ class WorkItemEditShared @Inject constructor() {
     private val _sprintState = Channel<Long?>()
     val sprintState = _sprintState.receiveAsFlow()
 
+    private val _epicsState = Channel<PersistentList<Long>>()
+    val epicsState = _epicsState.receiveAsFlow()
+
     private var _currentType: TeamMemberEditType? = null
     val currentType: TeamMemberEditType
         get() = requireNotNull(_currentType)
@@ -62,6 +65,10 @@ class WorkItemEditShared @Inject constructor() {
     private var _currentSprint: Long? = null
     val currentSprint: Long?
         get() = _currentSprint
+
+    private var _currentEpics: PersistentList<Long> = persistentListOf()
+    val currentEpics: ImmutableList<Long>
+        get() = _currentEpics
 
     fun setTags(tags: ImmutableList<TagUI>) {
         _originalTags = tags.toPersistentList()
@@ -129,6 +136,17 @@ class WorkItemEditShared @Inject constructor() {
         clear()
     }
 
+    fun setCurrentEpics(ids: ImmutableList<Long>?) {
+        _currentEpics = ids.orEmpty().toPersistentList()
+    }
+
+    fun updateEpics(ids: PersistentList<Long>) {
+        scope.launch {
+            _epicsState.send(ids)
+        }
+        clear()
+    }
+
     fun clear() {
         _originalTags = _originalTags.clear()
         _currentTags = _currentTags.clear()
@@ -136,6 +154,7 @@ class WorkItemEditShared @Inject constructor() {
         _currentWatchers = _currentWatchers.clear()
         _currentAssignees = _currentAssignees.clear()
         _currentSprint = null
+        _currentEpics = _currentEpics.clear()
         _currentType = null
     }
 }

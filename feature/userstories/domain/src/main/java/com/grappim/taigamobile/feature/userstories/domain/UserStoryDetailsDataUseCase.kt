@@ -20,6 +20,8 @@ class UserStoryDetailsDataUseCase @Inject constructor(
     private val workItemRepository: WorkItemRepository
 ) {
 
+    suspend fun getUserStory(id: Long): UserStory = userStoriesRepository.getUserStory(id = id)
+
     suspend fun getUserStoryData(id: Long) = resultOf {
         coroutineScope {
             val taskType = CommonTaskType.UserStory

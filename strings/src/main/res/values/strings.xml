@@ -90,10 +90,13 @@
     <string name="epic_slug">Epic #%d</string>
     <string name="issue_slug">Issue #%d</string>
 
+    <string name="user_story_belongs_to">This user story belongs to</string>
+
     <string name="epic">Epic</string>
     <string name="userstory">User story</string>
     <string name="task">Task</string>
     <string name="issue">Issue</string>
+    <string name="edit_epic">Edit Epic</string>
 
     <string name="no_sprint">No sprint</string>
     <string name="link_to_epic">Link to epic</string>

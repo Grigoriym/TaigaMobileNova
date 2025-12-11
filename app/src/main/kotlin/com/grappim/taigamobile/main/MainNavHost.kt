@@ -66,6 +66,9 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navig
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsNavDestination
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsScreen
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
+import com.grappim.taigamobile.feature.workitem.ui.screens.epic.WorkItemEditEpicNavDestination
+import com.grappim.taigamobile.feature.workitem.ui.screens.epic.WorkItemEditEpicScreen
+import com.grappim.taigamobile.feature.workitem.ui.screens.epic.navigateToWorkItemEditEpic
 import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSprintNavDestination
 import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSprintScreen
 import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.navigateToWorkItemEditSprint
@@ -200,6 +203,12 @@ fun MainNavHost(
                 },
                 goToEditWatchers = {
                     navController.navigateToWorkItemEditTeamMember()
+                },
+                goToEpic = { epicId: Long, ref: Int ->
+                    navController.navigateToEpicDetails(epicId, ref)
+                },
+                goToEditEpics = {
+                    navController.navigateToWorkItemEditEpic()
                 }
             )
         }
@@ -337,6 +346,14 @@ fun MainNavHost(
 
         composable<WorkItemEditTeamMemberNavDestination> {
             WorkItemEditTeamMemberScreen(
+                goBack = {
+                    navController.popBackStack()
+                }
+            )
+        }
+
+        composable<WorkItemEditEpicNavDestination> {
+            WorkItemEditEpicScreen(
                 goBack = {
                     navController.popBackStack()
                 }
