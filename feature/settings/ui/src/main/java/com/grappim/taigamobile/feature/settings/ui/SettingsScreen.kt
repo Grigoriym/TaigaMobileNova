@@ -59,7 +59,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
-import com.grappim.taigamobile.utils.ui.collectSnackbarMessage
+import com.grappim.taigamobile.utils.ui.delegates.collectSnackbarMessage
 import timber.log.Timber
 
 private const val ANIMATION_DURATION = 500

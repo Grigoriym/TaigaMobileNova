@@ -3,19 +3,31 @@ package com.grappim.taigamobile.feature.wiki.ui.create
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.feature.wiki.domain.WikiPage
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
-import com.grappim.taigamobile.utils.ui.loadOrError
-import com.grappim.taigamobile.utils.ui.mutableResultFlow
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
+import com.grappim.taigamobile.utils.ui.delegates.UiErrorDelegate
+import com.grappim.taigamobile.utils.ui.delegates.UiErrorDelegateImpl
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class WikiCreatePageViewModel @Inject constructor(private val wikiRepository: WikiRepository) : ViewModel() {
+class WikiCreatePageViewModel @Inject constructor(
+    private val wikiRepository: WikiRepository,
+    private val workItemRepository: WorkItemRepository,
+    private val patchDataGenerator: PatchDataGenerator
+) : ViewModel(),
+    UiErrorDelegate by UiErrorDelegateImpl() {
 
     private val _state = MutableStateFlow(
         WikiCreatePageState(
@@ -26,7 +38,8 @@ class WikiCreatePageViewModel @Inject constructor(private val wikiRepository: Wi
     )
     val state = _state.asStateFlow()
 
-    val creationResult = mutableResultFlow<WikiPage>()
+    private val _creationResult = Channel<WikiPage>()
+    val creationResult = _creationResult.receiveAsFlow()
 
     private fun setTitle(title: TextFieldValue) {
         _state.update {
@@ -49,25 +62,36 @@ class WikiCreatePageViewModel @Inject constructor(private val wikiRepository: Wi
 
     private fun createWikiPage(title: String, content: String) {
         viewModelScope.launch {
-            creationResult.loadOrError {
+            _state.update {
+                it.copy(isLoading = true)
+            }
+            resultOf {
                 val slug = title.replace(" ", "-").lowercase()
-
                 wikiRepository.createWikiLink(
                     href = slug,
                     title = title
                 )
-
-                // Need it, because we can't put content to page
-                // and create link for it at the same time :(
+//                Need it, because we can't put content to page
+//                and create link for it at the same time :(
                 val wikiPage = wikiRepository.getProjectWikiPageBySlug(slug)
 
-                wikiRepository.editWikiPage(
+                workItemRepository.patchWikiPage(
                     pageId = wikiPage.id,
-                    content = content,
+                    payload = patchDataGenerator.getWikiContent(content),
                     version = wikiPage.version
                 )
-
                 wikiPage
+            }.onSuccess { result ->
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+                _creationResult.send(result)
+            }.onFailure { error ->
+                Timber.e(error)
+                showUiErrorSuspend(getErrorMessage(error))
+                _state.update {
+                    it.copy(isLoading = false)
+                }
             }
         }
     }

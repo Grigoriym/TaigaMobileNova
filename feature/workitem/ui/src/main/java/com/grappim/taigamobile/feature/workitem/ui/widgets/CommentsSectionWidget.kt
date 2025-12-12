@@ -97,7 +97,8 @@ private fun CommentItem(comment: Comment, onDeleteClick: () -> Unit, navigateToP
             modifier = Modifier.fillMaxWidth()
         ) {
             UserItem(
-                userDTO = comment.author,
+                displayName = comment.author.displayName,
+                avatarUrl = comment.author.photo,
                 dateTime = comment.postDateTime,
                 onUserItemClick = { navigateToProfile(comment.author.actualId) }
             )

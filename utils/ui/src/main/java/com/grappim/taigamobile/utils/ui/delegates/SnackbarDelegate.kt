@@ -1,7 +1,8 @@
-package com.grappim.taigamobile.utils.ui
+package com.grappim.taigamobile.utils.ui.delegates
 
 import androidx.compose.runtime.Composable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.asSharedFlow

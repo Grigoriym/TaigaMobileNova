@@ -21,7 +21,10 @@ enum class CommonTaskType {
     UserStory,
     Task,
     Epic,
-    Issue
+    Issue,
+
+    // todo it kinda does not fit perfectly to this group, only a temp solution
+    Wiki
 }
 
 data class CommonTask(

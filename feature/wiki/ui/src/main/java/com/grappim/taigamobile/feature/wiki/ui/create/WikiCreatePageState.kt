@@ -4,10 +4,11 @@ import androidx.compose.ui.text.input.TextFieldValue
 
 data class WikiCreatePageState(
     val title: TextFieldValue = TextFieldValue(""),
-    val setTitle: (TextFieldValue) -> Unit,
+    val setTitle: (TextFieldValue) -> Unit = {},
 
     val description: TextFieldValue = TextFieldValue(""),
-    val setDescription: (TextFieldValue) -> Unit,
+    val setDescription: (TextFieldValue) -> Unit = {},
 
-    val onCreateWikiPage: () -> Unit
+    val onCreateWikiPage: () -> Unit = {},
+    val isLoading: Boolean = false
 )

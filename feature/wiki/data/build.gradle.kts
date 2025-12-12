@@ -14,6 +14,8 @@ dependencies {
     implementation(projects.core.async)
 
     implementation(projects.feature.wiki.domain)
+    implementation(projects.feature.workitem.data)
+    implementation(projects.feature.workitem.domain)
 
     implementation(libs.retrofit)
 

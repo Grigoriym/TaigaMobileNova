@@ -37,6 +37,7 @@ class UsersRepositoryImpl @Inject constructor(
 
     override suspend fun getMeResult(): Result<UserDTO> = resultOf { getMe() }
 
+    @Deprecated("use getUser")
     override suspend fun getUserDTO(userId: Long): UserDTO = usersApi.getUser(userId)
 
     override suspend fun getUser(userId: Long): User {

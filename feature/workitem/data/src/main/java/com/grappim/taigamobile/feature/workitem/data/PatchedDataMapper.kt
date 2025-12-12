@@ -7,6 +7,7 @@ import com.grappim.taigamobile.core.domain.DueDateStatus
 import com.grappim.taigamobile.core.domain.DueDateStatusDTO
 import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
 import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.feature.workitem.data.wiki.WikiPageDTO
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -44,4 +45,11 @@ class PatchedDataMapper @Inject constructor(@IoDispatcher private val dispatcher
         withContext(dispatcher) {
             PatchedCustomAttributes(version = resp.version)
         }
+
+    suspend fun fromWiki(dto: WikiPageDTO): PatchedData = withContext(dispatcher) {
+        PatchedData(
+            newVersion = dto.version,
+            dueDateStatus = null
+        )
+    }
 }

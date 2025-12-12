@@ -10,6 +10,7 @@ value class WorkItemPathPlural private constructor(val path: String) {
             CommonTaskType.Task -> "tasks"
             CommonTaskType.Epic -> "epics"
             CommonTaskType.Issue -> "issues"
+            CommonTaskType.Wiki -> "wiki"
         }
     )
 }
@@ -23,6 +24,7 @@ value class WorkItemPathSingular private constructor(val path: String) {
             CommonTaskType.Task -> "task"
             CommonTaskType.Epic -> "epic"
             CommonTaskType.Issue -> "issue"
+            CommonTaskType.Wiki -> "wiki"
         }
     )
 }

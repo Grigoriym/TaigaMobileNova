@@ -27,4 +27,6 @@ interface PatchDataGenerator {
     fun getColor(color: String): ImmutableMap<String, Any?>
 
     fun getSprint(sprintId: Long?): ImmutableMap<String, Any?>
+
+    fun getWikiContent(content: String): ImmutableMap<String, Any?>
 }

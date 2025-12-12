@@ -18,6 +18,8 @@ dependencies {
 
     implementation(projects.feature.wiki.domain)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.workitem.ui)
+    implementation(projects.feature.workitem.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)

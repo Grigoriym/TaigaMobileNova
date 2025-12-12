@@ -53,7 +53,7 @@ import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.collectSnackbarMessage
+import com.grappim.taigamobile.utils.ui.delegates.collectSnackbarMessage
 
 @Composable
 fun LoginScreen(

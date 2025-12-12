@@ -100,6 +100,7 @@ class CommonTaskViewModel @Inject constructor(
                     CommonTaskType.Task -> RString.task_slug
                     CommonTaskType.Epic -> RString.epic_slug
                     CommonTaskType.Issue -> RString.issue_slug
+                    CommonTaskType.Wiki -> RString.wiki
                 },
                 args = listOf(ref)
             ),

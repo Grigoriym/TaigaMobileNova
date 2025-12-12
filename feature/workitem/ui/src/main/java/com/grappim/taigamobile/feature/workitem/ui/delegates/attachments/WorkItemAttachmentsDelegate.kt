@@ -15,14 +15,14 @@ interface WorkItemAttachmentsDelegate {
         uri: Uri?,
         doOnPreExecute: (() -> Unit)? = null,
         doOnSuccess: (() -> Unit)? = null,
-        doOnError: (Throwable) -> Unit
+        doOnError: suspend (Throwable) -> Unit
     )
 
     suspend fun handleRemoveAttachment(
         attachment: Attachment,
         doOnPreExecute: (() -> Unit)? = null,
         doOnSuccess: (() -> Unit)? = null,
-        doOnError: (Throwable) -> Unit
+        doOnError: suspend (Throwable) -> Unit
     )
 
     fun setInitialAttachments(attachments: List<Attachment>)

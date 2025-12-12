@@ -110,8 +110,7 @@ private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) {
                 isAlertVisible = false
                 onRemoveClick()
             },
-            onDismiss = { isAlertVisible = false },
-            iconId = R.drawable.ic_remove
+            onDismiss = { isAlertVisible = false }
         )
     }
 

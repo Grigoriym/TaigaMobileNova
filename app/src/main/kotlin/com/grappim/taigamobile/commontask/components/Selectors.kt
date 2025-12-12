@@ -262,7 +262,10 @@ private fun MemberItem(member: UserDTO, onClick: () -> Unit) = ContainerBoxWidge
     verticalPadding = 16.dp,
     onClick = onClick
 ) {
-    UserItem(member)
+    UserItem(
+        displayName = member.displayName,
+        avatarUrl = member.photo
+    )
 }
 
 @Composable

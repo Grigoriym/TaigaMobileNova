@@ -6,6 +6,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class WikiPageNavDestination(val slug: String)
 
-fun NavController.navigateToWikiPage(slug: String) {
-    navigate(route = WikiPageNavDestination(slug))
+fun NavController.navigateToWikiPage(slug: String, popUpToRoute: Any? = null) {
+    navigate(route = WikiPageNavDestination(slug)) {
+        popUpToRoute?.let { route ->
+            popUpTo(route = route) {
+                inclusive = true
+            }
+        }
+    }
 }

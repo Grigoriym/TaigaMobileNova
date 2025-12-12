@@ -41,7 +41,8 @@ import java.time.format.FormatStyle
  */
 @Composable
 fun UserItem(
-    userDTO: UserDTO,
+    displayName: String,
+    avatarUrl: Any?,
     modifier: Modifier = Modifier,
     dateTime: LocalDateTime? = null,
     onUserItemClick: () -> Unit = { }
@@ -62,14 +63,14 @@ fun UserItem(
             contentScale = ContentScale.Crop,
             placeholder = painterResource(RDrawable.default_avatar),
             error = painterResource(RDrawable.default_avatar),
-            model = userDTO.avatarUrl
+            model = avatarUrl
         )
 
         Spacer(Modifier.width(6.dp))
 
         Column {
             Text(
-                text = userDTO.displayName,
+                text = displayName,
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -112,7 +113,8 @@ fun UserItemWithAction(
         modifier = modifier.fillMaxWidth()
     ) {
         UserItem(
-            userDTO = userDTO,
+            displayName = userDTO.displayName,
+            avatarUrl = userDTO.photo,
             onUserItemClick = onUserItemClick
         )
 
@@ -130,12 +132,8 @@ fun UserItemWithAction(
 @Composable
 private fun UserItemPreview() = TaigaMobileTheme {
     UserItem(
-        userDTO = UserDTO(
-            id = 0L,
-            fullName = "Full Name",
-            photo = null,
-            bigPhoto = null,
-            username = "username"
-        )
+        displayName = "Full Name",
+        avatarUrl = null,
+        dateTime = LocalDateTime.now()
     )
 }
