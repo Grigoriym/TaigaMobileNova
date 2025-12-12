@@ -7,6 +7,8 @@ import com.grappim.taigamobile.core.domain.UserDTO
 import kotlinx.collections.immutable.ImmutableList
 
 interface UsersRepository {
+
+    suspend fun getTeamMembers(generateMemberStats: Boolean = false): ImmutableList<TeamMember>
     suspend fun getMe(): UserDTO
     suspend fun getMeResult(): Result<UserDTO>
 
@@ -21,8 +23,5 @@ interface UsersRepository {
 
     suspend fun getTeamOld(): Result<List<TeamMemberDTO>>
     suspend fun getTeamByProjectIdOld(projectId: Long): Result<List<TeamMemberDTO>>
-
-    suspend fun getCurrentTeam(generateMemberStats: Boolean = false): ImmutableList<TeamMember>
-
     suspend fun getCurrentTeamResult(generateMemberStats: Boolean = false): Result<ImmutableList<TeamMember>>
 }

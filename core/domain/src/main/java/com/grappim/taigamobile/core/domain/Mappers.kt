@@ -10,7 +10,7 @@ fun CommonTaskResponse.toCommonTaskExtended(
     filters: FiltersDataDTO,
     swimlaneDTOS: List<SwimlaneDTO>,
     sprint: Sprint? = null,
-    tags: List<Tag>,
+    tagOlds: List<TagOld>,
     url: String
 ): CommonTaskExtended = CommonTaskExtended(
     id = id,
@@ -32,7 +32,7 @@ fun CommonTaskResponse.toCommonTaskExtended(
     description = description ?: "",
     epicsShortInfo = epics.orEmpty(),
     projectSlug = projectDTOExtraInfo.slug,
-    tags = tags,
+    tagOlds = tagOlds,
     swimlaneDTO = swimlaneDTOS.find { it.id == swimlane },
     dueDate = dueDate,
     dueDateStatusDTO = dueDateStatusDTO,

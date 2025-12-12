@@ -11,7 +11,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.CustomFieldValue
 import com.grappim.taigamobile.core.domain.CustomFields
 import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.core.domain.TasksRepositoryOld
 import com.grappim.taigamobile.core.domain.toCommonTaskExtended
 import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
@@ -56,7 +56,7 @@ class TasksRepositoryOldImpl @Inject constructor(
 
     override suspend fun getCommonTask(commonTaskId: Long, type: CommonTaskType) = withIO {
         val filters = async { filtersRepository.getFiltersDataOld(type) }
-        val swimlanes = async { swimlanesRepository.getSwimlanes() }
+        val swimlanes = async { swimlanesRepository.getSwimlanesOld() }
 
         val task = taigaApi.getCommonTask(CommonTaskPathPlural(type), commonTaskId)
         val sprint = task.milestone?.let {
@@ -67,8 +67,8 @@ class TasksRepositoryOldImpl @Inject constructor(
             filters = filters.await(),
             swimlaneDTOS = swimlanes.await(),
             sprint = sprint,
-            tags = task.tags.orEmpty()
-                .map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
+            tagOlds = task.tags.orEmpty()
+                .map { TagOld(name = it[0]!!, color = it[1].fixNullColor()) },
             url = "${serverStorage.server}/project/${task.projectDTOExtraInfo.slug}/${
                 transformTaskTypeForCopyLink(type)
             }/${task.ref}"
@@ -106,7 +106,7 @@ class TasksRepositoryOldImpl @Inject constructor(
 
     // edit task itself
 
-    private fun Tag.toList() = listOf(name, color)
+    private fun TagOld.toList() = listOf(name, color)
 
     private fun CommonTaskExtended.toEditRequest() = EditCommonTaskRequest(
         subject = title,
@@ -122,7 +122,7 @@ class TasksRepositoryOldImpl @Inject constructor(
         swimlane = swimlaneDTO?.id,
         dueDate = dueDate,
         color = color,
-        tags = tags.map { it.toList() },
+        tags = tagOlds.map { it.toList() },
         blockedNote = blockedNote.orEmpty(),
         isBlocked = blockedNote != null,
         version = version
@@ -185,8 +185,8 @@ class TasksRepositoryOldImpl @Inject constructor(
             )
         }
 
-    override suspend fun editTags(commonTask: CommonTaskExtended, tags: List<Tag>) =
-        editCommonTask(commonTask, commonTask.toEditRequest().copy(tags = tags.map { it.toList() }))
+    override suspend fun editTags(commonTask: CommonTaskExtended, tagOlds: List<TagOld>) =
+        editCommonTask(commonTask, commonTask.toEditRequest().copy(tags = tagOlds.map { it.toList() }))
 
     override suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?) = withIO {
         if (commonTask.taskType != CommonTaskType.UserStory) {

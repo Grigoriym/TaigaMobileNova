@@ -2,12 +2,9 @@
 
 package com.grappim.taigamobile.feature.kanban.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -20,11 +17,11 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.getErrorMessage
 
 @Composable
 fun KanbanScreen(
@@ -35,6 +32,7 @@ fun KanbanScreen(
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
@@ -45,28 +43,38 @@ fun KanbanScreen(
     }
 
     LaunchedEffect(state.error) {
-        if (state.error != null) {
-            showSnackbar(getErrorMessage(state.error!!))
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 
-    KanbanScreenContent(
-        state = state,
-        navigateToStory = { id, ref ->
-            goToTask(
-                id,
-                CommonTaskType.UserStory,
-                ref
-            )
-        },
-        navigateToCreateTask = { statusId, swimlaneId ->
-            goToCreateTask(
-                CommonTaskType.UserStory,
-                statusId,
-                swimlaneId
-            )
-        }
-    )
+    if (state.error.isEmpty()) {
+        KanbanScreenContent(
+            state = state,
+            navigateToStory = { id, ref ->
+                goToTask(
+                    id,
+                    CommonTaskType.UserStory,
+                    ref
+                )
+            },
+            navigateToCreateTask = { statusId, swimlaneId ->
+                goToCreateTask(
+                    CommonTaskType.UserStory,
+                    statusId,
+                    swimlaneId
+                )
+            }
+        )
+    } else {
+        ErrorStateWidget(
+            modifier = Modifier.fillMaxSize(),
+            message = state.error,
+            onRetry = {
+                state.onRefresh()
+            }
+        )
+    }
 }
 
 @Composable
@@ -84,30 +92,16 @@ fun KanbanScreenContent(
         Column(
             horizontalAlignment = Alignment.Start
         ) {
-            if (state.error != null) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    // todo create a common error use case solution
-                    Button(onClick = {
-                        state.onRefresh()
-                    }, content = {
-                        Text("Refresh")
-                    })
-                }
-            } else {
-                KanbanBoardWidget(
-                    statusOlds = state.statusOlds,
-                    stories = state.stories,
-                    team = state.team,
-                    swimlaneDTOS = state.swimlaneDTOS,
-                    selectSwimlane = state.onSelectSwimlane,
-                    selectedSwimlaneDTO = state.selectedSwimlaneDTO,
-                    navigateToStory = navigateToStory,
-                    navigateToCreateTask = navigateToCreateTask
-                )
-            }
+            KanbanBoardWidget(
+                statuses = state.statuses,
+                stories = state.stories,
+                teamMembers = state.teamMembers,
+                swimlanes = state.swimlanes,
+                selectSwimlane = state.onSelectSwimlane,
+                selectedSwimlane = state.selectedSwimlane,
+                navigateToStory = navigateToStory,
+                navigateToCreateTask = navigateToCreateTask
+            )
         }
     }
 }

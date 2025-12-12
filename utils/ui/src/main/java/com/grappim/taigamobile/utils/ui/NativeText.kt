@@ -13,6 +13,9 @@ sealed class NativeText {
     data class Plural(@PluralsRes val id: Int, val number: Int, val args: List<Any>) : NativeText()
     data class Arguments(@StringRes val id: Int, val args: List<Any>) : NativeText()
     data class Multi(val text: List<NativeText>) : NativeText()
+
+    fun isEmpty(): Boolean = this is Empty
+    fun isNotEmpty(): Boolean = this !is Empty
 }
 
 @Suppress("SpreadOperator")
@@ -46,9 +49,11 @@ fun getErrorMessage(exception: Throwable): NativeText = if (exception is Network
         NetworkException.ERROR_NO_INTERNET -> NativeText.Resource(
             RString.error_no_internet_connection
         )
+
         NetworkException.ERROR_HOST_NOT_FOUND -> NativeText.Resource(
             RString.error_host_not_found
         )
+
         NetworkException.ERROR_TIMEOUT -> NativeText.Resource(RString.timeout_exceeded)
         NetworkException.ERROR_NETWORK_IO -> NativeText.Resource(RString.connection_failed)
         NetworkException.ERROR_UNDEFINED -> NativeText.Resource(RString.request_failed)

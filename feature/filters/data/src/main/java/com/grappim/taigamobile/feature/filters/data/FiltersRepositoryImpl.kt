@@ -5,7 +5,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskPathPlural
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.domain.toStatus
 import com.grappim.taigamobile.core.storage.TaigaStorage
@@ -28,6 +28,7 @@ class FiltersRepositoryImpl @Inject constructor(
         return filtersMapper.toDomain(response)
     }
 
+    @Deprecated("remove it")
     override suspend fun getFiltersDataResult(commonTaskType: CommonTaskType): Result<FiltersData> = resultOf {
         getFiltersData(commonTaskType)
     }
@@ -54,7 +55,7 @@ class FiltersRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getStatuses(commonTaskType: CommonTaskType) =
+    override suspend fun getStatusesOld(commonTaskType: CommonTaskType) =
         getFiltersDataOld(commonTaskType).statuses.map { it.toStatus(StatusType.Status) }
 
     override suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType) = withIO {
@@ -73,5 +74,5 @@ class FiltersRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAllTags(commonTaskType: CommonTaskType) =
-        getFiltersDataOld(commonTaskType).tags.map { Tag(it.name, it.color) }
+        getFiltersDataOld(commonTaskType).tags.map { TagOld(it.name, it.color) }
 }

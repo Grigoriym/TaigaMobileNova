@@ -34,7 +34,7 @@ class SprintsRepositoryImpl @Inject constructor(
     override suspend fun getSprintData(sprintId: Long): Result<SprintData> = resultOf {
         coroutineScope {
             val sprint = getSprint(sprintId = sprintId)
-            val statuses = filtersRepository.getStatuses(CommonTaskType.Task)
+            val statuses = filtersRepository.getStatusesOld(CommonTaskType.Task)
             val storiesWithTasks = getSprintUserStories(sprintId = sprintId)
                 .map {
                     it to async { tasksRepository.getUserStoryTasks(it.id) }

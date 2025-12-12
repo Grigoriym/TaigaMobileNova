@@ -42,20 +42,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.CommonTaskExtended
-import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.DueDateStatusDTO
-import com.grappim.taigamobile.core.domain.EpicShortInfo
-import com.grappim.taigamobile.core.domain.StatusOld
-import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.SwimlaneDTO
-import com.grappim.taigamobile.core.domain.UserDTO
+import com.grappim.taigamobile.feature.filters.domain.model.Statuses
+import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
+import com.grappim.taigamobile.feature.users.domain.TeamMember
+import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.cardShadowElevation
 import com.grappim.taigamobile.uikit.theme.kanbanBoardTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -64,17 +58,19 @@ import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import com.grappim.taigamobile.utils.ui.toColor
-import java.time.LocalDateTime
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun KanbanBoardWidget(
-    statusOlds: List<StatusOld>,
-    swimlaneDTOS: List<SwimlaneDTO?>,
+    statuses: ImmutableList<Statuses>,
+    swimlanes: ImmutableList<Swimlane?>,
     modifier: Modifier = Modifier,
-    stories: List<CommonTaskExtended> = emptyList(),
-    team: List<UserDTO> = emptyList(),
-    selectSwimlane: (SwimlaneDTO?) -> Unit = {},
-    selectedSwimlaneDTO: SwimlaneDTO? = null,
+    stories: ImmutableList<UserStory> = persistentListOf(),
+    teamMembers: ImmutableList<TeamMember> = persistentListOf(),
+    selectSwimlane: (Swimlane?) -> Unit = {},
+    selectedSwimlane: Swimlane? = null,
     navigateToStory: (id: Long, ref: Int) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
 ) {
@@ -84,7 +80,7 @@ fun KanbanBoardWidget(
     val backgroundCellColor =
         MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
 
-    swimlaneDTOS.takeIf { it.isNotEmpty() }?.let {
+    swimlanes.takeIf { it.isNotEmpty() }?.let {
         Row(
             modifier = modifier.padding(cellOuterPadding),
             verticalAlignment = Alignment.CenterVertically
@@ -97,8 +93,8 @@ fun KanbanBoardWidget(
             Spacer(Modifier.width(8.dp))
 
             DropdownSelector(
-                items = swimlaneDTOS,
-                selectedItem = selectedSwimlaneDTO,
+                items = swimlanes,
+                selectedItem = selectedSwimlane,
                 onItemSelect = selectSwimlane,
                 itemContent = {
                     Text(
@@ -119,7 +115,7 @@ fun KanbanBoardWidget(
         }
     }
 
-    val storiesToDisplay = stories.filter { it.swimlaneDTO?.id == selectedSwimlaneDTO?.id }
+    val storiesToDisplay = stories.filter { it.swimlane == selectedSwimlane?.id }
 
     Row(
         Modifier
@@ -128,8 +124,8 @@ fun KanbanBoardWidget(
     ) {
         Spacer(Modifier.width(cellPadding))
 
-        statusOlds.forEach { status ->
-            val statusStories = storiesToDisplay.filter { it.statusOld == status }
+        statuses.forEach { status ->
+            val statusStories = storiesToDisplay.filter { it.status == status }
 
             Column {
                 Header(
@@ -139,7 +135,7 @@ fun KanbanBoardWidget(
                     cellOuterPadding = cellOuterPadding,
                     stripeColor = status.color.toColor(),
                     backgroundColor = backgroundCellColor,
-                    onAddClick = { navigateToCreateTask(status.id, selectedSwimlaneDTO?.id) }
+                    onAddClick = { navigateToCreateTask(status.id, selectedSwimlane?.id) }
                 )
 
                 LazyColumn(
@@ -152,9 +148,9 @@ fun KanbanBoardWidget(
                     items(statusStories) {
                         StoryItem(
                             story = it,
-                            assignees = it.assignedIds.mapNotNull { id ->
-                                team.find { it.actualId == id }
-                            },
+                            assignees = it.assignedUserIds.mapNotNull { id ->
+                                teamMembers.find { it.id == id }
+                            }.toImmutableList(),
                             onTaskClick = { navigateToStory(it.id, it.ref) }
                         )
                     }
@@ -230,7 +226,7 @@ private fun Header(
 
 @ExperimentalLayoutApi
 @Composable
-private fun StoryItem(story: CommonTaskExtended, assignees: List<UserDTO>, onTaskClick: () -> Unit) {
+private fun StoryItem(story: UserStory, assignees: ImmutableList<TeamMember>, onTaskClick: () -> Unit) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -248,7 +244,7 @@ private fun StoryItem(story: CommonTaskExtended, assignees: List<UserDTO>, onTas
                 )
                 .padding(12.dp)
         ) {
-            story.epicsShortInfo.forEach {
+            story.userStoryEpics.forEach {
                 val textStyle = MaterialTheme.typography.bodySmall
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Spacer(
@@ -299,86 +295,5 @@ private fun StoryItem(story: CommonTaskExtended, assignees: List<UserDTO>, onTas
                 }
             }
         }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun KanbanBoardPreview() {
-    TaigaMobileTheme {
-        KanbanBoardWidget(
-            swimlaneDTOS = listOf(
-                SwimlaneDTO(0, "Name", 0),
-                SwimlaneDTO(0, "Another name", 1)
-            ),
-            statusOlds = listOf(
-                StatusOld(
-                    id = 0,
-                    name = "New",
-                    color = "#70728F",
-                    type = StatusType.Status
-                ),
-                StatusOld(
-                    id = 1,
-                    name = "In progress",
-                    color = "#E47C40",
-                    type = StatusType.Status
-                ),
-                StatusOld(
-                    id = 1,
-                    name = "Done",
-                    color = "#A8E440",
-                    type = StatusType.Status
-                ),
-                StatusOld(
-                    id = 1,
-                    name = "Archived",
-                    color = "#A9AABC",
-                    type = StatusType.Status
-                )
-            ),
-            stories = List(5) {
-                CommonTaskExtended(
-                    id = 0,
-                    statusOld = StatusOld(
-                        id = 1,
-                        name = "In progress",
-                        color = "#E47C40",
-                        type = StatusType.Status
-                    ),
-                    createdDateTime = LocalDateTime.now(),
-                    sprint = null,
-                    assignedIds = List(10) { it.toLong() },
-                    watcherIds = emptyList(),
-                    creatorId = 0,
-                    ref = 1,
-                    title = "Sample title",
-                    isClosed = false,
-                    description = "",
-                    epicsShortInfo = List(3) { EpicShortInfo(0, "Some title", 1, "#A8E440") },
-                    projectSlug = "",
-                    userStoryShortInfo = null,
-                    version = 0,
-                    color = null,
-                    type = null,
-                    priority = null,
-                    severity = null,
-                    taskType = CommonTaskType.UserStory,
-                    swimlaneDTO = null,
-                    dueDate = null,
-                    dueDateStatusDTO = DueDateStatusDTO.NotSet,
-                    url = ""
-                )
-            },
-            team = List(10) {
-                UserDTO(
-                    id = it.toLong(),
-                    fullName = "Name Name",
-                    photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
-                    bigPhoto = null,
-                    username = "username"
-                )
-            }
-        )
     }
 }

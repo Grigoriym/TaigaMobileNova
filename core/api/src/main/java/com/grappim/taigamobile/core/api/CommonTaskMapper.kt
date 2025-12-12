@@ -10,7 +10,7 @@ import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.domain.SwimlaneDTO
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.core.domain.nullOwnerError
 import com.grappim.taigamobile.core.domain.toStatus
 import com.grappim.taigamobile.utils.ui.fixNullColor
@@ -40,8 +40,8 @@ class CommonTaskMapper @Inject constructor(@IoDispatcher private val ioDispatche
                     listOf(it)
                 } ?: resp.epics.orEmpty().map { it.color },
                 isClosed = resp.isClosed,
-                tags = resp.tags.orEmpty().map {
-                    Tag(name = it[0]!!, color = it[1].fixNullColor())
+                tagOlds = resp.tags.orEmpty().map {
+                    TagOld(name = it[0]!!, color = it[1].fixNullColor())
                 },
                 blockedNote = resp.blockedNote.takeIf { resp.isBlocked }
             )
@@ -53,7 +53,7 @@ class CommonTaskMapper @Inject constructor(@IoDispatcher private val ioDispatche
         filters: FiltersDataDTO,
         swimlaneDTOS: List<SwimlaneDTO>,
         sprint: Sprint? = null,
-        tags: List<Tag>,
+        tagOlds: List<TagOld>,
         url: String
     ): CommonTaskExtended = withContext(ioDispatcher) {
         CommonTaskExtended(
@@ -76,7 +76,7 @@ class CommonTaskMapper @Inject constructor(@IoDispatcher private val ioDispatche
             description = resp.description ?: "",
             epicsShortInfo = resp.epics.orEmpty(),
             projectSlug = resp.projectDTOExtraInfo.slug,
-            tags = tags,
+            tagOlds = tagOlds,
             swimlaneDTO = swimlaneDTOS.find { it.id == resp.swimlane },
             dueDate = resp.dueDate,
             dueDateStatusDTO = resp.dueDateStatusDTO,

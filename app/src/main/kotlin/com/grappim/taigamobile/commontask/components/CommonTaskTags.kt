@@ -37,7 +37,7 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
@@ -63,9 +63,9 @@ fun LazyListScope.CommonTaskTags(commonTask: CommonTaskExtended, editActions: Ed
         ) {
             var isAddTagDialogVisible by remember { mutableStateOf(false) }
 
-            commonTask.tags.forEach {
+            commonTask.tagOlds.forEach {
                 TagItem(
-                    tag = it,
+                    tagOld = it,
                     onRemoveClick = { editActions.editTags.remove(it) }
                 )
             }
@@ -85,7 +85,7 @@ fun LazyListScope.CommonTaskTags(commonTask: CommonTaskExtended, editActions: Ed
 
             if (isAddTagDialogVisible) {
                 AddTagDialog(
-                    tags = editActions.editTags.items,
+                    tagOlds = editActions.editTags.items,
                     onInputChange = editActions.editTags.searchItems,
                     onConfirm = {
                         editActions.editTags.select(it)
@@ -99,8 +99,8 @@ fun LazyListScope.CommonTaskTags(commonTask: CommonTaskExtended, editActions: Ed
 }
 
 @Composable
-private fun TagItem(tag: Tag, onRemoveClick: () -> Unit) {
-    val bgColor = tag.color.toColor()
+private fun TagItem(tagOld: TagOld, onRemoveClick: () -> Unit) {
+    val bgColor = tagOld.color.toColor()
     val textColor = bgColor.textColor()
 
     Chip(
@@ -111,7 +111,7 @@ private fun TagItem(tag: Tag, onRemoveClick: () -> Unit) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = tag.name,
+                text = tagOld.name,
                 color = textColor
             )
 
@@ -135,9 +135,9 @@ private fun TagItem(tag: Tag, onRemoveClick: () -> Unit) {
 
 @Composable
 private fun AddTagDialog(
-    tags: List<Tag>,
+    tagOlds: List<TagOld>,
     onInputChange: (String) -> Unit,
-    onConfirm: (Tag) -> Unit,
+    onConfirm: (TagOld) -> Unit,
     onDismiss: () -> Unit
 ) {
     var name by rememberSaveable(
@@ -160,7 +160,7 @@ private fun AddTagDialog(
             TextButton(
                 onClick = {
                     if (name.text.isNotBlank()) {
-                        onConfirm(Tag(name.text, color.toHex()))
+                        onConfirm(TagOld(name.text, color.toHex()))
                     }
                 }
             ) {
@@ -187,7 +187,7 @@ private fun AddTagDialog(
                         onValueChange = {
                             name = it
                             // if dropdown menu item has been chosen - do not show dropdown again
-                            if (tags.none { it.name == name.text }) {
+                            if (tagOlds.none { it.name == name.text }) {
                                 isDropdownVisible = true
                                 onInputChange(it.text)
                             }
@@ -199,7 +199,7 @@ private fun AddTagDialog(
 
                     if (isDropdownVisible) {
                         DropdownMenu(
-                            expanded = tags.isNotEmpty(),
+                            expanded = tagOlds.isNotEmpty(),
                             onDismissRequest = { isDropdownVisible = false },
                             properties = PopupProperties(clippingEnabled = false),
                             modifier = Modifier
@@ -210,7 +210,7 @@ private fun AddTagDialog(
                                     )
                                 )
                         ) {
-                            tags.forEach {
+                            tagOlds.forEach {
                                 DropdownMenuItem(
                                     onClick = {
                                         name = TextFieldValue(it.name)

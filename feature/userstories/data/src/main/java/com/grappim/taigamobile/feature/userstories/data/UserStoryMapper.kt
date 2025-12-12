@@ -29,6 +29,9 @@ class UserStoryMapper @Inject constructor(
     private val serverStorage: ServerStorage
 ) {
 
+    suspend fun toListDomain(list: List<WorkItemResponseDTO>): ImmutableList<UserStory> =
+        list.map { toDomain(it) }.toImmutableList()
+
     suspend fun toDomain(resp: WorkItemResponseDTO): UserStory = withContext(ioDispatcher) {
         val creatorId = resp.owner ?: error("Owner field is null")
 
@@ -59,7 +62,8 @@ class UserStoryMapper @Inject constructor(
             dueDate = resp.dueDate,
             dueDateStatus = dueDateStatusMapper.toDomain(resp.dueDateStatusDTO),
             copyLinkUrl = url,
-            userStoryEpics = epicsToDomain(resp.epics)
+            userStoryEpics = epicsToDomain(resp.epics),
+            swimlane = resp.swimlane
         )
     }
 

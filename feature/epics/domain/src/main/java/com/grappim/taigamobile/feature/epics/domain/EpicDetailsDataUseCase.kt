@@ -52,7 +52,7 @@ class EpicDetailsDataUseCase @Inject constructor(
             }
 
             val userStories = async {
-                userStoriesRepository.getUserStories(epicId = epicId)
+                userStoriesRepository.getEpicUserStoriesSimplified(epicId = epicId)
             }
 
             val epic = epicDeferred.await()
@@ -99,7 +99,7 @@ class EpicDetailsDataUseCase @Inject constructor(
             )
         )
 
-        val userStories = userStoriesRepository.getUserStories(epicId = epicId)
+        val userStories = userStoriesRepository.getEpicUserStoriesSimplified(epicId = epicId)
 
         EpicColorUpdateData(
             patchedData = patchData,

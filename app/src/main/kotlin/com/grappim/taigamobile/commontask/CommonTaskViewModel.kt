@@ -20,7 +20,7 @@ import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
 import com.grappim.taigamobile.core.domain.SwimlaneDTO
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.core.domain.TasksRepositoryOld
 import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.core.storage.Session
@@ -128,7 +128,7 @@ class CommonTaskViewModel @Inject constructor(
     val comments = mutableResultFlow<List<CommentDTO>>()
 
     val team = mutableResultFlow<List<UserDTO>>()
-    val tags = mutableResultFlow<List<Tag>>()
+    val tags = mutableResultFlow<List<TagOld>>()
     val swimlanes = mutableResultFlow<List<SwimlaneDTO>>()
     val statuses = mutableResultFlow<Map<StatusType, List<StatusOld>>>()
 
@@ -263,7 +263,7 @@ class CommonTaskViewModel @Inject constructor(
                         // prepend "unclassified"
                         launch {
                             swimlanes.loadOrError(showLoading = false) {
-                                listOf(SWIMLANE_DTO_HEADER) + swimlanesRepository.getSwimlanes()
+                                listOf(SWIMLANE_DTO_HEADER) + swimlanesRepository.getSwimlanesOld()
                             }
                         },
                         launch {
@@ -390,20 +390,20 @@ class CommonTaskViewModel @Inject constructor(
     fun removeWatcher(userId: Long = session.userId) = editWatchers(userId, remove = true)
 
     // Tags
-    val tagsSearched = MutableStateFlow(emptyList<Tag>())
+    val tagsSearched = MutableStateFlow(emptyList<TagOld>())
 
     fun searchTags(query: String) = viewModelScope.launch {
         tagsSearched.value =
             tags.value.data.orEmpty().filter { query.isNotEmpty() && query.lowercase() in it.name }
     }
 
-    private fun editTag(tag: Tag, remove: Boolean) = viewModelScope.launch {
+    private fun editTag(tagOld: TagOld, remove: Boolean) = viewModelScope.launch {
         tags.loadOrError(RString.permission_error) {
             tagsSearched.value = tags.value.data.orEmpty()
 
             tasksRepositoryOld.editTags(
                 commonTask.value.data!!,
-                commonTask.value.data!!.tags.let { if (remove) it - tag else it + tag }
+                commonTask.value.data!!.tagOlds.let { if (remove) it - tagOld else it + tagOld }
             )
 
             loadData().join()
@@ -412,8 +412,8 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    fun addTag(tag: Tag) = editTag(tag, remove = false)
-    fun deleteTag(tag: Tag) = editTag(tag, remove = true)
+    fun addTag(tagOld: TagOld) = editTag(tagOld, remove = false)
+    fun deleteTag(tagOld: TagOld) = editTag(tagOld, remove = true)
 
     // Swimlanes
     fun editSwimlane(swimlaneDTO: SwimlaneDTO) = viewModelScope.launch {

@@ -89,7 +89,6 @@ fun getIssueUI(): IssueUI = IssueUI(
 
 fun getTag(): Tag = Tag(
     color = getRandomString(),
-    count = getRandomLong(),
     name = getRandomString()
 )
 

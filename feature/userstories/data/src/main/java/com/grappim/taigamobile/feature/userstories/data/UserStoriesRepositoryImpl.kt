@@ -6,17 +6,13 @@ import androidx.paging.PagingData
 import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.api.handle404
-import com.grappim.taigamobile.core.api.withIO
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.core.domain.Tag
 import com.grappim.taigamobile.core.domain.commaString
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.tagsCommaString
-import com.grappim.taigamobile.core.domain.toCommonTaskExtended
-import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.data.StatusMapper
@@ -30,13 +26,11 @@ import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.utils.ui.fixNullColor
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
@@ -82,26 +76,34 @@ class UserStoriesRepositoryImpl @Inject constructor(
         return userStoryMapper.toDomain(resp = response)
     }
 
-    override suspend fun getAllUserStories() = withIO {
-        val filters = async { filtersRepository.getFiltersDataOld(CommonTaskType.UserStory) }
-        val swimlanes = async { swimlanesRepository.getSwimlanes() }
-
-        userStoriesApi.getUserStoriesOld(project = taigaStorage.currentProjectIdFlow.first())
-            .map { response ->
-                response.toCommonTaskExtended(
-                    commonTaskType = CommonTaskType.UserStory,
-                    filters = filters.await(),
-                    swimlaneDTOS = swimlanes.await(),
-                    tags = response.tags.orEmpty()
-                        .map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
-                    url = "${serverStorage.server}/project/${response.projectDTOExtraInfo.slug}/${
-                        transformTaskTypeForCopyLink(
-                            CommonTaskType.UserStory
-                        )
-                    }/${response.ref}"
-                )
-            }
+    override suspend fun getUserStories(): ImmutableList<UserStory> {
+        val stories = userStoriesApi.getUserStories(
+            project = taigaStorage.currentProjectIdFlow.first()
+        )
+        return userStoryMapper.toListDomain(stories)
     }
+
+//    @Deprecated("remove it")
+//    override suspend fun getAllUserStoriesOld() = withIO {
+//        val filters = async { filtersRepository.getFiltersDataOld(CommonTaskType.UserStory) }
+//        val swimlanes = async { swimlanesRepository.getSwimlanes() }
+//
+//        userStoriesApi.getUserStoriesOld(project = taigaStorage.currentProjectIdFlow.first())
+//            .map { response ->
+//                response.toCommonTaskExtended(
+//                    commonTaskType = CommonTaskType.UserStory,
+//                    filters = filters.await(),
+//                    swimlaneDTOS = swimlanes.await(),
+//                    tags = response.tags.orEmpty()
+//                        .map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
+//                    url = "${serverStorage.server}/project/${response.projectDTOExtraInfo.slug}/${
+//                        transformTaskTypeForCopyLink(
+//                            CommonTaskType.UserStory
+//                        )
+//                    }/${response.ref}"
+//                )
+//            }
+//    }
 
     override suspend fun getBacklogUserStories(page: Int, filters: FiltersDataDTO) = handle404 {
         userStoriesApi.getUserStoriesOld(
@@ -136,11 +138,12 @@ class UserStoriesRepositoryImpl @Inject constructor(
         sprint = sprint
     ).map { commonTaskMapper.toDomain(it, CommonTaskType.UserStory) }
 
-    override suspend fun getUserStories(epicId: Long): ImmutableList<WorkItem> = userStoriesApi.getUserStories(
-        epic = epicId
-    ).map {
-        toDomain(it, CommonTaskType.UserStory)
-    }.toImmutableList()
+    override suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem> =
+        userStoriesApi.getUserStories(
+            epic = epicId
+        ).map {
+            toDomain(it, CommonTaskType.UserStory)
+        }.toImmutableList()
 
     private suspend fun toDomain(dto: WorkItemResponseDTO, taskType: CommonTaskType): WorkItem = WorkItem(
         id = dto.id,

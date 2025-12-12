@@ -13,6 +13,7 @@ interface UiErrorDelegate {
     suspend fun showUiErrorSuspend(message: NativeText)
 }
 
+@Deprecated("remove it")
 class UiErrorDelegateImpl : UiErrorDelegate {
     private val _uiError = Channel<NativeText>()
     override val uiError: Flow<NativeText>
@@ -24,6 +25,6 @@ class UiErrorDelegateImpl : UiErrorDelegate {
 }
 
 @Composable
-fun SharedFlow<NativeText>.collectUiError() = collectAsStateWithLifecycle(
+fun Flow<NativeText>.collectUiError() = collectAsStateWithLifecycle(
     initialValue = NativeText.Empty
 )

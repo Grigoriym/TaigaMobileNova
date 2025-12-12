@@ -23,7 +23,7 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
-import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
+import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitleOld
 import com.grappim.taigamobile.utils.ui.toColor
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -83,12 +83,12 @@ fun CommonTaskItem(
             )
         }
 
-        CommonTaskTitle(
+        CommonTaskTitleOld(
             ref = commonTask.ref,
             title = commonTask.title,
             indicatorColorsHex = commonTask.colors,
             isInactive = commonTask.isClosed,
-            tags = commonTask.tags,
+            tagOlds = commonTask.tagOlds,
             isBlocked = commonTask.blockedNote != null
         )
 
