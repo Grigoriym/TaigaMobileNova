@@ -34,6 +34,8 @@ doctor {
 allprojects {
     tasks.withType<Test> {
         failFast = true
+        // https://github.com/gradle/gradle/issues/33619#issuecomment-2913519014
+        failOnNoDiscoveredTests = false
         reports {
             html.required.set(true)
         }
@@ -48,7 +50,7 @@ allprojects {
 
 subprojects {
     apply {
-        plugin("io.gitlab.arturbosch.detekt")
+        plugin("dev.detekt")
         plugin("org.jlleitschuh.gradle.ktlint")
         plugin("com.autonomousapps.dependency-analysis")
     }
