@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.wiki.data
 
-import com.grappim.taigamobile.core.api.AttachmentMapper
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
 import com.grappim.taigamobile.feature.workitem.data.wiki.WikiLinkMapper
@@ -15,7 +14,6 @@ import javax.inject.Inject
 class WikiRepositoryImpl @Inject constructor(
     private val wikiApi: WikiApi,
     private val taigaStorage: TaigaStorage,
-    private val attachmentMapper: AttachmentMapper,
     private val wikiPageMapper: WikiPageMapper,
     private val wikiLinkMapper: WikiLinkMapper
 ) : WikiRepository {
