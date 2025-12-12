@@ -14,6 +14,7 @@ value class CommonTaskPathPlural private constructor(val path: String) {
             CommonTaskType.Task -> "tasks"
             CommonTaskType.Epic -> "epics"
             CommonTaskType.Issue -> "issues"
+            CommonTaskType.Wiki -> "wiki"
         }
     )
 }
@@ -27,6 +28,7 @@ value class CommonTaskPathSingular private constructor(val path: String) {
             CommonTaskType.Task -> "task"
             CommonTaskType.Epic -> "epic"
             CommonTaskType.Issue -> "issue"
+            CommonTaskType.Wiki -> "wiki"
         }
     )
 }
@@ -48,4 +50,5 @@ fun transformTaskTypeForCopyLink(commonTaskType: CommonTaskType) = when (commonT
     CommonTaskType.Task -> PATH_TO_TASK
     CommonTaskType.Epic -> PATH_TO_EPIC
     CommonTaskType.Issue -> PATH_TO_ISSUE
+    CommonTaskType.Wiki -> "wiki"
 }

@@ -9,6 +9,8 @@ import kotlinx.collections.immutable.ImmutableList
 interface UsersRepository {
     suspend fun getMe(): UserDTO
     suspend fun getMeResult(): Result<UserDTO>
+
+    @Deprecated("use getUser")
     suspend fun getUserDTO(userId: Long): UserDTO
     suspend fun getUser(userId: Long): User
     suspend fun getUsersList(ids: List<Long>): ImmutableList<User>

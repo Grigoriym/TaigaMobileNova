@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import timber.log.Timber
 
 class WorkItemAttachmentsDelegateImpl(
     private val commonTaskType: CommonTaskType,
@@ -34,7 +35,7 @@ class WorkItemAttachmentsDelegateImpl(
         uri: Uri?,
         doOnPreExecute: (() -> Unit)?,
         doOnSuccess: (() -> Unit)?,
-        doOnError: (Throwable) -> Unit
+        doOnError: suspend (Throwable) -> Unit
     ) {
         _attachmentsState.update {
             it.copy(areAttachmentsLoading = true)
@@ -69,6 +70,7 @@ class WorkItemAttachmentsDelegateImpl(
                 )
             }
         }.onFailure { error ->
+            Timber.e(error)
             _attachmentsState.update {
                 it.copy(areAttachmentsLoading = false)
             }
@@ -80,7 +82,7 @@ class WorkItemAttachmentsDelegateImpl(
         attachment: Attachment,
         doOnPreExecute: (() -> Unit)?,
         doOnSuccess: (() -> Unit)?,
-        doOnError: (Throwable) -> Unit
+        doOnError: suspend (Throwable) -> Unit
     ) {
         doOnPreExecute?.invoke()
         _attachmentsState.update {
@@ -102,6 +104,7 @@ class WorkItemAttachmentsDelegateImpl(
                 )
             }
         }.onFailure { error ->
+            Timber.e(error)
             _attachmentsState.update {
                 it.copy(areAttachmentsLoading = false)
             }

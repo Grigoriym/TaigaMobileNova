@@ -7,6 +7,7 @@ import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 
 @Suppress("FunctionName")
+@Deprecated("remove it")
 fun LazyListScope.Description(description: String) {
     item {
         if (description.isNotEmpty()) {

@@ -13,8 +13,8 @@ import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.SnackbarDelegate
-import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

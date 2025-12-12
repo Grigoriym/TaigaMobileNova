@@ -29,18 +29,6 @@ fun WikiPageDropDownMenuWidget(state: WikiPageState, modifier: Modifier = Modifi
             DropdownMenuItem(
                 onClick = {
                     state.setDropdownMenuExpanded(false)
-                    state.setEditPageVisible(true)
-                },
-                text = {
-                    Text(
-                        text = stringResource(RString.edit),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            )
-            DropdownMenuItem(
-                onClick = {
-                    state.setDropdownMenuExpanded(false)
                     state.setDeleteAlertVisible(true)
                 },
                 text = {

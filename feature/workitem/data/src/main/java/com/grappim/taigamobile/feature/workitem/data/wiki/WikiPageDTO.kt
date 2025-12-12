@@ -1,13 +1,13 @@
-package com.grappim.taigamobile.feature.wiki.domain
+package com.grappim.taigamobile.feature.workitem.data.wiki
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.time.LocalDateTime
 
 @JsonClass(generateAdapter = true)
-data class WikiPage(
+data class WikiPageDTO(
     val id: Long,
-    val version: Int,
+    val version: Long,
     val content: String,
     val editions: Long,
     @Json(name = "created_date") val cratedDate: LocalDateTime,
@@ -19,4 +19,4 @@ data class WikiPage(
 )
 
 @JsonClass(generateAdapter = true)
-data class WikiLink(@Json(name = "href") val ref: String, val id: Long, val order: Long, val title: String)
+data class WikiLinkDTO(@Json(name = "href") val ref: String, val id: Long, val order: Long, val title: String)

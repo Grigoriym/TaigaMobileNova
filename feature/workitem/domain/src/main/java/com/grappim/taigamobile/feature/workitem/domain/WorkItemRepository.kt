@@ -55,4 +55,6 @@ interface WorkItemRepository {
     suspend fun getWorkItemAttachments(workItemId: Long, commonTaskType: CommonTaskType): ImmutableList<Attachment>
 
     suspend fun deleteWorkItem(workItemId: Long, commonTaskType: CommonTaskType)
+
+    suspend fun patchWikiPage(pageId: Long, version: Long, payload: ImmutableMap<String, Any?>): PatchedData
 }

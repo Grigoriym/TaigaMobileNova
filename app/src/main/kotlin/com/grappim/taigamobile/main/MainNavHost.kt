@@ -387,7 +387,7 @@ fun MainNavHost(
 
         composable<WikiNavDestination> {
             WikiListScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 goToWikiCreatePage = {
                     navController.navigate(route = WikiCreatePageNavDestination)
                 },
@@ -399,21 +399,28 @@ fun MainNavHost(
 
         composable<WikiCreatePageNavDestination> {
             WikiCreatePageScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 goToWikiPage = {
-                    navController.popBackStack()
-                    navController.navigateToWikiPage(it)
+                    navController.navigateToWikiPage(
+                        slug = it,
+                        popUpToRoute = WikiCreatePageNavDestination
+                    )
                 }
             )
         }
 
         composable<WikiPageNavDestination> {
             WikiPageScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 goToProfile = { userId ->
                     navController.navigateToProfileScreen(userId)
                 },
-                goBack = navController::popBackStack
+                goBack = navController::popBackStack,
+                goToEditDescription = { description: String ->
+                    navController.navigateToWorkItemEditDescription(
+                        description = description
+                    )
+                }
             )
         }
 

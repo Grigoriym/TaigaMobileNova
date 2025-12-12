@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import timber.log.Timber
 
 class WorkItemDescriptionDelegateImpl(
     private val commonTaskType: CommonTaskType,
@@ -19,13 +20,54 @@ class WorkItemDescriptionDelegateImpl(
     override val descriptionState: StateFlow<WorkItemDescriptionState> =
         _descriptionState.asStateFlow()
 
+    /**
+     * Since wiki is different from Work Items, it has its own logic
+     */
+    override suspend fun handleWikiContentUpdate(
+        newDescription: String,
+        version: Long,
+        pageId: Long,
+        doOnPreExecute: (() -> Unit)?,
+        doOnSuccess: ((newVersion: Long) -> Unit)?,
+        doOnError: suspend (Throwable) -> Unit
+    ) {
+        if (_descriptionState.value.currentDescription == newDescription) {
+            return
+        }
+        doOnPreExecute?.invoke()
+        _descriptionState.update {
+            it.copy(isDescriptionLoading = true)
+        }
+
+        resultOf {
+            workItemRepository.patchWikiPage(
+                version = version,
+                pageId = pageId,
+                payload = patchDataGenerator.getWikiContent(newDescription)
+            )
+        }.onSuccess { patchedData ->
+            doOnSuccess?.invoke(patchedData.newVersion)
+            setInitialDescription(newDescription)
+
+            _descriptionState.update {
+                it.copy(isDescriptionLoading = false)
+            }
+        }.onFailure { error ->
+            Timber.e(error)
+            _descriptionState.update {
+                it.copy(isDescriptionLoading = false)
+            }
+            doOnError(error)
+        }
+    }
+
     override suspend fun handleDescriptionUpdate(
         newDescription: String,
         version: Long,
         workItemId: Long,
         doOnPreExecute: (() -> Unit)?,
         doOnSuccess: ((newVersion: Long) -> Unit)?,
-        doOnError: (Throwable) -> Unit
+        doOnError: suspend (Throwable) -> Unit
     ) {
         if (_descriptionState.value.currentDescription == newDescription) {
             return
@@ -51,6 +93,7 @@ class WorkItemDescriptionDelegateImpl(
                 it.copy(isDescriptionLoading = false)
             }
         }.onFailure { error ->
+            Timber.e(error)
             _descriptionState.update {
                 it.copy(isDescriptionLoading = false)
             }

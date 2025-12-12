@@ -12,7 +12,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -28,17 +27,15 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.SubscribeOnError
-import com.grappim.taigamobile.utils.ui.SuccessResult
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun WikiCreatePageScreen(
-    viewModel: WikiCreatePageViewModel = hiltViewModel(),
-    showMessage: (message: Int) -> Unit = {},
-    goToWikiPage: (slug: String) -> Unit
+    showSnackbar: (NativeText) -> Unit,
+    goToWikiPage: (slug: String) -> Unit,
+    viewModel: WikiCreatePageViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -61,29 +58,27 @@ fun WikiCreatePageScreen(
         )
     }
 
-    val creationResult by viewModel.creationResult.collectAsState()
-    creationResult.SubscribeOnError(showMessage)
-
-    creationResult.takeIf { it is SuccessResult }?.data?.let {
-        LaunchedEffect(Unit) {
-            goToWikiPage(it.slug)
+    ObserveAsEvents(viewModel.uiError) { error ->
+        if (error !is NativeText.Empty) {
+            showSnackbar(error)
         }
     }
 
-    WikiCreatePageScreenContent(
-        state = state,
-        isLoading = creationResult is LoadingResult
-    )
+    ObserveAsEvents(viewModel.creationResult) { result ->
+        goToWikiPage(result.slug)
+    }
+
+    WikiCreatePageScreenContent(state = state)
 }
 
 @Composable
-fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier = Modifier, isLoading: Boolean = false) {
+fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .imePadding()
     ) {
-        if (isLoading) {
+        if (state.isLoading) {
             LoadingDialog()
         }
 
@@ -108,7 +103,8 @@ fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier =
             TextFieldWithHint(
                 hintId = RString.description_hint,
                 value = state.description,
-                onValueChange = { state.setDescription(it) }
+                onValueChange = { state.setDescription(it) },
+                modifier = Modifier.fillMaxSize()
             )
         }
     }
@@ -118,10 +114,6 @@ fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier =
 @Composable
 private fun WikiCreatePageScreenPreview() {
     WikiCreatePageScreenContent(
-        state = WikiCreatePageState(
-            setTitle = {},
-            setDescription = {},
-            onCreateWikiPage = {}
-        )
+        state = WikiCreatePageState()
     )
 }

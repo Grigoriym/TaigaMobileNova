@@ -3,6 +3,7 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.core.domain.AttachmentDTO
 import com.grappim.taigamobile.core.domain.CustomAttributeResponseDTO
 import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
+import com.grappim.taigamobile.feature.workitem.data.wiki.WikiPageDTO
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import okhttp3.MultipartBody
@@ -89,4 +90,9 @@ interface WorkItemApi {
         @Path("id") taskId: Long,
         @Body payload: Map<String, Any?>
     ): CustomAttributesValuesResponseDTO
+
+    // wiki
+    @PATCH("wiki/{id}")
+    @JvmSuppressWildcards
+    suspend fun patchWikiPage(@Path("id") pageId: Long, @Body payload: Map<String, Any?>): WikiPageDTO
 }

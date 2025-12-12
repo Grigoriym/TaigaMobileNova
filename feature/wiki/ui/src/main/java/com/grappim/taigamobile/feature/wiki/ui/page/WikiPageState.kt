@@ -1,25 +1,30 @@
 package com.grappim.taigamobile.feature.wiki.ui.page
 
-import androidx.compose.ui.text.input.TextFieldValue
-import com.grappim.taigamobile.core.domain.UserDTO
-import com.grappim.taigamobile.feature.wiki.domain.WikiPage
+import android.net.Uri
+import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiLink
+import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
 import com.grappim.taigamobile.utils.ui.NativeText
 
 data class WikiPageState(
     val toolbarTitle: NativeText = NativeText.Empty,
 
-    val userDTO: UserDTO? = null,
-    val page: WikiPage? = null,
+    val user: User? = null,
+    val currentPage: WikiPage? = null,
+    val originalPage: WikiPage? = null,
+    val pageSlug: String,
+    val link: WikiLink? = null,
 
     val isDeleteAlertVisible: Boolean = false,
-    val setDeleteAlertVisible: (Boolean) -> Unit,
+    val setDeleteAlertVisible: (Boolean) -> Unit = {},
 
     val isDropdownMenuExpanded: Boolean = false,
-    val setDropdownMenuExpanded: (Boolean) -> Unit,
+    val setDropdownMenuExpanded: (Boolean) -> Unit = {},
 
-    val isEditPageVisible: Boolean = false,
-    val setEditPageVisible: (Boolean) -> Unit,
+    val onDeleteConfirm: () -> Unit = {},
+    val isLoading: Boolean = false,
 
-    val description: TextFieldValue = TextFieldValue(""),
-    val setDescription: (TextFieldValue) -> Unit
+    val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
+    val onAttachmentRemove: (Attachment) -> Unit = {}
 )

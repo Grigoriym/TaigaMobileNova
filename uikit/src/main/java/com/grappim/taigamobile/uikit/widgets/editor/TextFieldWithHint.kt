@@ -33,9 +33,6 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 
-/**
- * You've read it right. Text field. With hint.
- */
 @Composable
 fun TextFieldWithHint(
     @StringRes hintId: Int,

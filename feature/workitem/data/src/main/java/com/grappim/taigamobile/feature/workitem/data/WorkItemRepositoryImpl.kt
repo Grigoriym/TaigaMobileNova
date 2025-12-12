@@ -197,4 +197,13 @@ class WorkItemRepositoryImpl @Inject constructor(
             taskPath = WorkItemPathPlural(commonTaskType)
         )
     }
+
+    override suspend fun patchWikiPage(pageId: Long, version: Long, payload: ImmutableMap<String, Any?>): PatchedData {
+        val editedMap = payload.toPersistentMap().put("version", version)
+        val response = workItemApi.patchWikiPage(
+            pageId = pageId,
+            payload = editedMap
+        )
+        return patchedDataMapper.fromWiki(response)
+    }
 }
