@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.wiki.data
 
 import com.grappim.taigamobile.core.api.AttachmentMapper
-import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
 import com.grappim.taigamobile.feature.workitem.data.wiki.WikiLinkMapper
@@ -11,10 +10,6 @@ import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.first
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.InputStream
 import javax.inject.Inject
 
 class WikiRepositoryImpl @Inject constructor(
@@ -43,41 +38,6 @@ class WikiRepositoryImpl @Inject constructor(
     override suspend fun deleteWikiPage(pageId: Long) {
         wikiApi.deleteWikiPage(
             pageId = pageId
-        )
-    }
-
-    override suspend fun getPageAttachments(pageId: Long): ImmutableList<Attachment> {
-        val attachments = wikiApi.getPageAttachments(
-            pageId = pageId,
-            projectId = taigaStorage.currentProjectIdFlow.first()
-        )
-        return attachmentMapper.toDomain(attachments)
-    }
-
-    override suspend fun addPageAttachment(pageId: Long, fileName: String, inputStream: InputStream) {
-        val file = MultipartBody.Part.createFormData(
-            name = "attached_file",
-            filename = fileName,
-            body = inputStream.readBytes().toRequestBody("*/*".toMediaType())
-        )
-        val project = MultipartBody.Part.createFormData(
-            "project",
-            taigaStorage.currentProjectIdFlow.first().toString()
-        )
-        val objectId = MultipartBody.Part.createFormData("object_id", pageId.toString())
-
-        inputStream.use {
-            wikiApi.uploadPageAttachment(
-                file = file,
-                project = project,
-                objectId = objectId
-            )
-        }
-    }
-
-    override suspend fun deletePageAttachment(attachmentId: Long) {
-        wikiApi.deletePageAttachment(
-            attachmentId = attachmentId
         )
     }
 

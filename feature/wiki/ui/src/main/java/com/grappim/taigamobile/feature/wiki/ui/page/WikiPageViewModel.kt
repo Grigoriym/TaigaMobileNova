@@ -41,7 +41,7 @@ class WikiPageViewModel @Inject constructor(
     private val taigaStorage: TaigaStorage,
     private val fileUriManager: FileUriManager,
     private val patchDataGenerator: PatchDataGenerator,
-    private val workItemEditShared: WorkItemEditShared,
+    workItemEditShared: WorkItemEditShared,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(),
     UiErrorDelegate by UiErrorDelegateImpl(),
