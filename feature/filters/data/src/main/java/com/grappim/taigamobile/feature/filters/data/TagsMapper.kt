@@ -15,8 +15,7 @@ class TagsMapper @Inject constructor(@IoDispatcher private val ioDispatcher: Cor
             .map { tag ->
                 Tag(
                     name = tag.getOrNull(0).orEmpty(),
-                    color = tag.getOrNull(1).fixNullColor(),
-                    count = tag.getOrNull(2)?.toLong() ?: 0
+                    color = tag.getOrNull(1).fixNullColor()
                 )
             }.toImmutableList()
     }

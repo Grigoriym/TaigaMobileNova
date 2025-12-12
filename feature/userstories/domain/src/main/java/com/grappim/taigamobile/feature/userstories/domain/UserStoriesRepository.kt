@@ -15,7 +15,8 @@ interface UserStoriesRepository {
     fun getUserStoriesPaging(filters: FiltersDataDTO): Flow<PagingData<CommonTask>>
 
     fun refreshUserStories()
-    suspend fun getAllUserStories(): List<CommonTaskExtended>
+
+//    suspend fun getAllUserStoriesOld(): List<CommonTaskExtended>
     suspend fun getBacklogUserStories(page: Int, filters: FiltersDataDTO): List<CommonTask>
 
     suspend fun getUserStoriesOld(
@@ -28,7 +29,7 @@ interface UserStoriesRepository {
         sprint: Any? = null
     ): List<CommonTask>
 
-    suspend fun getUserStories(epicId: Long): ImmutableList<WorkItem>
+    suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem>
 
     suspend fun createUserStory(
         project: Long,
@@ -41,6 +42,8 @@ interface UserStoriesRepository {
     suspend fun getUserStoryByRefOld(projectId: Long, ref: Int): CommonTask
 
     suspend fun getUserStory(id: Long): UserStory
+
+    suspend fun getUserStories(): ImmutableList<UserStory>
 
     suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): PatchedData
 

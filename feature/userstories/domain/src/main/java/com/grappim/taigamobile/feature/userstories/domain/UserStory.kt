@@ -35,5 +35,7 @@ data class UserStory(
     val dueDate: LocalDate?,
     val dueDateStatus: DueDateStatus?,
     val copyLinkUrl: String,
-    val userStoryEpics: ImmutableList<UserStoryEpic>
+    val userStoryEpics: ImmutableList<UserStoryEpic>,
+
+    val swimlane: Long?
 )

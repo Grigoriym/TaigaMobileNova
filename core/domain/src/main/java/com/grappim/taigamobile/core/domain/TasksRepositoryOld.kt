@@ -23,7 +23,7 @@ interface TasksRepositoryOld {
     suspend fun editDueDate(commonTask: CommonTaskExtended, date: LocalDate?)
     suspend fun editCommonTaskBasicInfo(commonTask: CommonTaskExtended, title: String, description: String)
 
-    suspend fun editTags(commonTask: CommonTaskExtended, tags: List<Tag>)
+    suspend fun editTags(commonTask: CommonTaskExtended, tagOlds: List<TagOld>)
     suspend fun editUserStorySwimlane(commonTask: CommonTaskExtended, swimlaneId: Long?)
     suspend fun editEpicColor(commonTask: CommonTaskExtended, color: String)
     suspend fun editBlocked(commonTask: CommonTaskExtended, blockedNote: String?)

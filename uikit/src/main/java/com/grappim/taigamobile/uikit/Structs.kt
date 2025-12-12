@@ -14,7 +14,7 @@ import com.grappim.taigamobile.core.domain.EpicShortInfo
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.SwimlaneDTO
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.core.navigation.NavigateToTask
 import java.io.InputStream
@@ -56,7 +56,7 @@ class EditActions(
     val editBasicInfo: SimpleEditAction<Pair<String, String>> = SimpleEditAction(),
     val editCustomField: SimpleEditAction<Pair<CustomField, CustomFieldValue?>> =
         SimpleEditAction(),
-    val editTags: SimpleEditAction<Tag> = SimpleEditAction(),
+    val editTags: SimpleEditAction<TagOld> = SimpleEditAction(),
     val editDueDate: EditAction<LocalDate, Unit> = EditAction(),
     val editEpicColor: SimpleEditAction<String> = SimpleEditAction(),
     val deleteTask: EmptyEditAction = EmptyEditAction(),

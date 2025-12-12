@@ -4,7 +4,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 
 interface FiltersRepository {
@@ -23,8 +23,8 @@ interface FiltersRepository {
         isCommonTaskFromBacklog: Boolean = false
     ): Result<FiltersDataDTO>
 
-    suspend fun getStatuses(commonTaskType: CommonTaskType): List<StatusOld>
+    suspend fun getStatusesOld(commonTaskType: CommonTaskType): List<StatusOld>
     suspend fun getStatusByType(commonTaskType: CommonTaskType, statusType: StatusType): List<StatusOld>
 
-    suspend fun getAllTags(commonTaskType: CommonTaskType): List<Tag>
+    suspend fun getAllTags(commonTaskType: CommonTaskType): List<TagOld>
 }

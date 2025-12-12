@@ -37,7 +37,7 @@ data class CommonTask(
     val projectDTOInfo: ProjectDTO,
     val taskType: CommonTaskType,
     val isClosed: Boolean,
-    val tags: List<Tag> = emptyList(),
+    val tagOlds: List<TagOld> = emptyList(),
     // colored indicators (for stories and epics)
     val colors: List<String> = emptyList(),
     val blockedNote: String? = null
@@ -77,7 +77,7 @@ data class CommonTaskExtended(
     val projectSlug: String,
     val version: Long,
     val epicsShortInfo: List<EpicShortInfo> = emptyList(),
-    val tags: List<Tag> = emptyList(),
+    val tagOlds: List<TagOld> = emptyList(),
     val swimlaneDTO: SwimlaneDTO?,
     val dueDate: LocalDate?,
     val dueDateStatusDTO: DueDateStatusDTO?,

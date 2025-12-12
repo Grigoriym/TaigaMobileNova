@@ -61,7 +61,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.utils.clickableUnindicated
 import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.list.CommonTaskItem
-import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
+import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitleOld
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import com.grappim.taigamobile.utils.ui.toColor
 import java.time.LocalDateTime
@@ -302,12 +302,12 @@ private fun UserStoryItem(
             .fillMaxWidth()
             .weight(0.8f, fill = false)
     ) {
-        CommonTaskTitle(
+        CommonTaskTitleOld(
             ref = userStory.ref,
             title = userStory.title,
             indicatorColorsHex = userStory.colors,
             isInactive = userStory.isClosed,
-            tags = userStory.tags,
+            tagOlds = userStory.tagOlds,
             isBlocked = userStory.blockedNote != null,
             modifier = Modifier
                 .padding(top = 4.dp)
@@ -398,12 +398,12 @@ private fun TaskItem(task: CommonTask, onTaskClick: () -> Unit) = Surface(
             .padding(12.dp)
     ) {
         Column(Modifier.weight(0.8f, fill = false)) {
-            CommonTaskTitle(
+            CommonTaskTitleOld(
                 ref = task.ref,
                 title = task.title,
                 indicatorColorsHex = task.colors,
                 isInactive = task.isClosed,
-                tags = task.tags,
+                tagOlds = task.tagOlds,
                 isBlocked = task.blockedNote != null
             )
 

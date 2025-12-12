@@ -73,8 +73,7 @@ class FiltersMapper @Inject constructor(@param:DefaultDispatcher private val dis
             tags = response.tags.orEmpty().map { dto ->
                 Tag(
                     name = dto.name,
-                    color = dto.color.fixNullColor(),
-                    count = dto.count
+                    color = dto.color.fixNullColor()
                 )
             }.toImmutableList(),
             types = response.types.orEmpty().map { dto ->

@@ -5,7 +5,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.utils.ui.fixNullColor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +30,7 @@ fun CommonTaskResponse.toCommonTask(commonTaskType: CommonTaskType) = CommonTask
     taskType = commonTaskType,
     colors = color?.let { listOf(it) } ?: epics.orEmpty().map { it.color },
     isClosed = isClosed,
-    tags = tags.orEmpty().map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
+    tagOlds = tags.orEmpty().map { TagOld(name = it[0]!!, color = it[1].fixNullColor()) },
     blockedNote = blockedNote.takeIf { isBlocked }
 )
 

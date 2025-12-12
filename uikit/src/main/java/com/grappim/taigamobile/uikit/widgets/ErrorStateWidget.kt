@@ -41,13 +41,6 @@ fun ErrorStateWidget(
             verticalArrangement = Arrangement.Center,
             modifier = Modifier.padding(16.dp)
         ) {
-            Icon(
-                imageVector = Icons.Default.Refresh,
-                contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = MaterialTheme.colorScheme.error
-            )
-
             Text(
                 text = message.asString(context),
                 style = MaterialTheme.typography.bodyLarge,

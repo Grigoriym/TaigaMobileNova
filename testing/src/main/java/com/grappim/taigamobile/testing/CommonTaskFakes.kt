@@ -5,7 +5,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.core.domain.TagOld
 import com.grappim.taigamobile.feature.workitem.data.StatusExtraInfoDTO
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
 import java.time.LocalDate
@@ -64,9 +64,9 @@ fun getCommonTask(newId: Long = getRandomLong()): CommonTask = CommonTask(
     projectDTOInfo = getProjectDTO(),
     taskType = CommonTaskType.Issue,
     isClosed = getRandomBoolean(),
-    tags = listOf(
-        Tag(name = getRandomString(), color = "#FF9800"),
-        Tag(name = getRandomString(), color = "#4CAF50")
+    tagOlds = listOf(
+        TagOld(name = getRandomString(), color = "#FF9800"),
+        TagOld(name = getRandomString(), color = "#4CAF50")
     ),
     colors = listOf("#E91E63", "#9C27B0"),
     blockedNote = getRandomString()
