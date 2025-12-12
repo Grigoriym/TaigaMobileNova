@@ -14,7 +14,7 @@ jacocoAggregation = "2.4.7"
 composeRules = "0.4.28"
 
 agp = "8.13.1"
-androidTools = "31.13.1"
+androidTools = "31.13.2"
 androidDesugarJdkLibs = "2.1.5"
 
 kotlin = "2.2.21"
