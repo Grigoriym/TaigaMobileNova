@@ -10,7 +10,7 @@ import com.grappim.taigamobile.core.domain.CommentDTO
 import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CustomField
 import com.grappim.taigamobile.core.domain.CustomFieldValue
-import com.grappim.taigamobile.core.domain.EpicShortInfo
+import com.grappim.taigamobile.core.domain.EpicShortInfoDTO
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.StatusOld
 import com.grappim.taigamobile.core.domain.SwimlaneDTO
@@ -48,7 +48,7 @@ class EditActions(
     val editPriority: SimpleEditAction<StatusOld> = SimpleEditAction(),
     val editSwimlaneDTO: SimpleEditAction<SwimlaneDTO> = SimpleEditAction(),
     val editSprint: SimpleEditAction<Sprint> = SimpleEditAction(),
-    val editEpics: EditAction<CommonTask, EpicShortInfo> = EditAction(),
+    val editEpics: EditAction<CommonTask, EpicShortInfoDTO> = EditAction(),
     val editAttachments: EditAction<Pair<String, InputStream>, AttachmentDTO> = EditAction(),
     val editAssignees: SimpleEditAction<UserDTO> = SimpleEditAction(),
     val editWatchers: SimpleEditAction<UserDTO> = SimpleEditAction(),

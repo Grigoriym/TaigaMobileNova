@@ -28,9 +28,9 @@ data class CommonTaskResponse(
     val watchers: List<Long>?,
     val owner: Long?,
     val description: String?,
-    val epics: List<EpicShortInfo>?,
+    val epics: List<EpicShortInfoDTO>?,
     @Json(name = "user_story_extra_info")
-    val userStoryExtraInfo: UserStoryShortInfo?,
+    val userStoryExtraInfo: UserStoryShortInfoDTO?,
     val version: Long,
     @Json(name = "is_closed")
     val isClosed: Boolean,

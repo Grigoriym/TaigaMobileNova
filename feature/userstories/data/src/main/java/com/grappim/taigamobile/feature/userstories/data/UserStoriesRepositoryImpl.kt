@@ -14,11 +14,8 @@ import com.grappim.taigamobile.core.domain.commaString
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.domain.tagsCommaString
 import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.data.StatusMapper
 import com.grappim.taigamobile.feature.filters.data.TagsMapper
-import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
-import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
@@ -40,9 +37,6 @@ private val userStoryPlural = WorkItemPathPlural(CommonTaskType.UserStory)
 class UserStoriesRepositoryImpl @Inject constructor(
     private val userStoriesApi: UserStoriesApi,
     private val taigaStorage: TaigaStorage,
-    private val filtersRepository: FiltersRepository,
-    private val swimlanesRepository: SwimlanesRepository,
-    private val serverStorage: ServerStorage,
     private val commonTaskMapper: CommonTaskMapper,
     private val userStoryMapper: UserStoryMapper,
     private val workItemApi: WorkItemApi,
@@ -82,28 +76,6 @@ class UserStoriesRepositoryImpl @Inject constructor(
         )
         return userStoryMapper.toListDomain(stories)
     }
-
-//    @Deprecated("remove it")
-//    override suspend fun getAllUserStoriesOld() = withIO {
-//        val filters = async { filtersRepository.getFiltersDataOld(CommonTaskType.UserStory) }
-//        val swimlanes = async { swimlanesRepository.getSwimlanes() }
-//
-//        userStoriesApi.getUserStoriesOld(project = taigaStorage.currentProjectIdFlow.first())
-//            .map { response ->
-//                response.toCommonTaskExtended(
-//                    commonTaskType = CommonTaskType.UserStory,
-//                    filters = filters.await(),
-//                    swimlaneDTOS = swimlanes.await(),
-//                    tags = response.tags.orEmpty()
-//                        .map { Tag(name = it[0]!!, color = it[1].fixNullColor()) },
-//                    url = "${serverStorage.server}/project/${response.projectDTOExtraInfo.slug}/${
-//                        transformTaskTypeForCopyLink(
-//                            CommonTaskType.UserStory
-//                        )
-//                    }/${response.ref}"
-//                )
-//            }
-//    }
 
     override suspend fun getBacklogUserStories(page: Int, filters: FiltersDataDTO) = handle404 {
         userStoriesApi.getUserStoriesOld(

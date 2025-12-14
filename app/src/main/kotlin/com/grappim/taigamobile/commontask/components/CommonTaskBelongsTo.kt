@@ -25,8 +25,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.domain.CommonTaskExtended
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.EpicShortInfo
-import com.grappim.taigamobile.core.domain.UserStoryShortInfo
+import com.grappim.taigamobile.core.domain.EpicShortInfoDTO
+import com.grappim.taigamobile.core.domain.UserStoryShortInfoDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.EditActions
 import com.grappim.taigamobile.uikit.NavigationActions
@@ -84,7 +84,7 @@ fun LazyListScope.CommonTaskBelongsTo(
 }
 
 @Composable
-private fun EpicItemWithAction(epic: EpicShortInfo, onClick: () -> Unit, onRemoveClick: () -> Unit) = Row(
+private fun EpicItemWithAction(epic: EpicShortInfoDTO, onClick: () -> Unit, onRemoveClick: () -> Unit) = Row(
     verticalAlignment = Alignment.CenterVertically,
     horizontalArrangement = Arrangement.SpaceBetween
 ) {
@@ -129,7 +129,7 @@ private fun EpicItemWithAction(epic: EpicShortInfo, onClick: () -> Unit, onRemov
 }
 
 @Composable
-private fun UserStoryItem(story: UserStoryShortInfo, onClick: () -> Unit) = CommonTaskTitle(
+private fun UserStoryItem(story: UserStoryShortInfoDTO, onClick: () -> Unit) = CommonTaskTitle(
     ref = story.ref,
     title = story.title,
     textColor = MaterialTheme.colorScheme.primary,

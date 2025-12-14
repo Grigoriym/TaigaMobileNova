@@ -65,6 +65,7 @@ dependencies {
 
     implementation(projects.feature.tasks.data)
     implementation(projects.feature.tasks.domain)
+    implementation(projects.feature.tasks.ui)
 
     implementation(projects.feature.scrum.ui)
 
