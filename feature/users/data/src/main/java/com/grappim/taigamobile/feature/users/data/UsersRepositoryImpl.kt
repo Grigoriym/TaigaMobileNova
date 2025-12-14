@@ -1,17 +1,19 @@
 package com.grappim.taigamobile.feature.users.data
 
-import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.domain.Stats
+import com.grappim.taigamobile.core.domain.StatsDTO
 import com.grappim.taigamobile.core.domain.TeamMemberDTO
-import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
 import com.grappim.taigamobile.feature.users.data.mappers.TeamMemberMapper
+import com.grappim.taigamobile.feature.users.data.mappers.UserMapper
+import com.grappim.taigamobile.feature.users.data.mappers.UserStatsMapper
 import com.grappim.taigamobile.feature.users.domain.TeamMember
+import com.grappim.taigamobile.feature.users.domain.User
+import com.grappim.taigamobile.feature.users.domain.UserStats
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -30,13 +32,21 @@ class UsersRepositoryImpl @Inject constructor(
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
     private val userMapper: UserMapper,
     private val session: Session,
-    private val teamMemberMapper: TeamMemberMapper
+    private val teamMemberMapper: TeamMemberMapper,
+    private val userStatsMapper: UserStatsMapper
 ) : UsersRepository {
 
-    override suspend fun getTeamMembers(generateMemberStats: Boolean): ImmutableList<TeamMember> = coroutineScope {
-        val currentProjectId = taigaStorage.currentProjectIdFlow.first()
+    override suspend fun getTeamMembers(generateMemberStats: Boolean): ImmutableList<TeamMember> =
+        getTeamMembersByProjectId(
+            projectId = taigaStorage.currentProjectIdFlow.first(),
+            generateMemberStats = generateMemberStats
+        )
 
-        val team = projectsApi.getProject(currentProjectId).members
+    override suspend fun getTeamMembersByProjectId(
+        projectId: Long,
+        generateMemberStats: Boolean
+    ): ImmutableList<TeamMember> = coroutineScope {
+        val team = projectsApi.getProject(projectId).members
         val stats: Map<Long, Int> = if (generateMemberStats) {
             retrieveMembersStats()
         } else {
@@ -67,7 +77,13 @@ class UsersRepositoryImpl @Inject constructor(
         session.userId in list.map { it.actualId }
     }
 
-    override suspend fun getUserStats(userId: Long): Stats = usersApi.getUserStats(userId)
+    @Deprecated("remove it")
+    override suspend fun getUserStatsOld(userId: Long): StatsDTO = usersApi.getUserStats(userId)
+
+    override suspend fun getUserStats(userId: Long): UserStats {
+        val response = usersApi.getUserStats(userId)
+        return userStatsMapper.toDomain(response)
+    }
 
     @Deprecated("remove it")
     override suspend fun getTeamByProjectIdOld(projectId: Long): Result<List<TeamMemberDTO>> = resultOf {

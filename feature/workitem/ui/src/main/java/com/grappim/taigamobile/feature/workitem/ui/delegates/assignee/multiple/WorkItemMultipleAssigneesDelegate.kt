@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple
 
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.users.domain.User
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf

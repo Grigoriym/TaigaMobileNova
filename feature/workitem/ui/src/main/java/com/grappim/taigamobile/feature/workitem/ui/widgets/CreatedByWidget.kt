@@ -8,7 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import java.time.LocalDateTime

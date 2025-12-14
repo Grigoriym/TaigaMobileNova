@@ -27,6 +27,9 @@ dependencies {
     implementation(projects.feature.workitem.data)
     implementation(projects.feature.workitem.domain)
 
+    implementation(projects.feature.users.domain)
+    implementation(projects.feature.users.data)
+
     implementation(libs.androidx.paging.common)
     implementation(libs.retrofit)
 

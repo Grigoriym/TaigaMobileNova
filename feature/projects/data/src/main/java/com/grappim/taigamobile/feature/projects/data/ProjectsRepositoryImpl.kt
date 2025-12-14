@@ -5,12 +5,17 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class ProjectsRepositoryImpl @Inject constructor(private val projectsApi: ProjectsApi, private val session: Session) :
-    ProjectsRepository {
+class ProjectsRepositoryImpl @Inject constructor(
+    private val projectsApi: ProjectsApi,
+    private val session: Session,
+    private val projectMapper: ProjectMapper
+) : ProjectsRepository {
     override suspend fun fetchProjects(query: String): Flow<PagingData<ProjectDTO>> = Pager(
         PagingConfig(
             pageSize = 10,
@@ -22,5 +27,9 @@ class ProjectsRepositoryImpl @Inject constructor(private val projectsApi: Projec
 
     override suspend fun getMyProjects(): List<ProjectDTO> = projectsApi.getProjects(memberId = session.userId)
 
-    override suspend fun getUserProjects(userId: Long): List<ProjectDTO> = projectsApi.getProjects(memberId = userId)
+    override suspend fun getUserProjectsOld(userId: Long): List<ProjectDTO> = projectsApi.getProjects(memberId = userId)
+    override suspend fun getUserProjects(userId: Long): ImmutableList<Project> {
+        val response = projectsApi.getProjects(memberId = userId)
+        return projectMapper.toListDomain(response)
+    }
 }

@@ -14,8 +14,9 @@ import kotlin.test.assertContentEquals
 class ProjectsRepositoryImplTest {
     private val projectsApi = mockk<ProjectsApi>()
     private val session = mockk<Session>()
+    private val projectMapper = mockk<ProjectMapper>()
 
-    private val sut: ProjectsRepository = ProjectsRepositoryImpl(projectsApi, session)
+    private val sut: ProjectsRepository = ProjectsRepositoryImpl(projectsApi, session, projectMapper)
 
     @Test
     fun `on getMyProjects return projects from api`() = runTest {
@@ -43,7 +44,7 @@ class ProjectsRepositoryImplTest {
 
         coEvery { projectsApi.getProjects(memberId = userId) } returns expected
 
-        val actual = sut.getUserProjects(userId)
+        val actual = sut.getUserProjectsOld(userId)
 
         assert(actual.isNotEmpty())
         assertContentEquals(expected, actual)

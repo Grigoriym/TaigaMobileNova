@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.epics.domain
 
-import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.projects.domain.Project
+import com.grappim.taigamobile.feature.users.domain.User
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDateTime

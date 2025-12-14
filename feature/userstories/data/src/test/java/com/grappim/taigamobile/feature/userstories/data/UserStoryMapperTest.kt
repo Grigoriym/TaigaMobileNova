@@ -1,12 +1,12 @@
 package com.grappim.taigamobile.feature.userstories.data
 
-import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.domain.DueDateStatus
 import com.grappim.taigamobile.core.domain.DueDateStatusDTO
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.data.StatusMapper
 import com.grappim.taigamobile.feature.filters.data.TagsMapper
 import com.grappim.taigamobile.feature.projects.data.ProjectMapper
+import com.grappim.taigamobile.feature.users.data.mappers.UserMapper
 import com.grappim.taigamobile.feature.workitem.data.DueDateStatusMapper
 import com.grappim.taigamobile.testing.getProject
 import com.grappim.taigamobile.testing.getRandomString

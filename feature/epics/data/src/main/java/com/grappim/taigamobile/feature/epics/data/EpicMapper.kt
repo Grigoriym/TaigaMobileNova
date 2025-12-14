@@ -1,8 +1,6 @@
 package com.grappim.taigamobile.feature.epics.data
 
-import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskResponse
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
@@ -11,6 +9,7 @@ import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.filters.data.StatusMapper
 import com.grappim.taigamobile.feature.filters.data.TagsMapper
 import com.grappim.taigamobile.feature.projects.data.ProjectMapper
+import com.grappim.taigamobile.feature.users.data.mappers.UserMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext

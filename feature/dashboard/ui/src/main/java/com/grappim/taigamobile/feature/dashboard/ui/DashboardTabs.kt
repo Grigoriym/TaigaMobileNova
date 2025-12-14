@@ -6,6 +6,5 @@ import com.grappim.taigamobile.uikit.utils.Tab
 
 enum class DashboardTabs(@StringRes override val titleId: Int) : Tab {
     WorkingOn(RString.working_on),
-    Watching(RString.watching),
-    MyProjects(RString.my_projects)
+    Watching(RString.watching)
 }

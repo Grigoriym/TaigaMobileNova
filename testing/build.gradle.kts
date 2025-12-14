@@ -16,6 +16,7 @@ dependencies {
     implementation(projects.feature.projects.domain)
     implementation(projects.feature.workitem.data)
     implementation(projects.feature.workitem.ui)
+    implementation(projects.feature.users.domain)
     implementation(projects.utils.ui)
 
     api(libs.junit4)

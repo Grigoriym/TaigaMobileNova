@@ -4,8 +4,8 @@ import android.net.Uri
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.Sprint
-import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
+import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI

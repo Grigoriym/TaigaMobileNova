@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.models
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.users.domain.User
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
