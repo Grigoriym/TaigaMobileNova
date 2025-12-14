@@ -48,6 +48,9 @@ import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
 import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
 import com.grappim.taigamobile.feature.sprint.ui.navigateToSprintScreen
+import com.grappim.taigamobile.feature.tasks.ui.TaskDetailsNavDestination
+import com.grappim.taigamobile.feature.tasks.ui.TaskDetailsScreen
+import com.grappim.taigamobile.feature.tasks.ui.navigateToTask
 import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
 import com.grappim.taigamobile.feature.teams.ui.TeamScreen
 import com.grappim.taigamobile.feature.userstories.ui.UserStoryDetailsNavDestination
@@ -146,6 +149,11 @@ fun MainNavHost(
                                 ref = ref
                             )
 
+                            CommonTaskType.Task -> navController.navigateToTask(
+                                taskId = id,
+                                ref = ref
+                            )
+
                             else -> navController.navigateToCommonTask(id, type, ref)
                         }
                     } else {
@@ -209,6 +217,33 @@ fun MainNavHost(
                 },
                 goToEditEpics = {
                     navController.navigateToWorkItemEditEpic()
+                }
+            )
+        }
+
+        composable<TaskDetailsNavDestination> {
+            TaskDetailsScreen(
+                showSnackbar = showSnackbar,
+                goBack = {
+                    navController.setUpdateDataOnBack()
+                    navController.popBackStack()
+                },
+                goToEditDescription = { description: String ->
+                    navController.navigateToWorkItemEditDescription(
+                        description = description
+                    )
+                },
+                goToEditTags = {
+                    navController.navigateToWorkItemEditTags()
+                },
+                goToProfile = { creatorId ->
+                    navController.navigateToProfileScreen(creatorId)
+                },
+                goToEditAssignee = {
+                    navController.navigateToWorkItemEditTeamMember()
+                },
+                goToEditWatchers = {
+                    navController.navigateToWorkItemEditTeamMember()
                 }
             )
         }
@@ -432,8 +467,34 @@ fun MainNavHost(
             SprintScreen(
                 showMessage = showMessage,
                 goBack = navController::popBackStack,
-                goToTaskScreen = { id, taskType, ref ->
-                    navController.navigateToCommonTask(id, taskType, ref)
+                goToTaskScreen = { id, type, ref ->
+                    if (isNewUiUsed) {
+                        when (type) {
+                            CommonTaskType.UserStory -> navController.navigateToUserStory(
+                                taskId = id,
+                                ref = ref
+                            )
+
+                            CommonTaskType.Epic -> navController.navigateToEpicDetails(
+                                epicId = id,
+                                ref = ref
+                            )
+
+                            CommonTaskType.Issue -> navController.navigateToIssueDetails(
+                                taskId = id,
+                                ref = ref
+                            )
+
+                            CommonTaskType.Task -> navController.navigateToTask(
+                                taskId = id,
+                                ref = ref
+                            )
+
+                            else -> navController.navigateToCommonTask(id, type, ref)
+                        }
+                    } else {
+                        navController.navigateToCommonTask(id, type, ref)
+                    }
                 },
                 goToCreateTask = { type, parentId, sprintId ->
                     navController.navigateToCreateTask(
@@ -472,7 +533,33 @@ fun MainNavHost(
                     )
                 },
                 navigateToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
+                    if (isNewUiUsed) {
+                        when (type) {
+                            CommonTaskType.UserStory -> navController.navigateToUserStory(
+                                taskId = id,
+                                ref = ref
+                            )
+
+                            CommonTaskType.Epic -> navController.navigateToEpicDetails(
+                                epicId = id,
+                                ref = ref
+                            )
+
+                            CommonTaskType.Issue -> navController.navigateToIssueDetails(
+                                taskId = id,
+                                ref = ref
+                            )
+
+                            CommonTaskType.Task -> navController.navigateToTask(
+                                taskId = id,
+                                ref = ref
+                            )
+
+                            else -> navController.navigateToCommonTask(id, type, ref)
+                        }
+                    } else {
+                        navController.navigateToCommonTask(id, type, ref)
+                    }
                 }
             )
         }

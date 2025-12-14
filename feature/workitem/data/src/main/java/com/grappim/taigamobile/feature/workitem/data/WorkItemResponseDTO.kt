@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.workitem.data
 
 import com.grappim.taigamobile.core.domain.DueDateStatusDTO
-import com.grappim.taigamobile.core.domain.EpicShortInfo
+import com.grappim.taigamobile.core.domain.EpicShortInfoDTO
 import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.core.domain.UserDTO
-import com.grappim.taigamobile.core.domain.UserStoryShortInfo
+import com.grappim.taigamobile.core.domain.UserStoryShortInfoDTO
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 import java.time.LocalDate
@@ -32,9 +32,9 @@ data class WorkItemResponseDTO(
     val watchers: List<Long>?,
     val owner: Long?,
     val description: String?,
-    val epics: List<EpicShortInfo>?,
+    val epics: List<EpicShortInfoDTO>?,
     @Json(name = "user_story_extra_info")
-    val userStoryExtraInfo: UserStoryShortInfo?,
+    val userStoryExtraInfo: UserStoryShortInfoDTO?,
     val version: Long,
     @Json(name = "is_closed")
     val isClosed: Boolean,

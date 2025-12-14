@@ -5,11 +5,8 @@ import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.data.StatusMapper
 import com.grappim.taigamobile.feature.filters.data.TagsMapper
-import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
-import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
@@ -36,9 +33,6 @@ class UserStoriesRepositoryImplTest {
 
     private val userStoriesApi: UserStoriesApi = mockk()
     private val taigaStorage: TaigaStorage = mockk()
-    private val filtersRepository: FiltersRepository = mockk()
-    private val swimlanesRepository: SwimlanesRepository = mockk()
-    private val serverStorage: ServerStorage = mockk()
     private val commonTaskMapper: CommonTaskMapper = mockk()
     private val userStoryMapper: UserStoryMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
@@ -57,9 +51,6 @@ class UserStoriesRepositoryImplTest {
         sut = UserStoriesRepositoryImpl(
             userStoriesApi = userStoriesApi,
             taigaStorage = taigaStorage,
-            filtersRepository = filtersRepository,
-            swimlanesRepository = swimlanesRepository,
-            serverStorage = serverStorage,
             commonTaskMapper = commonTaskMapper,
             userStoryMapper = userStoryMapper,
             workItemApi = workItemApi,

@@ -12,4 +12,6 @@ interface TasksRepository {
         project: Long? = null,
         sprint: Long? = null
     ): List<CommonTask>
+    suspend fun getTask(id: Long): Task
+    suspend fun deleteTask(id: Long)
 }

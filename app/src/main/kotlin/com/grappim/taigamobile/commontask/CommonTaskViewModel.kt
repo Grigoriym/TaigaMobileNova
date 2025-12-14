@@ -14,7 +14,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.CustomField
 import com.grappim.taigamobile.core.domain.CustomFieldValue
 import com.grappim.taigamobile.core.domain.CustomFields
-import com.grappim.taigamobile.core.domain.EpicShortInfo
+import com.grappim.taigamobile.core.domain.EpicShortInfoDTO
 import com.grappim.taigamobile.core.domain.FiltersDataDTO
 import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.StatusOld
@@ -473,7 +473,7 @@ class CommonTaskViewModel @Inject constructor(
         }
     }
 
-    fun unlinkFromEpic(epic: EpicShortInfo) = viewModelScope.launch {
+    fun unlinkFromEpic(epic: EpicShortInfoDTO) = viewModelScope.launch {
         linkToEpicResult.loadOrError(RString.permission_error) {
             epicsRepository.unlinkFromEpic(epic.id, commonTaskId)
             loadData().join()

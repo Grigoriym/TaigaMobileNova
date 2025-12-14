@@ -76,12 +76,12 @@ data class CommonTaskExtended(
     val description: String,
     val projectSlug: String,
     val version: Long,
-    val epicsShortInfo: List<EpicShortInfo> = emptyList(),
+    val epicsShortInfo: List<EpicShortInfoDTO> = emptyList(),
     val tagOlds: List<TagOld> = emptyList(),
     val swimlaneDTO: SwimlaneDTO?,
     val dueDate: LocalDate?,
     val dueDateStatusDTO: DueDateStatusDTO?,
-    val userStoryShortInfo: UserStoryShortInfo? = null,
+    val userStoryShortInfo: UserStoryShortInfoDTO? = null,
     val url: String,
     val blockedNote: String? = null,
 
@@ -95,14 +95,14 @@ data class CommonTaskExtended(
 )
 
 @JsonClass(generateAdapter = true)
-data class EpicShortInfo(val id: Long, @Json(name = "subject") val title: String, val ref: Int, val color: String)
+data class EpicShortInfoDTO(val id: Long, @Json(name = "subject") val title: String, val ref: Int, val color: String)
 
 @JsonClass(generateAdapter = true)
-data class UserStoryShortInfo(
+data class UserStoryShortInfoDTO(
     val id: Long,
     val ref: Int,
     @Json(name = "subject") val title: String,
-    val epics: List<EpicShortInfo>?
+    val epics: List<EpicShortInfoDTO>?
 ) {
     val epicColors get() = epics?.map { it.color }.orEmpty()
 }
