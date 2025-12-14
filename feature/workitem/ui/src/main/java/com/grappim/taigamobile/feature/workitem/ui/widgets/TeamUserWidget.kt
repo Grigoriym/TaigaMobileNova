@@ -22,7 +22,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

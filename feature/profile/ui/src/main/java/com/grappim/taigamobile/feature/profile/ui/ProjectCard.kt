@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.uikit.widgets.list
+package com.grappim.taigamobile.feature.profile.ui
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
@@ -27,13 +27,13 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
-fun ProjectCard(projectDTO: ProjectDTO, isCurrent: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+fun ProjectCard(project: Project, isCurrent: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -63,7 +63,7 @@ fun ProjectCard(projectDTO: ProjectDTO, isCurrent: Boolean, modifier: Modifier =
                     contentDescription = null,
                     placeholder = painterResource(RDrawable.default_avatar),
                     error = painterResource(RDrawable.default_avatar),
-                    model = projectDTO.avatarUrl
+                    model = project.avatarUrl
                 )
 
                 Spacer(Modifier.width(8.dp))
@@ -74,8 +74,8 @@ fun ProjectCard(projectDTO: ProjectDTO, isCurrent: Boolean, modifier: Modifier =
                         color = MaterialTheme.colorScheme.primary,
                         text = stringResource(
                             when {
-                                projectDTO.isOwner -> RString.project_owner
-                                projectDTO.isAdmin -> RString.project_admin
+                                project.isOwner -> RString.project_owner
+                                project.isAdmin -> RString.project_admin
                                 else -> RString.project_member
                             }
                         )
@@ -84,13 +84,13 @@ fun ProjectCard(projectDTO: ProjectDTO, isCurrent: Boolean, modifier: Modifier =
                     Spacer(Modifier.height(4.dp))
 
                     Text(
-                        text = projectDTO.name,
+                        text = project.name,
                         style = MaterialTheme.typography.bodyLarge
                     )
                 }
             }
 
-            projectDTO.description?.let {
+            project.description?.let {
                 Spacer(Modifier.height(4.dp))
                 Text(
                     text = it,
@@ -125,13 +125,13 @@ fun ProjectCard(projectDTO: ProjectDTO, isCurrent: Boolean, modifier: Modifier =
                         )
                     }
 
-                    Indicator(RDrawable.ic_favorite, projectDTO.fansCount)
+                    Indicator(RDrawable.ic_favorite, project.fansCount)
                     Spacer(Modifier.width(indicatorsSpacing))
-                    Indicator(RDrawable.ic_watch, projectDTO.watchersCount)
+                    Indicator(RDrawable.ic_watch, project.watchersCount)
                     Spacer(Modifier.width(indicatorsSpacing))
-                    Indicator(RDrawable.ic_team, projectDTO.members.size)
+                    Indicator(RDrawable.ic_team, project.members.size)
 
-                    if (projectDTO.isPrivate) {
+                    if (project.isPrivate) {
                         Spacer(Modifier.width(indicatorsSpacing))
                         Icon(
                             painter = painterResource(RDrawable.ic_key),

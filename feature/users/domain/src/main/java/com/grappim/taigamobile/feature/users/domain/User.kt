@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.core.domain
+package com.grappim.taigamobile.feature.users.domain
 
 data class User(
     val id: Long?,

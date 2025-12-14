@@ -3,6 +3,8 @@ package com.grappim.taigamobile.feature.projects.data
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.feature.projects.domain.Project
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -24,4 +26,7 @@ class ProjectMapper @Inject constructor(@IoDispatcher private val ioDispatcher: 
             isPrivate = dto.isPrivate
         )
     }
+
+    suspend fun toListDomain(dto: List<ProjectDTO>): ImmutableList<Project> =
+        dto.map { toProject(it) }.toImmutableList()
 }

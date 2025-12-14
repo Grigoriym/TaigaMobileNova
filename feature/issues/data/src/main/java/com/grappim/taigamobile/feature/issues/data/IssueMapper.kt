@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.issues.data
 
-import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
@@ -13,6 +12,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.Severity
 import com.grappim.taigamobile.feature.filters.domain.model.Type
 import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.projects.data.ProjectMapper
+import com.grappim.taigamobile.feature.users.data.mappers.UserMapper
 import com.grappim.taigamobile.feature.workitem.data.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
 import kotlinx.coroutines.CoroutineDispatcher

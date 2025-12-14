@@ -1,12 +1,12 @@
 package com.grappim.taigamobile.feature.userstories.data
 
 import com.grappim.taigamobile.core.api.CommonTaskMapper
-import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.data.StatusMapper
 import com.grappim.taigamobile.feature.filters.data.TagsMapper
+import com.grappim.taigamobile.feature.users.data.mappers.UserMapper
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi

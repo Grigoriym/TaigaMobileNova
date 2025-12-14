@@ -1,8 +1,8 @@
-package com.grappim.taigamobile.core.api
+package com.grappim.taigamobile.feature.users.data.mappers
 
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.core.domain.UserDTO
+import com.grappim.taigamobile.feature.users.domain.User
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

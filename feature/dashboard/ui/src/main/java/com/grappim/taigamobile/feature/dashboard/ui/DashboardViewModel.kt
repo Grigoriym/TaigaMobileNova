@@ -67,6 +67,7 @@ class DashboardViewModel @Inject constructor(
         }
     }
 
+    @Deprecated("let's temporarily turn it off since it can break stuff")
     fun changeCurrentProject(projectDTO: ProjectDTO) {
         viewModelScope.launch {
             projectDTO.apply {

@@ -3,8 +3,8 @@ package com.grappim.taigamobile.feature.epics.domain
 import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.Comment
 import com.grappim.taigamobile.core.domain.CustomFields
-import com.grappim.taigamobile.core.domain.User
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
+import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.ImmutableList
 

@@ -2,11 +2,8 @@ package com.grappim.taigamobile.feature.dashboard.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -14,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTask
@@ -25,7 +21,6 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPagerWidget
-import com.grappim.taigamobile.uikit.widgets.list.ProjectCard
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -62,8 +57,7 @@ fun DashboardScreen(
         navigateToTask = {
             viewModel.changeCurrentProject(it.projectDTOInfo)
             navigateToTaskScreen(it.id, it.taskType, it.ref)
-        },
-        changeCurrentProject = viewModel::changeCurrentProject
+        }
     )
 }
 
@@ -71,8 +65,7 @@ fun DashboardScreen(
 fun DashboardScreenContent(
     state: DashboardState,
     modifier: Modifier = Modifier,
-    navigateToTask: (CommonTask) -> Unit = { _ -> },
-    changeCurrentProject: (ProjectDTO) -> Unit = { _ -> }
+    navigateToTask: (CommonTask) -> Unit = { _ -> }
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -101,12 +94,6 @@ fun DashboardScreenContent(
                         commonTasks = state.watching,
                         navigateToTask = navigateToTask
                     )
-
-                    DashboardTabs.MyProjects -> MyProjects(
-                        myProjectDTOS = state.myProjectDTOS,
-                        currentProjectId = state.currentProjectId,
-                        changeCurrentProject = changeCurrentProject
-                    )
                 }
             }
         }
@@ -124,44 +111,6 @@ private fun TabContent(commonTasks: List<CommonTask>, navigateToTask: (CommonTas
             navigateToTask = { id, _, _ -> navigateToTask(commonTasks.find { it.id == id }!!) }
         )
     }
-
-@Composable
-private fun MyProjects(
-    myProjectDTOS: List<ProjectDTO>,
-    currentProjectId: Long,
-    changeCurrentProject: (ProjectDTO) -> Unit
-) {
-    LazyColumn(modifier = Modifier.fillMaxSize()) {
-        items(myProjectDTOS) {
-            ProjectCard(
-                projectDTO = it,
-                isCurrent = it.id == currentProjectId,
-                onClick = { changeCurrentProject(it) }
-            )
-
-            Spacer(Modifier.height(12.dp))
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun ProjectCardPreview() {
-    TaigaMobileTheme {
-        ProjectCard(
-            projectDTO = ProjectDTO(
-                id = 0,
-                name = "Name",
-                slug = "slug",
-                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-                    "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-                isPrivate = true
-            ),
-            isCurrent = true,
-            onClick = {}
-        )
-    }
-}
 
 @Preview(showBackground = true)
 @Composable

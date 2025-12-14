@@ -20,6 +20,8 @@ dependencies {
     implementation(projects.feature.workitem.domain)
     implementation(projects.feature.projects.data)
     implementation(projects.feature.projects.domain)
+    implementation(projects.feature.users.data)
+    implementation(projects.feature.users.domain)
 
     implementation(libs.retrofit)
 

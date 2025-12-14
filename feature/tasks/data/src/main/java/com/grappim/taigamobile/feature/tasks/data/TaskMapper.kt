@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.tasks.data
 
-import com.grappim.taigamobile.core.api.UserMapper
 import com.grappim.taigamobile.core.async.DefaultDispatcher
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
@@ -9,6 +8,7 @@ import com.grappim.taigamobile.feature.filters.data.StatusMapper
 import com.grappim.taigamobile.feature.filters.data.TagsMapper
 import com.grappim.taigamobile.feature.projects.data.ProjectMapper
 import com.grappim.taigamobile.feature.tasks.domain.Task
+import com.grappim.taigamobile.feature.users.data.mappers.UserMapper
 import com.grappim.taigamobile.feature.workitem.data.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.data.UserStoryShortInfoMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO

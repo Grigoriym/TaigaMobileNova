@@ -397,7 +397,7 @@ fun MainNavHost(
 
         composable<TeamNavDestination> {
             TeamScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 goToProfile = { userId ->
                     navController.navigateToProfileScreen(userId)
                 }
@@ -508,7 +508,7 @@ fun MainNavHost(
 
         composable<ProfileNavDestination> {
             ProfileScreen(
-                showMessage = showMessage
+                showSnackbar = showSnackbar
             )
         }
 

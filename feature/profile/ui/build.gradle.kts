@@ -20,6 +20,7 @@ dependencies {
 
     implementation(projects.feature.users.domain)
     implementation(projects.feature.projects.domain)
+    implementation(projects.feature.profile.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)

@@ -40,7 +40,7 @@ data class TeamMemberDTO(
 }
 
 @JsonClass(generateAdapter = true)
-data class Stats(
+data class StatsDTO(
     val roles: List<String> = emptyList(),
     @Json(name = "total_num_closed_userstories")
     val totalNumClosedUserStories: Int,

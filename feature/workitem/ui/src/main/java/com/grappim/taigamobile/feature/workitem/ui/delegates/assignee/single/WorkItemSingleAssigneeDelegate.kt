@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single
 
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.users.domain.User
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow

@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.profile.ui
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -19,7 +18,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,28 +28,23 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.ProjectDTO
-import com.grappim.taigamobile.core.domain.Stats
-import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.list.ProjectCard
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
+import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.utils.ui.ErrorResult
-import com.grappim.taigamobile.utils.ui.LoadingResult
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.SubscribeOnError
 
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel(), showMessage: (message: Int) -> Unit = {}) {
+fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel(), showSnackbar: (NativeText) -> Unit) {
     val topBarController = LocalTopBarConfig.current
-    LaunchedEffect(Unit) {
-        viewModel.onOpen()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
+    LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.profile),
@@ -60,49 +53,35 @@ fun ProfileScreen(viewModel: ProfileViewModel = hiltViewModel(), showMessage: (m
         )
     }
 
-    val currentUser by viewModel.currentUserDTO.collectAsState()
-    currentUser.SubscribeOnError(showMessage)
-    val currentUserStats by viewModel.currentUserStats.collectAsState()
-    currentUserStats.SubscribeOnError(showMessage)
-    val currentUserProjects by viewModel.currentUserProjects.collectAsState()
-    currentUserProjects.SubscribeOnError(showMessage)
-    val currentProjectId by viewModel.currentProjectId.collectAsState()
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
+        }
+    }
 
-    ProfileScreenContent(
-        currentUserDTO = currentUser.data,
-        currentUserStats = currentUserStats.data,
-        currentUserProjectDTOS = currentUserProjects.data ?: emptyList(),
-        currentProjectId = currentProjectId,
-        isLoading = currentUser is LoadingResult ||
-            currentUserStats is LoadingResult ||
-            currentUserProjects is LoadingResult,
-        isError = currentUser is ErrorResult ||
-            currentUserStats is ErrorResult ||
-            currentUserProjects is ErrorResult
-    )
+    TaigaLoadingDialog(isVisible = state.isLoading)
+
+    if (state.error.isNotEmpty()) {
+        ErrorStateWidget(
+            modifier = Modifier.fillMaxSize(),
+            message = state.error,
+            onRetry = {
+                state.onReload()
+            }
+        )
+    } else {
+        ProfileScreenContent(
+            state = state
+        )
+    }
 }
 
 @Composable
-fun ProfileScreenContent(
-    modifier: Modifier = Modifier,
-    currentUserDTO: UserDTO? = null,
-    currentUserStats: Stats? = null,
-    currentUserProjectDTOS: List<ProjectDTO> = emptyList(),
-    currentProjectId: Long = 0,
-    isLoading: Boolean = false,
-    isError: Boolean = false
-) = Column(
-    modifier = modifier.fillMaxSize(),
-    horizontalAlignment = Alignment.CenterHorizontally
-) {
-    if (isLoading || isError) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularLoaderWidget()
-        }
-    } else {
+fun ProfileScreenContent(state: ProfileState, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier.fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
         LazyColumn(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
@@ -115,13 +94,13 @@ fun ProfileScreenContent(
                     contentScale = ContentScale.Crop,
                     placeholder = painterResource(RDrawable.default_avatar),
                     error = painterResource(RDrawable.default_avatar),
-                    model = currentUserDTO?.avatarUrl
+                    model = state.user?.avatarUrl
                 )
 
                 Spacer(Modifier.height(16.dp))
 
                 Text(
-                    text = currentUserDTO?.fullName.orEmpty(),
+                    text = state.user?.fullName.orEmpty(),
                     style = MaterialTheme.typography.titleLarge
                 )
 
@@ -130,7 +109,7 @@ fun ProfileScreenContent(
                 Text(
                     text = stringResource(
                         RString.username_template
-                    ).format(currentUserDTO?.username.orEmpty()),
+                    ).format(state.user?.username.orEmpty()),
                     color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -140,7 +119,7 @@ fun ProfileScreenContent(
                 Spacer(Modifier.height(16.dp))
             }
 
-            currentUserStats?.roles?.let { roles ->
+            state.userStats?.roles?.let { roles ->
                 items(roles) {
                     Spacer(Modifier.height(2.dp))
                     Text(
@@ -159,15 +138,15 @@ fun ProfileScreenContent(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     ColumnTextData(
-                        currentUserStats?.totalNumProjects.toString(),
+                        state.userStats?.totalNumProjects.toString(),
                         stringResource(RString.projects)
                     )
                     ColumnTextData(
-                        currentUserStats?.totalNumClosedUserStories.toString(),
+                        state.userStats?.totalNumClosedUserStories.toString(),
                         stringResource(RString.closed_user_story)
                     )
                     ColumnTextData(
-                        currentUserStats?.totalNumContacts.toString(),
+                        state.userStats?.totalNumContacts.toString(),
                         stringResource(RString.contacts)
                     )
                 }
@@ -182,10 +161,10 @@ fun ProfileScreenContent(
                 Spacer(Modifier.height(12.dp))
             }
 
-            items(currentUserProjectDTOS) {
+            items(state.projects) {
                 ProjectCard(
-                    projectDTO = it,
-                    isCurrent = it.id == currentProjectId
+                    project = it,
+                    isCurrent = it.id == state.currentProjectId
                 )
                 Spacer(Modifier.height(12.dp))
             }
@@ -218,54 +197,7 @@ private fun ColumnTextData(titleText: String, bodyText: String) = Column(
 @Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
 @Composable
 private fun ProfileScreenPreview() {
-    val currentUserDTO = UserDTO(
-        id = 123,
-        fullName = null,
-        photo = null,
-        bigPhoto = null,
-        username = "@username",
-        name = "Cool user",
-        pk = null
-    )
-    val currentUserStats = Stats(
-        roles = listOf(
-            "Design",
-            "Front"
-        ),
-        totalNumClosedUserStories = 4,
-        totalNumContacts = 48,
-        totalNumProjects = 3
-    )
-    val currentUserProjectDTOS = listOf(
-        ProjectDTO(
-            id = 1,
-            name = "Cool project1",
-            slug = "slug",
-            description = "Cool description1",
-            fansCount = 10,
-            watchersCount = 3
-        ),
-        ProjectDTO(
-            id = 2,
-            name = "Cool project2",
-            slug = "slug",
-            description = "Cool description2",
-            fansCount = 1,
-            watchersCount = 4
-        ),
-        ProjectDTO(
-            id = 3,
-            name = "Cool project3",
-            slug = "slug",
-            description = "Cool description3",
-            fansCount = 99,
-            watchersCount = 0
-        )
-    )
-
     ProfileScreenContent(
-        currentUserDTO = currentUserDTO,
-        currentUserStats = currentUserStats,
-        currentUserProjectDTOS = currentUserProjectDTOS
+        state = ProfileState()
     )
 }
