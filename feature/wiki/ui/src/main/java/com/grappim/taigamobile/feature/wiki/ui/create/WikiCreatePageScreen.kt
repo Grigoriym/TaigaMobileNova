@@ -58,9 +58,9 @@ fun WikiCreatePageScreen(
         )
     }
 
-    ObserveAsEvents(viewModel.uiError) { error ->
-        if (error !is NativeText.Empty) {
-            showSnackbar(error)
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 

@@ -1,26 +1,25 @@
 package com.grappim.taigamobile.feature.userstories.data
 
-import com.grappim.taigamobile.core.api.CommonTaskMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.feature.filters.data.StatusMapper
-import com.grappim.taigamobile.feature.filters.data.TagsMapper
-import com.grappim.taigamobile.feature.users.data.mappers.UserMapper
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
+import com.grappim.taigamobile.feature.userstories.mapper.UserStoryMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemResponseDTO
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.testing.getCommonTask
-import com.grappim.taigamobile.testing.getCommonTaskResponse
+import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getRandomLong
+import com.grappim.taigamobile.testing.getUser
+import com.grappim.taigamobile.testing.getUserStory
+import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.just
 import io.mockk.mockk
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -33,14 +32,10 @@ class UserStoriesRepositoryImplTest {
 
     private val userStoriesApi: UserStoriesApi = mockk()
     private val taigaStorage: TaigaStorage = mockk()
-    private val commonTaskMapper: CommonTaskMapper = mockk()
     private val userStoryMapper: UserStoryMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
-
-    private val statusMapper: StatusMapper = mockk()
-    private val userMapper: UserMapper = mockk()
-    private val tagsMapper: TagsMapper = mockk()
+    private val workItemMapper: WorkItemMapper = mockk()
 
     private lateinit var sut: UserStoriesRepository
 
@@ -51,20 +46,17 @@ class UserStoriesRepositoryImplTest {
         sut = UserStoriesRepositoryImpl(
             userStoriesApi = userStoriesApi,
             taigaStorage = taigaStorage,
-            commonTaskMapper = commonTaskMapper,
             userStoryMapper = userStoryMapper,
             workItemApi = workItemApi,
             workItemRepository = workItemRepository,
-            statusMapper = statusMapper,
-            userMapper = userMapper,
-            tagsMapper = tagsMapper
+            workItemMapper = workItemMapper
         )
     }
 
     @Test
     fun `getUserStory should return correct UserStory`() = runTest {
         val userStoryId = getRandomLong()
-        val mockResponse = mockk<WorkItemResponseDTO>()
+        val mockResponse = getWorkItemResponseDTO()
         val expectedUserStory = mockk<UserStory>()
 
         coEvery {
@@ -123,7 +115,7 @@ class UserStoriesRepositoryImplTest {
 
     @Test
     fun `getUserStories should return correct data`() = runTest {
-        val responses = listOf(getCommonTaskResponse(), getCommonTaskResponse())
+        val responses = listOf(getWorkItemResponseDTO(), getWorkItemResponseDTO())
         val assignedId = getRandomLong()
         val isClosed = false
         val isDashboard = true
@@ -131,9 +123,13 @@ class UserStoriesRepositoryImplTest {
         val epicId = getRandomLong()
         val projectId = getRandomLong()
         val sprint = getRandomLong()
+        val expected = persistentListOf(
+            getUserStory(),
+            getUserStory()
+        )
 
         coEvery {
-            userStoriesApi.getUserStoriesOld(
+            userStoriesApi.getUserStories(
                 assignedId = assignedId,
                 isClosed = isClosed,
                 isDashboard = isDashboard,
@@ -143,16 +139,10 @@ class UserStoriesRepositoryImplTest {
                 sprint = sprint
             )
         } returns responses
-        responses.forEach {
-            coEvery {
-                commonTaskMapper.toDomain(
-                    it,
-                    CommonTaskType.UserStory
-                )
-            } returns getCommonTask(it.id)
-        }
 
-        val actuals = sut.getUserStoriesOld(
+        coEvery { userStoryMapper.toListDomain(responses) } returns expected
+
+        val actual = sut.getUserStories(
             assignedId = assignedId,
             isClosed = isClosed,
             isDashboard = isDashboard,
@@ -162,9 +152,9 @@ class UserStoriesRepositoryImplTest {
             sprint = sprint
         )
 
-        for (i in responses.indices) {
-            val response = responses[i]
-            val actual = actuals[i]
+        for (i in expected.indices) {
+            val response = expected[i]
+            val actual = actual[i]
             assertEquals(response.id, actual.id)
         }
     }

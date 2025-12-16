@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 
 import android.net.Uri
-import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf

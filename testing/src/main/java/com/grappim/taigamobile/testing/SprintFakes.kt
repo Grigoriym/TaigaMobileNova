@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.feature.sprint.domain.Sprint
 
 fun getSprint(): Sprint = Sprint(
     id = getRandomLong(),

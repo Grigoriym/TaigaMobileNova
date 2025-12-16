@@ -165,7 +165,7 @@ fun SprintScreenContent(
                 isEditLoading || isDeleteLoading -> LoadingDialog()
 
                 else -> SprintKanbanWidget(
-                    statusOlds = state.statusOlds,
+                    statuses = state.statuses,
                     storiesWithTasks = state.storiesWithTasks,
                     storylessTasks = state.storylessTasks,
                     issues = state.issues,

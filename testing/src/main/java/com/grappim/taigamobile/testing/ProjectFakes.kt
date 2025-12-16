@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.feature.projects.domain.Project
+import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
 
 fun getProjectDTO(): ProjectDTO = ProjectDTO(
     id = 6498,

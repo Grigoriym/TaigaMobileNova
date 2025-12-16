@@ -40,11 +40,11 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.TaskFilters
+import com.grappim.taigamobile.feature.sprint.domain.Sprint
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -86,6 +86,7 @@ fun ScrumScreen(
     val openSprints = viewModel.openSprints.collectAsLazyPagingItems()
     val closedSprints = viewModel.closedSprints.collectAsLazyPagingItems()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -166,6 +167,7 @@ fun ScrumScreen(
         state = state,
         pagerState = pagerState,
         stories = userStories,
+        searchQuery = searchQuery,
         filters = filters,
         openSprints = openSprints,
         closedSprints = closedSprints,
@@ -180,12 +182,13 @@ fun ScrumScreen(
 fun ScrumScreenContent(
     state: ScrumState,
     pagerState: PagerState,
-    stories: LazyPagingItems<CommonTask>,
+    stories: LazyPagingItems<WorkItem>,
     openSprints: LazyPagingItems<Sprint>,
     closedSprints: LazyPagingItems<Sprint>,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
     modifier: Modifier = Modifier,
-    filters: FiltersDataDTO = FiltersDataDTO(),
+    filters: FiltersData = FiltersData(),
+    searchQuery: String = "",
     navigateToBoard: (Sprint) -> Unit = {}
 ) {
     Column(
@@ -202,7 +205,8 @@ fun ScrumScreenContent(
                     state = state,
                     stories = stories,
                     filters = filters,
-                    navigateToTask = navigateToTask
+                    navigateToTask = navigateToTask,
+                    searchQuery = searchQuery
                 )
 
                 ScrumTabs.Sprints -> SprintsTabContent(
@@ -219,9 +223,10 @@ fun ScrumScreenContent(
 private fun BacklogTabContent(
     state: ScrumState,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
-    stories: LazyPagingItems<CommonTask>,
+    stories: LazyPagingItems<WorkItem>,
     modifier: Modifier = Modifier,
-    filters: FiltersDataDTO = FiltersDataDTO()
+    filters: FiltersData = FiltersData(),
+    searchQuery: String = ""
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -233,7 +238,9 @@ private fun BacklogTabContent(
             data = filters,
             isFiltersError = state.isFiltersError,
             onRetryFilters = state.retryLoadFilters,
-            isFiltersLoading = state.isFiltersLoading
+            isFiltersLoading = state.isFiltersLoading,
+            searchQuery = searchQuery,
+            setSearchQuery = state.onSetSearchQuery
         )
 
         PullToRefreshBox(

@@ -26,10 +26,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -39,12 +38,12 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SubscribeOnError
-import kotlinx.coroutines.flow.flowOf
+import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 
 @Composable
 fun ProjectSelectorScreen(
     showMessage: (message: Int) -> Unit,
-    onProjectSelect: (isFromLogin: Boolean) -> Unit,
+    onProjectSelect: () -> Unit,
     viewModel: ProjectSelectorViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -74,7 +73,7 @@ fun ProjectSelectorScreen(
         projects = lazyProjectItems,
         selectProject = {
             state.setProject(it)
-            onProjectSelect(state.isFromLogin)
+            onProjectSelect()
         }
     )
 }
@@ -83,9 +82,9 @@ fun ProjectSelectorScreen(
 fun ProjectSelectorScreenContent(
     state: ProjectSelectorState,
     searchQuery: String,
-    projects: LazyPagingItems<ProjectDTO>,
+    projects: LazyPagingItems<Project>,
     modifier: Modifier = Modifier,
-    selectProject: (ProjectDTO) -> Unit = {}
+    selectProject: (Project) -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -120,7 +119,7 @@ fun ProjectSelectorScreenContent(
 }
 
 @Composable
-private fun ItemProject(projectDTO: ProjectDTO, currentProjectId: Long, onClick: () -> Unit = {}) {
+private fun ItemProject(projectDTO: Project, currentProjectId: Long, onClick: () -> Unit = {}) {
     ContainerBoxWidget(
         verticalPadding = 16.dp,
         onClick = onClick
@@ -170,9 +169,7 @@ private fun ItemProject(projectDTO: ProjectDTO, currentProjectId: Long, onClick:
 @Composable
 private fun ProjectSelectorScreenPreview() = TaigaMobileTheme {
     ProjectSelectorScreenContent(
-        projects = flowOf(
-            PagingData.empty<ProjectDTO>()
-        ).collectAsLazyPagingItems(),
+        projects = getPagingPreviewItems(),
         searchQuery = "",
         state = ProjectSelectorState(
             currentProjectId = 1L,

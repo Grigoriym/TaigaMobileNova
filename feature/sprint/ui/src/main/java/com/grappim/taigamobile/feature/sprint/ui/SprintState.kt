@@ -1,19 +1,21 @@
 package com.grappim.taigamobile.feature.sprint.ui
 
-import com.grappim.taigamobile.core.domain.CommonTask
-import com.grappim.taigamobile.core.domain.Sprint
-import com.grappim.taigamobile.core.domain.StatusOld
+import com.grappim.taigamobile.feature.filters.domain.model.Statuses
+import com.grappim.taigamobile.feature.sprint.domain.Sprint
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 data class SprintState(
     val sprint: Sprint? = null,
     val sprintToolbarTitle: NativeText = NativeText.Empty,
     val sprintToolbarSubtitle: NativeText = NativeText.Empty,
 
-    val statusOlds: List<StatusOld> = emptyList(),
-    val storiesWithTasks: Map<CommonTask, List<CommonTask>> = emptyMap(),
-    val issues: List<CommonTask> = emptyList(),
-    val storylessTasks: List<CommonTask> = emptyList(),
+    val statuses: ImmutableList<Statuses> = persistentListOf(),
+    val storiesWithTasks: Map<WorkItem, List<WorkItem>> = emptyMap(),
+    val issues: ImmutableList<WorkItem> = persistentListOf(),
+    val storylessTasks: ImmutableList<WorkItem> = persistentListOf(),
 
     val isLoading: Boolean = false,
     val isMenuExpanded: Boolean = false,

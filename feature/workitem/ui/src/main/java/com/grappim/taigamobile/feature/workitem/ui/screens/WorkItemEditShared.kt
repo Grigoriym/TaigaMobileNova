@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens
 
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
@@ -66,13 +67,18 @@ class WorkItemEditShared @Inject constructor() {
     val currentSprint: Long?
         get() = _currentSprint
 
+    private var _currentCommonTaskType: CommonTaskType? = null
+    val currentCommonTaskType: CommonTaskType
+        get() = requireNotNull(_currentCommonTaskType)
+
     private var _currentEpics: PersistentList<Long> = persistentListOf()
     val currentEpics: ImmutableList<Long>
         get() = _currentEpics
 
-    fun setTags(tags: ImmutableList<TagUI>) {
+    fun setTags(tags: ImmutableList<TagUI>, commonTaskType: CommonTaskType) {
         _originalTags = tags.toPersistentList()
         _currentTags = tags.toPersistentList()
+        _currentCommonTaskType = commonTaskType
     }
 
     fun updateDescription(description: String) {
@@ -156,6 +162,7 @@ class WorkItemEditShared @Inject constructor() {
         _currentSprint = null
         _currentEpics = _currentEpics.clear()
         _currentType = null
+        _currentCommonTaskType = null
     }
 }
 

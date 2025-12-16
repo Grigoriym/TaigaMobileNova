@@ -18,6 +18,7 @@ dependencies {
     implementation(projects.feature.history.domain)
     implementation(projects.feature.users.domain)
     implementation(projects.feature.epics.domain)
+    implementation(projects.feature.sprint.domain)
 
     implementation(projects.feature.userstories.domain)
 

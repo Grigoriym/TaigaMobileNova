@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.feature.users.domain.User
+import com.grappim.taigamobile.feature.users.dto.UserDTO
 
 fun getUserDTO(): UserDTO = UserDTO(
     id = getRandomLong(),

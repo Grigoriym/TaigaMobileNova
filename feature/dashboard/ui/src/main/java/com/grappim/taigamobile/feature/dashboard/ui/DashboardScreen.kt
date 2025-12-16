@@ -13,9 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -30,7 +29,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun DashboardScreen(
-    showMessage: (message: Int) -> Unit,
+    showSnackbar: (NativeText) -> Unit,
     navigateToTaskScreen: (Long, CommonTaskType, Int) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
@@ -38,6 +37,7 @@ fun DashboardScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        state.onLoad()
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.dashboard),
@@ -46,16 +46,15 @@ fun DashboardScreen(
         )
     }
 
-    LaunchedEffect(state.isError) {
-        if (state.isError) {
-            showMessage(RString.common_error_message)
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 
     DashboardScreenContent(
         state = state,
         navigateToTask = {
-            viewModel.changeCurrentProject(it.projectDTOInfo)
             navigateToTaskScreen(it.id, it.taskType, it.ref)
         }
     )
@@ -65,7 +64,7 @@ fun DashboardScreen(
 fun DashboardScreenContent(
     state: DashboardState,
     modifier: Modifier = Modifier,
-    navigateToTask: (CommonTask) -> Unit = { _ -> }
+    navigateToTask: (WorkItem) -> Unit = { _ -> }
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -101,7 +100,7 @@ fun DashboardScreenContent(
 }
 
 @Composable
-private fun TabContent(commonTasks: List<CommonTask>, navigateToTask: (CommonTask) -> Unit) =
+private fun TabContent(commonTasks: List<WorkItem>, navigateToTask: (WorkItem) -> Unit) =
     LazyColumn(Modifier.fillMaxSize()) {
         simpleTasksListWithTitle(
             bottomPadding = commonVerticalPadding,

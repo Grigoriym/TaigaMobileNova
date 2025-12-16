@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.comments
 
-import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.CreatedCommentData
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.PersistentList

@@ -2,10 +2,10 @@ package com.grappim.taigamobile.feature.wiki.data
 
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
-import com.grappim.taigamobile.feature.workitem.data.wiki.WikiLinkMapper
-import com.grappim.taigamobile.feature.workitem.data.wiki.WikiPageMapper
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiLink
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
+import com.grappim.taigamobile.feature.workitem.mapper.WikiLinkMapper
+import com.grappim.taigamobile.feature.workitem.mapper.WikiPageMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.first

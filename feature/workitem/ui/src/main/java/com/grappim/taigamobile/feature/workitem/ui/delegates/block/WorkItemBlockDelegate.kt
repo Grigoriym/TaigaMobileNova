@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.block
 
-import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import kotlinx.coroutines.flow.StateFlow
 
 interface WorkItemBlockDelegate {

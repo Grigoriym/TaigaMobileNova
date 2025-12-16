@@ -19,6 +19,7 @@ dependencies {
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.tasks.domain)
     implementation(projects.feature.issues.domain)
+    implementation(projects.feature.workitem.domain)
 
     implementation(libs.retrofit)
 

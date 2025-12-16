@@ -16,10 +16,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.TaskFilters
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -49,6 +49,7 @@ fun EpicsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
     val epics = viewModel.epics.collectAsLazyPagingItems()
+    val query by viewModel.searchQuery.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -93,6 +94,7 @@ fun EpicsScreen(
     EpicsScreenContent(
         state = state,
         epics = epics,
+        query = query,
         filters = filters,
         goToEpic = goToEpic
     )
@@ -102,10 +104,11 @@ fun EpicsScreen(
 @Composable
 fun EpicsScreenContent(
     state: EpicsState,
-    filters: FiltersDataDTO,
-    epics: LazyPagingItems<CommonTask>,
+    filters: FiltersData,
+    epics: LazyPagingItems<WorkItem>,
     goToEpic: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    query: String = ""
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -117,7 +120,9 @@ fun EpicsScreenContent(
             data = filters,
             isFiltersError = state.isFiltersError,
             onRetryFilters = state.retryLoadFilters,
-            isFiltersLoading = state.isFiltersLoading
+            isFiltersLoading = state.isFiltersLoading,
+            searchQuery = query,
+            setSearchQuery = state.onSetQuery
         )
         PullToRefreshBox(
             modifier = Modifier.fillMaxSize(),
@@ -159,7 +164,7 @@ private fun EpicsScreenPreview() {
             state = EpicsState(),
             goToEpic = { _, _, _ -> },
             epics = getPagingPreviewItems(),
-            filters = FiltersDataDTO()
+            filters = FiltersData()
         )
     }
 }

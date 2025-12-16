@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.wiki.ui.create
 
 import androidx.compose.ui.text.input.TextFieldValue
+import com.grappim.taigamobile.utils.ui.NativeText
 
 data class WikiCreatePageState(
     val title: TextFieldValue = TextFieldValue(""),
@@ -10,5 +11,6 @@ data class WikiCreatePageState(
     val setDescription: (TextFieldValue) -> Unit = {},
 
     val onCreateWikiPage: () -> Unit = {},
-    val isLoading: Boolean = false
+    val isLoading: Boolean = false,
+    val error: NativeText = NativeText.Empty
 )

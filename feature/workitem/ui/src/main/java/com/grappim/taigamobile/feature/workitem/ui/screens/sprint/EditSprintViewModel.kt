@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.workitem.ui.screens.sprint
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -74,14 +75,14 @@ class EditSprintViewModel @Inject constructor(
 
     private fun getSprints() {
         viewModelScope.launch {
-            try {
-                val sprints = sprintsRepository.getSprints(page = 1, isClosed = false)
-                _state.update {
-                    it.copy(itemsToShow = sprints.toPersistentList())
+            resultOf { sprintsRepository.getSprints(page = 1, isClosed = false) }
+                .onSuccess { result ->
+                    _state.update {
+                        it.copy(itemsToShow = result.toPersistentList())
+                    }
+                }.onFailure { error ->
+                    Timber.e(error)
                 }
-            } catch (error: Exception) {
-                Timber.e(error)
-            }
         }
     }
 }

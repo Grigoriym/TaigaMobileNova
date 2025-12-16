@@ -4,10 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
-import com.grappim.taigamobile.utils.ui.delegates.UiErrorDelegate
-import com.grappim.taigamobile.utils.ui.delegates.UiErrorDelegateImpl
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
@@ -24,7 +23,6 @@ import javax.inject.Inject
 @HiltViewModel
 class WikiListViewModel @Inject constructor(private val wikiRepository: WikiRepository) :
     ViewModel(),
-    UiErrorDelegate by UiErrorDelegateImpl(),
     SnackbarDelegate by SnackbarDelegateImpl() {
 
     private val _state = MutableStateFlow(
@@ -37,7 +35,10 @@ class WikiListViewModel @Inject constructor(private val wikiRepository: WikiRepo
     private fun onOpen() {
         viewModelScope.launch {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
             }
             resultOf {
                 coroutineScope {
@@ -60,9 +61,11 @@ class WikiListViewModel @Inject constructor(private val wikiRepository: WikiRepo
             }.onFailure { error ->
                 Timber.e(error)
                 _state.update {
-                    it.copy(isLoading = false)
+                    it.copy(
+                        isLoading = false,
+                        error = getErrorMessage(error)
+                    )
                 }
-                showUiErrorSuspend(getErrorMessage(error))
             }
         }
     }

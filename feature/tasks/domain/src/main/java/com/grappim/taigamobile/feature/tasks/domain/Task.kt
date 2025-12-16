@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.tasks.domain
 
-import com.grappim.taigamobile.core.domain.DueDateStatus
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.users.domain.User
+import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.UserStoryShortInfo
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

@@ -34,7 +34,6 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -65,9 +64,9 @@ fun WikiListScreen(
         )
     }
 
-    ObserveAsEvents(viewModel.uiError) { error ->
-        if (error !is NativeText.Empty) {
-            showSnackbar(error)
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 

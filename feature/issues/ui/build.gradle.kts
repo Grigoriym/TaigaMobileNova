@@ -18,6 +18,7 @@ dependencies {
     implementation(projects.feature.workitem.domain)
     implementation(projects.utils.formatter.datetime)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.sprint.domain)
 
     implementation(projects.strings)
     implementation(projects.core.api)

@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.issues.ui.model
 
-import com.grappim.taigamobile.core.domain.DueDateStatus
+import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import kotlinx.collections.immutable.ImmutableList

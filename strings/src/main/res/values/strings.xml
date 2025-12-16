@@ -17,6 +17,8 @@
     <string name="save">Save</string>
     <string name="close">Close</string>
 
+    <string name="title_is_empty">Title is empty</string>
+
     <string name="filters_loading_error">Something went wrong loading filters</string>
 
     <string name="common_error_message">An error has occurred. Check your connection</string>

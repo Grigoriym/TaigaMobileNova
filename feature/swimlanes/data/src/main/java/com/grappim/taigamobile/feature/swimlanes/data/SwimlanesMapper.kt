@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.swimlanes.data
 
 import com.grappim.taigamobile.core.async.DefaultDispatcher
-import com.grappim.taigamobile.core.domain.SwimlaneDTO
+import com.grappim.taigamobile.feature.swimlanes.data.SwimlaneDTO
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList

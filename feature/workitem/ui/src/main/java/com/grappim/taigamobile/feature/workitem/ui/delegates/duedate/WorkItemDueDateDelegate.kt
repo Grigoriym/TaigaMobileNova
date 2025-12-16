@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.duedate
 
-import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.flow.StateFlow
 import java.time.LocalDate

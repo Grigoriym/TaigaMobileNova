@@ -1,17 +1,12 @@
 package com.grappim.taigamobile.utils.ui
 
-import androidx.activity.OnBackPressedCallback
-import androidx.activity.OnBackPressedDispatcherOwner
 import androidx.compose.material3.ColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
@@ -62,31 +57,4 @@ inline fun <T : Any> LazyPagingItems<T>.SubscribeOnError(crossinline onError: (m
             onError(RString.common_error_message)
         }
     }
-}
-
-/**
- * Utility function to handle press on back button
- */
-@Composable
-@Deprecated("remove it")
-fun OnBackPressed(action: () -> Unit) {
-    LocalContext
-    (LocalContext.current as? OnBackPressedDispatcherOwner)
-        ?.onBackPressedDispatcher
-        ?.let { dispatcher ->
-            val callback = remember {
-                object : OnBackPressedCallback(true) {
-                    override fun handleOnBackPressed() {
-                        action()
-                        remove()
-                    }
-                }.also {
-                    dispatcher.addCallback(it)
-                }
-            }
-
-            DisposableEffect(Unit) {
-                onDispose(callback::remove)
-            }
-        }
 }

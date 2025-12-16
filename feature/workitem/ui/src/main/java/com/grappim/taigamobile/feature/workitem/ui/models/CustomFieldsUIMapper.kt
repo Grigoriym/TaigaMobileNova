@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.ui.models
 
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.domain.CustomFieldType
-import com.grappim.taigamobile.core.domain.CustomFields
+import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFieldType
+import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CheckboxItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.DateItemState

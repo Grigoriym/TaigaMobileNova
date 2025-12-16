@@ -15,10 +15,10 @@ interface SprintApi {
         @Query("project") project: Long,
         @Query("page") page: Int,
         @Query("closed") isClosed: Boolean
-    ): List<SprintResponse>
+    ): List<SprintResponseDTO>
 
     @GET("milestones/{id}")
-    suspend fun getSprint(@Path("id") sprintId: Long): SprintResponse
+    suspend fun getSprint(@Path("id") sprintId: Long): SprintResponseDTO
 
     @POST("milestones")
     suspend fun createSprint(@Body request: CreateSprintRequest)

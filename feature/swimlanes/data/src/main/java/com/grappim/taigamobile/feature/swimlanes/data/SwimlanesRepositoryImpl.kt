@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.swimlanes.data
 
-import com.grappim.taigamobile.core.domain.SwimlaneDTO
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
@@ -17,7 +16,4 @@ class SwimlanesRepositoryImpl @Inject constructor(
         val response = swimlanesApi.getSwimlanes(taigaStorage.currentProjectIdFlow.first())
         return swimlanesMapper.toListDomain(response)
     }
-
-    override suspend fun getSwimlanesOld(): List<SwimlaneDTO> =
-        swimlanesApi.getSwimlanes(taigaStorage.currentProjectIdFlow.first())
 }

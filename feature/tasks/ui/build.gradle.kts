@@ -20,6 +20,7 @@ dependencies {
     implementation(projects.feature.epics.domain)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.tasks.domain)
+    implementation(projects.feature.sprint.domain)
 
     implementation(projects.utils.formatter.datetime)
     implementation(projects.strings)

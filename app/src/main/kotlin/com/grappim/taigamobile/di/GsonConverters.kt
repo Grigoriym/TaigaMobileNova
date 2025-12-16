@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.di
 
-import com.grappim.taigamobile.core.api.toLocalDate
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.squareup.moshi.FromJson
 import com.squareup.moshi.ToJson
@@ -15,7 +14,7 @@ class LocalDateTypeAdapter @Inject constructor(private val dateTimeUtils: DateTi
     fun toJson(value: LocalDate): String = dateTimeUtils.parseLocalDateToString(value)
 
     @FromJson
-    fun fromJson(input: String): LocalDate = input.toLocalDate()
+    fun fromJson(input: String): LocalDate = dateTimeUtils.parseToLocalDate(input)
 }
 
 class LocalDateTimeTypeAdapter {

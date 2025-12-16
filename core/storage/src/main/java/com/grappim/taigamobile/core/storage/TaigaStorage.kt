@@ -29,12 +29,6 @@ class TaigaStorage @Inject constructor(@ApplicationContext private val context: 
         name = TAIGA_STORAGE_NAME
     )
 
-    private val isNewUiUsedKey = booleanPreferencesKey("is_new_ui_used")
-    val isNewUIUsed: Flow<Boolean> = context.dataStore.data
-        .map {
-            it[isNewUiUsedKey] ?: false
-        }
-
     private val themeSettingKey = stringPreferencesKey("theme_settings")
     val themeSettings: Flow<ThemeSettings> = context.dataStore.data
         .map { preferences ->
@@ -66,13 +60,6 @@ class TaigaStorage @Inject constructor(@ApplicationContext private val context: 
     suspend fun clearData() {
         context.dataStore.edit {
             it.clear()
-        }
-    }
-
-    suspend fun setIsUIUsed(isEnabled: Boolean) {
-        Timber.d("setCrashesCollectionEnabled: $isEnabled")
-        context.dataStore.edit { settings ->
-            settings[isNewUiUsedKey] = isEnabled
         }
     }
 }

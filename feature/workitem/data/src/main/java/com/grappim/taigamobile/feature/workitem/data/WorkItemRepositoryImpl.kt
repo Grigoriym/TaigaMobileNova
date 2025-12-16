@@ -1,20 +1,24 @@
 package com.grappim.taigamobile.feature.workitem.data
 
-import com.grappim.taigamobile.core.api.AttachmentMapper
-import com.grappim.taigamobile.core.api.CustomFieldsMapper
-import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.CustomFields
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.domain.PatchedCustomAttributes
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.UpdateWorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
+import com.grappim.taigamobile.feature.workitem.dto.CreateWorkItemRequestDTO
+import com.grappim.taigamobile.feature.workitem.mapper.AttachmentMapper
+import com.grappim.taigamobile.feature.workitem.mapper.CustomFieldsMapper
+import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
+import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
@@ -37,6 +41,26 @@ class WorkItemRepositoryImpl @Inject constructor(
     private val customFieldsMapper: CustomFieldsMapper,
     private val taigaStorage: TaigaStorage
 ) : WorkItemRepository {
+
+    override suspend fun getWorkItems(
+        commonTaskType: CommonTaskType,
+        projectId: Long,
+        assignedId: Long?,
+        isClosed: Boolean?,
+        watcherId: Long?,
+        isDashboard: Boolean?,
+        assignedIds: String?
+    ): ImmutableList<WorkItem> {
+        val response = workItemApi.getWorkItems(
+            taskPath = WorkItemPathPlural(commonTaskType),
+            project = projectId,
+            assignedId = assignedId,
+            isClosed = isClosed,
+            watcherId = watcherId,
+            isDashboard = isDashboard
+        )
+        return workItemMapper.toDomainList(response, commonTaskType)
+    }
 
     override suspend fun patchData(
         version: Long,
@@ -205,5 +229,23 @@ class WorkItemRepositoryImpl @Inject constructor(
             payload = editedMap
         )
         return patchedDataMapper.fromWiki(response)
+    }
+
+    override suspend fun createWorkItem(
+        commonTaskType: CommonTaskType,
+        subject: String,
+        description: String,
+        status: Long?
+    ): WorkItem {
+        val response = workItemApi.createWorkItem(
+            taskPath = WorkItemPathPlural(commonTaskType),
+            createRequest = CreateWorkItemRequestDTO(
+                project = taigaStorage.currentProjectIdFlow.first(),
+                subject = subject,
+                description = description,
+                status = status
+            )
+        )
+        return workItemMapper.toDomain(response, commonTaskType)
     }
 }

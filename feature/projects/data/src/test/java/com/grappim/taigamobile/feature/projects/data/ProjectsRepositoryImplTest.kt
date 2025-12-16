@@ -2,11 +2,14 @@ package com.grappim.taigamobile.feature.projects.data
 
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
+import com.grappim.taigamobile.testing.getProject
 import com.grappim.taigamobile.testing.getProjectDTO
 import com.grappim.taigamobile.testing.getRandomLong
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 import kotlin.test.assertContentEquals
@@ -21,12 +24,17 @@ class ProjectsRepositoryImplTest {
     @Test
     fun `on getMyProjects return projects from api`() = runTest {
         val userId = getRandomLong()
-        val expected = listOf(
+        val dtos = listOf(
             getProjectDTO(),
             getProjectDTO()
         )
+        val expected = listOf(
+            getProject(),
+            getProject()
+        )
         every { session.userId } returns userId
-        coEvery { projectsApi.getProjects(memberId = userId) } returns expected
+        coEvery { projectsApi.getProjects(memberId = userId) } returns dtos
+        coEvery { projectMapper.toListDomain(dtos) } returns expected.toImmutableList()
 
         val actual = sut.getMyProjects()
 
@@ -37,14 +45,19 @@ class ProjectsRepositoryImplTest {
     @Test
     fun `on getUserProjects return projects from api`() = runTest {
         val userId = getRandomLong()
-        val expected = listOf(
+        val dtos = listOf(
             getProjectDTO(),
             getProjectDTO()
         )
+        val expected = listOf(
+            getProject(),
+            getProject()
+        )
 
-        coEvery { projectsApi.getProjects(memberId = userId) } returns expected
+        coEvery { projectsApi.getProjects(memberId = userId) } returns dtos
+        coEvery { projectMapper.toListDomain(dtos) } returns expected.toImmutableList()
 
-        val actual = sut.getUserProjectsOld(userId)
+        val actual = sut.getUserProjects(userId)
 
         assert(actual.isNotEmpty())
         assertContentEquals(expected, actual)

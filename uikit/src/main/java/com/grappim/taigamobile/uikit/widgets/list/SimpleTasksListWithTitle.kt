@@ -18,18 +18,15 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
-/**
- * List of tasks with optional title.
- */
 fun LazyListScope.simpleTasksListWithTitle(
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
-    commonTasks: List<CommonTask> = emptyList(),
-    commonTasksLazy: LazyPagingItems<CommonTask>? = null,
+    commonTasks: List<WorkItem> = emptyList(),
+    commonTasksLazy: LazyPagingItems<WorkItem>? = null,
     keysHash: Int = 0,
     @StringRes titleText: Int? = null,
     topPadding: Dp = 0.dp,
@@ -45,7 +42,7 @@ fun LazyListScope.simpleTasksListWithTitle(
 
     val lastIndex = commonTasksLazy?.itemCount?.minus(1) ?: commonTasks.lastIndex
 
-    val itemContent: @Composable LazyItemScope.(Int, CommonTask?) -> Unit = lambda@{ index, item ->
+    val itemContent: @Composable LazyItemScope.(Int, WorkItem?) -> Unit = lambda@{ index, item ->
         if (item == null) return@lambda
 
         CommonTaskItem(

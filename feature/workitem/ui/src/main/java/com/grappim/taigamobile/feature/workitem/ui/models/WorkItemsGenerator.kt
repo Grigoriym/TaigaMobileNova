@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.models
 
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgePriority
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeSeverity
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState

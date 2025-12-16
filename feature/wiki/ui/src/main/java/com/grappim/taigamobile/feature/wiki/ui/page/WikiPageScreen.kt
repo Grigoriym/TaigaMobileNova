@@ -29,8 +29,8 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
-import com.grappim.taigamobile.uikit.widgets.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
@@ -77,9 +77,9 @@ fun WikiPageScreen(
         goBack()
     }
 
-    ObserveAsEvents(viewModel.uiError) { error ->
-        if (error !is NativeText.Empty) {
-            showSnackbar(error)
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 
