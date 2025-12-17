@@ -51,7 +51,7 @@ class UserStoryDetailsViewModelTest {
     val coroutineRule = MainDispatcherRule()
 
     private val taskId = getRandomLong()
-    private val ref = getRandomInt()
+    private val ref = getRandomLong()
 
     private val route = UserStoryDetailsNavDestination(taskId, ref)
 

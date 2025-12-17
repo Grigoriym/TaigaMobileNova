@@ -25,11 +25,7 @@ inline fun <reified PopUpTo : Any> NavController.navigateAndPopCurrent(
     navigate(route = route, navOptions = options)
 }
 
-fun NavController.navigateAndPopCurrent(
-    route: Any,
-    popUpToRoute: Any,
-    builder: NavOptionsBuilder.() -> Unit = {}
-) {
+fun NavController.navigateAndPopCurrent(route: Any, popUpToRoute: Any, builder: NavOptionsBuilder.() -> Unit = {}) {
     val options = navOptions {
         when (popUpToRoute) {
             is KClass<*> -> popUpTo(popUpToRoute) { inclusive = true }

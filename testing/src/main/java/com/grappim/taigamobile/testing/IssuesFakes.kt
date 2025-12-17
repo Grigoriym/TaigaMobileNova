@@ -47,7 +47,7 @@ fun getIssueDetailsData(): IssueDetailsData = IssueDetailsData(
 fun getIssueTask(): Issue = Issue(
     id = getRandomLong(),
     version = getRandomLong(),
-    ref = getRandomInt(),
+    ref = getRandomLong(),
     creatorId = getRandomLong(),
     title = getRandomString(),
     description = getRandomString(),
@@ -72,7 +72,7 @@ fun getIssueTask(): Issue = Issue(
 fun getIssueUI(): IssueUI = IssueUI(
     id = getRandomLong(),
     version = getRandomLong(),
-    ref = getRandomInt(),
+    ref = getRandomLong(),
     creatorId = getRandomLong(),
     title = getRandomString(),
     description = getRandomString(),
@@ -85,6 +85,7 @@ fun getIssueUI(): IssueUI = IssueUI(
     watcherUserIds = listOf(getRandomLong()),
     copyLinkUrl = getRandomString(),
     status = getStatusUI(),
+    promotedUserStories = persistentListOf()
 )
 
 fun getTag(): Tag = Tag(

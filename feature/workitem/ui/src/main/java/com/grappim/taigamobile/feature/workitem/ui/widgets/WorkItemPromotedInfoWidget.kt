@@ -23,8 +23,8 @@ import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun WorkItemPromotedInfoWidget(
-    modifier: Modifier = Modifier,
     infos: ImmutableList<PromotedUserStoryInfo>,
+    modifier: Modifier = Modifier,
     onInfoClick: (PromotedUserStoryInfo) -> Unit = {}
 ) {
     if (infos.isNotEmpty()) {
@@ -54,10 +54,7 @@ fun WorkItemPromotedInfoWidget(
 }
 
 @Composable
-private fun UserStoryInfoWidget(
-    info: PromotedUserStoryInfo,
-    onInfoClick: (PromotedUserStoryInfo) -> Unit = {}
-) {
+private fun UserStoryInfoWidget(info: PromotedUserStoryInfo, onInfoClick: (PromotedUserStoryInfo) -> Unit = {}) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -71,7 +68,7 @@ private fun UserStoryInfoWidget(
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.Center
-        ){
+        ) {
             Text(
                 modifier = Modifier
                     .fillMaxSize()

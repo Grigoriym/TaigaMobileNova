@@ -277,7 +277,7 @@ private fun IssueDetailsScreenContent(
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
     goToSprints: () -> Unit,
-    goToUserStory: (id: Long, ref: Long) -> Unit,
+    goToUserStory: (id: Long, ref: Long) -> Unit
 ) {
     requireNotNull(state.currentIssue)
 
@@ -317,7 +317,7 @@ private fun IssueDetailsScreenContent(
 
                 WorkItemPromotedInfoWidget(
                     infos = state.currentIssue.promotedUserStories,
-                    onInfoClick = {info->
+                    onInfoClick = { info ->
                         goToUserStory(info.id, info.ref)
                     }
                 )

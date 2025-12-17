@@ -13,7 +13,7 @@ fun getUserStory(): UserStory = UserStory(
     version = getRandomLong(),
     createdDateTime = LocalDateTime.now(),
     title = getRandomString(),
-    ref = getRandomInt(),
+    ref = getRandomLong(),
     status = Status(
         color = getRandomString(),
         id = getRandomLong(),
@@ -39,7 +39,7 @@ fun getUserStory(): UserStory = UserStory(
         UserStoryEpic(
             id = getRandomLong(),
             title = getRandomString(),
-            ref = getRandomInt(),
+            ref = getRandomLong(),
             color = getRandomString()
         )
     ),
