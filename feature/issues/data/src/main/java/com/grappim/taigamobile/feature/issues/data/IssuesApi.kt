@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.issues.data
 
-import com.grappim.taigamobile.core.domain.CommonTaskResponse
+import com.grappim.taigamobile.feature.issues.dto.CreateIssueRequestDTO
+import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -33,8 +34,8 @@ interface IssuesApi {
         @Query("tags", encoded = true) tags: String? = null,
 
         @Header("x-disable-pagination") disablePagination: Boolean? = (page == null).takeIf { it }
-    ): List<CommonTaskResponse>
+    ): List<WorkItemResponseDTO>
 
     @POST("issues")
-    suspend fun createIssue(@Body createIssueRequest: CreateIssueRequest): CommonTaskResponse
+    suspend fun createIssue(@Body createIssueRequest: CreateIssueRequestDTO): WorkItemResponseDTO
 }

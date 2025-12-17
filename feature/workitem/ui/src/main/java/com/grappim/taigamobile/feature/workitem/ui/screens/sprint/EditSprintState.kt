@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.sprint
 
-import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 

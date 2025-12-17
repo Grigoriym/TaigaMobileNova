@@ -7,7 +7,7 @@ import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getUserDTO
+import com.grappim.taigamobile.testing.getUser
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -34,17 +34,16 @@ class SettingsViewModelTest {
     private val serverStorage = mockk<ServerStorage>()
     private val appInfoProvider = mockk<AppInfoProvider>()
 
-    private val userResult = Result.success(getUserDTO())
+    private val userResult = getUser()
     private val appInfo = getRandomString()
     private val server = getRandomString()
 
     @Before
     fun setup() {
-        coEvery { usersRepository.getMeResult() } returns userResult
+        coEvery { usersRepository.getMe() } returns userResult
         every { appInfoProvider.getAppInfo() } returns appInfo
         every { serverStorage.server } returns server
         every { taigaStorage.themeSettings } returns flowOf(ThemeSettings.default())
-        every { taigaStorage.isNewUIUsed } returns flowOf(false)
 
         sut = SettingsViewModel(
             usersRepository = usersRepository,
@@ -68,17 +67,5 @@ class SettingsViewModelTest {
         sut.state.value.onThemeChanged(newTheme)
 
         coVerify { taigaStorage.setThemSetting(newTheme) }
-    }
-
-    @Test
-    fun `on isNewUIUsed toggle, should switch isNewUIUsed`() = runTest {
-        val expected = true
-        coEvery { taigaStorage.setIsUIUsed(expected) } just Runs
-        every { taigaStorage.isNewUIUsed } returns flowOf(expected)
-        assertEquals(false, sut.state.value.isNewUIUsed)
-
-        sut.state.value.onNewUIToggle()
-
-        coVerify { taigaStorage.setIsUIUsed(expected) }
     }
 }

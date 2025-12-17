@@ -93,7 +93,7 @@ class SprintViewModel @Inject constructor(
                             )
                         ),
                         isLoading = false,
-                        statusOlds = result.statusOlds,
+                        statuses = result.statuses,
                         storiesWithTasks = result.storiesWithTasks,
                         storylessTasks = result.storylessTasks,
                         issues = result.issues

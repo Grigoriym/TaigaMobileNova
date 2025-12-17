@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.epics.data
 
-import com.grappim.taigamobile.core.domain.CommonTaskResponse
+import com.grappim.taigamobile.feature.epics.dto.LinkToEpicRequestDTO
+import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -32,10 +33,10 @@ interface EpicsApi {
         @Query("tags", encoded = true) tags: String? = null,
 
         @Header("x-disable-pagination") disablePagination: Boolean? = (page == null).takeIf { it }
-    ): List<CommonTaskResponse>
+    ): List<WorkItemResponseDTO>
 
     @POST("epics/{id}/related_userstories")
-    suspend fun linkToEpic(@Path("id") epicId: Long, @Body linkToEpicRequest: LinkToEpicRequest)
+    suspend fun linkToEpic(@Path("id") epicId: Long, @Body linkToEpicRequest: LinkToEpicRequestDTO)
 
     @DELETE("epics/{epicId}/related_userstories/{userStoryId}")
     suspend fun unlinkFromEpic(@Path("epicId") epicId: Long, @Path("userStoryId") userStoryId: Long): Response<Void>

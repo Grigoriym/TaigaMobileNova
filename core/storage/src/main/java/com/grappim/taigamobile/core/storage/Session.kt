@@ -2,22 +2,20 @@ package com.grappim.taigamobile.core.storage
 
 import android.content.Context
 import androidx.core.content.edit
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.core.domain.FiltersDataDTOJsonAdapter
+import com.grappim.taigamobile.core.storage.di.StorageJsonQualifier
 import com.grappim.taigamobile.core.storage.utils.long
-import com.squareup.moshi.Moshi
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.launch
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -25,7 +23,10 @@ import javax.inject.Singleton
  * Global app state
  */
 @Singleton
-class Session @Inject constructor(@ApplicationContext private val context: Context, moshi: Moshi) {
+class Session @Inject constructor(
+    @ApplicationContext private val context: Context,
+    @StorageJsonQualifier private val json: Json
+) {
 
     private val sharedPreferences =
         context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
@@ -77,50 +78,41 @@ class Session @Inject constructor(@ApplicationContext private val context: Conte
             initialValue = checkLogged(token.value, refreshToken.value)
         )
 
-//    private fun checkProjectSelected(id: Long) = id >= 0
-//    val isProjectSelected = currentProjectId.map(::checkProjectSelected)
-//        .stateIn(
-//            scope,
-//            SharingStarted.Eagerly,
-//            initialValue = checkProjectSelected(currentProjectId.value)
-//        )
-
     // Filters
-    private val filtersJsonAdapter = FiltersDataDTOJsonAdapter(moshi)
     private fun getFiltersOrEmpty(key: String) = sharedPreferences.getString(key, null)?.takeIf { it.isNotBlank() }
-        ?.let { filtersJsonAdapter.fromJson(it) } ?: FiltersDataDTO()
+        ?.let { json.decodeFromString(it) } ?: FiltersData()
 
     private val _scrumFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_SCRUM))
-    val scrumFilters: StateFlow<FiltersDataDTO> = _scrumFilters
-    fun changeScrumFilters(filters: FiltersDataDTO) {
+    val scrumFilters: StateFlow<FiltersData> = _scrumFilters
+    fun changeScrumFilters(filters: FiltersData) {
         sharedPreferences.edit {
-            putString(FILTERS_SCRUM, filtersJsonAdapter.toJson(filters))
+            putString(FILTERS_SCRUM, json.encodeToString(filters))
         }
         _scrumFilters.value = filters
     }
 
     private val _epicsFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_EPICS))
-    val epicsFilters: StateFlow<FiltersDataDTO> = _epicsFilters
-    fun changeEpicsFilters(filters: FiltersDataDTO) {
+    val epicsFilters: StateFlow<FiltersData> = _epicsFilters
+    fun changeEpicsFilters(filters: FiltersData) {
         sharedPreferences.edit {
-            putString(FILTERS_EPICS, filtersJsonAdapter.toJson(filters))
+            putString(FILTERS_EPICS, json.encodeToString(filters))
         }
         _epicsFilters.value = filters
     }
 
     private val _issuesFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_ISSUES))
-    val issuesFilters: StateFlow<FiltersDataDTO> = _issuesFilters
-    fun changeIssuesFilters(filters: FiltersDataDTO) {
+    val issuesFilters: StateFlow<FiltersData> = _issuesFilters
+    fun changeIssuesFilters(filters: FiltersData) {
         sharedPreferences.edit {
-            putString(FILTERS_ISSUES, filtersJsonAdapter.toJson(filters))
+            putString(FILTERS_ISSUES, json.encodeToString(filters))
         }
         _issuesFilters.value = filters
     }
 
     private fun resetFilters() {
-        changeScrumFilters(FiltersDataDTO())
-        changeEpicsFilters(FiltersDataDTO())
-        changeIssuesFilters(FiltersDataDTO())
+        changeScrumFilters(FiltersData())
+        changeEpicsFilters(FiltersData())
+        changeIssuesFilters(FiltersData())
     }
 
     fun reset() {
@@ -159,11 +151,3 @@ fun eventFlow() = MutableSharedFlow<Event>()
 
 suspend fun MutableSharedFlow<Event>.postUpdate() = emit(Event())
 fun MutableSharedFlow<Event>.tryPostUpdate() = tryEmit(Event())
-
-fun CoroutineScope.subscribeToAll(vararg flows: Flow<*>, action: () -> Unit) {
-    flows.forEach {
-        launch {
-            it.collect { action() }
-        }
-    }
-}

@@ -5,11 +5,11 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiPageUseCase
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
+import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
@@ -18,8 +18,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
-import com.grappim.taigamobile.utils.ui.delegates.UiErrorDelegate
-import com.grappim.taigamobile.utils.ui.delegates.UiErrorDelegateImpl
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -44,7 +43,6 @@ class WikiPageViewModel @Inject constructor(
     workItemEditShared: WorkItemEditShared,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(),
-    UiErrorDelegate by UiErrorDelegateImpl(),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         commonTaskType = CommonTaskType.Wiki,
         workItemRepository = workItemRepository,
@@ -90,7 +88,10 @@ class WikiPageViewModel @Inject constructor(
             pageId = currentPage.id,
             newDescription = newDescription,
             doOnError = { error ->
-                showUiErrorSuspend(getErrorMessage(error))
+                _state.update { it.copy(error = getErrorMessage(error)) }
+            },
+            doOnPreExecute = {
+                _state.update { it.copy(error = NativeText.Empty) }
             },
             doOnSuccess = { version ->
                 updateVersion(version)
@@ -136,9 +137,10 @@ class WikiPageViewModel @Inject constructor(
             handleRemoveAttachment(
                 attachment = attachment,
                 doOnPreExecute = {
+                    _state.update { it.copy(error = NativeText.Empty) }
                 },
                 doOnError = { error ->
-                    showUiErrorSuspend(getErrorMessage(error))
+                    _state.update { it.copy(error = getErrorMessage(error)) }
                 }
             )
         }
@@ -150,9 +152,10 @@ class WikiPageViewModel @Inject constructor(
                 workItemId = currentPage.id,
                 uri = uri,
                 doOnPreExecute = {
+                    _state.update { it.copy(error = NativeText.Empty) }
                 },
                 doOnError = { error ->
-                    showUiErrorSuspend(getErrorMessage(error))
+                    _state.update { it.copy(error = getErrorMessage(error)) }
                 }
             )
         }
@@ -161,7 +164,10 @@ class WikiPageViewModel @Inject constructor(
     private fun loadData() {
         viewModelScope.launch {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
             }
 
             wikiPageUseCase.getWikiPageData(pageSlug = _state.value.pageSlug)
@@ -179,9 +185,11 @@ class WikiPageViewModel @Inject constructor(
                     }
                 }.onFailure { error ->
                     Timber.e(error)
-                    showUiErrorSuspend(getErrorMessage(error))
                     _state.update {
-                        it.copy(isLoading = false)
+                        it.copy(
+                            isLoading = false,
+                            error = getErrorMessage(error)
+                        )
                     }
                 }
         }
@@ -190,7 +198,10 @@ class WikiPageViewModel @Inject constructor(
     private fun deleteWikiPage() {
         viewModelScope.launch {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
             }
 
             wikiPageUseCase.deleteWikiPage(
@@ -203,9 +214,11 @@ class WikiPageViewModel @Inject constructor(
                 _deleteWikiPageResult.send(Unit)
             }.onFailure { error ->
                 Timber.e(error)
-                showUiErrorSuspend(getErrorMessage(error))
                 _state.update {
-                    it.copy(isLoading = false)
+                    it.copy(
+                        isLoading = false,
+                        error = getErrorMessage(error)
+                    )
                 }
             }
         }

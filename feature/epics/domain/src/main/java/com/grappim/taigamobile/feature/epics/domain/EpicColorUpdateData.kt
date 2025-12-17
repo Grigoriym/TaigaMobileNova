@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.epics.domain
 
-import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.ImmutableList
 

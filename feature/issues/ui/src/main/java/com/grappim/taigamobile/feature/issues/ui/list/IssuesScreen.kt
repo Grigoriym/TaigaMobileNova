@@ -18,10 +18,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.TaskFilters
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -51,6 +51,7 @@ fun IssuesScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val filters by viewModel.filters.collectAsStateWithLifecycle()
     val issues = viewModel.issues.collectAsLazyPagingItems()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
@@ -81,7 +82,7 @@ fun IssuesScreen(
     }
 
     ObserveAsEvents(viewModel.snackBarMessage) { snackbarMessage ->
-        if (snackbarMessage !is NativeText.Empty) {
+        if (snackbarMessage.isNotEmpty()) {
             showSnackbar(snackbarMessage, context.getString(RString.close))
         }
     }
@@ -96,17 +97,19 @@ fun IssuesScreen(
         state = state,
         filters = filters,
         issues = issues,
-        navigateToTask = goToTask
+        navigateToTask = goToTask,
+        searchQuery = searchQuery
     )
 }
 
 @Composable
 fun IssuesScreenContent(
     state: IssuesState,
-    filters: FiltersDataDTO,
+    filters: FiltersData,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
-    issues: LazyPagingItems<CommonTask>,
-    modifier: Modifier = Modifier
+    issues: LazyPagingItems<WorkItem>,
+    modifier: Modifier = Modifier,
+    searchQuery: String = ""
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -118,7 +121,9 @@ fun IssuesScreenContent(
             data = filters,
             isFiltersError = state.isFiltersError,
             onRetryFilters = state.retryLoadFilters,
-            isFiltersLoading = state.isFiltersLoading
+            isFiltersLoading = state.isFiltersLoading,
+            searchQuery = searchQuery,
+            setSearchQuery = state.setSearchQuery
         )
         PullToRefreshBox(
             modifier = Modifier.fillMaxSize(),
@@ -159,6 +164,6 @@ private fun IssuesScreenPreview() = TaigaMobileTheme {
         navigateToTask = { _, _, _ -> },
         state = IssuesState(),
         issues = getPagingPreviewItems(),
-        filters = FiltersDataDTO()
+        filters = FiltersData()
     )
 }

@@ -1,13 +1,13 @@
 package com.grappim.taigamobile.feature.sprint.domain
 
-import com.grappim.taigamobile.core.domain.CommonTask
-import com.grappim.taigamobile.core.domain.Sprint
-import com.grappim.taigamobile.core.domain.StatusOld
+import com.grappim.taigamobile.feature.filters.domain.model.Statuses
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import kotlinx.collections.immutable.ImmutableList
 
 data class SprintData(
     val sprint: Sprint,
-    val statusOlds: List<StatusOld>,
-    val storiesWithTasks: Map<CommonTask, List<CommonTask>>,
-    val issues: List<CommonTask>,
-    val storylessTasks: List<CommonTask>
+    val statuses: ImmutableList<Statuses>,
+    val storiesWithTasks: Map<WorkItem, ImmutableList<WorkItem>>,
+    val issues: ImmutableList<WorkItem>,
+    val storylessTasks: ImmutableList<WorkItem>
 )

@@ -20,6 +20,9 @@ dependencies {
     implementation(projects.uikit)
     implementation(projects.core.navigation)
 
+    implementation(projects.feature.filters.domain)
+    implementation(projects.feature.filters.dto)
+
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.hilt.navigation.compose)

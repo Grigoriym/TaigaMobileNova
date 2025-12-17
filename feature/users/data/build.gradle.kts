@@ -17,7 +17,11 @@ dependencies {
     ksp(libs.moshi.kotlin.codegen)
 
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.users.mapper)
+    implementation(projects.feature.users.dto)
+
     implementation(projects.feature.projects.data)
+    implementation(projects.feature.projects.dto)
 
     implementation(libs.retrofit)
 }

@@ -19,6 +19,11 @@ dependencies {
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.issues.domain)
 
+    implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.workitem.mapper)
+    implementation(projects.feature.workitem.dto)
+    implementation(projects.feature.workitem.data)
+
     implementation(libs.androidx.paging.common)
     implementation(libs.retrofit)
 

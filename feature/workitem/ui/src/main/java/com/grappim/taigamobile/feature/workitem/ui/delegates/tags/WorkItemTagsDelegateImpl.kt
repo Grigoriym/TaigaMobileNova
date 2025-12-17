@@ -95,6 +95,6 @@ class WorkItemTagsDelegateImpl(
     }
 
     override fun onGoingToEditTags() {
-        workItemEditShared.setTags(_tagsState.value.tags)
+        workItemEditShared.setTags(_tagsState.value.tags, commonTaskType)
     }
 }

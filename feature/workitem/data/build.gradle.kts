@@ -15,6 +15,9 @@ dependencies {
     implementation(projects.core.async)
 
     implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.workitem.dto)
+    implementation(projects.feature.workitem.mapper)
+
     implementation(projects.feature.users.domain)
 
     implementation(libs.retrofit)

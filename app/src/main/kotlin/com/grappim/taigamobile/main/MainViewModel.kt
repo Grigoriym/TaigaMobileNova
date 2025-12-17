@@ -41,13 +41,6 @@ class MainViewModel @Inject constructor(
             initialValue = ThemeSettings.default()
         )
 
-    val isNewUIUsed = taigaStorage.isNewUIUsed
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5_000),
-            initialValue = false
-        )
-
     private fun logout() {
         viewModelScope.launch {
             _state.update {

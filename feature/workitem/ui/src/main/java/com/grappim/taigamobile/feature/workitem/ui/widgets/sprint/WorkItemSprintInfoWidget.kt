@@ -12,7 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.Sprint
+import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.Chip
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer

@@ -6,4 +6,5 @@ plugins {
 dependencies {
     implementation(projects.core.domain)
     implementation(projects.feature.projects.domain)
+    implementation(projects.feature.workitem.domain)
 }

@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.projects.data
 
-import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query

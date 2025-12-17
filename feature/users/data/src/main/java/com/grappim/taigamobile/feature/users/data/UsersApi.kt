@@ -1,7 +1,8 @@
 package com.grappim.taigamobile.feature.users.data
 
-import com.grappim.taigamobile.core.domain.StatsDTO
-import com.grappim.taigamobile.core.domain.UserDTO
+import com.grappim.taigamobile.feature.users.dto.MemberStatsResponseDTO
+import com.grappim.taigamobile.feature.users.dto.StatsDTO
+import com.grappim.taigamobile.feature.users.dto.UserDTO
 import retrofit2.http.GET
 import retrofit2.http.Path
 
@@ -17,5 +18,5 @@ interface UsersApi {
     suspend fun getUserStats(@Path("id") userId: Long): StatsDTO
 
     @GET("projects/{id}/member_stats")
-    suspend fun getMemberStats(@Path("id") projectId: Long): MemberStatsResponse
+    suspend fun getMemberStats(@Path("id") projectId: Long): MemberStatsResponseDTO
 }

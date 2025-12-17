@@ -10,4 +10,6 @@ interface DateTimeUtils {
     fun formatToMediumFormat(localDate: LocalDate): String
 
     fun formatToMediumFormat(localDateTime: LocalDateTime): String
+
+    fun parseToLocalDate(text: String): LocalDate
 }

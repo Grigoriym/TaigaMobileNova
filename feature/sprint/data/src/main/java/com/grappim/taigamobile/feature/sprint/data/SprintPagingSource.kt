@@ -3,14 +3,15 @@ package com.grappim.taigamobile.feature.sprint.data
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.grappim.taigamobile.core.api.tryCatchWithPagination
-import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import kotlinx.coroutines.flow.first
 
 class SprintPagingSource(
     private val sprintApi: SprintApi,
     private val isClosed: Boolean,
-    private val taigaStorage: TaigaStorage
+    private val taigaStorage: TaigaStorage,
+    private val sprintMapper: SprintMapper
 ) : PagingSource<Int, Sprint>() {
     override fun getRefreshKey(state: PagingState<Int, Sprint>): Int? = state.anchorPosition?.let { anchorPosition ->
         val anchorPage = state.closestPageToPosition(anchorPosition)
@@ -20,16 +21,16 @@ class SprintPagingSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Sprint> = tryCatchWithPagination(
         block = {
             val nextPageNumber = params.key ?: 1
-            val response =
-                sprintApi.getSprints(
-                    project = taigaStorage.currentProjectIdFlow.first(),
-                    page = nextPageNumber,
-                    isClosed = isClosed
-                ).map { it.toSprint() }
+            val response = sprintApi.getSprints(
+                project = taigaStorage.currentProjectIdFlow.first(),
+                page = nextPageNumber,
+                isClosed = isClosed
+            )
+            val result = sprintMapper.toDomainList(response)
             LoadResult.Page(
-                data = response,
+                data = result,
                 prevKey = null,
-                nextKey = if (response.isNotEmpty()) nextPageNumber + 1 else null
+                nextKey = if (result.isNotEmpty()) nextPageNumber + 1 else null
             )
         },
         catchBlock = { e ->

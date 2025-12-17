@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.wiki.data
 
-import com.grappim.taigamobile.core.domain.AttachmentDTO
-import com.grappim.taigamobile.feature.workitem.data.wiki.WikiLinkDTO
-import com.grappim.taigamobile.feature.workitem.data.wiki.WikiPageDTO
+import com.grappim.taigamobile.feature.workitem.dto.AttachmentDTO
+import com.grappim.taigamobile.feature.workitem.dto.WikiLinkDTO
+import com.grappim.taigamobile.feature.workitem.dto.WikiPageDTO
 import okhttp3.MultipartBody
 import retrofit2.Response
 import retrofit2.http.Body

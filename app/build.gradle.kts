@@ -41,6 +41,7 @@ dependencies {
     implementation(projects.core.asyncAndroid)
     implementation(projects.core.appinfoApi)
     implementation(projects.core.navigation)
+    implementation(projects.core.serialization)
 
     implementation(projects.feature.dashboard.domain)
     implementation(projects.feature.dashboard.ui)
@@ -52,6 +53,8 @@ dependencies {
 
     implementation(projects.feature.projects.data)
     implementation(projects.feature.projects.domain)
+    implementation(projects.feature.projects.dto)
+    implementation(projects.feature.projects.mapper)
 
     implementation(projects.feature.wiki.domain)
     implementation(projects.feature.wiki.data)
@@ -66,6 +69,7 @@ dependencies {
     implementation(projects.feature.tasks.data)
     implementation(projects.feature.tasks.domain)
     implementation(projects.feature.tasks.ui)
+    implementation(projects.feature.tasks.mapper)
 
     implementation(projects.feature.scrum.ui)
 
@@ -76,12 +80,16 @@ dependencies {
     implementation(projects.feature.filters.data)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)
+    implementation(projects.feature.filters.mapper)
+    implementation(projects.feature.filters.dto)
 
     implementation(projects.feature.swimlanes.data)
     implementation(projects.feature.swimlanes.domain)
 
     implementation(projects.feature.users.data)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.users.dto)
+    implementation(projects.feature.users.mapper)
 
     implementation(projects.feature.history.domain)
     implementation(projects.feature.history.data)
@@ -93,10 +101,14 @@ dependencies {
     implementation(projects.feature.epics.ui)
     implementation(projects.feature.epics.domain)
     implementation(projects.feature.epics.data)
+    implementation(projects.feature.epics.dto)
+    implementation(projects.feature.epics.mapper)
 
     implementation(projects.feature.issues.data)
     implementation(projects.feature.issues.domain)
     implementation(projects.feature.issues.ui)
+    implementation(projects.feature.issues.dto)
+    implementation(projects.feature.issues.mapper)
 
     implementation(projects.feature.sprint.data)
     implementation(projects.feature.sprint.domain)
@@ -105,10 +117,14 @@ dependencies {
     implementation(projects.feature.userstories.data)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.userstories.ui)
+    implementation(projects.feature.userstories.dto)
+    implementation(projects.feature.userstories.mapper)
 
     implementation(projects.feature.workitem.ui)
     implementation(projects.feature.workitem.domain)
     implementation(projects.feature.workitem.data)
+    implementation(projects.feature.workitem.mapper)
+    implementation(projects.feature.workitem.dto)
 
     implementation(kotlin("reflect"))
 
@@ -155,6 +171,6 @@ dependencies {
 }
 
 moduleGraphAssert {
-    maxHeight = 10
+    maxHeight = 20
     assertOnAnyBuild = true
 }

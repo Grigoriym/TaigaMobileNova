@@ -1,14 +1,22 @@
 package com.grappim.taigamobile.feature.workitem.domain
 
-import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.CustomFields
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
-import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 
 interface WorkItemRepository {
+
+    suspend fun getWorkItems(
+        commonTaskType: CommonTaskType,
+        projectId: Long,
+        assignedId: Long? = null,
+        isClosed: Boolean? = null,
+        watcherId: Long? = null,
+        isDashboard: Boolean? = null,
+        assignedIds: String? = null
+    ): ImmutableList<WorkItem>
+
     suspend fun patchData(
         version: Long,
         workItemId: Long,
@@ -57,4 +65,11 @@ interface WorkItemRepository {
     suspend fun deleteWorkItem(workItemId: Long, commonTaskType: CommonTaskType)
 
     suspend fun patchWikiPage(pageId: Long, version: Long, payload: ImmutableMap<String, Any?>): PatchedData
+
+    suspend fun createWorkItem(
+        commonTaskType: CommonTaskType,
+        subject: String,
+        description: String,
+        status: Long?
+    ): WorkItem
 }

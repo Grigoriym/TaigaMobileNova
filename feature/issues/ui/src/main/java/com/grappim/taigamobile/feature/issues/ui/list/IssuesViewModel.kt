@@ -6,10 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -21,6 +22,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -45,13 +47,19 @@ class IssuesViewModel @Inject constructor(
     private val _state = MutableStateFlow(
         IssuesState(
             selectFilters = ::selectFilters,
-            retryLoadFilters = ::retryLoadFilters
+            retryLoadFilters = ::retryLoadFilters,
+            setSearchQuery = ::setSearchQuery
         )
     )
     val state = _state.asStateFlow()
 
-    val issues = session.issuesFilters.flatMapLatest { filters ->
-        issuesRepository.getIssuesPaging(filters)
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
+    val issues = combine(session.issuesFilters, searchQuery) { filters, searchQuery ->
+        issuesRepository.getIssuesPaging(filters, searchQuery)
+    }.flatMapLatest {
+        it
     }.cachedIn(viewModelScope)
 
     private val retryFiltersSignal = MutableSharedFlow<Unit>()
@@ -64,16 +72,10 @@ class IssuesViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = FiltersDataDTO()
+        initialValue = FiltersData()
     )
 
     init {
-        taigaStorage.currentProjectIdFlow
-            .distinctUntilChanged()
-            .onEach {
-                issuesRepository.refreshIssues()
-            }.launchIn(viewModelScope)
-
         session.issuesFilters
             .onEach { filters ->
                 _state.update {
@@ -83,13 +85,19 @@ class IssuesViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
+    private fun setSearchQuery(newQuery: String) {
+        _searchQuery.update {
+            newQuery
+        }
+    }
+
     private fun retryLoadFilters() {
         viewModelScope.launch {
             retryFiltersSignal.emit(Unit)
         }
     }
 
-    private suspend fun loadFiltersData(): FiltersDataDTO {
+    private suspend fun loadFiltersData(): FiltersData {
         _state.update {
             it.copy(
                 isFiltersLoading = true,
@@ -97,7 +105,7 @@ class IssuesViewModel @Inject constructor(
             )
         }
 
-        val result = filtersRepository.getFiltersDataResultOld(CommonTaskType.Issue)
+        val result = resultOf { filtersRepository.getFiltersData(CommonTaskType.Issue) }
         return if (result.isSuccess) {
             val filters = result.getOrThrow()
             session.changeIssuesFilters(
@@ -122,11 +130,11 @@ class IssuesViewModel @Inject constructor(
             }
             showSnackbarSuspend(NativeText.Resource(RString.filters_loading_error))
 
-            FiltersDataDTO()
+            FiltersData()
         }
     }
 
-    private fun selectFilters(filters: FiltersDataDTO) {
+    private fun selectFilters(filters: FiltersData) {
         session.changeIssuesFilters(filters)
     }
 }

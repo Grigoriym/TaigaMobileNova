@@ -11,9 +11,6 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.grappim.taigamobile.commontask.CommonTaskNavDestination
-import com.grappim.taigamobile.commontask.CommonTaskScreen
-import com.grappim.taigamobile.commontask.navigateToCommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
@@ -83,7 +80,6 @@ import com.grappim.taigamobile.utils.ui.NativeText
 @Composable
 fun MainNavHost(
     isLogged: Boolean,
-    isNewUiUsed: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
     showSnackbar: (NativeText) -> Unit,
@@ -115,50 +111,17 @@ fun MainNavHost(
         composable<ProjectSelectorNavDestination> {
             ProjectSelectorScreen(
                 showMessage = showMessage,
-                onProjectSelect = { isFromLogin: Boolean ->
-                    /**
-                     * After the login and the project is selected, dashboard will become the top destination
-                     */
-                    if (isFromLogin) {
-                        navController.navigateToDashboardAsTopDestination()
-                    } else {
-                        navController.popBackStack()
-                    }
+                onProjectSelect = {
+                    navController.navigateToDashboardAsTopDestination()
                 }
             )
         }
 
         composable<DashboardNavDestination> {
             DashboardScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 navigateToTaskScreen = { id, type, ref ->
-                    if (isNewUiUsed) {
-                        when (type) {
-                            CommonTaskType.UserStory -> navController.navigateToUserStory(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Epic -> navController.navigateToEpicDetails(
-                                epicId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Issue -> navController.navigateToIssueDetails(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Task -> navController.navigateToTask(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            else -> navController.navigateToCommonTask(id, type, ref)
-                        }
-                    } else {
-                        navController.navigateToCommonTask(id, type, ref)
-                    }
+                    navController.navigate(id, type, ref)
                 }
             )
         }
@@ -176,14 +139,10 @@ fun MainNavHost(
                 },
                 updateData = updateData,
                 goToUserStory = { id, type, ref ->
-                    if (isNewUiUsed) {
-                        navController.navigateToUserStory(
-                            taskId = id,
-                            ref = ref
-                        )
-                    } else {
-                        navController.navigateToCommonTask(id, type, ref)
-                    }
+                    navController.navigateToUserStory(
+                        taskId = id,
+                        ref = ref
+                    )
                 }
             )
         }
@@ -258,14 +217,10 @@ fun MainNavHost(
                 },
                 updateData = updateData,
                 goToEpic = { id, type, ref ->
-                    if (isNewUiUsed) {
-                        navController.navigateToEpicDetails(
-                            epicId = id,
-                            ref = ref
-                        )
-                    } else {
-                        navController.navigateToCommonTask(id, type, ref)
-                    }
+                    navController.navigateToEpicDetails(
+                        epicId = id,
+                        ref = ref
+                    )
                 }
             )
         }
@@ -313,14 +268,10 @@ fun MainNavHost(
                 },
                 updateData = updateData,
                 goToTask = { id, type, ref ->
-                    if (isNewUiUsed) {
-                        navController.navigateToIssueDetails(
-                            taskId = id,
-                            ref = ref
-                        )
-                    } else {
-                        navController.navigateToCommonTask(id, type, ref)
-                    }
+                    navController.navigateToIssueDetails(
+                        taskId = id,
+                        ref = ref
+                    )
                 }
             )
         }
@@ -408,7 +359,7 @@ fun MainNavHost(
             KanbanScreen(
                 showSnackbar = showSnackbar,
                 goToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
+                    navController.navigate(id, type, ref)
                 },
                 goToCreateTask = { task, statusId, swimlaneId ->
                     navController.navigateToCreateTask(
@@ -468,33 +419,7 @@ fun MainNavHost(
                 showMessage = showMessage,
                 goBack = navController::popBackStack,
                 goToTaskScreen = { id, type, ref ->
-                    if (isNewUiUsed) {
-                        when (type) {
-                            CommonTaskType.UserStory -> navController.navigateToUserStory(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Epic -> navController.navigateToEpicDetails(
-                                epicId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Issue -> navController.navigateToIssueDetails(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Task -> navController.navigateToTask(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            else -> navController.navigateToCommonTask(id, type, ref)
-                        }
-                    } else {
-                        navController.navigateToCommonTask(id, type, ref)
-                    }
+                    navController.navigate(id, type, ref)
                 },
                 goToCreateTask = { type, parentId, sprintId ->
                     navController.navigateToCreateTask(
@@ -512,67 +437,41 @@ fun MainNavHost(
             )
         }
 
-        composable<CommonTaskNavDestination> {
-            CommonTaskScreen(
-                showMessage = showMessage,
-                goToProfile = { userId ->
-                    navController.navigateToProfileScreen(userId)
-                },
-                goToUserStory = { id, taskType, ref ->
-                    navController.popBackStack()
-                    navController.navigateToCommonTask(id, taskType, ref)
-                },
-                goBack = {
-                    navController.setUpdateDataOnBack()
-                    navController.popBackStack()
-                },
-                navigateToCreateTask = { type, id ->
-                    navController.navigateToCreateTask(
-                        type = type,
-                        parentId = id
-                    )
-                },
-                navigateToTask = { id, type, ref ->
-                    if (isNewUiUsed) {
-                        when (type) {
-                            CommonTaskType.UserStory -> navController.navigateToUserStory(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Epic -> navController.navigateToEpicDetails(
-                                epicId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Issue -> navController.navigateToIssueDetails(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            CommonTaskType.Task -> navController.navigateToTask(
-                                taskId = id,
-                                ref = ref
-                            )
-
-                            else -> navController.navigateToCommonTask(id, type, ref)
-                        }
-                    } else {
-                        navController.navigateToCommonTask(id, type, ref)
-                    }
-                }
-            )
-        }
-
         composable<CreateTaskNavDestination> {
             CreateTaskScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 navigateOnTaskCreated = { id, type, ref ->
                     navController.popBackStack()
-                    navController.navigateToCommonTask(id, type, ref)
+                    navController.navigate(id, type, ref)
                 }
             )
         }
+    }
+}
+
+private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Int) {
+    when (type) {
+        CommonTaskType.UserStory -> this.navigateToUserStory(
+            taskId = id,
+            ref = ref
+        )
+
+        CommonTaskType.Epic -> this.navigateToEpicDetails(
+            epicId = id,
+            ref = ref
+        )
+
+        CommonTaskType.Issue -> this.navigateToIssueDetails(
+            taskId = id,
+            ref = ref
+        )
+
+        CommonTaskType.Task -> this.navigateToTask(
+            taskId = id,
+            ref = ref
+        )
+
+        else -> error("lol")
     }
 }
 

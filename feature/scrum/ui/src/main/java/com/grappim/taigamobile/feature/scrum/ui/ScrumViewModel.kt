@@ -4,16 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.filters.domain.RetryFiltersSignalDelegate
 import com.grappim.taigamobile.feature.filters.domain.RetryFiltersSignalDelegateImpl
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
@@ -56,7 +58,8 @@ class ScrumViewModel @Inject constructor(
             setIsCreateSprintDialogVisible = ::setIsCreateSprintDialogVisible,
             onSelectFilters = ::selectFilters,
             retryLoadFilters = ::retryLoadFilters,
-            onCreateSprint = ::createSprint
+            onCreateSprint = ::createSprint,
+            onSetSearchQuery = ::setSearchQuery
         )
     )
     val state = _state.asStateFlow()
@@ -76,8 +79,16 @@ class ScrumViewModel @Inject constructor(
         sprintsRepository.getSprints(isClosed = true)
     }.cachedIn(viewModelScope)
 
-    val userStories: Flow<PagingData<CommonTask>> = session.scrumFilters.flatMapLatest { filters ->
-        userStoriesRepository.getUserStoriesPaging(filters)
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
+    val userStories: Flow<PagingData<WorkItem>> = combine(
+        session.scrumFilters,
+        searchQuery
+    ) { filters, query ->
+        userStoriesRepository.getUserStoriesPaging(filters, query)
+    }.flatMapLatest {
+        it
     }.cachedIn(viewModelScope)
 
     val filters = merge(
@@ -88,7 +99,7 @@ class ScrumViewModel @Inject constructor(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = FiltersDataDTO()
+        initialValue = FiltersData()
     )
 
     init {
@@ -97,6 +108,10 @@ class ScrumViewModel @Inject constructor(
                 it.copy(activeFilters = filters)
             }
         }.launchIn(viewModelScope)
+    }
+
+    private fun setSearchQuery(newQuery: String) {
+        _searchQuery.update { newQuery }
     }
 
     private fun retryLoadFilters() {
@@ -113,7 +128,7 @@ class ScrumViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadFiltersData(): FiltersDataDTO {
+    private suspend fun loadFiltersData(): FiltersData {
         _state.update {
             it.copy(
                 isFiltersLoading = true,
@@ -121,10 +136,12 @@ class ScrumViewModel @Inject constructor(
             )
         }
 
-        val result = filtersRepository.getFiltersDataResultOld(
-            commonTaskType = CommonTaskType.UserStory,
-            isCommonTaskFromBacklog = true
-        )
+        val result = resultOf {
+            filtersRepository.getFiltersData(
+                commonTaskType = CommonTaskType.UserStory,
+                isCommonTaskFromBacklog = true
+            )
+        }
         return if (result.isSuccess) {
             val filters = result.getOrThrow()
 
@@ -148,11 +165,11 @@ class ScrumViewModel @Inject constructor(
             }
             showSnackbarSuspend(NativeText.Resource(RString.filters_loading_error))
 
-            FiltersDataDTO()
+            FiltersData()
         }
     }
 
-    private fun selectFilters(filters: FiltersDataDTO) {
+    private fun selectFilters(filters: FiltersData) {
         session.changeScrumFilters(filters)
     }
 

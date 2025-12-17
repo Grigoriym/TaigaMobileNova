@@ -25,17 +25,18 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.strings.RString
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun FilterModalBottomSheet(
     bottomSheetState: SheetState,
-    unselectedFilters: FiltersDataDTO,
+    unselectedFilters: FiltersData,
     isBottomSheetVisible: Boolean,
     setBottomSheetVisible: (Boolean) -> Unit,
-    selected: FiltersDataDTO,
-    onSelect: (FiltersDataDTO) -> Unit,
+    selected: FiltersData,
+    onSelect: (FiltersData) -> Unit,
     isFiltersError: Boolean = false,
     onRetryFilters: () -> Unit = {},
     isFiltersLoading: Boolean = false
@@ -57,10 +58,10 @@ fun FilterModalBottomSheet(
 @Composable
 private fun FilterModalBottomSheetContent(
     bottomSheetState: SheetState,
-    unselectedFilters: FiltersDataDTO,
+    unselectedFilters: FiltersData,
     setBottomSheetVisible: (Boolean) -> Unit,
-    selected: FiltersDataDTO,
-    onSelect: (FiltersDataDTO) -> Unit,
+    selected: FiltersData,
+    onSelect: (FiltersData) -> Unit,
     isFiltersError: Boolean = false,
     onRetryFilters: () -> Unit = {},
     isFiltersLoading: Boolean = false
@@ -141,14 +142,14 @@ private fun FilterErrorContent(onRetry: () -> Unit, isLoading: Boolean) {
 }
 
 @Composable
-private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersDataDTO) -> Unit) {
+private fun SelectedFiltersContent(selected: FiltersData, onSelect: (FiltersData) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
         selected.types.forEach {
             FilterChip(
                 filter = it,
                 onRemoveClick = {
                     onSelect(
-                        selected.copy(types = selected.types - it)
+                        selected.copy(types = (selected.types - it).toImmutableList())
                     )
                 }
             )
@@ -160,7 +161,7 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
                 onRemoveClick = {
                     onSelect(
                         selected.copy(
-                            severities = selected.severities - it
+                            severities = (selected.severities - it).toImmutableList()
                         )
                     )
                 }
@@ -173,7 +174,7 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
                 onRemoveClick = {
                     onSelect(
                         selected.copy(
-                            priorities = selected.priorities - it
+                            priorities = (selected.priorities - it).toImmutableList()
                         )
                     )
                 }
@@ -186,7 +187,7 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
                 onRemoveClick = {
                     onSelect(
                         selected.copy(
-                            statuses = selected.statuses - it
+                            statuses = (selected.statuses - it).toImmutableList()
                         )
                     )
                 }
@@ -198,7 +199,7 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
                 filter = it,
                 onRemoveClick = {
                     onSelect(
-                        selected.copy(tags = selected.tags - it)
+                        selected.copy(tags = (selected.tags - it).toImmutableList())
                     )
                 }
             )
@@ -211,7 +212,7 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
                 onRemoveClick = {
                     onSelect(
                         selected.copy(
-                            assignees = selected.assignees - it
+                            assignees = (selected.assignees - it).toImmutableList()
                         )
                     )
                 }
@@ -223,7 +224,7 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
                 filter = it,
                 onRemoveClick = {
                     onSelect(
-                        selected.copy(roles = selected.roles - it)
+                        selected.copy(roles = (selected.roles - it).toImmutableList())
                     )
                 }
             )
@@ -235,7 +236,7 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
                 onRemoveClick = {
                     onSelect(
                         selected.copy(
-                            createdBy = selected.createdBy - it
+                            createdBy = (selected.createdBy - it).toImmutableList()
                         )
                     )
                 }
@@ -248,7 +249,7 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
                 noNameId = RString.not_in_an_epic,
                 onRemoveClick = {
                     onSelect(
-                        selected.copy(epics = selected.epics - it)
+                        selected.copy(epics = (selected.epics - it).toImmutableList())
                     )
                 }
             )
@@ -258,9 +259,9 @@ private fun SelectedFiltersContent(selected: FiltersDataDTO, onSelect: (FiltersD
 
 @Composable
 private fun FilterNormalContent(
-    unselectedFilters: FiltersDataDTO,
-    selected: FiltersDataDTO,
-    onSelect: (FiltersDataDTO) -> Unit
+    unselectedFilters: FiltersData,
+    selected: FiltersData,
+    onSelect: (FiltersData) -> Unit
 ) {
     val space = 6.dp
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -278,7 +279,7 @@ private fun FilterNormalContent(
                 filters = it,
                 onSelect = {
                     onSelect(
-                        selected.copy(types = selected.types + it)
+                        selected.copy(types = (selected.types + it).toImmutableList())
                     )
                 }
             )
@@ -292,7 +293,7 @@ private fun FilterNormalContent(
                 onSelect = {
                     onSelect(
                         selected.copy(
-                            severities = selected.severities + it
+                            severities = (selected.severities + it).toImmutableList()
                         )
                     )
                 }
@@ -307,7 +308,7 @@ private fun FilterNormalContent(
                 onSelect = {
                     onSelect(
                         selected.copy(
-                            priorities = selected.priorities + it
+                            priorities = (selected.priorities + it).toImmutableList()
                         )
                     )
                 }
@@ -321,7 +322,7 @@ private fun FilterNormalContent(
                 filters = it,
                 onSelect = {
                     onSelect(
-                        selected.copy(statuses = selected.statuses + it)
+                        selected.copy(statuses = (selected.statuses + it).toImmutableList())
                     )
                 }
             )
@@ -334,7 +335,7 @@ private fun FilterNormalContent(
                 filters = it,
                 onSelect = {
                     onSelect(
-                        selected.copy(tags = selected.tags + it)
+                        selected.copy(tags = (selected.tags + it).toImmutableList())
                     )
                 }
             )
@@ -349,7 +350,7 @@ private fun FilterNormalContent(
                 onSelect = {
                     onSelect(
                         selected.copy(
-                            assignees = selected.assignees + it
+                            assignees = (selected.assignees + it).toImmutableList()
                         )
                     )
                 }
@@ -363,7 +364,7 @@ private fun FilterNormalContent(
                 filters = it,
                 onSelect = {
                     onSelect(
-                        selected.copy(roles = selected.roles + it)
+                        selected.copy(roles = (selected.roles + it).toImmutableList())
                     )
                 }
             )
@@ -377,7 +378,7 @@ private fun FilterNormalContent(
                 onSelect = {
                     onSelect(
                         selected.copy(
-                            createdBy = selected.createdBy + it
+                            createdBy = (selected.createdBy + it).toImmutableList()
                         )
                     )
                 }
@@ -392,7 +393,7 @@ private fun FilterNormalContent(
                 filters = it,
                 onSelect = {
                     onSelect(
-                        selected.copy(epics = selected.epics + it)
+                        selected.copy(epics = (selected.epics + it).toImmutableList())
                     )
                 }
             )

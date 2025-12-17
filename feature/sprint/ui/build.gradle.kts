@@ -13,6 +13,8 @@ dependencies {
     implementation(projects.feature.sprint.domain)
     implementation(projects.feature.tasks.domain)
     implementation(projects.feature.filters.domain)
+    implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.users.domain)
 
     implementation(projects.strings)
     implementation(projects.uikit)

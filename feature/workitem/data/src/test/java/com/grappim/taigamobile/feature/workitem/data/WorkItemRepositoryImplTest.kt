@@ -1,17 +1,20 @@
 package com.grappim.taigamobile.feature.workitem.data
 
-import com.grappim.taigamobile.core.api.AttachmentMapper
-import com.grappim.taigamobile.core.api.CustomFieldsMapper
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.CustomAttributesValuesResponseDTO
-import com.grappim.taigamobile.core.domain.DueDateStatus
-import com.grappim.taigamobile.core.domain.patch.PatchedCustomAttributes
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
+import com.grappim.taigamobile.feature.workitem.domain.PatchedCustomAttributes
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.UpdateWorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.dto.CustomAttributesValuesResponseDTO
+import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
+import com.grappim.taigamobile.feature.workitem.mapper.AttachmentMapper
+import com.grappim.taigamobile.feature.workitem.mapper.CustomFieldsMapper
+import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
+import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getAttachment
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getUser

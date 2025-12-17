@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.workitem.ui.screens.edittags
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
@@ -97,24 +97,24 @@ class WorkItemEditTagsViewModel @Inject constructor(
 
     private fun getFiltersData() {
         viewModelScope.launch {
-            // todo remove hard-coded task type
-            filtersRepository.getFiltersDataResult(CommonTaskType.Issue)
-                .onSuccess { result ->
-                    val tags = tagUIMapper.toUI(list = result.tags).toPersistentList()
-                    val updatedTags = tags.map { tag ->
-                        if (tag.name in workItemEditShared.originalTagsNames) {
-                            tag.copy(isSelected = true)
-                        } else {
-                            tag
-                        }
-                    }.sortedByDescending { it.isSelected }
-                        .toImmutableList()
-                    _state.update {
-                        it.copy(tags = updatedTags)
+            resultOf {
+                filtersRepository.getFiltersData(workItemEditShared.currentCommonTaskType)
+            }.onSuccess { result ->
+                val tags = tagUIMapper.toUIFromFilters(list = result.tags).toPersistentList()
+                val updatedTags = tags.map { tag ->
+                    if (tag.name in workItemEditShared.originalTagsNames) {
+                        tag.copy(isSelected = true)
+                    } else {
+                        tag
                     }
-                }.onFailure { error ->
-                    Timber.e(error)
+                }.sortedByDescending { it.isSelected }
+                    .toImmutableList()
+                _state.update {
+                    it.copy(tags = updatedTags)
                 }
+            }.onFailure { error ->
+                Timber.e(error)
+            }
         }
     }
 }

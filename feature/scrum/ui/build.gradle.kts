@@ -21,6 +21,7 @@ dependencies {
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)
+    implementation(projects.feature.workitem.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)

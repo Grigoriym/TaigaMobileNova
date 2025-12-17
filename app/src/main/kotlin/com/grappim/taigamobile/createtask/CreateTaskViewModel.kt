@@ -5,27 +5,24 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.TasksRepositoryOld
-import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.postUpdate
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.loadOrError
-import com.grappim.taigamobile.utils.ui.mutableResultFlow
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class CreateTaskViewModel @Inject constructor(
-    private val tasksRepositoryOld: TasksRepositoryOld,
-    private val session: Session,
-    savedStateHandle: SavedStateHandle
+    savedStateHandle: SavedStateHandle,
+    private val createWorkItemUseCase: CreateWorkItemUseCase
 ) : ViewModel() {
 
     val route = savedStateHandle.toRoute<CreateTaskNavDestination>()
@@ -43,29 +40,60 @@ class CreateTaskViewModel @Inject constructor(
             ),
             setTitle = ::setTitle,
             setDescription = ::setDescription,
-            onCreateTask = ::createTask
+            onCreateTask = ::onCreateTask
         )
     )
     val state = _state.asStateFlow()
 
-    val creationResult = mutableResultFlow<CommonTask>()
+    private val _creationResult = Channel<CreateWorkItemData>()
+    val creationResult = _creationResult.receiveAsFlow()
 
-    // TODO handle empty title
-    private fun createTask() {
+    private fun onCreateTask() {
         val title = state.value.title.text.trim()
-        if (title.isEmpty()) return
+        if (title.isEmpty()) {
+            _state.update {
+                it.copy(
+                    error = NativeText.Resource(RString.title_is_empty)
+                )
+            }
+            return
+        }
+
+        _state.update {
+            it.copy(
+                isLoading = true
+            )
+        }
 
         val description = state.value.description.text.trim()
 
-        createTask(
-            route.type,
-            title,
-            description,
-            route.parentId,
-            route.sprintId,
-            route.statusId,
-            route.swimlaneId
-        )
+        viewModelScope.launch {
+            createWorkItemUseCase.createTask(
+                commonTaskType = route.type,
+                title = title,
+                description = description,
+                parentId = route.parentId,
+                sprintId = route.sprintId,
+                statusId = route.statusId,
+                swimlaneId = route.swimlaneId
+            ).onSuccess { result ->
+                _state.update {
+                    it.copy(
+                        isLoading = false
+                    )
+                }
+                _creationResult.send(result)
+            }.onFailure { error ->
+                Timber.e(error)
+
+                _state.update {
+                    it.copy(
+                        error = getErrorMessage(error),
+                        isLoading = false
+                    )
+                }
+            }
+        }
     }
 
     private fun setTitle(title: TextFieldValue) {
@@ -77,30 +105,6 @@ class CreateTaskViewModel @Inject constructor(
     private fun setDescription(description: TextFieldValue) {
         _state.update {
             it.copy(description = description)
-        }
-    }
-
-    fun createTask(
-        commonTaskType: CommonTaskType,
-        title: String,
-        description: String,
-        parentId: Long? = null,
-        sprintId: Long? = null,
-        statusId: Long? = null,
-        swimlaneId: Long? = null
-    ) = viewModelScope.launch {
-        creationResult.loadOrError(preserveValue = false) {
-            tasksRepositoryOld.createCommonTask(
-                commonTaskType,
-                title,
-                description,
-                parentId,
-                sprintId,
-                statusId,
-                swimlaneId
-            ).also {
-                session.taskEdit.postUpdate()
-            }
         }
     }
 }

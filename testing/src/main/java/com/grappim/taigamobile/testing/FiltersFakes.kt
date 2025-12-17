@@ -1,28 +1,26 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.domain.EpicsFilter
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.core.domain.RolesFilter
-import com.grappim.taigamobile.core.domain.StatusesFilter
-import com.grappim.taigamobile.core.domain.TagsFilter
-import com.grappim.taigamobile.core.domain.UsersFilter
-import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
-import com.grappim.taigamobile.feature.filters.domain.model.Statuses
-import kotlinx.collections.immutable.ImmutableList
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
+import com.grappim.taigamobile.feature.filters.dto.EpicsFilterDTO
+import com.grappim.taigamobile.feature.filters.dto.FiltersDataDTO
+import com.grappim.taigamobile.feature.filters.dto.RolesFilterDTO
+import com.grappim.taigamobile.feature.filters.dto.StatusesFilterDTO
+import com.grappim.taigamobile.feature.filters.dto.TagsFilterDTO
+import com.grappim.taigamobile.feature.filters.dto.UsersFilterDTO
 import kotlinx.collections.immutable.persistentListOf
 
-fun getFiltersData(
-    newStatuses: ImmutableList<Statuses> = persistentListOf()
-): FiltersData = FiltersData(
-    statuses = newStatuses,
+fun getFiltersData(): FiltersData = FiltersData(
+    statuses = persistentListOf(),
     types = persistentListOf(),
     severities = persistentListOf(),
     priorities = persistentListOf(),
-    assignedTo = persistentListOf(),
-    owners = persistentListOf(),
     tags = persistentListOf(),
-    roles = persistentListOf()
-)
+    roles = persistentListOf(),
+    epics = persistentListOf(),
+    assignees = persistentListOf(),
+    createdBy = persistentListOf(),
+
+    )
 
 fun getFiltersDataDTO(): FiltersDataDTO = FiltersDataDTO(
     query = getRandomString(),
@@ -64,31 +62,31 @@ fun getFiltersDataDTO(): FiltersDataDTO = FiltersDataDTO(
     )
 )
 
-fun getTagsFilter(): TagsFilter = TagsFilter(
+fun getTagsFilter(): TagsFilterDTO = TagsFilterDTO(
     name = getRandomString(),
     color = getRandomString(),
     count = getRandomLong()
 )
 
-fun getEpicsFilter(): EpicsFilter = EpicsFilter(
+fun getEpicsFilter(): EpicsFilterDTO = EpicsFilterDTO(
     id = getRandomLong(),
     name = getRandomString(),
     count = getRandomLong()
 )
 
-fun getUsersFilter(): UsersFilter = UsersFilter(
+fun getUsersFilter(): UsersFilterDTO = UsersFilterDTO(
     id = getRandomLong(),
     name = getRandomString(),
     count = getRandomLong()
 )
 
-fun getRolesFilter(): RolesFilter = RolesFilter(
+fun getRolesFilter(): RolesFilterDTO = RolesFilterDTO(
     id = getRandomLong(),
     name = getRandomString(),
     count = getRandomLong()
 )
 
-fun getStatusesFilter(): StatusesFilter = StatusesFilter(
+fun getStatusesFilter(): StatusesFilterDTO = StatusesFilterDTO(
     id = getRandomLong(),
     color = getRandomString(),
     name = getRandomString(),

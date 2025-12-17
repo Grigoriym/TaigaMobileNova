@@ -2,34 +2,38 @@ package com.grappim.taigamobile.feature.issues.data
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.grappim.taigamobile.core.api.toCommonTask
 import com.grappim.taigamobile.core.api.tryCatchWithPagination
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.core.domain.commaString
-import com.grappim.taigamobile.core.domain.tagsCommaString
 import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.filters.domain.commaString
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
+import com.grappim.taigamobile.feature.filters.domain.tagsCommaString
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import kotlinx.coroutines.flow.first
 
 class IssuesPagingSource(
-    private val issuesApi: IssuesApi,
-    private val filters: FiltersDataDTO,
-    private val taigaStorage: TaigaStorage
-) : PagingSource<Int, CommonTask>() {
-    override fun getRefreshKey(state: PagingState<Int, CommonTask>): Int? =
-        state.anchorPosition?.let { anchorPosition ->
-            val anchorPage = state.closestPageToPosition(anchorPosition)
-            anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
-        }
+    private val filters: FiltersData,
+    private val taigaStorage: TaigaStorage,
+    private val query: String,
+    private val workItemApi: WorkItemApi,
+    private val workItemMapper: WorkItemMapper
+) : PagingSource<Int, WorkItem>() {
+    override fun getRefreshKey(state: PagingState<Int, WorkItem>): Int? = state.anchorPosition?.let { anchorPosition ->
+        val anchorPage = state.closestPageToPosition(anchorPosition)
+        anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
+    }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, CommonTask> = tryCatchWithPagination(
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, WorkItem> = tryCatchWithPagination(
         block = {
             val nextPageNumber = params.key ?: 1
-            val response = issuesApi.getIssues(
+            val response = workItemApi.getWorkItemsPagination(
+                taskPath = WorkItemPathPlural(CommonTaskType.Issue),
                 page = nextPageNumber,
                 project = taigaStorage.currentProjectIdFlow.first(),
-                query = filters.query,
+                query = query,
                 assignedIds = filters.assignees.commaString(),
                 ownerIds = filters.createdBy.commaString(),
                 priorities = filters.priorities.commaString(),
@@ -38,11 +42,12 @@ class IssuesPagingSource(
                 statuses = filters.statuses.commaString(),
                 roles = filters.roles.commaString(),
                 tags = filters.tags.tagsCommaString()
-            ).map { it.toCommonTask(CommonTaskType.Issue) }
+            )
+            val result = workItemMapper.toDomainList(response, CommonTaskType.Issue)
             LoadResult.Page(
-                data = response,
+                data = result,
                 prevKey = null,
-                nextKey = if (response.isNotEmpty()) nextPageNumber + 1 else null
+                nextKey = if (result.isNotEmpty()) nextPageNumber + 1 else null
             )
         },
         catchBlock = { e ->

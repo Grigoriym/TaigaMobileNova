@@ -5,7 +5,6 @@ package com.grappim.taigamobile.feature.settings.ui
 import androidx.annotation.StringRes
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -22,7 +21,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircleOutline
 import androidx.compose.material.icons.filled.HighlightOff
 import androidx.compose.material3.Icon
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -59,7 +57,6 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
-import com.grappim.taigamobile.utils.ui.delegates.collectSnackbarMessage
 import timber.log.Timber
 
 private const val ANIMATION_DURATION = 500
@@ -68,7 +65,6 @@ private const val ANIMATION_DURATION = 500
 fun SettingsScreen(showSnackbar: (message: NativeText) -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarMsg by viewModel.snackBarMessage.collectSnackbarMessage()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -79,9 +75,9 @@ fun SettingsScreen(showSnackbar: (message: NativeText) -> Unit, viewModel: Setti
         )
     }
 
-    LaunchedEffect(snackbarMsg) {
-        if (snackbarMsg != NativeText.Empty) {
-            showSnackbar(snackbarMsg)
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 
@@ -89,14 +85,14 @@ fun SettingsScreen(showSnackbar: (message: NativeText) -> Unit, viewModel: Setti
         CircularLoaderWidget(modifier = Modifier.fillMaxSize())
     }
 
-    if (state.userDTO != null) {
+    if (state.user != null) {
         SettingsScreenContent(state = state)
     }
 }
 
 @Composable
 fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
-    requireNotNull(state.userDTO)
+    requireNotNull(state.user)
     val context = LocalContext.current
 
     Column(
@@ -111,7 +107,7 @@ fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
                 .clip(MaterialTheme.shapes.large),
             placeholder = painterResource(RDrawable.default_avatar),
             error = painterResource(RDrawable.default_avatar),
-            model = state.userDTO.avatarUrl,
+            model = state.user.avatarUrl,
             contentDescription = null,
             contentScale = ContentScale.Crop
         )
@@ -122,12 +118,12 @@ fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = state.userDTO.displayName,
+                text = state.user.displayName,
                 style = MaterialTheme.typography.titleLarge
             )
 
             Text(
-                text = stringResource(RString.username_template).format(state.userDTO.displayName),
+                text = stringResource(RString.username_template).format(state.user.displayName),
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -171,19 +167,6 @@ fun SettingsScreenContent(state: SettingsState, modifier: Modifier = Modifier) {
                             }
                         )
                     }
-                }
-            )
-
-            ListItem(
-                modifier = Modifier
-                    .clickable {
-                        state.onNewUIToggle()
-                    },
-                headlineContent = {
-                    Text(text = stringResource(id = RString.is_new_ui_used))
-                },
-                trailingContent = {
-                    FeatureEnabledIcon(state.isNewUIUsed)
                 }
             )
         }

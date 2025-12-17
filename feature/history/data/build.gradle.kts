@@ -12,7 +12,12 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.storage)
     implementation(projects.core.async)
+
     implementation(projects.feature.history.domain)
+
+    implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.workitem.dto)
+    implementation(projects.feature.workitem.mapper)
 
     implementation(libs.retrofit)
     implementation(libs.moshi)

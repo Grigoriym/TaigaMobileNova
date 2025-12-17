@@ -108,5 +108,80 @@ fun TextFieldWithHint(
     }
 }
 
+@Composable
+fun TextFieldStringWithHint(
+    @StringRes hintId: Int,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 0.dp,
+    verticalPadding: Dp = 0.dp,
+    width: Dp? = null,
+    minHeight: Dp? = null,
+    style: TextStyle = MaterialTheme.typography.bodyLarge,
+    singleLine: Boolean = false,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    onFocusChange: (Boolean) -> Unit = {},
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    maxLines: Int = Int.MAX_VALUE,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    onSearchClick: (() -> Unit)? = null,
+    hasBorder: Boolean = false,
+    contentAlignment: Alignment = Alignment.CenterStart
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val unfocusedColor = MaterialTheme.colorScheme.outline
+    var outlineColor by remember { mutableStateOf(unfocusedColor) }
+
+    Box(
+        contentAlignment = contentAlignment,
+        modifier = modifier.let { m -> width?.let { m.width(it) } ?: m.fillMaxWidth() }
+            .heightIn(min = minHeight ?: Dp.Unspecified)
+            .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+            .let {
+                if (hasBorder) {
+                    it
+                        .border(
+                            width = 1.dp,
+                            color = outlineColor,
+                            shape = MaterialTheme.shapes.large
+                        )
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                } else {
+                    it
+                }
+            }
+    ) {
+        if (value.isEmpty()) {
+            Text(
+                text = stringResource(hintId),
+                style = style,
+                color = unfocusedColor
+            )
+        }
+
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .onFocusChanged {
+                    onFocusChange(it.isFocused)
+                    outlineColor = if (it.isFocused) primaryColor else unfocusedColor
+                },
+            textStyle = style.merge(TextStyle(color = textColor)),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+            singleLine = singleLine,
+            maxLines = maxLines,
+            keyboardOptions = KeyboardOptions(
+                imeAction = onSearchClick?.let { ImeAction.Search } ?: ImeAction.Default,
+                keyboardType = keyboardType
+            ),
+            keyboardActions = KeyboardActions(onSearch = { onSearchClick?.invoke() })
+        )
+    }
+}
+
 val searchFieldHorizontalPadding = mainHorizontalScreenPadding
 val searchFieldVerticalPadding = 8.dp

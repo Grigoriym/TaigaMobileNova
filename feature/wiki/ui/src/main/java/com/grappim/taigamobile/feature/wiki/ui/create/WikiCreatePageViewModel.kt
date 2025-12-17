@@ -8,8 +8,7 @@ import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
-import com.grappim.taigamobile.utils.ui.delegates.UiErrorDelegate
-import com.grappim.taigamobile.utils.ui.delegates.UiErrorDelegateImpl
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -26,8 +25,7 @@ class WikiCreatePageViewModel @Inject constructor(
     private val wikiRepository: WikiRepository,
     private val workItemRepository: WorkItemRepository,
     private val patchDataGenerator: PatchDataGenerator
-) : ViewModel(),
-    UiErrorDelegate by UiErrorDelegateImpl() {
+) : ViewModel() {
 
     private val _state = MutableStateFlow(
         WikiCreatePageState(
@@ -63,7 +61,10 @@ class WikiCreatePageViewModel @Inject constructor(
     private fun createWikiPage(title: String, content: String) {
         viewModelScope.launch {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
             }
             resultOf {
                 val slug = title.replace(" ", "-").lowercase()
@@ -88,9 +89,11 @@ class WikiCreatePageViewModel @Inject constructor(
                 _creationResult.send(result)
             }.onFailure { error ->
                 Timber.e(error)
-                showUiErrorSuspend(getErrorMessage(error))
                 _state.update {
-                    it.copy(isLoading = false)
+                    it.copy(
+                        isLoading = false,
+                        error = getErrorMessage(error)
+                    )
                 }
             }
         }

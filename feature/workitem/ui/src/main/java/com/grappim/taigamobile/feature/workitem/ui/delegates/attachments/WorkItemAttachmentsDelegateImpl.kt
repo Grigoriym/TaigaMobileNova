@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 
 import android.net.Uri
-import com.grappim.taigamobile.core.domain.Attachment
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import kotlinx.collections.immutable.toPersistentList

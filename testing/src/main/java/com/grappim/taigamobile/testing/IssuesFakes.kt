@@ -1,19 +1,19 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.domain.Comment
-import com.grappim.taigamobile.core.domain.CustomField
-import com.grappim.taigamobile.core.domain.CustomFieldType
-import com.grappim.taigamobile.core.domain.CustomFieldValue
-import com.grappim.taigamobile.core.domain.CustomFields
-import com.grappim.taigamobile.core.domain.DueDateStatus
 import com.grappim.taigamobile.feature.filters.domain.model.Priority
 import com.grappim.taigamobile.feature.filters.domain.model.Severity
 import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.filters.domain.model.Type
-import com.grappim.taigamobile.feature.issues.domain.IssueDetailsData
 import com.grappim.taigamobile.feature.issues.domain.Issue
+import com.grappim.taigamobile.feature.issues.domain.IssueDetailsData
 import com.grappim.taigamobile.feature.issues.ui.model.IssueUI
+import com.grappim.taigamobile.feature.workitem.domain.Comment
+import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
+import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomField
+import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFieldType
+import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFieldValue
+import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -117,7 +117,7 @@ fun getSeverity(): Severity = Severity(
 )
 
 fun getCustomFields(): CustomFields = CustomFields(
-    fields = listOf(
+    fields = persistentListOf(
         getCustomField(),
         getCustomField()
     ),
@@ -130,7 +130,7 @@ fun getCustomField(): CustomField = CustomField(
     name = getRandomString(),
     description = getRandomString(),
     value = getCustomFieldValue(),
-    options = listOf(
+    options = persistentListOf(
         getRandomString(),
         getRandomString()
     )
@@ -142,7 +142,7 @@ fun getCustomFieldValue(): CustomFieldValue = CustomFieldValue(
 
 fun getComment(): Comment = Comment(
     id = getRandomString(),
-    author = getUserDTO(),
+    author = getUser(),
     text = getRandomString(),
     postDateTime = LocalDateTime.now(),
     deleteDate = LocalDateTime.now(),

@@ -27,9 +27,6 @@ object ApiModule {
     fun provideAuthApi(@AuthRetrofit retrofit: Retrofit): AuthApi = retrofit.create(AuthApi::class.java)
 
     @[Provides Singleton]
-    fun provideTaigaApi(@CommonRetrofit retrofit: Retrofit): TaigaApi = retrofit.create(TaigaApi::class.java)
-
-    @[Provides Singleton]
     fun provideProjectsApi(@CommonRetrofit retrofit: Retrofit): ProjectsApi = retrofit.create(ProjectsApi::class.java)
 
     @[Provides Singleton]

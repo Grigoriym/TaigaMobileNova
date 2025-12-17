@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.issues.ui.details
 
-import com.grappim.taigamobile.core.domain.patch.PatchedData
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -9,6 +8,7 @@ import com.grappim.taigamobile.feature.issues.domain.UpdateSprintData
 import com.grappim.taigamobile.feature.issues.ui.model.IssueUIMapper
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator

@@ -1,14 +1,17 @@
 package com.grappim.taigamobile.feature.dashboard.ui
 
-import com.grappim.taigamobile.core.domain.CommonTask
-import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 data class DashboardState(
     val isLoading: Boolean = false,
-    val isError: Boolean = false,
+    val error: NativeText = NativeText.Empty,
     val currentProjectId: Long = -1,
 
-    val workingOn: List<CommonTask> = emptyList(),
-    val watching: List<CommonTask> = emptyList(),
-    val myProjectDTOS: List<ProjectDTO> = emptyList()
+    val workingOn: ImmutableList<WorkItem> = persistentListOf(),
+    val watching: ImmutableList<WorkItem> = persistentListOf(),
+
+    val onLoad: () -> Unit = {}
 )

@@ -15,7 +15,11 @@ dependencies {
     implementation(projects.utils.ui)
 
     implementation(projects.feature.filters.domain)
+    implementation(projects.feature.filters.mapper)
+    implementation(projects.feature.filters.dto)
+
     implementation(projects.feature.workitem.data)
+    implementation(projects.feature.workitem.domain)
 
     implementation(libs.moshi)
     ksp(libs.moshi.kotlin.codegen)

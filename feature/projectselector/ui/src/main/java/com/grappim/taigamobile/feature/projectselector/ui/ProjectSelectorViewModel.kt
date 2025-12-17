@@ -6,9 +6,9 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import com.grappim.taigamobile.core.domain.ProjectDTO
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -43,7 +43,7 @@ class ProjectSelectorViewModel @Inject constructor(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
-    val projects: Flow<PagingData<ProjectDTO>> = _searchQuery.flatMapLatest { query ->
+    val projects: Flow<PagingData<Project>> = _searchQuery.flatMapLatest { query ->
         projectsRepository.fetchProjects(query)
     }.cachedIn(viewModelScope)
 
@@ -63,7 +63,7 @@ class ProjectSelectorViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    private fun selectProject(projectDTO: ProjectDTO) {
+    private fun selectProject(projectDTO: Project) {
         viewModelScope.launch {
             taigaStorage.setCurrentProjectId(projectId = projectDTO.id)
             session.changeCurrentProjectName(projectDTO.name)

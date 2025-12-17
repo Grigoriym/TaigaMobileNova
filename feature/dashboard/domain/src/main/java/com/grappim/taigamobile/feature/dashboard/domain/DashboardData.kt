@@ -1,10 +1,6 @@
 package com.grappim.taigamobile.feature.dashboard.domain
 
-import com.grappim.taigamobile.core.domain.CommonTask
-import com.grappim.taigamobile.core.domain.ProjectDTO
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import kotlinx.collections.immutable.ImmutableList
 
-data class DashboardData(
-    val workingOn: List<CommonTask> = emptyList(),
-    val watching: List<CommonTask> = emptyList(),
-    val myProjectDTOS: List<ProjectDTO> = emptyList()
-)
+data class DashboardData(val workingOn: ImmutableList<WorkItem>, val watching: ImmutableList<WorkItem>)

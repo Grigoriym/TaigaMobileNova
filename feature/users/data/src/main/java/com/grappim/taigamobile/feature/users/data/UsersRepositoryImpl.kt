@@ -1,20 +1,17 @@
 package com.grappim.taigamobile.feature.users.data
 
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.domain.StatsDTO
-import com.grappim.taigamobile.core.domain.TeamMemberDTO
-import com.grappim.taigamobile.core.domain.UserDTO
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
-import com.grappim.taigamobile.feature.users.data.mappers.TeamMemberMapper
-import com.grappim.taigamobile.feature.users.data.mappers.UserMapper
-import com.grappim.taigamobile.feature.users.data.mappers.UserStatsMapper
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UserStats
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.users.mapper.TeamMemberMapper
+import com.grappim.taigamobile.feature.users.mapper.UserMapper
+import com.grappim.taigamobile.feature.users.mapper.UserStatsMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
@@ -55,12 +52,10 @@ class UsersRepositoryImpl @Inject constructor(
         teamMemberMapper.toDomain(team, stats)
     }
 
-    override suspend fun getMe(): UserDTO = usersApi.getMyProfile()
-
-    override suspend fun getMeResult(): Result<UserDTO> = resultOf { getMe() }
-
-    @Deprecated("use getUser")
-    override suspend fun getUserDTO(userId: Long): UserDTO = usersApi.getUser(userId)
+    override suspend fun getMe(): User {
+        val result = usersApi.getMyProfile()
+        return userMapper.toUser(result)
+    }
 
     override suspend fun getUser(userId: Long): User {
         val dto = usersApi.getUser(userId)
@@ -77,52 +72,10 @@ class UsersRepositoryImpl @Inject constructor(
         session.userId in list.map { it.actualId }
     }
 
-    @Deprecated("remove it")
-    override suspend fun getUserStatsOld(userId: Long): StatsDTO = usersApi.getUserStats(userId)
-
     override suspend fun getUserStats(userId: Long): UserStats {
         val response = usersApi.getUserStats(userId)
         return userStatsMapper.toDomain(response)
     }
-
-    @Deprecated("remove it")
-    override suspend fun getTeamByProjectIdOld(projectId: Long): Result<List<TeamMemberDTO>> = resultOf {
-        getTeamOld(projectId)
-    }
-
-    @Deprecated("remove it")
-    override suspend fun getTeamOld(): Result<List<TeamMemberDTO>> = resultOf {
-        getTeamOld(taigaStorage.currentProjectIdFlow.first())
-    }
-
-    @Deprecated("remove it")
-    override suspend fun getTeamSimpleOld(): List<TeamMemberDTO> = getTeamOld(taigaStorage.currentProjectIdFlow.first())
-
-    @Deprecated("remove it")
-    private suspend fun getTeamOld(projectId: Long): List<TeamMemberDTO> = coroutineScope {
-        val team = async { projectsApi.getProject(projectId).members }
-        val stats = async { retrieveMembersStats() }
-
-        val statsResult = stats.await()
-        val teamResult = team.await()
-
-        teamResult.map {
-            TeamMemberDTO(
-                id = it.id,
-                avatarUrl = it.photo,
-                name = it.fullNameDisplay,
-                role = it.roleName,
-                username = it.username,
-                totalPower = statsResult[it.id] ?: 0
-            )
-        }
-    }
-
-    @Deprecated("remove it")
-    override suspend fun getCurrentTeamResult(generateMemberStats: Boolean): Result<ImmutableList<TeamMember>> =
-        resultOf {
-            getTeamMembers(generateMemberStats)
-        }
 
     /**
      * This one calculates the "Total power" of team members

@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.domain.Attachment
 
 fun getAttachment(): Attachment = Attachment(
     id = getRandomLong(),
