@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.issues.ui.model
 
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
+import com.grappim.taigamobile.feature.workitem.domain.PromotedUserStoryInfo
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import kotlinx.collections.immutable.ImmutableList
@@ -13,7 +14,7 @@ data class IssueUI(
     val version: Long,
     val createdDateTime: LocalDateTime,
     val title: String,
-    val ref: Int,
+    val ref: Long,
     val isClosed: Boolean,
     val blockedNote: String? = null,
     val description: String,
@@ -31,5 +32,6 @@ data class IssueUI(
     val tags: ImmutableList<TagUI> = persistentListOf(),
 
     val dueDate: LocalDate?,
-    val dueDateStatus: DueDateStatus?
+    val dueDateStatus: DueDateStatus?,
+    val promotedUserStories: ImmutableList<PromotedUserStoryInfo>
 )

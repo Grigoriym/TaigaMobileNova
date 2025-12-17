@@ -16,7 +16,7 @@ data class Task(
     val version: Long,
     val createdDateTime: LocalDateTime,
     val title: String,
-    val ref: Int,
+    val ref: Long,
     val status: Statuses?,
     val assignee: User? = null,
     val project: Project,

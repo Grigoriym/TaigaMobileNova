@@ -72,4 +72,6 @@ interface WorkItemRepository {
         description: String,
         status: Long?
     ): WorkItem
+
+    suspend fun promoteToUserStory(workItemId: Long, commonTaskType: CommonTaskType): WorkItem
 }

@@ -13,24 +13,9 @@ interface UserStoriesRepository {
 
     fun refreshUserStories()
 
-    //    suspend fun getAllUserStoriesOld(): List<CommonTaskExtended>
-//    suspend fun getBacklogUserStories(page: Int, filters: FiltersData): List<CommonTask>
-
-//    suspend fun getUserStoriesOld(
-//        assignedId: Long? = null,
-//        isClosed: Boolean? = null,
-//        isDashboard: Boolean? = null,
-//        watcherId: Long? = null,
-//        epicId: Long? = null,
-//        project: Long? = null,
-//        sprint: Any? = null
-//    ): List<CommonTask>
-
     suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem>
 
     suspend fun createUserStory(subject: String, description: String, status: Long?, swimlane: Long?): WorkItem
-
-//    suspend fun getUserStoryByRefOld(projectId: Long, ref: Int): CommonTask
 
     suspend fun getUserStory(id: Long): UserStory
 

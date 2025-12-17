@@ -15,7 +15,7 @@ data class UserStory(
     val version: Long,
     val createdDateTime: LocalDateTime,
     val title: String,
-    val ref: Int,
+    val ref: Long,
     val status: Statuses?,
     val assignee: User? = null,
     val project: Project,
@@ -37,5 +37,6 @@ data class UserStory(
     val copyLinkUrl: String,
     val userStoryEpics: ImmutableList<UserStoryEpic>,
 
-    val swimlane: Long?
+    val swimlane: Long?,
+    val wasPromotedFromTask: Boolean = false
 )

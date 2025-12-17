@@ -29,7 +29,7 @@ import com.grappim.taigamobile.utils.ui.toColor
  */
 @Composable
 fun CommonTaskTitle(
-    ref: Int,
+    ref: Long,
     title: String,
     modifier: Modifier = Modifier,
     isInactive: Boolean = false,

@@ -93,6 +93,7 @@
     <string name="issue_slug">Issue #%d</string>
 
     <string name="user_story_belongs_to">This user story belongs to</string>
+    <string name="user_story_was_task">This user story was originally a task.</string>
 
     <string name="epic">Epic</string>
     <string name="userstory">User story</string>
@@ -160,6 +161,8 @@
     <string name="choose_swimlane">Choose swimlane</string>
 
     <string name="power">power</string>
+
+    <string name="issue_was_promoted_to">This issue has been promoted to</string>
 
     <string name="unlink_epic_title">Unlink epic</string>
     <string name="unlink_epic_text">Are you sure you want to unlink this epic?</string>

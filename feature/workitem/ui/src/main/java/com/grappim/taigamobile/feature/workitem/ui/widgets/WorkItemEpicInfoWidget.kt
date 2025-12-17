@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.userstories.widgets
+package com.grappim.taigamobile.feature.workitem.ui.widgets
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row

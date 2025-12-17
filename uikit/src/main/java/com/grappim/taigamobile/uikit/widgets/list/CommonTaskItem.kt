@@ -32,7 +32,7 @@ fun CommonTaskItem(
     horizontalPadding: Dp = mainHorizontalScreenPadding,
     verticalPadding: Dp = 8.dp,
     showExtendedInfo: Boolean = false,
-    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit = { _, _, _ -> }
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit = { _, _, _ -> }
 ) = ContainerBoxWidget(
     modifier = modifier,
     horizontalPadding = horizontalPadding,

@@ -2,6 +2,7 @@ package com.grappim.taigamobile.testing
 
 import com.grappim.taigamobile.feature.workitem.dto.StatusExtraInfoDTO
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
+import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
 import java.time.LocalDateTime
 
@@ -11,7 +12,7 @@ fun getWorkItemResponseDTO(): WorkItemResponseDTO =
         subject = getRandomString(),
         createdDate = LocalDateTime.of(2024, 12, 15, 10, 30, 0),
         status = getRandomLong(),
-        ref = getRandomInt(),
+        ref = getRandomLong(),
         assignedToExtraInfo = getUserDTO(),
         statusExtraInfo = StatusExtraInfoDTO(
             color = "#FF5722",
@@ -40,5 +41,7 @@ fun getWorkItemResponseDTO(): WorkItemResponseDTO =
         color = "#4CAF50",
         type = getRandomLong(),
         severity = getRandomLong(),
-        priority = getRandomLong()
+        priority = getRandomLong(),
+        generatedUserStories = persistentListOf(),
+        fromTaskRef = null
     )

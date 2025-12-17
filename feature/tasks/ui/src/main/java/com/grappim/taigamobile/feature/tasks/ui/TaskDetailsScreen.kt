@@ -72,6 +72,7 @@ fun TaskDetailsScreen(
     showSnackbar: (message: NativeText) -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
+    goToUserStory: (id: Long, ref: Long) -> Unit,
     viewModel: TaskDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -115,6 +116,10 @@ fun TaskDetailsScreen(
         if (isDelete) {
             goBack()
         }
+    }
+
+    ObserveAsEvents(viewModel.promotedToUserStoryTrigger) { data ->
+        goToUserStory(data.id, data.ref)
     }
 
     LaunchedEffect(state.error) {
@@ -225,6 +230,9 @@ fun TaskDetailsScreen(
             },
             doOnUnblock = {
                 state.onBlockToggle(false, null)
+            },
+            onPromoteClick = {
+                state.onPromoteClick()
             }
         )
 

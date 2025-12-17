@@ -15,6 +15,7 @@ import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
 import com.grappim.taigamobile.feature.workitem.dto.CreateWorkItemRequestDTO
+import com.grappim.taigamobile.feature.workitem.dto.PromoteToUserStoryRequestDTO
 import com.grappim.taigamobile.feature.workitem.mapper.AttachmentMapper
 import com.grappim.taigamobile.feature.workitem.mapper.CustomFieldsMapper
 import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
@@ -247,5 +248,29 @@ class WorkItemRepositoryImpl @Inject constructor(
             )
         )
         return workItemMapper.toDomain(response, commonTaskType)
+    }
+
+    override suspend fun promoteToUserStory(workItemId: Long, commonTaskType: CommonTaskType): WorkItem {
+        if (commonTaskType !in listOf(CommonTaskType.Issue, CommonTaskType.Task)) {
+            error("Invalid task type to promote to user story")
+        }
+        val projectId = taigaStorage.currentProjectIdFlow.first()
+
+        val response = workItemApi.promoteToUserStory(
+            taskPath = WorkItemPathPlural(commonTaskType),
+            workItemId = workItemId,
+            body = PromoteToUserStoryRequestDTO(
+                projectId = projectId
+            )
+        )
+        val newUserStoryRef = response.firstOrNull() ?: error("User story ref not found")
+
+        val userStory = workItemApi.getWorkItemByRef(
+            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            project = projectId,
+            ref = newUserStoryRef
+        )
+
+        return workItemMapper.toDomain(dto = userStory, taskType = CommonTaskType.UserStory)
     }
 }

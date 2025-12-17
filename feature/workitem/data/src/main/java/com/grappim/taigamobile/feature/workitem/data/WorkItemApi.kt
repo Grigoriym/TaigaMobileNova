@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.workitem.dto.AttachmentDTO
 import com.grappim.taigamobile.feature.workitem.dto.CreateWorkItemRequestDTO
 import com.grappim.taigamobile.feature.workitem.dto.CustomAttributeResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.CustomAttributesValuesResponseDTO
+import com.grappim.taigamobile.feature.workitem.dto.PromoteToUserStoryRequestDTO
 import com.grappim.taigamobile.feature.workitem.dto.WikiPageDTO
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import okhttp3.MultipartBody
@@ -72,7 +73,7 @@ interface WorkItemApi {
     suspend fun getWorkItemByRef(
         @Path("taskPath") taskPath: WorkItemPathPlural,
         @Query("project") project: Long,
-        @Query("ref") ref: Int
+        @Query("ref") ref: Long
     ): WorkItemResponseDTO
 
     @PATCH("{taskPath}/{id}")
@@ -91,6 +92,16 @@ interface WorkItemApi {
 
     @DELETE("{taskPath}/{workItemId}")
     suspend fun deleteWorkItem(@Path("taskPath") taskPath: WorkItemPathPlural, @Path("workItemId") workItemId: Long)
+
+    /**
+     * Though they return a list, actually they always return only one value in the list, just fyi
+     */
+    @POST("{taskPath}/{workItemId}/promote_to_user_story")
+    suspend fun promoteToUserStory(
+        @Path("taskPath") taskPath: WorkItemPathPlural,
+        @Path("workItemId") workItemId: Long,
+        @Body body: PromoteToUserStoryRequestDTO
+    ): List<Long>
 
     // Attachments
     @GET("{taskPath}/attachments")

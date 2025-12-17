@@ -71,7 +71,7 @@ fun EpicDetailsScreen(
     goBack: () -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
-    goToUserStory: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    goToUserStory: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     viewModel: EpicDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -252,7 +252,7 @@ private fun EpicDetailsScreenContent(
     goToEditTags: () -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
-    goToUserStory: (id: Long, type: CommonTaskType, ref: Int) -> Unit
+    goToUserStory: (id: Long, type: CommonTaskType, ref: Long) -> Unit
 ) {
     requireNotNull(state.currentEpic)
 

@@ -24,7 +24,7 @@ import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
 
 fun LazyListScope.simpleTasksListWithTitle(
-    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     commonTasks: List<WorkItem> = emptyList(),
     commonTasksLazy: LazyPagingItems<WorkItem>? = null,
     keysHash: Int = 0,

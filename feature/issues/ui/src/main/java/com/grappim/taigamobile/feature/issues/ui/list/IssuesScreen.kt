@@ -18,7 +18,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.TaskFilters
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
@@ -42,8 +41,8 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun IssuesScreen(
     showSnackbar: (message: NativeText, actionLabel: String?) -> Unit,
-    goToCreateTask: () -> Unit,
-    goToTask: (Long, CommonTaskType, Int) -> Unit,
+    goToCreateIssue: () -> Unit,
+    goToIssue: (Long, Long) -> Unit,
     updateData: Boolean,
     viewModel: IssuesViewModel = hiltViewModel()
 ) {
@@ -64,7 +63,7 @@ fun IssuesScreen(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add",
                         onClick = {
-                            goToCreateTask()
+                            goToCreateIssue()
                         }
                     )
                 )
@@ -97,7 +96,7 @@ fun IssuesScreen(
         state = state,
         filters = filters,
         issues = issues,
-        navigateToTask = goToTask,
+        navigateToTask = goToIssue,
         searchQuery = searchQuery
     )
 }
@@ -106,7 +105,7 @@ fun IssuesScreen(
 fun IssuesScreenContent(
     state: IssuesState,
     filters: FiltersData,
-    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    navigateToTask: (id: Long, ref: Long) -> Unit,
     issues: LazyPagingItems<WorkItem>,
     modifier: Modifier = Modifier,
     searchQuery: String = ""
@@ -146,7 +145,9 @@ fun IssuesScreenContent(
                         simpleTasksListWithTitle(
                             commonTasksLazy = issues,
                             keysHash = state.activeFilters.hashCode(),
-                            navigateToTask = navigateToTask,
+                            navigateToTask = { id, _, ref ->
+                                navigateToTask(id, ref)
+                            },
                             horizontalPadding = mainHorizontalScreenPadding,
                             bottomPadding = commonVerticalPadding
                         )
@@ -161,7 +162,7 @@ fun IssuesScreenContent(
 @Composable
 private fun IssuesScreenPreview() = TaigaMobileTheme {
     IssuesScreenContent(
-        navigateToTask = { _, _, _ -> },
+        navigateToTask = { _, _ -> },
         state = IssuesState(),
         issues = getPagingPreviewItems(),
         filters = FiltersData()

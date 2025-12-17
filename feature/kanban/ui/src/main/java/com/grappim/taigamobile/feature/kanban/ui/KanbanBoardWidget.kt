@@ -71,7 +71,7 @@ fun KanbanBoardWidget(
     teamMembers: ImmutableList<TeamMember> = persistentListOf(),
     selectSwimlane: (Swimlane?) -> Unit = {},
     selectedSwimlane: Swimlane? = null,
-    navigateToStory: (id: Long, ref: Int) -> Unit = { _, _ -> },
+    navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
 ) {
     val cellOuterPadding = 8.dp

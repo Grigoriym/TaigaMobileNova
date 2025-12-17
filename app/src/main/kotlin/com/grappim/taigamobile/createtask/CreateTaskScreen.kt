@@ -36,7 +36,7 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun CreateTaskScreen(
     showSnackbar: (NativeText) -> Unit,
-    navigateOnTaskCreated: (Long, CommonTaskType, Int) -> Unit,
+    navigateOnTaskCreated: (Long, CommonTaskType, Long) -> Unit,
     viewModel: CreateTaskViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current

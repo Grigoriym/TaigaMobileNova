@@ -16,7 +16,7 @@ data class WorkItemResponseDTO(
     @Json(name = "created_date")
     val createdDate: LocalDateTime,
     val status: Long,
-    val ref: Int,
+    val ref: Long,
     @Json(name = "assigned_to_extra_info")
     val assignedToExtraInfo: UserDTO?,
     @Json(name = "status_extra_info")
@@ -54,8 +54,10 @@ data class WorkItemResponseDTO(
     // for issue
     val type: Long?,
     val severity: Long?,
-    val priority: Long?
-)
+    val priority: Long?,
 
-@JsonClass(generateAdapter = true)
-data class StatusExtraInfoDTO(val color: String, val name: String)
+    @Json(name = "generated_user_stories")
+    val generatedUserStories: List<GeneratedUserStoryDTO>?,
+    @Json(name = "from_task_ref")
+    val fromTaskRef: String?
+)

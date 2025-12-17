@@ -19,7 +19,7 @@ data class IssueDetailsState(
      * We use it on first load, so that we could reload whole issue
      */
     val initialLoadError: NativeText = NativeText.Empty,
-    val retryLoadIssue: () -> Unit = {},
+    val loadIssue: () -> Unit = {},
 
     val error: NativeText = NativeText.Empty,
 
@@ -66,5 +66,7 @@ data class IssueDetailsState(
     val setIsDeleteDialogVisible: (Boolean) -> Unit = {},
     val isDeleteDialogVisible: Boolean = false,
     val onDelete: () -> Unit = {},
-    val customFieldsVersion: Long = 0
+    val customFieldsVersion: Long = 0,
+
+    val onPromoteClick: () -> Unit = {}
 )

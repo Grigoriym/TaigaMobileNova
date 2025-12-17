@@ -44,6 +44,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBlockedBanner
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDescriptionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDropdownMenuWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemPromotedInfoWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
@@ -61,6 +62,8 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import com.grappim.taigamobile.utils.ui.OnLifecycleStart
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
@@ -73,6 +76,7 @@ fun IssueDetailsScreen(
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
     goToSprints: () -> Unit,
+    goToUserStory: (id: Long, ref: Long) -> Unit,
     viewModel: IssueDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -80,7 +84,6 @@ fun IssueDetailsScreen(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    val deleteTrigger by viewModel.deleteTrigger.collectAsStateWithLifecycle(false)
     val titleState by viewModel.titleState.collectAsStateWithLifecycle()
     val badgeState by viewModel.badgeState.collectAsStateWithLifecycle()
     val tagsState by viewModel.tagsState.collectAsStateWithLifecycle()
@@ -118,15 +121,19 @@ fun IssueDetailsScreen(
     }
 
     LaunchedEffect(state.error) {
-        if (state.error !is NativeText.Empty) {
+        if (state.error.isNotEmpty()) {
             showSnackbar(state.error)
         }
     }
 
-    LaunchedEffect(deleteTrigger) {
-        if (deleteTrigger) {
+    ObserveAsEvents(viewModel.deleteTrigger) { trigger ->
+        if (trigger) {
             goBack()
         }
+    }
+
+    ObserveAsEvents(viewModel.promotedToUserStoryTrigger) { data ->
+        goToUserStory(data.id, data.ref)
     }
 
     WorkItemBadgesBottomSheet(
@@ -157,6 +164,9 @@ fun IssueDetailsScreen(
         },
         doOnUnblock = {
             state.onBlockToggle(false, null)
+        },
+        onPromoteClick = {
+            state.onPromoteClick()
         }
     )
 
@@ -221,7 +231,7 @@ fun IssueDetailsScreen(
             modifier = Modifier.fillMaxSize(),
             message = state.initialLoadError,
             onRetry = {
-                state.retryLoadIssue()
+                state.loadIssue()
             }
         )
     } else if (state.currentIssue != null) {
@@ -242,7 +252,8 @@ fun IssueDetailsScreen(
             goToEditTags = goToEditTags,
             goToEditAssignee = goToEditAssignee,
             goToEditWatchers = goToEditWatchers,
-            goToSprints = goToSprints
+            goToSprints = goToSprints,
+            goToUserStory = goToUserStory
         )
     }
 }
@@ -265,7 +276,8 @@ private fun IssueDetailsScreenContent(
     goToEditTags: () -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
-    goToSprints: () -> Unit
+    goToSprints: () -> Unit,
+    goToUserStory: (id: Long, ref: Long) -> Unit
 ) {
     requireNotNull(state.currentIssue)
 
@@ -301,6 +313,13 @@ private fun IssueDetailsScreenContent(
                     updatingBadges = badgeState.updatingBadges,
                     items = badgeState.workItemBadges,
                     onBadgeClick = badgeState.onBadgeClick
+                )
+
+                WorkItemPromotedInfoWidget(
+                    infos = state.currentIssue.promotedUserStories,
+                    onInfoClick = { info ->
+                        goToUserStory(info.id, info.ref)
+                    }
                 )
 
                 WorkItemDescriptionWidget(

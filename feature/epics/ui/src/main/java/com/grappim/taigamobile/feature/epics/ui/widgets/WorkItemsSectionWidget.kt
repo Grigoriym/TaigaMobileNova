@@ -38,7 +38,7 @@ fun WorkItemsSectionWidget(
     workItemsType: CommonTaskType,
     areWorkItemsExpanded: Boolean,
     setAreWorkItemsExpanded: (Boolean) -> Unit,
-    goToWorkItem: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    goToWorkItem: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -83,7 +83,7 @@ fun WorkItemsSectionWidget(
 @Composable
 private fun WorkItemItemWidget(
     workItemUI: WorkItemUI,
-    goToWorkItem: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    goToWorkItem: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current

@@ -10,6 +10,7 @@ import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
+import com.grappim.taigamobile.feature.workitem.domain.PromotedUserStoryInfo
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
 import kotlinx.collections.immutable.ImmutableList
@@ -96,7 +97,15 @@ class IssueMapper @Inject constructor(
             status = statusesMapper.getStatus(resp = resp),
             type = statusesMapper.getType(filtersData = filters, resp = resp),
             severity = statusesMapper.getSeverity(filtersData = filters, resp = resp),
-            priority = statusesMapper.getPriority(filtersData = filters, resp = resp)
+            priority = statusesMapper.getPriority(filtersData = filters, resp = resp),
+            promotedUserStories = resp.generatedUserStories?.map { story ->
+                PromotedUserStoryInfo(
+                    id = story.id,
+                    ref = requireNotNull(story.ref),
+                    subject = story.subject,
+                    titleToDisplay = "#${story.ref} ${story.subject}"
+                )
+            }.orEmpty().toImmutableList()
         )
     }
 }

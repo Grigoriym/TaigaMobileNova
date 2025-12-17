@@ -5,6 +5,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
+import com.grappim.taigamobile.feature.workitem.domain.PromotedUserStoryInfo
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDate
@@ -15,7 +16,7 @@ data class Issue(
     val version: Long,
     val createdDateTime: LocalDateTime,
     val title: String,
-    val ref: Int,
+    val ref: Long,
     val status: Statuses?,
     val type: Statuses? = null,
     val priority: Statuses? = null,
@@ -36,5 +37,6 @@ data class Issue(
 
     val dueDate: LocalDate?,
     val dueDateStatus: DueDateStatus?,
-    val copyLinkUrl: String
+    val copyLinkUrl: String,
+    val promotedUserStories: ImmutableList<PromotedUserStoryInfo> = persistentListOf()
 )

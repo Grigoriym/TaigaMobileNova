@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,7 +25,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.grappim.taigamobile.feature.userstories.widgets.WorkItemEpicInfoWidget
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
@@ -45,6 +46,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBlockedBanner
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDescriptionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDropdownMenuWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDueDateWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemEpicInfoWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemTitleWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
@@ -73,7 +75,7 @@ fun UserStoryDetailsScreen(
     showSnackbar: (message: NativeText) -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
-    goToEpic: (epicId: Long, ref: Int) -> Unit,
+    goToEpic: (epicId: Long, ref: Long) -> Unit,
     goToEditEpics: () -> Unit,
     viewModel: UserStoryDetailsViewModel = hiltViewModel()
 ) {
@@ -272,7 +274,7 @@ private fun UserStoryDetailsScreenContent(
     goToProfile: (Long) -> Unit,
     goToEditAssignee: () -> Unit,
     goToEditWatchers: () -> Unit,
-    goToEpic: (epicId: Long, ref: Int) -> Unit,
+    goToEpic: (epicId: Long, ref: Long) -> Unit,
     goToEditEpics: () -> Unit
 ) {
     requireNotNull(state.currentUserStory)
@@ -324,6 +326,18 @@ private fun UserStoryDetailsScreenContent(
                         goToEditEpics()
                     }
                 )
+
+                if (state.currentUserStory.wasPromotedFromTask) {
+                    Box(
+                        modifier = Modifier.fillMaxWidth(),
+                        contentAlignment = Alignment.TopStart
+                    ) {
+                        Text(
+                            text = stringResource(RString.user_story_was_task),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                }
 
                 WorkItemDescriptionWidget(
                     currentDescription = state.currentUserStory.description,

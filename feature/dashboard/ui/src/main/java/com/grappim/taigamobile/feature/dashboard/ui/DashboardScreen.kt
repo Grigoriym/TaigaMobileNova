@@ -30,7 +30,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 @Composable
 fun DashboardScreen(
     showSnackbar: (NativeText) -> Unit,
-    navigateToTaskScreen: (Long, CommonTaskType, Int) -> Unit,
+    navigateToTaskScreen: (Long, CommonTaskType, Long) -> Unit,
     viewModel: DashboardViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
