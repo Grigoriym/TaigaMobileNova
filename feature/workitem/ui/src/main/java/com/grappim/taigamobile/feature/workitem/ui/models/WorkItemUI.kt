@@ -14,7 +14,7 @@ data class WorkItemUI(
     val taskType: CommonTaskType,
     val createdDate: String,
     val status: StatusUI,
-    val ref: Int,
+    val ref: Long,
     val title: String,
     val isBlocked: Boolean,
     val tags: ImmutableList<TagUI>,

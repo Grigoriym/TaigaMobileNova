@@ -7,7 +7,7 @@ import com.squareup.moshi.JsonClass
 @JsonClass(generateAdapter = true)
 data class UserStoryShortInfoDTO(
     val id: Long,
-    val ref: Int,
+    val ref: Long,
     @Json(name = "subject") val title: String,
     val epics: List<EpicShortInfoDTO>?
 ) {

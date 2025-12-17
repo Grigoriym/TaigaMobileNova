@@ -75,7 +75,7 @@ fun ScrumScreen(
     showSnackbar: (NativeText) -> Unit,
     goToCreateUserStory: () -> Unit,
     goToSprint: (sprintId: Long) -> Unit,
-    goToUserStory: (Long, CommonTaskType, Int) -> Unit,
+    goToUserStory: (Long, CommonTaskType, Long) -> Unit,
     updateData: Boolean,
     viewModel: ScrumViewModel = hiltViewModel()
 ) {
@@ -185,7 +185,7 @@ fun ScrumScreenContent(
     stories: LazyPagingItems<WorkItem>,
     openSprints: LazyPagingItems<Sprint>,
     closedSprints: LazyPagingItems<Sprint>,
-    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier,
     filters: FiltersData = FiltersData(),
     searchQuery: String = "",
@@ -222,7 +222,7 @@ fun ScrumScreenContent(
 @Composable
 private fun BacklogTabContent(
     state: ScrumState,
-    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     stories: LazyPagingItems<WorkItem>,
     modifier: Modifier = Modifier,
     filters: FiltersData = FiltersData(),

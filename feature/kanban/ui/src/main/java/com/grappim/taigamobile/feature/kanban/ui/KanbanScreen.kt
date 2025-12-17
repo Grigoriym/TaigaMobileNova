@@ -26,7 +26,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 @Composable
 fun KanbanScreen(
     showSnackbar: (NativeText) -> Unit,
-    goToTask: (Long, CommonTaskType, Int) -> Unit,
+    goToTask: (Long, CommonTaskType, Long) -> Unit,
     goToCreateTask: (CommonTaskType, Long, Long?) -> Unit,
     viewModel: KanbanViewModel = hiltViewModel()
 ) {
@@ -81,7 +81,7 @@ fun KanbanScreen(
 fun KanbanScreenContent(
     state: KanbanState,
     modifier: Modifier = Modifier,
-    navigateToStory: (id: Long, ref: Int) -> Unit = { _, _ -> },
+    navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swinlanaeId: Long?) -> Unit = { _, _ -> }
 ) {
     PullToRefreshBox(

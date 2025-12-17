@@ -171,7 +171,7 @@ fun MainNavHost(
                 goToEditWatchers = {
                     navController.navigateToWorkItemEditTeamMember()
                 },
-                goToEpic = { epicId: Long, ref: Int ->
+                goToEpic = { epicId: Long, ref: Long ->
                     navController.navigateToEpicDetails(epicId, ref)
                 },
                 goToEditEpics = {
@@ -203,6 +203,13 @@ fun MainNavHost(
                 },
                 goToEditWatchers = {
                     navController.navigateToWorkItemEditTeamMember()
+                },
+                goToUserStory = { id, ref ->
+                    navController.navigateToUserStory(
+                        taskId = id,
+                        ref = ref,
+                        popUpToRoute = TaskDetailsNavDestination::class
+                    )
                 }
             )
         }
@@ -263,11 +270,11 @@ fun MainNavHost(
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             IssuesScreen(
                 showSnackbar = showSnackbarAction,
-                goToCreateTask = {
+                goToCreateIssue = {
                     navController.navigateToCreateIssue()
                 },
                 updateData = updateData,
-                goToTask = { id, type, ref ->
+                goToIssue = { id, ref ->
                     navController.navigateToIssueDetails(
                         taskId = id,
                         ref = ref
@@ -302,6 +309,9 @@ fun MainNavHost(
                 },
                 goToSprints = {
                     navController.navigateToWorkItemEditSprint()
+                },
+                goToUserStory = { id, ref ->
+                    navController.navigateToUserStory(id, ref)
                 }
             )
         }
@@ -449,7 +459,7 @@ fun MainNavHost(
     }
 }
 
-private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Int) {
+private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Long) {
     when (type) {
         CommonTaskType.UserStory -> this.navigateToUserStory(
             taskId = id,

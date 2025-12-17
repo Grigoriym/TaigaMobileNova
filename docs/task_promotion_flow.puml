@@ -1,0 +1,20 @@
+@startuml
+
+start
+
+    :We are in a Task;
+
+    :User clicks "Promote to User Story" button;
+    :Show confirmation dialog;
+    :Call promotion logic;
+
+    if (Promotion successful?) then (yes)
+        :Navigate to promoted User Story;
+        :Remove Task page from the navigation;
+    else (no)
+        :Show error message;
+    endif
+
+stop
+
+@enduml

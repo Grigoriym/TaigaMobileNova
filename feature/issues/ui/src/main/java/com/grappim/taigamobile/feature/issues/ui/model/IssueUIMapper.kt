@@ -33,7 +33,8 @@ class IssueUIMapper @Inject constructor(
             watcherUserIds = issue.watcherUserIds,
             tags = tagUIMapper.toUI(issue.tags),
             dueDate = issue.dueDate,
-            dueDateStatus = issue.dueDateStatus
+            dueDateStatus = issue.dueDateStatus,
+            promotedUserStories = issue.promotedUserStories
         )
     }
 }

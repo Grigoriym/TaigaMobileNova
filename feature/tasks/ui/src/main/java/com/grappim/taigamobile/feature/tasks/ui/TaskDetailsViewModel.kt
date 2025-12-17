@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -15,6 +16,7 @@ import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl
@@ -59,12 +61,14 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -182,7 +186,8 @@ class TaskDetailsViewModel @Inject constructor(
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
-            onBadgeSave = ::onBadgeSave
+            onBadgeSave = ::onBadgeSave,
+            onPromoteClick = ::promoteToUserStory
         )
     )
     val state = _state.asStateFlow()
@@ -192,6 +197,9 @@ class TaskDetailsViewModel @Inject constructor(
 
     private val _deleteTrigger = MutableSharedFlow<Boolean>()
     val deleteTrigger = _deleteTrigger.asSharedFlow()
+
+    private val _promotedToUserStoryTrigger = Channel<WorkItem>()
+    val promotedToUserStoryTrigger = _promotedToUserStoryTrigger.receiveAsFlow()
 
     init {
         loadTask()
@@ -766,6 +774,33 @@ class TaskDetailsViewModel @Inject constructor(
                     updateVersion(version)
                 }
             )
+        }
+    }
+
+    private fun promoteToUserStory() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
+            }
+            resultOf {
+                workItemRepository.promoteToUserStory(
+                    workItemId = currentTask.id,
+                    commonTaskType = CommonTaskType.Task
+                )
+            }.onSuccess { result ->
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+                _promotedToUserStoryTrigger.send(result)
+            }.onFailure { error ->
+                emitError(error)
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+            }
         }
     }
 }

@@ -44,7 +44,7 @@ import java.time.LocalDate
 fun SprintScreen(
     showMessage: (message: Int) -> Unit,
     goBack: () -> Unit,
-    goToTaskScreen: (Long, CommonTaskType, Int) -> Unit,
+    goToTaskScreen: (Long, CommonTaskType, Long) -> Unit,
     goToCreateTask: (CommonTaskType, Long?, Long) -> Unit,
     viewModel: SprintViewModel = hiltViewModel()
 ) {
@@ -114,7 +114,7 @@ fun SprintScreen(
 @Composable
 fun SprintScreenContent(
     state: SprintState,
-    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier,
     isEditLoading: Boolean = false,
     isDeleteLoading: Boolean = false,

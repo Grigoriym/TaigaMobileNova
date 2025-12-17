@@ -19,6 +19,7 @@ import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl
@@ -62,12 +63,14 @@ import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -183,10 +186,11 @@ class IssueDetailsViewModel @Inject constructor(
             onAddMeToWatchersClick = ::onAddMeToWatchersClick,
             removeWatcher = ::removeWatcher,
             removeAssignee = ::removeAssignee,
-            retryLoadIssue = ::retryLoadIssue,
+            loadIssue = ::loadIssue,
             onTitleSave = ::onTitleSave,
             onBadgeSave = ::onBadgeSave,
-            onGoingToEditSprint = ::onGoingToEditSprint
+            onGoingToEditSprint = ::onGoingToEditSprint,
+            onPromoteClick = ::promoteToUserStory
         )
     )
     val state = _state.asStateFlow()
@@ -194,8 +198,11 @@ class IssueDetailsViewModel @Inject constructor(
     private val currentIssue: IssueUI
         get() = requireNotNull(_state.value.currentIssue)
 
-    private val _deleteTrigger = MutableSharedFlow<Boolean>()
-    val deleteTrigger = _deleteTrigger.asSharedFlow()
+    private val _deleteTrigger = Channel<Boolean>()
+    val deleteTrigger = _deleteTrigger.receiveAsFlow()
+
+    private val _promotedToUserStoryTrigger = Channel<WorkItem>()
+    val promotedToUserStoryTrigger = _promotedToUserStoryTrigger.receiveAsFlow()
 
     init {
         loadIssue()
@@ -233,10 +240,6 @@ class IssueDetailsViewModel @Inject constructor(
                 }
             )
         }
-    }
-
-    private fun retryLoadIssue() {
-        loadIssue()
     }
 
     private fun loadIssue() {
@@ -551,7 +554,7 @@ class IssueDetailsViewModel @Inject constructor(
                     commonTaskType = CommonTaskType.Issue
                 )
             }.onSuccess {
-                _deleteTrigger.emit(true)
+                _deleteTrigger.send(true)
             }.onFailure { error ->
                 Timber.e(error)
                 _state.update {
@@ -805,5 +808,32 @@ class IssueDetailsViewModel @Inject constructor(
 
     private fun onGoingToEditSprint() {
         workItemEditShared.setCurrentSprint(_state.value.sprint?.id)
+    }
+
+    private fun promoteToUserStory() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
+            }
+            resultOf {
+                workItemRepository.promoteToUserStory(
+                    workItemId = currentIssue.id,
+                    commonTaskType = CommonTaskType.Issue
+                )
+            }.onSuccess { result ->
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+                _promotedToUserStoryTrigger.send(result)
+            }.onFailure { error ->
+                emitError(error)
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+            }
+        }
     }
 }

@@ -67,7 +67,7 @@ internal fun SprintKanbanWidget(
     modifier: Modifier = Modifier,
     storylessTasks: ImmutableList<WorkItem> = persistentListOf(),
     issues: ImmutableList<WorkItem> = persistentListOf(),
-    navigateToTask: (id: Long, type: CommonTaskType, ref: Int) -> Unit = { _, _, _ -> },
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit = { _, _, _ -> },
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
 ) {
     Column(

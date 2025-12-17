@@ -41,7 +41,7 @@ import kotlinx.collections.immutable.persistentListOf
 fun EpicsScreen(
     showSnackbar: (message: NativeText, actionLabel: String?) -> Unit,
     goToCreateEpic: () -> Unit,
-    goToEpic: (Long, CommonTaskType, Int) -> Unit,
+    goToEpic: (Long, CommonTaskType, Long) -> Unit,
     updateData: Boolean,
     viewModel: EpicsViewModel = hiltViewModel()
 ) {
@@ -106,7 +106,7 @@ fun EpicsScreenContent(
     state: EpicsState,
     filters: FiltersData,
     epics: LazyPagingItems<WorkItem>,
-    goToEpic: (id: Long, type: CommonTaskType, ref: Int) -> Unit,
+    goToEpic: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier,
     query: String = ""
 ) {

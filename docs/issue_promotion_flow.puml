@@ -1,0 +1,24 @@
+@startuml
+
+start
+
+    :We are in Issue;
+    if (Was it promoted?) then (yes)
+        :We show "This issue has been promoted to";
+    else (no)
+
+    endif
+        :User clicks "Promote to User Story" button;
+        :Show confirmation dialog;
+        :Call promotion logic;
+
+    if (Promotion successful?) then (yes)
+        :Navigate to promoted User Story;
+        :Leave the Issue page in the backstack;
+    else (no)
+        :Show error message;
+    endif
+
+stop
+
+@enduml

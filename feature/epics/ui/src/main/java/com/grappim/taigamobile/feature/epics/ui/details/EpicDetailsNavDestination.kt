@@ -4,8 +4,8 @@ import androidx.navigation.NavController
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EpicDetailsNavDestination(val epicId: Long, val ref: Int)
+data class EpicDetailsNavDestination(val epicId: Long, val ref: Long)
 
-fun NavController.navigateToEpicDetails(epicId: Long, ref: Int) {
+fun NavController.navigateToEpicDetails(epicId: Long, ref: Long) {
     navigate(route = EpicDetailsNavDestination(epicId = epicId, ref = ref))
 }

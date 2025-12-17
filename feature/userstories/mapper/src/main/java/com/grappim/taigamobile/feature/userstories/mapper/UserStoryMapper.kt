@@ -63,7 +63,8 @@ class UserStoryMapper @Inject constructor(
             dueDateStatus = dueDateStatusMapper.toDomain(resp.dueDateStatusDTO),
             copyLinkUrl = url,
             userStoryEpics = epicsToDomain(resp.epics),
-            swimlane = resp.swimlane
+            swimlane = resp.swimlane,
+            wasPromotedFromTask = resp.fromTaskRef?.isNotEmpty() == true
         )
     }
 
