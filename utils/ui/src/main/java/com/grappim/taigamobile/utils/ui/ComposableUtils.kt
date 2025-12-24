@@ -18,12 +18,11 @@ import kotlin.math.ln
 /**
  * gray, because api returns null instead of gray -_-
  */
-fun String?.fixNullColor() =
-    if (this == null || this.isEmpty()) {
-        "#A9AABC"
-    } else {
-        this
-    }
+fun String?.fixNullColor() = if (this == null || this.isEmpty()) {
+    "#A9AABC"
+} else {
+    this
+}
 
 fun Color.toHex() = "#%08X".format(toArgb()).replace("#FF", "#")
 
