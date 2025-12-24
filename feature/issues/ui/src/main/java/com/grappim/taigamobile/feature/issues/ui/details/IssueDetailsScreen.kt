@@ -76,6 +76,7 @@ fun IssueDetailsScreen(
     goToEditWatchers: (issueId: Long) -> Unit,
     goToSprints: (issueId: Long) -> Unit,
     goToUserStory: (userStoryId: Long, ref: Long) -> Unit,
+    updateData: Boolean = false,
     viewModel: IssueDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -113,6 +114,12 @@ fun IssueDetailsScreen(
                 )
             )
         )
+    }
+
+    LaunchedEffect(updateData) {
+        if (updateData) {
+            state.loadIssue()
+        }
     }
 
     BackHandler {

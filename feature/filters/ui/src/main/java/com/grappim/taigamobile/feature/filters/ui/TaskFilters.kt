@@ -56,32 +56,6 @@ import com.grappim.taigamobile.uikit.widgets.editor.searchFieldVerticalPadding
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.coroutines.launch
 
-// /**
-// * TaskFilters which reacts to LazyList scroll state
-// */
-// @Composable
-// fun TasksFiltersWithLazyList(
-//    modifier: Modifier = Modifier,
-//    filters: FiltersDataDTO = FiltersDataDTO(),
-//    activeFilters: FiltersDataDTO = FiltersDataDTO(),
-//    selectFilters: (FiltersDataDTO) -> Unit = {},
-//    content: LazyListScope.() -> Unit
-// ) {
-//    LazyColumn(
-//        modifier = modifier.fillMaxSize()
-//    ) {
-//        item {
-//            TaskFilters(
-//                selected = activeFilters,
-//                onSelect = selectFilters,
-//                data = filters
-//            )
-//        }
-//
-//        content()
-//    }
-// }
-
 /**
  * Filters for tasks (like status, assignees etc.).
  * Filters are placed in bottom sheet dialog as expandable options
@@ -103,14 +77,6 @@ fun TaskFilters(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-//        var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-//            mutableStateOf(
-//                TextFieldValue(
-//                    searchQuery
-//                )
-//            )
-//        }
-
         TextFieldStringWithHint(
             hintId = RString.tasks_search_hint,
             value = searchQuery,
@@ -118,7 +84,6 @@ fun TaskFilters(
                 setSearchQuery(it)
             },
             onSearchClick = {
-//                onSelect(selected.copy(query = query.text))
                 onSelect(selected)
             },
             horizontalPadding = searchFieldHorizontalPadding,

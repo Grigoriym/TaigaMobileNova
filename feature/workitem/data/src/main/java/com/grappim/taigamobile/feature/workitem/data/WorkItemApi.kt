@@ -9,6 +9,7 @@ import com.grappim.taigamobile.feature.workitem.dto.CustomAttributesValuesRespon
 import com.grappim.taigamobile.feature.workitem.dto.PromoteToUserStoryRequestDTO
 import com.grappim.taigamobile.feature.workitem.dto.WikiPageDTO
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
+import kotlinx.serialization.json.JsonObject
 import okhttp3.MultipartBody
 import retrofit2.http.Body
 import retrofit2.http.DELETE
@@ -77,11 +78,10 @@ interface WorkItemApi {
     ): WorkItemResponseDTO
 
     @PATCH("{taskPath}/{id}")
-    @JvmSuppressWildcards
     suspend fun patchWorkItem(
         @Path("taskPath") taskPath: WorkItemPathPlural,
         @Path("id") id: Long,
-        @Body payload: Map<String, Any?>
+        @Body payload: JsonObject
     ): WorkItemResponseDTO
 
     @POST("{taskPath}/{workItemId}/unwatch")
@@ -137,15 +137,13 @@ interface WorkItemApi {
     ): CustomAttributesValuesResponseDTO
 
     @PATCH("{taskPath}/custom-attributes-values/{id}")
-    @JvmSuppressWildcards
     suspend fun patchCustomAttributesValues(
         @Path("taskPath") taskPath: WorkItemPathPlural,
         @Path("id") taskId: Long,
-        @Body payload: Map<String, Any?>
+        @Body payload: JsonObject
     ): CustomAttributesValuesResponseDTO
 
     // wiki
     @PATCH("wiki/{id}")
-    @JvmSuppressWildcards
-    suspend fun patchWikiPage(@Path("id") pageId: Long, @Body payload: Map<String, Any?>): WikiPageDTO
+    suspend fun patchWikiPage(@Path("id") pageId: Long, @Body payload: JsonObject): WikiPageDTO
 }

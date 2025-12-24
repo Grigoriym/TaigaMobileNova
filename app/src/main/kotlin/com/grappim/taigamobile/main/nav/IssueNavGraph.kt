@@ -30,7 +30,8 @@ fun NavGraphBuilder.issueNavGraph(
         val updateData: Boolean =
             navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
         IssuesScreen(
-            showSnackbar = showSnackbarAction,
+            showSnackbar = showSnackbar,
+            showSnackbarAction = showSnackbarAction,
             goToCreateIssue = {
                 navController.navigateToCreateIssue()
             },
@@ -44,9 +45,12 @@ fun NavGraphBuilder.issueNavGraph(
         )
     }
 
-    composable<IssueDetailsNavDestination> {
+    composable<IssueDetailsNavDestination> { navBackStackEntry ->
+        val updateData: Boolean =
+            navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
         IssueDetailsScreen(
             showSnackbar = showSnackbar,
+            updateData = updateData,
             goToProfile = { creatorId ->
                 navController.navigateToProfileScreen(creatorId)
             },

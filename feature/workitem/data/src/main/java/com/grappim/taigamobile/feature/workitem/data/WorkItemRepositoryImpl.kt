@@ -30,6 +30,14 @@ import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.first
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.add
+import kotlinx.serialization.json.addJsonArray
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
+import kotlinx.serialization.json.putJsonArray
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -44,6 +52,48 @@ class WorkItemRepositoryImpl @Inject constructor(
     private val customFieldsMapper: CustomFieldsMapper,
     private val taigaStorage: TaigaStorage
 ) : WorkItemRepository {
+
+    private fun Map<String, Any?>.toJsonObject(): JsonObject = buildJsonObject {
+        forEach { (key, value) ->
+            when (value) {
+                null -> put(key, JsonNull)
+                is Boolean -> put(key, value)
+                is Number -> put(key, value)
+                is String -> put(key, value)
+                is List<*> -> putJsonArray(key) {
+                    value.forEach { item ->
+                        when (item) {
+                            null -> add(JsonNull)
+                            is Boolean -> add(item)
+                            is Number -> add(item)
+                            is String -> add(item)
+                            is List<*> -> {
+                                addJsonArray {
+                                    item.forEach { nestedItem ->
+                                        when (nestedItem) {
+                                            null -> add(JsonNull)
+                                            is Boolean -> add(nestedItem)
+                                            is Number -> add(nestedItem)
+                                            is String -> add(nestedItem)
+                                            else -> add(JsonPrimitive(nestedItem.toString()))
+                                        }
+                                    }
+                                }
+                            }
+                            else -> add(JsonPrimitive(item.toString()))
+                        }
+                    }
+                }
+
+                is Map<*, *> -> {
+                    @Suppress("UNCHECKED_CAST")
+                    put(key, (value as Map<String, Any?>).toJsonObject())
+                }
+
+                else -> put(key, value.toString())
+            }
+        }
+    }
 
     override suspend fun getWorkItems(
         commonTaskType: CommonTaskType,
@@ -75,7 +125,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         val result = workItemApi.patchWorkItem(
             taskPath = WorkItemPathPlural(commonTaskType),
             id = workItemId,
-            payload = editedMap
+            payload = editedMap.toJsonObject()
         )
         return patchedDataMapper.toDomain(result)
     }
@@ -90,7 +140,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         val result = workItemApi.patchCustomAttributesValues(
             taskPath = WorkItemPathPlural(commonTaskType),
             taskId = workItemId,
-            payload = editedMap
+            payload = editedMap.toJsonObject()
         )
         return patchedDataMapper.toDomainCustomAttrs(result)
     }
@@ -229,7 +279,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         val editedMap = payload.toPersistentMap().put("version", version)
         val response = workItemApi.patchWikiPage(
             pageId = pageId,
-            payload = editedMap
+            payload = editedMap.toJsonObject()
         )
         return patchedDataMapper.fromWiki(response)
     }

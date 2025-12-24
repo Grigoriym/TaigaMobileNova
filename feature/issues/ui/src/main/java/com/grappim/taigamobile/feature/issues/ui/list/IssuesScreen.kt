@@ -13,12 +13,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.TaskFilters
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
@@ -40,7 +40,8 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun IssuesScreen(
-    showSnackbar: (message: NativeText, actionLabel: String?) -> Unit,
+    showSnackbar: (NativeText) -> Unit,
+    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
     goToCreateIssue: () -> Unit,
     goToIssue: (Long, Long) -> Unit,
     updateData: Boolean,
@@ -48,10 +49,9 @@ fun IssuesScreen(
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val filters by viewModel.filters.collectAsStateWithLifecycle()
     val issues = viewModel.issues.collectAsLazyPagingItems()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -73,16 +73,19 @@ fun IssuesScreen(
 
     LaunchedEffect(issues.loadState.hasError) {
         if (issues.loadState.hasError) {
-            showSnackbar(
+            showSnackbarAction(
                 NativeText.Resource(RString.error_loading_issues),
-                context.getString(RString.close)
+                resources.getString(RString.close)
             )
         }
     }
 
     ObserveAsEvents(viewModel.snackBarMessage) { snackbarMessage ->
         if (snackbarMessage.isNotEmpty()) {
-            showSnackbar(snackbarMessage, context.getString(RString.close))
+            showSnackbarAction(
+                snackbarMessage,
+                resources.getString(RString.close)
+            )
         }
     }
 
@@ -92,9 +95,14 @@ fun IssuesScreen(
         }
     }
 
+    LaunchedEffect(state.filtersError) {
+        if (state.filtersError.isNotEmpty()) {
+            showSnackbar(state.filtersError)
+        }
+    }
+
     IssuesScreenContent(
         state = state,
-        filters = filters,
         issues = issues,
         navigateToTask = goToIssue,
         searchQuery = searchQuery
@@ -104,7 +112,6 @@ fun IssuesScreen(
 @Composable
 fun IssuesScreenContent(
     state: IssuesState,
-    filters: FiltersData,
     navigateToTask: (id: Long, ref: Long) -> Unit,
     issues: LazyPagingItems<WorkItem>,
     modifier: Modifier = Modifier,
@@ -117,8 +124,8 @@ fun IssuesScreenContent(
         TaskFilters(
             selected = state.activeFilters,
             onSelect = state.selectFilters,
-            data = filters,
-            isFiltersError = state.isFiltersError,
+            data = state.filters,
+            isFiltersError = state.filtersError.isNotEmpty(),
             onRetryFilters = state.retryLoadFilters,
             isFiltersLoading = state.isFiltersLoading,
             searchQuery = searchQuery,
@@ -164,7 +171,6 @@ private fun IssuesScreenPreview() = TaigaMobileTheme {
     IssuesScreenContent(
         navigateToTask = { _, _ -> },
         state = IssuesState(),
-        issues = getPagingPreviewItems(),
-        filters = FiltersData()
+        issues = getPagingPreviewItems()
     )
 }

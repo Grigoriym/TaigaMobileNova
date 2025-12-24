@@ -47,11 +47,12 @@ fun WorkItemsSectionWidget(
         SectionTitleExpandable(
             text = stringResource(
                 when (workItemsType) {
-                    CommonTaskType.UserStory -> RString.userstories
-                    CommonTaskType.Task -> RString.tasks
-                    CommonTaskType.Epic -> RString.epics
-                    CommonTaskType.Issue -> RString.issues
-                }
+                    CommonTaskType.UserStory -> RString.userstories_number
+                    CommonTaskType.Task -> RString.tasks_number
+                    CommonTaskType.Epic -> RString.epics_number
+                    CommonTaskType.Issue -> RString.issues_number
+                },
+                workItemUIS.size
             ),
             isExpanded = areWorkItemsExpanded,
             onExpandClick = {

@@ -85,7 +85,7 @@ fun ScrumScreen(
     val userStories = viewModel.userStories.collectAsLazyPagingItems()
     val openSprints = viewModel.openSprints.collectAsLazyPagingItems()
     val closedSprints = viewModel.closedSprints.collectAsLazyPagingItems()
-    val filters by viewModel.filters.collectAsStateWithLifecycle()
+//    val filters by viewModel.filters.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
@@ -120,9 +120,15 @@ fun ScrumScreen(
         }
     }
 
-    ObserveAsEvents(viewModel.snackBarMessage) { snackbarMessage ->
-        if (snackbarMessage !is NativeText.Empty) {
-            showSnackbar(snackbarMessage)
+    LaunchedEffect(state.filtersError) {
+        if (state.filtersError.isNotEmpty()) {
+            showSnackbar(state.filtersError)
+        }
+    }
+
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 
@@ -168,7 +174,6 @@ fun ScrumScreen(
         pagerState = pagerState,
         stories = userStories,
         searchQuery = searchQuery,
-        filters = filters,
         openSprints = openSprints,
         closedSprints = closedSprints,
         navigateToBoard = {
@@ -187,7 +192,6 @@ fun ScrumScreenContent(
     closedSprints: LazyPagingItems<Sprint>,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier,
-    filters: FiltersData = FiltersData(),
     searchQuery: String = "",
     navigateToBoard: (Sprint) -> Unit = {}
 ) {
@@ -204,7 +208,7 @@ fun ScrumScreenContent(
                 ScrumTabs.Backlog -> BacklogTabContent(
                     state = state,
                     stories = stories,
-                    filters = filters,
+                    filters = state.filters,
                     navigateToTask = navigateToTask,
                     searchQuery = searchQuery
                 )
@@ -236,7 +240,7 @@ private fun BacklogTabContent(
             selected = state.activeFilters,
             onSelect = state.onSelectFilters,
             data = filters,
-            isFiltersError = state.isFiltersError,
+            isFiltersError = state.filtersError.isNotEmpty(),
             onRetryFilters = state.retryLoadFilters,
             isFiltersLoading = state.isFiltersLoading,
             searchQuery = searchQuery,

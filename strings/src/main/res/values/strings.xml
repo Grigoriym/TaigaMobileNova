@@ -41,7 +41,9 @@
     <string name="dashboard_short">Board</string>
     <string name="scrum">Scrum</string>
     <string name="epics">Epics</string>
+    <string name="epics_number">%d Epics</string>
     <string name="issues">Issues</string>
+    <string name="issues_number">%d Issues</string>
     <string name="team">Team</string>
     <string name="settings">Settings</string>
     <string name="more">More</string>
@@ -109,7 +111,9 @@
     <string name="assigned_to">Assigned to</string>
     <string name="watchers">Watchers</string>
     <string name="userstories">User stories</string>
+    <string name="userstories_number">%d User stories</string>
     <string name="tasks">Tasks</string>
+    <string name="tasks_number">%d Tasks</string>
     <string name="comments_template">%d Comments</string>
     <string name="comment_hint">Comment</string>
     <string name="delete_comment_title">Delete comment</string>

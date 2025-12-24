@@ -29,7 +29,8 @@ fun NavGraphBuilder.epicNavGraph(
         val updateData: Boolean =
             navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
         EpicsScreen(
-            showSnackbar = showSnackbarAction,
+            showSnackbar = showSnackbar,
+            showSnackbarAction = showSnackbarAction,
             goToCreateEpic = {
                 navController.navigateToCreateTask(type = CommonTaskType.Epic)
             },
@@ -43,9 +44,12 @@ fun NavGraphBuilder.epicNavGraph(
         )
     }
 
-    composable<EpicDetailsNavDestination> { _ ->
+    composable<EpicDetailsNavDestination> { navBackStackEntry ->
+        val updateData: Boolean =
+            navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
         EpicDetailsScreen(
             showSnackbar = showSnackbar,
+            updateData = updateData,
             goToProfile = { creatorId ->
                 navController.navigateToProfileScreen(creatorId)
             },

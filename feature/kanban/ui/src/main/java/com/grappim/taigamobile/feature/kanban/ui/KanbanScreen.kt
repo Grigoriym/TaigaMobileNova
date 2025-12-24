@@ -28,6 +28,7 @@ fun KanbanScreen(
     showSnackbar: (NativeText) -> Unit,
     goToTask: (Long, CommonTaskType, Long) -> Unit,
     goToCreateTask: (CommonTaskType, Long, Long?) -> Unit,
+    updateData: Boolean = false,
     viewModel: KanbanViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -45,6 +46,12 @@ fun KanbanScreen(
     LaunchedEffect(state.error) {
         if (state.error.isNotEmpty()) {
             showSnackbar(state.error)
+        }
+    }
+
+    LaunchedEffect(updateData) {
+        if (updateData) {
+            state.onRefresh()
         }
     }
 

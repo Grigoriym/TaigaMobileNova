@@ -5,9 +5,6 @@ import com.grappim.taigamobile.core.navigation.navigateAndPopCurrent
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object UserStoryRoot
-
-@Serializable
 data class UserStoryDetailsNavDestination(val userStoryId: Long, val ref: Long)
 
 fun NavController.navigateToUserStory(userStoryId: Long, ref: Long, popUpToRoute: Any? = null) {

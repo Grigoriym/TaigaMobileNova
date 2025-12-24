@@ -158,8 +158,11 @@ fun MainNavHost(
             )
         }
 
-        composable<KanbanNavDestination> {
+        composable<KanbanNavDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             KanbanScreen(
+                updateData = updateData,
                 showSnackbar = showSnackbar,
                 goToTask = { id, type, ref ->
                     navController.navigate(id, type, ref)

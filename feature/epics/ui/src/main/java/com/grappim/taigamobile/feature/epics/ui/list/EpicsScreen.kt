@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.LoadState
@@ -39,7 +40,8 @@ import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun EpicsScreen(
-    showSnackbar: (message: NativeText, actionLabel: String?) -> Unit,
+    showSnackbar: (NativeText) -> Unit,
+    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
     goToCreateEpic: () -> Unit,
     goToEpic: (Long, CommonTaskType, Long) -> Unit,
     updateData: Boolean,
@@ -47,10 +49,9 @@ fun EpicsScreen(
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val filters by viewModel.filters.collectAsStateWithLifecycle()
     val epics = viewModel.epics.collectAsLazyPagingItems()
     val query by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val context = LocalContext.current
+    val resources = LocalResources.current
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -72,16 +73,22 @@ fun EpicsScreen(
 
     LaunchedEffect(epics.loadState.hasError) {
         if (epics.loadState.hasError) {
-            showSnackbar(
+            showSnackbarAction(
                 NativeText.Resource(RString.error_loading_issues),
-                context.getString(RString.close)
+                resources.getString(RString.close)
             )
+        }
+    }
+
+    LaunchedEffect(state.filtersError) {
+        if (state.filtersError.isNotEmpty()) {
+            showSnackbar(state.filtersError)
         }
     }
 
     ObserveAsEvents(viewModel.snackBarMessage) { snackbarMessage ->
         if (snackbarMessage !is NativeText.Empty) {
-            showSnackbar(snackbarMessage, context.getString(RString.close))
+            showSnackbarAction(snackbarMessage, resources.getString(RString.close))
         }
     }
 
@@ -95,7 +102,6 @@ fun EpicsScreen(
         state = state,
         epics = epics,
         query = query,
-        filters = filters,
         goToEpic = goToEpic
     )
 }
@@ -104,7 +110,6 @@ fun EpicsScreen(
 @Composable
 fun EpicsScreenContent(
     state: EpicsState,
-    filters: FiltersData,
     epics: LazyPagingItems<WorkItem>,
     goToEpic: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier,
@@ -117,8 +122,8 @@ fun EpicsScreenContent(
         TaskFilters(
             selected = state.activeFilters,
             onSelect = state.selectFilters,
-            data = filters,
-            isFiltersError = state.isFiltersError,
+            data = state.filters,
+            isFiltersError = state.filtersError.isNotEmpty(),
             onRetryFilters = state.retryLoadFilters,
             isFiltersLoading = state.isFiltersLoading,
             searchQuery = query,
@@ -163,8 +168,7 @@ private fun EpicsScreenPreview() {
         EpicsScreenContent(
             state = EpicsState(),
             goToEpic = { _, _, _ -> },
-            epics = getPagingPreviewItems(),
-            filters = FiltersData()
+            epics = getPagingPreviewItems()
         )
     }
 }
