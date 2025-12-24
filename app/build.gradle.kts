@@ -166,6 +166,8 @@ dependencies {
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.noop)
 
+    // can be removed eventually with dagger update
+    // https://github.com/google/dagger/issues/5001#issuecomment-3687444052
     ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.3.0")
 }
 
