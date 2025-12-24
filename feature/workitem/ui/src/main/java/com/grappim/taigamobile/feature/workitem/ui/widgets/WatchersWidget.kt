@@ -15,23 +15,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.feature.users.domain.User
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.button.AddButtonWidget
 import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButtonWidget
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
-import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun WatchersWidget(
-    watchers: ImmutableList<User>,
+    watchersState: WorkItemWatchersState,
     goToProfile: (Long) -> Unit,
-    onRemoveWatcherClick: (watcherId: Long) -> Unit,
     onAddWatcherClick: () -> Unit,
-    isWatchersLoading: Boolean,
-    isWatchedByMe: Boolean,
     onAddMeToWatchersClick: () -> Unit,
     onRemoveMeFromWatchersClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -44,23 +40,23 @@ fun WatchersWidget(
 
         TaigaHeightSpacer(8.dp)
 
-        watchers.forEachIndexed { index, item ->
+        watchersState.watchers.forEachIndexed { index, item ->
             TeamUserWithActionWidget(
                 user = item,
                 goToProfile = {
                     goToProfile(item.actualId)
                 },
                 onRemoveUserClick = {
-                    onRemoveWatcherClick(item.actualId)
+                    watchersState.onRemoveWatcherClick(item.actualId)
                 }
             )
 
-            if (index < watchers.lastIndex) {
+            if (index < watchersState.watchers.lastIndex) {
                 Spacer(Modifier.height(6.dp))
             }
         }
 
-        if (isWatchersLoading) {
+        if (watchersState.areWatchersLoading) {
             DotsLoaderWidget()
         }
 
@@ -75,7 +71,7 @@ fun WatchersWidget(
 
             Spacer(modifier = Modifier.width(16.dp))
 
-            val (@StringRes buttonText: Int, @DrawableRes buttonIcon: Int) = if (isWatchedByMe) {
+            val (@StringRes buttonText: Int, @DrawableRes buttonIcon: Int) = if (watchersState.isWatchedByMe) {
                 RString.unwatch to RDrawable.ic_unwatch
             } else {
                 RString.watch to RDrawable.ic_watch
@@ -85,7 +81,7 @@ fun WatchersWidget(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
                 onClick = {
-                    if (isWatchedByMe) {
+                    if (watchersState.isWatchedByMe) {
                         onRemoveMeFromWatchersClick()
                     } else {
                         onAddMeToWatchersClick()

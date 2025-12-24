@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.LocalFilePicker
 import com.grappim.taigamobile.uikit.R
@@ -38,33 +39,29 @@ import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
-import kotlinx.collections.immutable.ImmutableList
 import timber.log.Timber
 
 @Composable
 fun AttachmentsSectionWidget(
-    isAttachmentsLoading: Boolean,
-    attachments: ImmutableList<Attachment>,
+    attachmentsState: WorkItemAttachmentsState,
     onAttachmentAdd: (uri: Uri?) -> Unit,
     onAttachmentRemove: (Attachment) -> Unit,
-    setAreAttachmentsExpanded: (Boolean) -> Unit,
-    areAttachmentsExpanded: Boolean,
     modifier: Modifier = Modifier
 ) {
     val filePicker = LocalFilePicker.current
     Column(modifier = modifier) {
         SectionTitleExpandable(
-            text = stringResource(RString.attachments_template).format(attachments.size),
-            isExpanded = areAttachmentsExpanded,
+            text = stringResource(RString.attachments_template).format(attachmentsState.attachments.size),
+            isExpanded = attachmentsState.areAttachmentsExpanded,
             onExpandClick = {
-                setAreAttachmentsExpanded(!areAttachmentsExpanded)
+                attachmentsState.setAreAttachmentsExpanded(!attachmentsState.areAttachmentsExpanded)
             }
         )
 
-        if (areAttachmentsExpanded) {
+        if (attachmentsState.areAttachmentsExpanded) {
             Spacer(Modifier.height(10.dp))
 
-            attachments.forEachIndexed { index, item ->
+            attachmentsState.attachments.forEachIndexed { index, item ->
                 AttachmentItem(
                     attachment = item,
                     onRemoveClick = {
@@ -72,14 +69,14 @@ fun AttachmentsSectionWidget(
                     }
                 )
 
-                if (index < attachments.lastIndex) {
+                if (index < attachmentsState.attachments.lastIndex) {
                     Spacer(Modifier.height(8.dp))
                 }
             }
 
             Spacer(Modifier.height(10.dp))
 
-            if (isAttachmentsLoading) {
+            if (attachmentsState.areAttachmentsLoading) {
                 DotsLoaderWidget()
             } else {
                 Button(

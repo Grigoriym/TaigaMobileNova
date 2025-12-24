@@ -13,6 +13,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
@@ -21,9 +22,8 @@ import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun WorkItemTagsWidget(
-    tags: ImmutableList<TagUI>,
+    tagsState: WorkItemTagsState,
     goToEditTags: () -> Unit,
-    areTagsLoading: Boolean,
     onTagRemoveClick: (TagUI) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -41,7 +41,7 @@ fun WorkItemTagsWidget(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            tags.forEach { tag ->
+            tagsState.tags.forEach { tag ->
                 TagItemWidget(
                     tag = tag,
                     onRemoveClick = {
@@ -50,7 +50,7 @@ fun WorkItemTagsWidget(
                 )
             }
 
-            if (areTagsLoading) {
+            if (tagsState.areTagsLoading) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(28.dp),
                     strokeWidth = 2.dp,

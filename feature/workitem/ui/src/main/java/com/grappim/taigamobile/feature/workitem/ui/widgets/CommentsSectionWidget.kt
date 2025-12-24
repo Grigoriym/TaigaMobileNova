@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.workitem.domain.Comment
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
@@ -31,25 +32,22 @@ import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun CommentsSectionWidget(
-    comments: ImmutableList<Comment>,
-    isCommentsWidgetExpanded: Boolean,
-    setIsCommentsWidgetExpanded: (Boolean) -> Unit,
-    areCommentsLoading: Boolean,
+    commentsState: WorkItemCommentsState,
     onCommentRemove: (Comment) -> Unit,
     goToProfile: (userId: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
         SectionTitleExpandable(
-            text = stringResource(RString.comments_template).format(comments.size),
-            isExpanded = isCommentsWidgetExpanded,
+            text = stringResource(RString.comments_template).format(commentsState.comments.size),
+            isExpanded = commentsState.isCommentsWidgetExpanded,
             onExpandClick = {
-                setIsCommentsWidgetExpanded(!isCommentsWidgetExpanded)
+                commentsState.setIsCommentsWidgetExpanded(!commentsState.isCommentsWidgetExpanded)
             }
         )
 
-        if (isCommentsWidgetExpanded) {
-            comments.forEachIndexed { index, item ->
+        if (commentsState.isCommentsWidgetExpanded) {
+            commentsState.comments.forEachIndexed { index, item ->
                 CommentItem(
                     comment = item,
                     onDeleteClick = {
@@ -58,7 +56,7 @@ fun CommentsSectionWidget(
                     navigateToProfile = goToProfile
                 )
 
-                if (index < comments.lastIndex) {
+                if (index < commentsState.comments.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(vertical = 12.dp),
                         color = MaterialTheme.colorScheme.outline
@@ -66,7 +64,7 @@ fun CommentsSectionWidget(
                 }
             }
 
-            if (areCommentsLoading) {
+            if (commentsState.areCommentsLoading) {
                 DotsLoaderWidget()
             }
         }

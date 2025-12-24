@@ -147,7 +147,7 @@ fun WikiPageScreenContent(
                         state.currentPage.id
                     )
                 },
-                isLoading = descriptionState.isDescriptionLoading
+                descriptionState = descriptionState
             )
 
             TaigaHeightSpacer(sectionsPadding)
@@ -173,13 +173,10 @@ fun WikiPageScreenContent(
             TaigaHeightSpacer(sectionsPadding)
 
             AttachmentsSectionWidget(
-                attachments = attachmentsState.attachments,
-                isAttachmentsLoading = attachmentsState.areAttachmentsLoading,
+                attachmentsState = attachmentsState,
                 onAttachmentAdd = { uri ->
                     state.onAttachmentAdd(uri)
                 },
-                areAttachmentsExpanded = attachmentsState.areAttachmentsExpanded,
-                setAreAttachmentsExpanded = attachmentsState.setAreAttachmentsExpanded,
                 onAttachmentRemove = {
                     state.onAttachmentRemove(it)
                 }
