@@ -28,6 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
@@ -36,18 +37,15 @@ import com.grappim.taigamobile.uikit.theme.taigaRed
 import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
 import com.grappim.taigamobile.utils.ui.textColor
 import java.time.LocalDate
 
 @Composable
 fun WorkItemDueDateWidget(
-    dueDateText: NativeText,
+    dueDateState: WorkItemDueDateState,
     dueDateStatus: DueDateStatus?,
-    isLoading: Boolean,
     dueDate: LocalDate?,
-    setIsDueDatePickerVisible: (Boolean) -> Unit,
     setDueDate: (Long?) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -85,12 +83,12 @@ fun WorkItemDueDateWidget(
                                 DueDateStatus.Set -> taigaGreenPositive
                                 DueDateStatus.DueSoon -> taigaOrange
                                 DueDateStatus.PastDue -> taigaRed
-                            }.takeUnless { isLoading } ?: MaterialTheme.colorScheme.primary,
+                            }.takeUnless { dueDateState.isDueDateLoading } ?: MaterialTheme.colorScheme.primary,
                             shape = MaterialTheme.shapes.small
                         )
                         .padding(4.dp)
                 ) {
-                    if (isLoading) {
+                    if (dueDateState.isDueDateLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier
                                 .size(40.dp)
@@ -123,10 +121,10 @@ fun WorkItemDueDateWidget(
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = dueDateText.asString(context),
+                        text = dueDateState.dueDateText.asString(context),
                         style = MaterialTheme.typography.bodyLarge,
                         modifier = Modifier.clickable {
-                            setIsDueDatePickerVisible(true)
+                            dueDateState.setDueDateDatePickerVisibility(true)
                         },
                         color = (
                             dueDate?.let { MaterialTheme.colorScheme.onSurface }
@@ -160,11 +158,9 @@ fun WorkItemDueDateWidget(
 private fun WorkItemDueDateWidgetPreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("27.02.0255"),
+            dueDateState = WorkItemDueDateState(),
             dueDateStatus = DueDateStatus.DueSoon,
-            isLoading = false,
             dueDate = LocalDate.now(),
-            setIsDueDatePickerVisible = {},
             setDueDate = {}
         )
     }
@@ -175,11 +171,9 @@ private fun WorkItemDueDateWidgetPreview() {
 private fun WorkItemDueDateWidgetPastDuePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("27.02.0255"),
+            dueDateState = WorkItemDueDateState(),
             dueDateStatus = DueDateStatus.PastDue,
-            isLoading = false,
             dueDate = LocalDate.now(),
-            setIsDueDatePickerVisible = {},
             setDueDate = {}
         )
     }
@@ -190,11 +184,9 @@ private fun WorkItemDueDateWidgetPastDuePreview() {
 private fun WorkItemDueDateWidgetNoLongerApplicablePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("27.02.0255"),
+            dueDateState = WorkItemDueDateState(),
             dueDateStatus = DueDateStatus.NoLongerApplicable,
-            isLoading = false,
             dueDate = LocalDate.now(),
-            setIsDueDatePickerVisible = {},
             setDueDate = {}
         )
     }
@@ -205,11 +197,9 @@ private fun WorkItemDueDateWidgetNoLongerApplicablePreview() {
 private fun WorkItemDueDateWidgetNoDueDatePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("no date"),
+            dueDateState = WorkItemDueDateState(),
             dueDateStatus = null,
-            isLoading = false,
             dueDate = null,
-            setIsDueDatePickerVisible = {},
             setDueDate = {}
         )
     }
@@ -220,11 +210,9 @@ private fun WorkItemDueDateWidgetNoDueDatePreview() {
 private fun WorkItemDueDateWidgetLoadingPreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("24.25.2626"),
+            dueDateState = WorkItemDueDateState(),
             dueDateStatus = DueDateStatus.NotSet,
-            isLoading = true,
             dueDate = LocalDate.now(),
-            setIsDueDatePickerVisible = {},
             setDueDate = {}
         )
     }

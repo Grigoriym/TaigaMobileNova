@@ -81,7 +81,7 @@ class WikiPageViewModel @Inject constructor(
         loadData()
 
         workItemEditStateRepository
-            .getDescriptionFlow(route.id, TaskIdentifier.Wiki)
+            .getDescriptionFlow(wikiId, TaskIdentifier.Wiki)
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
     }

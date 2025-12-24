@@ -11,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
@@ -18,9 +19,9 @@ import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 
 @Composable
 fun WorkItemDescriptionWidget(
+    descriptionState: WorkItemDescriptionState,
     currentDescription: String?,
     onDescriptionClick: () -> Unit,
-    isLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     Column(
@@ -52,7 +53,7 @@ fun WorkItemDescriptionWidget(
             )
         }
 
-        if (isLoading) {
+        if (descriptionState.isDescriptionLoading) {
             CircularLoaderWidget(modifier = Modifier.size(40.dp))
         }
 

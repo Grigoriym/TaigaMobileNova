@@ -18,30 +18,22 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 
 @Composable
-fun WorkItemTitleWidget(
-    currentTitle: String,
-    onTitleChange: (String) -> Unit,
-    onTitleSave: () -> Unit,
-    isLoading: Boolean,
-    isEditable: Boolean,
-    setIsEditable: (Boolean) -> Unit,
-    onCancelClick: () -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun WorkItemTitleWidget(titleState: WorkItemTitleState, onTitleSave: () -> Unit, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopStart
     ) {
-        if (isEditable) {
+        if (titleState.isTitleEditable) {
             Column {
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = currentTitle,
-                    onValueChange = onTitleChange,
+                    value = titleState.currentTitle,
+                    onValueChange = titleState.onTitleChange,
                     textStyle = MaterialTheme.typography.headlineSmall,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.background,
@@ -53,7 +45,7 @@ fun WorkItemTitleWidget(
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(onClick = onCancelClick) {
+                    TextButton(onClick = titleState.onCancelClick) {
                         Text(stringResource(RString.cancel))
                     }
                     TextButton(
@@ -63,7 +55,7 @@ fun WorkItemTitleWidget(
                     ) {
                         Text(stringResource(RString.save))
                     }
-                    if (isLoading) {
+                    if (titleState.isTitleLoading) {
                         CircularLoaderWidget(modifier = Modifier.size(40.dp))
                     }
                 }
@@ -78,9 +70,9 @@ fun WorkItemTitleWidget(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            setIsEditable(true)
+                            titleState.setIsTitleEditable(true)
                         },
-                    text = currentTitle,
+                    text = titleState.currentTitle,
                     style = MaterialTheme.typography.headlineSmall,
                     maxLines = 2
                 )

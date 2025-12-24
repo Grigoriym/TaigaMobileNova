@@ -33,11 +33,11 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDue
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
-import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CommentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CreatedByWidget
+import com.grappim.taigamobile.feature.workitem.ui.widgets.SingleAssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WatchersWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBadgesBottomSheet
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemBlockedBannerWidget
@@ -294,22 +294,13 @@ private fun TaskDetailsScreenContent(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 WorkItemTitleWidget(
-                    currentTitle = titleState.currentTitle,
-                    onTitleChange = titleState.onTitleChange,
-                    onTitleSave = state.onTitleSave,
-                    isLoading = titleState.isTitleLoading,
-                    isEditable = titleState.isTitleEditable,
-                    setIsEditable = titleState.setIsTitleEditable,
-                    onCancelClick = titleState.onCancelClick
+                    titleState = titleState,
+                    onTitleSave = state.onTitleSave
                 )
 
                 WorkItemBlockedBannerWidget(blockedNote = state.currentTask.blockedNote)
 
-                WorkItemBadgesWidget(
-                    updatingBadges = badgeState.updatingBadges,
-                    items = badgeState.workItemBadges,
-                    onBadgeClick = badgeState.onBadgeClick
-                )
+                WorkItemBadgesWidget(badgeState = badgeState)
 
                 WorkItemDescriptionWidget(
                     currentDescription = state.currentTask.description,
@@ -319,13 +310,12 @@ private fun TaskDetailsScreenContent(
                             state.currentTask.id
                         )
                     },
-                    isLoading = descriptionState.isDescriptionLoading
+                    descriptionState = descriptionState
                 )
 
                 WorkItemTagsWidget(
-                    tags = tagsState.tags,
+                    tagsState = tagsState,
                     onTagRemoveClick = state.onTagRemove,
-                    areTagsLoading = tagsState.areTagsLoading,
                     goToEditTags = {
                         state.onGoingToEditTags()
                         goToEditTags(state.currentTask.id)
@@ -333,13 +323,9 @@ private fun TaskDetailsScreenContent(
                 )
 
                 WorkItemDueDateWidget(
-                    dueDateText = dueDateState.dueDateText,
+                    dueDateState = dueDateState,
                     dueDateStatus = state.currentTask.dueDateStatus,
-                    isLoading = dueDateState.isDueDateLoading,
                     dueDate = state.currentTask.dueDate,
-                    setIsDueDatePickerVisible = { value ->
-                        dueDateState.setDueDateDatePickerVisibility(value)
-                    },
                     setDueDate = { value ->
                         state.setDueDate(value)
                     }
@@ -351,14 +337,9 @@ private fun TaskDetailsScreenContent(
                     createdDateTime = state.currentTask.createdDateTime
                 )
 
-                AssignedToWidget(
+                SingleAssignedToWidget(
+                    assigneeState = assigneesState,
                     goToProfile = goToProfile,
-                    assignees = assigneesState.assignees,
-                    isAssigneesLoading = assigneesState.isAssigneesLoading,
-                    onRemoveAssigneeClick = {
-                        assigneesState.onRemoveAssigneeClick()
-                    },
-                    isAssignedToMe = assigneesState.isAssignedToMe,
                     onUnassign = state.onUnassign,
                     onAssignToMe = state.onAssignToMe,
                     onAddAssigneeClick = {
@@ -369,52 +350,33 @@ private fun TaskDetailsScreenContent(
 
                 WatchersWidget(
                     goToProfile = goToProfile,
-                    watchers = watchersState.watchers,
-                    onRemoveWatcherClick = { watcherId ->
-                        watchersState.onRemoveWatcherClick(watcherId)
-                    },
-                    isWatchersLoading = watchersState.areWatchersLoading,
+                    watchersState = watchersState,
                     onAddWatcherClick = {
                         state.onGoingToEditWatchers()
                         goToEditWatchers(state.currentTask.id)
                     },
-                    isWatchedByMe = watchersState.isWatchedByMe,
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
                     onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
                 )
 
                 CustomFieldsSectionWidget(
-                    customFieldStateItems = customFieldsState.customFieldStateItems,
-                    isCustomFieldsLoading = customFieldsState.isCustomFieldsLoading,
-                    isCustomFieldsWidgetExpanded = customFieldsState.isCustomFieldsWidgetExpanded,
-                    setIsCustomFieldsWidgetExpanded = customFieldsState.setIsCustomFieldsWidgetExpanded,
-                    onCustomFieldChange = customFieldsState.onCustomFieldChange,
-                    onCustomFieldSave = state.onCustomFieldSave,
-                    onCustomFieldEditToggle = customFieldsState.onCustomFieldEditToggle,
-                    editingItemIds = customFieldsState.editingItemIds
+                    customFieldsState = customFieldsState,
+                    onCustomFieldSave = state.onCustomFieldSave
                 )
 
                 AttachmentsSectionWidget(
-                    attachments = attachmentsState.attachments,
-                    isAttachmentsLoading = attachmentsState.areAttachmentsLoading,
+                    attachmentsState = attachmentsState,
                     onAttachmentAdd = { uri ->
                         state.onAttachmentAdd(uri)
                     },
-                    areAttachmentsExpanded = attachmentsState.areAttachmentsExpanded,
-                    setAreAttachmentsExpanded = attachmentsState.setAreAttachmentsExpanded,
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
                     }
                 )
 
                 CommentsSectionWidget(
-                    comments = commentsState.comments,
+                    commentsState = commentsState,
                     goToProfile = goToProfile,
-                    isCommentsWidgetExpanded = commentsState.isCommentsWidgetExpanded,
-                    setIsCommentsWidgetExpanded = { value ->
-                        commentsState.setIsCommentsWidgetExpanded(value)
-                    },
-                    areCommentsLoading = commentsState.areCommentsLoading,
                     onCommentRemove = { value ->
                         state.onCommentRemove(value)
                     }

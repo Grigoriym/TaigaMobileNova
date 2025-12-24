@@ -35,6 +35,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
@@ -44,7 +45,6 @@ import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import timber.log.Timber
 import java.time.Instant
@@ -54,40 +54,36 @@ import java.time.format.FormatStyle
 
 @Composable
 fun CustomFieldsSectionWidget(
-    customFieldStateItems: ImmutableList<CustomFieldItemState>,
-    isCustomFieldsLoading: Boolean,
-    isCustomFieldsWidgetExpanded: Boolean,
-    setIsCustomFieldsWidgetExpanded: (Boolean) -> Unit,
-    onCustomFieldChange: (CustomFieldItemState) -> Unit,
+    customFieldsState: WorkItemCustomFieldsState,
     onCustomFieldSave: (CustomFieldItemState) -> Unit,
-    onCustomFieldEditToggle: (CustomFieldItemState) -> Unit,
-    editingItemIds: ImmutableSet<Long>,
     modifier: Modifier = Modifier
 ) {
-    if (customFieldStateItems.isNotEmpty()) {
+    if (customFieldsState.customFieldStateItems.isNotEmpty()) {
         Column(modifier = modifier) {
             SectionTitleExpandable(
                 text = stringResource(RString.custom_fields_with_number).format(
-                    customFieldStateItems.size
+                    customFieldsState.customFieldStateItems.size
                 ),
-                isExpanded = isCustomFieldsWidgetExpanded,
+                isExpanded = customFieldsState.isCustomFieldsWidgetExpanded,
                 onExpandClick = {
-                    setIsCustomFieldsWidgetExpanded(!isCustomFieldsWidgetExpanded)
+                    customFieldsState.setIsCustomFieldsWidgetExpanded(
+                        !customFieldsState.isCustomFieldsWidgetExpanded
+                    )
                 }
             )
 
-            if (isCustomFieldsWidgetExpanded) {
+            if (customFieldsState.isCustomFieldsWidgetExpanded) {
                 TaigaHeightSpacer(8.dp)
 
-                customFieldStateItems.forEachIndexed { index, item ->
+                customFieldsState.customFieldStateItems.forEachIndexed { index, item ->
                     CustomFieldWidget(
-                        editingItemIds = editingItemIds,
+                        editingItemIds = customFieldsState.editingItemIds,
                         item = item,
-                        onItemChange = onCustomFieldChange,
+                        onItemChange = customFieldsState.onCustomFieldChange,
                         onItemSave = onCustomFieldSave,
-                        onItemEdit = onCustomFieldEditToggle
+                        onItemEdit = customFieldsState.onCustomFieldEditToggle
                     )
-                    if (index < customFieldStateItems.lastIndex) {
+                    if (index < customFieldsState.customFieldStateItems.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                             thickness = DividerDefaults.Thickness,
@@ -95,7 +91,7 @@ fun CustomFieldsSectionWidget(
                         )
                     }
                 }
-                if (isCustomFieldsLoading) {
+                if (customFieldsState.isCustomFieldsLoading) {
                     TaigaHeightSpacer(8.dp)
                     DotsLoaderWidget()
                 }
