@@ -1,12 +1,17 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.epic
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
+import com.grappim.taigamobile.utils.ui.typeMapOf
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,18 +22,26 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.reflect.typeOf
 
 @HiltViewModel
 class EditEpicViewModel @Inject constructor(
     private val epicsRepository: EpicsRepository,
-    private val editShared: WorkItemEditShared,
-    private val taigaStorage: TaigaStorage
+    private val workItemEditStateRepository: WorkItemEditStateRepository,
+    private val taigaStorage: TaigaStorage,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val route = savedStateHandle.toRoute<WorkItemEditEpicNavDestination>(
+        typeMap = typeMapOf(
+            listOf(
+                typeOf<TaskIdentifier>()
+            )
+        )
+    )
 
     private val _state = MutableStateFlow(
         EditEpicState(
-            selectedItems = editShared.currentEpics.toPersistentList(),
-            originalSelectedItems = editShared.currentEpics.toPersistentList(),
             onEpicClick = ::onEpicClick,
             setIsDialogVisible = ::setIsDialogVisible,
             isItemSelected = ::isItemSelected,
@@ -55,9 +68,15 @@ class EditEpicViewModel @Inject constructor(
     private fun isItemSelected(id: Long): Boolean = state.value.selectedItems.contains(id)
 
     private fun notifyChange(shouldReturnCurrentValue: Boolean) {
-        val wasStateChanged = _state.value.selectedItems != _state.value.originalSelectedItems
-        if (shouldReturnCurrentValue && wasStateChanged) {
-            editShared.updateEpics(_state.value.selectedItems)
+        viewModelScope.launch {
+            val wasStateChanged = _state.value.selectedItems != _state.value.originalSelectedItems
+            if (shouldReturnCurrentValue && wasStateChanged) {
+                workItemEditStateRepository.updateEpics(
+                    workItemId = route.workItemId,
+                    type = route.taskIdentifier,
+                    ids = _state.value.selectedItems
+                )
+            }
         }
     }
 
@@ -84,8 +103,16 @@ class EditEpicViewModel @Inject constructor(
             resultOf {
                 epicsRepository.getEpics(projectId = taigaStorage.currentProjectIdFlow.first())
             }.onSuccess { result ->
+                val selected = workItemEditStateRepository.getCurrentEpics(
+                    workItemId = route.workItemId,
+                    type = route.taskIdentifier
+                ).toPersistentList()
                 _state.update {
-                    it.copy(itemsToShow = result.toPersistentList())
+                    it.copy(
+                        itemsToShow = result.toPersistentList(),
+                        selectedItems = selected,
+                        originalSelectedItems = selected
+                    )
                 }
             }.onFailure { error ->
                 Timber.e(error)

@@ -12,8 +12,6 @@ dependencies {
     implementation(projects.core.async)
     implementation(projects.core.storage)
 
-    implementation(libs.moshi)
-
     implementation(projects.feature.users.domain)
     implementation(projects.feature.users.mapper)
     implementation(projects.feature.users.dto)

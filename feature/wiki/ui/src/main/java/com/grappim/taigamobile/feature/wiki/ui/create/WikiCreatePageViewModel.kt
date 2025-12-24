@@ -67,7 +67,9 @@ class WikiCreatePageViewModel @Inject constructor(
                 )
             }
             resultOf {
-                val slug = title.replace(" ", "-").lowercase()
+                val slug = title
+                    .trimEnd()
+                    .replace(" ", "-").lowercase()
                 wikiRepository.createWikiLink(
                     href = slug,
                     title = title

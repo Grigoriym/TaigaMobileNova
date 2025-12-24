@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -36,10 +37,12 @@ interface WorkItemRepository {
         fileName: String,
         fileByteArray: ByteArray,
         projectId: Long,
-        commonTaskType: CommonTaskType
+        taskIdentifier: TaskIdentifier
     ): Attachment
 
-    suspend fun deleteAttachment(attachment: Attachment, commonTaskType: CommonTaskType)
+    suspend fun deleteAttachment(attachment: Attachment, taskIdentifier: TaskIdentifier)
+
+    suspend fun getWorkItemAttachments(workItemId: Long, taskIdentifier: TaskIdentifier): ImmutableList<Attachment>
 
     suspend fun watchWorkItem(workItemId: Long, commonTaskType: CommonTaskType)
 
@@ -59,8 +62,6 @@ interface WorkItemRepository {
     ): WatchersListUpdateData
 
     suspend fun getCustomFields(workItemId: Long, commonTaskType: CommonTaskType): CustomFields
-
-    suspend fun getWorkItemAttachments(workItemId: Long, commonTaskType: CommonTaskType): ImmutableList<Attachment>
 
     suspend fun deleteWorkItem(workItemId: Long, commonTaskType: CommonTaskType)
 

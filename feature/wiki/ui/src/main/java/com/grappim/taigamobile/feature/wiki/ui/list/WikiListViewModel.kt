@@ -47,9 +47,23 @@ class WikiListViewModel @Inject constructor(private val wikiRepository: WikiRepo
                     Pair(pages.await(), links.await())
                 }
             }.onSuccess { result ->
-                val allPages = result.first.map { it.slug }.toImmutableList()
-                val bookmarks = result.second.filter { it.ref in allPages }
-                    .map { it.title to it.ref }.toImmutableList()
+                val allPages = result.first.map { page ->
+                    WikiUIItem(
+                        id = page.id,
+                        title = page.slug,
+                        slug = page.slug
+                    )
+                }.toImmutableList()
+
+                val allPageSlugs = result.first.map { it.slug }
+                val bookmarks = result.second.filter { it.ref in allPageSlugs }
+                    .map { link ->
+                        WikiUIItem(
+                            id = link.id,
+                            title = link.title,
+                            slug = link.ref
+                        )
+                    }.toImmutableList()
 
                 _state.update {
                     it.copy(

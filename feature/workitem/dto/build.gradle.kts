@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.taigamobile.android.library)
+    alias(libs.plugins.taigamobile.kotlin.serialization)
 }
 
 android {
@@ -11,7 +12,5 @@ dependencies {
     implementation(projects.feature.projects.dto)
     implementation(projects.feature.epics.dto)
     implementation(projects.feature.userstories.dto)
-
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
+    implementation(projects.core.serialization)
 }

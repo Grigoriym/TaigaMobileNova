@@ -34,7 +34,7 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun WikiCreatePageScreen(
     showSnackbar: (NativeText) -> Unit,
-    goToWikiPage: (slug: String) -> Unit,
+    goToWikiPage: (slug: String, id: Long) -> Unit,
     viewModel: WikiCreatePageViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -65,7 +65,7 @@ fun WikiCreatePageScreen(
     }
 
     ObserveAsEvents(viewModel.creationResult) { result ->
-        goToWikiPage(result.slug)
+        goToWikiPage(result.slug, result.id)
     }
 
     WikiCreatePageScreenContent(state = state)

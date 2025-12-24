@@ -12,8 +12,6 @@ dependencies {
     implementation(projects.core.async)
     implementation(projects.core.storage)
 
-    implementation(libs.moshi)
-
     implementation(projects.feature.epics.domain)
     implementation(projects.feature.epics.dto)
 

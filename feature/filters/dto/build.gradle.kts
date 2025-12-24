@@ -1,12 +1,8 @@
 plugins {
     alias(libs.plugins.taigamobile.android.library)
+    alias(libs.plugins.taigamobile.kotlin.serialization)
 }
 
 android {
     namespace = "com.grappim.taigamobile.feature.filters.dto"
-}
-
-dependencies {
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
 }

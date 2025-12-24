@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
@@ -47,7 +48,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.utils.getDueDateText
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
@@ -79,7 +80,6 @@ class TaskDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val taskDetailsDataUseCase: TaskDetailsDataUseCase,
     private val workItemsGenerator: WorkItemsGenerator,
-    private val workItemEditShared: WorkItemEditShared,
     private val patchDataGenerator: PatchDataGenerator,
     private val statusUIMapper: StatusUIMapper,
     private val tagUIMapper: TagUIMapper,
@@ -90,7 +90,8 @@ class TaskDetailsViewModel @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
     private val taigaStorage: TaigaStorage,
-    private val usersRepository: UsersRepository
+    private val usersRepository: UsersRepository,
+    private val workItemEditStateRepository: WorkItemEditStateRepository
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = CommonTaskType.Task,
@@ -105,8 +106,7 @@ class TaskDetailsViewModel @Inject constructor(
     WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
         commonTaskType = CommonTaskType.Task,
         workItemRepository = workItemRepository,
-        patchDataGenerator = patchDataGenerator,
-        workItemEditShared = workItemEditShared
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         historyRepository = historyRepository,
@@ -114,8 +114,8 @@ class TaskDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
+        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task),
         workItemRepository = workItemRepository,
-        commonTaskType = CommonTaskType.Task,
         fileUriManager = fileUriManager,
         taigaStorage = taigaStorage
     ),
@@ -124,8 +124,7 @@ class TaskDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
-        session = session,
-        workItemEditShared = workItemEditShared
+        session = session
     ),
     WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
         commonTaskType = CommonTaskType.Task,
@@ -148,11 +147,10 @@ class TaskDetailsViewModel @Inject constructor(
         commonTaskType = CommonTaskType.Task,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
-        usersRepository = usersRepository,
-        workItemEditShared = workItemEditShared
+        usersRepository = usersRepository
     ),
     WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task),
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ) {
@@ -187,7 +185,10 @@ class TaskDetailsViewModel @Inject constructor(
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
             onBadgeSave = ::onBadgeSave,
-            onPromoteClick = ::promoteToUserStory
+            onPromoteClick = ::promoteToUserStory,
+            onGoingToEditTags = ::onGoingToEditTags,
+            onGoingToEditWatchers = ::onGoingToEditWatchers,
+            onGoingToEditAssignee = ::onGoingToEditAssignee
         )
     )
     val state = _state.asStateFlow()
@@ -204,17 +205,53 @@ class TaskDetailsViewModel @Inject constructor(
     init {
         loadTask()
 
-        workItemEditShared.teamMemberUpdateState
+        workItemEditStateRepository
+            .getTeamMemberUpdateFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
             .onEach(::handleTeamMemberUpdate)
             .launchIn(viewModelScope)
 
-        workItemEditShared.tagsState
+        workItemEditStateRepository
+            .getTagsFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
             .onEach(::onNewTagsUpdate)
             .launchIn(viewModelScope)
 
-        workItemEditShared.descriptionState
+        workItemEditStateRepository
+            .getDescriptionFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        workItemEditStateRepository.clearSession(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
+        Timber.d("IssueDetailsViewModel cleared - session cleaned up for taskId: $taskId")
+    }
+
+    private fun onGoingToEditTags() {
+        workItemEditStateRepository.setTags(
+            workItemId = taskId,
+            type = TaskIdentifier.WorkItem(CommonTaskType.Task),
+            tags = tagsState.value.tags
+        )
+    }
+
+    private fun onGoingToEditWatchers() {
+        val watchersIds = watchersState.value.watchers.mapNotNull { it.id }
+            .toPersistentList()
+        workItemEditStateRepository.setCurrentWatchers(
+            ids = watchersIds,
+            workItemId = taskId,
+            type = TaskIdentifier.WorkItem(CommonTaskType.Task)
+        )
+    }
+
+    fun onGoingToEditAssignee() {
+        val assigneeId = singleAssigneeState.value.assignees.firstOrNull()?.id
+        workItemEditStateRepository.setCurrentAssignee(
+            workItemId = taskId,
+            type = TaskIdentifier.WorkItem(CommonTaskType.Task),
+            id = assigneeId
+        )
     }
 
     private fun loadTask() {
@@ -676,7 +713,7 @@ class TaskDetailsViewModel @Inject constructor(
     }
 
     private suspend fun onNewDescriptionUpdate(newDescription: String) {
-        handleDescriptionUpdate(
+        updateDescription(
             version = currentTask.version,
             workItemId = currentTask.id,
             newDescription = newDescription,

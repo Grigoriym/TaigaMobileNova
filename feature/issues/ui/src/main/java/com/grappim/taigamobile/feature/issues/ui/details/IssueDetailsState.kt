@@ -68,5 +68,9 @@ data class IssueDetailsState(
     val onDelete: () -> Unit = {},
     val customFieldsVersion: Long = 0,
 
-    val onPromoteClick: () -> Unit = {}
+    val onPromoteClick: () -> Unit = {},
+
+    val onGoingToEditTags: () -> Unit = {},
+    val onGoingToEditWatchers: () -> Unit = {},
+    val onGoingToEditAssignee: () -> Unit = {}
 )

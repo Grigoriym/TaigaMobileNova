@@ -21,5 +21,5 @@ interface TasksApi {
     ): List<WorkItemResponseDTO>
 
     @POST("tasks")
-    suspend fun createTask(@Body createTaskRequest: CreateTaskRequest): WorkItemResponseDTO
+    suspend fun createTask(@Body createTaskRequestDTO: CreateTaskRequestDTO): WorkItemResponseDTO
 }

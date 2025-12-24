@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.wiki.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
@@ -23,7 +24,7 @@ class WikiPageUseCase @Inject constructor(
             val attachments = async {
                 workItemRepository.getWorkItemAttachments(
                     workItemId = page.id,
-                    commonTaskType = CommonTaskType.Wiki
+                    taskIdentifier = TaskIdentifier.Wiki
                 )
             }
 

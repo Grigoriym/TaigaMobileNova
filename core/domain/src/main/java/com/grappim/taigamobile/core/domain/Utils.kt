@@ -10,5 +10,4 @@ fun transformTaskTypeForCopyLink(commonTaskType: CommonTaskType) = when (commonT
     CommonTaskType.Task -> PATH_TO_TASK
     CommonTaskType.Epic -> PATH_TO_EPIC
     CommonTaskType.Issue -> PATH_TO_ISSUE
-    CommonTaskType.Wiki -> "wiki"
 }

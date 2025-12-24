@@ -52,7 +52,6 @@ fun CommonTaskItem(
                         CommonTaskType.Task -> RString.task
                         CommonTaskType.Epic -> RString.epic
                         CommonTaskType.Issue -> RString.issue
-                        CommonTaskType.Wiki -> RString.wiki
                     }
                 ).uppercase(),
                 color = MaterialTheme.colorScheme.secondary

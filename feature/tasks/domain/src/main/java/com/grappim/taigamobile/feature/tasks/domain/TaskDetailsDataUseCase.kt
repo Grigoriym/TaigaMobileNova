@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.tasks.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -32,7 +33,7 @@ class TaskDetailsDataUseCase @Inject constructor(
             val attachments = async {
                 workItemRepository.getWorkItemAttachments(
                     workItemId = id,
-                    commonTaskType = taskType
+                    taskIdentifier = TaskIdentifier.WorkItem(taskType)
                 )
             }
             val customFields = async {

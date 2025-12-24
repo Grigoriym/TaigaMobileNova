@@ -11,18 +11,17 @@ import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.data.interceptors.ErrorMappingInterceptor
 import com.grappim.taigamobile.data.interceptors.HostSelectionInterceptor
 import com.grappim.taigamobile.data.interceptors.TaigaBearerTokenAuthenticator
-import com.grappim.taigamobile.di.LocalDateTimeTypeAdapter
-import com.grappim.taigamobile.di.LocalDateTypeAdapter
-import com.squareup.moshi.Moshi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.kotlinx.serialization.asConverterFactory
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
@@ -31,14 +30,24 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
+    @[Provides Singleton]
+    fun provideSerialization(): Json = Json {
+        isLenient = true
+        prettyPrint = false
+        ignoreUnknownKeys = true
+        explicitNulls = false
+    }
+
     @[Provides CommonRetrofit Singleton]
     fun provideRetrofit(
-        moshiConverterFactory: MoshiConverterFactory,
         baseUrlProvider: BaseUrlProvider,
+        json: Json,
         @CommonOkHttp okHttpClient: OkHttpClient
     ): Retrofit = Retrofit.Builder()
         .baseUrl(baseUrlProvider.getBaseUrl())
-        .addConverterFactory(moshiConverterFactory)
+        .addConverterFactory(
+            json.asConverterFactory("application/json".toMediaType())
+        )
         .client(okHttpClient)
         .build()
 
@@ -64,16 +73,6 @@ object NetworkModule {
                 addInterceptor(chuckerInterceptor)
             }
         }
-        .build()
-
-    @[Provides Singleton]
-    fun provideMoshiConverterFactory(moshi: Moshi): MoshiConverterFactory =
-        MoshiConverterFactory.create(moshi).withNullSerialization()
-
-    @[Provides Singleton]
-    fun provideMoshi(localDateTypeAdapter: LocalDateTypeAdapter): Moshi = Moshi.Builder()
-        .add(localDateTypeAdapter)
-        .add(LocalDateTimeTypeAdapter())
         .build()
 
     @[Provides Singleton]

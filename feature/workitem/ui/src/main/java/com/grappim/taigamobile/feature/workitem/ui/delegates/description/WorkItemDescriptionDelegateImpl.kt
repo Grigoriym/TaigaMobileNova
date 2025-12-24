@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.description
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
@@ -11,7 +12,7 @@ import kotlinx.coroutines.flow.update
 import timber.log.Timber
 
 class WorkItemDescriptionDelegateImpl(
-    private val commonTaskType: CommonTaskType,
+    private val taskIdentifier: TaskIdentifier,
     private val workItemRepository: WorkItemRepository,
     private val patchDataGenerator: PatchDataGenerator
 ) : WorkItemDescriptionDelegate {
@@ -20,10 +21,40 @@ class WorkItemDescriptionDelegateImpl(
     override val descriptionState: StateFlow<WorkItemDescriptionState> =
         _descriptionState.asStateFlow()
 
+    override suspend fun updateDescription(
+        newDescription: String,
+        version: Long,
+        workItemId: Long,
+        doOnPreExecute: (() -> Unit)?,
+        doOnSuccess: ((newVersion: Long) -> Unit)?,
+        doOnError: suspend (Throwable) -> Unit
+    ) {
+        when (taskIdentifier) {
+            is TaskIdentifier.WorkItem -> handleDescriptionUpdate(
+                newDescription = newDescription,
+                version = version,
+                workItemId = workItemId,
+                commonTaskType = taskIdentifier.commonTaskType,
+                doOnPreExecute = doOnPreExecute,
+                doOnSuccess = doOnSuccess,
+                doOnError = doOnError
+            )
+
+            is TaskIdentifier.Wiki -> handleWikiContentUpdate(
+                newDescription = newDescription,
+                version = version,
+                pageId = workItemId,
+                doOnPreExecute = doOnPreExecute,
+                doOnSuccess = doOnSuccess,
+                doOnError = doOnError
+            )
+        }
+    }
+
     /**
      * Since wiki is different from Work Items, it has its own logic
      */
-    override suspend fun handleWikiContentUpdate(
+    private suspend fun handleWikiContentUpdate(
         newDescription: String,
         version: Long,
         pageId: Long,
@@ -61,10 +92,11 @@ class WorkItemDescriptionDelegateImpl(
         }
     }
 
-    override suspend fun handleDescriptionUpdate(
+    private suspend fun handleDescriptionUpdate(
         newDescription: String,
         version: Long,
         workItemId: Long,
+        commonTaskType: CommonTaskType,
         doOnPreExecute: (() -> Unit)?,
         doOnSuccess: ((newVersion: Long) -> Unit)?,
         doOnError: suspend (Throwable) -> Unit

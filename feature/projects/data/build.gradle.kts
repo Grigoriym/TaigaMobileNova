@@ -19,7 +19,4 @@ dependencies {
 
     implementation(libs.androidx.paging.common)
     implementation(libs.retrofit)
-
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
 }

@@ -14,21 +14,12 @@ import androidx.navigation.compose.composable
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
-import com.grappim.taigamobile.createtask.navigateToCreateIssue
 import com.grappim.taigamobile.createtask.navigateToCreateTask
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardScreen
 import com.grappim.taigamobile.feature.dashboard.ui.navigateToDashboardAsTopDestination
-import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsNavDestination
-import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsScreen
 import com.grappim.taigamobile.feature.epics.ui.details.navigateToEpicDetails
-import com.grappim.taigamobile.feature.epics.ui.list.EpicsNavDestination
-import com.grappim.taigamobile.feature.epics.ui.list.EpicsScreen
-import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
-import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsScreen
 import com.grappim.taigamobile.feature.issues.ui.details.navigateToIssueDetails
-import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
-import com.grappim.taigamobile.feature.issues.ui.list.IssuesScreen
 import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginScreen
@@ -45,41 +36,21 @@ import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
 import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
 import com.grappim.taigamobile.feature.sprint.ui.navigateToSprintScreen
-import com.grappim.taigamobile.feature.tasks.ui.TaskDetailsNavDestination
-import com.grappim.taigamobile.feature.tasks.ui.TaskDetailsScreen
 import com.grappim.taigamobile.feature.tasks.ui.navigateToTask
 import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
 import com.grappim.taigamobile.feature.teams.ui.TeamScreen
-import com.grappim.taigamobile.feature.userstories.ui.UserStoryDetailsNavDestination
-import com.grappim.taigamobile.feature.userstories.ui.UserStoryDetailsScreen
 import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
-import com.grappim.taigamobile.feature.wiki.ui.create.WikiCreatePageScreen
-import com.grappim.taigamobile.feature.wiki.ui.list.WikiListScreen
-import com.grappim.taigamobile.feature.wiki.ui.nav.WikiCreatePageNavDestination
-import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
-import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
-import com.grappim.taigamobile.feature.wiki.ui.nav.navigateToWikiPage
-import com.grappim.taigamobile.feature.wiki.ui.page.WikiPageScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navigateToWorkItemEditDescription
-import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
-import com.grappim.taigamobile.feature.workitem.ui.screens.epic.WorkItemEditEpicNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.epic.WorkItemEditEpicScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.epic.navigateToWorkItemEditEpic
-import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSprintNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSprintScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.navigateToWorkItemEditSprint
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditTeamMemberNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditTeamMemberScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditTeamMember
+import com.grappim.taigamobile.main.nav.epicNavGraph
+import com.grappim.taigamobile.main.nav.issueNavGraph
+import com.grappim.taigamobile.main.nav.taskNavGraph
+import com.grappim.taigamobile.main.nav.userStoryNavGraph
+import com.grappim.taigamobile.main.nav.wikiNavGraph
+import com.grappim.taigamobile.main.nav.workItemEditsNavGraph
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun MainNavHost(
-    isLogged: Boolean,
+    isLoggedIn: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
     showSnackbar: (NativeText) -> Unit,
@@ -90,7 +61,7 @@ fun MainNavHost(
         modifier = modifier,
         navController = navController,
         startDestination = remember {
-            if (isLogged) DashboardNavDestination else LoginNavDestination
+            if (isLoggedIn) DashboardNavDestination else LoginNavDestination
         },
         enterTransition = {
             fadeIn(animationSpec = tween(100))
@@ -99,6 +70,37 @@ fun MainNavHost(
             fadeOut(animationSpec = tween(100))
         }
     ) {
+        issueNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController,
+            showSnackbarAction = showSnackbarAction
+        )
+
+        userStoryNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController
+        )
+
+        taskNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController
+        )
+
+        workItemEditsNavGraph(
+            navController = navController
+        )
+
+        epicNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController,
+            showSnackbarAction = showSnackbarAction
+        )
+
+        wikiNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController
+        )
+
         composable<LoginNavDestination> {
             LoginScreen(
                 onShowSnackbar = showSnackbar,
@@ -138,220 +140,11 @@ fun MainNavHost(
                     navController.navigateToSprintScreen(id)
                 },
                 updateData = updateData,
-                goToUserStory = { id, type, ref ->
-                    navController.navigateToUserStory(
-                        taskId = id,
-                        ref = ref
-                    )
-                }
-            )
-        }
-
-        composable<UserStoryDetailsNavDestination> {
-            UserStoryDetailsScreen(
-                showSnackbar = showSnackbar,
-                goBack = {
-                    navController.setUpdateDataOnBack()
-                    navController.popBackStack()
-                },
-                goToEditDescription = { description: String ->
-                    navController.navigateToWorkItemEditDescription(
-                        description = description
-                    )
-                },
-                goToEditTags = {
-                    navController.navigateToWorkItemEditTags()
-                },
-                goToProfile = { creatorId ->
-                    navController.navigateToProfileScreen(creatorId)
-                },
-                goToEditAssignee = {
-                    navController.navigateToWorkItemEditTeamMember()
-                },
-                goToEditWatchers = {
-                    navController.navigateToWorkItemEditTeamMember()
-                },
-                goToEpic = { epicId: Long, ref: Long ->
-                    navController.navigateToEpicDetails(epicId, ref)
-                },
-                goToEditEpics = {
-                    navController.navigateToWorkItemEditEpic()
-                }
-            )
-        }
-
-        composable<TaskDetailsNavDestination> {
-            TaskDetailsScreen(
-                showSnackbar = showSnackbar,
-                goBack = {
-                    navController.setUpdateDataOnBack()
-                    navController.popBackStack()
-                },
-                goToEditDescription = { description: String ->
-                    navController.navigateToWorkItemEditDescription(
-                        description = description
-                    )
-                },
-                goToEditTags = {
-                    navController.navigateToWorkItemEditTags()
-                },
-                goToProfile = { creatorId ->
-                    navController.navigateToProfileScreen(creatorId)
-                },
-                goToEditAssignee = {
-                    navController.navigateToWorkItemEditTeamMember()
-                },
-                goToEditWatchers = {
-                    navController.navigateToWorkItemEditTeamMember()
-                },
-                goToUserStory = { id, ref ->
-                    navController.navigateToUserStory(
-                        taskId = id,
-                        ref = ref,
-                        popUpToRoute = TaskDetailsNavDestination::class
-                    )
-                }
-            )
-        }
-
-        composable<EpicsNavDestination> { navBackStackEntry ->
-            val updateData: Boolean =
-                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            EpicsScreen(
-                showSnackbar = showSnackbarAction,
-                goToCreateEpic = {
-                    navController.navigateToCreateTask(type = CommonTaskType.Epic)
-                },
-                updateData = updateData,
-                goToEpic = { id, type, ref ->
-                    navController.navigateToEpicDetails(
-                        epicId = id,
-                        ref = ref
-                    )
-                }
-            )
-        }
-
-        composable<EpicDetailsNavDestination> { _ ->
-            EpicDetailsScreen(
-                showSnackbar = showSnackbar,
-                goToProfile = { creatorId ->
-                    navController.navigateToProfileScreen(creatorId)
-                },
-                goToEditDescription = { description: String ->
-                    navController.navigateToWorkItemEditDescription(
-                        description = description
-                    )
-                },
-                goToEditTags = {
-                    navController.navigateToWorkItemEditTags()
-                },
-                goBack = {
-                    navController.setUpdateDataOnBack()
-                    navController.popBackStack()
-                },
-                goToEditAssignee = {
-                    navController.navigateToWorkItemEditTeamMember()
-                },
-                goToEditWatchers = {
-                    navController.navigateToWorkItemEditTeamMember()
-                },
                 goToUserStory = { id, _, ref ->
                     navController.navigateToUserStory(
-                        taskId = id,
+                        userStoryId = id,
                         ref = ref
                     )
-                }
-            )
-        }
-
-        composable<IssuesNavDestination> { navBackStackEntry ->
-            val updateData: Boolean =
-                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            IssuesScreen(
-                showSnackbar = showSnackbarAction,
-                goToCreateIssue = {
-                    navController.navigateToCreateIssue()
-                },
-                updateData = updateData,
-                goToIssue = { id, ref ->
-                    navController.navigateToIssueDetails(
-                        taskId = id,
-                        ref = ref
-                    )
-                }
-            )
-        }
-
-        composable<IssueDetailsNavDestination> { _ ->
-            IssueDetailsScreen(
-                showSnackbar = showSnackbar,
-                goToProfile = { creatorId ->
-                    navController.navigateToProfileScreen(creatorId)
-                },
-                goToEditDescription = { description: String ->
-                    navController.navigateToWorkItemEditDescription(
-                        description = description
-                    )
-                },
-                goToEditTags = {
-                    navController.navigateToWorkItemEditTags()
-                },
-                goBack = {
-                    navController.setUpdateDataOnBack()
-                    navController.popBackStack()
-                },
-                goToEditAssignee = {
-                    navController.navigateToWorkItemEditTeamMember()
-                },
-                goToEditWatchers = {
-                    navController.navigateToWorkItemEditTeamMember()
-                },
-                goToSprints = {
-                    navController.navigateToWorkItemEditSprint()
-                },
-                goToUserStory = { id, ref ->
-                    navController.navigateToUserStory(id, ref)
-                }
-            )
-        }
-
-        composable<WorkItemEditSprintNavDestination> {
-            WorkItemEditSprintScreen(
-                goBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable<WorkItemEditDescriptionNavDestination> {
-            WorkItemEditDescriptionScreen(
-                goBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable<WorkItemEditTagsNavDestination> {
-            WorkItemEditTagsScreen(
-                goBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable<WorkItemEditTeamMemberNavDestination> {
-            WorkItemEditTeamMemberScreen(
-                goBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable<WorkItemEditEpicNavDestination> {
-            WorkItemEditEpicScreen(
-                goBack = {
-                    navController.popBackStack()
                 }
             )
         }
@@ -376,45 +169,6 @@ fun MainNavHost(
                         type = task,
                         statusId = statusId,
                         swimlaneId = swimlaneId
-                    )
-                }
-            )
-        }
-
-        composable<WikiNavDestination> {
-            WikiListScreen(
-                showSnackbar = showSnackbar,
-                goToWikiCreatePage = {
-                    navController.navigate(route = WikiCreatePageNavDestination)
-                },
-                goToWikiPage = {
-                    navController.navigateToWikiPage(it)
-                }
-            )
-        }
-
-        composable<WikiCreatePageNavDestination> {
-            WikiCreatePageScreen(
-                showSnackbar = showSnackbar,
-                goToWikiPage = {
-                    navController.navigateToWikiPage(
-                        slug = it,
-                        popUpToRoute = WikiCreatePageNavDestination
-                    )
-                }
-            )
-        }
-
-        composable<WikiPageNavDestination> {
-            WikiPageScreen(
-                showSnackbar = showSnackbar,
-                goToProfile = { userId ->
-                    navController.navigateToProfileScreen(userId)
-                },
-                goBack = navController::popBackStack,
-                goToEditDescription = { description: String ->
-                    navController.navigateToWorkItemEditDescription(
-                        description = description
                     )
                 }
             )
@@ -462,7 +216,7 @@ fun MainNavHost(
 private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Long) {
     when (type) {
         CommonTaskType.UserStory -> this.navigateToUserStory(
-            taskId = id,
+            userStoryId = id,
             ref = ref
         )
 
@@ -472,7 +226,7 @@ private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Long) {
         )
 
         CommonTaskType.Issue -> this.navigateToIssueDetails(
-            taskId = id,
+            issueId = id,
             ref = ref
         )
 
@@ -480,8 +234,6 @@ private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Long) {
             taskId = id,
             ref = ref
         )
-
-        else -> error("lol")
     }
 }
 

@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.filters.dto
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class FiltersDataDTO(
     val query: String = "",
     val assignees: List<UsersFilterDTO> = emptyList(),

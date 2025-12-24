@@ -146,11 +146,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
-
     implementation(libs.retrofit)
-    implementation(libs.retrofit.moshi)
+    implementation(libs.retrofit.kotlin.serialization)
 
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
@@ -168,6 +165,8 @@ dependencies {
 
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.noop)
+
+    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.3.0")
 }
 
 moduleGraphAssert {

@@ -66,11 +66,11 @@ import kotlinx.collections.immutable.persistentListOf
 fun EpicDetailsScreen(
     showSnackbar: (message: NativeText) -> Unit,
     goToProfile: (userId: Long) -> Unit,
-    goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit,
+    goToEditDescription: (String, Long) -> Unit,
+    goToEditTags: (id: Long) -> Unit,
     goBack: () -> Unit,
-    goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit,
+    goToEditAssignee: (id: Long) -> Unit,
+    goToEditWatchers: (id: Long) -> Unit,
     goToUserStory: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     viewModel: EpicDetailsViewModel = hiltViewModel()
 ) {
@@ -248,10 +248,10 @@ private fun EpicDetailsScreenContent(
     assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
     goToProfile: (Long) -> Unit,
-    goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit,
-    goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit,
+    goToEditDescription: (String, Long) -> Unit,
+    goToEditTags: (id: Long) -> Unit,
+    goToEditAssignee: (id: Long) -> Unit,
+    goToEditWatchers: (id: Long) -> Unit,
     goToUserStory: (id: Long, type: CommonTaskType, ref: Long) -> Unit
 ) {
     requireNotNull(state.currentEpic)
@@ -298,7 +298,10 @@ private fun EpicDetailsScreenContent(
                 WorkItemDescriptionWidget(
                     currentDescription = state.currentEpic.description,
                     onDescriptionClick = {
-                        goToEditDescription(state.currentEpic.description)
+                        goToEditDescription(
+                            state.currentEpic.description,
+                            state.currentEpic.id
+                        )
                     },
                     isLoading = descriptionState.isDescriptionLoading
                 )
@@ -308,8 +311,8 @@ private fun EpicDetailsScreenContent(
                     onTagRemoveClick = state.onTagRemove,
                     areTagsLoading = tagsState.areTagsLoading,
                     goToEditTags = {
-                        tagsState.onGoingToEditTags()
-                        goToEditTags()
+                        state.onGoingToEditTags()
+                        goToEditTags(state.currentEpic.id)
                     }
                 )
 
@@ -330,8 +333,8 @@ private fun EpicDetailsScreenContent(
                     onUnassign = state.onUnassign,
                     onAssignToMe = state.onAssignToMe,
                     onAddAssigneeClick = {
-                        assigneesState.onGoingToEditAssignee()
-                        goToEditAssignee()
+                        state.onGoingToEditAssignee()
+                        goToEditAssignee(state.currentEpic.id)
                     }
                 )
 
@@ -343,8 +346,8 @@ private fun EpicDetailsScreenContent(
                     },
                     isWatchersLoading = watchersState.areWatchersLoading,
                     onAddWatcherClick = {
-                        watchersState.onGoingToEditWatchers()
-                        goToEditWatchers()
+                        state.onGoingToEditWatchers()
+                        goToEditWatchers(state.currentEpic.id)
                     },
                     isWatchedByMe = watchersState.isWatchedByMe,
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,

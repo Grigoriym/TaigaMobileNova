@@ -14,8 +14,5 @@ dependencies {
     implementation(projects.feature.filters.domain)
     implementation(libs.kotlinx.serialization.json)
 
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
-
     implementation(libs.androidx.datastore.android)
 }

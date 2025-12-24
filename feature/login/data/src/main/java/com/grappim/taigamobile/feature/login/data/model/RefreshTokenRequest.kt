@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.login.data.model
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class RefreshTokenRequest(val refresh: String)

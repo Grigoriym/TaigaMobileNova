@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.login.data.model
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
-data class AuthResponse(@Json(name = "auth_token") val authToken: String, val refresh: String?, val id: Long)
+@Serializable
+data class AuthResponse(@SerialName(value = "auth_token") val authToken: String, val refresh: String?, val id: Long)

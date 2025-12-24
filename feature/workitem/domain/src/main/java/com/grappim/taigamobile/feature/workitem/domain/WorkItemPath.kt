@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 
 @JvmInline
 value class WorkItemPathPlural private constructor(val path: String) {
@@ -10,9 +11,15 @@ value class WorkItemPathPlural private constructor(val path: String) {
             CommonTaskType.Task -> "tasks"
             CommonTaskType.Epic -> "epics"
             CommonTaskType.Issue -> "issues"
-            CommonTaskType.Wiki -> "wiki"
         }
     )
+}
+
+fun CommonTaskType.getPluralPath(): String = when (this) {
+    CommonTaskType.UserStory -> "userstories"
+    CommonTaskType.Task -> "tasks"
+    CommonTaskType.Epic -> "epics"
+    CommonTaskType.Issue -> "issues"
 }
 
 // singular form
@@ -24,7 +31,11 @@ value class WorkItemPathSingular private constructor(val path: String) {
             CommonTaskType.Task -> "task"
             CommonTaskType.Epic -> "epic"
             CommonTaskType.Issue -> "issue"
-            CommonTaskType.Wiki -> "wiki"
         }
     )
+}
+
+fun TaskIdentifier.getPluralPath(): String = when (this) {
+    TaskIdentifier.Wiki -> "wiki"
+    is TaskIdentifier.WorkItem -> this.commonTaskType.getPluralPath()
 }

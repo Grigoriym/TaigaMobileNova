@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.wiki.data
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class NewWikiLinkRequest(val href: String, val project: Long, val title: String)

@@ -106,18 +106,18 @@ interface WorkItemApi {
     // Attachments
     @GET("{taskPath}/attachments")
     suspend fun getAttachments(
-        @Path("taskPath") taskPath: WorkItemPathPlural,
+        @Path("taskPath") taskPath: String,
         @Query("object_id") objectId: Long,
         @Query("project") projectId: Long
     ): List<AttachmentDTO>
 
     @DELETE("{taskPath}/attachments/{id}")
-    suspend fun deleteAttachment(@Path("taskPath") taskPath: WorkItemPathPlural, @Path("id") attachmentId: Long)
+    suspend fun deleteAttachment(@Path("taskPath") taskPath: String, @Path("id") attachmentId: Long)
 
     @POST("{taskPath}/attachments")
     @Multipart
     suspend fun uploadCommonTaskAttachment(
-        @Path("taskPath") taskPath: WorkItemPathPlural,
+        @Path("taskPath") taskPath: String,
         @Part file: MultipartBody.Part,
         @Part project: MultipartBody.Part,
         @Part objectId: MultipartBody.Part

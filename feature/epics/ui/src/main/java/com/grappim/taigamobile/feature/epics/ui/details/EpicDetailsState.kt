@@ -65,5 +65,9 @@ data class EpicDetailsState(
     val setAreWorkItemsExpanded: (Boolean) -> Unit,
 
     val onEpicColorPick: (Color) -> Unit = {},
-    val isEpicColorLoading: Boolean = false
+    val isEpicColorLoading: Boolean = false,
+
+    val onGoingToEditTags: () -> Unit = {},
+    val onGoingToEditWatchers: () -> Unit = {},
+    val onGoingToEditAssignee: () -> Unit = {}
 )

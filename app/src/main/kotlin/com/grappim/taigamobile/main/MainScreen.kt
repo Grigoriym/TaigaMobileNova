@@ -148,7 +148,7 @@ private fun MainScreenContent(
             content = { paddingValues ->
                 MainNavHost(
                     modifier = Modifier.padding(paddingValues),
-                    isLogged = isLogged,
+                    isLoggedIn = isLogged,
                     navController = appState.navController,
                     showMessage = { message ->
                         scope.launch {

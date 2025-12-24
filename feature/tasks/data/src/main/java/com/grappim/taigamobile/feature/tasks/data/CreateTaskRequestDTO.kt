@@ -1,14 +1,14 @@
 package com.grappim.taigamobile.feature.tasks.data
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
-data class CreateTaskRequest(
+@Serializable
+data class CreateTaskRequestDTO(
     val project: Long,
     val subject: String,
     val description: String,
     val milestone: Long?,
-    @Json(name = "user_story")
+    @SerialName(value = "user_story")
     val userStory: Long?
 )

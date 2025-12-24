@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaStorage
@@ -46,7 +47,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.strings.RString
@@ -76,7 +77,6 @@ class EpicDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val workItemRepository: WorkItemRepository,
     private val patchDataGenerator: PatchDataGenerator,
-    private val workItemEditShared: WorkItemEditShared,
     private val historyRepository: HistoryRepository,
     private val fileUriManager: FileUriManager,
     private val usersRepository: UsersRepository,
@@ -88,7 +88,8 @@ class EpicDetailsViewModel @Inject constructor(
     private val workItemsGenerator: WorkItemsGenerator,
     private val tagUIMapper: TagUIMapper,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
-    private val workItemUIMapper: WorkItemUIMapper
+    private val workItemUIMapper: WorkItemUIMapper,
+    private val workItemEditStateRepository: WorkItemEditStateRepository
 ) : ViewModel(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = epicTaskType,
@@ -96,7 +97,7 @@ class EpicDetailsViewModel @Inject constructor(
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
-        commonTaskType = epicTaskType,
+        taskIdentifier = TaskIdentifier.WorkItem(epicTaskType),
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
@@ -108,8 +109,7 @@ class EpicDetailsViewModel @Inject constructor(
     WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
-        patchDataGenerator = patchDataGenerator,
-        workItemEditShared = workItemEditShared
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         commonTaskType = epicTaskType,
@@ -117,7 +117,7 @@ class EpicDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
-        commonTaskType = epicTaskType,
+        taskIdentifier = TaskIdentifier.WorkItem(epicTaskType),
         workItemRepository = workItemRepository,
         fileUriManager = fileUriManager,
         taigaStorage = taigaStorage
@@ -126,8 +126,7 @@ class EpicDetailsViewModel @Inject constructor(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
-        patchDataGenerator = patchDataGenerator,
-        workItemEditShared = workItemEditShared
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
         commonTaskType = epicTaskType,
@@ -139,8 +138,7 @@ class EpicDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
-        session = session,
-        workItemEditShared = workItemEditShared
+        session = session
     ),
     WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
         commonTaskType = epicTaskType,
@@ -189,7 +187,10 @@ class EpicDetailsViewModel @Inject constructor(
             onTitleSave = ::onTitleSave,
             onBadgeSave = ::onBadgeSave,
             setAreWorkItemsExpanded = ::setAreWorkItemsExpanded,
-            onEpicColorPick = ::onEpicColorPick
+            onEpicColorPick = ::onEpicColorPick,
+            onGoingToEditTags = ::onGoingToEditTags,
+            onGoingToEditWatchers = ::onGoingToEditWatchers,
+            onGoingToEditAssignee = ::onGoingToEditAssignee
         )
     )
     val state = _state.asStateFlow()
@@ -197,17 +198,53 @@ class EpicDetailsViewModel @Inject constructor(
     init {
         loadEpic()
 
-        workItemEditShared.teamMemberUpdateState
+        workItemEditStateRepository
+            .getTeamMemberUpdateFlow(epicId, TaskIdentifier.WorkItem(epicTaskType))
             .onEach(::handleTeamMemberUpdate)
             .launchIn(viewModelScope)
 
-        workItemEditShared.tagsState
+        workItemEditStateRepository
+            .getTagsFlow(epicId, TaskIdentifier.WorkItem(epicTaskType))
             .onEach(::onNewTagsUpdate)
             .launchIn(viewModelScope)
 
-        workItemEditShared.descriptionState
+        workItemEditStateRepository
+            .getDescriptionFlow(epicId, TaskIdentifier.WorkItem(epicTaskType))
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        workItemEditStateRepository.clearSession(epicId, TaskIdentifier.WorkItem(epicTaskType))
+        Timber.d("EpicDetailsViewModel cleared - session cleaned up for epicId: $epicId")
+    }
+
+    private fun onGoingToEditTags() {
+        workItemEditStateRepository.setTags(
+            workItemId = epicId,
+            type = TaskIdentifier.WorkItem(epicTaskType),
+            tags = tagsState.value.tags
+        )
+    }
+
+    private fun onGoingToEditWatchers() {
+        val watchersIds = watchersState.value.watchers.mapNotNull { it.id }
+            .toPersistentList()
+        workItemEditStateRepository.setCurrentWatchers(
+            ids = watchersIds,
+            workItemId = epicId,
+            type = TaskIdentifier.WorkItem(epicTaskType)
+        )
+    }
+
+    fun onGoingToEditAssignee() {
+        val assigneeId = singleAssigneeState.value.assignees.firstOrNull()?.id
+        workItemEditStateRepository.setCurrentAssignee(
+            workItemId = epicId,
+            type = TaskIdentifier.WorkItem(epicTaskType),
+            id = assigneeId
+        )
     }
 
     private fun clearError() {
@@ -271,7 +308,7 @@ class EpicDetailsViewModel @Inject constructor(
     }
 
     private suspend fun onNewDescriptionUpdate(newDescription: String) {
-        handleDescriptionUpdate(
+        updateDescription(
             version = currentEpic.version,
             workItemId = currentEpic.id,
             newDescription = newDescription,

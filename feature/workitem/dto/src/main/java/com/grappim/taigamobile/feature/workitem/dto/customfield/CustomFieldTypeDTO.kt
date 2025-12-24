@@ -1,31 +1,31 @@
 package com.grappim.taigamobile.feature.workitem.dto.customfield
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class CustomFieldTypeDTO {
-    @Json(name = "text")
+    @SerialName(value = "text")
     Text,
 
-    @Json(name = "multiline")
+    @SerialName(value = "multiline")
     Multiline,
 
-    @Json(name = "richtext")
+    @SerialName(value = "richtext")
     RichText,
 
-    @Json(name = "date")
+    @SerialName(value = "date")
     Date,
 
-    @Json(name = "url")
+    @SerialName(value = "url")
     Url,
 
-    @Json(name = "dropdown")
+    @SerialName(value = "dropdown")
     Dropdown,
 
-    @Json(name = "number")
+    @SerialName(value = "number")
     Number,
 
-    @Json(name = "checkbox")
+    @SerialName(value = "checkbox")
     Checkbox
 }

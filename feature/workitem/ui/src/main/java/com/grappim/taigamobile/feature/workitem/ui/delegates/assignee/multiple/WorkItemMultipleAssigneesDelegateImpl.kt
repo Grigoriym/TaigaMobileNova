@@ -8,7 +8,6 @@ import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.AssigneesData
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
@@ -24,13 +23,11 @@ class WorkItemMultipleAssigneesDelegateImpl(
     private val workItemRepository: WorkItemRepository,
     private val usersRepository: UsersRepository,
     private val patchDataGenerator: PatchDataGenerator,
-    private val workItemEditShared: WorkItemEditShared,
     private val session: Session
 ) : WorkItemMultipleAssigneesDelegate {
 
     private val _multipleAssigneesState = MutableStateFlow(
         WorkItemMultipleAssigneesState(
-            onGoingToEditAssignees = ::onGoingToEditAssignees,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
             onRemoveAssigneeClick = ::onRemoveAssigneeClick
         )
@@ -154,13 +151,6 @@ class WorkItemMultipleAssigneesDelegateImpl(
             doOnSuccess = doOnSuccess,
             doOnError = doOnError
         )
-    }
-
-    override fun onGoingToEditAssignees() {
-        val assigneesIds = _multipleAssigneesState.value.assignees
-            .mapNotNull { it.id }
-            .toImmutableList()
-        workItemEditShared.setCurrentAssignees(assigneesIds)
     }
 
     private fun setIsRemoveAssigneeDialogVisible(isVisible: Boolean) {

@@ -1,22 +1,22 @@
 package com.grappim.taigamobile.feature.workitem.dto
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = false)
+@Serializable
 enum class DueDateStatusDTO {
-    @Json(name = "not_set")
+    @SerialName(value = "not_set")
     NotSet,
 
-    @Json(name = "set")
+    @SerialName(value = "set")
     Set,
 
-    @Json(name = "due_soon")
+    @SerialName(value = "due_soon")
     DueSoon,
 
-    @Json(name = "past_due")
+    @SerialName(value = "past_due")
     PastDue,
 
-    @Json(name = "no_longer_applicable")
+    @SerialName(value = "no_longer_applicable")
     NoLongerApplicable
 }

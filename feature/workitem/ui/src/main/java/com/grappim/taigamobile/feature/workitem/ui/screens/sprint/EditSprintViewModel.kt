@@ -1,10 +1,14 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.sprint
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
+import com.grappim.taigamobile.utils.ui.typeMapOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
@@ -15,17 +19,25 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.reflect.typeOf
 
 @HiltViewModel
 class EditSprintViewModel @Inject constructor(
     private val sprintsRepository: SprintsRepository,
-    private val editShared: WorkItemEditShared
+    private val workItemEditStateRepository: WorkItemEditStateRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val route = savedStateHandle.toRoute<WorkItemEditSprintNavDestination>(
+        typeMap = typeMapOf(
+            listOf(
+                typeOf<TaskIdentifier>()
+            )
+        )
+    )
 
     private val _state = MutableStateFlow(
         EditSprintState(
-            selectedItem = editShared.currentSprint,
-            originalSelectedItem = editShared.currentSprint,
             onSprintClick = ::onSprintClick,
             setIsDialogVisible = ::setIsDialogVisible,
             isItemSelected = ::isItemSelected,
@@ -52,9 +64,15 @@ class EditSprintViewModel @Inject constructor(
     private fun isItemSelected(id: Long): Boolean = id == state.value.selectedItem
 
     private fun notifyChange(shouldReturnCurrentValue: Boolean) {
-        val wasStateChanged = _state.value.selectedItem != _state.value.originalSelectedItem
-        if (shouldReturnCurrentValue && wasStateChanged) {
-            editShared.updateSprint(_state.value.selectedItem)
+        viewModelScope.launch {
+            val wasStateChanged = _state.value.selectedItem != _state.value.originalSelectedItem
+            if (shouldReturnCurrentValue && wasStateChanged) {
+                workItemEditStateRepository.updateSprint(
+                    workItemId = route.workItemId,
+                    type = route.taskIdentifier,
+                    id = _state.value.selectedItem
+                )
+            }
         }
     }
 
@@ -77,8 +95,16 @@ class EditSprintViewModel @Inject constructor(
         viewModelScope.launch {
             resultOf { sprintsRepository.getSprints(page = 1, isClosed = false) }
                 .onSuccess { result ->
+                    val originalSprint = workItemEditStateRepository.getCurrentSprint(
+                        workItemId = route.workItemId,
+                        type = route.taskIdentifier
+                    )
                     _state.update {
-                        it.copy(itemsToShow = result.toPersistentList())
+                        it.copy(
+                            itemsToShow = result.toPersistentList(),
+                            selectedItem = originalSprint,
+                            originalSelectedItem = originalSprint
+                        )
                     }
                 }.onFailure { error ->
                     Timber.e(error)

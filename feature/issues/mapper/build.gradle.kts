@@ -13,8 +13,6 @@ dependencies {
     implementation(projects.core.storage)
     implementation(projects.utils.ui)
 
-    implementation(libs.moshi)
-
     implementation(projects.feature.issues.domain)
     implementation(projects.feature.issues.dto)
 
