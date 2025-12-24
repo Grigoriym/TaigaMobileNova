@@ -62,5 +62,9 @@ data class UserStoryDetailsState(
 
     val areUserStoryEpicsLoading: Boolean = false,
     val onEpicRemoveClick: (Long) -> Unit = {},
-    val onGoingToEditEpics: () -> Unit = {}
+    val onGoingToEditEpics: () -> Unit = {},
+
+    val onEditTags: () -> Unit = {},
+    val onGoingToEditAssignees: () -> Unit = {},
+    val onGoingToEditWatchers: () -> Unit = {}
 )

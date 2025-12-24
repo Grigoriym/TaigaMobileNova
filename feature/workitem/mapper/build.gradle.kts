@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.taigamobile.android.library)
     alias(libs.plugins.taigamobile.android.hilt)
+    alias(libs.plugins.taigamobile.kotlin.serialization)
 }
 
 android {
@@ -29,6 +30,4 @@ dependencies {
     implementation(projects.feature.projects.dto)
     implementation(projects.feature.projects.mapper)
     implementation(projects.feature.projects.domain)
-
-    implementation(libs.moshi)
 }

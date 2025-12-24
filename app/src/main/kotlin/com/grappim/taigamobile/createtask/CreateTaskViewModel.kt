@@ -35,7 +35,6 @@ class CreateTaskViewModel @Inject constructor(
                     CommonTaskType.Task -> RString.create_task
                     CommonTaskType.Epic -> RString.create_epic
                     CommonTaskType.Issue -> RString.create_issue
-                    CommonTaskType.Wiki -> RString.wiki
                 }
             ),
             setTitle = ::setTitle,

@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
@@ -14,6 +15,7 @@ import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
+import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
 import com.grappim.taigamobile.feature.workitem.dto.CreateWorkItemRequestDTO
 import com.grappim.taigamobile.feature.workitem.dto.PromoteToUserStoryRequestDTO
 import com.grappim.taigamobile.feature.workitem.mapper.AttachmentMapper
@@ -98,7 +100,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         fileName: String,
         fileByteArray: ByteArray,
         projectId: Long,
-        commonTaskType: CommonTaskType
+        taskIdentifier: TaskIdentifier
     ): Attachment {
         val file = MultipartBody.Part.createFormData(
             name = "attached_file",
@@ -112,7 +114,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         val objectId = MultipartBody.Part.createFormData("object_id", workItemId.toString())
 
         val dto = workItemApi.uploadCommonTaskAttachment(
-            taskPath = WorkItemPathPlural(commonTaskType),
+            taskPath = taskIdentifier.getPluralPath(),
             file = file,
             project = project,
             objectId = objectId
@@ -120,9 +122,9 @@ class WorkItemRepositoryImpl @Inject constructor(
         return attachmentMapper.toDomain(dto)
     }
 
-    override suspend fun deleteAttachment(attachment: Attachment, commonTaskType: CommonTaskType) {
+    override suspend fun deleteAttachment(attachment: Attachment, taskIdentifier: TaskIdentifier) {
         workItemApi.deleteAttachment(
-            taskPath = WorkItemPathPlural(commonTaskType),
+            taskPath = taskIdentifier.getPluralPath(),
             attachmentId = attachment.id
         )
     }
@@ -203,12 +205,12 @@ class WorkItemRepositoryImpl @Inject constructor(
 
     override suspend fun getWorkItemAttachments(
         workItemId: Long,
-        commonTaskType: CommonTaskType
+        taskIdentifier: TaskIdentifier
     ): ImmutableList<Attachment> {
         val projectId = taigaStorage.currentProjectIdFlow.first()
 
         val attachments = workItemApi.getAttachments(
-            taskPath = WorkItemPathPlural(commonTaskType),
+            taskPath = taskIdentifier.getPluralPath(),
             objectId = workItemId,
             projectId = projectId
         )

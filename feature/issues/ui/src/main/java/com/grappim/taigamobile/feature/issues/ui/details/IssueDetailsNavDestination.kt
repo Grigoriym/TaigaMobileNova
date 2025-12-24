@@ -4,8 +4,8 @@ import androidx.navigation.NavController
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class IssueDetailsNavDestination(val taskId: Long, val ref: Long)
+data class IssueDetailsNavDestination(val issueId: Long, val ref: Long)
 
-fun NavController.navigateToIssueDetails(taskId: Long, ref: Long) {
-    navigate(route = IssueDetailsNavDestination(taskId = taskId, ref = ref))
+fun NavController.navigateToIssueDetails(issueId: Long, ref: Long) {
+    navigate(route = IssueDetailsNavDestination(issueId = issueId, ref = ref))
 }

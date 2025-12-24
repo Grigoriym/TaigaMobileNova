@@ -20,6 +20,4 @@ dependencies {
     implementation(projects.feature.workitem.mapper)
 
     implementation(libs.retrofit)
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
 }

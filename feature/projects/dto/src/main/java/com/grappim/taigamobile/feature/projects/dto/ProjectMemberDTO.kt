@@ -1,15 +1,15 @@
 package com.grappim.taigamobile.feature.projects.dto
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ProjectMemberDTO(
     val id: Long,
     val photo: String?,
-    @Json(name = "full_name_display")
+    @SerialName(value = "full_name_display")
     val fullNameDisplay: String,
-    @Json(name = "role_name")
+    @SerialName(value = "role_name")
     val roleName: String,
     val username: String
 )

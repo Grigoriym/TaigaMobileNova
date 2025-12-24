@@ -20,7 +20,4 @@ dependencies {
     implementation(projects.feature.workitem.dto)
 
     implementation(libs.retrofit)
-
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
 }

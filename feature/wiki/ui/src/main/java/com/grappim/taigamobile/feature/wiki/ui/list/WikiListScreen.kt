@@ -34,13 +34,15 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun WikiListScreen(
     showSnackbar: (message: NativeText) -> Unit,
     goToWikiCreatePage: () -> Unit,
-    goToWikiPage: (slug: String) -> Unit,
+    goToWikiPage: (slug: String, id: Long) -> Unit,
     viewModel: WikiListViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -74,7 +76,7 @@ fun WikiListScreen(
         state = state,
         isLoading = state.isLoading,
         navigateToCreatePage = goToWikiCreatePage,
-        navigateToPageBySlug = goToWikiPage
+        goToPage = goToWikiPage
     )
 }
 
@@ -84,7 +86,7 @@ fun WikiListScreenContent(
     modifier: Modifier = Modifier,
     isLoading: Boolean = false,
     navigateToCreatePage: () -> Unit = {},
-    navigateToPageBySlug: (slug: String) -> Unit = {}
+    goToPage: (slug: String, id: Long) -> Unit = { _, _ -> }
 ) {
     Column(
         modifier = modifier.fillMaxSize(),
@@ -113,14 +115,13 @@ fun WikiListScreenContent(
         ) { page ->
             when (WikiTabs.entries[page]) {
                 WikiTabs.Bookmarks -> WikiSelectorList(
-                    titles = state.bookmarks.map { it.first },
-                    bookmarks = state.bookmarks,
-                    onClick = navigateToPageBySlug
+                    items = state.bookmarks,
+                    onClick = goToPage
                 )
 
                 WikiTabs.AllWikiPages -> WikiSelectorList(
-                    titles = state.allPages,
-                    onClick = navigateToPageBySlug
+                    items = state.allPages,
+                    onClick = goToPage
                 )
             }
         }
@@ -129,28 +130,13 @@ fun WikiListScreenContent(
 
 @Composable
 private fun WikiSelectorList(
-    titles: List<String> = emptyList(),
-    bookmarks: List<Pair<String, String>> = emptyList(),
-    onClick: (name: String) -> Unit = {}
+    items: ImmutableList<WikiUIItem> = persistentListOf(),
+    onClick: (slug: String, id: Long) -> Unit = { _, _ -> }
 ) {
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.TopStart
     ) {
-        val listItemContent: @Composable LazyItemScope.(Int, String) -> Unit = lambda@{ index, item ->
-            WikiSelectorItem(
-                title = item,
-                onClick = { onClick(bookmarks.getOrNull(index)?.second ?: item) }
-            )
-
-            if (index < titles.lastIndex) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
-        }
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -158,11 +144,25 @@ private fun WikiSelectorList(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             LazyColumn {
-                itemsIndexed(titles, itemContent = listItemContent)
+                itemsIndexed(items) { index, item ->
+                    WikiSelectorItem(
+                        title = item.title,
+                        onClick = {
+                            onClick(item.slug, item.id)
+                        }
+                    )
+
+                    if (index < items.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                }
             }
         }
 
-        if (titles.isEmpty()) {
+        if (items.isEmpty()) {
             EmptyWikiDialogWidget(
                 isButtonAvailable = false
             )

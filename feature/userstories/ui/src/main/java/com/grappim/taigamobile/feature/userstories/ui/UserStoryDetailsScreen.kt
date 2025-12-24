@@ -35,6 +35,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDue
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
+import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AssignedToWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
@@ -64,19 +65,20 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun UserStoryDetailsScreen(
     goBack: () -> Unit,
-    goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit,
+    goToEditDescription: (description: String, id: Long) -> Unit,
+    goToEditTags: (id: Long) -> Unit,
     goToProfile: (Long) -> Unit,
     showSnackbar: (message: NativeText) -> Unit,
-    goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit,
+    goToEditAssignee: (id: Long) -> Unit,
+    goToEditWatchers: (id: Long) -> Unit,
     goToEpic: (epicId: Long, ref: Long) -> Unit,
-    goToEditEpics: () -> Unit,
+    goToEditEpics: (userStoryId: Long) -> Unit,
     viewModel: UserStoryDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -269,13 +271,13 @@ private fun UserStoryDetailsScreenContent(
     dueDateState: WorkItemDueDateState,
     assigneesState: WorkItemMultipleAssigneesState,
     descriptionState: WorkItemDescriptionState,
-    goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit,
+    goToEditDescription: (description: String, id: Long) -> Unit,
+    goToEditTags: (id: Long) -> Unit,
     goToProfile: (Long) -> Unit,
-    goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit,
+    goToEditAssignee: (id: Long) -> Unit,
+    goToEditWatchers: (id: Long) -> Unit,
     goToEpic: (epicId: Long, ref: Long) -> Unit,
-    goToEditEpics: () -> Unit
+    goToEditEpics: (userStoryId: Long) -> Unit
 ) {
     requireNotNull(state.currentUserStory)
 
@@ -323,7 +325,7 @@ private fun UserStoryDetailsScreenContent(
                     },
                     onLinkToEpicClick = {
                         state.onGoingToEditEpics()
-                        goToEditEpics()
+                        goToEditEpics(state.currentUserStory.id)
                     }
                 )
 
@@ -342,7 +344,10 @@ private fun UserStoryDetailsScreenContent(
                 WorkItemDescriptionWidget(
                     currentDescription = state.currentUserStory.description,
                     onDescriptionClick = {
-                        goToEditDescription(state.currentUserStory.description)
+                        goToEditDescription(
+                            state.currentUserStory.description,
+                            state.currentUserStory.id
+                        )
                     },
                     isLoading = descriptionState.isDescriptionLoading
                 )
@@ -352,8 +357,8 @@ private fun UserStoryDetailsScreenContent(
                     onTagRemoveClick = state.onTagRemove,
                     areTagsLoading = tagsState.areTagsLoading,
                     goToEditTags = {
-                        tagsState.onGoingToEditTags()
-                        goToEditTags()
+                        state.onEditTags()
+                        goToEditTags(state.currentUserStory.id)
                     }
                 )
 
@@ -387,8 +392,8 @@ private fun UserStoryDetailsScreenContent(
                     onAssignToMe = state.onAssignToMe,
                     isPlural = true,
                     onAddAssigneeClick = {
-                        assigneesState.onGoingToEditAssignees()
-                        goToEditAssignee()
+                        state.onGoingToEditAssignees()
+                        goToEditAssignee(state.currentUserStory.id)
                     }
                 )
 
@@ -400,8 +405,8 @@ private fun UserStoryDetailsScreenContent(
                     },
                     isWatchersLoading = watchersState.areWatchersLoading,
                     onAddWatcherClick = {
-                        watchersState.onGoingToEditWatchers()
-                        goToEditWatchers()
+                        state.onGoingToEditWatchers()
+                        goToEditWatchers(state.currentUserStory.id)
                     },
                     isWatchedByMe = watchersState.isWatchedByMe,
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,

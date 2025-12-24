@@ -5,19 +5,10 @@ import kotlinx.coroutines.flow.StateFlow
 interface WorkItemDescriptionDelegate {
     val descriptionState: StateFlow<WorkItemDescriptionState>
 
-    suspend fun handleDescriptionUpdate(
+    suspend fun updateDescription(
         newDescription: String,
         version: Long,
         workItemId: Long,
-        doOnPreExecute: (() -> Unit)? = null,
-        doOnSuccess: ((newVersion: Long) -> Unit)? = null,
-        doOnError: suspend (Throwable) -> Unit
-    )
-
-    suspend fun handleWikiContentUpdate(
-        newDescription: String,
-        version: Long,
-        pageId: Long,
         doOnPreExecute: (() -> Unit)? = null,
         doOnSuccess: ((newVersion: Long) -> Unit)? = null,
         doOnError: suspend (Throwable) -> Unit

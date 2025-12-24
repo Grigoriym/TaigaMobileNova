@@ -12,7 +12,10 @@ import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.doubleOrNull
 import javax.inject.Inject
 
 class CustomFieldsMapper @Inject constructor(
@@ -39,15 +42,17 @@ class CustomFieldsMapper @Inject constructor(
                 type = toDomainType(resp.type),
                 name = resp.name,
                 description = resp.description?.takeIf { it.isNotEmpty() },
-                value = values.attributesValues[resp.id]?.let { value ->
+                value = values.attributesValues[resp.id.toString()]?.let { jsonElement ->
+                    val jsonPrimitive = jsonElement as? JsonPrimitive ?: return@let null
                     CustomFieldValue(
                         when (resp.type) {
-                            CustomFieldTypeDTO.Date -> (value as? String)?.takeIf {
+                            CustomFieldTypeDTO.Date -> jsonPrimitive.contentOrNull?.takeIf {
                                 it.isNotEmpty()
                             }?.let { dateTimeUtils.parseToLocalDate(it) }
 
-                            CustomFieldTypeDTO.Checkbox -> value as? Boolean
-                            else -> value
+                            CustomFieldTypeDTO.Checkbox -> jsonPrimitive.booleanOrNull
+                            CustomFieldTypeDTO.Number -> jsonPrimitive.doubleOrNull
+                            else -> jsonPrimitive.contentOrNull
                         } ?: return@let null
                     )
                 },

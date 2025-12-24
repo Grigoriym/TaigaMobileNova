@@ -21,7 +21,4 @@ dependencies {
     implementation(projects.feature.users.domain)
 
     implementation(libs.retrofit)
-
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
 }

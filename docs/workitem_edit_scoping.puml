@@ -1,0 +1,72 @@
+@startuml
+
+title WorkItemEditShared Scoping Architecture
+
+package "Current Problem (Singleton)" {
+    rectangle "WorkItemEditShared\n@Singleton" as WES1 #FF8A80
+
+    rectangle "IssueDetailsScreen" as Issue1 #FFF9C4
+    rectangle "EditDescriptionScreen" as EditDesc1 #FFF9C4
+    rectangle "EditTagsScreen" as EditTags1 #FFF9C4
+    rectangle "UserStoryDetailsScreen" as US1 #FFF9C4
+    rectangle "EditDescriptionScreen (US)" as EditDesc2 #FFF9C4
+
+    Issue1 --> WES1 : uses
+    EditDesc1 --> WES1 : updates
+    EditTags1 --> WES1 : updates
+    US1 --> WES1 : uses (CONFLICT!)
+    EditDesc2 --> WES1 : updates (CONFLICT!)
+
+    note right of WES1
+        Problem: Single instance shared
+        across all screens causes conflicts
+        when navigating between work items
+    end note
+}
+
+newpage
+
+package "Proposed Solution (Scoped Instances)" {
+
+    package "Issue Scope" as IssueScope #E1F5FE {
+        rectangle "WorkItemEditShared\n(Issue Instance)" as WES_Issue #C8E6C9
+        rectangle "IssueDetailsScreen" as Issue2 #FFF9C4
+        rectangle "EditDescriptionScreen" as EditDesc3 #FFF9C4
+        rectangle "EditTagsScreen" as EditTags2 #FFF9C4
+        rectangle "EditTeamMemberScreen" as EditTeam1 #FFF9C4
+        rectangle "EditSprintScreen" as EditSprint1 #FFF9C4
+
+        Issue2 --> WES_Issue : uses and listens
+        EditDesc3 --> WES_Issue : updates
+        EditTags2 --> WES_Issue : updates
+        EditTeam1 --> WES_Issue : updates
+        EditSprint1 --> WES_Issue : updates
+
+        note bottom of WES_Issue
+            All sub-screens of Issue
+            share the same instance.
+            Updates flow back to parent.
+        end note
+    }
+
+    package "UserStory Scope" as USScope #E1F5FE {
+        rectangle "WorkItemEditShared\n(UserStory Instance)" as WES_US #C8E6C9
+        rectangle "UserStoryDetailsScreen" as US2 #FFF9C4
+        rectangle "EditDescriptionScreen (US)" as EditDesc4 #FFF9C4
+        rectangle "EditTagsScreen (US)" as EditTags3 #FFF9C4
+
+        US2 --> WES_US : uses and listens
+        EditDesc4 --> WES_US : updates
+        EditTags3 --> WES_US : updates
+
+        note bottom of WES_US
+            UserStory has its own isolated
+            instance. No conflict with Issue.
+        end note
+    }
+
+    Issue2 ..> US2 : navigate to\n(different scope)
+    US2 ..> Issue2 : back\n(reload Issue data)
+}
+
+@enduml

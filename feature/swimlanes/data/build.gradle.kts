@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.taigamobile.android.library)
     alias(libs.plugins.taigamobile.android.hilt)
+    alias(libs.plugins.taigamobile.kotlin.serialization)
 }
 
 android {
@@ -14,9 +15,6 @@ dependencies {
     implementation(projects.core.storage)
 
     implementation(projects.feature.swimlanes.domain)
-
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
 
     implementation(libs.retrofit)
 }

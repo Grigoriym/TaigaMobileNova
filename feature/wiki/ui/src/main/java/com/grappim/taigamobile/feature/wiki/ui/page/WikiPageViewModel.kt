@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiPageUseCase
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
@@ -17,7 +18,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
@@ -40,22 +41,24 @@ class WikiPageViewModel @Inject constructor(
     private val taigaStorage: TaigaStorage,
     private val fileUriManager: FileUriManager,
     private val patchDataGenerator: PatchDataGenerator,
-    workItemEditShared: WorkItemEditShared,
+    private val workItemEditStateRepository: WorkItemEditStateRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
-        commonTaskType = CommonTaskType.Wiki,
+        taskIdentifier = TaskIdentifier.Wiki,
         workItemRepository = workItemRepository,
         taigaStorage = taigaStorage,
         fileUriManager = fileUriManager
     ),
     WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
-        commonTaskType = CommonTaskType.Wiki,
+        taskIdentifier = TaskIdentifier.Wiki,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ) {
 
     private val route = savedStateHandle.toRoute<WikiPageNavDestination>()
+
+    private val wikiId: Long = route.id
 
     private val _state = MutableStateFlow(
         WikiPageState(
@@ -77,15 +80,22 @@ class WikiPageViewModel @Inject constructor(
     init {
         loadData()
 
-        workItemEditShared.descriptionState
+        workItemEditStateRepository
+            .getDescriptionFlow(route.id, TaskIdentifier.Wiki)
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        workItemEditStateRepository.clearSession(wikiId, TaskIdentifier.Wiki)
+        Timber.d("WikiPageViewModel cleared - session cleaned up for taskId: $wikiId")
+    }
+
     private suspend fun onNewDescriptionUpdate(newDescription: String) {
-        handleWikiContentUpdate(
+        updateDescription(
             version = currentPage.version,
-            pageId = currentPage.id,
+            workItemId = currentPage.id,
             newDescription = newDescription,
             doOnError = { error ->
                 _state.update { it.copy(error = getErrorMessage(error)) }

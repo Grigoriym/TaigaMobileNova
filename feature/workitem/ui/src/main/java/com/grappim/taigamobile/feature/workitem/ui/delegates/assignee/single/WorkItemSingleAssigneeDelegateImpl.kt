@@ -7,7 +7,6 @@ import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.AssigneesData
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.async
@@ -21,13 +20,11 @@ class WorkItemSingleAssigneeDelegateImpl(
     private val commonTaskType: CommonTaskType,
     private val workItemRepository: WorkItemRepository,
     private val usersRepository: UsersRepository,
-    private val patchDataGenerator: PatchDataGenerator,
-    private val workItemEditShared: WorkItemEditShared
+    private val patchDataGenerator: PatchDataGenerator
 ) : WorkItemSingleAssigneeDelegate {
 
     private val _singleAssigneeState = MutableStateFlow(
         WorkItemSingleAssigneeState(
-            onGoingToEditAssignee = ::onGoingToEditAssignee,
             onRemoveAssigneeClick = ::onRemoveAssigneeClick,
             setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible
         )
@@ -137,11 +134,6 @@ class WorkItemSingleAssigneeDelegateImpl(
             doOnSuccess = doOnSuccess,
             doOnError = doOnError
         )
-    }
-
-    override fun onGoingToEditAssignee() {
-        val assigneeId = _singleAssigneeState.value.assignees.firstOrNull()?.id
-        workItemEditShared.setCurrentAssignee(assigneeId)
     }
 
     private fun onRemoveAssigneeClick() {

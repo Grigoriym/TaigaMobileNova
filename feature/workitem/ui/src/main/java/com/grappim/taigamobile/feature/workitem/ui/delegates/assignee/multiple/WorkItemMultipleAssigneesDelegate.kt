@@ -36,7 +36,7 @@ interface WorkItemMultipleAssigneesDelegate {
         doOnError: (Throwable) -> Unit
     )
 
-    fun onGoingToEditAssignees()
+//    fun onGoingToEditAssignees()
 
 //    fun onRemoveAssigneeClick(user: User)
 }

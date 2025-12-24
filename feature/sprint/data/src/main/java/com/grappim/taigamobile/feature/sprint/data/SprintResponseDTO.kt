@@ -1,22 +1,25 @@
 package com.grappim.taigamobile.feature.sprint.data
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import com.grappim.taigamobile.core.serialization.LocalDateSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.time.LocalDate
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class SprintResponseDTO(
     val id: Long,
     val name: String,
-    @Json(name = "estimated_start")
+    @SerialName(value = "estimated_start")
+    @Serializable(with = LocalDateSerializer::class)
     val estimatedStart: LocalDate,
-    @Json(name = "estimated_finish")
+    @SerialName(value = "estimated_finish")
+    @Serializable(with = LocalDateSerializer::class)
     val estimatedFinish: LocalDate,
     val closed: Boolean,
     val order: Int,
-    @Json(name = "user_stories")
+    @SerialName(value = "user_stories")
     val userStories: List<SprintUserStoryDTO>
-) {
-    @JsonClass(generateAdapter = true)
-    data class SprintUserStoryDTO(val id: Long)
-}
+)
+
+@Serializable
+data class SprintUserStoryDTO(val id: Long)

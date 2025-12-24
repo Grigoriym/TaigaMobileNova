@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.projects.dto
 
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class ProjectResponseDTO(val id: Long, val name: String, val members: List<ProjectMemberDTO>)

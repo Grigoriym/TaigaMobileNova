@@ -16,6 +16,4 @@ dependencies {
     implementation(projects.feature.filters.dto)
 
     implementation(projects.feature.workitem.dto)
-
-    implementation(libs.moshi)
 }

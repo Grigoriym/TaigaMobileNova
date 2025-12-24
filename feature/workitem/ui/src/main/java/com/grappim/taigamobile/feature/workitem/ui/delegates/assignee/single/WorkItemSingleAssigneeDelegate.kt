@@ -36,7 +36,7 @@ interface WorkItemSingleAssigneeDelegate {
         doOnError: (Throwable) -> Unit
     )
 
-    fun onGoingToEditAssignee()
+//    fun onGoingToEditAssignee()
 }
 
 data class WorkItemSingleAssigneeState(
@@ -44,7 +44,7 @@ data class WorkItemSingleAssigneeState(
     val isAssigneesLoading: Boolean = false,
     val isAssignedToMe: Boolean = false,
     val isRemoveAssigneeDialogVisible: Boolean = false,
-    val onGoingToEditAssignee: () -> Unit = {},
+//    val onGoingToEditAssignee: () -> Unit = {},
     val setIsRemoveAssigneeDialogVisible: (Boolean) -> Unit = { _ -> },
     val onRemoveAssigneeClick: () -> Unit = {}
 )

@@ -11,8 +11,6 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.async)
 
-    implementation(libs.moshi)
-
     implementation(projects.feature.projects.domain)
     implementation(projects.feature.projects.dto)
 }

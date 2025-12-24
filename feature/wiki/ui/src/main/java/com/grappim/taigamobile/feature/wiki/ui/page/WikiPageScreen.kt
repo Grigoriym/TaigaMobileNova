@@ -45,7 +45,7 @@ fun WikiPageScreen(
     goBack: () -> Unit,
     goToProfile: (userId: Long) -> Unit,
     showSnackbar: (NativeText) -> Unit,
-    goToEditDescription: (String) -> Unit,
+    goToEditDescription: (String, Long) -> Unit,
     viewModel: WikiPageViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -120,7 +120,7 @@ fun WikiPageScreenContent(
     state: WikiPageState,
     attachmentsState: WorkItemAttachmentsState,
     descriptionState: WorkItemDescriptionState,
-    goToEditDescription: (String) -> Unit,
+    goToEditDescription: (String, Long) -> Unit,
     modifier: Modifier = Modifier,
     onUserItemClick: (userId: Long) -> Unit = { _ -> }
 ) {
@@ -142,7 +142,10 @@ fun WikiPageScreenContent(
             WorkItemDescriptionWidget(
                 currentDescription = state.currentPage.content,
                 onDescriptionClick = {
-                    goToEditDescription(state.currentPage.content)
+                    goToEditDescription(
+                        state.currentPage.content,
+                        state.currentPage.id
+                    )
                 },
                 isLoading = descriptionState.isDescriptionLoading
             )
@@ -195,7 +198,7 @@ private fun WikiPagePreview() {
                 pageSlug = "adasds"
             ),
             attachmentsState = WorkItemAttachmentsState(),
-            goToEditDescription = {},
+            goToEditDescription = { _, _ -> },
             descriptionState = WorkItemDescriptionState()
         )
     }

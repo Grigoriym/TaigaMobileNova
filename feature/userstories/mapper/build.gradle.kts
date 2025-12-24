@@ -12,8 +12,6 @@ dependencies {
     implementation(projects.core.async)
     implementation(projects.core.storage)
 
-    implementation(libs.moshi)
-
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.userstories.dto)
 

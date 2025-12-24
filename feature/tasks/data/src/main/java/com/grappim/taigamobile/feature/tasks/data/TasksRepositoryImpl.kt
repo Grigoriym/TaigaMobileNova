@@ -64,7 +64,7 @@ class TasksRepositoryImpl @Inject constructor(
 
     override suspend fun createTask(title: String, description: String, parentId: Long?, sprintId: Long?): WorkItem {
         val response = tasksApi.createTask(
-            CreateTaskRequest(
+            CreateTaskRequestDTO(
                 project = taigaStorage.currentProjectIdFlow.first(),
                 subject = title,
                 description = description,

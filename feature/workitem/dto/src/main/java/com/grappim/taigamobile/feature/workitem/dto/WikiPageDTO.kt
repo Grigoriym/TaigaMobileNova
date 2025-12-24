@@ -1,22 +1,27 @@
 package com.grappim.taigamobile.feature.workitem.dto
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import com.grappim.taigamobile.core.serialization.LocalDateTimeSerializer
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class WikiPageDTO(
     val id: Long,
     val version: Long,
     val content: String,
     val editions: Long,
-    @Json(name = "created_date") val cratedDate: LocalDateTime,
-    @Json(name = "is_watcher") val isWatcher: Boolean,
-    @Json(name = "last_modifier") val lastModifier: Long,
-    @Json(name = "modified_date") val modifiedDate: LocalDateTime,
-    @Json(name = "total_watchers") val totalWatchers: Long,
-    @Json(name = "slug") val slug: String
+    @Serializable(with = LocalDateTimeSerializer::class)
+    @SerialName(value = "created_date")
+    val cratedDate: LocalDateTime,
+    @SerialName(value = "is_watcher") val isWatcher: Boolean,
+    @SerialName(value = "last_modifier") val lastModifier: Long,
+    @Serializable(with = LocalDateTimeSerializer::class)
+    @SerialName(value = "modified_date")
+    val modifiedDate: LocalDateTime,
+    @SerialName(value = "total_watchers") val totalWatchers: Long,
+    @SerialName(value = "slug") val slug: String
 )
 
-@JsonClass(generateAdapter = true)
-data class WikiLinkDTO(@Json(name = "href") val ref: String, val id: Long, val order: Long, val title: String)
+@Serializable
+data class WikiLinkDTO(@SerialName(value = "href") val ref: String, val id: Long, val order: Long, val title: String)

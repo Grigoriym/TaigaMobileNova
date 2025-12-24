@@ -21,8 +21,5 @@ dependencies {
     implementation(projects.feature.workitem.data)
     implementation(projects.feature.workitem.domain)
 
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
-
     implementation(libs.retrofit)
 }

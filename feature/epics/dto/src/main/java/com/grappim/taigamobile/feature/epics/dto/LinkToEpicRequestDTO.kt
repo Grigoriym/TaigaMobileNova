@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.feature.epics.dto
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class LinkToEpicRequestDTO(
     val epic: String,
-    @Json(name = "user_story")
+    @SerialName(value = "user_story")
     val userStory: Long
 )

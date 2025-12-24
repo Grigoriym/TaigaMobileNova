@@ -51,7 +51,6 @@ fun WorkItemsSectionWidget(
                     CommonTaskType.Task -> RString.tasks
                     CommonTaskType.Epic -> RString.epics
                     CommonTaskType.Issue -> RString.issues
-                    CommonTaskType.Wiki -> RString.wiki
                 }
             ),
             isExpanded = areWorkItemsExpanded,

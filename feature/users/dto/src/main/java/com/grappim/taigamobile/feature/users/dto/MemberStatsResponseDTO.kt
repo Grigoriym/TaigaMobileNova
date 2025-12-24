@@ -1,19 +1,19 @@
 package com.grappim.taigamobile.feature.users.dto
 
-import com.squareup.moshi.Json
-import com.squareup.moshi.JsonClass
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
-@JsonClass(generateAdapter = true)
+@Serializable
 data class MemberStatsResponseDTO(
     // because api returns "null" key along with id keys, so...
-    @Json(name = "closed_bugs")
+    @SerialName(value = "closed_bugs")
     val closedBugs: Map<String, Int>,
-    @Json(name = "closed_tasks")
+    @SerialName(value = "closed_tasks")
     val closedTasks: Map<String, Int>,
-    @Json(name = "created_bugs")
+    @SerialName(value = "created_bugs")
     val createdBugs: Map<String, Int>,
-    @Json(name = "iocaine_tasks")
+    @SerialName(value = "iocaine_tasks")
     val iocaineTasks: Map<String, Int>,
-    @Json(name = "wiki_changes")
+    @SerialName(value = "wiki_changes")
     val wikiChanges: Map<String, Int>
 )

@@ -63,20 +63,19 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
-import com.grappim.taigamobile.utils.ui.OnLifecycleStart
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun IssueDetailsScreen(
     showSnackbar: (message: NativeText) -> Unit,
     goToProfile: (userId: Long) -> Unit,
-    goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit,
+    goToEditDescription: (description: String, issueId: Long) -> Unit,
+    goToEditTags: (issueId: Long) -> Unit,
     goBack: () -> Unit,
-    goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit,
-    goToSprints: () -> Unit,
-    goToUserStory: (id: Long, ref: Long) -> Unit,
+    goToEditAssignee: (issueId: Long) -> Unit,
+    goToEditWatchers: (issueId: Long) -> Unit,
+    goToSprints: (issueId: Long) -> Unit,
+    goToUserStory: (userStoryId: Long, ref: Long) -> Unit,
     viewModel: IssueDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -272,12 +271,12 @@ private fun IssueDetailsScreenContent(
     assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
     goToProfile: (Long) -> Unit,
-    goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit,
-    goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit,
-    goToSprints: () -> Unit,
-    goToUserStory: (id: Long, ref: Long) -> Unit
+    goToEditDescription: (description: String, issueId: Long) -> Unit,
+    goToEditTags: (issueId: Long) -> Unit,
+    goToEditAssignee: (issueId: Long) -> Unit,
+    goToEditWatchers: (issueId: Long) -> Unit,
+    goToSprints: (issueId: Long) -> Unit,
+    goToUserStory: (userStoryId: Long, ref: Long) -> Unit
 ) {
     requireNotNull(state.currentIssue)
 
@@ -325,7 +324,10 @@ private fun IssueDetailsScreenContent(
                 WorkItemDescriptionWidget(
                     currentDescription = state.currentIssue.description,
                     onDescriptionClick = {
-                        goToEditDescription(state.currentIssue.description)
+                        goToEditDescription(
+                            state.currentIssue.description,
+                            state.currentIssue.id
+                        )
                     },
                     isLoading = descriptionState.isDescriptionLoading
                 )
@@ -335,7 +337,7 @@ private fun IssueDetailsScreenContent(
                     isSprintLoading = state.isSprintLoading,
                     onClick = {
                         state.onGoingToEditSprint()
-                        goToSprints()
+                        goToSprints(state.currentIssue.id)
                     }
                 )
 
@@ -344,8 +346,8 @@ private fun IssueDetailsScreenContent(
                     onTagRemoveClick = state.onTagRemove,
                     areTagsLoading = tagsState.areTagsLoading,
                     goToEditTags = {
-                        tagsState.onGoingToEditTags()
-                        goToEditTags()
+                        state.onGoingToEditTags()
+                        goToEditTags(state.currentIssue.id)
                     }
                 )
 
@@ -379,8 +381,8 @@ private fun IssueDetailsScreenContent(
                     onUnassign = state.onUnassign,
                     onAssignToMe = state.onAssignToMe,
                     onAddAssigneeClick = {
-                        assigneesState.onGoingToEditAssignee()
-                        goToEditAssignee()
+                        state.onGoingToEditAssignee()
+                        goToEditAssignee(state.currentIssue.id)
                     }
                 )
 
@@ -392,8 +394,8 @@ private fun IssueDetailsScreenContent(
                     },
                     isWatchersLoading = watchersState.areWatchersLoading,
                     onAddWatcherClick = {
-                        watchersState.onGoingToEditWatchers()
-                        goToEditWatchers()
+                        state.onGoingToEditWatchers()
+                        goToEditWatchers(state.currentIssue.id)
                     },
                     isWatchedByMe = watchersState.isWatchedByMe,
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,

@@ -5,7 +5,6 @@ import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import com.grappim.taigamobile.utils.ui.toHex
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
@@ -17,14 +16,11 @@ import kotlinx.coroutines.flow.update
 class WorkItemTagsDelegateImpl(
     private val commonTaskType: CommonTaskType,
     private val workItemRepository: WorkItemRepository,
-    private val patchDataGenerator: PatchDataGenerator,
-    private val workItemEditShared: WorkItemEditShared
+    private val patchDataGenerator: PatchDataGenerator
 ) : WorkItemTagsDelegate {
 
     private val _tagsState = MutableStateFlow(
-        WorkItemTagsState(
-            onGoingToEditTags = ::onGoingToEditTags
-        )
+        WorkItemTagsState()
     )
     override val tagsState: StateFlow<WorkItemTagsState> = _tagsState.asStateFlow()
 
@@ -94,7 +90,7 @@ class WorkItemTagsDelegateImpl(
         }
     }
 
-    override fun onGoingToEditTags() {
-        workItemEditShared.setTags(_tagsState.value.tags, commonTaskType)
-    }
+//    override fun onGoingToEditTags() {
+//
+//    }
 }

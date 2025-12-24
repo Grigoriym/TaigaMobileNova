@@ -8,7 +8,6 @@ import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WatchersData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,14 +20,12 @@ class WorkItemWatchersDelegateImpl(
     private val workItemRepository: WorkItemRepository,
     private val usersRepository: UsersRepository,
     private val patchDataGenerator: PatchDataGenerator,
-    private val session: Session,
-    private val workItemEditShared: WorkItemEditShared
+    private val session: Session
 ) : WorkItemWatchersDelegate {
 
     private val _watchersState = MutableStateFlow(
         WorkItemWatchersState(
             setIsRemoveWatcherDialogVisible = ::setIsRemoveWatcherDialogVisible,
-            onGoingToEditWatchers = ::onGoingToEditWatchers,
             onRemoveWatcherClick = ::onRemoveWatcherClick
         )
     )
@@ -41,12 +38,6 @@ class WorkItemWatchersDelegateImpl(
                 isRemoveWatcherDialogVisible = true
             )
         }
-    }
-
-    private fun onGoingToEditWatchers() {
-        val watchersIds = _watchersState.value.watchers.mapNotNull { it.id }
-            .toPersistentList()
-        workItemEditShared.setCurrentWatchers(watchersIds)
     }
 
     private fun setIsRemoveWatcherDialogVisible(isVisible: Boolean) {

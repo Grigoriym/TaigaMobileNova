@@ -28,11 +28,11 @@ interface WorkItemTagsDelegate {
         doOnError: (Throwable) -> Unit
     )
 
-    fun onGoingToEditTags()
+//    fun onGoingToEditTags()
 }
 
 data class WorkItemTagsState(
     val tags: PersistentList<TagUI> = persistentListOf(),
-    val areTagsLoading: Boolean = false,
-    val onGoingToEditTags: () -> Unit = {}
+    val areTagsLoading: Boolean = false
+//    val onGoingToEditTags: () -> Unit = {}
 )

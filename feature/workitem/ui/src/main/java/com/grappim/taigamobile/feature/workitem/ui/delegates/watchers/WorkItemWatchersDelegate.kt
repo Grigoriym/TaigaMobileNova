@@ -50,7 +50,7 @@ data class WorkItemWatchersState(
     val isWatchedByMe: Boolean = false,
     val isRemoveWatcherDialogVisible: Boolean = false,
     val setIsRemoveWatcherDialogVisible: (Boolean) -> Unit = {},
-    val onGoingToEditWatchers: () -> Unit = {},
+//    val onGoingToEditWatchers: () -> Unit = {},
     val watcherIdToRemove: Long? = null,
     val onRemoveWatcherClick: (Long) -> Unit = {}
 )

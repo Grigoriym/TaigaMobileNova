@@ -66,12 +66,12 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun TaskDetailsScreen(
     goBack: () -> Unit,
-    goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit,
+    goToEditDescription: (String, Long) -> Unit,
+    goToEditTags: (id: Long) -> Unit,
     goToProfile: (Long) -> Unit,
     showSnackbar: (message: NativeText) -> Unit,
-    goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit,
+    goToEditAssignee: (id: Long) -> Unit,
+    goToEditWatchers: (id: Long) -> Unit,
     goToUserStory: (id: Long, ref: Long) -> Unit,
     viewModel: TaskDetailsViewModel = hiltViewModel()
 ) {
@@ -270,11 +270,11 @@ private fun TaskDetailsScreenContent(
     dueDateState: WorkItemDueDateState,
     assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
-    goToEditDescription: (String) -> Unit,
-    goToEditTags: () -> Unit,
+    goToEditDescription: (description: String, id: Long) -> Unit,
+    goToEditTags: (id: Long) -> Unit,
     goToProfile: (Long) -> Unit,
-    goToEditAssignee: () -> Unit,
-    goToEditWatchers: () -> Unit
+    goToEditAssignee: (id: Long) -> Unit,
+    goToEditWatchers: (id: Long) -> Unit
 ) {
     requireNotNull(state.currentTask)
 
@@ -314,7 +314,10 @@ private fun TaskDetailsScreenContent(
                 WorkItemDescriptionWidget(
                     currentDescription = state.currentTask.description,
                     onDescriptionClick = {
-                        goToEditDescription(state.currentTask.description)
+                        goToEditDescription(
+                            state.currentTask.description,
+                            state.currentTask.id
+                        )
                     },
                     isLoading = descriptionState.isDescriptionLoading
                 )
@@ -324,8 +327,8 @@ private fun TaskDetailsScreenContent(
                     onTagRemoveClick = state.onTagRemove,
                     areTagsLoading = tagsState.areTagsLoading,
                     goToEditTags = {
-                        tagsState.onGoingToEditTags()
-                        goToEditTags()
+                        state.onGoingToEditTags()
+                        goToEditTags(state.currentTask.id)
                     }
                 )
 
@@ -359,8 +362,8 @@ private fun TaskDetailsScreenContent(
                     onUnassign = state.onUnassign,
                     onAssignToMe = state.onAssignToMe,
                     onAddAssigneeClick = {
-                        assigneesState.onGoingToEditAssignee()
-                        goToEditAssignee()
+                        state.onGoingToEditAssignee()
+                        goToEditAssignee(state.currentTask.id)
                     }
                 )
 
@@ -372,8 +375,8 @@ private fun TaskDetailsScreenContent(
                     },
                     isWatchersLoading = watchersState.areWatchersLoading,
                     onAddWatcherClick = {
-                        watchersState.onGoingToEditWatchers()
-                        goToEditWatchers()
+                        state.onGoingToEditWatchers()
+                        goToEditWatchers(state.currentTask.id)
                     },
                     isWatchedByMe = watchersState.isWatchedByMe,
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,

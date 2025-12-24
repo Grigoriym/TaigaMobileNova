@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 
 import android.net.Uri
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
@@ -16,7 +17,7 @@ import kotlinx.coroutines.flow.update
 import timber.log.Timber
 
 class WorkItemAttachmentsDelegateImpl(
-    private val commonTaskType: CommonTaskType,
+    private val taskIdentifier: TaskIdentifier,
     private val workItemRepository: WorkItemRepository,
     private val taigaStorage: TaigaStorage,
     private val fileUriManager: FileUriManager
@@ -57,7 +58,7 @@ class WorkItemAttachmentsDelegateImpl(
                 workItemId = workItemId,
                 fileName = attachmentInfo.name,
                 fileByteArray = attachmentInfo.fileBytes.toByteArray(),
-                commonTaskType = commonTaskType,
+                taskIdentifier = taskIdentifier,
                 projectId = taigaStorage.currentProjectIdFlow.first()
             )
         }.onSuccess { attachment ->
@@ -92,7 +93,7 @@ class WorkItemAttachmentsDelegateImpl(
         resultOf {
             workItemRepository.deleteAttachment(
                 attachment = attachment,
-                commonTaskType = commonTaskType
+                taskIdentifier = taskIdentifier
             )
         }.onSuccess {
             doOnSuccess?.invoke()
