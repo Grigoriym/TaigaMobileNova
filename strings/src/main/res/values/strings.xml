@@ -148,6 +148,7 @@
 
     <string name="date_hint">Date</string>
     <string name="no_due_date">No due date</string>
+    <string name="due_date">Due Date</string>
 
     <string name="select_date">Select date</string>
     <string name="select_color">Select color</string>

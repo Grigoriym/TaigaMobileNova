@@ -40,7 +40,7 @@ fun AssignedToWidget(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(RString.assigned_to),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.bodySmall
         )
 
         TaigaHeightSpacer(8.dp)

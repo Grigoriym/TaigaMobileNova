@@ -24,7 +24,7 @@ fun CreatedByWidget(
         Column(modifier = modifier.fillMaxWidth()) {
             Text(
                 text = stringResource(RString.created_by),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.bodySmall
             )
             TaigaHeightSpacer(8.dp)
 

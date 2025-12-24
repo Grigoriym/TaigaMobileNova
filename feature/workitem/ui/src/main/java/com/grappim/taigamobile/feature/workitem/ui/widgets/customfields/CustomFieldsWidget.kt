@@ -77,6 +77,8 @@ fun CustomFieldsSectionWidget(
             )
 
             if (isCustomFieldsWidgetExpanded) {
+                TaigaHeightSpacer(8.dp)
+
                 customFieldStateItems.forEachIndexed { index, item ->
                     CustomFieldWidget(
                         editingItemIds = editingItemIds,
