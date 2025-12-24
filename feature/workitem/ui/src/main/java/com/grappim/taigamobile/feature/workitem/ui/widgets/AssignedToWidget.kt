@@ -31,8 +31,7 @@ fun MultipleAssignedToWidget(
     assigneesState: WorkItemMultipleAssigneesState,
     goToProfile: (Long) -> Unit,
     onAssignToMe: () -> Unit,
-    onAddAssigneeClick: () -> Unit,
-    isPlural: Boolean = false
+    onAddAssigneeClick: () -> Unit
 ) {
     AssignedToWidget(
         assignees = assigneesState.assignees,
@@ -44,7 +43,7 @@ fun MultipleAssignedToWidget(
         isAssignedToMe = assigneesState.isAssignedToMe,
         onAssignToMe = onAssignToMe,
         onAddAssigneeClick = onAddAssigneeClick,
-        isPlural = isPlural
+        isPlural = true
     )
 }
 

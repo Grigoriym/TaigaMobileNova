@@ -369,7 +369,6 @@ private fun UserStoryDetailsScreenContent(
                     assigneesState = assigneesState,
                     goToProfile = goToProfile,
                     onAssignToMe = state.onAssignToMe,
-                    isPlural = true,
                     onAddAssigneeClick = {
                         state.onGoingToEditAssignees()
                         goToEditAssignee(state.currentUserStory.id)
