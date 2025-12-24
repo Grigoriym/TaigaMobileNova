@@ -154,7 +154,7 @@ fun WikiPageScreenContent(
 
             Text(
                 text = stringResource(RString.last_modification),
-                style = MaterialTheme.typography.titleMedium
+                style = MaterialTheme.typography.titleSmall
             )
 
             TaigaHeightSpacer(8.dp)

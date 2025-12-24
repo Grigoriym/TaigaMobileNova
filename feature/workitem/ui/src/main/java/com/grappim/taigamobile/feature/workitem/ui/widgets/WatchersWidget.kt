@@ -39,7 +39,7 @@ fun WatchersWidget(
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(RString.watchers),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.bodySmall
         )
 
         TaigaHeightSpacer(8.dp)

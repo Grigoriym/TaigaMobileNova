@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -104,35 +105,35 @@ fun SectionTitleExpandable(
         "arrow"
     ).animateFloat { if (it) -180f else 0f }
 
-    Row(
+    Surface(
         modifier = modifier
             .fillMaxWidth()
-            .height(50.dp)
-            .background(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.small
-            )
-            .clickable {
-                onExpandClick()
-            },
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
+            .height(50.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant,
+        shape = MaterialTheme.shapes.small,
+        onClick = onExpandClick
     ) {
-        Text(
-            text = text,
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(horizontal = 10.dp)
-                .weight(1f)
-        )
-
-        Icon(
-            painter = painterResource(RDrawable.ic_arrow_down),
-            contentDescription = null,
-            modifier = Modifier
-                .size(30.dp)
-                .rotate(arrowRotation)
-        )
-        TaigaWidthSpacer(width = 10.dp)
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = text,
+                style = MaterialTheme.typography.titleLarge,
+                modifier = Modifier
+                    .padding(horizontal = 10.dp)
+                    .weight(1f)
+            )
+            Icon(
+                painter = painterResource(RDrawable.ic_arrow_down),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(30.dp)
+                    .rotate(arrowRotation)
+            )
+            TaigaWidthSpacer(width = 10.dp)
+        }
     }
 }
 
