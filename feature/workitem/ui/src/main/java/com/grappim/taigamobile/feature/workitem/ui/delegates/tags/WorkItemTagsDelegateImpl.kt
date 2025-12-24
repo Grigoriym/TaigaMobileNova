@@ -89,8 +89,4 @@ class WorkItemTagsDelegateImpl(
             doOnError(error)
         }
     }
-
-//    override fun onGoingToEditTags() {
-//
-//    }
 }

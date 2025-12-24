@@ -19,10 +19,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class KanbanViewModel @Inject constructor(
-    taigaStorage: TaigaStorage,
-    private val getKanbanDataUseCase: GetKanbanDataUseCase
-) : ViewModel() {
+class KanbanViewModel @Inject constructor(private val getKanbanDataUseCase: GetKanbanDataUseCase) : ViewModel() {
 
     private val _state = MutableStateFlow(
         KanbanState(
@@ -34,12 +31,6 @@ class KanbanViewModel @Inject constructor(
 
     init {
         getKanbanData()
-
-        taigaStorage.currentProjectIdFlow
-            .distinctUntilChanged()
-            .onEach {
-                refresh()
-            }.launchIn(viewModelScope)
     }
 
     private fun getKanbanData() {

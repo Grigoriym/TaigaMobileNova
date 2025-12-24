@@ -45,7 +45,6 @@ dependencies {
 
     implementation(projects.feature.dashboard.domain)
     implementation(projects.feature.dashboard.ui)
-    implementation(projects.feature.dashboard.data)
 
     implementation(projects.feature.login.domain)
     implementation(projects.feature.login.ui)

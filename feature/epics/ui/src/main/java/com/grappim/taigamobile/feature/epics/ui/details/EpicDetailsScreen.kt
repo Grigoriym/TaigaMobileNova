@@ -72,6 +72,7 @@ fun EpicDetailsScreen(
     goToEditAssignee: (id: Long) -> Unit,
     goToEditWatchers: (id: Long) -> Unit,
     goToUserStory: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
+    updateData: Boolean = false,
     viewModel: EpicDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -110,6 +111,12 @@ fun EpicDetailsScreen(
                 )
             )
         )
+    }
+
+    LaunchedEffect(updateData) {
+        if (updateData) {
+            state.retryLoadEpic()
+        }
     }
 
     BackHandler {

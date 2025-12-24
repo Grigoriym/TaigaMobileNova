@@ -8,28 +8,21 @@ import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
-import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.mapLatest
-import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -39,8 +32,7 @@ import javax.inject.Inject
 class IssuesViewModel @Inject constructor(
     private val session: Session,
     private val issuesRepository: IssuesRepository,
-    private val filtersRepository: FiltersRepository,
-    taigaStorage: TaigaStorage
+    private val filtersRepository: FiltersRepository
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl() {
 
@@ -62,20 +54,8 @@ class IssuesViewModel @Inject constructor(
         it
     }.cachedIn(viewModelScope)
 
-    private val retryFiltersSignal = MutableSharedFlow<Unit>()
-
-    val filters = merge(
-        taigaStorage.currentProjectIdFlow.distinctUntilChanged(),
-        retryFiltersSignal
-    ).mapLatest {
-        loadFiltersData()
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
-        initialValue = FiltersData()
-    )
-
     init {
+        loadFiltersData()
         session.issuesFilters
             .onEach { filters ->
                 _state.update {
@@ -92,45 +72,39 @@ class IssuesViewModel @Inject constructor(
     }
 
     private fun retryLoadFilters() {
-        viewModelScope.launch {
-            retryFiltersSignal.emit(Unit)
-        }
+        loadFiltersData()
     }
 
-    private suspend fun loadFiltersData(): FiltersData {
-        _state.update {
-            it.copy(
-                isFiltersLoading = true,
-                isFiltersError = false
-            )
-        }
-
-        val result = resultOf { filtersRepository.getFiltersData(CommonTaskType.Issue) }
-        return if (result.isSuccess) {
-            val filters = result.getOrThrow()
-            session.changeIssuesFilters(
-                filters = _state.value.activeFilters.updateData(filters)
-            )
-
+    private fun loadFiltersData() {
+        viewModelScope.launch {
             _state.update {
                 it.copy(
-                    isFiltersLoading = false,
-                    isFiltersError = false
+                    isFiltersLoading = true,
+                    filtersError = NativeText.Empty
                 )
             }
 
-            filters
-        } else {
-            Timber.e(result.exceptionOrNull())
-            _state.update {
-                it.copy(
-                    isFiltersLoading = false,
-                    isFiltersError = true
-                )
-            }
-            showSnackbarSuspend(NativeText.Resource(RString.filters_loading_error))
+            resultOf { filtersRepository.getFiltersData(CommonTaskType.Issue) }
+                .onSuccess { result ->
+                    session.changeIssuesFilters(
+                        filters = _state.value.activeFilters.updateData(result)
+                    )
 
-            FiltersData()
+                    _state.update {
+                        it.copy(
+                            isFiltersLoading = false,
+                            filters = result
+                        )
+                    }
+                }.onFailure { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            isFiltersLoading = false,
+                            filtersError = getErrorMessage(error)
+                        )
+                    }
+                }
         }
     }
 
