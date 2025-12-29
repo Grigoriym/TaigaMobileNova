@@ -22,11 +22,7 @@ import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 
 @Composable
-fun SprintsListContent(
-    sprints: LazyPagingItems<Sprint>,
-    goToSprint: (Sprint) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun SprintsListContent(sprints: LazyPagingItems<Sprint>, goToSprint: (Sprint) -> Unit, modifier: Modifier = Modifier) {
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
         onRefresh = { sprints.refresh() },
