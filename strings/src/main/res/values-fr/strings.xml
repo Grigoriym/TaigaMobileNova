@@ -50,6 +50,8 @@
     <string name="backlog">Reste à faire</string>
 
     <string name="sprints_title">Sprints</string>
+    <string name="open_sprints">Sprints ouverts</string>
+    <string name="closed_sprints">Sprints fermés</string>
     <string name="stories_count_template">Récits: %d</string>
     <string name="taskboard">Board</string>
     <string name="closed">Fermé</string>

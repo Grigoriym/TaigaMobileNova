@@ -50,6 +50,8 @@
     <string name="backlog">Резерв</string>
 
     <string name="sprints_title">Спринти</string>
+    <string name="open_sprints">Відкриті спринти</string>
+    <string name="closed_sprints">Закриті спринти</string>
     <string name="stories_count_template">Історії: %d</string>
     <string name="taskboard">Дошка</string>
     <string name="closed">Закритий</string>

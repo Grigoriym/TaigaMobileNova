@@ -21,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,6 +71,7 @@ private fun MainScreenContent(
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val drawerState by appState.drawerState.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
@@ -107,8 +109,8 @@ private fun MainScreenContent(
     }
 
     TaigaDrawerWidget(
-        screens = appState.topLevelDestinations,
-        currentItem = appState.currentTopLevelDestination,
+        drawerItems = appState.drawerItems,
+        currentTopLevelDestination = appState.currentTopLevelDestination,
         drawerState = drawerState,
         onDrawerItemClick = { item: DrawerDestination ->
             scope.launch {
@@ -152,7 +154,7 @@ private fun MainScreenContent(
                     navController = appState.navController,
                     showMessage = { message ->
                         scope.launch {
-                            val strMessage = context.getString(message)
+                            val strMessage = resources.getString(message)
                             snackbarHostState.showSnackbar(
                                 message = strMessage,
                                 actionLabel = null,
@@ -164,7 +166,7 @@ private fun MainScreenContent(
                         scope.launch {
                             val result = snackbarHostState.showSnackbar(
                                 message = text.asString(context),
-                                actionLabel = context.getString(RString.close),
+                                actionLabel = resources.getString(RString.close),
                                 duration = SnackbarDuration.Short
                             )
                             if (result == SnackbarResult.ActionPerformed) {
