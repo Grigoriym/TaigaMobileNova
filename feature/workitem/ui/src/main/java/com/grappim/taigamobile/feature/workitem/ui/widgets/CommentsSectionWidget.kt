@@ -28,7 +28,6 @@ import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
-import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun CommentsSectionWidget(
@@ -37,35 +36,37 @@ fun CommentsSectionWidget(
     goToProfile: (userId: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(modifier = modifier) {
-        SectionTitleExpandable(
-            text = stringResource(RString.comments_template).format(commentsState.comments.size),
-            isExpanded = commentsState.isCommentsWidgetExpanded,
-            onExpandClick = {
-                commentsState.setIsCommentsWidgetExpanded(!commentsState.isCommentsWidgetExpanded)
-            }
-        )
-
-        if (commentsState.isCommentsWidgetExpanded) {
-            commentsState.comments.forEachIndexed { index, item ->
-                CommentItem(
-                    comment = item,
-                    onDeleteClick = {
-                        onCommentRemove(item)
-                    },
-                    navigateToProfile = goToProfile
-                )
-
-                if (index < commentsState.comments.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outline
-                    )
+    if (commentsState.comments.isNotEmpty()) {
+        Column(modifier = modifier) {
+            SectionTitleExpandable(
+                text = stringResource(RString.comments_template).format(commentsState.comments.size),
+                isExpanded = commentsState.isCommentsWidgetExpanded,
+                onExpandClick = {
+                    commentsState.setIsCommentsWidgetExpanded(!commentsState.isCommentsWidgetExpanded)
                 }
-            }
+            )
 
-            if (commentsState.areCommentsLoading) {
-                DotsLoaderWidget()
+            if (commentsState.isCommentsWidgetExpanded) {
+                commentsState.comments.forEachIndexed { index, item ->
+                    CommentItem(
+                        comment = item,
+                        onDeleteClick = {
+                            onCommentRemove(item)
+                        },
+                        navigateToProfile = goToProfile
+                    )
+
+                    if (index < commentsState.comments.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                }
+
+                if (commentsState.areCommentsLoading) {
+                    DotsLoaderWidget()
+                }
             }
         }
     }
