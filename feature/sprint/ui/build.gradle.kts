@@ -14,6 +14,7 @@ dependencies {
     implementation(projects.feature.tasks.domain)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.workitem.ui)
     implementation(projects.feature.users.domain)
 
     implementation(projects.strings)
@@ -21,6 +22,7 @@ dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.storage)
     implementation(projects.utils.ui)
+    implementation(projects.utils.formatter.datetime)
     implementation(projects.core.navigation)
 
     implementation(libs.androidx.navigation.compose)

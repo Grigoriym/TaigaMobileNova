@@ -12,10 +12,14 @@ import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegateImpl
+import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,10 +27,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.time.LocalDate
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -35,20 +39,27 @@ class ScrumViewModel @Inject constructor(
     private val sprintsRepository: SprintsRepository,
     private val session: Session,
     private val userStoriesRepository: UserStoriesRepository,
-    private val filtersRepository: FiltersRepository
-) : ViewModel() {
+    private val filtersRepository: FiltersRepository,
+    private val dateTimeUtils: DateTimeUtils
+) : ViewModel(),
+    WorkItemSprintDelegate by WorkItemSprintDelegateImpl(
+        dateTimeUtils = dateTimeUtils,
+        sprintsRepository = sprintsRepository
+    ) {
 
     private val _state = MutableStateFlow(
         ScrumState(
-            setIsCreateSprintDialogVisible = ::setIsCreateSprintDialogVisible,
             onSelectFilters = ::selectFilters,
             retryLoadFilters = ::retryLoadFilters,
-            onCreateSprint = ::createSprint,
-            onSetSearchQuery = ::setSearchQuery
+            onCreateSprintConfirm = ::createSprint,
+            onSetSearchQuery = ::setSearchQuery,
+            onCreateSprintClick = ::onCreateSprintClick
         )
     )
     val state = _state.asStateFlow()
 
+    private val _reloadOpenSprints = Channel<Unit>()
+    val reloadOpenSprints = _reloadOpenSprints.receiveAsFlow()
     val openSprints = sprintsRepository.getSprints(isClosed = false)
         .cachedIn(viewModelScope)
 
@@ -85,12 +96,9 @@ class ScrumViewModel @Inject constructor(
         loadFiltersData()
     }
 
-    private fun setIsCreateSprintDialogVisible(newValue: Boolean) {
-        _state.update {
-            it.copy(
-                isCreateSprintDialogVisible = newValue
-            )
-        }
+    private fun onCreateSprintClick() {
+        setInitialSprint()
+        setSprintDialogVisibility(true)
     }
 
     private fun loadFiltersData() {
@@ -134,27 +142,32 @@ class ScrumViewModel @Inject constructor(
         session.changeScrumFilters(filters)
     }
 
-    private fun createSprint(name: String, start: LocalDate, end: LocalDate) {
+    private fun createSprint() {
         viewModelScope.launch {
-            setIsCreateSprintDialogVisible(false)
-            _state.update {
-                it.copy(
-                    loading = true,
-                    error = NativeText.Empty
-                )
-            }
-            sprintsRepository.createSprint(name, start, end).onSuccess {
-                _state.update { it.copy(loading = false) }
-                loadFiltersData()
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        loading = false,
-                        error = getErrorMessage(error)
-                    )
+            createSprint(
+                doOnPreExecute = {
+                    _state.update {
+                        it.copy(
+                            isLoading = true
+                        )
+                    }
+                },
+                doOnSuccess = {
+                    _state.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
+                    _reloadOpenSprints.send(Unit)
+                },
+                doOnError = {
+                    _state.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
                 }
-            }
+            )
         }
     }
 }

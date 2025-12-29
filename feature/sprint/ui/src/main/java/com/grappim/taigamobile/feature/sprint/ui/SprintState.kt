@@ -18,10 +18,13 @@ data class SprintState(
     val storylessTasks: ImmutableList<WorkItem> = persistentListOf(),
 
     val isLoading: Boolean = false,
+    val error: NativeText = NativeText.Empty,
     val isMenuExpanded: Boolean = false,
     val setIsMenuExpanded: (Boolean) -> Unit = {},
-    val isEditDialogVisible: Boolean = false,
-    val setIsEditDialogVisible: (Boolean) -> Unit = {},
     val isDeleteDialogVisible: Boolean = false,
-    val setIsDeleteDialogVisible: (Boolean) -> Unit = {}
+    val setIsDeleteDialogVisible: (Boolean) -> Unit = {},
+    val onDeleteSprint: () -> Unit = {},
+
+    val onEditSprintConfirm: () -> Unit = {},
+    val onEditSprintClick: () -> Unit = {}
 )

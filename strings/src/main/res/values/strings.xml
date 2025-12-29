@@ -267,6 +267,10 @@
     <string name="error_loading_closed_stories">Failed to load closed user stories</string>
     <string name="error_loading_open_user_stories">Failed to load open user stories</string>
 
+    <string name="sprint_name_empty">Sprint name shouldn\'t be empty</string>
+    <string name="sprint_start_date_empty">Sprint start date is not set</string>
+    <string name="sprint_end_date_empty">Sprint end date is not set</string>
+
     <!--    Errors-->
     <string name="error_something_has_gone_wrong">Something went wrong</string>
     <string name="error_no_internet_connection">No Internet connection</string>

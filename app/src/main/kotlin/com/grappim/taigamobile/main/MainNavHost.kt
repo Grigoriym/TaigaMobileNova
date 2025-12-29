@@ -183,8 +183,11 @@ fun MainNavHost(
 
         composable<SprintNavDestination> {
             SprintScreen(
-                showMessage = showMessage,
-                goBack = navController::popBackStack,
+                showSnackbar = showSnackbar,
+                goBack = {
+                    navController.setUpdateDataOnBack()
+                    navController.popBackStack()
+                },
                 goToTaskScreen = { id, type, ref ->
                     navController.navigate(id, type, ref)
                 },
