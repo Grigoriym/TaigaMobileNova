@@ -23,7 +23,7 @@ import kotlinx.collections.immutable.persistentListOf
 @Composable
 fun ScrumOpenSprintsScreen(
     updateData: Boolean,
-    navigateToBoard: (Sprint) -> Unit,
+    goToSprint: (Sprint) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ScrumOpenSprintsViewModel = hiltViewModel()
 ) {
@@ -65,7 +65,7 @@ fun ScrumOpenSprintsScreen(
 
     SprintsListContent(
         sprints = openSprints,
-        navigateToBoard = navigateToBoard,
+        goToSprint = goToSprint,
         modifier = modifier
     )
 }

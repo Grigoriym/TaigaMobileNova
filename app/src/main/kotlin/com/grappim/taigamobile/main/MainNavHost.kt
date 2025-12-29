@@ -132,27 +132,6 @@ fun MainNavHost(
             )
         }
 
-//        composable<ScrumNavDestination> { navBackStackEntry ->
-//            val updateData: Boolean =
-//                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-//            ScrumScreen(
-//                showSnackbar = showSnackbar,
-//                goToCreateUserStory = {
-//                    navController.navigateToCreateTask(type = CommonTaskType.UserStory)
-//                },
-//                goToSprint = { id ->
-//                    navController.navigateToSprintScreen(id)
-//                },
-//                updateData = updateData,
-//                goToUserStory = { id, _, ref ->
-//                    navController.navigateToUserStory(
-//                        userStoryId = id,
-//                        ref = ref
-//                    )
-//                }
-//            )
-//        }
-
         composable<ScrumBacklogDestination> { navBackStackEntry ->
             val updateData: Boolean =
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
@@ -175,7 +154,7 @@ fun MainNavHost(
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             ScrumOpenSprintsScreen(
                 updateData = updateData,
-                navigateToBoard = { sprint ->
+                goToSprint = { sprint ->
                     navController.navigateToSprintScreen(sprint.id)
                 }
             )
@@ -186,7 +165,7 @@ fun MainNavHost(
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             ScrumClosedSprintsScreen(
                 updateData = updateData,
-                navigateToBoard = { sprint ->
+                goToSprint = { sprint ->
                     navController.navigateToSprintScreen(sprint.id)
                 }
             )
