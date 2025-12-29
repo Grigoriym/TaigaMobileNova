@@ -24,7 +24,7 @@ import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 @Composable
 fun SprintsListContent(
     sprints: LazyPagingItems<Sprint>,
-    navigateToBoard: (Sprint) -> Unit,
+    goToSprint: (Sprint) -> Unit,
     modifier: Modifier = Modifier
 ) {
     PullToRefreshBox(
@@ -45,7 +45,7 @@ fun SprintsListContent(
                 if (item != null) {
                     SprintItem(
                         sprint = item,
-                        navigateToBoard = navigateToBoard
+                        goToSprint = goToSprint
                     )
                 }
             }

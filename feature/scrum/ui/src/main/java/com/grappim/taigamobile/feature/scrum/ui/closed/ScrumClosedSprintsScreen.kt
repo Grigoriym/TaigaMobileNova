@@ -16,7 +16,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 @Composable
 fun ScrumClosedSprintsScreen(
     updateData: Boolean,
-    navigateToBoard: (Sprint) -> Unit,
+    goToSprint: (Sprint) -> Unit,
     modifier: Modifier = Modifier,
     viewModel: ScrumClosedSprintsViewModel = hiltViewModel()
 ) {
@@ -40,7 +40,7 @@ fun ScrumClosedSprintsScreen(
 
     SprintsListContent(
         sprints = closedSprints,
-        navigateToBoard = navigateToBoard,
+        goToSprint = goToSprint,
         modifier = modifier
     )
 }
