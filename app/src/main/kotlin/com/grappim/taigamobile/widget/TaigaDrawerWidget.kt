@@ -114,6 +114,14 @@ fun TaigaDrawerWidget(
                                         )
                                     }
                                 }
+
+                                is DrawerItem.Divider -> {
+                                    item {
+                                        HorizontalDivider(
+                                            modifier = Modifier.padding(vertical = 8.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
                     }
