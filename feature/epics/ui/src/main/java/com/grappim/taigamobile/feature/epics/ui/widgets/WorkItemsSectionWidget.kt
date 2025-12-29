@@ -41,39 +41,41 @@ fun WorkItemsSectionWidget(
     goToWorkItem: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
-        modifier = modifier
-    ) {
-        SectionTitleExpandable(
-            text = stringResource(
-                when (workItemsType) {
-                    CommonTaskType.UserStory -> RString.userstories_number
-                    CommonTaskType.Task -> RString.tasks_number
-                    CommonTaskType.Epic -> RString.epics_number
-                    CommonTaskType.Issue -> RString.issues_number
-                },
-                workItemUIS.size
-            ),
-            isExpanded = areWorkItemsExpanded,
-            onExpandClick = {
-                setAreWorkItemsExpanded(!areWorkItemsExpanded)
-            }
-        )
+    if (workItemUIS.isNotEmpty()) {
+        Column(
+            modifier = modifier
+        ) {
+            SectionTitleExpandable(
+                text = stringResource(
+                    when (workItemsType) {
+                        CommonTaskType.UserStory -> RString.userstories_number
+                        CommonTaskType.Task -> RString.tasks_number
+                        CommonTaskType.Epic -> RString.epics_number
+                        CommonTaskType.Issue -> RString.issues_number
+                    },
+                    workItemUIS.size
+                ),
+                isExpanded = areWorkItemsExpanded,
+                onExpandClick = {
+                    setAreWorkItemsExpanded(!areWorkItemsExpanded)
+                }
+            )
 
-        if (areWorkItemsExpanded) {
-            Spacer(Modifier.height(10.dp))
+            if (areWorkItemsExpanded) {
+                Spacer(Modifier.height(10.dp))
 
-            workItemUIS.forEachIndexed { index, item ->
-                WorkItemItemWidget(
-                    workItemUI = item,
-                    goToWorkItem = goToWorkItem
-                )
-
-                if (index < workItemUIS.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(vertical = 12.dp),
-                        color = MaterialTheme.colorScheme.outline
+                workItemUIS.forEachIndexed { index, item ->
+                    WorkItemItemWidget(
+                        workItemUI = item,
+                        goToWorkItem = goToWorkItem
                     )
+
+                    if (index < workItemUIS.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
                 }
             }
         }
