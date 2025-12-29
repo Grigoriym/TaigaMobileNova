@@ -96,16 +96,6 @@ class MainAppState(val navController: NavHostController) {
             label = RString.wiki,
             icon = IconSource.Resource(RDrawable.ic_wiki)
         ),
-        DrawerItem.Destination(
-            destination = DrawerDestination.Settings,
-            label = RString.settings,
-            icon = IconSource.Resource(RDrawable.ic_settings)
-        ),
-        DrawerItem.Destination(
-            destination = DrawerDestination.Logout,
-            label = RString.logout_title,
-            icon = IconSource.Resource(RDrawable.ic_logout)
-        ),
         DrawerItem.Group(
             label = RString.scrum,
             items = listOf(
@@ -125,6 +115,17 @@ class MainAppState(val navController: NavHostController) {
                     icon = IconSource.Vector(Icons.Filled.Archive)
                 )
             )
+        ),
+        DrawerItem.Divider,
+        DrawerItem.Destination(
+            destination = DrawerDestination.Settings,
+            label = RString.settings,
+            icon = IconSource.Resource(RDrawable.ic_settings)
+        ),
+        DrawerItem.Destination(
+            destination = DrawerDestination.Logout,
+            label = RString.logout_title,
+            icon = IconSource.Resource(RDrawable.ic_logout)
         )
     )
 

@@ -16,4 +16,6 @@ sealed interface DrawerItem {
         DrawerItem {
         val route: Any get() = destination.route
     }
+
+    data object Divider : DrawerItem
 }
