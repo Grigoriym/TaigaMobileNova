@@ -54,6 +54,8 @@
     <string name="backlog">Бэклог</string>
 
     <string name="sprints_title">Спринты</string>
+    <string name="open_sprints">Открытые спринты</string>
+    <string name="closed_sprints">Закрытые спринты</string>
     <string name="sprint_dates_template" translatable="false">%s - %s</string>
     <string name="stories_count_template">Истории: %d</string>
     <string name="taskboard">Доска</string>

@@ -20,11 +20,14 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.nav.DrawerDestination
+import com.grappim.taigamobile.core.nav.DrawerItem
+import com.grappim.taigamobile.core.nav.IconSource
+import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun TaigaDrawerWidget(
-    screens: List<DrawerDestination>,
-    currentItem: DrawerDestination?,
+    drawerItems: ImmutableList<DrawerItem>,
+    currentTopLevelDestination: DrawerDestination?,
     onDrawerItemClick: (DrawerDestination) -> Unit,
     drawerState: DrawerState,
     modifier: Modifier = Modifier,
@@ -50,20 +53,68 @@ fun TaigaDrawerWidget(
                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                     LazyColumn {
-                        items(screens) { item ->
-                            NavigationDrawerItem(
-                                label = { Text(stringResource(item.label)) },
-                                selected = currentItem == item,
-                                icon = {
-                                    Icon(
-                                        painter = painterResource(item.icon),
-                                        contentDescription = stringResource(item.label)
-                                    )
-                                },
-                                onClick = {
-                                    onDrawerItemClick(item)
+                        drawerItems.forEach { drawerItem ->
+                            when (drawerItem) {
+                                is DrawerItem.Group -> {
+                                    item {
+                                        Text(
+                                            text = stringResource(drawerItem.label),
+                                            style = MaterialTheme.typography.labelSmall,
+                                            modifier = Modifier.padding(
+                                                start = 16.dp,
+                                                top = 16.dp,
+                                                bottom = 8.dp
+                                            ),
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    items(drawerItem.items) { destination ->
+                                        NavigationDrawerItem(
+                                            label = { Text(stringResource(destination.label)) },
+                                            selected = currentTopLevelDestination == destination.destination,
+                                            icon = {
+                                                when (val iconSource = destination.icon) {
+                                                    is IconSource.Vector -> Icon(
+                                                        imageVector = iconSource.imageVector,
+                                                        contentDescription = stringResource(destination.label)
+                                                    )
+                                                    is IconSource.Resource -> Icon(
+                                                        painter = painterResource(iconSource.resourceId),
+                                                        contentDescription = stringResource(destination.label)
+                                                    )
+                                                }
+                                            },
+                                            onClick = {
+                                                onDrawerItemClick(destination.destination)
+                                            }
+                                        )
+                                    }
                                 }
-                            )
+
+                                is DrawerItem.Destination -> {
+                                    item {
+                                        NavigationDrawerItem(
+                                            label = { Text(stringResource(drawerItem.label)) },
+                                            selected = currentTopLevelDestination == drawerItem.destination,
+                                            icon = {
+                                                when (val iconSource = drawerItem.icon) {
+                                                    is IconSource.Vector -> Icon(
+                                                        imageVector = iconSource.imageVector,
+                                                        contentDescription = stringResource(drawerItem.label)
+                                                    )
+                                                    is IconSource.Resource -> Icon(
+                                                        painter = painterResource(iconSource.resourceId),
+                                                        contentDescription = stringResource(drawerItem.label)
+                                                    )
+                                                }
+                                            },
+                                            onClick = {
+                                                onDrawerItemClick(drawerItem.destination)
+                                            }
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
                 }

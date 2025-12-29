@@ -29,8 +29,12 @@ import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorScreen
 import com.grappim.taigamobile.feature.projectselector.ui.navigateToProjectSelector
-import com.grappim.taigamobile.feature.scrum.ui.ScrumNavDestination
-import com.grappim.taigamobile.feature.scrum.ui.ScrumScreen
+import com.grappim.taigamobile.feature.scrum.ui.ScrumBacklogDestination
+import com.grappim.taigamobile.feature.scrum.ui.ScrumClosedSprintsDestination
+import com.grappim.taigamobile.feature.scrum.ui.ScrumOpenSprintsDestination
+import com.grappim.taigamobile.feature.scrum.ui.backlog.ScrumBacklogScreen
+import com.grappim.taigamobile.feature.scrum.ui.closed.ScrumClosedSprintsScreen
+import com.grappim.taigamobile.feature.scrum.ui.open.ScrumOpenSprintsScreen
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
@@ -128,23 +132,62 @@ fun MainNavHost(
             )
         }
 
-        composable<ScrumNavDestination> { navBackStackEntry ->
+//        composable<ScrumNavDestination> { navBackStackEntry ->
+//            val updateData: Boolean =
+//                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
+//            ScrumScreen(
+//                showSnackbar = showSnackbar,
+//                goToCreateUserStory = {
+//                    navController.navigateToCreateTask(type = CommonTaskType.UserStory)
+//                },
+//                goToSprint = { id ->
+//                    navController.navigateToSprintScreen(id)
+//                },
+//                updateData = updateData,
+//                goToUserStory = { id, _, ref ->
+//                    navController.navigateToUserStory(
+//                        userStoryId = id,
+//                        ref = ref
+//                    )
+//                }
+//            )
+//        }
+
+        composable<ScrumBacklogDestination> { navBackStackEntry ->
             val updateData: Boolean =
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            ScrumScreen(
-                showSnackbar = showSnackbar,
+            ScrumBacklogScreen(
+                updateData = updateData,
                 goToCreateUserStory = {
                     navController.navigateToCreateTask(type = CommonTaskType.UserStory)
                 },
-                goToSprint = { id ->
-                    navController.navigateToSprintScreen(id)
-                },
-                updateData = updateData,
-                goToUserStory = { id, _, ref ->
+                navigateToTask = { id, _, ref ->
                     navController.navigateToUserStory(
                         userStoryId = id,
                         ref = ref
                     )
+                }
+            )
+        }
+
+        composable<ScrumOpenSprintsDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
+            ScrumOpenSprintsScreen(
+                updateData = updateData,
+                navigateToBoard = { sprint ->
+                    navController.navigateToSprintScreen(sprint.id)
+                }
+            )
+        }
+
+        composable<ScrumClosedSprintsDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
+            ScrumClosedSprintsScreen(
+                updateData = updateData,
+                navigateToBoard = { sprint ->
+                    navController.navigateToSprintScreen(sprint.id)
                 }
             )
         }
