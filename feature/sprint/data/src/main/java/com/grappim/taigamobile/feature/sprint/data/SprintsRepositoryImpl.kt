@@ -115,13 +115,13 @@ class SprintsRepositoryImpl @Inject constructor(
         return workItemMapper.toDomainList(response, CommonTaskType.Issue)
     }
 
-    override suspend fun createSprint(name: String, start: LocalDate, end: LocalDate): Result<Unit> = resultOf {
+    override suspend fun createSprint(name: String, start: LocalDate, end: LocalDate) {
         sprintApi.createSprint(
             CreateSprintRequest(
-                name,
-                start,
-                end,
-                taigaStorage.currentProjectIdFlow.first()
+                name = name,
+                estimatedStart = start,
+                estimatedFinish = end,
+                project = taigaStorage.currentProjectIdFlow.first()
             )
         )
     }

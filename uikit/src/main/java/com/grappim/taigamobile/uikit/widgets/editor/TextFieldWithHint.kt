@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -32,6 +34,42 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.asString
+
+@Composable
+fun HintTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    hint: NativeText,
+    modifier: Modifier = Modifier,
+    error: NativeText = NativeText.Empty
+) {
+    val context = LocalContext.current
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            isError = error.isNotEmpty(),
+            value = value,
+            placeholder = {
+                Text(text = hint.asString(context))
+            },
+            onValueChange = onValueChange,
+            supportingText = {
+                if (error.isNotEmpty()) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = error.asString(context),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        )
+    }
+}
 
 @Composable
 fun TextFieldWithHint(

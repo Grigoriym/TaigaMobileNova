@@ -18,7 +18,7 @@ interface SprintsRepository {
     suspend fun getSprintUserStories(sprintId: Long): ImmutableList<WorkItem>
     suspend fun getSprintTasks(sprintId: Long): ImmutableList<WorkItem>
 
-    suspend fun createSprint(name: String, start: LocalDate, end: LocalDate): Result<Unit>
+    suspend fun createSprint(name: String, start: LocalDate, end: LocalDate)
     suspend fun editSprint(sprintId: Long, name: String, start: LocalDate, end: LocalDate)
     suspend fun deleteSprint(sprintId: Long)
 }

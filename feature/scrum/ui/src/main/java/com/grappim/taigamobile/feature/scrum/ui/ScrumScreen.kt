@@ -45,6 +45,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.TaskFilters
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -53,8 +54,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.container.HorizontalTabbedPagerWidget
-import com.grappim.taigamobile.uikit.widgets.dialog.EditSprintDialog
-import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
+import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
@@ -85,8 +85,8 @@ fun ScrumScreen(
     val userStories = viewModel.userStories.collectAsLazyPagingItems()
     val openSprints = viewModel.openSprints.collectAsLazyPagingItems()
     val closedSprints = viewModel.closedSprints.collectAsLazyPagingItems()
-//    val filters by viewModel.filters.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val sprintDialogState by viewModel.sprintDialogState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -104,7 +104,7 @@ fun ScrumScreen(
                                 }
 
                                 ScrumTabs.Sprints -> {
-                                    state.setIsCreateSprintDialogVisible(true)
+                                    state.onCreateSprintClick()
                                 }
                             }
                         }
@@ -114,9 +114,15 @@ fun ScrumScreen(
         )
     }
 
+    ObserveAsEvents(viewModel.reloadOpenSprints) {
+        openSprints.refresh()
+    }
+
     LaunchedEffect(updateData) {
         if (updateData) {
             userStories.refresh()
+            openSprints.refresh()
+            closedSprints.refresh()
         }
     }
 
@@ -156,18 +162,12 @@ fun ScrumScreen(
         }
     }
 
-    if (state.isCreateSprintDialogVisible) {
-        EditSprintDialog(
-            onConfirm = { name, start, end ->
-                state.onCreateSprint(name, start, end)
-            },
-            onDismiss = { state.setIsCreateSprintDialogVisible(false) }
-        )
-    }
+    EditSprintDialog(
+        state = sprintDialogState,
+        onConfirm = state.onCreateSprintConfirm
+    )
 
-    if (state.loading) {
-        LoadingDialog()
-    }
+    TaigaLoadingDialog(state.isLoading)
 
     ScrumScreenContent(
         state = state,
@@ -435,9 +435,7 @@ private fun SprintPreview() = TaigaMobileTheme {
 @Composable
 private fun ScrumScreenPreview() = TaigaMobileTheme {
     ScrumScreenContent(
-        state = ScrumState(
-            setIsCreateSprintDialogVisible = {}
-        ),
+        state = ScrumState(),
         pagerState = rememberPagerState { 2 },
         stories = getPagingPreviewItems(),
         navigateToTask = { _, _, _ -> },

@@ -16,12 +16,14 @@ dependencies {
     implementation(projects.core.storage)
     implementation(projects.core.navigation)
     implementation(projects.utils.ui)
+    implementation(projects.utils.formatter.datetime)
 
     implementation(projects.feature.sprint.domain)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)
     implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.workitem.ui)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
