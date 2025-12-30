@@ -11,11 +11,14 @@ import retrofit2.http.Query
 
 interface SprintApi {
     @GET("milestones")
-    suspend fun getSprints(
+    suspend fun getSprintsPaging(
         @Query("project") project: Long,
         @Query("page") page: Int,
         @Query("closed") isClosed: Boolean
-    ): List<SprintResponseDTO>
+    ): Response<List<SprintResponseDTO>>
+
+    @GET("milestones")
+    suspend fun getSprints(@Query("project") project: Long, @Query("closed") isClosed: Boolean): List<SprintResponseDTO>
 
     @GET("milestones/{id}")
     suspend fun getSprint(@Path("id") sprintId: Long): SprintResponseDTO

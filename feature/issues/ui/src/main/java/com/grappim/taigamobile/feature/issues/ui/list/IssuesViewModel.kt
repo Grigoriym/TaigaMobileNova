@@ -49,9 +49,9 @@ class IssuesViewModel @Inject constructor(
     val searchQuery = _searchQuery.asStateFlow()
 
     val issues = combine(session.issuesFilters, searchQuery) { filters, searchQuery ->
-        issuesRepository.getIssuesPaging(filters, searchQuery)
-    }.flatMapLatest {
-        it
+        Pair(filters, searchQuery)
+    }.flatMapLatest { (filters, searchQuery) ->
+        issuesRepository.getIssuesPaging(filtersData = filters, query = searchQuery)
     }.cachedIn(viewModelScope)
 
     init {

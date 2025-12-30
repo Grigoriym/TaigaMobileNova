@@ -20,7 +20,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
@@ -51,10 +50,10 @@ class ScrumBacklogViewModel @Inject constructor(
     val userStories: Flow<PagingData<WorkItem>> = combine(
         session.scrumFilters,
         searchQuery
-    ) { filters, query ->
-        userStoriesRepository.getUserStoriesPaging(filters, query)
-    }.flatMapLatest {
-        it
+    ) { filters, searchQuery ->
+        Pair(filters, searchQuery)
+    }.flatMapLatest { (filters, searchQuery) ->
+        userStoriesRepository.getUserStoriesPaging(filters = filters, query = searchQuery)
     }.cachedIn(viewModelScope)
 
     init {

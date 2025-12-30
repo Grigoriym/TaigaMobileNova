@@ -37,7 +37,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
 
     override fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> = Pager(
         PagingConfig(
-            pageSize = 20,
+            pageSize = 10,
             enablePlaceholders = false
         )
     ) {

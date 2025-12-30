@@ -10,6 +10,6 @@ import javax.inject.Inject
 @HiltViewModel
 class ScrumClosedSprintsViewModel @Inject constructor(sprintsRepository: SprintsRepository) : ViewModel() {
 
-    val closedSprints = sprintsRepository.getSprints(isClosed = true)
+    val closedSprints = sprintsRepository.getSprintsPaging(isClosed = true)
         .cachedIn(viewModelScope)
 }
