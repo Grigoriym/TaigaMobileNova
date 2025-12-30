@@ -53,10 +53,11 @@ class EpicsViewModel @Inject constructor(
     val epics: Flow<PagingData<WorkItem>> = combine(
         session.epicsFilters,
         searchQuery
-    ) { filters, query ->
-        epicsRepository.getEpicsPaging(filters, query)
-    }.flatMapLatest { it }
-        .cachedIn(viewModelScope)
+    ) { filters, searchQuery ->
+        Pair(filters, searchQuery)
+    }.flatMapLatest { (filters, searchQuery) ->
+        epicsRepository.getEpicsPaging(filters = filters, query = searchQuery)
+    }.cachedIn(viewModelScope)
 
     init {
         loadFiltersData()

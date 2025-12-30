@@ -59,9 +59,9 @@ class SprintsRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getSprints(isClosed: Boolean): Flow<PagingData<Sprint>> = Pager(
+    override fun getSprintsPaging(isClosed: Boolean): Flow<PagingData<Sprint>> = Pager(
         PagingConfig(
-            pageSize = 20,
+            pageSize = 10,
             enablePlaceholders = false
         )
     ) {
@@ -82,10 +82,9 @@ class SprintsRepositoryImpl @Inject constructor(
         return workItemMapper.toDomainList(response, CommonTaskType.UserStory)
     }
 
-    override suspend fun getSprints(page: Int, isClosed: Boolean): ImmutableList<Sprint> {
+    override suspend fun getSprints(isClosed: Boolean): ImmutableList<Sprint> {
         val dtos = sprintApi.getSprints(
             project = taigaStorage.currentProjectIdFlow.first(),
-            page = page,
             isClosed = isClosed
         )
         return sprintMapper.toDomainList(dtos)

@@ -2,7 +2,8 @@ package com.grappim.taigamobile.feature.userstories.data
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import com.grappim.taigamobile.core.api.tryCatchWithPagination
+import com.grappim.taigamobile.core.api.defaultTryCatch
+import com.grappim.taigamobile.core.api.hasNextPage
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.commaString
@@ -26,7 +27,7 @@ class UserStoriesPagingSource(
         anchorPage?.prevKey?.plus(1) ?: anchorPage?.nextKey?.minus(1)
     }
 
-    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, WorkItem> = tryCatchWithPagination(
+    override suspend fun load(params: LoadParams<Int>): LoadResult<Int, WorkItem> = defaultTryCatch(
         block = {
             val nextPageNumber = params.key ?: 1
             val response = workItemApi.getWorkItemsPagination(
@@ -43,23 +44,16 @@ class UserStoriesPagingSource(
                 epics = filters.epics.commaString(),
                 tags = filters.tags.tagsCommaString()
             )
-            val result = workItemMapper.toDomainList(response, CommonTaskType.UserStory)
+            val result = workItemMapper.toDomainList(response.body() ?: emptyList(), CommonTaskType.UserStory)
 
             LoadResult.Page(
                 data = result,
                 prevKey = null,
-                nextKey = if (result.isNotEmpty()) nextPageNumber + 1 else null
+                nextKey = if (response.hasNextPage()) nextPageNumber + 1 else null
             )
         },
         catchBlock = { e ->
             LoadResult.Error(e)
-        },
-        onPaginationEnd = {
-            LoadResult.Page(
-                data = emptyList(),
-                prevKey = null,
-                nextKey = null
-            )
         }
     )
 }

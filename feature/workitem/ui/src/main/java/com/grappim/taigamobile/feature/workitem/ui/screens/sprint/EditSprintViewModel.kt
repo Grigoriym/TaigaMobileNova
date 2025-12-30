@@ -93,7 +93,7 @@ class EditSprintViewModel @Inject constructor(
 
     private fun getSprints() {
         viewModelScope.launch {
-            resultOf { sprintsRepository.getSprints(page = 1, isClosed = false) }
+            resultOf { sprintsRepository.getSprints(isClosed = false) }
                 .onSuccess { result ->
                     val originalSprint = workItemEditStateRepository.getCurrentSprint(
                         workItemId = route.workItemId,

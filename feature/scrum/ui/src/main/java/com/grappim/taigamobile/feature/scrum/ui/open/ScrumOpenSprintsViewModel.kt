@@ -37,7 +37,7 @@ class ScrumOpenSprintsViewModel @Inject constructor(
     private val _reloadOpenSprints = Channel<Unit>()
     val reloadOpenSprints = _reloadOpenSprints.receiveAsFlow()
 
-    val openSprints = sprintsRepository.getSprints(isClosed = false)
+    val openSprints = sprintsRepository.getSprintsPaging(isClosed = false)
         .cachedIn(viewModelScope)
 
     private fun onCreateSprintClick() {

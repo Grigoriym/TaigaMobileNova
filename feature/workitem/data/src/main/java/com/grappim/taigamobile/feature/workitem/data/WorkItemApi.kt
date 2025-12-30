@@ -62,7 +62,7 @@ interface WorkItemApi {
         @Query("severity", encoded = true) severities: String? = null,
         @Query("type", encoded = true) types: String? = null,
         @Header("x-disable-pagination") disablePagination: Boolean? = (page == null).takeIf { it }
-    ): List<WorkItemResponseDTO>
+    ): retrofit2.Response<List<WorkItemResponseDTO>>
 
     @POST("{taskPath}")
     suspend fun createWorkItem(

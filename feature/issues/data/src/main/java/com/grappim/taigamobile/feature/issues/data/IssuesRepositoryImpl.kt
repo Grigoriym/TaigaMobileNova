@@ -30,7 +30,7 @@ class IssuesRepositoryImpl @Inject constructor(
 
     override fun getIssuesPaging(filtersData: FiltersData, query: String): Flow<PagingData<WorkItem>> = Pager(
         PagingConfig(
-            pageSize = 20,
+            pageSize = 10,
             enablePlaceholders = false
         )
     ) {
