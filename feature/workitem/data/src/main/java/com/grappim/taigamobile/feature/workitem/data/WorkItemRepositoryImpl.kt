@@ -102,7 +102,12 @@ class WorkItemRepositoryImpl @Inject constructor(
         isClosed: Boolean?,
         watcherId: Long?,
         isDashboard: Boolean?,
-        assignedIds: String?
+        assignedIds: String?,
+        isBlocked: Boolean?,
+        modifiedDateGte: String?,
+        finishDateGte: String?,
+        milestoneId: Long?,
+        pageSize: Int?
     ): ImmutableList<WorkItem> {
         val response = workItemApi.getWorkItems(
             taskPath = WorkItemPathPlural(commonTaskType),
@@ -110,7 +115,12 @@ class WorkItemRepositoryImpl @Inject constructor(
             assignedId = assignedId,
             isClosed = isClosed,
             watcherId = watcherId,
-            isDashboard = isDashboard
+            isDashboard = isDashboard,
+            isBlocked = isBlocked,
+            modifiedDateGte = modifiedDateGte,
+            finishDateGte = finishDateGte,
+            sprint = milestoneId,
+            pageSize = pageSize
         )
         return workItemMapper.toDomainList(response, commonTaskType)
     }

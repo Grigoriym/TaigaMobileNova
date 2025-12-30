@@ -125,7 +125,6 @@ fun MainNavHost(
 
         composable<DashboardNavDestination> {
             DashboardScreen(
-                showSnackbar = showSnackbar,
                 navigateToTaskScreen = { id, type, ref ->
                     navController.navigate(id, type, ref)
                 }

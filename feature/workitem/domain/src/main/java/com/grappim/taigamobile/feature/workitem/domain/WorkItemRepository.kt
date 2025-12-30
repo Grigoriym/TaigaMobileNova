@@ -15,7 +15,12 @@ interface WorkItemRepository {
         isClosed: Boolean? = null,
         watcherId: Long? = null,
         isDashboard: Boolean? = null,
-        assignedIds: String? = null
+        assignedIds: String? = null,
+        isBlocked: Boolean? = null,
+        modifiedDateGte: String? = null,
+        finishDateGte: String? = null,
+        milestoneId: Long? = null,
+        pageSize: Int? = null
     ): ImmutableList<WorkItem>
 
     suspend fun patchData(

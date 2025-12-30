@@ -41,7 +41,11 @@ interface WorkItemApi {
         @Query("status__is_closed") isClosed: Boolean? = null,
         @Query("milestone") sprint: Long? = null,
         @Query("user_story") userStory: Any? = null,
-        @Query("dashboard") isDashboard: Boolean? = null
+        @Query("dashboard") isDashboard: Boolean? = null,
+        @Query("is_blocked") isBlocked: Boolean? = null,
+        @Query("modified_date__gte") modifiedDateGte: String? = null,
+        @Query("finish_date__gte") finishDateGte: String? = null,
+        @Query("page_size") pageSize: Int? = null
     ): List<WorkItemResponseDTO>
 
     @GET("{taskPath}")
