@@ -39,6 +39,25 @@
     <string name="dashboard">Dashboard</string>
     <string name="project_selector">Select Project</string>
     <string name="dashboard_short">Board</string>
+
+    <!-- Dashboard sections -->
+    <string name="dashboard_watching_title">👀 WATCHING</string>
+    <string name="dashboard_watching_subtitle">Items I\'m monitoring</string>
+    <string name="dashboard_my_work_title">📋 MY WORK</string>
+    <string name="dashboard_my_work_subtitle">Items assigned to me</string>
+    <string name="dashboard_recent_activity_title">🆕 RECENT ACTIVITY</string>
+    <string name="dashboard_recent_activity_subtitle">Modified in the last 3 days</string>
+    <string name="dashboard_completed_title">✅ COMPLETED</string>
+    <string name="dashboard_completed_subtitle">Finished in the last 3 days</string>
+
+    <!-- Dashboard info banner -->
+    <string name="dashboard_info_banner_title">Limited Dashboard View</string>
+    <string name="dashboard_info_banner_message">This dashboard shows only a limited number of items per section for optimal performance.</string>
+
+    <!-- Dashboard states -->
+    <string name="dashboard_loading">Loading…</string>
+    <string name="dashboard_error_loading">Error loading data</string>
+    <string name="dashboard_updated_today">📝 Updated today</string>
     <string name="scrum">Scrum</string>
     <string name="epics">Epics</string>
     <string name="epics_number">%d Epics</string>
