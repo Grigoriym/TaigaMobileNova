@@ -9,7 +9,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
@@ -49,12 +49,13 @@ import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.feature.workitem.ui.utils.getDueDateText
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -91,10 +92,11 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val usersRepository: UsersRepository,
     private val epicsRepository: EpicsRepository
 ) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = CommonTaskType.UserStory,
         workItemRepository = workItemRepository,
@@ -119,14 +121,14 @@ class UserStoryDetailsViewModel @Inject constructor(
         taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory),
         workItemRepository = workItemRepository,
         fileUriManager = fileUriManager,
-        taigaStorage = taigaStorage
+        taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
         commonTaskType = CommonTaskType.UserStory,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
-        session = session
+        taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
         commonTaskType = CommonTaskType.UserStory,
@@ -150,7 +152,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         usersRepository = usersRepository,
-        session = session
+        taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
         taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory),
@@ -287,9 +289,6 @@ class UserStoryDetailsViewModel @Inject constructor(
                     val tags = async {
                         tagUIMapper.toUI(result.userStory.tags).toPersistentList()
                     }
-                    val dueDateText = dateTimeUtils.getDueDateText(
-                        dueDate = result.userStory.dueDate
-                    )
                     val customFieldsStateItems = async {
                         customFieldsUIMapper.toUI(result.customFields)
                     }
@@ -303,7 +302,11 @@ class UserStoryDetailsViewModel @Inject constructor(
                             creator = result.creator,
                             filtersData = result.filtersData,
                             initialLoadError = NativeText.Empty,
-                            customFieldsVersion = result.customFields.version
+                            customFieldsVersion = result.customFields.version,
+                            canEditUserStory = result.canModifyUserStory,
+                            canDeleteUserStory = result.canDeleteUserStory,
+                            canComment = result.canComment,
+                            canModifyRelatedEpic = result.canModifyRelatedEpic
                         )
                     }
                     setInitialTitle(result.userStory.title)
@@ -319,7 +322,10 @@ class UserStoryDetailsViewModel @Inject constructor(
                         version = result.customFields.version,
                         customFieldStateItems = customFieldsStateItems.await()
                     )
-                    setInitialDueDate(dueDateText = dueDateText)
+                    setInitialDueDate(
+                        dueDate = result.userStory.dueDate,
+                        dueDateStatus = result.userStory.dueDateStatus
+                    )
                     setInitialAssignees(
                         assignees = result.assignees.toPersistentList(),
                         isAssignedToMe = result.isAssignedToMe
@@ -348,10 +354,8 @@ class UserStoryDetailsViewModel @Inject constructor(
 
     private fun emitError(error: Throwable) {
         Timber.e(error)
-        _state.update {
-            it.copy(
-                error = getErrorMessage(error)
-            )
+        viewModelScope.launch {
+            showSnackbarSuspend(getErrorMessage(error))
         }
     }
 
@@ -751,11 +755,9 @@ class UserStoryDetailsViewModel @Inject constructor(
                 doOnPreExecute = {
                     clearError()
                 },
-                doOnSuccess = { result ->
+                doOnSuccess = { patchedData ->
                     val updatedUserStory = currentUserStory.copy(
-                        dueDate = result.dueDate,
-                        dueDateStatus = result.patchedData.dueDateStatus,
-                        version = result.patchedData.newVersion
+                        version = patchedData.newVersion
                     )
 
                     _state.update {

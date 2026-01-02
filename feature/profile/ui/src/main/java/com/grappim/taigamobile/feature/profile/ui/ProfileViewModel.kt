@@ -4,7 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.profile.domain.GetProfileDataUseCase
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
@@ -12,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -21,7 +20,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val getProfileDataUseCase: GetProfileDataUseCase,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -56,7 +55,7 @@ class ProfileViewModel @Inject constructor(
                             user = result.user,
                             userStats = result.userStats,
                             projects = result.projects,
-                            currentProjectId = taigaStorage.currentProjectIdFlow.first()
+                            currentProjectId = taigaSessionStorage.getCurrentProjectId()
                         )
                     }
                 }.onFailure { error ->

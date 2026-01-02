@@ -7,6 +7,7 @@ import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import javax.inject.Inject
 
+@Suppress("NewApi")
 class DateTimeUtilsImpl @Inject constructor(
     @IsoLocalDateFormatter private val isoDateFormatter: DateTimeFormatter,
     @LocalDateUIMedium private val localDateUiMediumFormatter: DateTimeFormatter

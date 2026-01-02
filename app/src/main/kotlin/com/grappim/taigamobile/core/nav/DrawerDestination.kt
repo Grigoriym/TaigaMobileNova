@@ -12,7 +12,9 @@ import com.grappim.taigamobile.feature.scrum.ui.ScrumClosedSprintsDestination
 import com.grappim.taigamobile.feature.scrum.ui.ScrumOpenSprintsDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
+import com.grappim.taigamobile.feature.wiki.ui.nav.WikiLinksNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
+import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPagesNavDestination
 
 fun DrawerDestination.navigate(navController: NavHostController, navOptions: NavOptions) {
     navController.navigate(route = route, navOptions = navOptions)
@@ -26,6 +28,8 @@ enum class DrawerDestination(val route: Any) {
     Kanban(KanbanNavDestination),
     Team(TeamNavDestination),
     Wiki(WikiNavDestination),
+    WikiPages(WikiPagesNavDestination),
+    WikiLinks(WikiLinksNavDestination),
     Settings(SettingsNavDestination),
     Logout(""),
     ScrumBacklog(ScrumBacklogDestination),

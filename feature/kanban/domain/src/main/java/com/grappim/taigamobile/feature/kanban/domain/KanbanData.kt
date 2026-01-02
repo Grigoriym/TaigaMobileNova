@@ -10,5 +10,6 @@ data class KanbanData(
     val statuses: ImmutableList<Statuses>,
     val stories: ImmutableList<UserStory>,
     val swimlanes: ImmutableList<Swimlane>,
-    val teamMembers: ImmutableList<TeamMember>
+    val teamMembers: ImmutableList<TeamMember>,
+    val canAddUserStory: Boolean
 )

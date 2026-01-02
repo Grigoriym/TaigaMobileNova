@@ -10,6 +10,7 @@ android {
 dependencies {
     implementation(projects.core.domain)
     implementation(projects.core.async)
+    implementation(projects.core.storage)
 
     implementation(projects.feature.projects.domain)
     implementation(projects.feature.projects.dto)

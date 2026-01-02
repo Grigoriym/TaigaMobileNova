@@ -5,6 +5,11 @@ import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canCommentUserStory
+import com.grappim.taigamobile.feature.projects.domain.canDeleteUserStory
+import com.grappim.taigamobile.feature.projects.domain.canModifyEpic
+import com.grappim.taigamobile.feature.projects.domain.canModifyUserStory
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
@@ -18,7 +23,8 @@ class UserStoryDetailsDataUseCase @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val sprintsRepository: SprintsRepository,
     private val usersRepository: UsersRepository,
-    private val workItemRepository: WorkItemRepository
+    private val workItemRepository: WorkItemRepository,
+    private val projectsRepository: ProjectsRepository
 ) {
 
     suspend fun getUserStory(id: Long): UserStory = userStoriesRepository.getUserStory(id = id)
@@ -80,7 +86,11 @@ class UserStoryDetailsDataUseCase @Inject constructor(
                 watchers = watchers,
                 isAssignedToMe = isAssignedToMe.await(),
                 isWatchedByMe = isWatchedByMe.await(),
-                filtersData = filtersData.await()
+                filtersData = filtersData.await(),
+                canDeleteUserStory = projectsRepository.getPermissions().canDeleteUserStory(),
+                canComment = projectsRepository.getPermissions().canCommentUserStory(),
+                canModifyUserStory = projectsRepository.getPermissions().canModifyUserStory(),
+                canModifyRelatedEpic = projectsRepository.getPermissions().canModifyEpic()
             )
         }
     }

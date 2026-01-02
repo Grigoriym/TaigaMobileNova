@@ -1,9 +1,8 @@
 package com.grappim.taigamobile.feature.users.data
 
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.users.domain.User
@@ -18,14 +17,13 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class UsersRepositoryImpl @Inject constructor(
     private val usersApi: UsersApi,
     private val projectsApi: ProjectsApi,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
     private val userMapper: UserMapper,
     private val session: Session,
@@ -35,7 +33,7 @@ class UsersRepositoryImpl @Inject constructor(
 
     override suspend fun getTeamMembers(generateMemberStats: Boolean): ImmutableList<TeamMember> =
         getTeamMembersByProjectId(
-            projectId = taigaStorage.currentProjectIdFlow.first(),
+            projectId = taigaSessionStorage.getCurrentProjectId(),
             generateMemberStats = generateMemberStats
         )
 
@@ -69,7 +67,7 @@ class UsersRepositoryImpl @Inject constructor(
     }
 
     override suspend fun isAnyAssignedToMe(list: ImmutableList<User>): Boolean = withContext(dispatcher) {
-        session.userId in list.map { it.actualId }
+        taigaSessionStorage.requireUserId() in list.map { it.actualId }
     }
 
     override suspend fun getUserStats(userId: Long): UserStats {
@@ -82,7 +80,7 @@ class UsersRepositoryImpl @Inject constructor(
      * Also present on taiga-front
      */
     private suspend fun retrieveMembersStats(): Map<Long, Int> {
-        val response = usersApi.getMemberStats(taigaStorage.currentProjectIdFlow.first())
+        val response = usersApi.getMemberStats(taigaSessionStorage.getCurrentProjectId())
 
         return withContext(dispatcher) {
             listOf(

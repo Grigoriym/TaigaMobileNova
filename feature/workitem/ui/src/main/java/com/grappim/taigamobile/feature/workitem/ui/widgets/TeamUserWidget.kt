@@ -80,7 +80,8 @@ fun TeamUserWithActionWidget(
     user: User,
     goToProfile: (Long) -> Unit,
     onRemoveUserClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -92,12 +93,14 @@ fun TeamUserWithActionWidget(
             user = user
         )
 
-        IconButton(onClick = onRemoveUserClick) {
-            Icon(
-                painter = painterResource(RDrawable.ic_remove),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline
-            )
+        if (canModify) {
+            IconButton(onClick = onRemoveUserClick) {
+                Icon(
+                    painter = painterResource(RDrawable.ic_remove),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.outline
+                )
+            }
         }
     }
 }

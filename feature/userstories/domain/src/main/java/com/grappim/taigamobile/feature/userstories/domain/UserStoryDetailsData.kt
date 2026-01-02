@@ -19,5 +19,9 @@ data class UserStoryDetailsData(
     val watchers: ImmutableList<User>,
     val isAssignedToMe: Boolean,
     val isWatchedByMe: Boolean,
-    val filtersData: FiltersData
+    val filtersData: FiltersData,
+    val canDeleteUserStory: Boolean,
+    val canModifyUserStory: Boolean,
+    val canComment: Boolean,
+    val canModifyRelatedEpic: Boolean
 )

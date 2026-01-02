@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.wiki.data
 
-import com.grappim.taigamobile.feature.workitem.dto.WikiLinkDTO
-import com.grappim.taigamobile.feature.workitem.dto.WikiPageDTO
+import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiLinkDTO
+import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
 import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.GET
@@ -23,8 +23,11 @@ interface WikiApi {
     suspend fun getWikiLink(@Query("project") projectId: Long): List<WikiLinkDTO>
 
     @POST("wiki-links")
-    suspend fun createWikiLink(@Body newWikiLinkRequest: NewWikiLinkRequest)
+    suspend fun createWikiLink(@Body body: NewWikiLinkRequest): WikiLinkDTO
 
     @DELETE("wiki-links/{id}")
     suspend fun deleteWikiLink(@Path("id") linkId: Long)
+
+    @POST("wiki")
+    suspend fun createWikiPage(@Body body: CreateWikiPageRequestDTO): WikiPageDTO
 }

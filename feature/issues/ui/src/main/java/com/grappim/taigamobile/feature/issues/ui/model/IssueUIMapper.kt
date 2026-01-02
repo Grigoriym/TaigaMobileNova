@@ -32,8 +32,6 @@ class IssueUIMapper @Inject constructor(
             assignedUserIds = issue.assignedUserIds,
             watcherUserIds = issue.watcherUserIds,
             tags = tagUIMapper.toUI(issue.tags),
-            dueDate = issue.dueDate,
-            dueDateStatus = issue.dueDateStatus,
             promotedUserStories = issue.promotedUserStories
         )
     }

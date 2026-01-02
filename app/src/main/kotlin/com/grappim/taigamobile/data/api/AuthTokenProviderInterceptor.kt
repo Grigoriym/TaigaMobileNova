@@ -2,7 +2,7 @@ package com.grappim.taigamobile.data.api
 
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.AuthStorage
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -14,7 +14,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class AuthTokenProviderInterceptor @Inject constructor(
-    private val session: Session,
+    private val authStorage: AuthStorage,
     private val appInfoProvider: AppInfoProvider
 ) : Interceptor {
 
@@ -37,7 +37,7 @@ class AuthTokenProviderInterceptor @Inject constructor(
     }
 
     private fun Request.Builder.putXownerAndAuthorization() {
-        val bearerToken = "Bearer ${session.token.value}"
+        val bearerToken = "Bearer ${authStorage.token}"
         this@putXownerAndAuthorization.header(
             ApiConstants.AUTHORIZATION,
             bearerToken

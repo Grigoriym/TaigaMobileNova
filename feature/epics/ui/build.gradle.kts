@@ -17,6 +17,7 @@ dependencies {
     implementation(projects.feature.workitem.domain)
     implementation(projects.feature.users.domain)
     implementation(projects.feature.history.domain)
+    implementation(projects.feature.projects.domain)
     implementation(projects.utils.formatter.datetime)
 
     implementation(projects.strings)

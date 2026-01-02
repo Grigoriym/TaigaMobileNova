@@ -18,7 +18,7 @@ import com.grappim.taigamobile.utils.ui.asString
 import kotlinx.collections.immutable.ImmutableSet
 
 @Composable
-fun WorkItemBadgesWidget(badgeState: WorkItemBadgeState, modifier: Modifier = Modifier) {
+fun WorkItemBadgesWidget(badgeState: WorkItemBadgeState, modifier: Modifier = Modifier, canModify: Boolean = true) {
     val context = LocalContext.current
     Card(
         modifier = modifier
@@ -43,7 +43,7 @@ fun WorkItemBadgesWidget(badgeState: WorkItemBadgeState, modifier: Modifier = Mo
                         badgeState.onBadgeClick(item)
                     },
                     isLoading = item in badgeState.updatingBadges,
-                    isClickable = true
+                    isClickable = canModify
                 )
             }
         }

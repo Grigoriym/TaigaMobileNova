@@ -67,7 +67,10 @@
     <string name="settings">Settings</string>
     <string name="more">More</string>
     <string name="kanban">Kanban</string>
+
     <string name="wiki">Wiki</string>
+    <string name="wiki_pages">All Pages</string>
+    <string name="wiki_bookmarks">Bookmarks</string>
 
     <string name="edit_description">Edit Description</string>
     <string name="edit_tags">Edit Tags</string>
@@ -202,6 +205,9 @@
     <string name="delete_wiki_title">Delete page</string>
     <string name="delete_wiki_text">Are you sure you want to delete this page?</string>
 
+    <string name="delete_bookmark_title">Delete Bookmark</string>
+    <string name="delete_bookmark_text">Are you sure you want to delete this bookmark?</string>
+
     <string name="promote_title">Promote</string>
     <string name="promote_text">Are you sure you want to promote this task to a user story?</string>
 
@@ -212,8 +218,12 @@
     <string name="delete_sprint_text">Are you sure you want to delete this sprint?</string>
 
     <string name="title_hint">Title</string>
+    <string name="slug_hint">Slug</string>
+    <string name="slug_helper_text">URL-friendly name (e.g., getting-started-guide)</string>
+    <string name="content_hint">Content</string>
     <string name="description_hint">Description</string>
     <string name="add_description">Add a description</string>
+    <string name="no_description_yet">No description yet</string>
 
     <string name="edit">Edit</string>
     <string name="delete">Delete</string>
@@ -269,6 +279,9 @@
     <string name="empty_wiki_dialog_title">There are no wiki pages…</string>
     <string name="empty_wiki_dialog_subtitle">Let\'s add a new one?</string>
     <string name="create_new_page">Create new page</string>
+    <string name="create_new_bookmark">Create new bookmark</string>
+    <string name="new_link_name">Link name</string>
+
     <string name="list_of_bookmarks">List of bookmarks</string>
     <string name="pages">Pages</string>
     <string name="pages_without_link">Pages without link</string>
@@ -300,9 +313,22 @@
     <string name="connection_failed">Connection error</string>
     <string name="timeout_exceeded">Waiting limit exceeded</string>
     <string name="auth_error_refresh_token_not_passed">For security reasons, your session was closed</string>
+    <string name="error_permission_denied">You do not have permission to perform this action</string>
+    <string name="error_not_found">The requested item was not found</string>
+    <string name="error_blocked">This item is blocked and cannot be modified</string>
+    <string name="error_http">Server returned an error</string>
+    <string name="error_validation">Validation error</string>
+    <string name="error_method_not_allowed">Method not allowed</string>
+    <string name="error_not_acceptable">Request not acceptable</string>
+    <string name="error_unsupported_media_type">Unsupported media type</string>
+    <string name="error_throttled">Too many requests. Please wait and try again.</string>
+    <string name="error_internal_server">Internal server error. Please try again later.</string>
     <string name="error_loading_data">Failed to load data</string>
     <string name="error_loading_issues">Failed to load issues</string>
     <string name="retry">Retry</string>
 
     <string name="epic_color">Epic Color:</string>
+
+    <string name="show_more">Show more</string>
+    <string name="show_less">Show less</string>
 </resources>

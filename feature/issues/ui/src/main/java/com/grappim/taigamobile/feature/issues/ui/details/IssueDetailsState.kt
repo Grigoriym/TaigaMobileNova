@@ -72,5 +72,9 @@ data class IssueDetailsState(
 
     val onGoingToEditTags: () -> Unit = {},
     val onGoingToEditWatchers: () -> Unit = {},
-    val onGoingToEditAssignee: () -> Unit = {}
+    val onGoingToEditAssignee: () -> Unit = {},
+
+    val canDeleteIssue: Boolean = false,
+    val canModifyIssue: Boolean = false,
+    val canComment: Boolean = false
 )

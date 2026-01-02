@@ -15,4 +15,6 @@ class AppInfoProviderImpl @Inject constructor() : AppInfoProvider {
     override fun getVersionName(): String = BuildConfig.VERSION_NAME
 
     override fun getDebugLocalHost(): String = BuildConfig.DEBUG_LOCAL_HOST
+
+    override fun getBuildType(): String = BuildConfig.BUILD_TYPE
 }

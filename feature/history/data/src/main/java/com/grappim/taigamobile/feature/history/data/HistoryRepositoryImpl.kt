@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.history.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
@@ -12,7 +12,7 @@ import javax.inject.Inject
 
 class HistoryRepositoryImpl @Inject constructor(
     private val historyApi: HistoryApi,
-    private val session: Session,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val commentsMapper: CommentsMapper
 ) : HistoryRepository {
 
@@ -23,7 +23,7 @@ class HistoryRepositoryImpl @Inject constructor(
         ).sortedBy { it.postDateTime }
             .filter { it.deleteDate == null }
             .map { dto ->
-                commentsMapper.toDomain(dto = dto, currentUserId = session.userId)
+                commentsMapper.toDomain(dto = dto, currentUserId = taigaSessionStorage.requireUserId())
             }
             .toImmutableList()
 

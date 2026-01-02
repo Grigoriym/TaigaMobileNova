@@ -2,19 +2,18 @@ package com.grappim.taigamobile.feature.dashboard.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.dashboard.domain.GetMyWorkItemsUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetRecentActivityUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetRecentlyCompletedItemsUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetWatchingItemsUseCase
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -22,12 +21,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DashboardViewModel @Inject constructor(
-    private val taigaStorage: TaigaStorage,
-    private val session: Session,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val getWatchingItemsUseCase: GetWatchingItemsUseCase,
     private val getMyWorkItemsUseCase: GetMyWorkItemsUseCase,
     private val getRecentActivityUseCase: GetRecentActivityUseCase,
-    private val getRecentlyCompletedItemsUseCase: GetRecentlyCompletedItemsUseCase
+    private val getRecentlyCompletedItemsUseCase: GetRecentlyCompletedItemsUseCase,
+    private val projectsRepository: ProjectsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -46,6 +45,12 @@ class DashboardViewModel @Inject constructor(
 
     init {
         loadAll()
+    }
+
+    fun updateInternalProjectData() {
+        viewModelScope.launch {
+            projectsRepository.fetchAndSaveProjectInfo()
+        }
     }
 
     private fun loadAll() {
@@ -98,8 +103,8 @@ class DashboardViewModel @Inject constructor(
                 )
             }
 
-            val userId = session.userId
-            val projectId = taigaStorage.currentProjectIdFlow.first()
+            val userId = taigaSessionStorage.requireUserId()
+            val projectId = taigaSessionStorage.getCurrentProjectId()
 
             getWatchingItemsUseCase.getData(userId, projectId)
                 .onSuccess { items ->
@@ -143,8 +148,8 @@ class DashboardViewModel @Inject constructor(
                 )
             }
 
-            val userId = session.userId
-            val projectId = taigaStorage.currentProjectIdFlow.first()
+            val userId = taigaSessionStorage.requireUserId()
+            val projectId = taigaSessionStorage.getCurrentProjectId()
 
             getMyWorkItemsUseCase.getData(userId, projectId)
                 .onSuccess { items ->
@@ -188,7 +193,7 @@ class DashboardViewModel @Inject constructor(
                 )
             }
 
-            val projectId = taigaStorage.currentProjectIdFlow.first()
+            val projectId = taigaSessionStorage.getCurrentProjectId()
 
             getRecentActivityUseCase.getData(projectId)
                 .onSuccess { items ->
@@ -232,7 +237,7 @@ class DashboardViewModel @Inject constructor(
                 )
             }
 
-            val projectId = taigaStorage.currentProjectIdFlow.first()
+            val projectId = taigaSessionStorage.getCurrentProjectId()
 
             getRecentlyCompletedItemsUseCase.getData(projectId)
                 .onSuccess { items ->

@@ -19,5 +19,8 @@ data class TaskDetailsData(
     val watchers: ImmutableList<User>,
     val isAssignedToMe: Boolean,
     val isWatchedByMe: Boolean,
-    val filtersData: FiltersData
+    val filtersData: FiltersData,
+    val canDeleteTask: Boolean,
+    val canModifyTask: Boolean,
+    val canComment: Boolean
 )

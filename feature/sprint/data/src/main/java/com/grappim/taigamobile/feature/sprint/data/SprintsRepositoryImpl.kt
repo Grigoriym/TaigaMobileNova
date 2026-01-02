@@ -5,7 +5,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.sprint.domain.SprintData
@@ -18,13 +18,12 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import javax.inject.Inject
 
 class SprintsRepositoryImpl @Inject constructor(
     private val sprintApi: SprintApi,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val filtersRepository: FiltersRepository,
     private val workItemMapper: WorkItemMapper,
     private val workItemApi: WorkItemApi,
@@ -40,7 +39,7 @@ class SprintsRepositoryImpl @Inject constructor(
                     it to async {
                         val dtos = workItemApi.getWorkItems(
                             taskPath = WorkItemPathPlural(CommonTaskType.Task),
-                            project = taigaStorage.currentProjectIdFlow.first(),
+                            project = taigaSessionStorage.getCurrentProjectId(),
                             userStory = it.id
                         )
                         workItemMapper.toDomainList(dtos, CommonTaskType.Task)
@@ -68,7 +67,7 @@ class SprintsRepositoryImpl @Inject constructor(
         SprintPagingSource(
             sprintApi = sprintApi,
             isClosed = isClosed,
-            taigaStorage = taigaStorage,
+            taigaSessionStorage = taigaSessionStorage,
             sprintMapper = sprintMapper
         )
     }.flow
@@ -76,7 +75,7 @@ class SprintsRepositoryImpl @Inject constructor(
     override suspend fun getSprintUserStories(sprintId: Long): ImmutableList<WorkItem> {
         val response = workItemApi.getWorkItems(
             taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
-            project = taigaStorage.currentProjectIdFlow.first(),
+            project = taigaSessionStorage.getCurrentProjectId(),
             sprint = sprintId
         )
         return workItemMapper.toDomainList(response, CommonTaskType.UserStory)
@@ -84,7 +83,7 @@ class SprintsRepositoryImpl @Inject constructor(
 
     override suspend fun getSprints(isClosed: Boolean): ImmutableList<Sprint> {
         val dtos = sprintApi.getSprints(
-            project = taigaStorage.currentProjectIdFlow.first(),
+            project = taigaSessionStorage.getCurrentProjectId(),
             isClosed = isClosed
         )
         return sprintMapper.toDomainList(dtos)
@@ -98,7 +97,7 @@ class SprintsRepositoryImpl @Inject constructor(
     override suspend fun getSprintTasks(sprintId: Long): ImmutableList<WorkItem> {
         val response = workItemApi.getWorkItems(
             taskPath = WorkItemPathPlural(CommonTaskType.Task),
-            project = taigaStorage.currentProjectIdFlow.first(),
+            project = taigaSessionStorage.getCurrentProjectId(),
             sprint = sprintId,
             userStory = "null"
         )
@@ -108,7 +107,7 @@ class SprintsRepositoryImpl @Inject constructor(
     override suspend fun getSprintIssues(sprintId: Long): ImmutableList<WorkItem> {
         val response = workItemApi.getWorkItems(
             taskPath = WorkItemPathPlural(CommonTaskType.Issue),
-            project = taigaStorage.currentProjectIdFlow.first(),
+            project = taigaSessionStorage.getCurrentProjectId(),
             sprint = sprintId
         )
         return workItemMapper.toDomainList(response, CommonTaskType.Issue)
@@ -120,7 +119,7 @@ class SprintsRepositoryImpl @Inject constructor(
                 name = name,
                 estimatedStart = start,
                 estimatedFinish = end,
-                project = taigaStorage.currentProjectIdFlow.first()
+                project = taigaSessionStorage.getCurrentProjectId()
             )
         )
     }

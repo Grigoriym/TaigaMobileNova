@@ -18,7 +18,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun ScrumOpenSprintsScreen(
@@ -37,13 +37,17 @@ fun ScrumOpenSprintsScreen(
             TopBarConfig(
                 title = NativeText.Resource(RString.open_sprints),
                 navigationIcon = NavigationIconConfig.Menu,
-                actions = persistentListOf(
-                    TopBarActionIconButton(
-                        drawable = RDrawable.ic_add,
-                        contentDescription = "Add Sprint",
-                        onClick = state.onCreateSprintClick
-                    )
-                )
+                actions = buildList {
+                    if (state.canAddSprint) {
+                        add(
+                            TopBarActionIconButton(
+                                drawable = RDrawable.ic_add,
+                                contentDescription = "Add Sprint",
+                                onClick = state.onCreateSprintClick
+                            )
+                        )
+                    }
+                }.toImmutableList()
             )
         )
     }

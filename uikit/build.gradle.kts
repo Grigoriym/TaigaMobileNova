@@ -18,7 +18,6 @@ dependencies {
     implementation(projects.core.navigation)
 
     implementation(libs.vanpra.color)
-    implementation(libs.markdown)
     implementation(libs.coil.compose)
     implementation(libs.coil.okhttp)
     implementation(libs.material)
@@ -26,4 +25,9 @@ dependencies {
 
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.paging.runtime)
+
+    implementation(libs.markdownRenderer.core)
+    implementation(libs.markdownRenderer.android)
+    implementation(libs.markdownRenderer.m3)
+    implementation(libs.markdownRenderer.coil)
 }

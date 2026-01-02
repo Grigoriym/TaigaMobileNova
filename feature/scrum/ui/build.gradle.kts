@@ -19,6 +19,7 @@ dependencies {
     implementation(projects.utils.formatter.datetime)
 
     implementation(projects.feature.sprint.domain)
+    implementation(projects.feature.projects.domain)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)

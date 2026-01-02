@@ -46,6 +46,7 @@ import com.grappim.taigamobile.feature.teams.ui.TeamScreen
 import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
 import com.grappim.taigamobile.main.nav.epicNavGraph
 import com.grappim.taigamobile.main.nav.issueNavGraph
+import com.grappim.taigamobile.main.nav.scrumNavGraph
 import com.grappim.taigamobile.main.nav.taskNavGraph
 import com.grappim.taigamobile.main.nav.userStoryNavGraph
 import com.grappim.taigamobile.main.nav.wikiNavGraph
@@ -105,6 +106,10 @@ fun MainNavHost(
             navController = navController
         )
 
+        scrumNavGraph(
+            navController = navController
+        )
+
         composable<LoginNavDestination> {
             LoginScreen(
                 onShowSnackbar = showSnackbar,
@@ -127,45 +132,6 @@ fun MainNavHost(
             DashboardScreen(
                 navigateToTaskScreen = { id, type, ref ->
                     navController.navigate(id, type, ref)
-                }
-            )
-        }
-
-        composable<ScrumBacklogDestination> { navBackStackEntry ->
-            val updateData: Boolean =
-                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            ScrumBacklogScreen(
-                updateData = updateData,
-                goToCreateUserStory = {
-                    navController.navigateToCreateTask(type = CommonTaskType.UserStory)
-                },
-                navigateToTask = { id, _, ref ->
-                    navController.navigateToUserStory(
-                        userStoryId = id,
-                        ref = ref
-                    )
-                }
-            )
-        }
-
-        composable<ScrumOpenSprintsDestination> { navBackStackEntry ->
-            val updateData: Boolean =
-                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            ScrumOpenSprintsScreen(
-                updateData = updateData,
-                goToSprint = { sprint ->
-                    navController.navigateToSprintScreen(sprint.id)
-                }
-            )
-        }
-
-        composable<ScrumClosedSprintsDestination> { navBackStackEntry ->
-            val updateData: Boolean =
-                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            ScrumClosedSprintsScreen(
-                updateData = updateData,
-                goToSprint = { sprint ->
-                    navController.navigateToSprintScreen(sprint.id)
                 }
             )
         }

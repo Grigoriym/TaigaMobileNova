@@ -7,7 +7,7 @@ import androidx.navigation.toRoute
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +25,7 @@ import javax.inject.Inject
 class ProjectSelectorViewModel @Inject constructor(
     private val projectsRepository: ProjectsRepository,
     private val session: Session,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -50,7 +50,7 @@ class ProjectSelectorViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             launch {
-                taigaStorage.currentProjectIdFlow.collect { id ->
+                taigaSessionStorage.currentProjectIdFlow.collect { id ->
                     _state.update {
                         it.copy(currentProjectId = id)
                     }
@@ -63,10 +63,11 @@ class ProjectSelectorViewModel @Inject constructor(
         _searchQuery.value = query
     }
 
-    private fun selectProject(projectDTO: Project) {
+    private fun selectProject(project: Project) {
         viewModelScope.launch {
-            taigaStorage.setCurrentProjectId(projectId = projectDTO.id)
-            session.changeCurrentProjectName(projectDTO.name)
+            taigaSessionStorage.setCurrentProjectId(projectId = project.id)
+            projectsRepository.saveProject(project)
+            session.resetFilters()
         }
     }
 }

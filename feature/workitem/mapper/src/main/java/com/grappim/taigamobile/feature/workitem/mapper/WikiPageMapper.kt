@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.workitem.mapper
 
 import com.grappim.taigamobile.core.async.DefaultDispatcher
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
-import com.grappim.taigamobile.feature.workitem.dto.WikiPageDTO
+import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,9 +17,9 @@ class WikiPageMapper @Inject constructor(@DefaultDispatcher private val dispatch
             version = dto.version,
             content = dto.content,
             editions = dto.editions,
-            createdDate = dto.cratedDate,
+            createdDate = dto.createdDate,
             isWatcher = dto.isWatcher,
-            lastModifier = dto.lastModifier,
+            lastModifier = dto.lastModifierId,
             modifiedDate = dto.modifiedDate,
             totalWatchers = dto.totalWatchers,
             slug = dto.slug

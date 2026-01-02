@@ -1,10 +1,9 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 
 import android.net.Uri
-import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
@@ -12,14 +11,13 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import timber.log.Timber
 
 class WorkItemAttachmentsDelegateImpl(
     private val taskIdentifier: TaskIdentifier,
     private val workItemRepository: WorkItemRepository,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val fileUriManager: FileUriManager
 ) : WorkItemAttachmentsDelegate {
 
@@ -59,7 +57,7 @@ class WorkItemAttachmentsDelegateImpl(
                 fileName = attachmentInfo.name,
                 fileByteArray = attachmentInfo.fileBytes.toByteArray(),
                 taskIdentifier = taskIdentifier,
-                projectId = taigaStorage.currentProjectIdFlow.first()
+                projectId = taigaSessionStorage.getCurrentProjectId()
             )
         }.onSuccess { attachment ->
             doOnSuccess?.invoke()

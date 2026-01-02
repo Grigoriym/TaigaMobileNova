@@ -4,7 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
@@ -14,14 +14,12 @@ import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 class IssuesRepositoryImpl @Inject constructor(
     private val issuesApi: IssuesApi,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val issueMapper: IssueMapper,
     private val workItemApi: WorkItemApi,
     private val workItemMapper: WorkItemMapper
@@ -36,7 +34,7 @@ class IssuesRepositoryImpl @Inject constructor(
     ) {
         IssuesPagingSource(
             filters = filtersData,
-            taigaStorage = taigaStorage,
+            taigaSessionStorage = taigaSessionStorage,
             query = query,
             workItemApi = workItemApi,
             workItemMapper = workItemMapper
@@ -60,7 +58,7 @@ class IssuesRepositoryImpl @Inject constructor(
     override suspend fun createIssue(title: String, description: String, sprintId: Long?): WorkItem {
         val response = issuesApi.createIssue(
             createIssueRequest = CreateIssueRequestDTO(
-                project = taigaStorage.currentProjectIdFlow.first(),
+                project = taigaSessionStorage.getCurrentProjectId(),
                 subject = title,
                 description = description,
                 milestone = sprintId

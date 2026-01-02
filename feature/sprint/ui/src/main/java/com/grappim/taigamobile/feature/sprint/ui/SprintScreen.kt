@@ -21,6 +21,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -35,7 +36,8 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
+import java.time.LocalDate
 
 @Composable
 fun SprintScreen(
@@ -59,15 +61,19 @@ fun SprintScreen(
                         goBack()
                     }
                 ),
-                actions = persistentListOf(
-                    TopBarActionIconButton(
-                        drawable = RDrawable.ic_options,
-                        contentDescription = "",
-                        onClick = {
-                            state.setIsMenuExpanded(true)
-                        }
-                    )
-                )
+                actions = buildList {
+                    if (state.canShowTopBarActions) {
+                        add(
+                            TopBarActionIconButton(
+                                drawable = RDrawable.ic_options,
+                                contentDescription = "",
+                                onClick = {
+                                    state.setIsMenuExpanded(true)
+                                }
+                            )
+                        )
+                    }
+                }.toImmutableList()
             )
         )
     }
@@ -93,17 +99,16 @@ fun SprintScreen(
         state = state
     )
 
-    if (state.isDeleteDialogVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.delete_sprint_title),
-            description = stringResource(RString.delete_sprint_text),
-            onConfirm = {
-                state.setIsDeleteDialogVisible(false)
-                state.onDeleteSprint()
-            },
-            onDismiss = { state.setIsDeleteDialogVisible(false) }
-        )
-    }
+    ConfirmActionDialog(
+        title = stringResource(RString.delete_sprint_title),
+        description = stringResource(RString.delete_sprint_text),
+        onConfirm = {
+            state.setIsDeleteDialogVisible(false)
+            state.onDeleteSprint()
+        },
+        onDismiss = { state.setIsDeleteDialogVisible(false) },
+        isVisible = state.isDeleteDialogVisible
+    )
 
     EditSprintDialog(
         state = sprintDialogState,
@@ -143,10 +148,7 @@ fun SprintScreenContent(
             horizontalAlignment = Alignment.Start
         ) {
             SprintKanbanWidget(
-                statuses = state.statuses,
-                storiesWithTasks = state.storiesWithTasks,
-                storylessTasks = state.storylessTasks,
-                issues = state.issues,
+                state = state,
                 navigateToTask = navigateToTask,
                 navigateToCreateTask = navigateToCreateTask
             )
@@ -166,31 +168,35 @@ private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Mo
             expanded = state.isMenuExpanded,
             onDismissRequest = { state.setIsMenuExpanded(false) }
         ) {
-            DropdownMenuItem(
-                onClick = {
-                    state.setIsMenuExpanded(false)
-                    state.onEditSprintClick()
-                },
-                text = {
-                    Text(
-                        text = stringResource(RString.edit),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            )
+            if (state.canEdit) {
+                DropdownMenuItem(
+                    onClick = {
+                        state.setIsMenuExpanded(false)
+                        state.onEditSprintClick()
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(RString.edit),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                )
+            }
 
-            DropdownMenuItem(
-                onClick = {
-                    state.setIsMenuExpanded(false)
-                    state.setIsDeleteDialogVisible(true)
-                },
-                text = {
-                    Text(
-                        text = stringResource(RString.delete),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            )
+            if (state.canDelete) {
+                DropdownMenuItem(
+                    onClick = {
+                        state.setIsMenuExpanded(false)
+                        state.setIsDeleteDialogVisible(true)
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(RString.delete),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                )
+            }
         }
     }
 }
@@ -199,7 +205,17 @@ private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Mo
 @Composable
 private fun SprintScreenPreview() = TaigaMobileTheme {
     SprintScreenContent(
-        state = SprintState(),
+        state = SprintState(
+            sprint = Sprint(
+                id = 1187,
+                name = "Lauren Tyler",
+                order = 8443,
+                start = LocalDate.now(),
+                end = LocalDate.now(),
+                storiesCount = 8890,
+                isClosed = false
+            )
+        ),
         navigateToTask = { _, _, _ -> }
     )
 }

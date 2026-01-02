@@ -1,12 +1,10 @@
 package com.grappim.taigamobile.feature.issues.ui.model
 
-import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.PromotedUserStoryInfo
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import java.time.LocalDate
 import java.time.LocalDateTime
 
 data class IssueUI(
@@ -30,8 +28,5 @@ data class IssueUI(
     val watcherUserIds: List<Long>,
 
     val tags: ImmutableList<TagUI> = persistentListOf(),
-
-    val dueDate: LocalDate?,
-    val dueDateStatus: DueDateStatus?,
     val promotedUserStories: ImmutableList<PromotedUserStoryInfo>
 )

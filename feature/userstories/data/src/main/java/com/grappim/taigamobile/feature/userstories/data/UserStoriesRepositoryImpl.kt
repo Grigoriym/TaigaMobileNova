@@ -4,7 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
@@ -20,14 +20,13 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 
 private val userStoryPlural = WorkItemPathPlural(CommonTaskType.UserStory)
 
 class UserStoriesRepositoryImpl @Inject constructor(
     private val userStoriesApi: UserStoriesApi,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val userStoryMapper: UserStoryMapper,
     private val workItemApi: WorkItemApi,
     private val workItemRepository: WorkItemRepository,
@@ -43,7 +42,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     ) {
         UserStoriesPagingSource(
             filters = filters,
-            taigaStorage = taigaStorage,
+            taigaSessionStorage = taigaSessionStorage,
             query = query,
             workItemMapper = workItemMapper,
             workItemApi = workItemApi
@@ -100,7 +99,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     ): WorkItem {
         val response = userStoriesApi.createUserStory(
             createUserStoryRequest = CreateUserStoryRequest(
-                project = taigaStorage.currentProjectIdFlow.first(),
+                project = taigaSessionStorage.getCurrentProjectId(),
                 subject = subject,
                 description = description,
                 status = status,

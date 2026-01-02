@@ -46,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.cardShadowElevation
@@ -57,16 +56,11 @@ import com.grappim.taigamobile.uikit.widgets.list.CommonTaskItem
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import com.grappim.taigamobile.utils.ui.toColor
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 internal fun SprintKanbanWidget(
-    statuses: ImmutableList<Statuses>,
-    storiesWithTasks: Map<WorkItem, List<WorkItem>>,
+    state: SprintState,
     modifier: Modifier = Modifier,
-    storylessTasks: ImmutableList<WorkItem> = persistentListOf(),
-    issues: ImmutableList<WorkItem> = persistentListOf(),
     navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit = { _, _, _ -> },
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
 ) {
@@ -82,7 +76,7 @@ internal fun SprintKanbanWidget(
             MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
         val totalWidth =
-            cellWidth * statuses.size + userStoryHeadingWidth + cellPadding * statuses.size
+            cellWidth * state.statuses.size + userStoryHeadingWidth + cellPadding * state.statuses.size
 
         Row(Modifier.padding(start = cellPadding, top = cellPadding)) {
             Header(
@@ -93,7 +87,7 @@ internal fun SprintKanbanWidget(
                 backgroundColor = Color.Transparent
             )
 
-            statuses.forEach {
+            state.statuses.forEach {
                 Header(
                     text = it.name,
                     cellWidth = cellWidth,
@@ -105,8 +99,7 @@ internal fun SprintKanbanWidget(
         }
 
         LazyColumn {
-            // stories with tasks
-            storiesWithTasks.forEach { (story, tasks) ->
+            state.storiesWithTasks.forEach { (story, tasks) ->
                 item {
                     Row(
                         Modifier
@@ -128,7 +121,7 @@ internal fun SprintKanbanWidget(
                             }
                         )
 
-                        statuses.forEach { status ->
+                        state.statuses.forEach { status ->
                             Cell(
                                 cellWidth = cellWidth,
                                 cellOuterPadding = cellOuterPadding,
@@ -159,17 +152,18 @@ internal fun SprintKanbanWidget(
                         cellPadding = cellPadding,
                         cellWidth = userStoryHeadingWidth,
                         minCellHeight = minCellHeight,
+                        canCreateTasks = state.canCreateTasks,
                         onAddClick = { navigateToCreateTask(CommonTaskType.Task, null) }
                     )
 
-                    statuses.forEach { status ->
+                    state.statuses.forEach { status ->
                         Cell(
                             cellWidth = cellWidth,
                             cellOuterPadding = cellOuterPadding,
                             cellPadding = cellPadding,
                             backgroundCellColor = backgroundCellColor
                         ) {
-                            storylessTasks.filter { it.status == status }.forEach {
+                            state.storylessTasks.filter { it.status == status }.forEach {
                                 TaskItem(
                                     task = it,
                                     onTaskClick = { navigateToTask(it.id, it.taskType, it.ref) }
@@ -196,11 +190,12 @@ internal fun SprintKanbanWidget(
                     width = screenWidth,
                     padding = cellPadding,
                     backgroundColor = backgroundCellColor,
-                    onAddClick = { navigateToCreateTask(CommonTaskType.Issue, null) }
+                    onAddClick = { navigateToCreateTask(CommonTaskType.Issue, null) },
+                    canCreateIssue = state.canCreateIssue
                 )
             }
 
-            items(issues) {
+            items(state.issues) {
                 Row(Modifier.width(totalWidth)) {
                     Row(
                         Modifier
@@ -254,7 +249,13 @@ private fun Header(text: String, cellWidth: Dp, cellPadding: Dp, stripeColor: Co
 }
 
 @Composable
-private fun IssueHeader(width: Dp, padding: Dp, backgroundColor: Color, onAddClick: () -> Unit) = Row(
+private fun IssueHeader(
+    width: Dp,
+    padding: Dp,
+    backgroundColor: Color,
+    onAddClick: () -> Unit,
+    canCreateIssue: Boolean
+) = Row(
     modifier = Modifier
         .width(width)
         .padding(padding)
@@ -269,11 +270,13 @@ private fun IssueHeader(width: Dp, padding: Dp, backgroundColor: Color, onAddCli
         modifier = Modifier.weight(0.8f, fill = false)
     )
 
-    PlusButtonWidget(
-        tint = MaterialTheme.colorScheme.outline,
-        onClick = onAddClick,
-        modifier = Modifier.weight(0.2f)
-    )
+    if (canCreateIssue) {
+        PlusButtonWidget(
+            tint = MaterialTheme.colorScheme.outline,
+            onClick = onAddClick,
+            modifier = Modifier.weight(0.2f)
+        )
+    }
 }
 
 @Composable
@@ -328,7 +331,8 @@ private fun CategoryItem(
     cellPadding: Dp,
     cellWidth: Dp,
     minCellHeight: Dp,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    canCreateTasks: Boolean
 ) = Column(
     modifier = Modifier
         .padding(end = cellPadding, bottom = cellPadding)
@@ -346,11 +350,13 @@ private fun CategoryItem(
                 .padding(top = 4.dp)
         )
 
-        PlusButtonWidget(
-            tint = MaterialTheme.colorScheme.outline,
-            onClick = onAddClick,
-            modifier = Modifier.weight(0.2f)
-        )
+        if (canCreateTasks) {
+            PlusButtonWidget(
+                tint = MaterialTheme.colorScheme.outline,
+                onClick = onAddClick,
+                modifier = Modifier.weight(0.2f)
+            )
+        }
     }
 }
 

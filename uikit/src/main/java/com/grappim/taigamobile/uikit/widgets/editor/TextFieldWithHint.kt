@@ -52,6 +52,7 @@ fun HintTextField(
             .fillMaxWidth()
     ) {
         OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
             isError = error.isNotEmpty(),
             value = value,
             placeholder = {

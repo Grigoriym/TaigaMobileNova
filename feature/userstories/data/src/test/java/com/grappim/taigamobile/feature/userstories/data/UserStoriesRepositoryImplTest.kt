@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.userstories.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.mapper.UserStoryMapper
@@ -11,7 +11,6 @@ import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getUser
 import com.grappim.taigamobile.testing.getUserStory
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.Runs
@@ -31,7 +30,7 @@ import kotlin.test.assertEquals
 class UserStoriesRepositoryImplTest {
 
     private val userStoriesApi: UserStoriesApi = mockk()
-    private val taigaStorage: TaigaStorage = mockk()
+    private val taigaSessionStorage: TaigaSessionStorage = mockk()
     private val userStoryMapper: UserStoryMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
@@ -45,7 +44,7 @@ class UserStoriesRepositoryImplTest {
     fun setup() {
         sut = UserStoriesRepositoryImpl(
             userStoriesApi = userStoriesApi,
-            taigaStorage = taigaStorage,
+            taigaSessionStorage = taigaSessionStorage,
             userStoryMapper = userStoryMapper,
             workItemApi = workItemApi,
             workItemRepository = workItemRepository,

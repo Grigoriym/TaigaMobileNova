@@ -55,6 +55,7 @@ fun DashboardScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
+        viewModel.updateInternalProjectData()
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.dashboard),

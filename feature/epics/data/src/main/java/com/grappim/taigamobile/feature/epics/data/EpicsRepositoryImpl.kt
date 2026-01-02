@@ -4,7 +4,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.epics.dto.LinkToEpicRequestDTO
@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 class EpicsRepositoryImpl @Inject constructor(
     private val epicsApi: EpicsApi,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val workItemApi: WorkItemApi,
     private val epicMapper: EpicMapper,
     private val workItemMapper: WorkItemMapper
@@ -36,7 +36,7 @@ class EpicsRepositoryImpl @Inject constructor(
         pagingSourceFactory = {
             EpicsPagingSource(
                 filters = filters,
-                taigaStorage = taigaStorage,
+                taigaSessionStorage = taigaSessionStorage,
                 query = query,
                 workItemApi = workItemApi,
                 workItemMapper = workItemMapper

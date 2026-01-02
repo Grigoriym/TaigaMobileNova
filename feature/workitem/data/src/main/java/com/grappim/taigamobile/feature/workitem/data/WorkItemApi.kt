@@ -7,8 +7,8 @@ import com.grappim.taigamobile.feature.workitem.dto.CreateWorkItemRequestDTO
 import com.grappim.taigamobile.feature.workitem.dto.CustomAttributeResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.PromoteToUserStoryRequestDTO
-import com.grappim.taigamobile.feature.workitem.dto.WikiPageDTO
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
+import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
 import kotlinx.serialization.json.JsonObject
 import okhttp3.MultipartBody
 import retrofit2.http.Body

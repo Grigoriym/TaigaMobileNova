@@ -138,6 +138,12 @@ fun IssueDetailsScreen(
         }
     }
 
+    ObserveAsEvents(viewModel.snackBarMessage) { message ->
+        if (message !is NativeText.Empty) {
+            showSnackbar(message)
+        }
+    }
+
     ObserveAsEvents(viewModel.promotedToUserStoryTrigger) { data ->
         goToUserStory(data.id, data.ref)
     }
@@ -150,29 +156,6 @@ fun IssueDetailsScreen(
         },
         onBottomSheetItemSelect = { badgeState, option ->
             state.onBadgeSave(badgeState, option)
-        }
-    )
-
-    WorkItemDropdownMenuWidget(
-        modifier = Modifier
-            .fillMaxWidth()
-            .wrapContentSize(Alignment.TopEnd),
-        isExpanded = state.isDropdownMenuExpanded,
-        onDismissRequest = { state.setDropdownMenuExpanded(false) },
-        showSnackbar = showSnackbar,
-        url = state.currentIssue?.copyLinkUrl ?: "",
-        setDeleteAlertVisible = {
-            state.setIsDeleteDialogVisible(it)
-        },
-        isBlocked = state.currentIssue?.blockedNote != null,
-        setBlockDialogVisible = {
-            blockState.setIsBlockDialogVisible(it)
-        },
-        doOnUnblock = {
-            state.onBlockToggle(false, null)
-        },
-        onPromoteClick = {
-            state.onPromoteClick()
         }
     )
 
@@ -241,6 +224,31 @@ fun IssueDetailsScreen(
             }
         )
     } else if (state.currentIssue != null) {
+        WorkItemDropdownMenuWidget(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentSize(Alignment.TopEnd),
+            isExpanded = state.isDropdownMenuExpanded,
+            onDismissRequest = { state.setDropdownMenuExpanded(false) },
+            showSnackbar = showSnackbar,
+            url = state.currentIssue?.copyLinkUrl ?: "",
+            setDeleteAlertVisible = {
+                state.setIsDeleteDialogVisible(it)
+            },
+            isBlocked = state.currentIssue?.blockedNote != null,
+            setBlockDialogVisible = {
+                blockState.setIsBlockDialogVisible(it)
+            },
+            doOnUnblock = {
+                state.onBlockToggle(false, null)
+            },
+            onPromoteClick = {
+                state.onPromoteClick()
+            },
+            canModify = state.canModifyIssue,
+            canDelete = state.canDeleteIssue
+        )
+
         IssueDetailsScreenContent(
             state = state,
             titleState = titleState,
@@ -305,12 +313,16 @@ private fun IssueDetailsScreenContent(
             ) {
                 WorkItemTitleWidget(
                     titleState = titleState,
-                    onTitleSave = state.onTitleSave
+                    onTitleSave = state.onTitleSave,
+                    canModify = state.canModifyIssue
                 )
 
                 WorkItemBlockedBannerWidget(blockedNote = state.currentIssue.blockedNote)
 
-                WorkItemBadgesWidget(badgeState = badgeState)
+                WorkItemBadgesWidget(
+                    badgeState = badgeState,
+                    canModify = state.canModifyIssue
+                )
 
                 WorkItemPromotedInfoWidget(
                     infos = state.currentIssue.promotedUserStories,
@@ -320,14 +332,15 @@ private fun IssueDetailsScreenContent(
                 )
 
                 WorkItemDescriptionWidget(
-                    currentDescription = state.currentIssue.description,
+                    description = state.currentIssue.description,
                     onDescriptionClick = {
                         goToEditDescription(
                             state.currentIssue.description,
                             state.currentIssue.id
                         )
                     },
-                    descriptionState = descriptionState
+                    descriptionState = descriptionState,
+                    canModify = state.canModifyIssue
                 )
 
                 WorkItemSprintInfoWidget(
@@ -345,16 +358,16 @@ private fun IssueDetailsScreenContent(
                     goToEditTags = {
                         state.onGoingToEditTags()
                         goToEditTags(state.currentIssue.id)
-                    }
+                    },
+                    canModify = state.canModifyIssue
                 )
 
                 WorkItemDueDateWidget(
                     dueDateState = dueDateState,
-                    dueDateStatus = state.currentIssue.dueDateStatus,
-                    dueDate = state.currentIssue.dueDate,
                     setDueDate = { value ->
                         state.setDueDate(value)
-                    }
+                    },
+                    canModify = state.canModifyIssue
                 )
 
                 CreatedByWidget(
@@ -371,7 +384,8 @@ private fun IssueDetailsScreenContent(
                     onAddAssigneeClick = {
                         state.onGoingToEditAssignee()
                         goToEditAssignee(state.currentIssue.id)
-                    }
+                    },
+                    canModify = state.canModifyIssue
                 )
 
                 WatchersWidget(
@@ -382,12 +396,14 @@ private fun IssueDetailsScreenContent(
                         goToEditWatchers(state.currentIssue.id)
                     },
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
-                    onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
+                    onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick,
+                    canModify = state.canModifyIssue
                 )
 
                 CustomFieldsSectionWidget(
                     customFieldsState = customFieldsState,
-                    onCustomFieldSave = state.onCustomFieldSave
+                    onCustomFieldSave = state.onCustomFieldSave,
+                    canModify = state.canModifyIssue
                 )
 
                 AttachmentsSectionWidget(
@@ -397,7 +413,8 @@ private fun IssueDetailsScreenContent(
                     },
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
-                    }
+                    },
+                    canModify = state.canModifyIssue
                 )
 
                 CommentsSectionWidget(
@@ -409,6 +426,9 @@ private fun IssueDetailsScreenContent(
                 )
             }
         }
-        CreateCommentBar(onButtonClick = state.onCreateCommentClick)
+        CreateCommentBar(
+            onButtonClick = state.onCreateCommentClick,
+            canComment = state.canComment
+        )
     }
 }

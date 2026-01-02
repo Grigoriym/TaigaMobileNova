@@ -5,7 +5,7 @@ import androidx.paging.PagingState
 import com.grappim.taigamobile.core.api.defaultTryCatch
 import com.grappim.taigamobile.core.api.hasNextPage
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.commaString
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.tagsCommaString
@@ -13,11 +13,10 @@ import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
-import kotlinx.coroutines.flow.first
 
 class EpicsPagingSource(
     private val filters: FiltersData,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val query: String,
     private val workItemApi: WorkItemApi,
     private val workItemMapper: WorkItemMapper
@@ -35,7 +34,7 @@ class EpicsPagingSource(
                 taskPath = WorkItemPathPlural(CommonTaskType.Epic),
                 page = nextPageNumber,
                 pageSize = params.loadSize,
-                project = taigaStorage.currentProjectIdFlow.first(),
+                project = taigaSessionStorage.getCurrentProjectId(),
                 query = query,
                 assignedIds = filters.assignees.commaString(),
                 ownerIds = filters.createdBy.commaString(),

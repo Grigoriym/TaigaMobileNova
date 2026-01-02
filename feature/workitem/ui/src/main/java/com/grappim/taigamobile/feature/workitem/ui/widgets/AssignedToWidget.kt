@@ -31,7 +31,8 @@ fun MultipleAssignedToWidget(
     assigneesState: WorkItemMultipleAssigneesState,
     goToProfile: (Long) -> Unit,
     onAssignToMe: () -> Unit,
-    onAddAssigneeClick: () -> Unit
+    onAddAssigneeClick: () -> Unit,
+    canModify: Boolean = true
 ) {
     AssignedToWidget(
         assignees = assigneesState.assignees,
@@ -43,7 +44,8 @@ fun MultipleAssignedToWidget(
         isAssignedToMe = assigneesState.isAssignedToMe,
         onAssignToMe = onAssignToMe,
         onAddAssigneeClick = onAddAssigneeClick,
-        isPlural = true
+        isPlural = true,
+        canModify = canModify
     )
 }
 
@@ -53,7 +55,8 @@ fun SingleAssignedToWidget(
     goToProfile: (Long) -> Unit,
     onAssignToMe: () -> Unit,
     onAddAssigneeClick: () -> Unit,
-    onUnassign: (() -> Unit)? = null
+    onUnassign: (() -> Unit)? = null,
+    canModify: Boolean = true
 ) {
     AssignedToWidget(
         assignees = assigneeState.assignees,
@@ -65,7 +68,8 @@ fun SingleAssignedToWidget(
         isAssignedToMe = assigneeState.isAssignedToMe,
         onUnassign = onUnassign,
         onAssignToMe = onAssignToMe,
-        onAddAssigneeClick = onAddAssigneeClick
+        onAddAssigneeClick = onAddAssigneeClick,
+        canModify = canModify
     )
 }
 
@@ -80,7 +84,8 @@ private fun AssignedToWidget(
     onAddAssigneeClick: () -> Unit,
     modifier: Modifier = Modifier,
     isPlural: Boolean = false,
-    onUnassign: (() -> Unit)? = null
+    onUnassign: (() -> Unit)? = null,
+    canModify: Boolean = true
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -98,7 +103,8 @@ private fun AssignedToWidget(
                 },
                 onRemoveUserClick = {
                     onRemoveAssigneeClick(item)
-                }
+                },
+                canModify = canModify
             )
 
             if (index < assignees.lastIndex) {
@@ -110,44 +116,45 @@ private fun AssignedToWidget(
             DotsLoaderWidget()
         }
 
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
-            val addText = if (isPlural) {
-                RString.add_assignees
-            } else {
-                RString.add_assignee
-            }
-            AddButtonWidget(
-                text = stringResource(addText),
-                onClick = onAddAssigneeClick
-            )
-
-            // todo maybe make it more understandable, i.e. the condition
-            if (onUnassign != null || !isAssignedToMe) {
-                Spacer(modifier = Modifier.width(16.dp))
-
-                val (
-                    @StringRes buttonText: Int,
-                    @DrawableRes buttonIcon: Int
-                ) = if (isAssignedToMe) {
-                    RString.unassign to RDrawable.ic_unassigned
+        if (canModify) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.Start
+            ) {
+                val addText = if (isPlural) {
+                    RString.add_assignees
                 } else {
-                    RString.assign_to_me to RDrawable.ic_assignee_to_me
+                    RString.add_assignee
                 }
-
-                TaigaTextButtonWidget(
-                    text = stringResource(buttonText),
-                    icon = buttonIcon,
-                    onClick = {
-                        if (isAssignedToMe) {
-                            onUnassign?.invoke()
-                        } else {
-                            onAssignToMe()
-                        }
-                    }
+                AddButtonWidget(
+                    text = stringResource(addText),
+                    onClick = onAddAssigneeClick
                 )
+
+                if (onUnassign != null || !isAssignedToMe) {
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    val (
+                        @StringRes buttonText: Int,
+                        @DrawableRes buttonIcon: Int
+                    ) = if (isAssignedToMe) {
+                        RString.unassign to RDrawable.ic_unassigned
+                    } else {
+                        RString.assign_to_me to RDrawable.ic_assignee_to_me
+                    }
+
+                    TaigaTextButtonWidget(
+                        text = stringResource(buttonText),
+                        icon = buttonIcon,
+                        onClick = {
+                            if (isAssignedToMe) {
+                                onUnassign?.invoke()
+                            } else {
+                                onAssignToMe()
+                            }
+                        }
+                    )
+                }
             }
         }
     }

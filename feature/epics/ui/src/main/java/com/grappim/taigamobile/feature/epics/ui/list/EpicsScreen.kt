@@ -10,7 +10,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalResources
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -18,14 +17,13 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.TaskFilters
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
@@ -36,7 +34,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun EpicsScreen(
@@ -58,15 +56,19 @@ fun EpicsScreen(
             TopBarConfig(
                 title = NativeText.Resource(RString.epics),
                 navigationIcon = NavigationIconConfig.Menu,
-                actions = persistentListOf(
-                    TopBarActionIconButton(
-                        drawable = RDrawable.ic_add,
-                        contentDescription = "Add",
-                        onClick = {
-                            goToCreateEpic()
-                        }
-                    )
-                )
+                actions = buildList {
+                    if (state.canAddEpic) {
+                        add(
+                            TopBarActionIconButton(
+                                drawable = RDrawable.ic_add,
+                                contentDescription = "Add",
+                                onClick = {
+                                    goToCreateEpic()
+                                }
+                            )
+                        )
+                    }
+                }.toImmutableList()
             )
         )
     }
@@ -161,7 +163,7 @@ fun EpicsScreenContent(
     }
 }
 
-@PreviewDarkLight
+@PreviewTaigaDarkLight
 @Composable
 private fun EpicsScreenPreview() {
     TaigaMobileTheme {

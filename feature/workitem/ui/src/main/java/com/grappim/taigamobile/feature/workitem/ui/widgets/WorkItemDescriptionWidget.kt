@@ -2,7 +2,6 @@ package com.grappim.taigamobile.feature.workitem.ui.widgets
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.MaterialTheme
@@ -15,21 +14,28 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkIte
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
-import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
+import com.grappim.taigamobile.uikit.widgets.text.ExpandableMarkdownText
 
 @Composable
 fun WorkItemDescriptionWidget(
     descriptionState: WorkItemDescriptionState,
-    currentDescription: String?,
+    description: String?,
     onDescriptionClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
-                onDescriptionClick()
-            }
+            .then(
+                if (canModify) {
+                    Modifier.clickable {
+                        onDescriptionClick()
+                    }
+                } else {
+                    Modifier
+                }
+            )
     ) {
         TaigaHeightSpacer(8.dp)
 
@@ -40,14 +46,19 @@ fun WorkItemDescriptionWidget(
 
         TaigaHeightSpacer(4.dp)
 
-        if (currentDescription?.isNotEmpty() == true) {
-            MarkdownTextWidget(
-                text = currentDescription,
-                isSelectable = false
+        if (description?.isNotEmpty() == true) {
+            ExpandableMarkdownText(
+                text = description
             )
         } else {
             Text(
-                text = stringResource(RString.add_description),
+                text = stringResource(
+                    if (canModify) {
+                        RString.add_description
+                    } else {
+                        RString.no_description_yet
+                    }
+                ),
                 color = MaterialTheme.colorScheme.outline,
                 style = MaterialTheme.typography.bodyLarge
             )

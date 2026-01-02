@@ -5,6 +5,10 @@ import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canCommentEpic
+import com.grappim.taigamobile.feature.projects.domain.canDeleteEpic
+import com.grappim.taigamobile.feature.projects.domain.canModifyEpic
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
@@ -20,7 +24,8 @@ class EpicDetailsDataUseCase @Inject constructor(
     private val workItemRepository: WorkItemRepository,
     private val usersRepository: UsersRepository,
     private val userStoriesRepository: UserStoriesRepository,
-    private val patchDataGenerator: PatchDataGenerator
+    private val patchDataGenerator: PatchDataGenerator,
+    private val projectsRepository: ProjectsRepository
 ) {
 
     suspend fun getEpicData(epicId: Long): Result<EpicDetailsData> = resultOf {
@@ -81,7 +86,10 @@ class EpicDetailsDataUseCase @Inject constructor(
                 watchers = watchers,
                 isAssignedToMe = isAssignedToMe.await(),
                 isWatchedByMe = isWatchedByMe.await(),
-                userStories = userStories.await()
+                userStories = userStories.await(),
+                canDeleteEpic = projectsRepository.getPermissions().canDeleteEpic(),
+                canModifyEpic = projectsRepository.getPermissions().canModifyEpic(),
+                canComment = projectsRepository.getPermissions().canCommentEpic()
             )
         }
     }

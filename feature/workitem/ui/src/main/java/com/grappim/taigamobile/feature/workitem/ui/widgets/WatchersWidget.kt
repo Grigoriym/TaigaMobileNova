@@ -30,7 +30,8 @@ fun WatchersWidget(
     onAddWatcherClick: () -> Unit,
     onAddMeToWatchersClick: () -> Unit,
     onRemoveMeFromWatchersClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
@@ -48,7 +49,8 @@ fun WatchersWidget(
                 },
                 onRemoveUserClick = {
                     watchersState.onRemoveWatcherClick(item.actualId)
-                }
+                },
+                canModify = canModify
             )
 
             if (index < watchersState.watchers.lastIndex) {
@@ -64,12 +66,14 @@ fun WatchersWidget(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start
         ) {
-            AddButtonWidget(
-                text = stringResource(RString.add_watcher),
-                onClick = onAddWatcherClick
-            )
+            if (canModify) {
+                AddButtonWidget(
+                    text = stringResource(RString.add_watcher),
+                    onClick = onAddWatcherClick
+                )
 
-            Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+            }
 
             val (@StringRes buttonText: Int, @DrawableRes buttonIcon: Int) = if (watchersState.isWatchedByMe) {
                 RString.unwatch to RDrawable.ic_unwatch

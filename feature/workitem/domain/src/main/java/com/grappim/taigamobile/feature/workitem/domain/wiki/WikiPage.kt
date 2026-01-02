@@ -9,7 +9,7 @@ data class WikiPage(
     val editions: Long,
     val createdDate: LocalDateTime,
     val isWatcher: Boolean,
-    val lastModifier: Long,
+    val lastModifier: Long?,
     val modifiedDate: LocalDateTime,
     val totalWatchers: Long,
     val slug: String

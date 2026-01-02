@@ -6,8 +6,8 @@ import com.grappim.taigamobile.feature.workitem.domain.PatchedCustomAttributes
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.dto.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
-import com.grappim.taigamobile.feature.workitem.dto.WikiPageDTO
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
+import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

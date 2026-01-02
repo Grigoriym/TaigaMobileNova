@@ -89,7 +89,7 @@ fun KanbanScreenContent(
     state: KanbanState,
     modifier: Modifier = Modifier,
     navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
-    navigateToCreateTask: (statusId: Long, swinlanaeId: Long?) -> Unit = { _, _ -> }
+    navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
 ) {
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
@@ -100,12 +100,7 @@ fun KanbanScreenContent(
             horizontalAlignment = Alignment.Start
         ) {
             KanbanBoardWidget(
-                statuses = state.statuses,
-                stories = state.stories,
-                teamMembers = state.teamMembers,
-                swimlanes = state.swimlanes,
-                selectSwimlane = state.onSelectSwimlane,
-                selectedSwimlane = state.selectedSwimlane,
+                state = state,
                 navigateToStory = navigateToStory,
                 navigateToCreateTask = navigateToCreateTask
             )

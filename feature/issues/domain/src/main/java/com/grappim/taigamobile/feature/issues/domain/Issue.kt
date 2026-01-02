@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.issues.domain
 
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
-import com.grappim.taigamobile.feature.projects.domain.Project
+import com.grappim.taigamobile.feature.projects.domain.ProjectExtraInfo
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.PromotedUserStoryInfo
@@ -22,7 +22,7 @@ data class Issue(
     val priority: Statuses? = null,
     val severity: Statuses? = null,
     val assignee: User? = null,
-    val project: Project,
+    val project: ProjectExtraInfo,
     val isClosed: Boolean,
     val blockedNote: String? = null,
     val description: String,

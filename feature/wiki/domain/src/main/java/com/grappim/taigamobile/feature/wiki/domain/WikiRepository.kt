@@ -10,6 +10,8 @@ interface WikiRepository {
     suspend fun deleteWikiPage(pageId: Long)
 
     suspend fun getWikiLinks(): ImmutableList<WikiLink>
-    suspend fun createWikiLink(href: String, title: String)
+    suspend fun createWikiLink(title: String): WikiLink
     suspend fun deleteWikiLink(linkId: Long)
+
+    suspend fun createWikiPage(slug: String, content: String): WikiPage
 }

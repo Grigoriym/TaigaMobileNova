@@ -4,6 +4,7 @@ import com.grappim.taigamobile.core.serialization.LocalDateSerializer
 import com.grappim.taigamobile.core.serialization.LocalDateTimeSerializer
 import com.grappim.taigamobile.feature.epics.dto.EpicShortInfoDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectExtraInfoDTO
 import com.grappim.taigamobile.feature.users.dto.UserDTO
 import com.grappim.taigamobile.feature.userstories.dto.UserStoryShortInfoDTO
 import kotlinx.serialization.SerialName
@@ -25,7 +26,7 @@ data class WorkItemResponseDTO(
     @SerialName(value = "status_extra_info")
     val statusExtraInfo: StatusExtraInfoDTO,
     @SerialName(value = "project_extra_info")
-    val projectDTOExtraInfo: ProjectDTO,
+    val projectDTOExtraInfo: ProjectExtraInfoDTO,
     val milestone: Long?,
     @SerialName(value = "assigned_users")
     val assignedUsers: List<Long>?,

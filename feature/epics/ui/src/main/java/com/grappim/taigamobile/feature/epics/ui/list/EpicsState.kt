@@ -11,5 +11,7 @@ data class EpicsState(
     val retryLoadFilters: () -> Unit = {},
     val isFiltersLoading: Boolean = false,
     val filters: FiltersData = FiltersData(),
-    val filtersError: NativeText = NativeText.Empty
+    val filtersError: NativeText = NativeText.Empty,
+
+    val canAddEpic: Boolean = false
 )
