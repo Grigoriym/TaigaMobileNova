@@ -7,8 +7,10 @@ on:
     pull_request:
         branches:
             - dev
+            - master
     push:
         branches:
+            - dev
             - master
 
 concurrency:
@@ -18,10 +20,16 @@ concurrency:
 jobs:
   code_analysis:
     runs-on: ubuntu-latest
+    env:
+        TAIGA_PATH_R: ${{ secrets.TAIGA_PATH_R }}
+        TAIGA_KEY_PASS_R: ${{ secrets.TAIGA_KEY_PASS_R }}
+        TAIGA_STORE_PASS_R: ${{ secrets.TAIGA_STORE_PASS_R }}
+        TAIGA_ALIAS_R: ${{ secrets.TAIGA_ALIAS_R }}
+        ENCODED_STRING_R: ${{ secrets.TAIGA_KEYSTORE_R }}
 
     steps:
       - name: Check out the repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Android Environment
         uses: ./.github/actions/android-setup-composite-action

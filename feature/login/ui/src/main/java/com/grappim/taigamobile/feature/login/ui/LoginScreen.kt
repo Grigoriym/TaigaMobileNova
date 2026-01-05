@@ -44,16 +44,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.collectSnackbarMessage
+import com.grappim.taigamobile.utils.ui.delegates.collectSnackbarMessage
 
 @Composable
 fun LoginScreen(
@@ -76,15 +76,14 @@ fun LoginScreen(
         }
     }
 
-    if (state.isAlertVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.login_alert_title),
-            description = stringResource(RString.login_alert_text),
-            onConfirm = state.onActionDialogConfirm,
-            onDismiss = { state.setIsAlertVisible(false) },
-            iconId = RDrawable.ic_insecure
-        )
-    }
+    ConfirmActionDialog(
+        title = stringResource(RString.login_alert_title),
+        description = stringResource(RString.login_alert_text),
+        onConfirm = state.onActionDialogConfirm,
+        onDismiss = { state.setIsAlertVisible(false) },
+        iconId = RDrawable.ic_insecure,
+        isVisible = state.isAlertVisible
+    )
 
     LoginScreenContent(
         state = state,
@@ -262,7 +261,7 @@ fun LoginTextField(
     )
 }
 
-@[Composable PreviewDarkLight]
+@[Composable PreviewTaigaDarkLight]
 private fun LoginScreenPreview() {
     TaigaMobileTheme {
         LoginScreenContent(
@@ -288,7 +287,7 @@ private fun LoginScreenPreview() {
     }
 }
 
-@[Composable PreviewDarkLight]
+@[Composable PreviewTaigaDarkLight]
 private fun LoginScreenErrorsPreview() {
     TaigaMobileTheme {
         LoginScreenContent(
@@ -314,7 +313,7 @@ private fun LoginScreenErrorsPreview() {
     }
 }
 
-@[Composable PreviewDarkLight]
+@[Composable PreviewTaigaDarkLight]
 private fun LoginScreenAlertPreview() {
     TaigaMobileTheme {
         LoginScreenContent(

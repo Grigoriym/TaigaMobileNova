@@ -23,11 +23,14 @@ fun WorkItemDropdownMenuWidget(
     onDismissRequest: () -> Unit,
     showSnackbar: (NativeText) -> Unit,
     url: String,
-    setDeleteAlertVisible: (Boolean) -> Unit,
     isBlocked: Boolean,
     setBlockDialogVisible: (Boolean) -> Unit,
     doOnUnblock: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    setDeleteAlertVisible: ((Boolean) -> Unit)? = null,
+    onPromoteClick: (() -> Unit)? = null,
+    canDelete: Boolean = false,
+    canModify: Boolean = false
 ) {
     val clipboardManager = LocalClipboard.current
     Box(modifier = modifier) {
@@ -58,37 +61,58 @@ fun WorkItemDropdownMenuWidget(
                 }
             )
 
-            DropdownMenuItem(
-                onClick = {
-                    onDismissRequest()
-                    setDeleteAlertVisible(true)
-                },
-                text = {
-                    Text(
-                        text = stringResource(RString.delete),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            )
-
-            DropdownMenuItem(
-                onClick = {
-                    onDismissRequest()
-                    if (isBlocked) {
-                        doOnUnblock()
-                    } else {
-                        setBlockDialogVisible(true)
+            if (setDeleteAlertVisible != null && canDelete) {
+                DropdownMenuItem(
+                    onClick = {
+                        onDismissRequest()
+                        setDeleteAlertVisible(true)
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(RString.delete),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
-                },
-                text = {
-                    Text(
-                        text = stringResource(
-                            if (isBlocked) RString.unblock else RString.block
-                        ),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            )
+                )
+            }
+
+            if (onPromoteClick != null && canModify) {
+                DropdownMenuItem(
+                    onClick = {
+                        onDismissRequest()
+                        onPromoteClick()
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(
+                                RString.promote_to_user_story
+                            ),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                )
+            }
+
+            if (canModify) {
+                DropdownMenuItem(
+                    onClick = {
+                        onDismissRequest()
+                        if (isBlocked) {
+                            doOnUnblock()
+                        } else {
+                            setBlockDialogVisible(true)
+                        }
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(
+                                if (isBlocked) RString.unblock else RString.block
+                            ),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                    }
+                )
+            }
         }
     }
 }

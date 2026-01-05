@@ -28,23 +28,24 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.TeamMemberDTO
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun TeamScreen(
-    showMessage: (message: Int) -> Unit,
+    showSnackbar: (NativeText) -> Unit,
     goToProfile: (userId: Long) -> Unit,
     viewModel: TeamViewModel = hiltViewModel()
 ) {
@@ -54,13 +55,14 @@ fun TeamScreen(
     LaunchedEffect(Unit) {
         topBarController.update(
             TopBarConfig(
-                title = NativeText.Resource(RString.team)
+                title = NativeText.Resource(RString.team),
+                navigationIcon = NavigationIconConfig.Menu
             )
         )
     }
-    LaunchedEffect(state.isError) {
-        if (state.isError) {
-            showMessage(RString.common_error_message)
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 
@@ -85,7 +87,7 @@ fun TeamScreenContent(
         onRefresh = state.onRefresh
     ) {
         when {
-            state.teamMemberDTOS.isEmpty() -> {
+            state.teamMembers.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
@@ -96,9 +98,9 @@ fun TeamScreenContent(
 
             else -> {
                 LazyColumn(Modifier.padding(horizontal = mainHorizontalScreenPadding)) {
-                    items(state.teamMemberDTOS) { member ->
+                    items(state.teamMembers) { member ->
                         TeamMemberItem(
-                            teamMemberDTO = member,
+                            teamMember = member,
                             onUserItemClick = { onUserItemClick(member.id) }
                         )
                         HorizontalDivider(
@@ -114,7 +116,7 @@ fun TeamScreenContent(
 }
 
 @Composable
-private fun TeamMemberItem(teamMemberDTO: TeamMemberDTO, onUserItemClick: () -> Unit) {
+private fun TeamMemberItem(teamMember: TeamMember, onUserItemClick: () -> Unit) {
     Row(
         modifier = Modifier.clickable { onUserItemClick() },
         verticalAlignment = Alignment.CenterVertically,
@@ -132,19 +134,19 @@ private fun TeamMemberItem(teamMemberDTO: TeamMemberDTO, onUserItemClick: () -> 
                 contentScale = ContentScale.Crop,
                 placeholder = painterResource(RDrawable.default_avatar),
                 error = painterResource(RDrawable.default_avatar),
-                model = teamMemberDTO.avatarUrl
+                model = teamMember.avatarUrl
             )
 
             Spacer(Modifier.width(6.dp))
 
             Column {
                 Text(
-                    text = teamMemberDTO.name,
+                    text = teamMember.name,
                     style = MaterialTheme.typography.titleMedium
                 )
 
                 Text(
-                    text = teamMemberDTO.role,
+                    text = teamMember.role,
                     color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyLarge
                 )
@@ -157,7 +159,7 @@ private fun TeamMemberItem(teamMemberDTO: TeamMemberDTO, onUserItemClick: () -> 
             modifier = Modifier.weight(0.4f)
         ) {
             Text(
-                text = teamMemberDTO.totalPower.toString(),
+                text = teamMember.totalPower.toString(),
                 style = MaterialTheme.typography.headlineSmall
             )
 
@@ -171,7 +173,7 @@ private fun TeamMemberItem(teamMemberDTO: TeamMemberDTO, onUserItemClick: () -> 
     }
 }
 
-@[Composable PreviewDarkLight]
+@[Composable PreviewTaigaDarkLight]
 private fun TeamScreenPreview() = TaigaMobileTheme {
     TeamScreenContent(
         state = TeamState(onRefresh = {})

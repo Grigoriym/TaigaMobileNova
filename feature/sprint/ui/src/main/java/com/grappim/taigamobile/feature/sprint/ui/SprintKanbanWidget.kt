@@ -41,39 +41,27 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.annotation.ExperimentalCoilApi
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.ProjectDTO
-import com.grappim.taigamobile.core.domain.StatusOld
-import com.grappim.taigamobile.core.domain.StatusType
-import com.grappim.taigamobile.core.domain.UserDTO
-import com.grappim.taigamobile.core.navigation.NavigateToTask
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.cardShadowElevation
 import com.grappim.taigamobile.uikit.theme.kanbanBoardTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.utils.clickableUnindicated
-import com.grappim.taigamobile.uikit.widgets.button.PlusButton
+import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.list.CommonTaskItem
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import com.grappim.taigamobile.utils.ui.toColor
-import java.time.LocalDateTime
 
 @Composable
 internal fun SprintKanbanWidget(
-    statusOlds: List<StatusOld>,
-    storiesWithTasks: Map<CommonTask, List<CommonTask>>,
+    state: SprintState,
     modifier: Modifier = Modifier,
-    storylessTasks: List<CommonTask> = emptyList(),
-    issues: List<CommonTask> = emptyList(),
-    navigateToTask: NavigateToTask = { _, _, _ -> },
+    navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit = { _, _, _ -> },
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
 ) {
     Column(
@@ -88,7 +76,7 @@ internal fun SprintKanbanWidget(
             MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
         val screenWidth = LocalConfiguration.current.screenWidthDp.dp
         val totalWidth =
-            cellWidth * statusOlds.size + userStoryHeadingWidth + cellPadding * statusOlds.size
+            cellWidth * state.statuses.size + userStoryHeadingWidth + cellPadding * state.statuses.size
 
         Row(Modifier.padding(start = cellPadding, top = cellPadding)) {
             Header(
@@ -99,7 +87,7 @@ internal fun SprintKanbanWidget(
                 backgroundColor = Color.Transparent
             )
 
-            statusOlds.forEach {
+            state.statuses.forEach {
                 Header(
                     text = it.name,
                     cellWidth = cellWidth,
@@ -111,8 +99,7 @@ internal fun SprintKanbanWidget(
         }
 
         LazyColumn {
-            // stories with tasks
-            storiesWithTasks.forEach { (story, tasks) ->
+            state.storiesWithTasks.forEach { (story, tasks) ->
                 item {
                     Row(
                         Modifier
@@ -134,14 +121,14 @@ internal fun SprintKanbanWidget(
                             }
                         )
 
-                        statusOlds.forEach { status ->
+                        state.statuses.forEach { status ->
                             Cell(
                                 cellWidth = cellWidth,
                                 cellOuterPadding = cellOuterPadding,
                                 cellPadding = cellPadding,
                                 backgroundCellColor = backgroundCellColor
                             ) {
-                                tasks.filter { it.statusOld == status }.forEach {
+                                tasks.filter { it.status == status }.forEach {
                                     TaskItem(
                                         task = it,
                                         onTaskClick = { navigateToTask(it.id, it.taskType, it.ref) }
@@ -165,17 +152,18 @@ internal fun SprintKanbanWidget(
                         cellPadding = cellPadding,
                         cellWidth = userStoryHeadingWidth,
                         minCellHeight = minCellHeight,
+                        canCreateTasks = state.canCreateTasks,
                         onAddClick = { navigateToCreateTask(CommonTaskType.Task, null) }
                     )
 
-                    statusOlds.forEach { status ->
+                    state.statuses.forEach { status ->
                         Cell(
                             cellWidth = cellWidth,
                             cellOuterPadding = cellOuterPadding,
                             cellPadding = cellPadding,
                             backgroundCellColor = backgroundCellColor
                         ) {
-                            storylessTasks.filter { it.statusOld == status }.forEach {
+                            state.storylessTasks.filter { it.status == status }.forEach {
                                 TaskItem(
                                     task = it,
                                     onTaskClick = { navigateToTask(it.id, it.taskType, it.ref) }
@@ -202,11 +190,12 @@ internal fun SprintKanbanWidget(
                     width = screenWidth,
                     padding = cellPadding,
                     backgroundColor = backgroundCellColor,
-                    onAddClick = { navigateToCreateTask(CommonTaskType.Issue, null) }
+                    onAddClick = { navigateToCreateTask(CommonTaskType.Issue, null) },
+                    canCreateIssue = state.canCreateIssue
                 )
             }
 
-            items(issues) {
+            items(state.issues) {
                 Row(Modifier.width(totalWidth)) {
                     Row(
                         Modifier
@@ -230,13 +219,7 @@ internal fun SprintKanbanWidget(
 }
 
 @Composable
-private fun Header(
-    text: String,
-    cellWidth: Dp,
-    cellPadding: Dp,
-    stripeColor: Color,
-    backgroundColor: Color
-) = Column(
+private fun Header(text: String, cellWidth: Dp, cellPadding: Dp, stripeColor: Color, backgroundColor: Color) = Column(
     modifier = Modifier
         .padding(end = cellPadding, bottom = cellPadding)
         .width(cellWidth)
@@ -266,35 +249,42 @@ private fun Header(
 }
 
 @Composable
-private fun IssueHeader(width: Dp, padding: Dp, backgroundColor: Color, onAddClick: () -> Unit) =
-    Row(
-        modifier = Modifier
-            .width(width)
-            .padding(padding)
-            .clip(MaterialTheme.shapes.extraSmall)
-            .background(backgroundColor)
-            .padding(horizontal = 6.dp, vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = stringResource(RString.sprint_issues).uppercase(),
-            modifier = Modifier.weight(0.8f, fill = false)
-        )
+private fun IssueHeader(
+    width: Dp,
+    padding: Dp,
+    backgroundColor: Color,
+    onAddClick: () -> Unit,
+    canCreateIssue: Boolean
+) = Row(
+    modifier = Modifier
+        .width(width)
+        .padding(padding)
+        .clip(MaterialTheme.shapes.extraSmall)
+        .background(backgroundColor)
+        .padding(horizontal = 6.dp, vertical = 4.dp),
+    horizontalArrangement = Arrangement.SpaceBetween,
+    verticalAlignment = Alignment.CenterVertically
+) {
+    Text(
+        text = stringResource(RString.sprint_issues).uppercase(),
+        modifier = Modifier.weight(0.8f, fill = false)
+    )
 
-        PlusButton(
+    if (canCreateIssue) {
+        PlusButtonWidget(
             tint = MaterialTheme.colorScheme.outline,
             onClick = onAddClick,
             modifier = Modifier.weight(0.2f)
         )
     }
+}
 
 @Composable
 private fun UserStoryItem(
     cellPadding: Dp,
     cellWidth: Dp,
     minCellHeight: Dp,
-    userStory: CommonTask,
+    userStory: WorkItem,
     onAddClick: () -> Unit,
     onUserStoryClick: () -> Unit
 ) = Row(
@@ -318,17 +308,17 @@ private fun UserStoryItem(
             isBlocked = userStory.blockedNote != null,
             modifier = Modifier
                 .padding(top = 4.dp)
-                .clickableUnindicated(onClick = onUserStoryClick)
+                .clickable(onClick = onUserStoryClick)
         )
 
         Text(
-            text = userStory.statusOld.name,
-            color = userStory.statusOld.color.toColor(),
+            text = userStory.status.name,
+            color = userStory.status.color.toColor(),
             style = MaterialTheme.typography.bodyMedium
         )
     }
 
-    PlusButton(
+    PlusButtonWidget(
         tint = MaterialTheme.colorScheme.outline,
         onClick = onAddClick,
         modifier = Modifier.weight(0.2f)
@@ -341,7 +331,8 @@ private fun CategoryItem(
     cellPadding: Dp,
     cellWidth: Dp,
     minCellHeight: Dp,
-    onAddClick: () -> Unit
+    onAddClick: () -> Unit,
+    canCreateTasks: Boolean
 ) = Column(
     modifier = Modifier
         .padding(end = cellPadding, bottom = cellPadding)
@@ -359,11 +350,13 @@ private fun CategoryItem(
                 .padding(top = 4.dp)
         )
 
-        PlusButton(
-            tint = MaterialTheme.colorScheme.outline,
-            onClick = onAddClick,
-            modifier = Modifier.weight(0.2f)
-        )
+        if (canCreateTasks) {
+            PlusButtonWidget(
+                tint = MaterialTheme.colorScheme.outline,
+                onClick = onAddClick,
+                modifier = Modifier.weight(0.2f)
+            )
+        }
     }
 }
 
@@ -386,7 +379,7 @@ private fun Cell(
 
 @OptIn(ExperimentalCoilApi::class)
 @Composable
-private fun TaskItem(task: CommonTask, onTaskClick: () -> Unit) = Surface(
+private fun TaskItem(task: WorkItem, onTaskClick: () -> Unit) = Surface(
     modifier = Modifier
         .fillMaxWidth()
         .padding(4.dp),
@@ -439,150 +432,150 @@ private fun TaskItem(task: CommonTask, onTaskClick: () -> Unit) = Surface(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun SprintKanbanPreview() = TaigaMobileTheme {
-    SprintKanbanWidget(
-        statusOlds = listOf(
-            StatusOld(
-                id = 0,
-                name = "New",
-                color = "#70728F",
-                type = StatusType.Status
-            ),
-            StatusOld(
-                id = 1,
-                name = "In progress",
-                color = "#E47C40",
-                type = StatusType.Status
-            ),
-            StatusOld(
-                id = 1,
-                name = "Done",
-                color = "#A8E440",
-                type = StatusType.Status
-            ),
-            StatusOld(
-                id = 1,
-                name = "Archived",
-                color = "#A9AABC",
-                type = StatusType.Status
-            )
-        ),
-        storiesWithTasks = List(5) {
-            CommonTask(
-                id = it.toLong(),
-                createdDate = LocalDateTime.now(),
-                title = "Very cool story",
-                ref = 100,
-                statusOld = StatusOld(
-                    id = 1,
-                    name = "In progress",
-                    color = "#E47C40",
-                    type = StatusType.Status
-                ),
-                assignee = UserDTO(
-                    id = it.toLong(),
-                    fullName = "Name Name",
-                    photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
-                    bigPhoto = null,
-                    username = "username"
-                ),
-                projectDTOInfo = ProjectDTO(0, "", ""),
-                taskType = CommonTaskType.UserStory,
-                isClosed = false
-            ) to listOf(
-                CommonTask(
-                    id = it.toLong(),
-                    createdDate = LocalDateTime.now(),
-                    title = "Very cool story Very cool story Very cool story",
-                    ref = 100,
-                    statusOld = StatusOld(
-                        id = 1,
-                        name = "In progress",
-                        color = "#E47C40",
-                        type = StatusType.Status
-                    ),
-                    assignee = UserDTO(
-                        id = it.toLong(),
-                        fullName = "Name Name",
-                        photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
-                        bigPhoto = null,
-                        username = "username"
-                    ),
-                    projectDTOInfo = ProjectDTO(0, "", ""),
-                    taskType = CommonTaskType.Task,
-                    isClosed = false
-                ),
-                CommonTask(
-                    id = it.toLong() + 2,
-                    createdDate = LocalDateTime.now(),
-                    title = "Very cool story",
-                    ref = 100,
-                    statusOld = StatusOld(
-                        id = 1,
-                        name = "In progress",
-                        color = "#E47C40",
-                        type = StatusType.Status
-                    ),
-                    assignee = UserDTO(
-                        id = it.toLong(),
-                        fullName = "Name Name",
-                        photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
-                        bigPhoto = null,
-                        username = "username"
-                    ),
-                    projectDTOInfo = ProjectDTO(0, "", ""),
-                    taskType = CommonTaskType.Task,
-                    isClosed = false
-                ),
-                CommonTask(
-                    id = it.toLong() + 2,
-                    createdDate = LocalDateTime.now(),
-                    title = "Very cool story",
-                    ref = 100,
-                    statusOld = StatusOld(
-                        id = 0,
-                        name = "New",
-                        color = "#70728F",
-                        type = StatusType.Status
-                    ),
-                    assignee = UserDTO(
-                        id = it.toLong(),
-                        fullName = "Name Name",
-                        photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
-                        bigPhoto = null,
-                        username = "username"
-                    ),
-                    projectDTOInfo = ProjectDTO(0, "", ""),
-                    taskType = CommonTaskType.Task,
-                    isClosed = false
-                )
-            )
-        }.toMap(),
-        issues = List(10) {
-            CommonTask(
-                id = it.toLong() + 1,
-                createdDate = LocalDateTime.now(),
-                title = "Very cool story",
-                ref = 100,
-                statusOld = StatusOld(
-                    id = 0,
-                    name = "New",
-                    color = "#70728F",
-                    type = StatusType.Status
-                ),
-                assignee = UserDTO(
-                    id = it.toLong(),
-                    fullName = "Name Name",
-                    photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
-                    bigPhoto = null,
-                    username = "username"
-                ),
-                projectDTOInfo = ProjectDTO(0, "", ""),
-                taskType = CommonTaskType.Issue,
-                isClosed = false
-            )
-        }
-    )
-}
+// @Preview(showBackground = true)
+// @Composable
+// private fun SprintKanbanPreview() = TaigaMobileTheme {
+//    SprintKanbanWidget(
+//        statuses = listOf(
+//            StatusOld(
+//                id = 0,
+//                name = "New",
+//                color = "#70728F",
+//                type = StatusType.Status
+//            ),
+//            StatusOld(
+//                id = 1,
+//                name = "In progress",
+//                color = "#E47C40",
+//                type = StatusType.Status
+//            ),
+//            StatusOld(
+//                id = 1,
+//                name = "Done",
+//                color = "#A8E440",
+//                type = StatusType.Status
+//            ),
+//            StatusOld(
+//                id = 1,
+//                name = "Archived",
+//                color = "#A9AABC",
+//                type = StatusType.Status
+//            )
+//        ),
+//        storiesWithTasks = List(5) {
+//            CommonTask(
+//                id = it.toLong(),
+//                createdDate = LocalDateTime.now(),
+//                title = "Very cool story",
+//                ref = 100,
+//                statusOld = StatusOld(
+//                    id = 1,
+//                    name = "In progress",
+//                    color = "#E47C40",
+//                    type = StatusType.Status
+//                ),
+//                assignee = UserDTO(
+//                    id = it.toLong(),
+//                    fullName = "Name Name",
+//                    photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
+//                    bigPhoto = null,
+//                    username = "username"
+//                ),
+//                projectDTOInfo = ProjectDTO(0, "", ""),
+//                taskType = CommonTaskType.UserStory,
+//                isClosed = false
+//            ) to listOf(
+//                CommonTask(
+//                    id = it.toLong(),
+//                    createdDate = LocalDateTime.now(),
+//                    title = "Very cool story Very cool story Very cool story",
+//                    ref = 100,
+//                    statusOld = StatusOld(
+//                        id = 1,
+//                        name = "In progress",
+//                        color = "#E47C40",
+//                        type = StatusType.Status
+//                    ),
+//                    assignee = UserDTO(
+//                        id = it.toLong(),
+//                        fullName = "Name Name",
+//                        photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
+//                        bigPhoto = null,
+//                        username = "username"
+//                    ),
+//                    projectDTOInfo = ProjectDTO(0, "", ""),
+//                    taskType = CommonTaskType.Task,
+//                    isClosed = false
+//                ),
+//                CommonTask(
+//                    id = it.toLong() + 2,
+//                    createdDate = LocalDateTime.now(),
+//                    title = "Very cool story",
+//                    ref = 100,
+//                    statusOld = StatusOld(
+//                        id = 1,
+//                        name = "In progress",
+//                        color = "#E47C40",
+//                        type = StatusType.Status
+//                    ),
+//                    assignee = UserDTO(
+//                        id = it.toLong(),
+//                        fullName = "Name Name",
+//                        photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
+//                        bigPhoto = null,
+//                        username = "username"
+//                    ),
+//                    projectDTOInfo = ProjectDTO(0, "", ""),
+//                    taskType = CommonTaskType.Task,
+//                    isClosed = false
+//                ),
+//                CommonTask(
+//                    id = it.toLong() + 2,
+//                    createdDate = LocalDateTime.now(),
+//                    title = "Very cool story",
+//                    ref = 100,
+//                    statusOld = StatusOld(
+//                        id = 0,
+//                        name = "New",
+//                        color = "#70728F",
+//                        type = StatusType.Status
+//                    ),
+//                    assignee = UserDTO(
+//                        id = it.toLong(),
+//                        fullName = "Name Name",
+//                        photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
+//                        bigPhoto = null,
+//                        username = "username"
+//                    ),
+//                    projectDTOInfo = ProjectDTO(0, "", ""),
+//                    taskType = CommonTaskType.Task,
+//                    isClosed = false
+//                )
+//            )
+//        }.toMap(),
+//        issues = List(10) {
+//            CommonTask(
+//                id = it.toLong() + 1,
+//                createdDate = LocalDateTime.now(),
+//                title = "Very cool story",
+//                ref = 100,
+//                statusOld = StatusOld(
+//                    id = 0,
+//                    name = "New",
+//                    color = "#70728F",
+//                    type = StatusType.Status
+//                ),
+//                assignee = UserDTO(
+//                    id = it.toLong(),
+//                    fullName = "Name Name",
+//                    photo = "https://avatars.githubusercontent.com/u/36568187?v=4",
+//                    bigPhoto = null,
+//                    username = "username"
+//                ),
+//                projectDTOInfo = ProjectDTO(0, "", ""),
+//                taskType = CommonTaskType.Issue,
+//                isClosed = false
+//            )
+//        }
+//    )
+// }

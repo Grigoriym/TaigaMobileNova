@@ -16,6 +16,7 @@ dependencies {
     implementation(projects.core.async)
 
     implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.navigation.compose)
 
     testImplementation(libs.robolectric)
 }

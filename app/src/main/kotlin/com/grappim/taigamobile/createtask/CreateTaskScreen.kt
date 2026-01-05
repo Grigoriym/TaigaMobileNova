@@ -12,12 +12,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
@@ -27,17 +26,18 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.utils.ui.LoadingResult
-import com.grappim.taigamobile.utils.ui.SubscribeOnError
-import com.grappim.taigamobile.utils.ui.SuccessResult
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun CreateTaskScreen(
-    viewModel: CreateTaskViewModel = hiltViewModel(),
-    showMessage: (message: Int) -> Unit = {},
-    navigateOnTaskCreated: (Long, CommonTaskType, Int) -> Unit
+    showSnackbar: (NativeText) -> Unit,
+    navigateOnTaskCreated: (Long, CommonTaskType, Long) -> Unit,
+    viewModel: CreateTaskViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -46,8 +46,8 @@ fun CreateTaskScreen(
         topBarController.update(
             TopBarConfig(
                 title = state.toolbarTitle,
-                showBackButton = true,
-                actions = listOf(
+                navigationIcon = NavigationIconConfig.Back(),
+                actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_save,
                         contentDescription = "Save",
@@ -60,33 +60,29 @@ fun CreateTaskScreen(
         )
     }
 
-    val creationResult by viewModel.creationResult.collectAsState()
-    creationResult.SubscribeOnError(showMessage)
-
-    creationResult.takeIf { it is SuccessResult }?.data?.let {
-        LaunchedEffect(Unit) {
-            navigateOnTaskCreated(it.id, it.taskType, it.ref)
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            showSnackbar(state.error)
         }
     }
 
+    ObserveAsEvents(viewModel.creationResult) { result ->
+        navigateOnTaskCreated(result.id, result.type, result.ref)
+    }
+
     CreateTaskScreenContent(
-        state = state,
-        isLoading = creationResult is LoadingResult
+        state = state
     )
 }
 
 @Composable
-fun CreateTaskScreenContent(
-    state: CreateTaskState,
-    modifier: Modifier = Modifier,
-    isLoading: Boolean = false
-) {
+fun CreateTaskScreenContent(state: CreateTaskState, modifier: Modifier = Modifier) {
     Box(
         modifier = modifier
             .fillMaxSize()
             .imePadding()
     ) {
-        if (isLoading) {
+        if (state.isLoading) {
             LoadingDialog()
         }
 

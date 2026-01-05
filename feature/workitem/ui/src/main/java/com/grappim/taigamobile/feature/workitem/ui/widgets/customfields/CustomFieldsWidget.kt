@@ -35,16 +35,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
-import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import timber.log.Timber
 import java.time.Instant
@@ -54,38 +54,38 @@ import java.time.format.FormatStyle
 
 @Composable
 fun CustomFieldsSectionWidget(
-    customFieldStateItems: ImmutableList<CustomFieldItemState>,
-    isCustomFieldsLoading: Boolean,
-    isCustomFieldsWidgetExpanded: Boolean,
-    setIsCustomFieldsWidgetExpanded: (Boolean) -> Unit,
-    onCustomFieldChange: (CustomFieldItemState) -> Unit,
+    customFieldsState: WorkItemCustomFieldsState,
     onCustomFieldSave: (CustomFieldItemState) -> Unit,
-    onCustomFieldEditToggle: (CustomFieldItemState) -> Unit,
-    editingItemIds: ImmutableSet<Long>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
-    if (customFieldStateItems.isNotEmpty()) {
+    if (customFieldsState.customFieldStateItems.isNotEmpty()) {
         Column(modifier = modifier) {
             SectionTitleExpandable(
                 text = stringResource(RString.custom_fields_with_number).format(
-                    customFieldStateItems.size
+                    customFieldsState.customFieldStateItems.size
                 ),
-                isExpanded = isCustomFieldsWidgetExpanded,
+                isExpanded = customFieldsState.isCustomFieldsWidgetExpanded,
                 onExpandClick = {
-                    setIsCustomFieldsWidgetExpanded(!isCustomFieldsWidgetExpanded)
+                    customFieldsState.setIsCustomFieldsWidgetExpanded(
+                        !customFieldsState.isCustomFieldsWidgetExpanded
+                    )
                 }
             )
 
-            if (isCustomFieldsWidgetExpanded) {
-                customFieldStateItems.forEachIndexed { index, item ->
+            if (customFieldsState.isCustomFieldsWidgetExpanded) {
+                TaigaHeightSpacer(8.dp)
+
+                customFieldsState.customFieldStateItems.forEachIndexed { index, item ->
                     CustomFieldWidget(
-                        editingItemIds = editingItemIds,
+                        editingItemIds = customFieldsState.editingItemIds,
                         item = item,
-                        onItemChange = onCustomFieldChange,
+                        onItemChange = customFieldsState.onCustomFieldChange,
                         onItemSave = onCustomFieldSave,
-                        onItemEdit = onCustomFieldEditToggle
+                        onItemEdit = customFieldsState.onCustomFieldEditToggle,
+                        canModify = canModify
                     )
-                    if (index < customFieldStateItems.lastIndex) {
+                    if (index < customFieldsState.customFieldStateItems.lastIndex) {
                         HorizontalDivider(
                             modifier = Modifier.padding(top = 8.dp, bottom = 8.dp),
                             thickness = DividerDefaults.Thickness,
@@ -93,9 +93,9 @@ fun CustomFieldsSectionWidget(
                         )
                     }
                 }
-                if (isCustomFieldsLoading) {
+                if (customFieldsState.isCustomFieldsLoading) {
                     TaigaHeightSpacer(8.dp)
-                    DotsLoader()
+                    DotsLoaderWidget()
                 }
                 TaigaHeightSpacer(10.dp)
             }
@@ -110,7 +110,8 @@ private fun CustomFieldWidget(
     onItemChange: (CustomFieldItemState) -> Unit,
     onItemSave: (CustomFieldItemState) -> Unit,
     onItemEdit: (CustomFieldItemState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     val isEditableItem = item is EditableItem
     val isEditMode = isEditableItem && item.id in editingItemIds
@@ -151,95 +152,105 @@ private fun CustomFieldWidget(
                 when (item) {
                     is TextItemState -> CustomFieldTextItemWidget(
                         item = item,
-                        onItemChange = onItemChange
+                        onItemChange = onItemChange,
+                        canModify = canModify
                     )
 
                     is MultilineTextItemState -> CustomFieldMultilineItemWidget(
                         item = item,
-                        onItemChange = onItemChange
+                        onItemChange = onItemChange,
+                        canModify = canModify
                     )
 
                     is RichTextItemState -> CustomFieldRichTextItemWidget(
                         item = item,
                         onItemChange = onItemChange,
-                        isEditMode = isEditMode
+                        isEditMode = isEditMode,
+                        canModify = canModify
                     )
 
                     is NumberItemState -> CustomFieldNumberItemWidget(
                         item = item,
-                        onItemChange = onItemChange
+                        onItemChange = onItemChange,
+                        canModify = canModify
                     )
 
                     is UrlItemState -> {
                         CustomFieldUrlItemWidget(
                             item = item,
                             onItemChange = onItemChange,
-                            isEditMode = isEditMode
+                            isEditMode = isEditMode,
+                            canModify = canModify
                         )
                     }
 
                     is DateItemState -> {
                         CustomFieldDateItemWidget(
                             item = item,
-                            onItemChange = onItemChange
+                            onItemChange = onItemChange,
+                            canModify = canModify
                         )
                     }
 
                     is CheckboxItemState -> {
                         CustomFieldCheckboxWidget(
                             item = item,
-                            onItemChange = onItemChange
+                            onItemChange = onItemChange,
+                            canModify = canModify
                         )
                     }
 
                     is DropdownItemState -> {
                         CustomFieldDropdownItemWidget(
                             item = item,
-                            onItemChange = onItemChange
+                            onItemChange = onItemChange,
+                            canModify = canModify
                         )
                     }
                 }
             }
 
-            if (isEditableItem) {
-                TaigaWidthSpacer(4.dp)
+            if (canModify) {
+                if (isEditableItem) {
+                    TaigaWidthSpacer(4.dp)
+
+                    IconButton(
+                        onClick = {
+                            onItemEdit(item)
+                        },
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape)
+                    ) {
+                        Icon(
+                            painter = if (isEditMode) {
+                                painterResource(RDrawable.ic_undo)
+                            } else {
+                                painterResource(RDrawable.ic_edit)
+                            },
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                } else {
+                    TaigaWidthSpacer(4.dp)
+                }
 
                 IconButton(
-                    onClick = {
-                        onItemEdit(item)
-                    },
                     modifier = Modifier
                         .size(32.dp)
-                        .clip(CircleShape)
+                        .clip(CircleShape),
+                    enabled = item.isModified,
+                    onClick = {
+                        onItemSave(item)
+                    }
                 ) {
                     Icon(
-                        painter = if (isEditMode) {
-                            painterResource(RDrawable.ic_undo)
-                        } else {
-                            painterResource(RDrawable.ic_edit)
-                        },
+                        painter = painterResource(RDrawable.ic_save),
                         contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
+                        tint = indicationColor
                     )
                 }
-            } else {
-                TaigaWidthSpacer(4.dp)
-            }
-
-            IconButton(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
-                enabled = item.isModified,
-                onClick = {
-                    onItemSave(item)
-                }
-            ) {
-                Icon(
-                    painter = painterResource(RDrawable.ic_save),
-                    contentDescription = null,
-                    tint = indicationColor
-                )
             }
         }
     }
@@ -249,7 +260,8 @@ private fun CustomFieldWidget(
 private fun CustomFieldTextItemWidget(
     item: TextItemState,
     onItemChange: (TextItemState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     CustomFieldTextWidget(
         modifier = modifier,
@@ -258,7 +270,8 @@ private fun CustomFieldTextItemWidget(
             onItemChange(item.copy(currentValue = newValue))
         },
         placeholder = stringResource(RString.custom_field_text),
-        singleLine = true
+        singleLine = true,
+        enabled = canModify
     )
 }
 
@@ -266,7 +279,8 @@ private fun CustomFieldTextItemWidget(
 private fun CustomFieldMultilineItemWidget(
     item: MultilineTextItemState,
     onItemChange: (MultilineTextItemState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     CustomFieldTextWidget(
         modifier = modifier,
@@ -275,7 +289,8 @@ private fun CustomFieldMultilineItemWidget(
             onItemChange(item.copy(currentValue = newValue))
         },
         placeholder = stringResource(RString.custom_field_multiline),
-        singleLine = false
+        singleLine = false,
+        enabled = canModify
     )
 }
 
@@ -283,7 +298,8 @@ private fun CustomFieldMultilineItemWidget(
 private fun CustomFieldNumberItemWidget(
     item: NumberItemState,
     onItemChange: (NumberItemState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     CustomFieldTextWidget(
         modifier = modifier,
@@ -293,6 +309,7 @@ private fun CustomFieldNumberItemWidget(
         },
         placeholder = stringResource(RString.custom_field_number),
         singleLine = true,
+        enabled = canModify,
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Number
         )
@@ -303,7 +320,8 @@ private fun CustomFieldNumberItemWidget(
 private fun CustomFieldDateItemWidget(
     item: DateItemState,
     onItemChange: (DateItemState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     val dateFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
     var isDatePickerVisible by remember { mutableStateOf(false) }
@@ -334,9 +352,15 @@ private fun CustomFieldDateItemWidget(
         isFocused = item.isModified,
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
-                isDatePickerVisible = true
-            }
+            .then(
+                if (canModify) {
+                    Modifier.clickable {
+                        isDatePickerVisible = true
+                    }
+                } else {
+                    Modifier
+                }
+            )
     ) {
         Row(
             modifier = Modifier
@@ -350,7 +374,7 @@ private fun CustomFieldDateItemWidget(
                 style = MaterialTheme.typography.bodyLarge
             )
 
-            if (item.currentValue != null) {
+            if (item.currentValue != null && canModify) {
                 Spacer(Modifier.width(4.dp))
 
                 IconButton(
@@ -378,7 +402,8 @@ private fun CustomFieldUrlItemWidget(
     item: UrlItemState,
     onItemChange: (UrlItemState) -> Unit,
     isEditMode: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     val uriHandler = LocalUriHandler.current
     val isEnabled = item.currentValue.isNotEmpty()
@@ -391,7 +416,7 @@ private fun CustomFieldUrlItemWidget(
         },
         placeholder = stringResource(RString.custom_field_url),
         singleLine = true,
-        enabled = isEditMode,
+        enabled = isEditMode && canModify,
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Uri
         ),
@@ -428,7 +453,8 @@ private fun CustomFieldUrlItemWidget(
 private fun CustomFieldCheckboxWidget(
     item: CheckboxItemState,
     onItemChange: (CheckboxItemState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     CustomFieldBoxParent(
         modifier = modifier,
@@ -437,6 +463,7 @@ private fun CustomFieldCheckboxWidget(
         Checkbox(
             modifier = Modifier.padding(6.dp),
             checked = item.currentValue,
+            enabled = canModify,
             onCheckedChange = {
                 onItemChange(item.copy(currentValue = it))
             }
@@ -449,9 +476,10 @@ private fun CustomFieldRichTextItemWidget(
     isEditMode: Boolean,
     item: RichTextItemState,
     onItemChange: (RichTextItemState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
-    if (isEditMode) {
+    if (isEditMode && canModify) {
         CustomFieldTextWidget(
             modifier = modifier,
             value = item.currentValue,
@@ -459,7 +487,8 @@ private fun CustomFieldRichTextItemWidget(
                 onItemChange(item.copy(currentValue = newValue))
             },
             placeholder = stringResource(RString.custom_field_rich_text),
-            singleLine = false
+            singleLine = false,
+            enabled = true
         )
     } else {
         CustomFieldBoxParent(
@@ -478,7 +507,8 @@ private fun CustomFieldRichTextItemWidget(
 private fun CustomFieldDropdownItemWidget(
     item: DropdownItemState,
     onItemChange: (DropdownItemState) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     val option = item.currentValue.orEmpty()
 
@@ -488,6 +518,7 @@ private fun CustomFieldDropdownItemWidget(
     ) {
         DropdownSelector(
             modifier = Modifier.padding(16.dp),
+            canModify = canModify,
             items = item.options?.toList() ?: emptyList(),
             selectedItem = option,
             onItemSelect = {
@@ -522,11 +553,7 @@ private fun CustomFieldDropdownItemWidget(
 }
 
 @Composable
-private fun CustomFieldBoxParent(
-    isFocused: Boolean,
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
+private fun CustomFieldBoxParent(isFocused: Boolean, modifier: Modifier = Modifier, content: @Composable () -> Unit) {
     Box(
         modifier = modifier
             .fillMaxWidth()

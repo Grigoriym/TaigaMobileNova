@@ -12,5 +12,7 @@ data class CreateTaskState(
     val description: TextFieldValue = TextFieldValue(""),
     val setDescription: (TextFieldValue) -> Unit,
 
-    val onCreateTask: () -> Unit
+    val onCreateTask: () -> Unit,
+    val error: NativeText = NativeText.Empty,
+    val isLoading: Boolean = false
 )

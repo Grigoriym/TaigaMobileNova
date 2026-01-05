@@ -59,10 +59,16 @@ fun WorkItemClickableBadgeWidget(
     ) {
         Row(
             modifier = Modifier
-                .clickable(
-                    indication = ripple(),
-                    onClick = onClick,
-                    interactionSource = remember { MutableInteractionSource() }
+                .then(
+                    if (isClickable) {
+                        Modifier.clickable(
+                            indication = ripple(),
+                            onClick = onClick,
+                            interactionSource = remember { MutableInteractionSource() }
+                        )
+                    } else {
+                        Modifier
+                    }
                 )
                 .padding(horizontal = 12.dp, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically

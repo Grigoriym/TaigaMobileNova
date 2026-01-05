@@ -15,77 +15,77 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
-import com.grappim.taigamobile.uikit.widgets.button.AddButton
-import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButton
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
-import kotlinx.collections.immutable.ImmutableList
+import com.grappim.taigamobile.uikit.widgets.button.AddButtonWidget
+import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButtonWidget
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 
 @Composable
 fun WatchersWidget(
-    watchers: ImmutableList<User>,
+    watchersState: WorkItemWatchersState,
     goToProfile: (Long) -> Unit,
-    onRemoveWatcherClick: (watcherId: Long) -> Unit,
     onAddWatcherClick: () -> Unit,
-    isWatchersLoading: Boolean,
-    isWatchedByMe: Boolean,
     onAddMeToWatchersClick: () -> Unit,
     onRemoveMeFromWatchersClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
 ) {
     Column(modifier = modifier.fillMaxWidth()) {
         Text(
             text = stringResource(RString.watchers),
-            style = MaterialTheme.typography.titleMedium
+            style = MaterialTheme.typography.bodySmall
         )
 
         TaigaHeightSpacer(8.dp)
 
-        watchers.forEachIndexed { index, item ->
+        watchersState.watchers.forEachIndexed { index, item ->
             TeamUserWithActionWidget(
                 user = item,
                 goToProfile = {
                     goToProfile(item.actualId)
                 },
                 onRemoveUserClick = {
-                    onRemoveWatcherClick(item.actualId)
-                }
+                    watchersState.onRemoveWatcherClick(item.actualId)
+                },
+                canModify = canModify
             )
 
-            if (index < watchers.lastIndex) {
+            if (index < watchersState.watchers.lastIndex) {
                 Spacer(Modifier.height(6.dp))
             }
         }
 
-        if (isWatchersLoading) {
-            DotsLoader()
+        if (watchersState.areWatchersLoading) {
+            DotsLoaderWidget()
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.Start
         ) {
-            AddButton(
-                text = stringResource(RString.add_watcher),
-                onClick = onAddWatcherClick
-            )
+            if (canModify) {
+                AddButtonWidget(
+                    text = stringResource(RString.add_watcher),
+                    onClick = onAddWatcherClick
+                )
 
-            Spacer(modifier = Modifier.width(16.dp))
+                Spacer(modifier = Modifier.width(16.dp))
+            }
 
-            val (@StringRes buttonText: Int, @DrawableRes buttonIcon: Int) = if (isWatchedByMe) {
+            val (@StringRes buttonText: Int, @DrawableRes buttonIcon: Int) = if (watchersState.isWatchedByMe) {
                 RString.unwatch to RDrawable.ic_unwatch
             } else {
                 RString.watch to RDrawable.ic_watch
             }
 
-            TaigaTextButton(
+            TaigaTextButtonWidget(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
                 onClick = {
-                    if (isWatchedByMe) {
+                    if (watchersState.isWatchedByMe) {
                         onRemoveMeFromWatchersClick()
                     } else {
                         onAddMeToWatchersClick()

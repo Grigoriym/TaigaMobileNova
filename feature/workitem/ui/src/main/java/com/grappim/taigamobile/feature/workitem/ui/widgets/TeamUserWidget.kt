@@ -22,7 +22,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.core.domain.User
+import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -80,7 +80,8 @@ fun TeamUserWithActionWidget(
     user: User,
     goToProfile: (Long) -> Unit,
     onRemoveUserClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
 ) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -92,12 +93,14 @@ fun TeamUserWithActionWidget(
             user = user
         )
 
-        IconButton(onClick = onRemoveUserClick) {
-            Icon(
-                painter = painterResource(RDrawable.ic_remove),
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.outline
-            )
+        if (canModify) {
+            IconButton(onClick = onRemoveUserClick) {
+                Icon(
+                    painter = painterResource(RDrawable.ic_remove),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.outline
+                )
+            }
         }
     }
 }

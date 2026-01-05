@@ -13,6 +13,12 @@ dependencies {
     implementation(projects.feature.epics.domain)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)
+    implementation(projects.feature.workitem.ui)
+    implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.users.domain)
+    implementation(projects.feature.history.domain)
+    implementation(projects.feature.projects.domain)
+    implementation(projects.utils.formatter.datetime)
 
     implementation(projects.strings)
     implementation(projects.uikit)
@@ -24,4 +30,8 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.paging.compose)
+
+    implementation(libs.vanpra.color)
+
+    implementation(libs.androidx.compose.material.icons.core)
 }

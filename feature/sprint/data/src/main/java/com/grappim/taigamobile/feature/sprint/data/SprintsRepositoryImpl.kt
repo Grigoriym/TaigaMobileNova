@@ -3,32 +3,31 @@ package com.grappim.taigamobile.feature.sprint.data
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.grappim.taigamobile.core.api.handle404
-import com.grappim.taigamobile.core.domain.CommonTask
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.Sprint
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
-import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
+import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.sprint.domain.SprintData
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
-import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
-import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
+import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 import javax.inject.Inject
 
 class SprintsRepositoryImpl @Inject constructor(
-    private val userStoriesRepository: UserStoriesRepository,
     private val sprintApi: SprintApi,
-    private val issuesRepository: IssuesRepository,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val filtersRepository: FiltersRepository,
-    private val tasksRepository: TasksRepository
+    private val workItemMapper: WorkItemMapper,
+    private val workItemApi: WorkItemApi,
+    private val sprintMapper: SprintMapper
 ) : SprintsRepository {
 
     override suspend fun getSprintData(sprintId: Long): Result<SprintData> = resultOf {
@@ -37,14 +36,21 @@ class SprintsRepositoryImpl @Inject constructor(
             val statuses = filtersRepository.getStatuses(CommonTaskType.Task)
             val storiesWithTasks = getSprintUserStories(sprintId = sprintId)
                 .map {
-                    it to async { tasksRepository.getUserStoryTasks(it.id) }
+                    it to async {
+                        val dtos = workItemApi.getWorkItems(
+                            taskPath = WorkItemPathPlural(CommonTaskType.Task),
+                            project = taigaSessionStorage.getCurrentProjectId(),
+                            userStory = it.id
+                        )
+                        workItemMapper.toDomainList(dtos, CommonTaskType.Task)
+                    }
                 }
                 .associate { (story, tasks) -> story to tasks.await() }
             val issues = getSprintIssues(sprintId = sprintId)
             val storylessTasks = getSprintTasks(sprintId = sprintId)
             SprintData(
                 sprint = sprint,
-                statusOlds = statuses,
+                statuses = statuses,
                 storiesWithTasks = storiesWithTasks,
                 issues = issues,
                 storylessTasks = storylessTasks
@@ -52,58 +58,77 @@ class SprintsRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getSprints(isClosed: Boolean): Flow<PagingData<Sprint>> = Pager(
+    override fun getSprintsPaging(isClosed: Boolean): Flow<PagingData<Sprint>> = Pager(
         PagingConfig(
-            pageSize = 20,
+            pageSize = 10,
             enablePlaceholders = false
         )
     ) {
-        SprintPagingSource(sprintApi, isClosed, taigaStorage)
+        SprintPagingSource(
+            sprintApi = sprintApi,
+            isClosed = isClosed,
+            taigaSessionStorage = taigaSessionStorage,
+            sprintMapper = sprintMapper
+        )
     }.flow
 
-    override suspend fun getSprintUserStories(sprintId: Long): List<CommonTask> =
-        userStoriesRepository.getUserStories(
-            project = taigaStorage.currentProjectIdFlow.first(),
+    override suspend fun getSprintUserStories(sprintId: Long): ImmutableList<WorkItem> {
+        val response = workItemApi.getWorkItems(
+            taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
+            project = taigaSessionStorage.getCurrentProjectId(),
             sprint = sprintId
         )
-
-    override suspend fun getSprints(page: Int, isClosed: Boolean) = handle404 {
-        sprintApi.getSprints(taigaStorage.currentProjectIdFlow.first(), page, isClosed)
-            .map { it.toSprint() }
+        return workItemMapper.toDomainList(response, CommonTaskType.UserStory)
     }
 
-    override suspend fun getSprint(sprintId: Long) = sprintApi.getSprint(sprintId).toSprint()
+    override suspend fun getSprints(isClosed: Boolean): ImmutableList<Sprint> {
+        val dtos = sprintApi.getSprints(
+            project = taigaSessionStorage.getCurrentProjectId(),
+            isClosed = isClosed
+        )
+        return sprintMapper.toDomainList(dtos)
+    }
 
-    override suspend fun getSprintTasks(sprintId: Long) = tasksRepository.getTasks(
-        userStory = "null",
-        project = taigaStorage.currentProjectIdFlow.first(),
-        sprint = sprintId
-    )
+    override suspend fun getSprint(sprintId: Long): Sprint {
+        val sprint = sprintApi.getSprint(sprintId)
+        return sprintMapper.toDomain(sprint)
+    }
 
-    override suspend fun getSprintIssues(sprintId: Long) = issuesRepository.getIssues(
-        project = taigaStorage.currentProjectIdFlow.first(),
-        sprint = sprintId
-    )
+    override suspend fun getSprintTasks(sprintId: Long): ImmutableList<WorkItem> {
+        val response = workItemApi.getWorkItems(
+            taskPath = WorkItemPathPlural(CommonTaskType.Task),
+            project = taigaSessionStorage.getCurrentProjectId(),
+            sprint = sprintId,
+            userStory = "null"
+        )
+        return workItemMapper.toDomainList(response, CommonTaskType.Task)
+    }
 
-    override suspend fun createSprint(name: String, start: LocalDate, end: LocalDate) =
+    override suspend fun getSprintIssues(sprintId: Long): ImmutableList<WorkItem> {
+        val response = workItemApi.getWorkItems(
+            taskPath = WorkItemPathPlural(CommonTaskType.Issue),
+            project = taigaSessionStorage.getCurrentProjectId(),
+            sprint = sprintId
+        )
+        return workItemMapper.toDomainList(response, CommonTaskType.Issue)
+    }
+
+    override suspend fun createSprint(name: String, start: LocalDate, end: LocalDate) {
         sprintApi.createSprint(
             CreateSprintRequest(
-                name,
-                start,
-                end,
-                taigaStorage.currentProjectIdFlow.first()
+                name = name,
+                estimatedStart = start,
+                estimatedFinish = end,
+                project = taigaSessionStorage.getCurrentProjectId()
             )
         )
+    }
 
-    override suspend fun editSprint(
-        sprintId: Long,
-        name: String,
-        start: LocalDate,
-        end: LocalDate
-    ) = sprintApi.editSprint(
-        id = sprintId,
-        request = EditSprintRequest(name, start, end)
-    )
+    override suspend fun editSprint(sprintId: Long, name: String, start: LocalDate, end: LocalDate) =
+        sprintApi.editSprint(
+            id = sprintId,
+            request = EditSprintRequest(name, start, end)
+        )
 
     override suspend fun deleteSprint(sprintId: Long) {
         sprintApi.deleteSprint(sprintId)

@@ -1,12 +1,12 @@
 package com.grappim.taigamobile.feature.scrum.ui
 
-import androidx.navigation.NavController
-import androidx.navigation.NavOptions
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object ScrumNavDestination
+data object ScrumBacklogDestination
 
-fun NavController.navigateToScrum(navOptions: NavOptions) {
-    navigate(route = ScrumNavDestination, navOptions = navOptions)
-}
+@Serializable
+data object ScrumOpenSprintsDestination
+
+@Serializable
+data object ScrumClosedSprintsDestination

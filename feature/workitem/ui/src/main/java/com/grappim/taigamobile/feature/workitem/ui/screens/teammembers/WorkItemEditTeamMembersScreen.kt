@@ -28,7 +28,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.grappim.taigamobile.feature.workitem.ui.models.TeamMemberUI
@@ -37,6 +37,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -44,10 +45,7 @@ import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 
 @Composable
-fun WorkItemEditAssigneeScreen(
-    goBack: () -> Unit,
-    viewModel: EditTeamMemberViewModel = hiltViewModel()
-) {
+fun WorkItemEditTeamMemberScreen(goBack: () -> Unit, viewModel: EditTeamMemberViewModel = hiltViewModel()) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -55,14 +53,12 @@ fun WorkItemEditAssigneeScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.edit_team_members),
-                showBackButton = true,
-                overrideBackHandlerAction = {
-                    state.setIsDialogVisible(!state.isDialogVisible)
-                },
+                navigationIcon = NavigationIconConfig.Back(
+                    onBackClick = { state.setIsDialogVisible(!state.isDialogVisible) }
+                ),
                 actions = persistentListOf(
                     TopBarActionTextButton(
                         text = NativeText.Resource(RString.save),
-                        contentDescription = "",
                         onClick = {
                             state.shouldGoBackWithCurrentValue(true)
                         }
@@ -121,11 +117,7 @@ private fun EditAssigneeContent(state: EditTeamMemberState) {
 }
 
 @Composable
-private fun TeamMemberItem(
-    teamMemberUI: TeamMemberUI,
-    isSelected: Boolean,
-    onItemClick: (TeamMemberUI) -> Unit
-) {
+private fun TeamMemberItem(teamMemberUI: TeamMemberUI, isSelected: Boolean, onItemClick: (TeamMemberUI) -> Unit) {
     ListItem(
         modifier = Modifier.clickable {
             onItemClick(teamMemberUI)

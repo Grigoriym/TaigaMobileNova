@@ -11,15 +11,14 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -43,50 +42,19 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.Filter
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
-import com.grappim.taigamobile.core.domain.RolesFilter
-import com.grappim.taigamobile.core.domain.StatusesFilter
-import com.grappim.taigamobile.core.domain.TagsFilter
-import com.grappim.taigamobile.core.domain.UsersFilter
-import com.grappim.taigamobile.core.domain.hasData
+import com.grappim.taigamobile.feature.filters.domain.hasData
+import com.grappim.taigamobile.feature.filters.domain.model.filters.Filters
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.Chip
 import com.grappim.taigamobile.uikit.widgets.badge.Badge
+import com.grappim.taigamobile.uikit.widgets.editor.TextFieldStringWithHint
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 import com.grappim.taigamobile.uikit.widgets.editor.searchFieldHorizontalPadding
 import com.grappim.taigamobile.uikit.widgets.editor.searchFieldVerticalPadding
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.coroutines.launch
-
-/**
- * TaskFilters which reacts to LazyList scroll state
- */
-@Composable
-fun TasksFiltersWithLazyList(
-    modifier: Modifier = Modifier,
-    filters: FiltersDataDTO = FiltersDataDTO(),
-    activeFilters: FiltersDataDTO = FiltersDataDTO(),
-    selectFilters: (FiltersDataDTO) -> Unit = {},
-    content: LazyListScope.() -> Unit
-) {
-    LazyColumn(
-        modifier = modifier.fillMaxSize()
-    ) {
-        item {
-            TaskFilters(
-                selected = activeFilters,
-                onSelect = selectFilters,
-                data = filters
-            )
-        }
-
-        content()
-    }
-}
 
 /**
  * Filters for tasks (like status, assignees etc.).
@@ -95,28 +63,29 @@ fun TasksFiltersWithLazyList(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskFilters(
-    selected: FiltersDataDTO,
-    onSelect: (FiltersDataDTO) -> Unit,
-    data: FiltersDataDTO,
-    modifier: Modifier = Modifier
+    selected: FiltersData,
+    onSelect: (FiltersData) -> Unit,
+    data: FiltersData,
+    searchQuery: String,
+    setSearchQuery: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    isFiltersError: Boolean = false,
+    onRetryFilters: () -> Unit = {},
+    isFiltersLoading: Boolean = false
 ) {
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        var query by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-            mutableStateOf(
-                TextFieldValue(
-                    selected.query
-                )
-            )
-        }
-
-        TextFieldWithHint(
+        TextFieldStringWithHint(
             hintId = RString.tasks_search_hint,
-            value = query,
-            onValueChange = { query = it },
-            onSearchClick = { onSelect(selected.copy(query = query.text)) },
+            value = searchQuery,
+            onValueChange = {
+                setSearchQuery(it)
+            },
+            onSearchClick = {
+                onSelect(selected)
+            },
             horizontalPadding = searchFieldHorizontalPadding,
             verticalPadding = searchFieldVerticalPadding,
             hasBorder = true
@@ -153,6 +122,16 @@ fun TaskFilters(
                     Spacer(Modifier.width(space))
                     Badge(it.toString())
                 }
+
+                if (isFiltersError) {
+                    Spacer(Modifier.width(space))
+                    Icon(
+                        imageVector = Icons.Default.Warning,
+                        contentDescription = "Filter error",
+                        tint = MaterialTheme.colorScheme.error,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
         }
 
@@ -164,16 +143,18 @@ fun TaskFilters(
             isBottomSheetVisible = isBottomSheetVisible,
             setBottomSheetVisible = { isBottomSheetVisible = it },
             selected = selected,
-            onSelect = onSelect
+            onSelect = onSelect,
+            isFiltersError = isFiltersError,
+            onRetryFilters = onRetryFilters,
+            isFiltersLoading = isFiltersLoading
         )
     }
 }
 
-internal inline fun <T : Filter> List<T>.ifHasData(action: (List<T>) -> Unit) =
-    takeIf { it.hasData() }?.let(action)
+internal inline fun <T : Filters> List<T>.ifHasData(action: (List<T>) -> Unit) = takeIf { it.hasData() }?.let(action)
 
 @Composable
-internal fun <T : Filter> Section(
+internal fun <T : Filters> Section(
     @StringRes titleId: Int,
     filters: List<T>,
     onSelect: (T) -> Unit,
@@ -229,7 +210,7 @@ internal fun <T : Filter> Section(
 
 @Composable
 internal fun FilterChip(
-    filter: Filter,
+    filter: Filters,
     @StringRes noNameId: Int? = null,
     onClick: () -> Unit = {},
     onRemoveClick: (() -> Unit)? = null
@@ -274,59 +255,59 @@ internal fun FilterChip(
     }
 }
 
-@PreviewDarkLight
-@Composable
-private fun TaskFiltersPreview() = TaigaMobileTheme {
-    var selected by remember { mutableStateOf(FiltersDataDTO()) }
-
-    Column {
-        Text("test")
-
-        TaskFilters(
-            selected = selected,
-            onSelect = { selected = it },
-            data = FiltersDataDTO(
-                assignees = listOf(
-                    UsersFilter(null, "", 2)
-                ) + List(10) { UsersFilter(it.toLong(), "Human $it", it % 3L) },
-                roles = listOf(
-                    RolesFilter(0, "UX", 1),
-                    RolesFilter(1, "Developer", 4),
-                    RolesFilter(2, "Stakeholder", 0)
-                ),
-                tags = List(10) {
-                    listOf(
-                        TagsFilter("#7E57C2", "tag ${it * 3}", 3),
-                        TagsFilter("#F57C00", "tag ${it * 3 + 1}", 4),
-                        TagsFilter("#C62828", "tag ${it * 3 + 2}", 0)
-                    )
-                }.flatten(),
-                statuses = listOf(
-                    StatusesFilter(0, "#B0BEC5", "Backlog", 2),
-                    StatusesFilter(1, "#1E88E5", "In progress", 1),
-                    StatusesFilter(2, "#43A047", "Done", 3)
-                ),
-                priorities = listOf(
-                    StatusesFilter(0, "#29B6F6", "Low", 2),
-                    StatusesFilter(1, "#43A047", "Normal", 1),
-                    StatusesFilter(2, "#FBC02D", "High", 2)
-                ),
-                severities = listOf(
-                    StatusesFilter(0, "#29B6F6", "Minor", 2),
-                    StatusesFilter(1, "#43A047", "Normal", 1),
-                    StatusesFilter(2, "#FBC02D", "Major", 2),
-                    StatusesFilter(0, "#29B6F6", "Minor", 2),
-                    StatusesFilter(1, "#43A047", "Normal", 1),
-                    StatusesFilter(2, "#FBC02D", "Major", 2)
-                ),
-                types = listOf(
-                    StatusesFilter(0, "#F44336", "Bug", 2),
-                    StatusesFilter(1, "#C8E6C9", "Question", 1),
-                    StatusesFilter(2, "#C8E6C9", "Enhancement", 2)
-                )
-            )
-        )
-
-        Text("Text")
-    }
-}
+// @PreviewDarkLight
+// @Composable
+// private fun TaskFiltersPreview() = TaigaMobileTheme {
+//    var selected by remember { mutableStateOf(FiltersDataDTO()) }
+//
+//    Column {
+//        Text("test")
+//
+//        TaskFilters(
+//            selected = selected,
+//            onSelect = { selected = it },
+//            data = FiltersDataDTO(
+//                assignees = listOf(
+//                    UsersFilterDTO(null, "", 2)
+//                ) + List(10) { UsersFilterDTO(it.toLong(), "Human $it", it % 3L) },
+//                roles = listOf(
+//                    RolesFilterDTO(0, "UX", 1),
+//                    RolesFilterDTO(1, "Developer", 4),
+//                    RolesFilterDTO(2, "Stakeholder", 0)
+//                ),
+//                tags = List(10) {
+//                    listOf(
+//                        TagsFilterDTO("#7E57C2", "tag ${it * 3}", 3),
+//                        TagsFilterDTO("#F57C00", "tag ${it * 3 + 1}", 4),
+//                        TagsFilterDTO("#C62828", "tag ${it * 3 + 2}", 0)
+//                    )
+//                }.flatten(),
+//                statuses = listOf(
+//                    StatusesFilterDTO(0, "#B0BEC5", "Backlog", 2),
+//                    StatusesFilterDTO(1, "#1E88E5", "In progress", 1),
+//                    StatusesFilterDTO(2, "#43A047", "Done", 3)
+//                ),
+//                priorities = listOf(
+//                    StatusesFilterDTO(0, "#29B6F6", "Low", 2),
+//                    StatusesFilterDTO(1, "#43A047", "Normal", 1),
+//                    StatusesFilterDTO(2, "#FBC02D", "High", 2)
+//                ),
+//                severities = listOf(
+//                    StatusesFilterDTO(0, "#29B6F6", "Minor", 2),
+//                    StatusesFilterDTO(1, "#43A047", "Normal", 1),
+//                    StatusesFilterDTO(2, "#FBC02D", "Major", 2),
+//                    StatusesFilterDTO(0, "#29B6F6", "Minor", 2),
+//                    StatusesFilterDTO(1, "#43A047", "Normal", 1),
+//                    StatusesFilterDTO(2, "#FBC02D", "Major", 2)
+//                ),
+//                types = listOf(
+//                    StatusesFilterDTO(0, "#F44336", "Bug", 2),
+//                    StatusesFilterDTO(1, "#C8E6C9", "Question", 1),
+//                    StatusesFilterDTO(2, "#C8E6C9", "Enhancement", 2)
+//                )
+//            )
+//        )
+//
+//        Text("Text")
+//    }
+// }

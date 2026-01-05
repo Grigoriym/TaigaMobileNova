@@ -11,6 +11,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.input.ImeAction
@@ -32,10 +34,44 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.asString
 
-/**
- * You've read it right. Text field. With hint.
- */
+@Composable
+fun HintTextField(
+    value: String,
+    onValueChange: (String) -> Unit,
+    hint: NativeText,
+    modifier: Modifier = Modifier,
+    error: NativeText = NativeText.Empty
+) {
+    val context = LocalContext.current
+
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+    ) {
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            isError = error.isNotEmpty(),
+            value = value,
+            placeholder = {
+                Text(text = hint.asString(context))
+            },
+            onValueChange = onValueChange,
+            supportingText = {
+                if (error.isNotEmpty()) {
+                    Text(
+                        modifier = Modifier.fillMaxWidth(),
+                        text = error.asString(context),
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+            }
+        )
+    }
+}
+
 @Composable
 fun TextFieldWithHint(
     @StringRes hintId: Int,
@@ -81,6 +117,81 @@ fun TextFieldWithHint(
             }
     ) {
         if (value.text.isEmpty()) {
+            Text(
+                text = stringResource(hintId),
+                style = style,
+                color = unfocusedColor
+            )
+        }
+
+        BasicTextField(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth()
+                .focusRequester(focusRequester)
+                .onFocusChanged {
+                    onFocusChange(it.isFocused)
+                    outlineColor = if (it.isFocused) primaryColor else unfocusedColor
+                },
+            textStyle = style.merge(TextStyle(color = textColor)),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface),
+            singleLine = singleLine,
+            maxLines = maxLines,
+            keyboardOptions = KeyboardOptions(
+                imeAction = onSearchClick?.let { ImeAction.Search } ?: ImeAction.Default,
+                keyboardType = keyboardType
+            ),
+            keyboardActions = KeyboardActions(onSearch = { onSearchClick?.invoke() })
+        )
+    }
+}
+
+@Composable
+fun TextFieldStringWithHint(
+    @StringRes hintId: Int,
+    value: String,
+    onValueChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    horizontalPadding: Dp = 0.dp,
+    verticalPadding: Dp = 0.dp,
+    width: Dp? = null,
+    minHeight: Dp? = null,
+    style: TextStyle = MaterialTheme.typography.bodyLarge,
+    singleLine: Boolean = false,
+    keyboardType: KeyboardType = KeyboardType.Text,
+    onFocusChange: (Boolean) -> Unit = {},
+    focusRequester: FocusRequester = remember { FocusRequester() },
+    maxLines: Int = Int.MAX_VALUE,
+    textColor: Color = MaterialTheme.colorScheme.onSurface,
+    onSearchClick: (() -> Unit)? = null,
+    hasBorder: Boolean = false,
+    contentAlignment: Alignment = Alignment.CenterStart
+) {
+    val primaryColor = MaterialTheme.colorScheme.primary
+    val unfocusedColor = MaterialTheme.colorScheme.outline
+    var outlineColor by remember { mutableStateOf(unfocusedColor) }
+
+    Box(
+        contentAlignment = contentAlignment,
+        modifier = modifier.let { m -> width?.let { m.width(it) } ?: m.fillMaxWidth() }
+            .heightIn(min = minHeight ?: Dp.Unspecified)
+            .padding(horizontal = horizontalPadding, vertical = verticalPadding)
+            .let {
+                if (hasBorder) {
+                    it
+                        .border(
+                            width = 1.dp,
+                            color = outlineColor,
+                            shape = MaterialTheme.shapes.large
+                        )
+                        .padding(horizontal = 16.dp, vertical = 10.dp)
+                } else {
+                    it
+                }
+            }
+    ) {
+        if (value.isEmpty()) {
             Text(
                 text = stringResource(hintId),
                 style = style,

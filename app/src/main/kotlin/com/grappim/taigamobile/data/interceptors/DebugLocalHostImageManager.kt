@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.data.interceptors
 
+import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -8,11 +9,11 @@ import javax.inject.Singleton
 
 /**
  * While debugging I use the locally run Taiga, which has the "localhost" as a host
- * I need to change that to "10.0.2.2"
+ * I need to change that to "10.0.2.2" or any other
  * Why? Because images are downloaded with "localhost" as a host, while I need another host
  */
 @Singleton
-class DebugLocalHostImageManager @Inject constructor() : Interceptor {
+class DebugLocalHostImageManager @Inject constructor(private val appInfoProvider: AppInfoProvider) : Interceptor {
 
     private val lock = Any()
 
@@ -22,7 +23,7 @@ class DebugLocalHostImageManager @Inject constructor() : Interceptor {
 
             if (!request.url.host.contains("localhost")) return chain.proceed(request)
 
-            val newHost = "http://10.0.2.2:9000/".toHttpUrlOrNull()
+            val newHost = appInfoProvider.getDebugLocalHost().toHttpUrlOrNull()
             if (newHost != null) {
                 val newUrl = request.url.newBuilder()
                     .scheme(newHost.scheme)

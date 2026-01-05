@@ -1,9 +1,6 @@
 <resources>
 
-    <style name="Theme.TaigaMobile" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryVariant">@color/colorPrimaryVariant</item>
-    </style>
+    <style name="Theme.TaigaMobile" parent="Theme.Material3.DayNight.NoActionBar"/>
 
     <style name="DatePicker" parent="ThemeOverlay.Material3.MaterialCalendar">
         <item name="materialCalendarHeaderTitle">@style/DatePicker.Title</item>
@@ -12,5 +9,17 @@
     <style name="DatePicker.Title" parent="Widget.Material3.MaterialCalendar.HeaderTitle">
         <item name="android:textAppearance">@style/TextAppearance.Material3.TitleMedium</item>
         <item name="autoSizeTextType">none</item>
+    </style>
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.TaigaMobile.SplashScreen" parent="Theme.SplashScreen">
+        <!-- Set the splash screen background color -->
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+
+        <!-- Set the splash screen icon -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+
+        <!-- Optional: Set the theme for after splash screen -->
+        <item name="postSplashScreenTheme">@style/Theme.TaigaMobile</item>
     </style>
 </resources>

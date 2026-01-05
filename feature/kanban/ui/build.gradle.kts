@@ -19,6 +19,10 @@ dependencies {
     implementation(projects.uikit)
 
     implementation(projects.feature.kanban.domain)
+    implementation(projects.feature.filters.domain)
+    implementation(projects.feature.users.domain)
+    implementation(projects.feature.userstories.domain)
+    implementation(projects.feature.swimlanes.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)

@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.tasks.data
 
-import com.grappim.taigamobile.core.domain.CommonTaskResponse
+import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -18,8 +18,8 @@ interface TasksApi {
         @Query("status__is_closed") isClosed: Boolean? = null,
         @Query("watchers") watcherId: Long? = null,
         @Header("x-disable-pagination") disablePagination: Boolean? = (page == null).takeIf { it }
-    ): List<CommonTaskResponse>
+    ): List<WorkItemResponseDTO>
 
     @POST("tasks")
-    suspend fun createTask(@Body createTaskRequest: CreateTaskRequest): CommonTaskResponse
+    suspend fun createTask(@Body createTaskRequestDTO: CreateTaskRequestDTO): WorkItemResponseDTO
 }

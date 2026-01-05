@@ -18,8 +18,14 @@ dependencies {
 
     implementation(projects.feature.wiki.domain)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.workitem.ui)
+    implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.projects.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.paging.compose)
+
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
 }

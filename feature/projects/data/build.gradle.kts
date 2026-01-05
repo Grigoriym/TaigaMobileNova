@@ -14,10 +14,9 @@ dependencies {
     implementation(projects.core.async)
 
     implementation(projects.feature.projects.domain)
+    implementation(projects.feature.projects.dto)
+    implementation(projects.feature.projects.mapper)
 
     implementation(libs.androidx.paging.common)
     implementation(libs.retrofit)
-
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
 }

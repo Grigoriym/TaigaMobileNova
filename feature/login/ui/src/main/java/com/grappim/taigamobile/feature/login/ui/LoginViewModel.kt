@@ -10,8 +10,8 @@ import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.SnackbarStateViewModel
-import com.grappim.taigamobile.utils.ui.SnackbarStateViewModelImpl
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,11 +22,9 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class LoginViewModel @Inject constructor(
-    private val authRepository: AuthRepository,
-    serverStorage: ServerStorage
-) : ViewModel(),
-    SnackbarStateViewModel by SnackbarStateViewModelImpl() {
+class LoginViewModel @Inject constructor(private val authRepository: AuthRepository, serverStorage: ServerStorage) :
+    ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl() {
 
     companion object {
         private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""

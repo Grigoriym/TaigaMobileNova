@@ -35,68 +35,70 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldWithHint
 
 @Composable
-fun CreateCommentBar(onButtonClick: (String) -> Unit, modifier: Modifier = Modifier) {
-    Surface(
-        modifier = modifier.fillMaxWidth(),
-        tonalElevation = 8.dp
-    ) {
-        val keyboardController = LocalSoftwareKeyboardController.current
-        var commentTextValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-            mutableStateOf(
-                TextFieldValue()
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .padding(vertical = 8.dp, horizontal = mainHorizontalScreenPadding)
-                .navigationBarsPadding()
-                .imePadding(),
-            verticalAlignment = Alignment.CenterVertically
+fun CreateCommentBar(onButtonClick: (String) -> Unit, modifier: Modifier = Modifier, canComment: Boolean = false) {
+    if (canComment) {
+        Surface(
+            modifier = modifier.fillMaxWidth(),
+            tonalElevation = 8.dp
         ) {
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(end = 4.dp)
-                    .border(
-                        width = 0.5.dp,
-                        color = MaterialTheme.colorScheme.outline,
-                        shape = MaterialTheme.shapes.large
-                    )
-                    .clip(MaterialTheme.shapes.large)
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
-                    .padding(8.dp),
-                contentAlignment = Alignment.CenterStart
-            ) {
-                TextFieldWithHint(
-                    hintId = RString.comment_hint,
-                    maxLines = 3,
-                    value = commentTextValue,
-                    onValueChange = { commentTextValue = it }
+            val keyboardController = LocalSoftwareKeyboardController.current
+            var commentTextValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
+                mutableStateOf(
+                    TextFieldValue()
                 )
             }
 
-            CompositionLocalProvider(
-                LocalMinimumInteractiveComponentSize provides Dp.Unspecified
+            Row(
+                modifier = Modifier
+                    .padding(vertical = 8.dp, horizontal = mainHorizontalScreenPadding)
+                    .navigationBarsPadding()
+                    .imePadding(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                IconButton(
-                    onClick = {
-                        commentTextValue.text.trim().takeIf { it.isNotEmpty() }?.let {
-                            onButtonClick(it)
-                            commentTextValue = TextFieldValue()
-                            keyboardController?.hide()
-                        }
-                    },
+                Box(
                     modifier = Modifier
-                        .size(36.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
+                        .weight(1f)
+                        .padding(end = 4.dp)
+                        .border(
+                            width = 0.5.dp,
+                            color = MaterialTheme.colorScheme.outline,
+                            shape = MaterialTheme.shapes.large
+                        )
+                        .clip(MaterialTheme.shapes.large)
+                        .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.08f))
+                        .padding(8.dp),
+                    contentAlignment = Alignment.CenterStart
                 ) {
-                    Icon(
-                        painter = painterResource(RDrawable.ic_send),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary
+                    TextFieldWithHint(
+                        hintId = RString.comment_hint,
+                        maxLines = 3,
+                        value = commentTextValue,
+                        onValueChange = { commentTextValue = it }
                     )
+                }
+
+                CompositionLocalProvider(
+                    LocalMinimumInteractiveComponentSize provides Dp.Unspecified
+                ) {
+                    IconButton(
+                        onClick = {
+                            commentTextValue.text.trim().takeIf { it.isNotEmpty() }?.let {
+                                onButtonClick(it)
+                                commentTextValue = TextFieldValue()
+                                keyboardController?.hide()
+                            }
+                        },
+                        modifier = Modifier
+                            .size(36.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary)
+                    ) {
+                        Icon(
+                            painter = painterResource(RDrawable.ic_send),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
                 }
             }
         }

@@ -11,10 +11,15 @@ android {
 
 dependencies {
     implementation(projects.feature.issues.domain)
+    implementation(projects.feature.history.domain)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)
     implementation(projects.feature.workitem.ui)
+    implementation(projects.feature.workitem.domain)
     implementation(projects.utils.formatter.datetime)
+    implementation(projects.feature.users.domain)
+    implementation(projects.feature.sprint.domain)
+    implementation(projects.feature.projects.domain)
 
     implementation(projects.strings)
     implementation(projects.core.api)
@@ -29,6 +34,9 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.coil.compose)
 }

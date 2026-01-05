@@ -25,13 +25,32 @@ doctor {
     disallowCleanTaskDependencies.set(true)
     warnWhenJetifierEnabled.set(true)
     javaHome {
+        ensureJavaHomeMatches.set(false)
+        ensureJavaHomeIsSet.set(false)
         failOnError.set(false)
+    }
+}
+
+allprojects {
+    tasks.withType<Test> {
+        failFast = true
+        // https://github.com/gradle/gradle/issues/33619#issuecomment-2913519014
+        failOnNoDiscoveredTests = false
+        reports {
+            html.required.set(true)
+        }
+        testLogging {
+            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
+            showStandardStreams = true
+            exceptionFormat = TestExceptionFormat.FULL
+            showExceptions = true
+        }
     }
 }
 
 subprojects {
     apply {
-        plugin("io.gitlab.arturbosch.detekt")
+        plugin("dev.detekt")
         plugin("org.jlleitschuh.gradle.ktlint")
         plugin("com.autonomousapps.dependency-analysis")
     }
@@ -48,7 +67,7 @@ subprojects {
     // ./gradlew ktlintFormat
     // ./gradlew addKtlintCheckGitPreCommitHook
     configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-        version.set("1.5.0")
+        version.set("1.7.1")
         android.set(true)
         ignoreFailures.set(false)
         verbose.set(true)
@@ -62,22 +81,10 @@ subprojects {
         }
     }
 
-    tasks.withType<Test> {
-        failFast = true
-        reports {
-            html.required.set(true)
-        }
-        testLogging {
-            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-            showStandardStreams = true
-            exceptionFormat = TestExceptionFormat.FULL
-            showExceptions = true
-        }
-    }
-
+    // https://stackoverflow.com/questions/77527617/using-version-catalog-in-gradle-kotlin-build-for-subprojects
     dependencies {
-        ktlintRuleset("io.nlopez.compose.rules:ktlint:0.4.22")
-        detektPlugins("io.nlopez.compose.rules:detekt:0.4.22")
+        ktlintRuleset(rootProject.libs.composeRules.ktlint)
+        detektPlugins(rootProject.libs.composeRules.detekt)
     }
 }
 
@@ -104,6 +111,10 @@ private val coverageExclusions = listOf(
 
     "**/MainDispatcherRule*",
     "**/SavedStateHandleRule*",
+    "**/*Api",
+
+    "**/TaigaApp",
+    "**/DrawerDestination",
 
     "**/*Screen",
     "**/*Activity",
@@ -115,10 +126,10 @@ private val coverageExclusions = listOf(
     "**/*NavDestination",
     "**/*Widget",
     "**/*Dialog",
+    "**/*BottomSheet",
+    "**/TaskFilters",
+    "**/MainNavHost",
 
-    "**/testing/*",
-    "**/uikit/theme/*",
-    "**/uikit/widgets/*",
     "**/FileLoggingTree"
 ).flatMap {
     listOf(
@@ -131,6 +142,8 @@ private val coverageExclusions = listOf(
 testAggregation {
     modules {
         exclude(rootProject)
+        exclude(projects.testing)
+        exclude(projects.uikit)
     }
     coverage {
         exclude(coverageExclusions)
@@ -146,11 +159,4 @@ tasks.jacocoAggregatedReport {
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
-}
-
-// taken from https://github.com/reactor/BlockHound
-tasks.withType<Test>().all {
-    if (JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_13)) {
-        jvmArgs("-XX:+AllowRedefinitionToAddDeleteMethods")
-    }
 }

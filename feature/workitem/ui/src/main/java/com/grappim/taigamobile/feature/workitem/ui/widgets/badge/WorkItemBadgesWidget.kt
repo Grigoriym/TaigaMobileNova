@@ -12,17 +12,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
 import com.grappim.taigamobile.utils.ui.asColor
 import com.grappim.taigamobile.utils.ui.asString
 import kotlinx.collections.immutable.ImmutableSet
 
 @Composable
-fun WorkItemBadgesWidget(
-    updatingBadges: ImmutableSet<SelectableWorkItemBadgeState>,
-    items: ImmutableSet<SelectableWorkItemBadgeState>,
-    onWorkingItemBadgeClick: (SelectableWorkItemBadgeState) -> Unit,
-    modifier: Modifier = Modifier
-) {
+fun WorkItemBadgesWidget(badgeState: WorkItemBadgeState, modifier: Modifier = Modifier, canModify: Boolean = true) {
     val context = LocalContext.current
     Card(
         modifier = modifier
@@ -39,15 +35,15 @@ fun WorkItemBadgesWidget(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items.forEach { item ->
+            badgeState.workItemBadges.forEach { item ->
                 WorkItemClickableBadgeWidget(
                     title = item.currentValue.title.asString(context),
                     color = item.currentValue.color.asColor(),
                     onClick = {
-                        onWorkingItemBadgeClick(item)
+                        badgeState.onBadgeClick(item)
                     },
-                    isLoading = item in updatingBadges,
-                    isClickable = true
+                    isLoading = item in badgeState.updatingBadges,
+                    isClickable = canModify
                 )
             }
         }

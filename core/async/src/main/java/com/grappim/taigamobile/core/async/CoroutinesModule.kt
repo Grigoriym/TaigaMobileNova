@@ -34,7 +34,6 @@ object CoroutinesModule {
     fun providesIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     @[Provides Singleton ApplicationScope]
-    fun provideApplicationScope(
-        @DefaultDispatcher defaultDispatcher: CoroutineDispatcher
-    ): CoroutineScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
+    fun provideApplicationScope(@DefaultDispatcher defaultDispatcher: CoroutineDispatcher): CoroutineScope =
+        CoroutineScope(SupervisorJob() + defaultDispatcher)
 }

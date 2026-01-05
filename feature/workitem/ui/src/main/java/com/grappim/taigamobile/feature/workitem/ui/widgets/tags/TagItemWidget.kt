@@ -21,7 +21,7 @@ import com.grappim.taigamobile.uikit.widgets.Chip
 import com.grappim.taigamobile.utils.ui.textColor
 
 @Composable
-fun TagItemWidget(tag: TagUI, onRemoveClick: () -> Unit, modifier: Modifier = Modifier) {
+fun TagItemWidget(tag: TagUI, onRemoveClick: () -> Unit, modifier: Modifier = Modifier, canModify: Boolean = true) {
     val textColor = tag.color.textColor()
 
     Chip(
@@ -34,19 +34,21 @@ fun TagItemWidget(tag: TagUI, onRemoveClick: () -> Unit, modifier: Modifier = Mo
                 color = textColor
             )
 
-            Spacer(Modifier.width(2.dp))
+            if (canModify) {
+                Spacer(Modifier.width(2.dp))
 
-            IconButton(
-                modifier = Modifier
-                    .size(26.dp)
-                    .clip(CircleShape),
-                onClick = onRemoveClick
-            ) {
-                Icon(
-                    painter = painterResource(RDrawable.ic_remove),
-                    contentDescription = null,
-                    tint = textColor
-                )
+                IconButton(
+                    modifier = Modifier
+                        .size(26.dp)
+                        .clip(CircleShape),
+                    onClick = onRemoveClick
+                ) {
+                    Icon(
+                        painter = painterResource(RDrawable.ic_remove),
+                        contentDescription = null,
+                        tint = textColor
+                    )
+                }
             }
         }
     }

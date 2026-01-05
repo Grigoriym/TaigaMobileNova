@@ -14,8 +14,8 @@ android {
         applicationId = namespace!!
         testApplicationId = "${namespace!!}.tests"
 
-        versionCode = 29
-        versionName = "2.0"
+        versionCode = 31
+        versionName = "2.0.0"
 
         project.base.archivesName.set("TaigaMobile-$versionName")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -23,6 +23,24 @@ android {
 
     testOptions.unitTests {
         isIncludeAndroidResources = true
+    }
+}
+
+composeCompiler {
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+}
+
+val isGooglePlayBuild = project.gradle.startParameter.taskRequests.toString().contains("Gplay")
+if (isGooglePlayBuild) {
+    logger.lifecycle("✅ Applying Google Services Plugin due to detected Google Play Build!")
+} else {
+    logger.lifecycle("🚫 Google Services Plugin is NOT applied for this variant.")
+    // Disable DependencyInfoBlock for fdroid builds
+    android {
+        dependenciesInfo {
+            includeInApk = false
+            includeInBundle = false
+        }
     }
 }
 
@@ -41,10 +59,10 @@ dependencies {
     implementation(projects.core.asyncAndroid)
     implementation(projects.core.appinfoApi)
     implementation(projects.core.navigation)
+    implementation(projects.core.serialization)
 
     implementation(projects.feature.dashboard.domain)
     implementation(projects.feature.dashboard.ui)
-    implementation(projects.feature.dashboard.data)
 
     implementation(projects.feature.login.domain)
     implementation(projects.feature.login.ui)
@@ -52,6 +70,8 @@ dependencies {
 
     implementation(projects.feature.projects.data)
     implementation(projects.feature.projects.domain)
+    implementation(projects.feature.projects.dto)
+    implementation(projects.feature.projects.mapper)
 
     implementation(projects.feature.wiki.domain)
     implementation(projects.feature.wiki.data)
@@ -65,6 +85,8 @@ dependencies {
 
     implementation(projects.feature.tasks.data)
     implementation(projects.feature.tasks.domain)
+    implementation(projects.feature.tasks.ui)
+    implementation(projects.feature.tasks.mapper)
 
     implementation(projects.feature.scrum.ui)
 
@@ -75,12 +97,16 @@ dependencies {
     implementation(projects.feature.filters.data)
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.filters.ui)
+    implementation(projects.feature.filters.mapper)
+    implementation(projects.feature.filters.dto)
 
     implementation(projects.feature.swimlanes.data)
     implementation(projects.feature.swimlanes.domain)
 
     implementation(projects.feature.users.data)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.users.dto)
+    implementation(projects.feature.users.mapper)
 
     implementation(projects.feature.history.domain)
     implementation(projects.feature.history.data)
@@ -92,10 +118,14 @@ dependencies {
     implementation(projects.feature.epics.ui)
     implementation(projects.feature.epics.domain)
     implementation(projects.feature.epics.data)
+    implementation(projects.feature.epics.dto)
+    implementation(projects.feature.epics.mapper)
 
     implementation(projects.feature.issues.data)
     implementation(projects.feature.issues.domain)
     implementation(projects.feature.issues.ui)
+    implementation(projects.feature.issues.dto)
+    implementation(projects.feature.issues.mapper)
 
     implementation(projects.feature.sprint.data)
     implementation(projects.feature.sprint.domain)
@@ -104,9 +134,14 @@ dependencies {
     implementation(projects.feature.userstories.data)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.userstories.ui)
+    implementation(projects.feature.userstories.dto)
+    implementation(projects.feature.userstories.mapper)
 
     implementation(projects.feature.workitem.ui)
     implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.workitem.data)
+    implementation(projects.feature.workitem.mapper)
+    implementation(projects.feature.workitem.dto)
 
     implementation(kotlin("reflect"))
 
@@ -117,6 +152,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.core.splashScreen)
     implementation(libs.material)
 
     implementation(libs.androidx.compose.ui.graphics)
@@ -125,14 +161,14 @@ dependencies {
     implementation(libs.androidx.compose.animation)
     implementation(libs.androidx.compose.foundation.layout)
 
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
+
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
-
     implementation(libs.retrofit)
-    implementation(libs.retrofit.moshi)
+    implementation(libs.retrofit.kotlin.serialization)
 
     implementation(libs.okhttp)
     implementation(libs.okhttp.logging.interceptor)
@@ -150,9 +186,13 @@ dependencies {
 
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.noop)
+
+    // can be removed eventually with dagger update
+    // https://github.com/google/dagger/issues/5001#issuecomment-3687444052
+    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.3.0")
 }
 
 moduleGraphAssert {
-    maxHeight = 10
+    maxHeight = 20
     assertOnAnyBuild = true
 }

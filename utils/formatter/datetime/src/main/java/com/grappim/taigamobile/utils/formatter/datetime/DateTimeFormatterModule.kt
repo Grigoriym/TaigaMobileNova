@@ -23,8 +23,7 @@ interface DateTimeFormatterModule {
 
     companion object {
         @[Provides LocalDateUIMedium]
-        fun provideLocalDateUiMedium(): DateTimeFormatter =
-            DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
+        fun provideLocalDateUiMedium(): DateTimeFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
         @[Provides IsoLocalDateFormatter]
         fun provideIsoLocalDateFormatter(): DateTimeFormatter = DateTimeFormatter.ISO_LOCAL_DATE

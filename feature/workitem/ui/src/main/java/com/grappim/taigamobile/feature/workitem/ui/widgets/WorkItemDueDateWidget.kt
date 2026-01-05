@@ -1,132 +1,119 @@
 package com.grappim.taigamobile.feature.workitem.ui.widgets
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.DueDateStatus
+import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateState
+import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
 import com.grappim.taigamobile.uikit.theme.taigaOrange
 import com.grappim.taigamobile.uikit.theme.taigaRed
-import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.StaticColor
+import com.grappim.taigamobile.utils.ui.asColor
 import com.grappim.taigamobile.utils.ui.asString
-import com.grappim.taigamobile.utils.ui.textColor
 import java.time.LocalDate
 
 @Composable
 fun WorkItemDueDateWidget(
-    dueDateText: NativeText,
-    dueDateStatus: DueDateStatus?,
-    isLoading: Boolean,
-    dueDate: LocalDate?,
-    setIsDueDatePickerVisible: (Boolean) -> Unit,
+    dueDateState: WorkItemDueDateState,
     setDueDate: (Long?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     val context = LocalContext.current
-    Box(
+    val accentColor = if (dueDateState.isDueDateLoading) {
+        MaterialTheme.colorScheme.primary
+    } else {
+        dueDateState.backgroundColor.asColor()
+    }
+
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(42.dp)
     ) {
-        Row(
+        Text(
+            text = stringResource(RString.due_date),
+            style = MaterialTheme.typography.bodySmall
+        )
+
+        TaigaHeightSpacer(4.dp)
+
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.surface, MaterialTheme.shapes.small),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Start
+                .then(
+                    if (canModify && !dueDateState.isDueDateLoading) {
+                        Modifier.clickable {
+                            dueDateState.setDueDateDatePickerVisibility(true)
+                        }
+                    } else {
+                        Modifier
+                    }
+                ),
+            shape = MaterialTheme.shapes.medium
         ) {
-            Box(
-                modifier = Modifier
-                    .background(
-                        color = when (dueDateStatus) {
-                            DueDateStatus.NotSet, DueDateStatus.NoLongerApplicable, null ->
-                                dueDate?.let { MaterialTheme.colorScheme.surface }
-                                    ?: MaterialTheme.colorScheme.primary
-
-                            DueDateStatus.Set -> taigaGreenPositive
-                            DueDateStatus.DueSoon -> taigaOrange
-                            DueDateStatus.PastDue -> taigaRed
-                        }.takeUnless { isLoading } ?: MaterialTheme.colorScheme.primary,
-                        shape = MaterialTheme.shapes.small
-                    )
-                    .padding(4.dp)
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier
-                            .size(40.dp)
-                            .padding(2.dp),
-                        strokeWidth = 2.dp,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                } else {
-                    Icon(
-                        painter = painterResource(RDrawable.ic_clock),
-                        contentDescription = null,
-                        tint = dueDate?.let { MaterialTheme.colorScheme.onSurface }
-                            ?: MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(40.dp)
-                    )
-                }
-            }
-
             Row(
                 modifier = Modifier
-                    .background(
-                        color = MaterialTheme.colorScheme.primary,
-                        shape = MaterialTheme.shapes.small.copy(
-                            topStart = CornerSize(0.dp),
-                            bottomStart = CornerSize(0.dp)
-                        )
-                    )
-                    .padding(4.dp),
+                    .fillMaxWidth()
+                    .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Text(
-                    text = dueDateText.asString(context),
-                    style = MaterialTheme.typography.bodyLarge,
-                    modifier = Modifier.clickable {
-                        setIsDueDatePickerVisible(true)
-                    },
-                    color = (
-                        dueDate?.let { MaterialTheme.colorScheme.onSurface }
-                            ?: MaterialTheme.colorScheme.onPrimary
-                        ).textColor()
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    if (dueDateState.isDueDateLoading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(24.dp),
+                            strokeWidth = 2.dp,
+                            color = accentColor
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(RDrawable.ic_clock),
+                            contentDescription = null,
+                            tint = accentColor,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
 
-                if (dueDate != null) {
-                    Spacer(Modifier.width(4.dp))
+                    Spacer(modifier = Modifier.width(16.dp))
 
+                    Text(
+                        text = dueDateState.dueDateText.asString(context),
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                if (dueDateState.dueDate != null && canModify) {
                     IconButton(
-                        modifier = Modifier
-                            .size(22.dp)
-                            .clip(CircleShape),
+                        modifier = Modifier.size(32.dp),
                         onClick = { setDueDate(null) }
                     ) {
                         Icon(
@@ -141,75 +128,80 @@ fun WorkItemDueDateWidget(
 }
 
 @Composable
-@PreviewDarkLight
+@PreviewTaigaDarkLight
 private fun WorkItemDueDateWidgetPreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("27.02.0255"),
-            dueDateStatus = DueDateStatus.DueSoon,
-            isLoading = false,
-            dueDate = LocalDate.now(),
-            setIsDueDatePickerVisible = {},
+            dueDateState = WorkItemDueDateState(
+                dueDateStatus = DueDateStatus.DueSoon,
+                dueDate = LocalDate.now(),
+                dueDateText = NativeText.Simple("24.01.23"),
+                backgroundColor = StaticColor(
+                    taigaOrange
+                )
+            ),
             setDueDate = {}
         )
     }
 }
 
 @Composable
-@PreviewDarkLight
+@PreviewTaigaDarkLight
 private fun WorkItemDueDateWidgetPastDuePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("27.02.0255"),
-            dueDateStatus = DueDateStatus.PastDue,
-            isLoading = false,
-            dueDate = LocalDate.now(),
-            setIsDueDatePickerVisible = {},
+            dueDateState = WorkItemDueDateState(
+                dueDateStatus = DueDateStatus.PastDue,
+                dueDate = LocalDate.now(),
+                dueDateText = NativeText.Simple("24.01.23")
+            ),
             setDueDate = {}
         )
     }
 }
 
 @Composable
-@PreviewDarkLight
+@PreviewTaigaDarkLight
 private fun WorkItemDueDateWidgetNoLongerApplicablePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("27.02.0255"),
-            dueDateStatus = DueDateStatus.NoLongerApplicable,
-            isLoading = false,
-            dueDate = LocalDate.now(),
-            setIsDueDatePickerVisible = {},
+            dueDateState = WorkItemDueDateState(
+                dueDateStatus = DueDateStatus.NoLongerApplicable,
+                dueDate = LocalDate.now(),
+                dueDateText = NativeText.Simple("24.01.23"),
+                backgroundColor = StaticColor(
+                    taigaRed
+                )
+            ),
             setDueDate = {}
         )
     }
 }
 
 @Composable
-@PreviewDarkLight
+@PreviewTaigaDarkLight
 private fun WorkItemDueDateWidgetNoDueDatePreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("no date"),
-            dueDateStatus = null,
-            isLoading = false,
-            dueDate = null,
-            setIsDueDatePickerVisible = {},
+            dueDateState = WorkItemDueDateState(
+                dueDateStatus = null,
+                dueDate = null
+            ),
             setDueDate = {}
         )
     }
 }
 
 @Composable
-@PreviewDarkLight
+@PreviewTaigaDarkLight
 private fun WorkItemDueDateWidgetLoadingPreview() {
     TaigaMobileTheme {
         WorkItemDueDateWidget(
-            dueDateText = NativeText.Simple("24.25.2626"),
-            dueDateStatus = DueDateStatus.NotSet,
-            isLoading = true,
-            dueDate = LocalDate.now(),
-            setIsDueDatePickerVisible = {},
+            dueDateState = WorkItemDueDateState(
+                dueDateStatus = DueDateStatus.NotSet,
+                dueDate = LocalDate.now(),
+                dueDateText = NativeText.Simple("24.01.23")
+            ),
             setDueDate = {}
         )
     }

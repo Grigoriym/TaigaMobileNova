@@ -17,33 +17,28 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.widgets.loader.CircularLoader
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 
 @Composable
 fun WorkItemTitleWidget(
-    currentTitle: String,
-    originalTitle: String,
-    onTitleChange: (String) -> Unit,
-    isClosed: Boolean,
+    titleState: WorkItemTitleState,
     onTitleSave: () -> Unit,
-    isLoading: Boolean,
-    isEditable: Boolean,
-    setIsEditable: (Boolean) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
 ) {
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopStart
     ) {
-        if (isEditable) {
+        if (titleState.isTitleEditable) {
             Column {
                 TextField(
                     modifier = Modifier.fillMaxWidth(),
-                    value = currentTitle,
-                    onValueChange = onTitleChange,
+                    value = titleState.currentTitle,
+                    onValueChange = titleState.onTitleChange,
                     textStyle = MaterialTheme.typography.headlineSmall,
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.background,
@@ -55,12 +50,7 @@ fun WorkItemTitleWidget(
                     horizontalArrangement = Arrangement.Start,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    TextButton(
-                        onClick = {
-                            setIsEditable(false)
-                            onTitleChange(originalTitle)
-                        }
-                    ) {
+                    TextButton(onClick = titleState.onCancelClick) {
                         Text(stringResource(RString.cancel))
                     }
                     TextButton(
@@ -70,8 +60,8 @@ fun WorkItemTitleWidget(
                     ) {
                         Text(stringResource(RString.save))
                     }
-                    if (isLoading) {
-                        CircularLoader(modifier = Modifier.size(40.dp))
+                    if (titleState.isTitleLoading) {
+                        CircularLoaderWidget(modifier = Modifier.size(40.dp))
                     }
                 }
             }
@@ -84,20 +74,17 @@ fun WorkItemTitleWidget(
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            setIsEditable(true)
-                        },
-                    text = currentTitle,
-                    style = MaterialTheme.typography.headlineSmall.let { textStyle ->
-                        if (isClosed) {
-                            textStyle.copy(
-                                color = MaterialTheme.colorScheme.outline,
-                                textDecoration = TextDecoration.LineThrough
-                            )
-                        } else {
-                            textStyle
-                        }
-                    },
+                        .then(
+                            if (canModify) {
+                                Modifier.clickable {
+                                    titleState.setIsTitleEditable(true)
+                                }
+                            } else {
+                                Modifier
+                            }
+                        ),
+                    text = titleState.currentTitle,
+                    style = MaterialTheme.typography.headlineSmall,
                     maxLines = 2
                 )
             }

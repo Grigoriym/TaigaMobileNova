@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.grappim.taigamobile.feature.issues.ui.details
 
 import android.net.Uri
@@ -5,77 +7,158 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.Attachment
-import com.grappim.taigamobile.core.domain.Comment
-import com.grappim.taigamobile.core.domain.patch.PatchableField
-import com.grappim.taigamobile.core.domain.patch.PatchedData
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
-import com.grappim.taigamobile.feature.issues.domain.IssueTask
-import com.grappim.taigamobile.feature.issues.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.issues.ui.model.IssueUI
+import com.grappim.taigamobile.feature.issues.ui.model.IssueUIMapper
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.domain.Comment
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgePriority
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeSeverity
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeStatus
-import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeType
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
-import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.DateItemState
-import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.NumberItemState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
-import com.grappim.taigamobile.utils.ui.toHex
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.PersistentList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.toImmutableList
-import kotlinx.collections.immutable.toImmutableSet
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.collections.immutable.toPersistentMap
-import kotlinx.collections.immutable.toPersistentSet
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.async
-import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
 class IssueDetailsViewModel @Inject constructor(
     private val issueDetailsDataUseCase: IssueDetailsDataUseCase,
     savedStateHandle: SavedStateHandle,
-    private val statusUIMapper: StatusUIMapper,
-    private val tagUIMapper: TagUIMapper,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val workItemsGenerator: WorkItemsGenerator,
-    private val workItemEditShared: WorkItemEditShared,
+    private val workItemEditStateRepository: WorkItemEditStateRepository,
     private val dateTimeUtils: DateTimeUtils,
     private val fileUriManager: FileUriManager,
     private val session: Session,
-    private val patchDataGenerator: PatchDataGenerator
-) : ViewModel() {
+    private val patchDataGenerator: PatchDataGenerator,
+    private val historyRepository: HistoryRepository,
+    private val workItemRepository: WorkItemRepository,
+    private val taigaSessionStorage: TaigaSessionStorage,
+    private val usersRepository: UsersRepository,
+    private val issueUIMapper: IssueUIMapper
+) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl(),
+    WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        historyRepository = historyRepository,
+        workItemRepository = workItemRepository
+    ),
+    WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
+        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+        workItemRepository = workItemRepository,
+        fileUriManager = fileUriManager,
+        taigaSessionStorage = taigaSessionStorage
+    ),
+    WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        usersRepository = usersRepository,
+        patchDataGenerator = patchDataGenerator,
+        taigaSessionStorage = taigaSessionStorage
+    ),
+    WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemDueDateDelegate by WorkItemDueDateDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
+        commonTaskType = CommonTaskType.Issue,
+        workItemRepository = workItemRepository,
+        usersRepository = usersRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
+        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ) {
 
     private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
 
-    private val taskId: Long = route.taskId
+    private val issueId: Long = route.issueId
     private val ref = route.ref
 
     private val _state = MutableStateFlow(
@@ -85,214 +168,237 @@ class IssueDetailsViewModel @Inject constructor(
                 id = RString.issue_slug,
                 args = listOf(ref)
             ),
-            setIsDueDatePickerVisible = ::setDueDateDatePickerVisibility,
-            setIsRemoveAssigneeDialogVisible = ::setIsRemoveAssigneeDialogVisible,
-            setIsRemoveWatcherDialogVisible = ::setIsRemoveWatcherDialogVisible,
-            onCustomFieldChange = ::onCustomFieldChange,
             onCustomFieldSave = ::onCustomFieldSave,
-            onCustomFieldEditToggle = ::onCustomFieldEditToggle,
-            setIsCustomFieldsWidgetExpanded = ::setIsCustomFieldsWidgetExpanded,
-            setIsCommentsWidgetExpanded = ::setIsCommentsWidgetExpanded,
-            onFieldChanged = ::updateLocalField,
-            onSaveField = ::saveField,
-            onFieldSetIsEditable = ::setFieldIsEditable,
-            onWorkingItemBadgeClick = ::onWorkItemBadgeClick,
-            onBadgeSheetDismiss = ::onBadgeSheetDismiss,
-            onBadgeSheetItemClick = ::onBadgeSheetItemClick,
-            onGoingToEditTags = ::onGoingToEditTags,
             onTagRemove = ::onTagRemove,
             setDueDate = ::setDueDate,
             onBlockToggle = ::onBlockToggle,
-            setIsBlockDialogVisible = ::setIsBlockDialogVisible,
             setIsDeleteDialogVisible = ::setIsDeleteDialogVisible,
             onDelete = ::doOnDelete,
             onAttachmentRemove = ::onAttachmentRemove,
             onAttachmentAdd = ::onAttachmentAdd,
-            setAreAttachmentsExpanded = ::setAreAttachmentsExpanded,
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onAssignToMe = ::onAssignToMe,
             onUnassign = ::onUnassign,
-            onGoingToEditAssignee = ::onGoingToEditAssignee,
-            onGoingToEditWatchers = ::onGoingToEditWatchers,
             onRemoveMeFromWatchersClick = ::onRemoveMeFromWatchersClick,
             onAddMeToWatchersClick = ::onAddMeToWatchersClick,
-            onRemoveWatcherClick = ::onRemoveWatcherClick,
             removeWatcher = ::removeWatcher,
             removeAssignee = ::removeAssignee,
-            onRemoveAssigneeClick = ::onRemoveAssigneeClick
+            loadIssue = ::loadIssue,
+            onTitleSave = ::onTitleSave,
+            onBadgeSave = ::onBadgeSave,
+            onGoingToEditSprint = ::onGoingToEditSprint,
+            onPromoteClick = ::promoteToUserStory,
+            onGoingToEditTags = ::onGoingToEditTags,
+            onGoingToEditWatchers = ::onGoingToEditWatchers,
+            onGoingToEditAssignee = ::onGoingToEditAssignee
         )
     )
     val state = _state.asStateFlow()
 
-    private val _deleteTrigger = MutableSharedFlow<Boolean>()
-    val deleteTrigger = _deleteTrigger.asSharedFlow()
+    private val currentIssue: IssueUI
+        get() = requireNotNull(_state.value.currentIssue)
+
+    private val _deleteTrigger = Channel<Boolean>()
+    val deleteTrigger = _deleteTrigger.receiveAsFlow()
+
+    private val _promotedToUserStoryTrigger = Channel<WorkItem>()
+    val promotedToUserStoryTrigger = _promotedToUserStoryTrigger.receiveAsFlow()
 
     init {
-        workItemEditShared.teamMemberUpdateState
+        loadIssue()
+
+        workItemEditStateRepository
+            .getTeamMemberUpdateFlow(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
             .onEach(::handleTeamMemberUpdate)
             .launchIn(viewModelScope)
 
-        workItemEditShared.tagsState
+        workItemEditStateRepository
+            .getTagsFlow(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
             .onEach(::onNewTagsUpdate)
             .launchIn(viewModelScope)
 
-        workItemEditShared.descriptionState
+        workItemEditStateRepository
+            .getDescriptionFlow(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
 
+        workItemEditStateRepository
+            .getSprintFlow(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
+            .onEach(::onNewSprintUpdate)
+            .launchIn(viewModelScope)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        workItemEditStateRepository.clearSession(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
+        Timber.d("IssueDetailsViewModel cleared - session cleaned up for taskId: $issueId")
+    }
+
+    private fun onGoingToEditTags() {
+        workItemEditStateRepository.setTags(
+            workItemId = issueId,
+            type = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+            tags = tagsState.value.tags
+        )
+    }
+
+    private fun onGoingToEditWatchers() {
+        val watchersIds = watchersState.value.watchers.mapNotNull { it.id }
+            .toPersistentList()
+        workItemEditStateRepository.setCurrentWatchers(
+            ids = watchersIds,
+            workItemId = issueId,
+            type = TaskIdentifier.WorkItem(CommonTaskType.Issue)
+        )
+    }
+
+    fun onGoingToEditAssignee() {
+        val assigneeId = singleAssigneeState.value.assignees.firstOrNull()?.id
+        workItemEditStateRepository.setCurrentAssignee(
+            workItemId = issueId,
+            type = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+            id = assigneeId
+        )
+    }
+
+    private fun onTitleSave() {
+        viewModelScope.launch {
+            handleTitleSave(
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    Timber.e(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
+    }
+
+    private fun loadIssue() {
         viewModelScope.launch {
             _state.update {
-                it.copy(isLoading = true)
+                it.copy(
+                    isLoading = true,
+                    initialLoadError = NativeText.Empty
+                )
             }
-            issueDetailsDataUseCase.getIssueData(
-                taskId = taskId,
-                ref = ref
-            ).onSuccess { result ->
-                _state.update {
-                    val typeUiDeferred = result.issueTask.type?.let { type ->
-                        async { statusUIMapper.toUI(type) }
-                    }
-                    val severityUiDeferred = result.issueTask.severity?.let { task ->
-                        async { statusUIMapper.toUI(task) }
-                    }
-
-                    val priorityUiDeferred = result.issueTask.priority?.let { prio ->
-                        async { statusUIMapper.toUI(prio) }
-                    }
-                    val statusUiDeferred = result.issueTask.status?.let { status ->
-                        async { statusUIMapper.toUI(status) }
-                    }
-
-                    val tags = async {
-                        result.issueTask.tags.map { tag ->
-                            tagUIMapper.toUI(tag)
-                        }.toPersistentList()
-                    }
+            issueDetailsDataUseCase.getIssueData(issueId = issueId)
+                .onSuccess { result ->
+                    val issueUI = issueUIMapper.toUI(result.issue)
                     val customFieldsStateItems = async {
                         customFieldsUIMapper.toUI(result.customFields)
                     }
 
-                    val statusUi = statusUiDeferred?.await()
                     val sprint = result.sprint
-                    val typeUI = typeUiDeferred?.await()
-                    val severityUI = severityUiDeferred?.await()
-                    val priorityUi = priorityUiDeferred?.await()
+
                     val workItemBadges = workItemsGenerator.getItems(
-                        statusUI = statusUi,
-                        typeUI = typeUI,
-                        severityUI = severityUI,
-                        priorityUi = priorityUi,
+                        statusUI = issueUI.status,
+                        typeUI = issueUI.type,
+                        severityUI = issueUI.severity,
+                        priorityUi = issueUI.priority,
                         filtersData = result.filtersData
                     )
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            currentIssue = issueUI,
+                            originalIssue = issueUI,
+                            sprint = sprint,
+                            creator = result.creator,
+                            filtersData = result.filtersData,
+                            initialLoadError = NativeText.Empty,
+                            customFieldsVersion = result.customFields.version,
+                            canDeleteIssue = result.canDeleteIssue,
+                            canModifyIssue = result.canModifyIssue,
+                            canComment = result.canComment
+                        )
+                    }
 
-                    it.copy(
-                        workItemBadges = workItemBadges,
-                        isLoading = false,
-                        currentIssue = result.issueTask,
-                        originalIssue = result.issueTask,
-                        attachments = result.attachments.toPersistentList(),
-                        comments = result.comments.toPersistentList(),
-                        sprint = sprint,
-                        tags = tags.await(),
-                        dueDateText = getDueDateText(result.issueTask.dueDate),
-                        creator = result.creator,
-                        assignees = result.assignees.toPersistentList(),
+                    setInitialTitle(result.issue.title)
+                    setWorkItemBadges(workItemBadges)
+                    setInitialTags(issueUI.tags.toPersistentList())
+                    setInitialComments(result.comments)
+                    setInitialAttachments(result.attachments.toPersistentList())
+                    setInitialWatchers(
                         watchers = result.watchers.toPersistentList(),
-                        isAssignedToMe = result.isAssignedToMe,
-                        isWatchedByMe = result.isWatchedByMe,
-                        customFieldsVersion = result.customFields.version,
-                        customFieldStateItems = customFieldsStateItems.await(),
-                        filtersData = result.filtersData
+                        isWatchedByMe = result.isWatchedByMe
                     )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(isLoading = false)
-                }
-            }
-        }
-    }
-
-    private fun removeAssignee() {
-        viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getAssignedToPatchPayload(null),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            isAssigneesLoading = true,
-                            error = NativeText.Empty
-                        )
-                    }
-                },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
-                    _state.update {
-                        it.copy(
-                            isAssigneesLoading = false,
-                            error = NativeText.Empty,
-                            assignees = persistentListOf()
-                        )
-                    }
-                },
-                doOnError = { error ->
+                    setInitialCustomFields(
+                        version = result.customFields.version,
+                        customFieldStateItems = customFieldsStateItems.await()
+                    )
+                    setInitialDueDate(
+                        dueDate = result.issue.dueDate,
+                        dueDateStatus = result.issue.dueDateStatus
+                    )
+                    setInitialAssignees(
+                        assignees = result.assignees.toPersistentList(),
+                        isAssignedToMe = result.isAssignedToMe
+                    )
+                    setInitialDescription(result.issue.description)
+                }.onFailure { error ->
                     Timber.e(error)
+                    val errorToShow = getErrorMessage(error)
                     _state.update {
                         it.copy(
-                            isAssigneesLoading = false,
-                            error = getErrorMessage(error)
+                            isLoading = false,
+                            initialLoadError = errorToShow
                         )
                     }
                 }
-            )
         }
     }
 
-    private fun onRemoveAssigneeClick() {
+    private fun clearError() {
         _state.update {
             it.copy(
-                isRemoveAssigneeDialogVisible = true
+                error = NativeText.Empty
             )
         }
     }
+
+    private fun emitError(error: Throwable) {
+        Timber.e(error)
+        viewModelScope.launch {
+            showSnackbarSuspend(getErrorMessage(error))
+        }
+    }
+
+    private fun updateVersion(newVersion: Long) {
+        val updatedIssue = currentIssue.copy(
+            version = newVersion
+        )
+        _state.update {
+            it.copy(
+                currentIssue = updatedIssue,
+                originalIssue = updatedIssue
+            )
+        }
+    }
+
+    // Watchers segment
 
     private fun removeWatcher() {
         viewModelScope.launch {
-            val newWatchers = _state.value.watchers.map { it.actualId }
-                .filterNot { it == _state.value.watcherIdToRemove }
-
-            patchData(
-                payload = patchDataGenerator.getWatchersPatchPayload(newWatchers),
+            handleRemoveWatcher(
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            isWatchersLoading = true,
-                            error = NativeText.Empty
-                        )
-                    }
+                    clearError()
                 },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
-                    val isWatchedByMe = session.userId in newWatchers
-                    val watchersToSave = _state.value.watchers.removeAll {
-                        it.actualId == _state.value.watcherIdToRemove
-                    }
-
-                    _state.update {
-                        it.copy(
-                            isWatchersLoading = false,
-                            error = NativeText.Empty,
-                            watcherIdToRemove = null,
-                            isWatchedByMe = isWatchedByMe,
-                            watchers = watchersToSave
-                        )
-                    }
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 },
                 doOnError = { error ->
                     Timber.e(error)
                     _state.update {
                         it.copy(
-                            isWatchersLoading = false,
                             error = getErrorMessage(error)
                         )
                     }
@@ -301,78 +407,57 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onRemoveWatcherClick(watcherId: Long) {
-        _state.update {
-            it.copy(
-                watcherIdToRemove = watcherId,
-                isRemoveWatcherDialogVisible = true
-            )
-        }
-    }
-
-    private fun onGoingToEditWatchers() {
-        val watchersIds = _state.value.watchers.mapNotNull { it.id }
-            .toPersistentList()
-        workItemEditShared.setCurrentWatchers(watchersIds)
-    }
-
     private fun onRemoveMeFromWatchersClick() {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(isLoading = true)
-            }
-            issueDetailsDataUseCase.removeMeFromWatchers(issueId = currentIssue.id, ref = ref)
-                .onSuccess { result ->
-                    _state.update {
-                        it.copy(
-                            isWatchedByMe = result.isWatchedByMe,
-                            watchers = result.watchers.toPersistentList(),
-                            isLoading = false
-                        )
-                    }
-                }.onFailure { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            isLoading = false
-                        )
-                    }
+            handleRemoveMeFromWatchers(
+                workItemId = currentIssue.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
                 }
+            )
         }
     }
 
     private fun onAddMeToWatchersClick() {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(isLoading = true)
-            }
-            issueDetailsDataUseCase.addMeToWatchers(issueId = currentIssue.id, ref = ref)
-                .onSuccess { result ->
-                    _state.update {
-                        it.copy(
-                            isWatchedByMe = result.isWatchedByMe,
-                            watchers = result.watchers.toPersistentList(),
-                            isLoading = false
-                        )
-                    }
-                }.onFailure { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            isLoading = false
-                        )
-                    }
+            handleAddMeToWatchers(
+                workItemId = currentIssue.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
                 }
+            )
         }
     }
 
-    private fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
+    private fun onWatchersUpdated(newWatchers: ImmutableList<Long>) {
+        viewModelScope.launch {
+            handleUpdateWatchers(
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
+                newWatchers = newWatchers,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
             TeamMemberUpdate.Clear -> {}
+            is TeamMemberUpdate.Assignees -> {}
             is TeamMemberUpdate.Assignee -> {
                 onAssigneeUpdated(updateState.id)
             }
@@ -383,194 +468,99 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onAssigneeUpdated(newAssignee: Long?) {
-        val currentIssue = _state.value.currentIssue ?: return
-        viewModelScope.launch {
-            _state.update {
-                it.copy(error = NativeText.Empty, isAssigneesLoading = true)
-            }
+    // Assignees section
 
-            issueDetailsDataUseCase.updateAssigneesData(
+    private fun onAssigneeUpdated(newAssigneeId: Long?) {
+        viewModelScope.launch {
+            handleUpdateAssignee(
+                newAssigneeId = newAssigneeId,
+                workItemId = currentIssue.id,
                 version = currentIssue.version,
-                issueId = currentIssue.id,
-                userId = newAssignee
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.newVersion
-                )
-                _state.update {
-                    it.copy(
-                        isAssigneesLoading = false,
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        isAssignedToMe = result.isAssignedToMe,
-                        assignees = result.assignees.toPersistentList()
-                    )
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isAssigneesLoading = false
-                    )
-                }
-            }
+            )
         }
     }
 
-    private fun onWatchersUpdated(newWatchers: ImmutableList<Long>) {
-        val currentIssue = _state.value.currentIssue ?: return
-        viewModelScope.launch {
-            _state.update {
-                it.copy(error = NativeText.Empty, isWatchersLoading = true)
-            }
-
-            issueDetailsDataUseCase.updateWatchersData(
-                version = currentIssue.version,
-                issueId = currentIssue.id,
-                newList = newWatchers
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.version
-                )
-                _state.update {
-                    it.copy(
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        isWatchersLoading = false,
-                        isWatchedByMe = result.isWatchedByMe,
-                        watchers = result.watchers.toPersistentList()
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isWatchersLoading = false
-                    )
-                }
-            }
-        }
-    }
-
-    private fun onGoingToEditAssignee() {
-        val assigneeId = _state.value.assignees.firstOrNull()?.id
-        workItemEditShared.setCurrentAssignee(assigneeId)
+    private fun removeAssignee() {
+        onUnassign()
     }
 
     private fun onAssignToMe() {
-        patchAssignedToMe(false)
+        viewModelScope.launch {
+            handleAssignToMe(
+                workItemId = currentIssue.id,
+                version = currentIssue.version,
+                currentUserId = taigaSessionStorage.requireUserId(),
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
     }
 
     private fun onUnassign() {
-        patchAssignedToMe(true)
-    }
-
-    private fun patchAssignedToMe(onUnassign: Boolean) {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(error = NativeText.Empty, isAssigneesLoading = true)
-            }
-
-            issueDetailsDataUseCase.updateAssigneesData(
+            handleUnassign(
+                workItemId = currentIssue.id,
                 version = currentIssue.version,
-                issueId = currentIssue.id,
-                userId = if (onUnassign) null else session.userId
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.newVersion
-                )
-                _state.update {
-                    it.copy(
-                        isAssigneesLoading = false,
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        isAssignedToMe = result.isAssignedToMe,
-                        assignees = result.assignees.toPersistentList()
-                    )
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isAssigneesLoading = false
-                    )
-                }
-            }
+            )
         }
     }
 
     private fun createComment(newComment: String) {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isCommentsLoading = true,
-                    error = NativeText.Empty
-                )
-            }
-
-            issueDetailsDataUseCase.createComment(
+            handleCreateComment(
                 version = currentIssue.version,
-                issueId = currentIssue.id,
-                comment = newComment
-            ).onSuccess { result ->
-                val updatedIssue = currentIssue.copy(
-                    version = result.newVersion
-                )
-
-                _state.update {
-                    it.copy(
-                        isCommentsLoading = false,
-                        currentIssue = updatedIssue,
-                        originalIssue = updatedIssue,
-                        comments = result.comments.toPersistentList()
-                    )
+                id = currentIssue.id,
+                comment = newComment,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnSuccess = { result ->
+                    updateVersion(result.newVersion)
+                },
+                doOnError = { error ->
+                    emitError(error)
                 }
-            }.onFailure { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isCommentsLoading = false
-                    )
-                }
-            }
+            )
         }
     }
 
     private fun deleteComment(comment: Comment) {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isCommentsLoading = true,
-                    error = NativeText.Empty
-                )
-            }
-
-            issueDetailsDataUseCase.deleteComment(
-                issueId = currentIssue.id,
-                commentId = comment.id
-            ).onSuccess { result ->
-                _state.update { currentState ->
-                    currentState.copy(
-                        isCommentsLoading = false,
-                        comments = _state.value.comments.removeAll { it.id == comment.id }
-                    )
+            handleDeleteComment(
+                id = currentIssue.id,
+                commentId = comment.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
                 }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        isCommentsLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
-            }
+            )
         }
     }
 
@@ -597,10 +587,13 @@ class IssueDetailsViewModel @Inject constructor(
                 it.copy(isLoading = true)
             }
 
-            issueDetailsDataUseCase.deleteIssue(
-                id = id
-            ).onSuccess {
-                _deleteTrigger.emit(true)
+            resultOf {
+                workItemRepository.deleteWorkItem(
+                    workItemId = id,
+                    commonTaskType = CommonTaskType.Issue
+                )
+            }.onSuccess {
+                _deleteTrigger.send(true)
             }.onFailure { error ->
                 Timber.e(error)
                 _state.update {
@@ -612,609 +605,276 @@ class IssueDetailsViewModel @Inject constructor(
 
     private fun onBlockToggle(isBlocked: Boolean, blockNote: String?) {
         viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getBlockedPatchPayload(isBlocked, blockNote),
+            handleBlockToggle(
+                isBlocked = isBlocked,
+                blockNote = blockNote,
+                workItemId = currentIssue.id,
+                version = currentIssue.version,
                 doOnPreExecute = {
+                    clearError()
                     _state.update {
                         it.copy(
                             isLoading = true
                         )
                     }
                 },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
-                    val updatedIssue = task.copy(blockedNote = blockNote)
+                doOnError = { error ->
+                    emitError(error)
                     _state.update {
                         it.copy(
-                            currentIssue = updatedIssue,
-                            originalIssue = updatedIssue,
                             isLoading = false
                         )
                     }
                 },
-                doOnError = { error ->
+                doOnSuccess = { result ->
+                    val patchedIssue = currentIssue.copy(
+                        blockedNote = result.blockNote,
+                        version = result.patchedData.newVersion
+                    )
                     _state.update {
                         it.copy(
-                            error = getErrorMessage(error),
+                            currentIssue = patchedIssue,
+                            originalIssue = patchedIssue,
                             isLoading = false
                         )
                     }
                 }
             )
-        }
-    }
-
-    private fun setIsBlockDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isBlockDialogVisible = isVisible)
         }
     }
 
     private fun setDueDate(newDate: Long?) {
         viewModelScope.launch {
-            val localDate = if (newDate != null) {
-                dateTimeUtils.fromMillisToLocalDate(newDate)
-            } else {
-                null
-            }
-            val jsonLocalDate = if (localDate != null) {
-                dateTimeUtils.parseLocalDateToString(localDate)
-            } else {
-                null
-            }
-
-            patchData(
-                payload = patchDataGenerator.getDueDatePatchPayload(jsonLocalDate),
+            handleDueDateSave(
+                newDate = newDate,
+                workItemId = currentIssue.id,
+                version = currentIssue.version,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            isDueDateLoading = true
-                        )
-                    }
+                    clearError()
                 },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
-                    val updatedIssue = task.copy(
-                        dueDate = localDate,
-                        dueDateStatus = data.dueDateStatus
+                doOnSuccess = { patchedData ->
+                    val updatedIssue = currentIssue.copy(
+                        version = patchedData.newVersion
                     )
 
-                    _state.update { currentState ->
-                        currentState.copy(
-                            currentIssue = updatedIssue,
-                            originalIssue = updatedIssue,
-                            dueDateText = getDueDateText(localDate),
-                            isDueDateLoading = false
-                        )
-                    }
-                },
-                doOnError = { error ->
                     _state.update {
                         it.copy(
-                            error = getErrorMessage(error),
-                            isDueDateLoading = false
-                        )
-                    }
-                }
-            )
-        }
-    }
-
-    private fun getDueDateText(dueDate: LocalDate?): NativeText = if (dueDate == null) {
-        NativeText.Resource(id = RString.no_due_date)
-    } else {
-        NativeText.Simple(dateTimeUtils.formatLocalDateUiMedium(dueDate))
-    }
-
-    private fun onGoingToEditTags() {
-        workItemEditShared.setTags(_state.value.tags)
-    }
-
-    private fun onTagRemove(tag: TagUI) {
-        viewModelScope.launch {
-            val currentTags = _state.value.tags
-            val newTagsToUse = currentTags.removeAll { it.name == tag.name }
-
-            val preparedTags = newTagsToUse.map { tag ->
-                listOf(tag.name, tag.color.toHex())
-            }
-
-            patchData(
-                payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            areTagsLoading = true
-                        )
-                    }
-                },
-                doOnSuccess = { _, _ ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            tags = newTagsToUse,
-                            areTagsLoading = false
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            areTagsLoading = false
-                        )
-                    }
-                }
-            )
-        }
-    }
-
-    private suspend fun patchData(
-        payload: ImmutableMap<String, Any?>,
-        doOnPreExecute: () -> Unit,
-        doOnSuccess: (PatchedData, IssueTask) -> Unit,
-        doOnError: (Throwable) -> Unit
-    ) {
-        val currentIssue = _state.value.currentIssue ?: return
-
-        doOnPreExecute()
-
-        issueDetailsDataUseCase.patchData(
-            issueId = currentIssue.id,
-            payload = payload,
-            version = currentIssue.version
-        ).onSuccess { result ->
-            val updatedIssue = currentIssue.copy(
-                version = result.newVersion
-            )
-            _state.update {
-                it.copy(
-                    currentIssue = updatedIssue,
-                    originalIssue = updatedIssue
-                )
-            }
-
-            doOnSuccess(result, updatedIssue)
-        }.onFailure { error ->
-            Timber.e(error)
-            doOnError(error)
-        }
-    }
-
-    private fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
-        viewModelScope.launch {
-            val preparedTags = newTagsToUse.map { tag ->
-                listOf(tag.name, tag.color.toHex())
-            }
-
-            patchData(
-                payload = patchDataGenerator.getTagsPatchPayload(preparedTags),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            error = NativeText.Empty,
-                            areTagsLoading = true
-                        )
-                    }
-                },
-                doOnSuccess = { _, _ ->
-                    _state.update { currentState ->
-                        currentState.copy(
-                            tags = newTagsToUse,
-                            areTagsLoading = false
-                        )
-                    }
-                },
-                doOnError = { error ->
-                    _state.update {
-                        it.copy(
-                            error = getErrorMessage(error),
-                            areTagsLoading = false
-                        )
-                    }
-                }
-            )
-        }
-    }
-
-    private fun onNewDescriptionUpdate(newDescription: String) {
-        viewModelScope.launch {
-            patchData(
-                payload = patchDataGenerator.getDescriptionPatchPayload(newDescription),
-                doOnPreExecute = {
-                    _state.update {
-                        it.copy(error = NativeText.Empty, isLoading = true)
-                    }
-                },
-                doOnSuccess = { _, issue ->
-                    val updatedIssue = issue.copy(description = newDescription)
-
-                    _state.update { currentState ->
-                        currentState.copy(
-                            isLoading = false,
                             currentIssue = updatedIssue,
                             originalIssue = updatedIssue
                         )
                     }
                 },
                 doOnError = { error ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
                 }
             )
         }
     }
 
-    private fun onBadgeSheetDismiss() {
-        _state.update {
-            it.copy(activeBadge = null)
-        }
-    }
-
-    private fun onBadgeSheetItemClick(type: SelectableWorkItemBadgeState, item: StatusUI) {
+    private fun onTagRemove(tag: TagUI) {
         viewModelScope.launch {
-            val patchableData = when (type) {
-                is SelectableWorkItemBadgeStatus -> {
-                    mapOf("status" to item.id)
-                }
-
-                is SelectableWorkItemBadgeType -> {
-                    mapOf("type" to item.id)
-                }
-
-                is SelectableWorkItemBadgeSeverity -> {
-                    mapOf("severity" to item.id)
-                }
-
-                is SelectableWorkItemBadgePriority -> {
-                    mapOf("priority" to item.id)
-                }
-            }.toPersistentMap()
-
-            patchData(
-                payload = patchableData,
+            handleTagRemove(
+                tag = tag,
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
                 doOnPreExecute = {
-                    _state.update { currentState ->
-                        currentState.copy(
-                            updatingBadges = currentState.updatingBadges.add(type),
-                            error = NativeText.Empty
-                        )
-                    }
-                },
-                doOnSuccess = { data: PatchedData, updatedIssue: IssueTask ->
-                    _state.update { currentState ->
-                        val updatedWorkItemBadges = currentState.workItemBadges.map { badge ->
-                            if (badge == type) {
-                                when (badge) {
-                                    is SelectableWorkItemBadgeStatus -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgeType -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgeSeverity -> {
-                                        badge.copy(currentValue = item)
-                                    }
-
-                                    is SelectableWorkItemBadgePriority -> {
-                                        badge.copy(currentValue = item)
-                                    }
-                                }
-                            } else {
-                                badge
-                            }
-                        }
-
-                        currentState.copy(
-                            activeBadge = null,
-                            workItemBadges = updatedWorkItemBadges.toPersistentSet(),
-                            updatingBadges = currentState.updatingBadges.remove(type)
-                        )
-                    }
+                    clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            activeBadge = null,
-                            error = getErrorMessage(error)
-                        )
-                    }
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
             )
         }
     }
 
-    private fun onWorkItemBadgeClick(type: SelectableWorkItemBadgeState) {
-        _state.update {
-            it.copy(activeBadge = type)
-        }
-    }
-
-    private fun updateLocalField(field: PatchableField, newValue: Any) {
-        _state.update { currentState ->
-            val updatedIssue = when (field) {
-                PatchableField.TITLE -> currentState.currentIssue?.copy(title = newValue as String)
-                else -> currentState.currentIssue
+    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
+        handleTagsUpdate(
+            newTags = newTagsToUse,
+            version = currentIssue.version,
+            workItemId = currentIssue.id,
+            doOnPreExecute = {
+                clearError()
+            },
+            doOnError = { error ->
+                emitError(error)
+            },
+            doOnSuccess = { version ->
+                updateVersion(version)
             }
-            currentState.copy(currentIssue = updatedIssue)
-        }
+        )
     }
 
-    private fun setFieldIsEditable(field: PatchableField, isEditable: Boolean) {
-        _state.update { currentState ->
-            if (isEditable) {
-                currentState.copy(editableFields = currentState.editableFields.add(field))
-            } else {
-                currentState.copy(editableFields = currentState.editableFields.remove(field))
+    private suspend fun onNewDescriptionUpdate(newDescription: String) {
+        updateDescription(
+            version = currentIssue.version,
+            workItemId = currentIssue.id,
+            newDescription = newDescription,
+            doOnPreExecute = {
+                clearError()
+            },
+            doOnError = { error ->
+                emitError(error)
+            },
+            doOnSuccess = { version ->
+                updateVersion(version)
+
+                val updatedIssue = currentIssue.copy(description = newDescription)
+
+                _state.update { currentState ->
+                    currentState.copy(
+                        currentIssue = updatedIssue,
+                        originalIssue = updatedIssue
+                    )
+                }
             }
-        }
+        )
     }
 
-    private fun saveField(field: PatchableField) {
-        val currentIssue = _state.value.currentIssue ?: return
+    private fun onNewSprintUpdate(newSprintId: Long?) {
         viewModelScope.launch {
-            val patchableData = when (field) {
-                PatchableField.TITLE -> mapOf("subject" to currentIssue.title)
-            }.toPersistentMap()
+            clearError()
 
-            patchData(
-                payload = patchableData,
+            _state.update {
+                it.copy(isSprintLoading = true)
+            }
+
+            issueDetailsDataUseCase.updateSprint(
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
+                commonTaskType = CommonTaskType.Issue,
+                sprintId = newSprintId
+            ).onSuccess { result ->
+                updateVersion(result.patchedData.newVersion)
+                _state.update {
+                    it.copy(
+                        sprint = result.sprint,
+                        isSprintLoading = false
+                    )
+                }
+            }.onFailure { error ->
+                emitError(error)
+                _state.update {
+                    it.copy(isSprintLoading = false)
+                }
+            }
+        }
+    }
+
+    private fun onBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
+        viewModelScope.launch {
+            handleBadgeSave(
+                type = type,
+                item = item,
+                version = currentIssue.version,
+                workItemId = currentIssue.id,
                 doOnPreExecute = {
-                    _state.update {
-                        it.copy(
-                            savingFields = it.savingFields.add(field),
-                            patchableFieldError = NativeText.Empty
-                        )
-                    }
-                },
-                doOnSuccess = { data: PatchedData, task: IssueTask ->
-                    setFieldIsEditable(field, false)
-                    _state.update {
-                        it.copy(
-                            savingFields = it.savingFields.remove(field)
-                        )
-                    }
+                    clearError()
                 },
                 doOnError = { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            patchableFieldError = getErrorMessage(error),
-                            savingFields = it.savingFields.remove(field)
-                        )
-                    }
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
                 }
             )
-        }
-    }
-
-    private fun setIsCustomFieldsWidgetExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(isCustomFieldsWidgetExpanded = isExpanded)
-        }
-    }
-
-    private fun setAreAttachmentsExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(areAttachmentsExpanded = isExpanded)
-        }
-    }
-
-    private fun onCustomFieldEditToggle(item: CustomFieldItemState) {
-        _state.update { currentState ->
-            val currentIds = _state.value.editingItemIds
-            val newIds = if (item.id in currentIds) {
-                currentIds - item.id
-            } else {
-                currentIds + item.id
-            }.toImmutableSet()
-            currentState.copy(editingItemIds = newIds)
-        }
-    }
-
-    private fun onCustomFieldSaved(newItem: CustomFieldItemState) {
-        _state.update { currentState ->
-            val updatedList = currentState.customFieldStateItems.map { item ->
-                if (item.id == newItem.id) {
-                    newItem
-                } else {
-                    item
-                }
-            }.toImmutableList()
-            currentState.copy(customFieldStateItems = updatedList)
-        }
-    }
-
-    private fun setIsCommentsWidgetExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(isCommentsWidgetExpanded = isExpanded)
-        }
-    }
-
-    private fun getCustomFieldValue(
-        stateItem: CustomFieldItemState,
-        takeCurrentValue: Boolean
-    ): Any? {
-        val valueToUse = if (takeCurrentValue) {
-            stateItem.currentValue
-        } else {
-            stateItem.originalValue
-        }
-        return when (stateItem) {
-            is DateItemState -> {
-                if (valueToUse != null) {
-                    dateTimeUtils.parseLocalDateToString(valueToUse as LocalDate)
-                } else {
-                    null
-                }
-            }
-
-            is NumberItemState -> {
-                valueToUse?.toString()?.toLongOrNull()
-            }
-
-            else -> valueToUse
         }
     }
 
     private fun onCustomFieldSave(item: CustomFieldItemState) {
-        val currentIssue = _state.value.currentIssue ?: return
         viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    error = NativeText.Empty,
-                    isCustomFieldsLoading = true
-                )
-            }
-
-            val currentState = _state.value
-
-            val patchedData = currentState.customFieldStateItems.associateBy(
-                keySelector = { stateItem ->
-                    stateItem.id.toString()
+            handleCustomFieldSave(
+                item = item,
+                customAttributesVersion = _state.value.customFieldsVersion,
+                workItemId = currentIssue.id,
+                doOnPreExecute = {
+                    clearError()
                 },
-                valueTransform = { stateItem ->
-                    if (stateItem.id == item.id) {
-                        getCustomFieldValue(stateItem, true)
-                    } else if (stateItem.isModified) {
-                        getCustomFieldValue(stateItem, false)
-                    } else {
-                        getCustomFieldValue(stateItem, true)
-                    }
+                doOnError = { error ->
+                    emitError(error)
                 }
             )
-
-            issueDetailsDataUseCase.patchCustomAttributes(
-                issueId = currentIssue.id,
-                version = currentState.customFieldsVersion,
-                payload = patchDataGenerator.getAttributesPatchPayload(patchedData)
-            ).onSuccess { result ->
-                onCustomFieldEditToggle(item)
-                onCustomFieldSaved(item.getSavedItem())
-                _state.update {
-                    it.copy(
-                        error = NativeText.Empty,
-                        isCustomFieldsLoading = false,
-                        customFieldsVersion = result.version
-                    )
-                }
-            }.onFailure { error ->
-                _state.update {
-                    it.copy(
-                        error = getErrorMessage(error),
-                        isCustomFieldsLoading = false
-                    )
-                }
-            }
-        }
-    }
-
-    private fun onCustomFieldChange(updatedItem: CustomFieldItemState) {
-        _state.update { currentState ->
-            val updatedList = currentState.customFieldStateItems.map { item ->
-                if (item.id == updatedItem.id) {
-                    updatedItem
-                } else {
-                    item
-                }
-            }.toImmutableList()
-            currentState.copy(customFieldStateItems = updatedList)
         }
     }
 
     private fun onAttachmentAdd(uri: Uri?) {
-        val currentIssue = _state.value.currentIssue ?: return
+        if (uri == null) {
+            _state.update {
+                it.copy(
+                    error = NativeText.Resource(RString.common_error_message)
+                )
+            }
+            return
+        }
+
         viewModelScope.launch {
-            if (uri == null) {
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = true,
-                        error = NativeText.Resource(RString.common_error_message)
-                    )
+            handleAddAttachment(
+                workItemId = currentIssue.id,
+                uri = uri,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
                 }
-                return@launch
-            }
-
-            val attachmentInfoToSend = fileUriManager.retrieveAttachmentInfo(uri)
-
-            issueDetailsDataUseCase.addAttachment(
-                issueId = currentIssue.id,
-                fileName = attachmentInfoToSend.name,
-                fileByteArray = attachmentInfoToSend.fileBytes.toByteArray()
-            ).onSuccess { result ->
-                val currentAttachments = _state.value.attachments
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = false,
-                        attachments = currentAttachments.add(result)
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        isAttachmentsLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
-            }
+            )
         }
     }
 
     private fun onAttachmentRemove(attachment: Attachment) {
-        _state.update {
-            it.copy(isAttachmentsLoading = true)
-        }
         viewModelScope.launch {
-            issueDetailsDataUseCase.deleteAttachment(attachment)
-                .onSuccess { result ->
-                    val currentAttachments = _state.value.attachments
-                    _state.update {
-                        it.copy(
-                            isAttachmentsLoading = false,
-                            attachments = currentAttachments.remove(attachment)
-                        )
-                    }
+            handleRemoveAttachment(
+                attachment = attachment,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
                 }
-                .onFailure { error ->
-                    Timber.e(error)
-                    _state.update {
-                        it.copy(
-                            isAttachmentsLoading = false,
-                            error = getErrorMessage(error)
-                        )
-                    }
-                }
-        }
-    }
-
-    private fun setIsRemoveWatcherDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isRemoveWatcherDialogVisible = isVisible)
-        }
-    }
-
-    private fun setIsRemoveAssigneeDialogVisible(isVisible: Boolean) {
-        _state.update {
-            it.copy(isRemoveAssigneeDialogVisible = isVisible)
-        }
-    }
-
-    private fun setDueDateDatePickerVisibility(isVisible: Boolean) {
-        _state.update {
-            it.copy(isDueDateDatePickerVisible = isVisible)
+            )
         }
     }
 
     private fun setDropdownMenuExpanded(isExpanded: Boolean) {
         _state.update {
             it.copy(isDropdownMenuExpanded = isExpanded)
+        }
+    }
+
+    private fun onGoingToEditSprint() {
+        workItemEditStateRepository.setCurrentSprint(
+            workItemId = issueId,
+            type = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+            id = _state.value.sprint?.id
+        )
+    }
+
+    private fun promoteToUserStory() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
+            }
+            resultOf {
+                workItemRepository.promoteToUserStory(
+                    workItemId = currentIssue.id,
+                    commonTaskType = CommonTaskType.Issue
+                )
+            }.onSuccess { result ->
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+                _promotedToUserStoryTrigger.send(result)
+            }.onFailure { error ->
+                emitError(error)
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+            }
         }
     }
 }

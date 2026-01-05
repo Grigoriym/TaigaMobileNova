@@ -5,8 +5,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyListScope
-import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -21,80 +19,78 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.Comment
+import com.grappim.taigamobile.feature.workitem.domain.Comment
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
-import kotlinx.collections.immutable.ImmutableList
 
-fun LazyListScope.commentsSectionWidget(
-    comments: ImmutableList<Comment>,
-    isCommentsWidgetExpanded: Boolean,
-    setIsCommentsWidgetExpanded: (Boolean) -> Unit,
-    isCommentsLoading: Boolean,
+@Composable
+fun CommentsSectionWidget(
+    commentsState: WorkItemCommentsState,
     onCommentRemove: (Comment) -> Unit,
-    goToProfile: (userId: Long) -> Unit
+    goToProfile: (userId: Long) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    item {
-        SectionTitleExpandable(
-            text = stringResource(RString.comments_template).format(comments.size),
-            isExpanded = isCommentsWidgetExpanded,
-            onExpandClick = {
-                setIsCommentsWidgetExpanded(!isCommentsWidgetExpanded)
-            }
-        )
-    }
-    if (isCommentsWidgetExpanded) {
-        itemsIndexed(comments) { index, item ->
-            CommentItem(
-                comment = item,
-                onDeleteClick = {
-                    onCommentRemove(item)
-                },
-                navigateToProfile = goToProfile
+    if (commentsState.comments.isNotEmpty()) {
+        Column(modifier = modifier) {
+            SectionTitleExpandable(
+                text = stringResource(RString.comments_template).format(commentsState.comments.size),
+                isExpanded = commentsState.isCommentsWidgetExpanded,
+                onExpandClick = {
+                    commentsState.setIsCommentsWidgetExpanded(!commentsState.isCommentsWidgetExpanded)
+                }
             )
 
-            if (index < comments.lastIndex) {
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 12.dp),
-                    color = MaterialTheme.colorScheme.outline
-                )
-            }
-        }
+            if (commentsState.isCommentsWidgetExpanded) {
+                TaigaHeightSpacer(10.dp)
 
-        item {
-            if (isCommentsLoading) {
-                DotsLoader()
+                commentsState.comments.forEachIndexed { index, item ->
+                    CommentItem(
+                        comment = item,
+                        onDeleteClick = {
+                            onCommentRemove(item)
+                        },
+                        navigateToProfile = goToProfile
+                    )
+
+                    if (index < commentsState.comments.lastIndex) {
+                        HorizontalDivider(
+                            modifier = Modifier.padding(vertical = 12.dp),
+                            color = MaterialTheme.colorScheme.outline
+                        )
+                    }
+                }
+
+                if (commentsState.areCommentsLoading) {
+                    DotsLoaderWidget()
+                }
             }
         }
     }
 }
 
 @Composable
-private fun CommentItem(
-    comment: Comment,
-    onDeleteClick: () -> Unit,
-    navigateToProfile: (userId: Long) -> Unit
-) {
+private fun CommentItem(comment: Comment, onDeleteClick: () -> Unit, navigateToProfile: (userId: Long) -> Unit) {
     Column {
         var isAlertVisible by remember { mutableStateOf(false) }
 
-        if (isAlertVisible) {
-            ConfirmActionDialog(
-                title = stringResource(RString.delete_comment_title),
-                description = stringResource(RString.delete_comment_text),
-                onConfirm = {
-                    isAlertVisible = false
-                    onDeleteClick()
-                },
-                onDismiss = { isAlertVisible = false },
-                iconId = RDrawable.ic_delete
-            )
-        }
+        ConfirmActionDialog(
+            title = stringResource(RString.delete_comment_title),
+            description = stringResource(RString.delete_comment_text),
+            onConfirm = {
+                isAlertVisible = false
+                onDeleteClick()
+            },
+            onDismiss = { isAlertVisible = false },
+            iconId = RDrawable.ic_delete,
+            isVisible = isAlertVisible
+        )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -102,13 +98,18 @@ private fun CommentItem(
             modifier = Modifier.fillMaxWidth()
         ) {
             UserItem(
-                userDTO = comment.author,
+                displayName = comment.author.displayName,
+                avatarUrl = comment.author.photo,
                 dateTime = comment.postDateTime,
                 onUserItemClick = { navigateToProfile(comment.author.actualId) }
             )
 
             if (comment.canDelete) {
-                IconButton(onClick = { isAlertVisible = true }) {
+                IconButton(
+                    onClick = {
+                        isAlertVisible = true
+                    }
+                ) {
                     Icon(
                         painter = painterResource(RDrawable.ic_delete),
                         contentDescription = null,
