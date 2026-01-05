@@ -24,12 +24,12 @@ internal fun configureFlavors(
 ) {
     commonExtension.apply {
 
-        FlavorDimensions.values().forEach { flavorDimension ->
+        FlavorDimensions.entries.forEach { flavorDimension ->
             flavorDimensions += flavorDimension.name
         }
 
         productFlavors {
-            AppFlavors.values().forEach { flavor ->
+            AppFlavors.entries.forEach { flavor ->
                 register(flavor.title) {
                     dimension = flavor.dimensions.name
                     flavorConfigurationBlock(this, flavor)

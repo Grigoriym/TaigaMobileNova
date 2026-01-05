@@ -14,8 +14,8 @@ android {
         applicationId = namespace!!
         testApplicationId = "${namespace!!}.tests"
 
-        versionCode = 29
-        versionName = "2.0"
+        versionCode = 30
+        versionName = "2.0.0"
 
         project.base.archivesName.set("TaigaMobile-$versionName")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -23,6 +23,24 @@ android {
 
     testOptions.unitTests {
         isIncludeAndroidResources = true
+    }
+}
+
+composeCompiler {
+    reportsDestination = layout.buildDirectory.dir("compose_compiler")
+}
+
+val isGooglePlayBuild = project.gradle.startParameter.taskRequests.toString().contains("Gplay")
+if (isGooglePlayBuild) {
+    logger.lifecycle("✅ Applying Google Services Plugin due to detected Google Play Build!")
+} else {
+    logger.lifecycle("🚫 Google Services Plugin is NOT applied for this variant.")
+    // Disable DependencyInfoBlock for fdroid builds
+    android {
+        dependenciesInfo {
+            includeInApk = false
+            includeInBundle = false
+        }
     }
 }
 
