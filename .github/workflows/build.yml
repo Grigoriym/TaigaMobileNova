@@ -15,6 +15,12 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+        TAIGA_PATH_R: ${{ secrets.TAIGA_PATH_R }}
+        TAIGA_KEY_PASS_R: ${{ secrets.TAIGA_KEY_PASS_R }}
+        TAIGA_STORE_PASS_R: ${{ secrets.TAIGA_STORE_PASS_R }}
+        TAIGA_ALIAS_R: ${{ secrets.TAIGA_ALIAS_R }}
+        ENCODED_STRING_R: ${{ secrets.TAIGA_KEYSTORE_R }}
 
     steps:
       - name: Check out the repo
@@ -23,5 +29,8 @@ jobs:
       - name: Setup Android Environment
         uses: ./.github/actions/android-setup-composite-action
 
-      - name: Assemble gradle project
-        run: ./gradlew assembleDebug
+      - name: Assemble gradle fdroid project
+        run: ./gradlew assembleFdroidDebug
+
+      - name: Assemble gradle gplay project
+        run: ./gradlew assembleGplayDebug

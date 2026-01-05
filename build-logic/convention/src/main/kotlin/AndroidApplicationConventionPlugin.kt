@@ -1,6 +1,7 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.grappim.taigamobile.buildlogic.AppBuildTypes
 import com.grappim.taigamobile.buildlogic.configureAndroidCompose
+import com.grappim.taigamobile.buildlogic.configureFlavors
 import com.grappim.taigamobile.buildlogic.configureKotlinAndroid
 import com.grappim.taigamobile.buildlogic.libs
 import org.gradle.api.Plugin
@@ -19,6 +20,18 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 
             extensions.configure<ApplicationExtension> {
                 defaultConfig.targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
+
+                signingConfigs {
+                    create("release") {
+                        storeFile = file("../taigamobilenova_keystore_release.jks")
+                        keyAlias = System.getenv("TAIGA_ALIAS_R")
+                        keyPassword = System.getenv("TAIGA_KEY_PASS_R")
+                        storePassword = System.getenv("TAIGA_STORE_PASS_R")
+                        enableV2Signing = true
+                        enableV3Signing = true
+                    }
+                }
+
                 buildTypes {
                     debug {
                         applicationIdSuffix = AppBuildTypes.DEBUG.applicationIdSuffix
@@ -31,16 +44,17 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         buildConfigField("String", "DEBUG_LOCAL_HOST", "\"$debugLocalHost\"")
                     }
                     release {
-//                        applicationIdSuffix = AppBuildTypes.RELEASE.applicationIdSuffix
-//
-//                        isDebuggable = false
-//                        isMinifyEnabled = true
-//                        isShrinkResources = true
-//
-//                        proguardFiles(
-//                            getDefaultProguardFile("proguard-android-optimize.txt"),
-//                            "proguard-rules.pro"
-//                        )
+                        applicationIdSuffix = AppBuildTypes.RELEASE.applicationIdSuffix
+
+                        isDebuggable = false
+                        isMinifyEnabled = true
+                        isShrinkResources = true
+
+                        signingConfig = signingConfigs.getByName("release")
+                        proguardFiles(
+                            getDefaultProguardFile("proguard-android-optimize.txt"),
+                            "proguard-rules.pro"
+                        )
 
                         buildConfigField("String", "DEBUG_LOCAL_HOST", "\"\"")
                     }
@@ -61,6 +75,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     add("DEPENDENCIES")
                 }
 
+                configureFlavors(this)
                 configureKotlinAndroid(this)
                 configureAndroidCompose(this)
             }

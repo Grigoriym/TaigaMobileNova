@@ -1,4 +1,5 @@
 import com.android.build.gradle.LibraryExtension
+import com.grappim.taigamobile.buildlogic.configureFlavors
 import com.grappim.taigamobile.buildlogic.configureKotlinAndroid
 import com.grappim.taigamobile.buildlogic.libs
 import org.gradle.api.Plugin
@@ -18,6 +19,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             extensions.configure<LibraryExtension> {
                 defaultConfig.targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
                 configureKotlinAndroid(this)
+                configureFlavors(this)
             }
 
             dependencies {

@@ -32,3 +32,7 @@
 /feature/tasks/build/
 /feature/workitem/build/
 /utils/formatter/build/
+
+taigamobilenova_keystore_release.jks
+/app/gplay/release/
+/app/fdroid/release/
