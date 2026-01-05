@@ -14,7 +14,7 @@ android {
         applicationId = namespace!!
         testApplicationId = "${namespace!!}.tests"
 
-        versionCode = 30
+        versionCode = 31
         versionName = "2.0.0"
 
         project.base.archivesName.set("TaigaMobile-$versionName")
