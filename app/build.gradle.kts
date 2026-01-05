@@ -11,13 +11,12 @@ android {
     namespace = "com.grappim.taigamobile"
 
     defaultConfig {
-        applicationId = namespace!!
-        testApplicationId = "${namespace!!}.tests"
+        applicationId = "com.grappim.taigamobile"
+        testApplicationId = "com.grappim.taigamobile.tests"
 
-        versionCode = 31
-        versionName = "2.0.0"
+        versionCode = 32
+        versionName = "2.0.1"
 
-        project.base.archivesName.set("TaigaMobile-$versionName")
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
