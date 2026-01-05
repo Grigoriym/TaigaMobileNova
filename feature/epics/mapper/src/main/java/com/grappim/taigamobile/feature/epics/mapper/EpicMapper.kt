@@ -42,7 +42,7 @@ class EpicMapper @Inject constructor(
             assignee = resp.assignedToExtraInfo?.let { assigned ->
                 userMapper.toUser(assigned)
             },
-            project = projectMapper.toProject(resp.projectDTOExtraInfo),
+            project = projectMapper.toProjectExtraInfo(resp.projectDTOExtraInfo),
             isClosed = resp.isClosed,
             epicColor = resp.color,
             blockedNote = resp.blockedNote.takeIf { resp.isBlocked },
@@ -58,36 +58,4 @@ class EpicMapper @Inject constructor(
 
     suspend fun toDomainList(dtos: List<WorkItemResponseDTO>): ImmutableList<Epic> =
         dtos.map { toDomain(it) }.toImmutableList()
-
-//    suspend fun toDomainOld(resp: CommonTaskResponse): Epic = withContext(ioDispatcher) {
-//        val creatorId = resp.owner ?: error("Owner field is null")
-//
-//        val server = serverStorage.server
-//        val url = "$server/project/${resp.projectDTOExtraInfo.slug}/${
-//            transformTaskTypeForCopyLink(CommonTaskType.Epic)
-//        }/${resp.ref}"
-//
-//        Epic(
-//            id = resp.id,
-//            version = resp.version,
-//            createdDateTime = resp.createdDate,
-//            title = resp.subject,
-//            ref = resp.ref,
-//            status = statusMapper.getStatusOld(resp = resp),
-//            assignee = resp.assignedToExtraInfo?.let { assigned ->
-//                userMapper.toUser(assigned)
-//            },
-//            project = projectMapper.toProject(resp.projectDTOExtraInfo),
-//            isClosed = resp.isClosed,
-//            epicColor = resp.color,
-//            blockedNote = resp.blockedNote.takeIf { resp.isBlocked },
-//            milestone = resp.milestone,
-//            creatorId = creatorId,
-//            assignedUserIds = resp.assignedUsers ?: listOfNotNull(resp.assignedTo),
-//            watcherUserIds = resp.watchers.orEmpty(),
-//            description = resp.description ?: "",
-//            tags = tagsMapper.toTags(resp.tags),
-//            copyLinkUrl = url
-//        )
-//    }
 }

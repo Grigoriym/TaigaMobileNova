@@ -45,8 +45,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.feature.filters.domain.model.Statuses
-import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.strings.RString
@@ -59,18 +57,12 @@ import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun KanbanBoardWidget(
-    statuses: ImmutableList<Statuses>,
-    swimlanes: ImmutableList<Swimlane?>,
+    state: KanbanState,
     modifier: Modifier = Modifier,
-    stories: ImmutableList<UserStory> = persistentListOf(),
-    teamMembers: ImmutableList<TeamMember> = persistentListOf(),
-    selectSwimlane: (Swimlane?) -> Unit = {},
-    selectedSwimlane: Swimlane? = null,
     navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
 ) {
@@ -80,7 +72,7 @@ fun KanbanBoardWidget(
     val backgroundCellColor =
         MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
 
-    swimlanes.takeIf { it.isNotEmpty() }?.let {
+    state.swimlanes.takeIf { it.isNotEmpty() }?.let {
         Row(
             modifier = modifier.padding(cellOuterPadding),
             verticalAlignment = Alignment.CenterVertically
@@ -93,9 +85,9 @@ fun KanbanBoardWidget(
             Spacer(Modifier.width(8.dp))
 
             DropdownSelector(
-                items = swimlanes,
-                selectedItem = selectedSwimlane,
-                onItemSelect = selectSwimlane,
+                items = state.swimlanes,
+                selectedItem = state.selectedSwimlane,
+                onItemSelect = state.onSelectSwimlane,
                 itemContent = {
                     Text(
                         text = it?.name ?: stringResource(RString.unclassifed),
@@ -115,7 +107,7 @@ fun KanbanBoardWidget(
         }
     }
 
-    val storiesToDisplay = stories.filter { it.swimlane == selectedSwimlane?.id }
+    val storiesToDisplay = state.stories.filter { it.swimlane == state.selectedSwimlane?.id }
 
     Row(
         Modifier
@@ -124,7 +116,7 @@ fun KanbanBoardWidget(
     ) {
         Spacer(Modifier.width(cellPadding))
 
-        statuses.forEach { status ->
+        state.statuses.forEach { status ->
             val statusStories = storiesToDisplay.filter { it.status == status }
 
             Column {
@@ -135,7 +127,13 @@ fun KanbanBoardWidget(
                     cellOuterPadding = cellOuterPadding,
                     stripeColor = status.color.toColor(),
                     backgroundColor = backgroundCellColor,
-                    onAddClick = { navigateToCreateTask(status.id, selectedSwimlane?.id) }
+                    canAddUserStory = state.canAddUserStory,
+                    onAddClick = {
+                        navigateToCreateTask(
+                            status.id,
+                            state.selectedSwimlane?.id
+                        )
+                    }
                 )
 
                 LazyColumn(
@@ -149,7 +147,7 @@ fun KanbanBoardWidget(
                         StoryItem(
                             story = it,
                             assignees = it.assignedUserIds.mapNotNull { id ->
-                                teamMembers.find { it.id == id }
+                                state.teamMembers.find { it.id == id }
                             }.toImmutableList(),
                             onTaskClick = { navigateToStory(it.id, it.ref) }
                         )
@@ -172,6 +170,7 @@ private fun Header(
     cellOuterPadding: Dp,
     stripeColor: Color,
     backgroundColor: Color,
+    canAddUserStory: Boolean,
     onAddClick: () -> Unit
 ) {
     Row(
@@ -216,11 +215,13 @@ private fun Header(
             )
         }
 
-        PlusButtonWidget(
-            tint = MaterialTheme.colorScheme.outline,
-            onClick = onAddClick,
-            modifier = Modifier.weight(0.2f)
-        )
+        if (canAddUserStory) {
+            PlusButtonWidget(
+                tint = MaterialTheme.colorScheme.outline,
+                onClick = onAddClick,
+                modifier = Modifier.weight(0.2f)
+            )
+        }
     }
 }
 

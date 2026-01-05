@@ -10,4 +10,5 @@ dependencies {
     implementation(projects.feature.swimlanes.domain)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.projects.domain)
 }

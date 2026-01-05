@@ -11,6 +11,8 @@ import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canAddIssue
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
@@ -32,7 +34,8 @@ import javax.inject.Inject
 class IssuesViewModel @Inject constructor(
     private val session: Session,
     private val issuesRepository: IssuesRepository,
-    private val filtersRepository: FiltersRepository
+    private val filtersRepository: FiltersRepository,
+    private val projectsRepository: ProjectsRepository
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl() {
 
@@ -56,6 +59,7 @@ class IssuesViewModel @Inject constructor(
 
     init {
         loadFiltersData()
+        getPermissions()
         session.issuesFilters
             .onEach { filters ->
                 _state.update {
@@ -63,6 +67,17 @@ class IssuesViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+    }
+
+    private fun getPermissions() {
+        viewModelScope.launch {
+            val perm = projectsRepository.getPermissions()
+            _state.update {
+                it.copy(
+                    canCreateIssue = perm.canAddIssue()
+                )
+            }
+        }
     }
 
     private fun setSearchQuery(newQuery: String) {

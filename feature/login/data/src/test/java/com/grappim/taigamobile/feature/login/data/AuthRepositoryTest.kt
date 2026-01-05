@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.login.data
 
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.AuthStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.AuthRequest
@@ -29,14 +30,17 @@ import kotlin.test.assertTrue
 internal class AuthRepositoryTest {
 
     private val authApi = mockk<AuthApi>()
-    private val session = mockk<Session>()
     private val serverStorage = mockk<ServerStorage>()
+
+    private val taigaSessionStorage = mockk<TaigaSessionStorage>()
+    private val authStorage = mockk<AuthStorage>()
 
     private val sut: AuthRepository =
         AuthRepositoryImpl(
             authApi = authApi,
-            session = session,
+            taigaSessionStorage = taigaSessionStorage,
             serverStorage = serverStorage,
+            authStorage = authStorage,
             dispatcher = UnconfinedTestDispatcher()
         )
 
@@ -65,13 +69,13 @@ internal class AuthRepositoryTest {
             )
         } returns response
         every {
-            session.changeAuthCredentials(
+            authStorage.setAuthCredentials(
                 token = response.authToken,
-                refreshToken = response.refresh ?: "missing"
+                refreshToken = response.refresh
             )
         } just Runs
 
-        every { session.changeCurrentUserId(response.id) } just Runs
+        coEvery { taigaSessionStorage.setUserId(response.id) } just Runs
 
         val actual = sut.auth(authData)
 
@@ -79,12 +83,12 @@ internal class AuthRepositoryTest {
 
         verify { serverStorage.defineServer(authData.taigaServer) }
         verify {
-            session.changeAuthCredentials(
+            authStorage.setAuthCredentials(
                 token = response.authToken,
-                refreshToken = response.refresh ?: "missing"
+                refreshToken = response.refresh
             )
         }
-        verify { session.changeCurrentUserId(response.id) }
+        coVerify { taigaSessionStorage.setUserId(response.id) }
         coVerify {
             authApi.auth(
                 AuthRequest(
@@ -136,11 +140,11 @@ internal class AuthRepositoryTest {
             )
         }
         verify(exactly = 0) {
-            session.changeAuthCredentials(
+            authStorage.setAuthCredentials(
                 token = response.authToken,
                 refreshToken = response.refresh ?: "missing"
             )
         }
-        verify(exactly = 0) { session.changeCurrentUserId(response.id) }
+        coVerify(exactly = 0) { taigaSessionStorage.setUserId(response.id) }
     }
 }

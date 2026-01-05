@@ -3,7 +3,7 @@ package com.grappim.taigamobile.feature.teams.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
@@ -19,8 +19,10 @@ import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class TeamViewModel @Inject constructor(private val usersRepository: UsersRepository, taigaStorage: TaigaStorage) :
-    ViewModel() {
+class TeamViewModel @Inject constructor(
+    private val usersRepository: UsersRepository,
+    taigaSessionStorage: TaigaSessionStorage
+) : ViewModel() {
 
     private val _state = MutableStateFlow(
         TeamState(
@@ -30,7 +32,7 @@ class TeamViewModel @Inject constructor(private val usersRepository: UsersReposi
     val state = _state.asStateFlow()
 
     init {
-        taigaStorage
+        taigaSessionStorage
             .currentProjectIdFlow
             .distinctUntilChanged()
             .onEach { fetchTeam() }

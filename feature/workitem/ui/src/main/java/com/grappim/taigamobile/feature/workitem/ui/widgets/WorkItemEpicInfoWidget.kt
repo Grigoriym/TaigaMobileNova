@@ -37,6 +37,7 @@ import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun WorkItemEpicInfoWidget(
+    canModifyRelatedEpic: Boolean,
     areUserStoryEpicsLoading: Boolean,
     userStoryEpics: ImmutableList<UserStoryEpic>,
     modifier: Modifier = Modifier,
@@ -50,54 +51,59 @@ fun WorkItemEpicInfoWidget(
     ) {
         TaigaHeightSpacer(4.dp)
 
-        Text(
-            text = stringResource(RString.user_story_belongs_to),
-            style = MaterialTheme.typography.bodySmall
-        )
-
-        TaigaHeightSpacer(4.dp)
-
-        userStoryEpics.forEachIndexed { _, epic ->
-            EpicInfoWidget(
-                userStoryEpic = epic,
-                onEpicClick = onEpicClick,
-                onEpicRemoveClick = onEpicRemoveClick
+        if (userStoryEpics.isNotEmpty()) {
+            Text(
+                text = stringResource(RString.user_story_belongs_to),
+                style = MaterialTheme.typography.bodySmall
             )
-        }
 
-        TaigaHeightSpacer(2.dp)
+            TaigaHeightSpacer(4.dp)
+
+            userStoryEpics.forEachIndexed { _, epic ->
+                EpicInfoWidget(
+                    canModifyRelatedEpic = canModifyRelatedEpic,
+                    userStoryEpic = epic,
+                    onEpicClick = onEpicClick,
+                    onEpicRemoveClick = onEpicRemoveClick
+                )
+            }
+
+            TaigaHeightSpacer(2.dp)
+        }
 
         if (areUserStoryEpicsLoading) {
             DotsLoaderWidget()
             TaigaHeightSpacer(2.dp)
         }
 
-        AddButtonWidget(
-            text = stringResource(RString.link_to_epic),
-            onClick = onLinkToEpicClick
-        )
+        if (canModifyRelatedEpic) {
+            AddButtonWidget(
+                text = stringResource(RString.link_to_epic),
+                onClick = onLinkToEpicClick
+            )
+        }
     }
 }
 
 @Composable
 private fun EpicInfoWidget(
+    canModifyRelatedEpic: Boolean,
     userStoryEpic: UserStoryEpic,
     onEpicClick: (UserStoryEpic) -> Unit = {},
     onEpicRemoveClick: (UserStoryEpic) -> Unit = {}
 ) {
     var isAlertVisible by remember { mutableStateOf(false) }
 
-    if (isAlertVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.unlink_epic_title),
-            description = stringResource(RString.unlink_epic_text),
-            onConfirm = {
-                isAlertVisible = false
-                onEpicRemoveClick(userStoryEpic)
-            },
-            onDismiss = { isAlertVisible = false }
-        )
-    }
+    ConfirmActionDialog(
+        title = stringResource(RString.unlink_epic_title),
+        description = stringResource(RString.unlink_epic_text),
+        onConfirm = {
+            isAlertVisible = false
+            onEpicRemoveClick(userStoryEpic)
+        },
+        onDismiss = { isAlertVisible = false },
+        isVisible = isAlertVisible
+    )
 
     Surface(
         modifier = Modifier
@@ -135,14 +141,16 @@ private fun EpicInfoWidget(
                 style = MaterialTheme.typography.titleMedium
             )
 
-            IconButton(
-                onClick = { isAlertVisible = true }
-            ) {
-                Icon(
-                    painter = painterResource(RDrawable.ic_remove),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outline
-                )
+            if (canModifyRelatedEpic) {
+                IconButton(
+                    onClick = { isAlertVisible = true }
+                ) {
+                    Icon(
+                        painter = painterResource(RDrawable.ic_remove),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.outline
+                    )
+                }
             }
         }
     }

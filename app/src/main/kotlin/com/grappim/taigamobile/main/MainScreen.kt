@@ -45,7 +45,7 @@ import timber.log.Timber
 fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val isLogged by viewModel.isLogged.collectAsStateWithLifecycle()
+    val isLogged by viewModel.isLoggedIn.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(
         LocalTopBarConfig provides topBarController
@@ -73,6 +73,7 @@ private fun MainScreenContent(
     val context = LocalContext.current
     val resources = LocalResources.current
     val drawerState by appState.drawerState.collectAsStateWithLifecycle()
+    val drawerItems by viewModel.drawerItems.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -96,20 +97,19 @@ private fun MainScreenContent(
         }.launchIn(this)
     }
 
-    if (state.isLogoutConfirmationVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.logout_title),
-            description = stringResource(RString.logout_text),
-            onConfirm = {
-                state.onLogout()
-            },
-            onDismiss = { state.setIsLogoutConfirmationVisible(false) },
-            iconId = RDrawable.ic_logout
-        )
-    }
+    ConfirmActionDialog(
+        title = stringResource(RString.logout_title),
+        description = stringResource(RString.logout_text),
+        onConfirm = {
+            state.onLogout()
+        },
+        onDismiss = { state.setIsLogoutConfirmationVisible(false) },
+        iconId = RDrawable.ic_logout,
+        isVisible = state.isLogoutConfirmationVisible
+    )
 
     TaigaDrawerWidget(
-        drawerItems = appState.drawerItems,
+        drawerItems = drawerItems,
         currentTopLevelDestination = appState.currentTopLevelDestination,
         drawerState = drawerState,
         onDrawerItemClick = { item: DrawerDestination ->

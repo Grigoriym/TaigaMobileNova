@@ -20,7 +20,7 @@ fun getUserStory(): UserStory = UserStory(
         name = getRandomString()
     ),
     assignee = getUser(),
-    project = getProject(),
+    project = getProjectExtraInfo(),
     isClosed = getRandomBoolean(),
     blockedNote = null,
     description = getRandomString(),

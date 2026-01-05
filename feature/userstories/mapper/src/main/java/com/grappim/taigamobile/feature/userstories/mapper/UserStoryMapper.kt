@@ -50,7 +50,7 @@ class UserStoryMapper @Inject constructor(
             assignee = resp.assignedToExtraInfo?.let { assigned ->
                 userMapper.toUser(assigned)
             },
-            project = projectMapper.toProject(resp.projectDTOExtraInfo),
+            project = projectMapper.toProjectExtraInfo(resp.projectDTOExtraInfo),
             isClosed = resp.isClosed,
             blockedNote = resp.blockedNote.takeIf { resp.isBlocked },
             milestone = resp.milestone,

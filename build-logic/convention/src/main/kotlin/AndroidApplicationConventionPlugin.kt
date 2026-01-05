@@ -27,7 +27,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         isMinifyEnabled = false
                         isShrinkResources = false
 
-                        val debugLocalHost = findProperty("debug.local.host") as String? ?: "not_defined"
+                        val debugLocalHost = findProperty("debug.local.host") as String? ?: ""
                         buildConfigField("String", "DEBUG_LOCAL_HOST", "\"$debugLocalHost\"")
                     }
                     release {
@@ -42,7 +42,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
 //                            "proguard-rules.pro"
 //                        )
 
-                        buildConfigField("String", "DEBUG_LOCAL_HOST", "\"not_defined\"")
+                        buildConfigField("String", "DEBUG_LOCAL_HOST", "\"\"")
                     }
                 }
 

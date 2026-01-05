@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.workitem.mapper
 
 import com.grappim.taigamobile.core.async.DefaultDispatcher
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiLink
-import com.grappim.taigamobile.feature.workitem.dto.WikiLinkDTO
+import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiLinkDTO
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.CoroutineDispatcher
@@ -14,7 +14,7 @@ class WikiLinkMapper @Inject constructor(@DefaultDispatcher private val dispatch
         WikiLink(
             id = dto.id,
             order = dto.order,
-            ref = dto.ref,
+            ref = dto.href,
             title = dto.title
         )
     }

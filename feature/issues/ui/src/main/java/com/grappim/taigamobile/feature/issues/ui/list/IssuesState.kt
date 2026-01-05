@@ -11,5 +11,7 @@ data class IssuesState(
     val retryLoadFilters: () -> Unit = {},
     val isFiltersLoading: Boolean = false,
     val filters: FiltersData = FiltersData(),
-    val filtersError: NativeText = NativeText.Empty
+    val filtersError: NativeText = NativeText.Empty,
+
+    val canCreateIssue: Boolean = false
 )

@@ -19,5 +19,8 @@ data class IssueDetailsData(
     val watchers: ImmutableList<User>,
     val isAssignedToMe: Boolean,
     val isWatchedByMe: Boolean,
-    val filtersData: FiltersData
+    val filtersData: FiltersData,
+    val canDeleteIssue: Boolean,
+    val canModifyIssue: Boolean,
+    val canComment: Boolean
 )

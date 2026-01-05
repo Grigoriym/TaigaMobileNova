@@ -8,7 +8,8 @@ import kotlinx.collections.immutable.ImmutableList
 
 data class WikiPageData(
     val page: WikiPage,
-    val user: User,
+    val user: User?,
     val wikiLink: WikiLink?,
-    val attachments: ImmutableList<Attachment>
+    val attachments: ImmutableList<Attachment>,
+    val canModifyPage: Boolean
 )

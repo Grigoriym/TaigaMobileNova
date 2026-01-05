@@ -10,6 +10,8 @@ import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canAddEpic
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
@@ -34,7 +36,8 @@ import javax.inject.Inject
 class EpicsViewModel @Inject constructor(
     private val session: Session,
     private val epicsRepository: EpicsRepository,
-    private val filtersRepository: FiltersRepository
+    private val filtersRepository: FiltersRepository,
+    private val projectsRepository: ProjectsRepository
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl() {
 
@@ -61,6 +64,7 @@ class EpicsViewModel @Inject constructor(
 
     init {
         loadFiltersData()
+        getPermissions()
 
         session.epicsFilters
             .onEach { filters ->
@@ -73,6 +77,17 @@ class EpicsViewModel @Inject constructor(
 
     private fun retryLoadFilters() {
         loadFiltersData()
+    }
+
+    private fun getPermissions() {
+        viewModelScope.launch {
+            val perm = projectsRepository.getPermissions()
+            _state.update {
+                it.copy(
+                    canAddEpic = perm.canAddEpic()
+                )
+            }
+        }
     }
 
     private fun loadFiltersData() {

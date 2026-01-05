@@ -5,6 +5,10 @@ import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canCommentTask
+import com.grappim.taigamobile.feature.projects.domain.canDeleteTask
+import com.grappim.taigamobile.feature.projects.domain.canModifyTask
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
@@ -18,7 +22,8 @@ class TaskDetailsDataUseCase @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val sprintsRepository: SprintsRepository,
     private val usersRepository: UsersRepository,
-    private val workItemRepository: WorkItemRepository
+    private val workItemRepository: WorkItemRepository,
+    private val projectsRepository: ProjectsRepository
 ) {
 
     suspend fun getTaskData(id: Long) = resultOf {
@@ -78,7 +83,10 @@ class TaskDetailsDataUseCase @Inject constructor(
                 watchers = watchers,
                 isAssignedToMe = isAssignedToMe.await(),
                 isWatchedByMe = isWatchedByMe.await(),
-                filtersData = filtersData.await()
+                filtersData = filtersData.await(),
+                canComment = projectsRepository.getPermissions().canCommentTask(),
+                canDeleteTask = projectsRepository.getPermissions().canDeleteTask(),
+                canModifyTask = projectsRepository.getPermissions().canModifyTask()
             )
         }
     }

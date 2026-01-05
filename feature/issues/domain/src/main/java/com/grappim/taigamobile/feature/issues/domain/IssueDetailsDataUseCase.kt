@@ -5,6 +5,10 @@ import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canCommentIssue
+import com.grappim.taigamobile.feature.projects.domain.canDeleteIssue
+import com.grappim.taigamobile.feature.projects.domain.canModifyIssue
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
@@ -22,7 +26,8 @@ class IssueDetailsDataUseCase @Inject constructor(
     private val usersRepository: UsersRepository,
     private val filtersRepository: FiltersRepository,
     private val workItemRepository: WorkItemRepository,
-    private val patchDataGenerator: PatchDataGenerator
+    private val patchDataGenerator: PatchDataGenerator,
+    private val projectsRepository: ProjectsRepository
 ) {
 
     /**
@@ -91,7 +96,10 @@ class IssueDetailsDataUseCase @Inject constructor(
                 watchers = watchers,
                 isAssignedToMe = isAssignedToMe.await(),
                 isWatchedByMe = isWatchedByMe.await(),
-                filtersData = filtersData
+                filtersData = filtersData,
+                canDeleteIssue = projectsRepository.getPermissions().canDeleteIssue(),
+                canModifyIssue = projectsRepository.getPermissions().canModifyIssue(),
+                canComment = projectsRepository.getPermissions().canCommentIssue()
             )
         }
     }

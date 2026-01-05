@@ -28,7 +28,9 @@ fun WorkItemDropdownMenuWidget(
     doOnUnblock: () -> Unit,
     modifier: Modifier = Modifier,
     setDeleteAlertVisible: ((Boolean) -> Unit)? = null,
-    onPromoteClick: (() -> Unit)? = null
+    onPromoteClick: (() -> Unit)? = null,
+    canDelete: Boolean = false,
+    canModify: Boolean = false
 ) {
     val clipboardManager = LocalClipboard.current
     Box(modifier = modifier) {
@@ -59,7 +61,7 @@ fun WorkItemDropdownMenuWidget(
                 }
             )
 
-            if (setDeleteAlertVisible != null) {
+            if (setDeleteAlertVisible != null && canDelete) {
                 DropdownMenuItem(
                     onClick = {
                         onDismissRequest()
@@ -74,7 +76,7 @@ fun WorkItemDropdownMenuWidget(
                 )
             }
 
-            if (onPromoteClick != null) {
+            if (onPromoteClick != null && canModify) {
                 DropdownMenuItem(
                     onClick = {
                         onDismissRequest()
@@ -91,24 +93,26 @@ fun WorkItemDropdownMenuWidget(
                 )
             }
 
-            DropdownMenuItem(
-                onClick = {
-                    onDismissRequest()
-                    if (isBlocked) {
-                        doOnUnblock()
-                    } else {
-                        setBlockDialogVisible(true)
+            if (canModify) {
+                DropdownMenuItem(
+                    onClick = {
+                        onDismissRequest()
+                        if (isBlocked) {
+                            doOnUnblock()
+                        } else {
+                            setBlockDialogVisible(true)
+                        }
+                    },
+                    text = {
+                        Text(
+                            text = stringResource(
+                                if (isBlocked) RString.unblock else RString.block
+                            ),
+                            style = MaterialTheme.typography.bodyLarge
+                        )
                     }
-                },
-                text = {
-                    Text(
-                        text = stringResource(
-                            if (isBlocked) RString.unblock else RString.block
-                        ),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            )
+                )
+            }
         }
     }
 }

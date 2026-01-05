@@ -19,5 +19,8 @@ data class EpicDetailsData(
     val isAssignedToMe: Boolean,
     val isWatchedByMe: Boolean,
     val filtersData: FiltersData,
-    val userStories: ImmutableList<WorkItem>
+    val userStories: ImmutableList<WorkItem>,
+    val canDeleteEpic: Boolean,
+    val canModifyEpic: Boolean,
+    val canComment: Boolean
 )

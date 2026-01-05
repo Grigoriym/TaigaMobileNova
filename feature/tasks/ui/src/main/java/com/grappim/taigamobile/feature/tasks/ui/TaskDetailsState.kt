@@ -64,5 +64,9 @@ data class TaskDetailsState(
 
     val onGoingToEditTags: () -> Unit = {},
     val onGoingToEditWatchers: () -> Unit = {},
-    val onGoingToEditAssignee: () -> Unit = {}
+    val onGoingToEditAssignee: () -> Unit = {},
+
+    val canDeleteTask: Boolean = false,
+    val canModifyTask: Boolean = false,
+    val canComment: Boolean = false
 )

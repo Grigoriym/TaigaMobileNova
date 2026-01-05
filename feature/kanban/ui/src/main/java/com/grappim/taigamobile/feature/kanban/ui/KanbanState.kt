@@ -20,5 +20,7 @@ data class KanbanState(
     val error: NativeText = NativeText.Empty,
 
     val selectedSwimlane: Swimlane? = null,
-    val onSelectSwimlane: (Swimlane?) -> Unit
+    val onSelectSwimlane: (Swimlane?) -> Unit,
+
+    val canAddUserStory: Boolean = false
 )

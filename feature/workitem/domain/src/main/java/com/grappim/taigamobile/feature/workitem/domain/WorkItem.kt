@@ -3,7 +3,7 @@ package com.grappim.taigamobile.feature.workitem.domain
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
-import com.grappim.taigamobile.feature.projects.domain.Project
+import com.grappim.taigamobile.feature.projects.domain.ProjectExtraInfo
 import com.grappim.taigamobile.feature.users.domain.User
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -25,5 +25,5 @@ data class WorkItem(
     val colors: ImmutableList<String> = persistentListOf(),
     val assignee: User? = null,
     val blockedNote: String? = null,
-    val project: Project
+    val project: ProjectExtraInfo
 )

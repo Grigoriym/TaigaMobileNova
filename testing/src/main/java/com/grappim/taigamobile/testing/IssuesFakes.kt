@@ -41,7 +41,10 @@ fun getIssueDetailsData(): IssueDetailsData = IssueDetailsData(
     ),
     isAssignedToMe = getRandomBoolean(),
     isWatchedByMe = getRandomBoolean(),
-    filtersData = getFiltersData()
+    filtersData = getFiltersData(),
+    canDeleteIssue = true,
+    canModifyIssue = true,
+    canComment = true
 )
 
 fun getIssueTask(): Issue = Issue(
@@ -54,7 +57,7 @@ fun getIssueTask(): Issue = Issue(
     createdDateTime = LocalDateTime.now(),
     dueDate = LocalDate.now().plusDays(getRandomLong() % 30),
     dueDateStatus = DueDateStatus.Set,
-    project = getProject(),
+    project = getProjectExtraInfo(),
     isClosed = getRandomBoolean(),
     tags = persistentListOf(getTag()),
     blockedNote = getRandomString(),
@@ -77,8 +80,6 @@ fun getIssueUI(): IssueUI = IssueUI(
     title = getRandomString(),
     description = getRandomString(),
     createdDateTime = LocalDateTime.now(),
-    dueDate = LocalDate.now().plusDays(getRandomLong() % 30),
-    dueDateStatus = DueDateStatus.Set,
     isClosed = getRandomBoolean(),
     blockedNote = getRandomString(),
     assignedUserIds = listOf(getRandomLong()),

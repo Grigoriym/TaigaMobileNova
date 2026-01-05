@@ -10,7 +10,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicDetailsDataUseCase
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -53,6 +53,8 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFi
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.toHex
@@ -80,7 +82,7 @@ class EpicDetailsViewModel @Inject constructor(
     private val historyRepository: HistoryRepository,
     private val fileUriManager: FileUriManager,
     private val usersRepository: UsersRepository,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val session: Session,
     private val dateTimeUtils: DateTimeUtils,
     private val epicDetailsDataUseCase: EpicDetailsDataUseCase,
@@ -91,6 +93,7 @@ class EpicDetailsViewModel @Inject constructor(
     private val workItemUIMapper: WorkItemUIMapper,
     private val workItemEditStateRepository: WorkItemEditStateRepository
 ) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
@@ -120,7 +123,7 @@ class EpicDetailsViewModel @Inject constructor(
         taskIdentifier = TaskIdentifier.WorkItem(epicTaskType),
         workItemRepository = workItemRepository,
         fileUriManager = fileUriManager,
-        taigaStorage = taigaStorage
+        taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
         commonTaskType = epicTaskType,
@@ -138,7 +141,7 @@ class EpicDetailsViewModel @Inject constructor(
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
-        session = session
+        taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
         commonTaskType = epicTaskType,
@@ -257,10 +260,8 @@ class EpicDetailsViewModel @Inject constructor(
 
     private fun emitError(error: Throwable) {
         Timber.e(error)
-        _state.update {
-            it.copy(
-                error = getErrorMessage(error)
-            )
+        viewModelScope.launch {
+            showSnackbarSuspend(getErrorMessage(error))
         }
     }
 
@@ -391,7 +392,10 @@ class EpicDetailsViewModel @Inject constructor(
                             filtersData = result.filtersData,
                             initialLoadError = NativeText.Empty,
                             customFieldsVersion = result.customFields.version,
-                            userStories = workItemUIMapper.toUI(result.userStories)
+                            userStories = workItemUIMapper.toUI(result.userStories),
+                            canModifyEpic = result.canModifyEpic,
+                            canDeleteEpic = result.canDeleteEpic,
+                            canComment = result.canComment
                         )
                     }
                     setInitialTitle(result.epic.title)
@@ -501,7 +505,7 @@ class EpicDetailsViewModel @Inject constructor(
             handleAssignToMe(
                 workItemId = currentEpic.id,
                 version = currentEpic.version,
-                currentUserId = session.userId,
+                currentUserId = taigaSessionStorage.requireUserId(),
                 doOnPreExecute = {
                     clearError()
                 },

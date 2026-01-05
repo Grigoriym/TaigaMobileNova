@@ -9,6 +9,8 @@ import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canAddUserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -32,7 +34,8 @@ import javax.inject.Inject
 class ScrumBacklogViewModel @Inject constructor(
     private val session: Session,
     private val userStoriesRepository: UserStoriesRepository,
-    private val filtersRepository: FiltersRepository
+    private val filtersRepository: FiltersRepository,
+    private val projectsRepository: ProjectsRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -58,12 +61,24 @@ class ScrumBacklogViewModel @Inject constructor(
 
     init {
         loadFiltersData()
+        getPermissions()
 
         session.scrumFilters.onEach { filters ->
             _state.update {
                 it.copy(activeFilters = filters)
             }
         }.launchIn(viewModelScope)
+    }
+
+    private fun getPermissions() {
+        viewModelScope.launch {
+            val perm = projectsRepository.getPermissions()
+            _state.update {
+                it.copy(
+                    canAddUserStory = perm.canAddUserStory()
+                )
+            }
+        }
     }
 
     private fun setSearchQuery(newQuery: String) {
@@ -123,5 +138,6 @@ data class ScrumBacklogState(
     val onSetSearchQuery: (String) -> Unit = {},
     val retryLoadFilters: () -> Unit = {},
     val isFiltersLoading: Boolean = false,
-    val filtersError: NativeText = NativeText.Empty
+    val filtersError: NativeText = NativeText.Empty,
+    val canAddUserStory: Boolean = false
 )

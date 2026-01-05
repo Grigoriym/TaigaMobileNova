@@ -69,5 +69,9 @@ data class EpicDetailsState(
 
     val onGoingToEditTags: () -> Unit = {},
     val onGoingToEditWatchers: () -> Unit = {},
-    val onGoingToEditAssignee: () -> Unit = {}
+    val onGoingToEditAssignee: () -> Unit = {},
+
+    val canDeleteEpic: Boolean = false,
+    val canModifyEpic: Boolean = false,
+    val canComment: Boolean = false
 )

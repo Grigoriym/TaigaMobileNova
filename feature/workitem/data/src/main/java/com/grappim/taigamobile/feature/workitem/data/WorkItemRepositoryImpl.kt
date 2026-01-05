@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.workitem.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
@@ -29,7 +29,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonNull
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.JsonPrimitive
@@ -50,7 +49,7 @@ class WorkItemRepositoryImpl @Inject constructor(
     private val workItemMapper: WorkItemMapper,
     private val usersRepository: UsersRepository,
     private val customFieldsMapper: CustomFieldsMapper,
-    private val taigaStorage: TaigaStorage
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : WorkItemRepository {
 
     private fun Map<String, Any?>.toJsonObject(): JsonObject = buildJsonObject {
@@ -247,7 +246,7 @@ class WorkItemRepositoryImpl @Inject constructor(
             val attributes = async {
                 workItemApi.getCustomAttributes(
                     taskPath = WorkItemPathSingular(commonTaskType),
-                    projectId = taigaStorage.currentProjectIdFlow.first()
+                    projectId = taigaSessionStorage.getCurrentProjectId()
                 )
             }
             val values = async {
@@ -267,7 +266,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         workItemId: Long,
         taskIdentifier: TaskIdentifier
     ): ImmutableList<Attachment> {
-        val projectId = taigaStorage.currentProjectIdFlow.first()
+        val projectId = taigaSessionStorage.getCurrentProjectId()
 
         val attachments = workItemApi.getAttachments(
             taskPath = taskIdentifier.getPluralPath(),
@@ -303,7 +302,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         val response = workItemApi.createWorkItem(
             taskPath = WorkItemPathPlural(commonTaskType),
             createRequest = CreateWorkItemRequestDTO(
-                project = taigaStorage.currentProjectIdFlow.first(),
+                project = taigaSessionStorage.getCurrentProjectId(),
                 subject = subject,
                 description = description,
                 status = status
@@ -316,7 +315,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         if (commonTaskType !in listOf(CommonTaskType.Issue, CommonTaskType.Task)) {
             error("Invalid task type to promote to user story")
         }
-        val projectId = taigaStorage.currentProjectIdFlow.first()
+        val projectId = taigaSessionStorage.getCurrentProjectId()
 
         val response = workItemApi.promoteToUserStory(
             taskPath = WorkItemPathPlural(commonTaskType),

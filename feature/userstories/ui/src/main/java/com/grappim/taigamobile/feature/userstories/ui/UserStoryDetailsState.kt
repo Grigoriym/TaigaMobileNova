@@ -66,5 +66,10 @@ data class UserStoryDetailsState(
 
     val onEditTags: () -> Unit = {},
     val onGoingToEditAssignees: () -> Unit = {},
-    val onGoingToEditWatchers: () -> Unit = {}
+    val onGoingToEditWatchers: () -> Unit = {},
+
+    val canEditUserStory: Boolean = false,
+    val canDeleteUserStory: Boolean = false,
+    val canComment: Boolean = false,
+    val canModifyRelatedEpic: Boolean = false
 )

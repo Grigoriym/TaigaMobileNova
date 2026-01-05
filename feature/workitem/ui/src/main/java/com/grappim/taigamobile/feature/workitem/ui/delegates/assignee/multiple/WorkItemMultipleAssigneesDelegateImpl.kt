@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.AssigneesData
@@ -23,7 +23,7 @@ class WorkItemMultipleAssigneesDelegateImpl(
     private val workItemRepository: WorkItemRepository,
     private val usersRepository: UsersRepository,
     private val patchDataGenerator: PatchDataGenerator,
-    private val session: Session
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : WorkItemMultipleAssigneesDelegate {
 
     private val _multipleAssigneesState = MutableStateFlow(
@@ -114,7 +114,7 @@ class WorkItemMultipleAssigneesDelegateImpl(
         val currentAssignees = _multipleAssigneesState.value.assignees
             .mapNotNull { it.id }
             .toPersistentList()
-            .add(session.userId)
+            .add(taigaSessionStorage.requireUserId())
 
         handleUpdateAssignees(
             newAssignees = currentAssignees.toImmutableList(),

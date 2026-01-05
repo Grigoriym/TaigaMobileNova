@@ -6,17 +6,15 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.utils.ui.typeMapOf
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,7 +26,7 @@ import kotlin.reflect.typeOf
 class EditEpicViewModel @Inject constructor(
     private val epicsRepository: EpicsRepository,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -101,7 +99,7 @@ class EditEpicViewModel @Inject constructor(
     private fun getEpics() {
         viewModelScope.launch {
             resultOf {
-                epicsRepository.getEpics(projectId = taigaStorage.currentProjectIdFlow.first())
+                epicsRepository.getEpics(projectId = taigaSessionStorage.getCurrentProjectId())
             }.onSuccess { result ->
                 val selected = workItemEditStateRepository.getCurrentEpics(
                     workItemId = route.workItemId,

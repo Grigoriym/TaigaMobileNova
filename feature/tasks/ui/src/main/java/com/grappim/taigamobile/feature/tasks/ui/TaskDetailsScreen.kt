@@ -112,6 +112,12 @@ fun TaskDetailsScreen(
         )
     }
 
+    ObserveAsEvents(viewModel.snackBarMessage) { message ->
+        if (message !is NativeText.Empty) {
+            showSnackbar(message)
+        }
+    }
+
     ObserveAsEvents(viewModel.deleteTrigger) { isDelete ->
         if (isDelete) {
             goBack()
@@ -233,7 +239,9 @@ fun TaskDetailsScreen(
             },
             onPromoteClick = {
                 state.onPromoteClick()
-            }
+            },
+            canModify = state.canModifyTask,
+            canDelete = state.canDeleteTask
         )
 
         TaskDetailsScreenContent(
@@ -295,22 +303,27 @@ private fun TaskDetailsScreenContent(
             ) {
                 WorkItemTitleWidget(
                     titleState = titleState,
-                    onTitleSave = state.onTitleSave
+                    onTitleSave = state.onTitleSave,
+                    canModify = state.canModifyTask
                 )
 
                 WorkItemBlockedBannerWidget(blockedNote = state.currentTask.blockedNote)
 
-                WorkItemBadgesWidget(badgeState = badgeState)
+                WorkItemBadgesWidget(
+                    badgeState = badgeState,
+                    canModify = state.canModifyTask
+                )
 
                 WorkItemDescriptionWidget(
-                    currentDescription = state.currentTask.description,
+                    description = state.currentTask.description,
                     onDescriptionClick = {
                         goToEditDescription(
                             state.currentTask.description,
                             state.currentTask.id
                         )
                     },
-                    descriptionState = descriptionState
+                    descriptionState = descriptionState,
+                    canModify = state.canModifyTask
                 )
 
                 WorkItemTagsWidget(
@@ -319,16 +332,16 @@ private fun TaskDetailsScreenContent(
                     goToEditTags = {
                         state.onGoingToEditTags()
                         goToEditTags(state.currentTask.id)
-                    }
+                    },
+                    canModify = state.canModifyTask
                 )
 
                 WorkItemDueDateWidget(
                     dueDateState = dueDateState,
-                    dueDateStatus = state.currentTask.dueDateStatus,
-                    dueDate = state.currentTask.dueDate,
                     setDueDate = { value ->
                         state.setDueDate(value)
-                    }
+                    },
+                    canModify = state.canModifyTask
                 )
 
                 CreatedByWidget(
@@ -345,7 +358,8 @@ private fun TaskDetailsScreenContent(
                     onAddAssigneeClick = {
                         state.onGoingToEditAssignee()
                         goToEditAssignee(state.currentTask.id)
-                    }
+                    },
+                    canModify = state.canModifyTask
                 )
 
                 WatchersWidget(
@@ -356,12 +370,14 @@ private fun TaskDetailsScreenContent(
                         goToEditWatchers(state.currentTask.id)
                     },
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
-                    onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
+                    onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick,
+                    canModify = state.canModifyTask
                 )
 
                 CustomFieldsSectionWidget(
                     customFieldsState = customFieldsState,
-                    onCustomFieldSave = state.onCustomFieldSave
+                    onCustomFieldSave = state.onCustomFieldSave,
+                    canModify = state.canModifyTask
                 )
 
                 AttachmentsSectionWidget(
@@ -371,7 +387,8 @@ private fun TaskDetailsScreenContent(
                     },
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
-                    }
+                    },
+                    canModify = state.canModifyTask
                 )
 
                 CommentsSectionWidget(
@@ -383,6 +400,9 @@ private fun TaskDetailsScreenContent(
                 )
             }
         }
-        CreateCommentBar(onButtonClick = state.onCreateCommentClick)
+        CreateCommentBar(
+            onButtonClick = state.onCreateCommentClick,
+            canComment = state.canComment
+        )
     }
 }

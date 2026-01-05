@@ -7,13 +7,13 @@ import com.grappim.taigamobile.utils.ui.NativeText
 
 @Stable
 data class SettingsState(
-    val appInfo: String,
-    val serverUrl: String,
+    val appInfo: String = "",
+    val serverUrl: String = "",
     val user: User? = null,
     val isLoading: Boolean = false,
     val error: NativeText = NativeText.Empty,
     val themeSettings: ThemeSettings = ThemeSettings.default(),
-    val onThemeChanged: (ThemeSettings) -> Unit,
+    val onThemeChanged: (ThemeSettings) -> Unit = {},
     val themeDropDownTitle: NativeText = NativeText.Empty,
     val getThemeTitle: (ThemeSettings) -> NativeText = { NativeText.Empty },
     val onNewUIToggle: () -> Unit = {}

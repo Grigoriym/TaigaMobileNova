@@ -8,7 +8,7 @@ import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
-import com.grappim.taigamobile.testing.getProject
+import com.grappim.taigamobile.testing.getProjectExtraInfo
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getStatus
 import com.grappim.taigamobile.testing.getTag
@@ -62,7 +62,7 @@ class UserStoryMapperTest {
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProject(response.projectDTOExtraInfo) } returns getProject()
+        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
         coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
@@ -102,7 +102,7 @@ class UserStoryMapperTest {
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProject(response.projectDTOExtraInfo) } returns getProject()
+        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
         coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
@@ -123,7 +123,7 @@ class UserStoryMapperTest {
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProject(response.projectDTOExtraInfo) } returns getProject()
+        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
         coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
@@ -140,7 +140,7 @@ class UserStoryMapperTest {
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProject(response.projectDTOExtraInfo) } returns getProject()
+        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
         coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
@@ -162,7 +162,7 @@ class UserStoryMapperTest {
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProject(response.projectDTOExtraInfo) } returns getProject()
+        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(
             firstTag,
             secondTag

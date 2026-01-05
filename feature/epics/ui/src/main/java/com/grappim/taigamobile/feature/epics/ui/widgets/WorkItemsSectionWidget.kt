@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -24,7 +25,6 @@ import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUI
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.taigaRed
 import com.grappim.taigamobile.uikit.widgets.Chip
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
 import com.grappim.taigamobile.utils.ui.asColor
 import com.grappim.taigamobile.utils.ui.asString
@@ -89,13 +89,18 @@ private fun WorkItemItemWidget(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    ContainerBoxWidget(
+    Surface(
         modifier = modifier,
         onClick = {
             goToWorkItem(workItemUI.id, workItemUI.taskType, workItemUI.ref)
-        }
+        },
+        shape = MaterialTheme.shapes.large
     ) {
-        Column(modifier = Modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
             Row(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier.fillMaxWidth()

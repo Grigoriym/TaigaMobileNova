@@ -26,5 +26,11 @@ data class SprintState(
     val onDeleteSprint: () -> Unit = {},
 
     val onEditSprintConfirm: () -> Unit = {},
-    val onEditSprintClick: () -> Unit = {}
+    val onEditSprintClick: () -> Unit = {},
+
+    val canEdit: Boolean = false,
+    val canDelete: Boolean = false,
+    val canShowTopBarActions: Boolean = false,
+    val canCreateIssue: Boolean = false,
+    val canCreateTasks: Boolean = false
 )

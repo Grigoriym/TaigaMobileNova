@@ -53,7 +53,7 @@ class WorkItemMapper @Inject constructor(
             assignee = dto.assignedToExtraInfo?.let { assigned ->
                 userMapper.toUser(assigned)
             },
-            project = projectMapper.toProject(dto.projectDTOExtraInfo)
+            project = projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo)
         )
     }
 }

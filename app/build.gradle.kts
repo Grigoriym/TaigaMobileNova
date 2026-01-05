@@ -134,6 +134,7 @@ dependencies {
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.paging.compose)
+    implementation(libs.androidx.core.splashScreen)
     implementation(libs.material)
 
     implementation(libs.androidx.compose.ui.graphics)

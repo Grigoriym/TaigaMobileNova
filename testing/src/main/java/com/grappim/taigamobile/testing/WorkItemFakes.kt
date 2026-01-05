@@ -18,7 +18,7 @@ fun getWorkItemResponseDTO(): WorkItemResponseDTO =
             color = "#FF5722",
             name = getRandomString()
         ),
-        projectDTOExtraInfo = getProjectDTO(),
+        projectDTOExtraInfo = getProjectExtraInfoDTO(),
         milestone = getRandomLong(),
         assignedUsers = listOf(getRandomLong(), getRandomLong()),
         assignedTo = getRandomLong(),

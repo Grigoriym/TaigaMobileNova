@@ -7,6 +7,10 @@ import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
+/**
+ * the slight parameter in functions switches between two serializers for list endpoints
+ * with true it makes fewer database queries - lighter/faster response
+ */
 interface ProjectsApi {
     @GET("projects")
     suspend fun getProjectsPaging(

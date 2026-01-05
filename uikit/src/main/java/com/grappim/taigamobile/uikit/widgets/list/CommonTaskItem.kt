@@ -4,7 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -16,7 +18,6 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.uikit.widgets.container.ContainerBoxWidget
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.toColor
 import java.time.format.DateTimeFormatter
@@ -33,15 +34,19 @@ fun CommonTaskItem(
     verticalPadding: Dp = 8.dp,
     showExtendedInfo: Boolean = false,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit = { _, _, _ -> }
-) = ContainerBoxWidget(
-    modifier = modifier,
-    horizontalPadding = horizontalPadding,
-    verticalPadding = verticalPadding,
+) = Surface(
+    modifier = modifier
+        .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+    shape = MaterialTheme.shapes.medium,
     onClick = { navigateToTask(commonTask.id, commonTask.taskType, commonTask.ref) }
 ) {
     val dateTimeFormatter = remember { DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM) }
 
-    Column(modifier = Modifier.fillMaxWidth()) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
         if (showExtendedInfo) {
             Text(commonTask.project.name)
 
@@ -94,28 +99,3 @@ fun CommonTaskItem(
         )
     }
 }
-
-// @Preview(showBackground = true)
-// @Composable
-// private fun CommonTaskItemPreview() = TaigaMobileTheme {
-//    CommonTaskItem(
-//        CommonTask(
-//            id = 0L,
-//            createdDate = LocalDateTime.now(),
-//            title = "Very cool story",
-//            ref = 100,
-//            statusOld = StatusOld(
-//                id = 0L,
-//                name = "In progress",
-//                color = "#729fcf",
-//                type = StatusType.Status
-//            ),
-//            assignee = null,
-//            projectDTOInfo = ProjectDTO(0, "Name", "slug"),
-//            taskType = CommonTaskType.UserStory,
-//            isClosed = false,
-//            blockedNote = "Block reason"
-//        ),
-//        showExtendedInfo = true
-//    )
-// }

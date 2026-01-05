@@ -9,7 +9,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.tasks.domain.Task
 import com.grappim.taigamobile.feature.tasks.domain.TaskDetailsDataUseCase
@@ -49,12 +49,13 @@ import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.feature.workitem.ui.utils.getDueDateText
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -89,10 +90,11 @@ class TaskDetailsViewModel @Inject constructor(
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val usersRepository: UsersRepository,
     private val workItemEditStateRepository: WorkItemEditStateRepository
 ) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = CommonTaskType.Task,
         workItemRepository = workItemRepository,
@@ -117,14 +119,14 @@ class TaskDetailsViewModel @Inject constructor(
         taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task),
         workItemRepository = workItemRepository,
         fileUriManager = fileUriManager,
-        taigaStorage = taigaStorage
+        taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
         commonTaskType = CommonTaskType.Task,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
-        session = session
+        taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
         commonTaskType = CommonTaskType.Task,
@@ -277,9 +279,6 @@ class TaskDetailsViewModel @Inject constructor(
                     val tags = async {
                         tagUIMapper.toUI(result.task.tags).toPersistentList()
                     }
-                    val dueDateText = dateTimeUtils.getDueDateText(
-                        dueDate = result.task.dueDate
-                    )
                     val customFieldsStateItems = async {
                         customFieldsUIMapper.toUI(result.customFields)
                     }
@@ -293,7 +292,10 @@ class TaskDetailsViewModel @Inject constructor(
                             creator = result.creator,
                             filtersData = result.filtersData,
                             initialLoadError = NativeText.Empty,
-                            customFieldsVersion = result.customFields.version
+                            customFieldsVersion = result.customFields.version,
+                            canModifyTask = result.canModifyTask,
+                            canComment = result.canComment,
+                            canDeleteTask = result.canDeleteTask
                         )
                     }
                     setInitialTitle(result.task.title)
@@ -309,7 +311,10 @@ class TaskDetailsViewModel @Inject constructor(
                         version = result.customFields.version,
                         customFieldStateItems = customFieldsStateItems.await()
                     )
-                    setInitialDueDate(dueDateText = dueDateText)
+                    setInitialDueDate(
+                        dueDate = result.task.dueDate,
+                        dueDateStatus = result.task.dueDateStatus
+                    )
                     setInitialAssignees(
                         assignees = result.assignees.toPersistentList(),
                         isAssignedToMe = result.isAssignedToMe
@@ -338,10 +343,8 @@ class TaskDetailsViewModel @Inject constructor(
 
     private fun emitError(error: Throwable) {
         Timber.e(error)
-        _state.update {
-            it.copy(
-                error = getErrorMessage(error)
-            )
+        viewModelScope.launch {
+            showSnackbarSuspend(getErrorMessage(error))
         }
     }
 
@@ -580,7 +583,7 @@ class TaskDetailsViewModel @Inject constructor(
             handleAssignToMe(
                 workItemId = currentTask.id,
                 version = currentTask.version,
-                currentUserId = session.userId,
+                currentUserId = taigaSessionStorage.requireUserId(),
                 doOnPreExecute = {
                     clearError()
                 },
@@ -757,11 +760,9 @@ class TaskDetailsViewModel @Inject constructor(
                 doOnPreExecute = {
                     clearError()
                 },
-                doOnSuccess = { result ->
+                doOnSuccess = { patchedData ->
                     val updatedTask = currentTask.copy(
-                        dueDate = result.dueDate,
-                        dueDateStatus = result.patchedData.dueDateStatus,
-                        version = result.patchedData.newVersion
+                        version = patchedData.newVersion
                     )
 
                     _state.update {

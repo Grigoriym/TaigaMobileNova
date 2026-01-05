@@ -25,7 +25,8 @@ fun WorkItemTagsWidget(
     tagsState: WorkItemTagsState,
     goToEditTags: () -> Unit,
     onTagRemoveClick: (TagUI) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
 ) {
     Column(
         modifier = modifier
@@ -46,7 +47,8 @@ fun WorkItemTagsWidget(
                     tag = tag,
                     onRemoveClick = {
                         onTagRemoveClick(tag)
-                    }
+                    },
+                    canModify = canModify
                 )
             }
 
@@ -56,7 +58,7 @@ fun WorkItemTagsWidget(
                     strokeWidth = 2.dp,
                     color = MaterialTheme.colorScheme.primary
                 )
-            } else {
+            } else if (canModify) {
                 AddButtonWidget(
                     text = stringResource(RString.edit_tags),
                     onClick = {

@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
@@ -24,7 +24,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val usersRepository: UsersRepository,
-    private val taigaStorage: TaigaStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     serverStorage: ServerStorage,
     appInfoProvider: AppInfoProvider
 ) : ViewModel() {
@@ -40,7 +40,7 @@ class SettingsViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
-        taigaStorage.themeSettings.onEach { settings ->
+        taigaSessionStorage.themeSettings.onEach { settings ->
             val title = getThemeTitle(settings)
             _state.update {
                 it.copy(
@@ -87,7 +87,7 @@ class SettingsViewModel @Inject constructor(
 
     private fun switchTheme(theme: ThemeSettings) {
         viewModelScope.launch {
-            taigaStorage.setThemSetting(theme)
+            taigaSessionStorage.setThemSetting(theme)
         }
     }
 }

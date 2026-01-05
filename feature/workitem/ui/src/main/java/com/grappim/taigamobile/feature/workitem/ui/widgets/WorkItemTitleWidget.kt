@@ -23,7 +23,12 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 
 @Composable
-fun WorkItemTitleWidget(titleState: WorkItemTitleState, onTitleSave: () -> Unit, modifier: Modifier = Modifier) {
+fun WorkItemTitleWidget(
+    titleState: WorkItemTitleState,
+    onTitleSave: () -> Unit,
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
+) {
     Box(
         modifier = modifier.fillMaxWidth(),
         contentAlignment = Alignment.TopStart
@@ -69,9 +74,15 @@ fun WorkItemTitleWidget(titleState: WorkItemTitleState, onTitleSave: () -> Unit,
                 Text(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable {
-                            titleState.setIsTitleEditable(true)
-                        },
+                        .then(
+                            if (canModify) {
+                                Modifier.clickable {
+                                    titleState.setIsTitleEditable(true)
+                                }
+                            } else {
+                                Modifier
+                            }
+                        ),
                     text = titleState.currentTitle,
                     style = MaterialTheme.typography.headlineSmall,
                     maxLines = 2

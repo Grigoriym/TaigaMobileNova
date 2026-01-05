@@ -33,7 +33,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun ScrumBacklogScreen(
@@ -53,13 +53,17 @@ fun ScrumBacklogScreen(
             TopBarConfig(
                 title = NativeText.Resource(RString.backlog),
                 navigationIcon = NavigationIconConfig.Menu,
-                actions = persistentListOf(
-                    TopBarActionIconButton(
-                        drawable = RDrawable.ic_add,
-                        contentDescription = "Add User Story",
-                        onClick = goToCreateUserStory
-                    )
-                )
+                actions = buildList {
+                    if (state.canAddUserStory) {
+                        add(
+                            TopBarActionIconButton(
+                                drawable = RDrawable.ic_add,
+                                contentDescription = "Add User Story",
+                                onClick = goToCreateUserStory
+                            )
+                        )
+                    }
+                }.toImmutableList()
             )
         )
     }

@@ -32,6 +32,7 @@ fun EpicColorWidget(
     isEpicColorLoading: Boolean,
     epicColor: String?,
     modifier: Modifier = Modifier,
+    canModify: Boolean = true,
     onColorPick: (Color) -> Unit = {}
 ) {
     val colorToUse = epicColor.orEmpty().toColor()
@@ -66,7 +67,13 @@ fun EpicColorWidget(
             Modifier
                 .size(32.dp)
                 .background(color = colorToUse, shape = MaterialTheme.shapes.small)
-                .clickable { dialogState.show() }
+                .then(
+                    if (canModify) {
+                        Modifier.clickable { dialogState.show() }
+                    } else {
+                        Modifier
+                    }
+                )
         )
 
         if (isEpicColorLoading) {

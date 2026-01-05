@@ -23,6 +23,7 @@ import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
@@ -47,6 +48,8 @@ fun CommentsSectionWidget(
             )
 
             if (commentsState.isCommentsWidgetExpanded) {
+                TaigaHeightSpacer(10.dp)
+
                 commentsState.comments.forEachIndexed { index, item ->
                     CommentItem(
                         comment = item,
@@ -77,18 +80,17 @@ private fun CommentItem(comment: Comment, onDeleteClick: () -> Unit, navigateToP
     Column {
         var isAlertVisible by remember { mutableStateOf(false) }
 
-        if (isAlertVisible) {
-            ConfirmActionDialog(
-                title = stringResource(RString.delete_comment_title),
-                description = stringResource(RString.delete_comment_text),
-                onConfirm = {
-                    isAlertVisible = false
-                    onDeleteClick()
-                },
-                onDismiss = { isAlertVisible = false },
-                iconId = RDrawable.ic_delete
-            )
-        }
+        ConfirmActionDialog(
+            title = stringResource(RString.delete_comment_title),
+            description = stringResource(RString.delete_comment_text),
+            onConfirm = {
+                isAlertVisible = false
+                onDeleteClick()
+            },
+            onDismiss = { isAlertVisible = false },
+            iconId = RDrawable.ic_delete,
+            isVisible = isAlertVisible
+        )
 
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -103,7 +105,11 @@ private fun CommentItem(comment: Comment, onDeleteClick: () -> Unit, navigateToP
             )
 
             if (comment.canDelete) {
-                IconButton(onClick = { isAlertVisible = true }) {
+                IconButton(
+                    onClick = {
+                        isAlertVisible = true
+                    }
+                ) {
                     Icon(
                         painter = painterResource(RDrawable.ic_delete),
                         contentDescription = null,

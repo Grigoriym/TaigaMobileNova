@@ -122,6 +122,12 @@ fun UserStoryDetailsScreen(
         }
     }
 
+    ObserveAsEvents(viewModel.snackBarMessage) { message ->
+        if (message !is NativeText.Empty) {
+            showSnackbar(message)
+        }
+    }
+
     LaunchedEffect(state.error) {
         if (state.error !is NativeText.Empty) {
             showSnackbar(state.error)
@@ -230,7 +236,9 @@ fun UserStoryDetailsScreen(
             },
             doOnUnblock = {
                 state.onBlockToggle(false, null)
-            }
+            },
+            canDelete = state.canDeleteUserStory,
+            canModify = state.canEditUserStory
         )
 
         UserStoryDetailsScreenContent(
@@ -296,14 +304,19 @@ private fun UserStoryDetailsScreenContent(
             ) {
                 WorkItemTitleWidget(
                     titleState = titleState,
-                    onTitleSave = state.onTitleSave
+                    onTitleSave = state.onTitleSave,
+                    canModify = state.canEditUserStory
                 )
 
                 WorkItemBlockedBannerWidget(blockedNote = state.currentUserStory.blockedNote)
 
-                WorkItemBadgesWidget(badgeState = badgeState)
+                WorkItemBadgesWidget(
+                    badgeState = badgeState,
+                    canModify = state.canEditUserStory
+                )
 
                 WorkItemEpicInfoWidget(
+                    canModifyRelatedEpic = state.canModifyRelatedEpic,
                     areUserStoryEpicsLoading = state.areUserStoryEpicsLoading,
                     userStoryEpics = state.currentUserStory.userStoryEpics,
                     onEpicClick = { epic ->
@@ -331,14 +344,15 @@ private fun UserStoryDetailsScreenContent(
                 }
 
                 WorkItemDescriptionWidget(
-                    currentDescription = state.currentUserStory.description,
+                    description = state.currentUserStory.description,
                     onDescriptionClick = {
                         goToEditDescription(
                             state.currentUserStory.description,
                             state.currentUserStory.id
                         )
                     },
-                    descriptionState = descriptionState
+                    descriptionState = descriptionState,
+                    canModify = state.canEditUserStory
                 )
 
                 WorkItemTagsWidget(
@@ -347,16 +361,16 @@ private fun UserStoryDetailsScreenContent(
                     goToEditTags = {
                         state.onEditTags()
                         goToEditTags(state.currentUserStory.id)
-                    }
+                    },
+                    canModify = state.canEditUserStory
                 )
 
                 WorkItemDueDateWidget(
                     dueDateState = dueDateState,
-                    dueDateStatus = state.currentUserStory.dueDateStatus,
-                    dueDate = state.currentUserStory.dueDate,
                     setDueDate = { value ->
                         state.setDueDate(value)
-                    }
+                    },
+                    canModify = state.canEditUserStory
                 )
 
                 CreatedByWidget(
@@ -372,7 +386,8 @@ private fun UserStoryDetailsScreenContent(
                     onAddAssigneeClick = {
                         state.onGoingToEditAssignees()
                         goToEditAssignee(state.currentUserStory.id)
-                    }
+                    },
+                    canModify = state.canEditUserStory
                 )
 
                 WatchersWidget(
@@ -383,12 +398,14 @@ private fun UserStoryDetailsScreenContent(
                         goToEditWatchers(state.currentUserStory.id)
                     },
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
-                    onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick
+                    onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick,
+                    canModify = state.canEditUserStory
                 )
 
                 CustomFieldsSectionWidget(
                     customFieldsState = customFieldsState,
-                    onCustomFieldSave = state.onCustomFieldSave
+                    onCustomFieldSave = state.onCustomFieldSave,
+                    canModify = state.canEditUserStory
                 )
 
                 AttachmentsSectionWidget(
@@ -398,7 +415,8 @@ private fun UserStoryDetailsScreenContent(
                     },
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
-                    }
+                    },
+                    canModify = state.canEditUserStory
                 )
 
                 CommentsSectionWidget(
@@ -410,6 +428,9 @@ private fun UserStoryDetailsScreenContent(
                 )
             }
         }
-        CreateCommentBar(onButtonClick = state.onCreateCommentClick)
+        CreateCommentBar(
+            onButtonClick = state.onCreateCommentClick,
+            canComment = state.canComment
+        )
     }
 }

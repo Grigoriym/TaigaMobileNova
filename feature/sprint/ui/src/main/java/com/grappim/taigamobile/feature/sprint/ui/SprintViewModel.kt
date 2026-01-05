@@ -5,6 +5,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canAddIssue
+import com.grappim.taigamobile.feature.projects.domain.canAddTask
+import com.grappim.taigamobile.feature.projects.domain.canDeleteMilestone
+import com.grappim.taigamobile.feature.projects.domain.canModifyMilestone
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegateImpl
@@ -27,6 +32,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SprintViewModel @Inject constructor(
     private val sprintsRepository: SprintsRepository,
+    private val projectsRepository: ProjectsRepository,
     private val dateTimeUtils: DateTimeUtils,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(),
@@ -55,8 +61,25 @@ class SprintViewModel @Inject constructor(
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
     init {
+        getPermissions()
+        loadData()
+    }
+
+    private fun getPermissions() {
         viewModelScope.launch {
-            loadData()
+            val perm = projectsRepository.getPermissions()
+            val canEdit = perm.canModifyMilestone()
+            val canDelete = perm.canDeleteMilestone()
+            val canShowTopBarActions = canEdit || canDelete
+            _state.update {
+                it.copy(
+                    canEdit = canEdit,
+                    canDelete = canDelete,
+                    canShowTopBarActions = canShowTopBarActions,
+                    canCreateIssue = perm.canAddIssue(),
+                    canCreateTasks = perm.canAddTask()
+                )
+            }
         }
     }
 
@@ -72,32 +95,34 @@ class SprintViewModel @Inject constructor(
         }
     }
 
-    private suspend fun loadData() {
-        _state.update { it.copy(isLoading = true) }
+    private fun loadData() {
+        viewModelScope.launch {
+            _state.update { it.copy(isLoading = true) }
 
-        sprintsRepository.getSprintData(sprintId)
-            .onSuccess { result ->
-                _state.update {
-                    it.copy(
-                        sprint = result.sprint,
-                        sprintToolbarTitle = NativeText.Simple(result.sprint.name),
-                        sprintToolbarSubtitle = NativeText.Arguments(
-                            id = RString.sprint_dates_template,
-                            args = listOf(
-                                result.sprint.start.format(dateFormatter),
-                                result.sprint.end.format(dateFormatter)
-                            )
-                        ),
-                        isLoading = false,
-                        statuses = result.statuses,
-                        storiesWithTasks = result.storiesWithTasks,
-                        storylessTasks = result.storylessTasks,
-                        issues = result.issues
-                    )
+            sprintsRepository.getSprintData(sprintId)
+                .onSuccess { result ->
+                    _state.update {
+                        it.copy(
+                            sprint = result.sprint,
+                            sprintToolbarTitle = NativeText.Simple(result.sprint.name),
+                            sprintToolbarSubtitle = NativeText.Arguments(
+                                id = RString.sprint_dates_template,
+                                args = listOf(
+                                    result.sprint.start.format(dateFormatter),
+                                    result.sprint.end.format(dateFormatter)
+                                )
+                            ),
+                            isLoading = false,
+                            statuses = result.statuses,
+                            storiesWithTasks = result.storiesWithTasks,
+                            storylessTasks = result.storylessTasks,
+                            issues = result.issues
+                        )
+                    }
+                }.onFailure {
+                    _state.update { it.copy(isLoading = false) }
                 }
-            }.onFailure {
-                _state.update { it.copy(isLoading = false) }
-            }
+        }
     }
 
     private fun editSprint() {
