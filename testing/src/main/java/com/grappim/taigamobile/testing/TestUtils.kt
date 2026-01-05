@@ -4,19 +4,24 @@ import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import java.io.File
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import kotlin.random.Random
 
 val nowDate = OffsetDateTime.now()
 
+val nowLocalDate = LocalDate.now()
+
 fun getRandomLong(): Long = Random.nextLong()
+
+fun getRandomInt(): Int = Random.nextInt()
 
 fun getRandomBoolean(): Boolean = Random.nextBoolean()
 
 @Suppress("MagicNumber")
-fun getRandomString(): String = List(15) { // Generate a list of 10 characters
-    Random.nextInt(97, 123) // ASCII range for lowercase letters a-z
-        .toChar() // Convert ASCII value to char
+fun getRandomString(): String = List(15) {
+    Random.nextInt(97, 123)
+        .toChar()
 }.joinToString("")
 
 /**

@@ -5,4 +5,6 @@ interface AppInfoProvider {
     fun isDebug(): Boolean
     fun isFdroidBuild(): Boolean
     fun getVersionName(): String
+    fun getDebugLocalHost(): String
+    fun getBuildType(): String
 }

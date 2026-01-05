@@ -7,10 +7,10 @@ import kotlinx.collections.immutable.persistentListOf
 
 data class EditTagsState(
     val tags: ImmutableList<TagUI> = persistentListOf(),
-    val originalSelectedTags: ImmutableList<TagUI>,
-    val currentSelectedTags: PersistentList<TagUI>,
+    val originalSelectedTags: ImmutableList<TagUI> = persistentListOf(),
+    val currentSelectedTags: PersistentList<TagUI> = persistentListOf(),
     val isDialogVisible: Boolean = false,
-    val setIsDialogVisible: (Boolean) -> Unit,
-    val onTagClick: (TagUI) -> Unit,
-    val shouldGoBackWithCurrentValue: (shouldReturnCurrentValue: Boolean) -> Unit
+    val setIsDialogVisible: (Boolean) -> Unit = {},
+    val onTagClick: (TagUI) -> Unit = {},
+    val shouldGoBackWithCurrentValue: (shouldReturnCurrentValue: Boolean) -> Unit = {}
 )

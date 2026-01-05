@@ -7,26 +7,19 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.grappim.taigamobile.commontask.CommonTaskNavDestination
-import com.grappim.taigamobile.commontask.CommonTaskScreen
-import com.grappim.taigamobile.commontask.navigateToCommonTask
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
 import com.grappim.taigamobile.createtask.navigateToCreateTask
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardScreen
 import com.grappim.taigamobile.feature.dashboard.ui.navigateToDashboardAsTopDestination
-import com.grappim.taigamobile.feature.epics.ui.EpicsNavDestination
-import com.grappim.taigamobile.feature.epics.ui.EpicsScreen
-import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
-import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsScreen
-import com.grappim.taigamobile.feature.issues.ui.details.UPDATE_DATA_ON_BACK
+import com.grappim.taigamobile.feature.epics.ui.details.navigateToEpicDetails
 import com.grappim.taigamobile.feature.issues.ui.details.navigateToIssueDetails
-import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
-import com.grappim.taigamobile.feature.issues.ui.list.IssuesScreen
 import com.grappim.taigamobile.feature.kanban.ui.KanbanScreen
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginScreen
@@ -36,47 +29,44 @@ import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorScreen
 import com.grappim.taigamobile.feature.projectselector.ui.navigateToProjectSelector
-import com.grappim.taigamobile.feature.scrum.ui.ScrumNavDestination
-import com.grappim.taigamobile.feature.scrum.ui.ScrumScreen
+import com.grappim.taigamobile.feature.scrum.ui.ScrumBacklogDestination
+import com.grappim.taigamobile.feature.scrum.ui.ScrumClosedSprintsDestination
+import com.grappim.taigamobile.feature.scrum.ui.ScrumOpenSprintsDestination
+import com.grappim.taigamobile.feature.scrum.ui.backlog.ScrumBacklogScreen
+import com.grappim.taigamobile.feature.scrum.ui.closed.ScrumClosedSprintsScreen
+import com.grappim.taigamobile.feature.scrum.ui.open.ScrumOpenSprintsScreen
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
 import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
 import com.grappim.taigamobile.feature.sprint.ui.navigateToSprintScreen
+import com.grappim.taigamobile.feature.tasks.ui.navigateToTask
 import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
 import com.grappim.taigamobile.feature.teams.ui.TeamScreen
-import com.grappim.taigamobile.feature.wiki.ui.create.WikiCreatePageScreen
-import com.grappim.taigamobile.feature.wiki.ui.list.WikiListScreen
-import com.grappim.taigamobile.feature.wiki.ui.nav.WikiCreatePageNavDestination
-import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
-import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
-import com.grappim.taigamobile.feature.wiki.ui.nav.navigateToWikiPage
-import com.grappim.taigamobile.feature.wiki.ui.page.WikiPageScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navigateToWorkItemEditDescription
-import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditAssigneeNavDestination
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditAssigneeScreen
-import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditAssignee
+import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
+import com.grappim.taigamobile.main.nav.epicNavGraph
+import com.grappim.taigamobile.main.nav.issueNavGraph
+import com.grappim.taigamobile.main.nav.scrumNavGraph
+import com.grappim.taigamobile.main.nav.taskNavGraph
+import com.grappim.taigamobile.main.nav.userStoryNavGraph
+import com.grappim.taigamobile.main.nav.wikiNavGraph
+import com.grappim.taigamobile.main.nav.workItemEditsNavGraph
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun MainNavHost(
-    isLogged: Boolean,
-    isNewUiUsed: Boolean,
+    isLoggedIn: Boolean,
     navController: NavHostController,
     showMessage: (message: Int) -> Unit,
     showSnackbar: (NativeText) -> Unit,
+    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     NavHost(
         modifier = modifier,
         navController = navController,
         startDestination = remember {
-            if (isLogged) DashboardNavDestination else LoginNavDestination
+            if (isLoggedIn) DashboardNavDestination else LoginNavDestination
         },
         enterTransition = {
             fadeIn(animationSpec = tween(100))
@@ -85,6 +75,41 @@ fun MainNavHost(
             fadeOut(animationSpec = tween(100))
         }
     ) {
+        issueNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController,
+            showSnackbarAction = showSnackbarAction
+        )
+
+        userStoryNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController
+        )
+
+        taskNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController
+        )
+
+        workItemEditsNavGraph(
+            navController = navController
+        )
+
+        epicNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController,
+            showSnackbarAction = showSnackbarAction
+        )
+
+        wikiNavGraph(
+            showSnackbar = showSnackbar,
+            navController = navController
+        )
+
+        scrumNavGraph(
+            navController = navController
+        )
+
         composable<LoginNavDestination> {
             LoginScreen(
                 onShowSnackbar = showSnackbar,
@@ -97,145 +122,37 @@ fun MainNavHost(
         composable<ProjectSelectorNavDestination> {
             ProjectSelectorScreen(
                 showMessage = showMessage,
-                onProjectSelect = { isFromLogin: Boolean ->
-                    /**
-                     * After the login and the project is selected, dashboard will become the top destination
-                     */
-                    if (isFromLogin) {
-                        navController.navigateToDashboardAsTopDestination()
-                    } else {
-                        navController.popBackStack()
-                    }
+                onProjectSelect = {
+                    navController.navigateToDashboardAsTopDestination()
                 }
             )
         }
 
         composable<DashboardNavDestination> {
             DashboardScreen(
-                showMessage = showMessage,
                 navigateToTaskScreen = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
-                }
-            )
-        }
-
-        composable<ScrumNavDestination> {
-            ScrumScreen(
-                showMessage = showMessage,
-                goToCreateTask = { type ->
-                    navController.navigateToCreateTask(type = type)
-                },
-                goToSprint = { id ->
-                    navController.navigateToSprintScreen(id)
-                },
-                goToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
-                }
-            )
-        }
-
-        composable<EpicsNavDestination> {
-            EpicsScreen(
-                showMessage = showMessage,
-                goToCreateTask = { type ->
-                    navController.navigateToCreateTask(type = type)
-                },
-                goToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
-                }
-            )
-        }
-
-        composable<IssuesNavDestination> { navBackStackEntry ->
-            val updateData: Boolean =
-                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            IssuesScreen(
-                showSnackbar = showSnackbar,
-                showMessage = showMessage,
-                goToCreateTask = { type ->
-                    navController.navigateToCreateTask(type = type)
-                },
-                updateData = updateData,
-                goToTask = { id, type, ref ->
-                    if (isNewUiUsed) {
-                        navController.navigateToIssueDetails(
-                            taskId = id,
-                            ref = ref
-                        )
-                    } else {
-                        navController.navigateToCommonTask(id, type, ref)
-                    }
-                }
-            )
-        }
-
-        composable<IssueDetailsNavDestination> { navBackStackEntry ->
-            IssueDetailsScreen(
-                showSnackbar = showSnackbar,
-                goToProfile = { creatorId ->
-                    navController.navigateToProfileScreen(creatorId)
-                },
-                goToEditDescription = { description: String ->
-                    navController.navigateToWorkItemEditDescription(
-                        description = description
-                    )
-                },
-                goToEditTags = {
-                    navController.navigateToWorkItemEditTags()
-                },
-                goBackUpdatingData = { updateData ->
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set(UPDATE_DATA_ON_BACK, updateData)
-                    navController.popBackStack()
-                },
-                goToEditAssignee = {
-                    navController.navigateToWorkItemEditAssignee()
-                },
-                goToEditWatchers = {
-                    navController.navigateToWorkItemEditAssignee()
-                }
-            )
-        }
-
-        composable<WorkItemEditDescriptionNavDestination> {
-            WorkItemEditDescriptionScreen(
-                goBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable<WorkItemEditTagsNavDestination> {
-            WorkItemEditTagsScreen(
-                goBack = {
-                    navController.popBackStack()
-                }
-            )
-        }
-
-        composable<WorkItemEditAssigneeNavDestination> {
-            WorkItemEditAssigneeScreen(
-                goBack = {
-                    navController.popBackStack()
+                    navController.navigate(id, type, ref)
                 }
             )
         }
 
         composable<TeamNavDestination> {
             TeamScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 goToProfile = { userId ->
                     navController.navigateToProfileScreen(userId)
                 }
             )
         }
 
-        composable<KanbanNavDestination> {
+        composable<KanbanNavDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             KanbanScreen(
+                updateData = updateData,
                 showSnackbar = showSnackbar,
                 goToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
+                    navController.navigate(id, type, ref)
                 },
                 goToCreateTask = { task, statusId, swimlaneId ->
                     navController.navigateToCreateTask(
@@ -247,48 +164,19 @@ fun MainNavHost(
             )
         }
 
-        composable<WikiNavDestination> {
-            WikiListScreen(
-                showMessage = showMessage,
-                goToWikiCreatePage = {
-                    navController.navigate(route = WikiCreatePageNavDestination)
-                },
-                goToWikiPage = {
-                    navController.navigateToWikiPage(it)
-                }
-            )
-        }
-
-        composable<WikiCreatePageNavDestination> {
-            WikiCreatePageScreen(
-                showMessage = showMessage,
-                goToWikiPage = {
-                    navController.popBackStack()
-                    navController.navigateToWikiPage(it)
-                }
-            )
-        }
-
-        composable<WikiPageNavDestination> {
-            WikiPageScreen(
-                showMessage = showMessage,
-                goToProfile = { userId ->
-                    navController.navigateToProfileScreen(userId)
-                },
-                goBack = navController::popBackStack
-            )
-        }
-
         composable<SettingsNavDestination> {
             SettingsScreen(showSnackbar = showSnackbar)
         }
 
         composable<SprintNavDestination> {
             SprintScreen(
-                showMessage = showMessage,
-                goBack = navController::popBackStack,
-                goToTaskScreen = { id, taskType, ref ->
-                    navController.navigateToCommonTask(id, taskType, ref)
+                showSnackbar = showSnackbar,
+                goBack = {
+                    navController.setUpdateDataOnBack()
+                    navController.popBackStack()
+                },
+                goToTaskScreen = { id, type, ref ->
+                    navController.navigate(id, type, ref)
                 },
                 goToCreateTask = { type, parentId, sprintId ->
                     navController.navigateToCreateTask(
@@ -302,46 +190,50 @@ fun MainNavHost(
 
         composable<ProfileNavDestination> {
             ProfileScreen(
-                showMessage = showMessage
-            )
-        }
-
-        composable<CommonTaskNavDestination> {
-            CommonTaskScreen(
-                showMessage = showMessage,
-                goToProfile = { userId ->
-                    navController.navigateToProfileScreen(userId)
-                },
-                goToUserStory = { id, taskType, ref ->
-                    navController.popBackStack()
-                    navController.navigateToCommonTask(id, taskType, ref)
-                },
-                goBack = {
-                    navController.previousBackStackEntry
-                        ?.savedStateHandle
-                        ?.set(UPDATE_DATA_ON_BACK, true)
-                    navController.popBackStack()
-                },
-                navigateToCreateTask = { type, id ->
-                    navController.navigateToCreateTask(
-                        type = type,
-                        parentId = id
-                    )
-                },
-                navigateToTask = { id, type, ref ->
-                    navController.navigateToCommonTask(id, type, ref)
-                }
+                showSnackbar = showSnackbar
             )
         }
 
         composable<CreateTaskNavDestination> {
             CreateTaskScreen(
-                showMessage = showMessage,
+                showSnackbar = showSnackbar,
                 navigateOnTaskCreated = { id, type, ref ->
                     navController.popBackStack()
-                    navController.navigateToCommonTask(id, type, ref)
+                    navController.navigate(id, type, ref)
                 }
             )
         }
     }
+}
+
+private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Long) {
+    when (type) {
+        CommonTaskType.UserStory -> this.navigateToUserStory(
+            userStoryId = id,
+            ref = ref
+        )
+
+        CommonTaskType.Epic -> this.navigateToEpicDetails(
+            epicId = id,
+            ref = ref
+        )
+
+        CommonTaskType.Issue -> this.navigateToIssueDetails(
+            issueId = id,
+            ref = ref
+        )
+
+        CommonTaskType.Task -> this.navigateToTask(
+            taskId = id,
+            ref = ref
+        )
+    }
+}
+
+const val UPDATE_DATA_ON_BACK = "UpdateDataOnBack"
+
+fun NavController.setUpdateDataOnBack() {
+    previousBackStackEntry
+        ?.savedStateHandle
+        ?.set(UPDATE_DATA_ON_BACK, true)
 }

@@ -42,7 +42,8 @@ fun <T> DropdownSelector(
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     tint: Color = MaterialTheme.colorScheme.primary,
     onExpand: () -> Unit = {},
-    onDismissRequest: () -> Unit = {}
+    onDismissRequest: () -> Unit = {},
+    canModify: Boolean = false
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
@@ -55,7 +56,15 @@ fun <T> DropdownSelector(
         Row(
             modifier = Modifier
                 .let { if (takeMaxWidth) it.fillMaxWidth() else it }
-                .clickable { isExpanded = !isExpanded },
+                .then(
+                    if (canModify) {
+                        Modifier.clickable {
+                            isExpanded = !isExpanded
+                        }
+                    } else {
+                        Modifier
+                    }
+                ),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = horizontalArrangement
         ) {

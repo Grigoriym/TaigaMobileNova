@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.swimlanes.domain
 
-import com.grappim.taigamobile.core.domain.SwimlaneDTO
+import kotlinx.collections.immutable.ImmutableList
 
 interface SwimlanesRepository {
-    suspend fun getSwimlanes(): List<SwimlaneDTO>
+    suspend fun getSwimlanes(): ImmutableList<Swimlane>
 }

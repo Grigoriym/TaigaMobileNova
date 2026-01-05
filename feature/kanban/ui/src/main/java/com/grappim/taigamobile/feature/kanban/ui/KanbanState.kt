@@ -1,18 +1,26 @@
 package com.grappim.taigamobile.feature.kanban.ui
 
-import com.grappim.taigamobile.core.domain.CommonTaskExtended
-import com.grappim.taigamobile.core.domain.StatusOld
-import com.grappim.taigamobile.core.domain.SwimlaneDTO
-import com.grappim.taigamobile.core.domain.UserDTO
+import com.grappim.taigamobile.feature.filters.domain.model.Statuses
+import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
+import com.grappim.taigamobile.feature.users.domain.TeamMember
+import com.grappim.taigamobile.feature.userstories.domain.UserStory
+import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import java.lang.annotation.Native
 
 data class KanbanState(
-    val isLoading: Boolean = false,
-    val team: List<UserDTO> = emptyList(),
-    val statusOlds: List<StatusOld> = emptyList(),
-    val stories: List<CommonTaskExtended> = emptyList(),
-    val swimlaneDTOS: List<SwimlaneDTO> = emptyList(),
-    val selectedSwimlaneDTO: SwimlaneDTO? = null,
-    val error: Throwable? = null,
+    val teamMembers: ImmutableList<TeamMember> = persistentListOf(),
+    val statuses: ImmutableList<Statuses> = persistentListOf(),
+    val stories: ImmutableList<UserStory> = persistentListOf(),
+    val swimlanes: ImmutableList<Swimlane> = persistentListOf(),
+
     val onRefresh: () -> Unit,
-    val onSelectSwimlane: (SwimlaneDTO?) -> Unit
+    val isLoading: Boolean = false,
+    val error: NativeText = NativeText.Empty,
+
+    val selectedSwimlane: Swimlane? = null,
+    val onSelectSwimlane: (Swimlane?) -> Unit,
+
+    val canAddUserStory: Boolean = false
 )

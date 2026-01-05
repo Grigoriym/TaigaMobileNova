@@ -2,7 +2,7 @@ package com.grappim.taigamobile.data.interceptors
 
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.storage.AuthStateManager
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.AuthStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.RefreshTokenRequest
 import okhttp3.Authenticator
@@ -19,7 +19,7 @@ import javax.inject.Singleton
  */
 @Singleton
 class TaigaBearerTokenAuthenticator @Inject constructor(
-    private val session: Session,
+    private val authStorage: AuthStorage,
     private val authApi: AuthApi,
     private val authStateManager: AuthStateManager
 ) : Authenticator {
@@ -44,7 +44,7 @@ class TaigaBearerTokenAuthenticator @Inject constructor(
         }
 
         val requestAccessToken = extractToken(response)
-        val currentAccessToken = session.token.value
+        val currentAccessToken = authStorage.token
 
         Timber.d("requestAccessToken : $requestAccessToken ")
 
@@ -62,18 +62,17 @@ class TaigaBearerTokenAuthenticator @Inject constructor(
         }
     }
 
-    private fun extractToken(response: Response): String? =
-        response.request.header(ApiConstants.AUTHORIZATION)
-            ?.removePrefix("${ApiConstants.BEARER} ")
+    private fun extractToken(response: Response): String? = response.request.header(ApiConstants.AUTHORIZATION)
+        ?.removePrefix("${ApiConstants.BEARER} ")
 
     private fun handleTokenRefresh(oldToken: String, response: Response): Request? {
-        val latestToken = session.token.value
+        val latestToken = authStorage.token
         if (oldToken != latestToken) {
             return response.withBearerToken(latestToken)
         }
 
         val refreshResponse = try {
-            authApi.refresh(RefreshTokenRequest(session.refreshToken.value)).execute()
+            authApi.refresh(RefreshTokenRequest(authStorage.refreshToken)).execute()
         } catch (e: Exception) {
             Timber.e(e)
             logout()
@@ -86,15 +85,14 @@ class TaigaBearerTokenAuthenticator @Inject constructor(
             return null
         }
 
-        session.changeAuthCredentials(body.authToken, body.refresh)
-        return response.withBearerToken(session.token.value)
+        authStorage.setAuthCredentials(token = body.authToken, refreshToken = body.refresh)
+        return response.withBearerToken(authStorage.token)
     }
 
     /**
      * Prevent endless loops
      */
-    private fun hasExceededRetryLimit(response: Response): Boolean =
-        response.responseCount >= MAX_AUTHENTICATOR_RETRIES
+    private fun hasExceededRetryLimit(response: Response): Boolean = response.responseCount >= MAX_AUTHENTICATOR_RETRIES
 
     private fun Response.withBearerToken(newToken: String): Request = request.newBuilder()
         .header(

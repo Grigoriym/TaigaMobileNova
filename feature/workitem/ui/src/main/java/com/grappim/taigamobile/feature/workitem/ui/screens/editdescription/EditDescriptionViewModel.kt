@@ -4,7 +4,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
+import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
+import com.grappim.taigamobile.utils.ui.typeMapOf
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -12,14 +14,22 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
+import kotlin.reflect.typeOf
 
 @HiltViewModel
 class EditDescriptionViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
-    private val workItemEditShared: WorkItemEditShared
+    private val workItemEditStateRepository: WorkItemEditStateRepository
 ) : ViewModel() {
-    private val route = savedStateHandle.toRoute<WorkItemEditDescriptionNavDestination>()
+    private val route = savedStateHandle.toRoute<WorkItemEditDescriptionNavDestination>(
+        typeMap = typeMapOf(
+            listOf(
+                typeOf<TaskIdentifier>()
+            )
+        )
+    )
     private val _state = MutableStateFlow(
         EditDescriptionState(
             originalDescription = route.description,
@@ -37,19 +47,16 @@ class EditDescriptionViewModel @Inject constructor(
     private fun onGoingBack(shouldReturnCurrentValue: Boolean) {
         viewModelScope.launch {
             setIsDialogVisible(false)
-            notifyDescriptionUpdate(shouldReturnCurrentValue)
+            val wasDescriptionChanged =
+                _state.value.currentDescription != _state.value.originalDescription
+            if (shouldReturnCurrentValue && wasDescriptionChanged) {
+                workItemEditStateRepository.updateDescription(
+                    workItemId = route.workItemId,
+                    type = route.taskIdentifier,
+                    description = _state.value.currentDescription
+                )
+            }
             _onBackAction.send(Unit)
-        }
-    }
-
-    /**
-     * We will return a non-null value only if the description has changed.
-     */
-    private fun notifyDescriptionUpdate(shouldReturnCurrentValue: Boolean) {
-        val wasDescriptionChanged =
-            _state.value.currentDescription != _state.value.originalDescription
-        if (shouldReturnCurrentValue && wasDescriptionChanged) {
-            workItemEditShared.updateDescription(_state.value.currentDescription)
         }
     }
 

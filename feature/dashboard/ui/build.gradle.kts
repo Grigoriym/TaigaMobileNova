@@ -19,8 +19,13 @@ dependencies {
 
     implementation(projects.feature.dashboard.domain)
     implementation(projects.feature.projects.domain)
+    implementation(projects.feature.workitem.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.paging.compose)
+
+    implementation(projects.feature.filters.domain)
+    implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
 }

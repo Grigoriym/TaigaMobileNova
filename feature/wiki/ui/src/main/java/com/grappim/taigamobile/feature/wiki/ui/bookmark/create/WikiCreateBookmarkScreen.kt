@@ -1,0 +1,97 @@
+package com.grappim.taigamobile.feature.wiki.ui.bookmark.create
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
+import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.persistentListOf
+
+@Composable
+fun WikiCreateBookmarkScreen(
+    goToWikiPage: (href: String, id: Long) -> Unit,
+    viewModel: WikiCreateBookmarkViewModel = hiltViewModel()
+) {
+    val topBarController = LocalTopBarConfig.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        topBarController.update(
+            TopBarConfig(
+                title = NativeText.Resource(RString.create_new_bookmark),
+                actions = persistentListOf(
+                    TopBarActionIconButton(
+                        drawable = RDrawable.ic_save,
+                        contentDescription = "Save",
+                        onClick = {
+                            state.onCreateWikiBookmark()
+                        }
+                    )
+                )
+            )
+        )
+    }
+
+    ObserveAsEvents(viewModel.creationResult) { result ->
+        goToWikiPage(result.ref, result.id)
+    }
+
+    WikiCreateBookmarkScreenContent(state = state)
+}
+
+@Composable
+fun WikiCreateBookmarkScreenContent(state: WikiCreateBookmarkState, modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .imePadding()
+    ) {
+        if (state.isLoading) {
+            LoadingDialog()
+        }
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            Spacer(Modifier.height(8.dp))
+
+            HintTextField(
+                error = state.error,
+                modifier = Modifier.padding(horizontal = 8.dp),
+                hint = NativeText.Resource(RString.title_hint),
+                value = state.title,
+                onValueChange = { state.setTitle(it) }
+            )
+        }
+    }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WikiCreateBookmarkScreenPreview() {
+    WikiCreateBookmarkScreenContent(
+        state = WikiCreateBookmarkState(
+            title = "asd"
+        )
+    )
+}

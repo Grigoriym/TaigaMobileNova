@@ -1,13 +1,19 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.edittags
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.domain.CommonTaskType
+import androidx.navigation.toRoute
+import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditShared
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
+import com.grappim.taigamobile.utils.ui.typeMapOf
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
@@ -18,17 +24,25 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
+import kotlin.reflect.typeOf
 
 @HiltViewModel
 class WorkItemEditTagsViewModel @Inject constructor(
     private val filtersRepository: FiltersRepository,
     private val tagUIMapper: TagUIMapper,
-    private val workItemEditShared: WorkItemEditShared
+    private val workItemEditStateRepository: WorkItemEditStateRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val route = savedStateHandle.toRoute<WorkItemEditTagsNavDestination>(
+        typeMap = typeMapOf(
+            listOf(
+                typeOf<TaskIdentifier>()
+            )
+        )
+    )
     private val _state = MutableStateFlow(
         EditTagsState(
-            originalSelectedTags = workItemEditShared.originalTags,
-            currentSelectedTags = workItemEditShared.currentTags.toPersistentList(),
             setIsDialogVisible = ::setIsDialogVisible,
             onTagClick = ::onTagClick,
             shouldGoBackWithCurrentValue = ::onGoingBack
@@ -43,6 +57,16 @@ class WorkItemEditTagsViewModel @Inject constructor(
         getFiltersData()
     }
 
+    private fun getOriginalTags(): ImmutableList<TagUI> = workItemEditStateRepository.getOriginalTags(
+        workItemId = route.workItemId,
+        type = route.taskIdentifier
+    )
+
+    private fun getCurrentTags(): PersistentList<TagUI> = workItemEditStateRepository.getCurrentTags(
+        workItemId = route.workItemId,
+        type = route.taskIdentifier
+    ).toPersistentList()
+
     private fun onGoingBack(shouldReturnCurrentValue: Boolean) {
         viewModelScope.launch {
             setIsDialogVisible(false)
@@ -52,10 +76,16 @@ class WorkItemEditTagsViewModel @Inject constructor(
     }
 
     private fun notifyChange(shouldReturnCurrentValue: Boolean) {
-        val wereTagsChanged =
-            _state.value.currentSelectedTags != _state.value.originalSelectedTags
-        if (shouldReturnCurrentValue && wereTagsChanged) {
-            workItemEditShared.updateTags(_state.value.currentSelectedTags)
+        viewModelScope.launch {
+            val wereTagsChanged =
+                _state.value.currentSelectedTags != _state.value.originalSelectedTags
+            if (shouldReturnCurrentValue && wereTagsChanged) {
+                workItemEditStateRepository.updateTags(
+                    workItemId = route.workItemId,
+                    type = route.taskIdentifier,
+                    tags = _state.value.currentSelectedTags
+                )
+            }
         }
     }
 
@@ -97,23 +127,33 @@ class WorkItemEditTagsViewModel @Inject constructor(
 
     private fun getFiltersData() {
         viewModelScope.launch {
-            filtersRepository.getFiltersDataResult(CommonTaskType.Issue)
-                .onSuccess { result ->
-                    val tags = tagUIMapper.toUI(list = result.tags).toPersistentList()
-                    val updatedTags = tags.map { tag ->
-                        if (tag.name in workItemEditShared.originalTagsNames) {
-                            tag.copy(isSelected = true)
-                        } else {
-                            tag
-                        }
-                    }.sortedByDescending { it.isSelected }
-                        .toImmutableList()
-                    _state.update {
-                        it.copy(tags = updatedTags)
+            resultOf {
+                require(route.taskIdentifier is TaskIdentifier.WorkItem)
+                filtersRepository.getFiltersData(route.taskIdentifier.commonTaskType)
+            }.onSuccess { result ->
+                val tags = tagUIMapper.toUIFromFilters(list = result.tags).toPersistentList()
+                val originalTagsNames = workItemEditStateRepository.getOriginalTagsNames(
+                    workItemId = route.workItemId,
+                    type = route.taskIdentifier
+                )
+                val updatedTags = tags.map { tag ->
+                    if (tag.name in originalTagsNames) {
+                        tag.copy(isSelected = true)
+                    } else {
+                        tag
                     }
-                }.onFailure { error ->
-                    Timber.e(error)
+                }.sortedByDescending { it.isSelected }
+                    .toImmutableList()
+                _state.update {
+                    it.copy(
+                        tags = updatedTags,
+                        originalSelectedTags = getOriginalTags(),
+                        currentSelectedTags = getCurrentTags()
+                    )
                 }
+            }.onFailure { error ->
+                Timber.e(error)
+            }
         }
     }
 }

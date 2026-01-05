@@ -21,14 +21,14 @@ import com.grappim.taigamobile.utils.ui.asString
  */
 @Composable
 fun ConfirmActionDialog(
+    isVisible: Boolean,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
     title: String? = null,
     description: String? = null,
     confirmButtonText: NativeText = NativeText.Resource(RString.yes),
     dismissButtonText: NativeText = NativeText.Resource(RString.no),
-    @DrawableRes iconId: Int? = null,
-    isVisible: Boolean = true
+    @DrawableRes iconId: Int? = null
 ) {
     if (isVisible) {
         val context = LocalContext.current

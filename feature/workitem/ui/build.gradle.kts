@@ -17,14 +17,22 @@ dependencies {
     implementation(projects.core.async)
     implementation(projects.utils.ui)
     implementation(projects.utils.formatter.decimal)
+    implementation(projects.utils.formatter.datetime)
     implementation(projects.uikit)
 
     implementation(projects.feature.filters.domain)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.history.domain)
+    implementation(projects.feature.sprint.domain)
+    implementation(projects.feature.epics.domain)
+    implementation(projects.feature.userstories.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.paging.compose)
     implementation(libs.androidx.hilt.navigation.compose)
+
+    implementation(libs.androidx.compose.material.icons.core)
 
     implementation(libs.coil.compose)
 }

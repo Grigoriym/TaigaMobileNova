@@ -19,6 +19,5 @@ interface UsersModule {
 @[Module InstallIn(SingletonComponent::class)]
 object UsersProvidesModule {
     @[Provides Singleton]
-    fun provideUsersApi(@CommonRetrofit retrofit: Retrofit): UsersApi =
-        retrofit.create(UsersApi::class.java)
+    fun provideUsersApi(@CommonRetrofit retrofit: Retrofit): UsersApi = retrofit.create(UsersApi::class.java)
 }

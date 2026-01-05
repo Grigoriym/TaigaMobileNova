@@ -2,24 +2,20 @@ package com.grappim.taigamobile.feature.kanban.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.domain.SwimlaneDTO
-import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.core.storage.subscribeToAll
-import com.grappim.taigamobile.feature.kanban.domain.KanbanRepository
+import com.grappim.taigamobile.feature.kanban.domain.GetKanbanDataUseCase
+import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class KanbanViewModel @Inject constructor(
-    session: Session,
-    taigaStorage: TaigaStorage,
-    private val kanbanRepository: KanbanRepository
-) : ViewModel() {
+class KanbanViewModel @Inject constructor(private val getKanbanDataUseCase: GetKanbanDataUseCase) : ViewModel() {
 
     private val _state = MutableStateFlow(
         KanbanState(
@@ -30,57 +26,47 @@ class KanbanViewModel @Inject constructor(
     val state = _state.asStateFlow()
 
     init {
+        getKanbanData()
+    }
+
+    private fun getKanbanData() {
         viewModelScope.launch {
-            launch {
-                subscribeToAll(taigaStorage.currentProjectIdFlow, session.taskEdit) {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
+            }
+            getKanbanDataUseCase.getData()
+                .onSuccess { result ->
                     _state.update {
                         it.copy(
-                            team = emptyList(),
-                            statusOlds = emptyList(),
-                            stories = emptyList(),
-                            swimlaneDTOS = emptyList()
+                            isLoading = false,
+                            teamMembers = result.teamMembers,
+                            statuses = result.statuses,
+                            stories = result.stories,
+                            swimlanes = result.swimlanes,
+                            canAddUserStory = result.canAddUserStory
                         )
                     }
                 }
-            }
-            launch {
-                getKanbanData()
-            }
+                .onFailure { error ->
+                    Timber.e(error)
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            error = getErrorMessage(error)
+                        )
+                    }
+                }
         }
-    }
-
-    private suspend fun getKanbanData() {
-        _state.update { it.copy(isLoading = true) }
-        kanbanRepository.getData()
-            .onSuccess { result ->
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = null,
-                        team = result.team,
-                        statusOlds = result.statusOlds,
-                        stories = result.stories,
-                        swimlaneDTOS = result.swimlaneDTOS
-                    )
-                }
-            }
-            .onFailure { error ->
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = error
-                    )
-                }
-            }
     }
 
     private fun refresh() {
-        viewModelScope.launch {
-            getKanbanData()
-        }
+        getKanbanData()
     }
 
-    private fun selectSwimlane(swimlaneDTO: SwimlaneDTO?) {
-        _state.update { it.copy(selectedSwimlaneDTO = swimlaneDTO) }
+    private fun selectSwimlane(swimlane: Swimlane?) {
+        _state.update { it.copy(selectedSwimlane = swimlane) }
     }
 }

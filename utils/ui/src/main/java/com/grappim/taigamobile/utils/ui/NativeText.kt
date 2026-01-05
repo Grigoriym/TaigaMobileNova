@@ -13,6 +13,9 @@ sealed class NativeText {
     data class Plural(@PluralsRes val id: Int, val number: Int, val args: List<Any>) : NativeText()
     data class Arguments(@StringRes val id: Int, val args: List<Any>) : NativeText()
     data class Multi(val text: List<NativeText>) : NativeText()
+
+    fun isEmpty(): Boolean = this is Empty
+    fun isNotEmpty(): Boolean = this !is Empty
 }
 
 @Suppress("SpreadOperator")
@@ -38,7 +41,7 @@ fun NativeText.asString(context: Context): String = when (this) {
 }
 
 fun getErrorMessage(exception: Throwable): NativeText = if (exception is NetworkException) {
-    when (exception.errorCode) {
+    exception.taigaError?.message?.let { NativeText.Simple(it) } ?: when (exception.errorCode) {
         NetworkException.ERROR_ON_REFRESH -> NativeText.Resource(
             RString.auth_error_refresh_token_not_passed
         )
@@ -46,12 +49,59 @@ fun getErrorMessage(exception: Throwable): NativeText = if (exception is Network
         NetworkException.ERROR_NO_INTERNET -> NativeText.Resource(
             RString.error_no_internet_connection
         )
+
         NetworkException.ERROR_HOST_NOT_FOUND -> NativeText.Resource(
             RString.error_host_not_found
         )
+
         NetworkException.ERROR_TIMEOUT -> NativeText.Resource(RString.timeout_exceeded)
         NetworkException.ERROR_NETWORK_IO -> NativeText.Resource(RString.connection_failed)
         NetworkException.ERROR_UNDEFINED -> NativeText.Resource(RString.request_failed)
+
+        NetworkException.ERROR_UNAUTHORIZED -> NativeText.Resource(
+            RString.auth_error_refresh_token_not_passed
+        )
+
+        NetworkException.ERROR_PERMISSION_DENIED -> NativeText.Resource(
+            RString.error_permission_denied
+        )
+
+        NetworkException.ERROR_NOT_FOUND -> NativeText.Resource(
+            RString.error_not_found
+        )
+
+        NetworkException.ERROR_BLOCKED -> NativeText.Resource(
+            RString.error_blocked
+        )
+
+        NetworkException.ERROR_VALIDATION -> NativeText.Resource(
+            RString.error_validation
+        )
+
+        NetworkException.ERROR_METHOD_NOT_ALLOWED -> NativeText.Resource(
+            RString.error_method_not_allowed
+        )
+
+        NetworkException.ERROR_NOT_ACCEPTABLE -> NativeText.Resource(
+            RString.error_not_acceptable
+        )
+
+        NetworkException.ERROR_UNSUPPORTED_MEDIA_TYPE -> NativeText.Resource(
+            RString.error_unsupported_media_type
+        )
+
+        NetworkException.ERROR_THROTTLED -> NativeText.Resource(
+            RString.error_throttled
+        )
+
+        NetworkException.ERROR_INTERNAL_SERVER -> NativeText.Resource(
+            RString.error_internal_server
+        )
+
+        NetworkException.ERROR_HTTP_EXCEPTION -> NativeText.Resource(
+            RString.error_http
+        )
+
         else -> NativeText.Resource(RString.error_something_has_gone_wrong)
     }
 } else {

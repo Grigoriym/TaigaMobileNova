@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.settings.ui
 
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.core.storage.TaigaStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
@@ -30,25 +30,24 @@ class SettingsViewModelTest {
     private lateinit var sut: SettingsViewModel
 
     private val usersRepository = mockk<UsersRepository>()
-    private val taigaStorage = mockk<TaigaStorage>()
+    private val taigaSessionStorage = mockk<TaigaSessionStorage>()
     private val serverStorage = mockk<ServerStorage>()
     private val appInfoProvider = mockk<AppInfoProvider>()
 
-    private val userResult = Result.success(getUser())
+    private val userResult = getUser()
     private val appInfo = getRandomString()
     private val server = getRandomString()
 
     @Before
     fun setup() {
-        coEvery { usersRepository.getMeResult() } returns userResult
+        coEvery { usersRepository.getMe() } returns userResult
         every { appInfoProvider.getAppInfo() } returns appInfo
         every { serverStorage.server } returns server
-        every { taigaStorage.themeSettings } returns flowOf(ThemeSettings.default())
-        every { taigaStorage.isNewUIUsed } returns flowOf(false)
+        every { taigaSessionStorage.themeSettings } returns flowOf(ThemeSettings.default())
 
         sut = SettingsViewModel(
             usersRepository = usersRepository,
-            taigaStorage = taigaStorage,
+            taigaSessionStorage = taigaSessionStorage,
             serverStorage = serverStorage,
             appInfoProvider = appInfoProvider
         )
@@ -61,24 +60,12 @@ class SettingsViewModelTest {
     @Test
     fun `on switchTheme, should switch theme`() = runTest {
         val newTheme = ThemeSettings.Dark
-        coEvery { taigaStorage.setThemSetting(newTheme) } just Runs
-        every { taigaStorage.themeSettings } returns flowOf(newTheme)
+        coEvery { taigaSessionStorage.setThemSetting(newTheme) } just Runs
+        every { taigaSessionStorage.themeSettings } returns flowOf(newTheme)
         assertEquals(ThemeSettings.default(), sut.state.value.themeSettings)
 
         sut.state.value.onThemeChanged(newTheme)
 
-        coVerify { taigaStorage.setThemSetting(newTheme) }
-    }
-
-    @Test
-    fun `on isNewUIUsed toggle, should switch isNewUIUsed`() = runTest {
-        val expected = true
-        coEvery { taigaStorage.setIsUIUsed(expected) } just Runs
-        every { taigaStorage.isNewUIUsed } returns flowOf(expected)
-        assertEquals(false, sut.state.value.isNewUIUsed)
-
-        sut.state.value.onNewUIToggle()
-
-        coVerify { taigaStorage.setIsUIUsed(expected) }
+        coVerify { taigaSessionStorage.setThemSetting(newTheme) }
     }
 }

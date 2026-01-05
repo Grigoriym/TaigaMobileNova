@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.core.storage.di
 
+import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapper
+import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapperImpl
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorageImpl
 import dagger.Binds
@@ -13,4 +15,7 @@ interface StorageModule {
 
     @[Binds Singleton]
     fun bindServerStorage(impl: ServerStorageImpl): ServerStorage
+
+    @[Binds Singleton]
+    fun bindAuthStorage(impl: DatabaseWrapperImpl): DatabaseWrapper
 }

@@ -49,6 +49,12 @@ class MainAppState(val navController: NavHostController) {
             } ?: previousDestination.value
         }
 
+    val currentNavDestination: NavDestination?
+        @Composable get() = currentDestination
+
+    val currentRoute: Any?
+        @Composable get() = currentDestination?.route
+
     val topLevelDestinations = DrawerDestination.entries
 
     val currentTopLevelDestination: DrawerDestination?

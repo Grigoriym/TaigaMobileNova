@@ -16,7 +16,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.Tag
+import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.taigaRed
@@ -29,7 +29,7 @@ import com.grappim.taigamobile.utils.ui.toColor
  */
 @Composable
 fun CommonTaskTitle(
-    ref: Int,
+    ref: Long,
     title: String,
     modifier: Modifier = Modifier,
     isInactive: Boolean = false,

@@ -1,10 +1,11 @@
 plugins {
     alias(libs.plugins.taigamobile.kotlin.library)
+    alias(libs.plugins.taigamobile.kotlin.hilt)
 }
 
 dependencies {
     implementation(projects.core.domain)
-
-    implementation(libs.moshi)
-    ksp(libs.moshi.kotlin.codegen)
+    implementation(projects.feature.users.domain)
+    implementation(projects.feature.workitem.domain)
+    implementation(projects.feature.projects.domain)
 }

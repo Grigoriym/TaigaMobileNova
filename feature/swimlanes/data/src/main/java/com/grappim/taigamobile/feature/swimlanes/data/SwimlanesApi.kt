@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.swimlanes.data
 
-import com.grappim.taigamobile.core.domain.SwimlaneDTO
+import com.grappim.taigamobile.feature.swimlanes.data.SwimlaneDTO
 import retrofit2.http.GET
 import retrofit2.http.Query
 

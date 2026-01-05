@@ -2,7 +2,8 @@ package com.grappim.taigamobile.feature.login.data.repo
 
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.AuthStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.AuthRequest
@@ -14,17 +15,11 @@ import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     private val authApi: AuthApi,
-    private val session: Session,
     private val serverStorage: ServerStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
+    private val authStorage: AuthStorage,
     @IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : AuthRepository {
-
-    companion object {
-        /**
-         * Compatibility with older Taiga versions without refresh token
-         */
-        private const val MISSING_REFRESH_TOKEN = "missing"
-    }
 
     override suspend fun auth(authData: AuthData): Result<Unit> = resultOf {
         withContext(dispatcher) {
@@ -37,11 +32,11 @@ class AuthRepositoryImpl @Inject constructor(
                     type = authData.authType.value
                 )
             )
-            session.changeAuthCredentials(
+            authStorage.setAuthCredentials(
                 token = response.authToken,
-                refreshToken = response.refresh ?: MISSING_REFRESH_TOKEN
+                refreshToken = response.refresh
             )
-            session.changeCurrentUserId(response.id)
+            taigaSessionStorage.setUserId(response.id)
         }
     }
 

@@ -11,6 +11,7 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -20,6 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -43,8 +45,7 @@ import timber.log.Timber
 fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val isLogged by viewModel.isLogged.collectAsStateWithLifecycle()
-    val isNewUIUsed by viewModel.isNewUIUsed.collectAsStateWithLifecycle()
+    val isLogged by viewModel.isLoggedIn.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(
         LocalTopBarConfig provides topBarController
@@ -54,8 +55,7 @@ fun MainContent(viewModel: MainViewModel) {
             viewModel = viewModel,
             topBarConfig = topBarConfig,
             state = state,
-            isLogged = isLogged,
-            isNewUIUsed = isNewUIUsed
+            isLogged = isLogged
         )
     }
 }
@@ -65,14 +65,15 @@ private fun MainScreenContent(
     viewModel: MainViewModel,
     topBarConfig: TopBarConfig,
     state: MainScreenState,
-    isLogged: Boolean,
-    isNewUIUsed: Boolean
+    isLogged: Boolean
 ) {
     val appState = rememberMainAppState()
 
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val resources = LocalResources.current
     val drawerState by appState.drawerState.collectAsStateWithLifecycle()
+    val drawerItems by viewModel.drawerItems.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -96,21 +97,20 @@ private fun MainScreenContent(
         }.launchIn(this)
     }
 
-    if (state.isLogoutConfirmationVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.logout_title),
-            description = stringResource(RString.logout_text),
-            onConfirm = {
-                state.onLogout()
-            },
-            onDismiss = { state.setIsLogoutConfirmationVisible(false) },
-            iconId = RDrawable.ic_logout
-        )
-    }
+    ConfirmActionDialog(
+        title = stringResource(RString.logout_title),
+        description = stringResource(RString.logout_text),
+        onConfirm = {
+            state.onLogout()
+        },
+        onDismiss = { state.setIsLogoutConfirmationVisible(false) },
+        iconId = RDrawable.ic_logout,
+        isVisible = state.isLogoutConfirmationVisible
+    )
 
     TaigaDrawerWidget(
-        screens = appState.topLevelDestinations,
-        currentItem = appState.currentTopLevelDestination,
+        drawerItems = drawerItems,
+        currentTopLevelDestination = appState.currentTopLevelDestination,
         drawerState = drawerState,
         onDrawerItemClick = { item: DrawerDestination ->
             scope.launch {
@@ -125,18 +125,13 @@ private fun MainScreenContent(
         gesturesEnabled = appState.areDrawerGesturesEnabled
     ) {
         Scaffold(
-            modifier = Modifier
-                .imePadding(),
+            modifier = Modifier.imePadding(),
             topBar = {
                 TaigaTopAppBar(
                     isVisible = appState.isTopBarVisible,
                     topBarConfig = topBarConfig,
                     drawerState = drawerState,
-                    isMenuButton = !topBarConfig.showBackButton,
-                    goBack = {
-                        topBarConfig.overrideBackHandlerAction?.invoke()
-                            ?: appState.navController.popBackStack()
-                    }
+                    defaultGoBack = { appState.navController.popBackStack() }
                 )
             },
             snackbarHost = {
@@ -155,12 +150,11 @@ private fun MainScreenContent(
             content = { paddingValues ->
                 MainNavHost(
                     modifier = Modifier.padding(paddingValues),
-                    isNewUiUsed = isNewUIUsed,
-                    isLogged = isLogged,
+                    isLoggedIn = isLogged,
                     navController = appState.navController,
                     showMessage = { message ->
                         scope.launch {
-                            val strMessage = context.getString(message)
+                            val strMessage = resources.getString(message)
                             snackbarHostState.showSnackbar(
                                 message = strMessage,
                                 actionLabel = null,
@@ -170,11 +164,26 @@ private fun MainScreenContent(
                     },
                     showSnackbar = { text ->
                         scope.launch {
-                            snackbarHostState.showSnackbar(
+                            val result = snackbarHostState.showSnackbar(
                                 message = text.asString(context),
-                                actionLabel = null,
+                                actionLabel = resources.getString(RString.close),
                                 duration = SnackbarDuration.Short
                             )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                            }
+                        }
+                    },
+                    showSnackbarAction = { text, action ->
+                        scope.launch {
+                            val result = snackbarHostState.showSnackbar(
+                                message = text.asString(context),
+                                actionLabel = action,
+                                duration = SnackbarDuration.Short
+                            )
+                            if (result == SnackbarResult.ActionPerformed) {
+                                snackbarHostState.currentSnackbarData?.dismiss()
+                            }
                         }
                     }
                 )

@@ -6,11 +6,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.FiltersDataDTO
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.Session
-import com.grappim.taigamobile.core.storage.TaigaStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canAddIssue
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -29,25 +35,31 @@ class IssuesViewModel @Inject constructor(
     private val session: Session,
     private val issuesRepository: IssuesRepository,
     private val filtersRepository: FiltersRepository,
-    taigaStorage: TaigaStorage
-) : ViewModel() {
+    private val projectsRepository: ProjectsRepository
+) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl() {
 
     private val _state = MutableStateFlow(
         IssuesState(
-            selectFilters = ::selectFilters
+            selectFilters = ::selectFilters,
+            retryLoadFilters = ::retryLoadFilters,
+            setSearchQuery = ::setSearchQuery
         )
     )
     val state = _state.asStateFlow()
 
-    val issues = session.issuesFilters.flatMapLatest { filters ->
-        issuesRepository.getIssuesPaging(filters)
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery = _searchQuery.asStateFlow()
+
+    val issues = combine(session.issuesFilters, searchQuery) { filters, searchQuery ->
+        Pair(filters, searchQuery)
+    }.flatMapLatest { (filters, searchQuery) ->
+        issuesRepository.getIssuesPaging(filtersData = filters, query = searchQuery)
     }.cachedIn(viewModelScope)
 
     init {
-        combine(taigaStorage.currentProjectIdFlow, session.taskEdit) {
-            issuesRepository.refreshIssues()
-        }.launchIn(viewModelScope)
-
+        loadFiltersData()
+        getPermissions()
         session.issuesFilters
             .onEach { filters ->
                 _state.update {
@@ -55,29 +67,63 @@ class IssuesViewModel @Inject constructor(
                 }
             }
             .launchIn(viewModelScope)
+    }
 
+    private fun getPermissions() {
         viewModelScope.launch {
-            filtersRepository.getFiltersDataResultOld(CommonTaskType.Issue)
-                .onSuccess { filters ->
+            val perm = projectsRepository.getPermissions()
+            _state.update {
+                it.copy(
+                    canCreateIssue = perm.canAddIssue()
+                )
+            }
+        }
+    }
+
+    private fun setSearchQuery(newQuery: String) {
+        _searchQuery.update {
+            newQuery
+        }
+    }
+
+    private fun retryLoadFilters() {
+        loadFiltersData()
+    }
+
+    private fun loadFiltersData() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isFiltersLoading = true,
+                    filtersError = NativeText.Empty
+                )
+            }
+
+            resultOf { filtersRepository.getFiltersData(CommonTaskType.Issue) }
+                .onSuccess { result ->
                     session.changeIssuesFilters(
-                        filters = _state.value.activeFilters.updateData(filters)
+                        filters = _state.value.activeFilters.updateData(result)
                     )
+
                     _state.update {
                         it.copy(
-                            filters = filters,
-                            isFiltersError = false
+                            isFiltersLoading = false,
+                            filters = result
                         )
                     }
                 }.onFailure { error ->
                     Timber.e(error)
                     _state.update {
-                        it.copy(isFiltersError = true)
+                        it.copy(
+                            isFiltersLoading = false,
+                            filtersError = getErrorMessage(error)
+                        )
                     }
                 }
         }
     }
 
-    private fun selectFilters(filters: FiltersDataDTO) {
+    private fun selectFilters(filters: FiltersData) {
         session.changeIssuesFilters(filters)
     }
 }

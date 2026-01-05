@@ -43,11 +43,16 @@ fun Chip(
         ) {
             Box(
                 modifier = Modifier
-                    .clickable(
-                        indication = ripple(),
-                        onClick = onClick ?: {},
-                        enabled = onClick != null,
-                        interactionSource = remember { MutableInteractionSource() }
+                    .then(
+                        if (onClick != null) {
+                            Modifier.clickable(
+                                indication = ripple(),
+                                onClick = onClick,
+                                interactionSource = remember { MutableInteractionSource() }
+                            )
+                        } else {
+                            Modifier
+                        }
                     )
                     .padding(vertical = 4.dp, horizontal = 10.dp)
             ) {

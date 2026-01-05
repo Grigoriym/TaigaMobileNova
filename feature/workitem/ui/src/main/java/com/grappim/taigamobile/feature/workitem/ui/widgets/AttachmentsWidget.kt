@@ -29,59 +29,60 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.LocalFilePicker
 import com.grappim.taigamobile.uikit.R
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.utils.PreviewDarkLight
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.utils.PreviewTheme
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoader
+import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
-import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import timber.log.Timber
 
 @Composable
 fun AttachmentsSectionWidget(
-    isAttachmentsLoading: Boolean,
-    attachments: ImmutableList<Attachment>,
+    attachmentsState: WorkItemAttachmentsState,
     onAttachmentAdd: (uri: Uri?) -> Unit,
     onAttachmentRemove: (Attachment) -> Unit,
-    setAreAttachmentsExpanded: (Boolean) -> Unit,
-    areAttachmentsExpanded: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    canModify: Boolean = false
 ) {
     val filePicker = LocalFilePicker.current
     Column(modifier = modifier) {
         SectionTitleExpandable(
-            text = stringResource(RString.attachments_template).format(attachments.size),
-            isExpanded = areAttachmentsExpanded,
+            text = stringResource(RString.attachments_template).format(attachmentsState.attachments.size),
+            isExpanded = attachmentsState.areAttachmentsExpanded,
             onExpandClick = {
-                setAreAttachmentsExpanded(!areAttachmentsExpanded)
+                attachmentsState.setAreAttachmentsExpanded(!attachmentsState.areAttachmentsExpanded)
             }
         )
 
-        if (areAttachmentsExpanded) {
+        if (attachmentsState.areAttachmentsExpanded) {
             Spacer(Modifier.height(10.dp))
 
-            attachments.forEachIndexed { index, item ->
+            attachmentsState.attachments.forEachIndexed { index, item ->
                 AttachmentItem(
                     attachment = item,
                     onRemoveClick = {
                         onAttachmentRemove(item)
-                    }
+                    },
+                    canModify = canModify
                 )
 
-                if (index < attachments.lastIndex) {
+                if (index < attachmentsState.attachments.lastIndex) {
                     Spacer(Modifier.height(8.dp))
                 }
             }
 
             Spacer(Modifier.height(10.dp))
 
-            if (isAttachmentsLoading) {
-                DotsLoader()
-            } else {
+            if (attachmentsState.areAttachmentsLoading) {
+                DotsLoaderWidget()
+            } else if (canModify) {
                 Button(
                     onClick = {
                         filePicker.requestFile { uri ->
@@ -97,23 +98,21 @@ fun AttachmentsSectionWidget(
 }
 
 @Composable
-private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) {
+private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit, canModify: Boolean = false) {
     val uriHandler = LocalUriHandler.current
 
     var isAlertVisible by rememberSaveable { mutableStateOf(false) }
 
-    if (isAlertVisible) {
-        ConfirmActionDialog(
-            title = stringResource(RString.remove_attachment_title),
-            description = stringResource(RString.remove_attachment_text),
-            onConfirm = {
-                isAlertVisible = false
-                onRemoveClick()
-            },
-            onDismiss = { isAlertVisible = false },
-            iconId = R.drawable.ic_remove
-        )
-    }
+    ConfirmActionDialog(
+        title = stringResource(RString.remove_attachment_title),
+        description = stringResource(RString.remove_attachment_text),
+        onConfirm = {
+            isAlertVisible = false
+            onRemoveClick()
+        },
+        onDismiss = { isAlertVisible = false },
+        isVisible = isAlertVisible
+    )
 
     Card(
         modifier = Modifier
@@ -150,24 +149,71 @@ private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit) {
                 )
             }
 
-            IconButton(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape),
-                onClick = { isAlertVisible = true }
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_delete),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.error
-                )
+            if (canModify) {
+                IconButton(
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clip(CircleShape),
+                    onClick = { isAlertVisible = true }
+                ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_delete),
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
             }
         }
     }
 }
 
 @Composable
-@PreviewDarkLight
+@PreviewTaigaDarkLight
+private fun AttachmentsSectionWidgetExpandedPreview() {
+    PreviewTheme {
+        AttachmentsSectionWidget(
+            attachmentsState = WorkItemAttachmentsState(
+                areAttachmentsExpanded = true,
+                attachments = persistentListOf(
+                    Attachment(
+                        id = 2965,
+                        name = "Giovanni Nixon",
+                        sizeInBytes = 5351,
+                        url = "https://search.yahoo.com/search?p=consul"
+                    ),
+                    Attachment(
+                        id = 5175,
+                        name = "Priscilla Garner",
+                        sizeInBytes = 9863,
+                        url = "https://duckduckgo.com/?q=detracto"
+                    )
+                )
+            ),
+            onAttachmentAdd = {},
+            onAttachmentRemove = {},
+            canModify = true
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun AttachmentsSectionWidgetPreview() {
+    PreviewTheme {
+        AttachmentsSectionWidget(
+            attachmentsState = WorkItemAttachmentsState(
+                areAttachmentsExpanded = false,
+                attachments = persistentListOf()
+            ),
+            onAttachmentAdd = {},
+            onAttachmentRemove = {},
+            canModify = true
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
 private fun AttachmentItemPreview() {
     TaigaMobileTheme {
         AttachmentItem(

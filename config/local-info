@@ -6,5 +6,32 @@ setup:
 docker compose -f docker-compose.yml -f docker-compose-inits.yml run --rm taiga-manage createsuperuser
 docker compose -f docker-compose.yml -f docker-compose-inits.yml run --rm taiga-manage changepassword
 
+to create a new user go to /admin/ panel
+
 users:
     admin - admin
+    user1 - user1 - user1@mail.com
+    user2 - user2 - user2@mail.com
+    user3 - user3 - user3@mail.com
+
+WebSocket:
+
+{
+  "cmd":"ping"
+}
+
+{
+  "cmd": "auth",
+  "data": {
+    "token": "token",
+    "sessionId": "random value"
+  }
+}
+
+{"cmd":"subscribe","routing_key":"notifications"}
+
+{"cmd":"subscribe","routing_key":"web_notifications.5"}
+
+{"cmd":"subscribe","routing_key":"changes.project.1.issues"}
+
+{"cmd":"subscribe","routing_key":"changes.project.1.userstories"}

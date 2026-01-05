@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.userstories.data
 
-import com.grappim.taigamobile.core.domain.CommonTaskResponse
+import com.grappim.taigamobile.feature.userstories.dto.CreateUserStoryRequest
+import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
@@ -10,15 +11,7 @@ import retrofit2.http.Query
 interface UserStoriesApi {
 
     @POST("userstories")
-    suspend fun createUserStory(
-        @Body createUserStoryRequest: CreateUserStoryRequest
-    ): CommonTaskResponse
-
-    @GET("userstories/by_ref")
-    suspend fun getUserStoryByRef(
-        @Query("project") projectId: Long,
-        @Query("ref") ref: Int
-    ): CommonTaskResponse
+    suspend fun createUserStory(@Body createUserStoryRequest: CreateUserStoryRequest): WorkItemResponseDTO
 
     @GET("userstories")
     suspend fun getUserStories(
@@ -49,5 +42,5 @@ interface UserStoriesApi {
         // here and below instead of setting header to "false" remove it,
         // because api always returns unpaginated result if header persists, regardless of its value
         @Header("x-disable-pagination") disablePagination: Boolean? = (page == null).takeIf { it }
-    ): List<CommonTaskResponse>
+    ): List<WorkItemResponseDTO>
 }

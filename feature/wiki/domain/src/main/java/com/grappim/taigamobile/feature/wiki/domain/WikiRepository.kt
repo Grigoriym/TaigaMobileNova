@@ -1,18 +1,17 @@
 package com.grappim.taigamobile.feature.wiki.domain
 
-import com.grappim.taigamobile.core.domain.AttachmentDTO
-import java.io.InputStream
+import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiLink
+import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
+import kotlinx.collections.immutable.ImmutableList
 
 interface WikiRepository {
-    suspend fun getProjectWikiPages(): List<WikiPage>
+    suspend fun getProjectWikiPages(): ImmutableList<WikiPage>
     suspend fun getProjectWikiPageBySlug(slug: String): WikiPage
-    suspend fun editWikiPage(pageId: Long, content: String, version: Int)
     suspend fun deleteWikiPage(pageId: Long)
-    suspend fun getPageAttachments(pageId: Long): List<AttachmentDTO>
-    suspend fun addPageAttachment(pageId: Long, fileName: String, inputStream: InputStream)
-    suspend fun deletePageAttachment(attachmentId: Long)
 
-    suspend fun getWikiLinks(): List<WikiLink>
-    suspend fun createWikiLink(href: String, title: String)
+    suspend fun getWikiLinks(): ImmutableList<WikiLink>
+    suspend fun createWikiLink(title: String): WikiLink
     suspend fun deleteWikiLink(linkId: Long)
+
+    suspend fun createWikiPage(slug: String, content: String): WikiPage
 }

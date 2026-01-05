@@ -1,0 +1,118 @@
+package com.grappim.taigamobile.feature.epics.domain
+
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
+import com.grappim.taigamobile.feature.history.domain.HistoryRepository
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canCommentEpic
+import com.grappim.taigamobile.feature.projects.domain.canDeleteEpic
+import com.grappim.taigamobile.feature.projects.domain.canModifyEpic
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import javax.inject.Inject
+
+class EpicDetailsDataUseCase @Inject constructor(
+    private val filtersRepository: FiltersRepository,
+    private val epicsRepository: EpicsRepository,
+    private val historyRepository: HistoryRepository,
+    private val workItemRepository: WorkItemRepository,
+    private val usersRepository: UsersRepository,
+    private val userStoriesRepository: UserStoriesRepository,
+    private val patchDataGenerator: PatchDataGenerator,
+    private val projectsRepository: ProjectsRepository
+) {
+
+    suspend fun getEpicData(epicId: Long): Result<EpicDetailsData> = resultOf {
+        coroutineScope {
+            val taskType = CommonTaskType.Epic
+            val filtersData = filtersRepository.getFiltersData(taskType)
+
+            val epicDeferred = async {
+                epicsRepository.getEpic(epicId)
+            }
+
+            val attachments = async {
+                workItemRepository.getWorkItemAttachments(
+                    workItemId = epicId,
+                    taskIdentifier = TaskIdentifier.WorkItem(taskType)
+                )
+            }
+
+            val customFields = async {
+                workItemRepository.getCustomFields(
+                    workItemId = epicId,
+                    commonTaskType = taskType
+                )
+            }
+            val commentsDeferred = async {
+                historyRepository.getComments(
+                    commonTaskId = epicId,
+                    type = taskType
+                )
+            }
+
+            val userStories = async {
+                userStoriesRepository.getEpicUserStoriesSimplified(epicId = epicId)
+            }
+
+            val epic = epicDeferred.await()
+
+            val creator = async { usersRepository.getUser(epic.creatorId) }
+
+            val assigneesDeferred =
+                async { usersRepository.getUsersList(epic.assignedUserIds) }
+            val watchersDeferred = async { usersRepository.getUsersList(epic.watcherUserIds) }
+
+            val assignees = assigneesDeferred.await()
+            val watchers = watchersDeferred.await()
+
+            val isAssignedToMe = async { usersRepository.isAnyAssignedToMe(assignees) }
+            val isWatchedByMe = async { usersRepository.isAnyAssignedToMe(watchers) }
+
+            EpicDetailsData(
+                epic = epic,
+                attachments = attachments.await(),
+                customFields = customFields.await(),
+                comments = commentsDeferred.await(),
+                filtersData = filtersData,
+                creator = creator.await(),
+                assignees = assignees,
+                watchers = watchers,
+                isAssignedToMe = isAssignedToMe.await(),
+                isWatchedByMe = isWatchedByMe.await(),
+                userStories = userStories.await(),
+                canDeleteEpic = projectsRepository.getPermissions().canDeleteEpic(),
+                canModifyEpic = projectsRepository.getPermissions().canModifyEpic(),
+                canComment = projectsRepository.getPermissions().canCommentEpic()
+            )
+        }
+    }
+
+    /**
+     * When we update the epic color, if there are any user stories, they also change the color
+     * that is why there are two requests
+     */
+    suspend fun changeEpicColor(color: String, version: Long, epicId: Long): Result<EpicColorUpdateData> = resultOf {
+        val patchData = workItemRepository.patchData(
+            version = version,
+            workItemId = epicId,
+            commonTaskType = CommonTaskType.Epic,
+            payload = patchDataGenerator.getColor(
+                color = color
+            )
+        )
+
+        val userStories = userStoriesRepository.getEpicUserStoriesSimplified(epicId = epicId)
+
+        EpicColorUpdateData(
+            patchedData = patchData,
+            userStories = userStories
+        )
+    }
+}

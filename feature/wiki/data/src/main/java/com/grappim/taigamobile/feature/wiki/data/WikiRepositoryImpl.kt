@@ -1,37 +1,36 @@
 package com.grappim.taigamobile.feature.wiki.data
 
-import com.grappim.taigamobile.core.domain.AttachmentDTO
-import com.grappim.taigamobile.core.storage.TaigaStorage
-import com.grappim.taigamobile.feature.wiki.domain.WikiLink
-import com.grappim.taigamobile.feature.wiki.domain.WikiPage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
-import kotlinx.coroutines.flow.first
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.MultipartBody
-import okhttp3.RequestBody.Companion.toRequestBody
-import java.io.InputStream
+import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiLink
+import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
+import com.grappim.taigamobile.feature.workitem.mapper.WikiLinkMapper
+import com.grappim.taigamobile.feature.workitem.mapper.WikiPageMapper
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import javax.inject.Inject
 
 class WikiRepositoryImpl @Inject constructor(
     private val wikiApi: WikiApi,
-    private val taigaStorage: TaigaStorage
+    private val taigaSessionStorage: TaigaSessionStorage,
+    private val wikiPageMapper: WikiPageMapper,
+    private val wikiLinkMapper: WikiLinkMapper
 ) : WikiRepository {
 
-    override suspend fun getProjectWikiPages(): List<WikiPage> = wikiApi.getProjectWikiPages(
-        projectId = taigaStorage.currentProjectIdFlow.first()
-    )
+    override suspend fun getProjectWikiPages(): ImmutableList<WikiPage> {
+        val result = wikiApi.getProjectWikiPages(
+            projectId = taigaSessionStorage.getCurrentProjectId()
+        )
+        return wikiPageMapper.toDomainList(result)
+    }
 
-    override suspend fun getProjectWikiPageBySlug(slug: String): WikiPage =
-        wikiApi.getProjectWikiPageBySlug(
-            projectId = taigaStorage.currentProjectIdFlow.first(),
+    override suspend fun getProjectWikiPageBySlug(slug: String): WikiPage {
+        val result = wikiApi.getProjectWikiPageBySlug(
+            projectId = taigaSessionStorage.getCurrentProjectId(),
             slug = slug
         )
-
-    override suspend fun editWikiPage(pageId: Long, content: String, version: Int) =
-        wikiApi.editWikiPage(
-            pageId = pageId,
-            editWikiPageRequest = EditWikiPageRequest(content, version)
-        )
+        return wikiPageMapper.toDomain(result)
+    }
 
     override suspend fun deleteWikiPage(pageId: Long) {
         wikiApi.deleteWikiPage(
@@ -39,59 +38,35 @@ class WikiRepositoryImpl @Inject constructor(
         )
     }
 
-    override suspend fun getPageAttachments(pageId: Long): List<AttachmentDTO> =
-        wikiApi.getPageAttachments(
-            pageId = pageId,
-            projectId = taigaStorage.currentProjectIdFlow.first()
-        )
-
-    override suspend fun addPageAttachment(
-        pageId: Long,
-        fileName: String,
-        inputStream: InputStream
-    ) {
-        val file = MultipartBody.Part.createFormData(
-            name = "attached_file",
-            filename = fileName,
-            body = inputStream.readBytes().toRequestBody("*/*".toMediaType())
-        )
-        val project = MultipartBody.Part.createFormData(
-            "project",
-            taigaStorage.currentProjectIdFlow.first().toString()
-        )
-        val objectId = MultipartBody.Part.createFormData("object_id", pageId.toString())
-
-        inputStream.use {
-            wikiApi.uploadPageAttachment(
-                file = file,
-                project = project,
-                objectId = objectId
-            )
-        }
+    override suspend fun getWikiLinks(): ImmutableList<WikiLink> {
+        val result = wikiApi.getWikiLink(
+            projectId = taigaSessionStorage.getCurrentProjectId()
+        ).toImmutableList()
+        return wikiLinkMapper.toDomainList(result)
     }
 
-    override suspend fun deletePageAttachment(attachmentId: Long) {
-        wikiApi.deletePageAttachment(
-            attachmentId = attachmentId
-        )
-    }
-
-    override suspend fun getWikiLinks(): List<WikiLink> = wikiApi.getWikiLink(
-        projectId = taigaStorage.currentProjectIdFlow.first()
-    )
-
-    override suspend fun createWikiLink(href: String, title: String) {
+    override suspend fun createWikiLink(title: String): WikiLink {
         val request = NewWikiLinkRequest(
-            href = href,
-            project = taigaStorage.currentProjectIdFlow.first(),
+            project = taigaSessionStorage.getCurrentProjectId(),
             title = title
         )
-        wikiApi.createWikiLink(newWikiLinkRequest = request)
+        val response = wikiApi.createWikiLink(body = request)
+        return wikiLinkMapper.toDomain(response)
     }
 
     override suspend fun deleteWikiLink(linkId: Long) {
         wikiApi.deleteWikiLink(
             linkId = linkId
         )
+    }
+
+    override suspend fun createWikiPage(slug: String, content: String): WikiPage {
+        val request = CreateWikiPageRequestDTO(
+            projectId = taigaSessionStorage.getCurrentProjectId(),
+            slug = slug,
+            content = content
+        )
+        val dto = wikiApi.createWikiPage(request)
+        return wikiPageMapper.toDomain(dto)
     }
 }
