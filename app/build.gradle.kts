@@ -14,8 +14,8 @@ android {
         applicationId = "com.grappim.taigamobile"
         testApplicationId = "com.grappim.taigamobile.tests"
 
-        versionCode = 32
-        versionName = "2.0.1"
+        versionCode = 33
+        versionName = "2.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
