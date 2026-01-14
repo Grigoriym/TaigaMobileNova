@@ -6,7 +6,7 @@ This is the **unofficial** Android app for the agile project management system [
 
 The previous author archived the original project. This version has been almost completely rewritten with modern Android development practices.
 
-**Coming soon:** Google Play and F-Droid
+**Coming soon:** Google Play and F-Droid (actually in progress, it will take a couple of weeks for both stores to add the app)
 
 [Project board](https://tasks.gregstuff.click/project/taigamobilenova/kanban)
 
