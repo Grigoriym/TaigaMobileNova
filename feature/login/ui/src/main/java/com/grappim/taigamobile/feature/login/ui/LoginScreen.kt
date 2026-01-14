@@ -53,7 +53,6 @@ import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.delegates.collectSnackbarMessage
 
 @Composable
 fun LoginScreen(
@@ -62,12 +61,11 @@ fun LoginScreen(
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val snackbarMessage by viewModel.snackBarMessage.collectSnackbarMessage()
     val isLoginSuccessful by viewModel.loginSuccessful.collectAsStateWithLifecycle(false)
 
-    LaunchedEffect(snackbarMessage) {
-        if (snackbarMessage !is NativeText.Empty) {
-            onShowSnackbar(snackbarMessage)
+    LaunchedEffect(state.error) {
+        if (state.error.isNotEmpty()) {
+            onShowSnackbar(state.error)
         }
     }
     LaunchedEffect(isLoginSuccessful) {
@@ -103,7 +101,7 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(40.dp))
 
         Image(
-            painter = painterResource(RDrawable.ic_taiga_tree),
+            painter = painterResource(RDrawable.taiga_mobile_logo),
             contentDescription = null,
             modifier = Modifier
                 .size(130.dp)
