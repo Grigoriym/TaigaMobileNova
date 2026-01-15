@@ -8,10 +8,8 @@ import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
-import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
-import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,12 +17,12 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(private val authRepository: AuthRepository, serverStorage: ServerStorage) :
-    ViewModel(),
-    SnackbarDelegate by SnackbarDelegateImpl() {
+    ViewModel() {
 
     companion object {
         private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""
@@ -51,13 +49,19 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
     private fun login(authData: AuthData) {
         viewModelScope.launch {
             isLoading(true)
+            _state.update {
+                it.copy(error = NativeText.Empty)
+            }
             authRepository.auth(authData)
                 .onSuccess {
                     isLoading(false)
                     _loginSuccessful.emit(true)
-                }.onFailure {
+                }.onFailure { error ->
+                    Timber.d(error)
                     isLoading(false)
-                    showSnackbarSuspend(NativeText.Resource(RString.login_error_message))
+                    _state.update {
+                        it.copy(error = getErrorMessage(error))
+                    }
                 }
         }
     }

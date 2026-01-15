@@ -4,13 +4,15 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.grappim.taigamobile.core.api.defaultTryCatch
 import com.grappim.taigamobile.core.api.hasNextPage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 
 class ProjectsPagingSource(
     private val projectsApi: ProjectsApi,
     private val query: String,
-    private val projectMapper: ProjectMapper
+    private val projectMapper: ProjectMapper,
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : PagingSource<Int, Project>() {
     override fun getRefreshKey(state: PagingState<Int, Project>): Int? = state.anchorPosition?.let { anchorPosition ->
         val anchorPage = state.closestPageToPosition(anchorPosition)
@@ -23,7 +25,8 @@ class ProjectsPagingSource(
             val response = projectsApi.getProjectsPaging(
                 query = query,
                 page = nextPageNumber,
-                pageSize = params.loadSize
+                pageSize = params.loadSize,
+                memberId = taigaSessionStorage.requireUserId()
             )
             val result = projectMapper.toListDomain(response.body() ?: emptyList())
 
