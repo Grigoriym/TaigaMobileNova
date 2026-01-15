@@ -31,7 +31,12 @@ class ProjectsRepositoryImpl @Inject constructor(
             enablePlaceholders = false
         )
     ) {
-        ProjectsPagingSource(projectsApi, query, projectMapper)
+        ProjectsPagingSource(
+            projectsApi = projectsApi,
+            query = query,
+            projectMapper = projectMapper,
+            taigaSessionStorage = taigaSessionStorage
+        )
     }.flow
 
     override suspend fun getMyProjects(): ImmutableList<Project> {

@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.login.ui
 
 import androidx.compose.ui.text.input.TextFieldValue
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.utils.ui.NativeText
 
 data class LoginState(
     val server: TextFieldValue,
@@ -11,6 +12,8 @@ data class LoginState(
     val login: TextFieldValue = TextFieldValue(),
     val onLoginValueChange: (TextFieldValue) -> Unit,
     val isLoginInputError: Boolean = false,
+
+    val error: NativeText = NativeText.Empty,
 
     val password: TextFieldValue = TextFieldValue(),
     val onPasswordValueChange: (TextFieldValue) -> Unit,

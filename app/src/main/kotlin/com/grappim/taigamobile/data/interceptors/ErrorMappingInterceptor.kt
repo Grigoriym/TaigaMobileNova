@@ -2,6 +2,7 @@ package com.grappim.taigamobile.data.interceptors
 
 import com.grappim.taigamobile.core.api.TaigaErrorResponse
 import com.grappim.taigamobile.core.domain.NetworkException
+import com.grappim.taigamobile.core.domain.ProjectLimitInfo
 import com.grappim.taigamobile.core.domain.TaigaErrorDetails
 import com.grappim.taigamobile.data.api.ConnectivityManagerNetworkMonitor
 import kotlinx.serialization.json.Json
@@ -49,12 +50,12 @@ class ErrorMappingInterceptor @Inject constructor(
         }
     }
 
-    private fun extractProjectLimitInfo(response: Response): com.grappim.taigamobile.core.domain.ProjectLimitInfo? {
+    private fun extractProjectLimitInfo(response: Response): ProjectLimitInfo? {
         val memberships = response.header("Taiga-Info-Project-Memberships")?.toIntOrNull()
         val isPrivate = response.header("Taiga-Info-Project-Is-Private")?.toBooleanStrictOrNull()
 
         return if (memberships != null && isPrivate != null) {
-            com.grappim.taigamobile.core.domain.ProjectLimitInfo(memberships, isPrivate)
+            ProjectLimitInfo(memberships, isPrivate)
         } else {
             null
         }
@@ -63,14 +64,14 @@ class ErrorMappingInterceptor @Inject constructor(
     private fun parseErrorResponse(
         errorBody: String,
         statusCode: Int,
-        projectLimitInfo: com.grappim.taigamobile.core.domain.ProjectLimitInfo?
+        projectLimitInfo: ProjectLimitInfo?
     ): TaigaErrorDetails? = try {
         val taigaError = json.decodeFromString<TaigaErrorResponse>(errorBody)
-        val errorMessage = taigaError.errorMessage
+        val errorMessage = taigaError.errorMessage ?: taigaError.detail
         if (errorMessage != null) {
             TaigaErrorDetails(
                 message = errorMessage,
-                type = taigaError.errorType,
+                type = taigaError.errorType ?: taigaError.code,
                 statusCode = statusCode,
                 projectLimitInfo = projectLimitInfo
             )
