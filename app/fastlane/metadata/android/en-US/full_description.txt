@@ -1,0 +1,15 @@
+Taiga Mobile Nova is an unofficial Android client for Taiga.io, an open-source agile project management platform.
+
+Key Features:
+
+• Dashboard: View your projects, working on items, and watching items at a glance
+• Projects: Browse and manage your Taiga projects
+• Kanban Board: Visualize and manage your workflow with drag-and-drop cards
+• Sprints: Track sprint progress and manage sprint backlogs
+• User Stories: Create, edit, and track user stories
+• Tasks: Manage tasks within user stories and sprints
+• Issues: Report and track issues
+• Epics: Organize related user stories into epics
+• Wiki: Access and edit project documentation
+
+Built with modern Android development practices using Jetpack Compose and Material Design 3.
