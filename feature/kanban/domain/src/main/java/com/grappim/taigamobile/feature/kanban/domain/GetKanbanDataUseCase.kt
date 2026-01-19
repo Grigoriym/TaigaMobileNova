@@ -21,17 +21,21 @@ class GetKanbanDataUseCase @Inject constructor(
 ) {
     suspend fun getData(): Result<KanbanData> = resultOf {
         coroutineScope {
+            val project = async { projectsRepository.getCurrentProjectSimple() }
             val userStories = async { userStoriesRepository.getUserStories() }
             val teamMembers = async { usersRepository.getTeamMembers(false) }
             val filters = async { filtersRepository.getStatuses(CommonTaskType.UserStory) }
             val swimlanes = swimlanesRepository.getSwimlanes()
+            val defaultSwimlane = swimlanes.find { it.id == project.await().defaultSwimlane }
+                ?: swimlanes.firstOrNull()
 
             KanbanData(
                 stories = userStories.await(),
                 swimlanes = swimlanes,
                 statuses = filters.await(),
                 teamMembers = teamMembers.await(),
-                canAddUserStory = projectsRepository.getPermissions().canAddUserStory()
+                canAddUserStory = projectsRepository.getPermissions().canAddUserStory(),
+                defaultSwimlane = defaultSwimlane
             )
         }
     }

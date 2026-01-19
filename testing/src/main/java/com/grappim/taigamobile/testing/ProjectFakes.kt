@@ -45,7 +45,8 @@ fun getProject(): Project = Project(
     isBacklogActivated = getRandomBoolean(),
     isKanbanActivated = getRandomBoolean(),
     isIssuesActivated = getRandomBoolean(),
-    isWikiActivated = getRandomBoolean()
+    isWikiActivated = getRandomBoolean(),
+    defaultSwimlane = getRandomLong()
 )
 
 
