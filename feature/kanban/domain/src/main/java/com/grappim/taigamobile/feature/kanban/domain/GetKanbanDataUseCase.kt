@@ -21,7 +21,6 @@ class GetKanbanDataUseCase @Inject constructor(
 ) {
     suspend fun getData(): Result<KanbanData> = resultOf {
         coroutineScope {
-            projectsRepository.fetchAndSaveProjectInfo()
             val project = async { projectsRepository.getCurrentProjectSimple() }
             val userStories = async { userStoriesRepository.getUserStories() }
             val teamMembers = async { usersRepository.getTeamMembers(false) }
