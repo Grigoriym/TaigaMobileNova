@@ -8,8 +8,10 @@ import kotlin.reflect.KClass
 fun NavOptionsBuilder.popUpToTop(navController: NavController) {
     popUpTo(navController.graph.id) {
         inclusive = true
+        saveState = false
     }
     launchSingleTop = true
+    restoreState = false
 }
 
 inline fun <reified PopUpTo : Any> NavController.navigateAndPopCurrent(

@@ -75,12 +75,14 @@ class MainAppState(val navController: NavHostController) {
         } == null
 
     fun navigateToTopLevelDestination(destination: DrawerDestination) {
+        val shouldSaveState = destination != DrawerDestination.ProjectSelector
+
         val navOptions = navOptions {
             popUpTo(navController.graph.findStartDestination().id) {
-                saveState = true
+                saveState = shouldSaveState
             }
             launchSingleTop = true
-            restoreState = true
+            restoreState = shouldSaveState
         }
 
         destination.navigate(navController, navOptions)
