@@ -35,7 +35,8 @@ class ProjectMapper @Inject constructor(@IoDispatcher private val ioDispatcher: 
             isBacklogActivated = dto.isBacklogActivated,
             isKanbanActivated = dto.isKanbanActivated,
             isIssuesActivated = dto.isIssuesActivated,
-            isWikiActivated = dto.isWikiActivated
+            isWikiActivated = dto.isWikiActivated,
+            defaultSwimlane = dto.defaultSwimlane
         )
     }
 
@@ -56,7 +57,8 @@ class ProjectMapper @Inject constructor(@IoDispatcher private val ioDispatcher: 
             isBacklogActivated = entity.isBacklogActivated,
             isKanbanActivated = entity.isKanbanActivated,
             isIssuesActivated = entity.isIssuesActivated,
-            isWikiActivated = entity.isWikiActivated
+            isWikiActivated = entity.isWikiActivated,
+            defaultSwimlane = entity.defaultSwimlane
         )
     }
 
@@ -72,7 +74,8 @@ class ProjectMapper @Inject constructor(@IoDispatcher private val ioDispatcher: 
         isBacklogActivated = project.isBacklogActivated,
         isKanbanActivated = project.isKanbanActivated,
         isIssuesActivated = project.isIssuesActivated,
-        isWikiActivated = project.isWikiActivated
+        isWikiActivated = project.isWikiActivated,
+        defaultSwimlane = project.defaultSwimlane
     )
 
     fun toEntity(dto: ProjectDTO): ProjectEntity = ProjectEntity(
@@ -84,7 +87,8 @@ class ProjectMapper @Inject constructor(@IoDispatcher private val ioDispatcher: 
         isBacklogActivated = dto.isBacklogActivated,
         isKanbanActivated = dto.isKanbanActivated,
         isIssuesActivated = dto.isIssuesActivated,
-        isWikiActivated = dto.isWikiActivated
+        isWikiActivated = dto.isWikiActivated,
+        defaultSwimlane = dto.defaultSwimlane
     )
 
     private fun TaigaPermissionDTO.toDomain(): TaigaPermission = when (this) {

@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.dashboard.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.dashboard.domain.GetMyWorkItemsUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetRecentActivityUseCase
@@ -49,7 +50,11 @@ class DashboardViewModel @Inject constructor(
 
     fun updateInternalProjectData() {
         viewModelScope.launch {
-            projectsRepository.fetchAndSaveProjectInfo()
+            resultOf {
+                projectsRepository.fetchAndSaveProjectInfo()
+            }.onFailure { error ->
+                Timber.e(error)
+            }
         }
     }
 

@@ -72,7 +72,7 @@ fun KanbanBoardWidget(
     val backgroundCellColor =
         MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
 
-    state.swimlanes.takeIf { it.isNotEmpty() }?.let {
+    if (state.swimlanes.isNotEmpty()) {
         Row(
             modifier = modifier.padding(cellOuterPadding),
             verticalAlignment = Alignment.CenterVertically
@@ -85,12 +85,13 @@ fun KanbanBoardWidget(
             Spacer(Modifier.width(8.dp))
 
             DropdownSelector(
+                canModify = true,
                 items = state.swimlanes,
                 selectedItem = state.selectedSwimlane,
                 onItemSelect = state.onSelectSwimlane,
                 itemContent = {
                     Text(
-                        text = it?.name ?: stringResource(RString.unclassifed),
+                        text = it?.name ?: stringResource(RString.no_name),
                         style = MaterialTheme.typography.bodyLarge,
                         color = it?.let { MaterialTheme.colorScheme.onSurface }
                             ?: MaterialTheme.colorScheme.primary
@@ -98,7 +99,7 @@ fun KanbanBoardWidget(
                 },
                 selectedItemContent = {
                     Text(
-                        text = it?.name ?: stringResource(RString.unclassifed),
+                        text = it?.name ?: stringResource(RString.no_name),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.primary
                     )

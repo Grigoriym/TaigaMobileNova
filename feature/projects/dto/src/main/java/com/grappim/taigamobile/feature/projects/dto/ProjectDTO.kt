@@ -26,5 +26,7 @@ data class ProjectDTO(
     @SerialName("is_backlog_activated") val isBacklogActivated: Boolean,
     @SerialName("is_kanban_activated") val isKanbanActivated: Boolean,
     @SerialName("is_issues_activated") val isIssuesActivated: Boolean,
-    @SerialName("is_wiki_activated") val isWikiActivated: Boolean
+    @SerialName("is_wiki_activated") val isWikiActivated: Boolean,
+    @SerialName("default_swimlane")
+    val defaultSwimlane: Long? = null
 )
