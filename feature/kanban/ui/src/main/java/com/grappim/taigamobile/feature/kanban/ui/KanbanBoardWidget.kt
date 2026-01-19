@@ -70,6 +70,10 @@ fun KanbanBoardWidget(
     val backgroundCellColor =
         MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
 
+    val selectedAssignees = state.activeFilters.assignees
+    val selectedAssigneeIds = selectedAssignees.mapNotNull { it.id }.toSet()
+    val includeUnassigned = selectedAssignees.any { it.id == null }
+
     if (state.swimlanes.isNotEmpty()) {
         Row(
             modifier = modifier.padding(cellOuterPadding),
@@ -105,6 +109,18 @@ fun KanbanBoardWidget(
             )
         }
     }
+
+    val storiesToDisplay = state.stories
+        .filter { it.swimlane == state.selectedSwimlane?.id }
+        .filter { story ->
+            if (selectedAssignees.isEmpty()) {
+                true
+            } else {
+                val hasAssignee = story.assignedUserIds.any { selectedAssigneeIds.contains(it) }
+                val isUnassigned = story.assignedUserIds.isEmpty()
+                hasAssignee || (includeUnassigned && isUnassigned)
+            }
+        }
 
     Row(
         Modifier

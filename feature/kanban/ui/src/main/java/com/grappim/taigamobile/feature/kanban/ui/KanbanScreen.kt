@@ -99,6 +99,12 @@ fun KanbanScreenContent(
         Column(
             horizontalAlignment = Alignment.Start
         ) {
+            KanbanFilters(
+                selected = state.activeFilters,
+                data = state.filters,
+                onSelect = state.onSelectFilters
+            )
+
             KanbanBoardWidget(
                 state = state,
                 navigateToStory = navigateToStory,
@@ -114,7 +120,8 @@ private fun KanbanScreenPreview() = TaigaMobileTheme {
     KanbanScreenContent(
         state = KanbanState(
             onRefresh = {},
-            onSelectSwimlane = {}
+            onSelectSwimlane = {},
+            onSelectFilters = {}
         )
     )
 }
