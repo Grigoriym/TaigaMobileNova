@@ -20,7 +20,8 @@ data class Project(
     val isBacklogActivated: Boolean,
     val isKanbanActivated: Boolean,
     val isIssuesActivated: Boolean,
-    val isWikiActivated: Boolean
+    val isWikiActivated: Boolean,
+    val defaultSwimlane: Long?
 )
 
 data class ProjectSimple(
@@ -32,5 +33,6 @@ data class ProjectSimple(
     val isBacklogActivated: Boolean,
     val isKanbanActivated: Boolean,
     val isIssuesActivated: Boolean,
-    val isWikiActivated: Boolean
+    val isWikiActivated: Boolean,
+    val defaultSwimlane: Long?
 )

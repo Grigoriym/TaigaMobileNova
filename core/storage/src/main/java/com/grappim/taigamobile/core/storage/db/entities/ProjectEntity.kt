@@ -19,5 +19,6 @@ data class ProjectEntity(
     val isBacklogActivated: Boolean,
     val isKanbanActivated: Boolean,
     val isIssuesActivated: Boolean,
-    val isWikiActivated: Boolean
+    val isWikiActivated: Boolean,
+    val defaultSwimlane: Long?
 )

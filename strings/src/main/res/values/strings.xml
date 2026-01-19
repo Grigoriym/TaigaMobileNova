@@ -163,6 +163,7 @@
 
     <string name="swimlane_title">Swimlane:</string>
     <string name="unclassifed">Unclassified</string>
+    <string name="no_name">No name</string>
 
     <string name="custom_field_text">Text</string>
     <string name="custom_field_multiline">Multiline text</string>

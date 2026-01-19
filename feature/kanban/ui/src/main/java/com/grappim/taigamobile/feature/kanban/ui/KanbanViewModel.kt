@@ -46,7 +46,8 @@ class KanbanViewModel @Inject constructor(private val getKanbanDataUseCase: GetK
                             statuses = result.statuses,
                             stories = result.stories,
                             swimlanes = result.swimlanes,
-                            canAddUserStory = result.canAddUserStory
+                            canAddUserStory = result.canAddUserStory,
+                            selectedSwimlane = result.defaultSwimlane
                         )
                     }
                 }
