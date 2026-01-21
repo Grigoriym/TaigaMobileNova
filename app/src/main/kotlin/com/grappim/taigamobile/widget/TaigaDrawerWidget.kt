@@ -39,14 +39,16 @@ fun TaigaDrawerWidget(
         gesturesEnabled = gesturesEnabled,
         drawerState = drawerState,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(
+                drawerState = drawerState
+            ) {
                 Column(
                     modifier = Modifier
                         .padding(horizontal = 16.dp)
                 ) {
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        "Taiga Nova",
+                        "Taiga Mobile Nova",
                         modifier = Modifier.padding(16.dp),
                         style = MaterialTheme.typography.titleLarge
                     )

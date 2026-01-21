@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.main
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -15,6 +16,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -25,6 +27,7 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.grappim.taigamobile.core.nav.DrawerDestination
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
@@ -36,6 +39,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.utils.ui.asString
 import com.grappim.taigamobile.widget.TaigaDrawerWidget
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -76,26 +80,18 @@ private fun MainScreenContent(
     val drawerItems by viewModel.drawerItems.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
-    /**
-     * On any navigation event hide the keyboard, close the drawer if it is open
-     */
     LaunchedEffect(Unit) {
-        appState.navController.addOnDestinationChangedListener { _, _, _ ->
-            keyboardController?.hide()
-            if (drawerState.isOpen) {
-                scope.launch {
-                    drawerState.close()
-                }
-            }
-        }
-
         viewModel.logoutEvent.onEach {
             Timber.d("Logout Event with $it")
             appState.navController.navigateToLoginAsTopDestination()
         }.launchIn(this)
     }
+
+    RegisterOnDestinationChangedListenerSideEffect(
+        navController = appState.navController,
+        coroutineScope = scope
+    )
 
     ConfirmActionDialog(
         title = stringResource(RString.logout_title),
@@ -179,7 +175,43 @@ private fun MainScreenContent(
                         }
                     }
                 )
+
+                /**
+                 * It is required to place it below MainNavHost because as per documentation
+                 * "If multiple BackHandler are present in the composition,
+                 * the one that is composed last among all enabled handlers will be invoked."
+                 * And with that this one will be called, otherwise on clicking back
+                 * we will go back in navigation but drawer will stay opened
+                 *
+                 * The second condition drawerState.isAnimationRunning is needed to fix an issue
+                 * when the drawer is visibly fully opened but is not opened actually
+                 */
+                BackHandler(drawerState.isOpen || drawerState.isAnimationRunning) {
+                    scope.launch {
+                        drawerState.close()
+                    }
+                }
             }
         )
+    }
+}
+
+@Composable
+private fun RegisterOnDestinationChangedListenerSideEffect(
+    navController: NavController,
+    coroutineScope: CoroutineScope
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    DisposableEffect(navController, coroutineScope) {
+        val listener = NavController.OnDestinationChangedListener { _, _, _ ->
+
+            keyboardController?.hide()
+        }
+
+        navController.addOnDestinationChangedListener(listener)
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
+        }
     }
 }
