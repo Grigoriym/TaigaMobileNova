@@ -867,7 +867,7 @@ Compose:
     CompositionLocalAllowlist:
         active: false
         # -- You can optionally define a list of CompositionLocals that are allowed here
-        allowedCompositionLocals: LocalTopBarConfig, LocalFilePicker
+        allowedCompositionLocals:
     CompositionLocalNaming:
         active: true
     ContentEmitterReturningValues:

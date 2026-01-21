@@ -10,7 +10,7 @@ ij_kotlin_imports_layout=*,java.**,javax.**,kotlin.**,^
 ##Investigate all this stuff
 ktlint_compose_lambda-param-in-effect=disabled
 ktlint_compose_multiple-emitters-check=disabled
-compose_allowed_composition_locals = LocalTopBarConfig, LocalFilePicker, LocalFilePickerOld
+compose_allowed_composition_locals = LocalTopBarConfig, LocalFilePicker, LocalScreenReadySignal
 max_line_length = 120
 
 [**/*Screen.kt]

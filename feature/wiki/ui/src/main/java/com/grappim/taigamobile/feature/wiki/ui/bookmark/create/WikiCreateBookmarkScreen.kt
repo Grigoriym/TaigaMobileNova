@@ -20,6 +20,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -38,6 +39,7 @@ fun WikiCreateBookmarkScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.create_new_bookmark),
+                navigationIcon = NavigationIconConfig.Back(),
                 actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_save,

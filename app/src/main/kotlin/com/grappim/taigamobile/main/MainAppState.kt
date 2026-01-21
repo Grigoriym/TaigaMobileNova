@@ -55,8 +55,6 @@ class MainAppState(val navController: NavHostController) {
     val currentRoute: Any?
         @Composable get() = currentDestination?.route
 
-    val topLevelDestinations = DrawerDestination.entries
-
     val currentTopLevelDestination: DrawerDestination?
         @Composable get() = DrawerDestination.entries.firstOrNull { drawerDestination ->
             currentDestination?.hasRoute(route = drawerDestination.route::class) == true

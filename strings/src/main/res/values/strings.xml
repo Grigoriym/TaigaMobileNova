@@ -326,6 +326,7 @@
     <string name="error_internal_server">Internal server error. Please try again later.</string>
     <string name="error_loading_data">Failed to load data</string>
     <string name="error_loading_issues">Failed to load issues</string>
+    <string name="error_loading_projects">Failed to load projects</string>
     <string name="retry">Retry</string>
 
     <string name="epic_color">Epic Color:</string>

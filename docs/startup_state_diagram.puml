@@ -1,0 +1,64 @@
+@startuml Startup State Diagram
+
+title App Startup States and Transitions
+
+skinparam backgroundColor #FEFEFE
+skinparam state {
+    BackgroundColor #E8E8E8
+    BorderColor #333333
+}
+
+[*] --> SplashVisible : App Launch
+
+state SplashVisible {
+    state "Loading Data" as Loading
+    state "Data Ready" as DataReady
+    state "Navigating" as Navigating
+    state "Screen Composing" as Composing
+
+    Loading : initialNavState.isReady = false
+    Loading : screenReady = false
+
+    DataReady : initialNavState.isReady = true
+    DataReady : screenReady = false
+
+    Navigating : LaunchedEffect triggers
+    Navigating : navigation to target screen
+
+    Composing : Target screen composing
+    Composing : screenReady = false
+
+    Loading --> DataReady : DataStore loaded
+    DataReady --> Navigating : LaunchedEffect runs
+    Navigating --> Composing : Navigation complete
+}
+
+state ScreenVisible {
+    state "Screen Ready" as Ready
+    Ready : screenReady = true
+    Ready : User can interact
+}
+
+Composing --> Ready : signalReady() called
+Ready --> [*]
+
+note right of SplashVisible
+    Splash remains visible during
+    all these states because
+    screenReady = false
+end note
+
+note right of ScreenVisible
+    Splash dismissed because
+    screenReady = true
+end note
+
+note bottom of Loading
+    **Problem we're solving:**
+    Without screenReady signal,
+    splash dismisses after DataReady
+    but before screen is actually composed,
+    causing a flash of LoginScreen
+end note
+
+@enduml

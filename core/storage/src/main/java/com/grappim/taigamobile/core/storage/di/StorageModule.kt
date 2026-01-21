@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.core.storage.di
 
+import com.grappim.taigamobile.core.storage.cleaner.DataCleaner
+import com.grappim.taigamobile.core.storage.cleaner.DataCleanerImpl
 import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapper
 import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapperImpl
 import com.grappim.taigamobile.core.storage.server.ServerStorage
@@ -18,4 +20,7 @@ interface StorageModule {
 
     @[Binds Singleton]
     fun bindAuthStorage(impl: DatabaseWrapperImpl): DatabaseWrapper
+
+    @[Binds Singleton]
+    fun bindDataCleaner(impl: DataCleanerImpl): DataCleaner
 }
