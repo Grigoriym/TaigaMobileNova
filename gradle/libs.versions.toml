@@ -43,7 +43,7 @@ lifecycle = "2.10.0"
 paging = "3.3.6"
 room = "2.8.4"
 
-robolectric = "4.16"
+robolectric = "4.16.1"
 timber = "5.0.1"
 coil = "3.3.0"
 retrofit = "3.0.0"
