@@ -45,7 +45,7 @@ import timber.log.Timber
 fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val isLogged by viewModel.isLoggedIn.collectAsStateWithLifecycle()
+    val initialNavState by viewModel.initialNavState.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(
         LocalTopBarConfig provides topBarController
@@ -55,7 +55,7 @@ fun MainContent(viewModel: MainViewModel) {
             viewModel = viewModel,
             topBarConfig = topBarConfig,
             state = state,
-            isLogged = isLogged
+            initialNavState = initialNavState
         )
     }
 }
@@ -65,7 +65,7 @@ private fun MainScreenContent(
     viewModel: MainViewModel,
     topBarConfig: TopBarConfig,
     state: MainScreenState,
-    isLogged: Boolean
+    initialNavState: InitialNavState
 ) {
     val appState = rememberMainAppState()
 
@@ -82,14 +82,14 @@ private fun MainScreenContent(
      * On any navigation event hide the keyboard, close the drawer if it is open
      */
     LaunchedEffect(Unit) {
-        appState.navController.addOnDestinationChangedListener({ nc, _, _ ->
+        appState.navController.addOnDestinationChangedListener { _, _, _ ->
             keyboardController?.hide()
             if (drawerState.isOpen) {
                 scope.launch {
                     drawerState.close()
                 }
             }
-        })
+        }
 
         viewModel.logoutEvent.onEach {
             Timber.d("Logout Event with $it")
@@ -122,7 +122,9 @@ private fun MainScreenContent(
                 appState.navigateToTopLevelDestination(item)
             }
         },
-        gesturesEnabled = appState.areDrawerGesturesEnabled
+        gesturesEnabled = appState.areDrawerGesturesEnabled &&
+            initialNavState.isReady &&
+            initialNavState.isProjectSelected
     ) {
         Scaffold(
             modifier = Modifier.imePadding(),
@@ -150,18 +152,8 @@ private fun MainScreenContent(
             content = { paddingValues ->
                 MainNavHost(
                     modifier = Modifier.padding(paddingValues),
-                    isLoggedIn = isLogged,
+                    initialNavState = initialNavState,
                     navController = appState.navController,
-                    showMessage = { message ->
-                        scope.launch {
-                            val strMessage = resources.getString(message)
-                            snackbarHostState.showSnackbar(
-                                message = strMessage,
-                                actionLabel = null,
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    },
                     showSnackbar = { text ->
                         scope.launch {
                             val result = snackbarHostState.showSnackbar(

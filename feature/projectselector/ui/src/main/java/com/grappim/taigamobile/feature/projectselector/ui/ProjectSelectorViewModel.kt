@@ -8,6 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.cleaner.DataCleaner
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,6 +27,7 @@ class ProjectSelectorViewModel @Inject constructor(
     private val projectsRepository: ProjectsRepository,
     private val session: Session,
     private val taigaSessionStorage: TaigaSessionStorage,
+    private val dataCleaner: DataCleaner,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -35,7 +37,8 @@ class ProjectSelectorViewModel @Inject constructor(
         ProjectSelectorState(
             isFromLogin = route.isFromLogin,
             setProjectsQuery = ::searchProjects,
-            setProject = ::selectProject
+            setProject = ::selectProject,
+            onGoingBackAfterLogIn = ::onGoingBackAfterLogIn
         )
     )
     val state = _state.asStateFlow()
@@ -49,13 +52,17 @@ class ProjectSelectorViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            launch {
-                taigaSessionStorage.currentProjectIdFlow.collect { id ->
-                    _state.update {
-                        it.copy(currentProjectId = id)
-                    }
+            taigaSessionStorage.currentProjectIdFlow.collect { id ->
+                _state.update {
+                    it.copy(currentProjectId = id)
                 }
             }
+        }
+    }
+
+    private fun onGoingBackAfterLogIn() {
+        viewModelScope.launch {
+            dataCleaner.cleanOnGoingBackAfterLogin()
         }
     }
 
