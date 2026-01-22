@@ -42,12 +42,13 @@ class KanbanViewModel @Inject constructor(private val getKanbanDataUseCase: GetK
                     _state.update {
                         it.copy(
                             isLoading = false,
-                            teamMembers = result.teamMembers,
                             statuses = result.statuses,
-                            stories = result.stories,
                             swimlanes = result.swimlanes,
+                            stories = result.stories,
+                            teamMembers = result.teamMembers,
                             canAddUserStory = result.canAddUserStory,
-                            selectedSwimlane = result.defaultSwimlane
+                            selectedSwimlane = result.defaultSwimlane,
+                            storiesByStatus = result.storiesByStatus
                         )
                     }
                 }
@@ -68,6 +69,20 @@ class KanbanViewModel @Inject constructor(private val getKanbanDataUseCase: GetK
     }
 
     private fun selectSwimlane(swimlane: Swimlane?) {
-        _state.update { it.copy(selectedSwimlane = swimlane) }
+        val currentState = _state.value
+        viewModelScope.launch {
+            val newStoriesByStatus = getKanbanDataUseCase.computeStoriesByStatus(
+                stories = currentState.stories,
+                statuses = currentState.statuses,
+                teamMembers = currentState.teamMembers,
+                swimlane = swimlane
+            )
+            _state.update {
+                it.copy(
+                    selectedSwimlane = swimlane,
+                    storiesByStatus = newStoriesByStatus
+                )
+            }
+        }
     }
 }
