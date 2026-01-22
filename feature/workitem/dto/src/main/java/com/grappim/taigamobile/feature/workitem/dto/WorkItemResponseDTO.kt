@@ -64,5 +64,7 @@ data class WorkItemResponseDTO(
     @SerialName(value = "generated_user_stories")
     val generatedUserStories: List<GeneratedUserStoryDTO>?,
     @SerialName(value = "from_task_ref")
-    val fromTaskRef: String?
+    val fromTaskRef: String?,
+    @SerialName("kanban_order")
+    val kanbanOrder: Long
 )
