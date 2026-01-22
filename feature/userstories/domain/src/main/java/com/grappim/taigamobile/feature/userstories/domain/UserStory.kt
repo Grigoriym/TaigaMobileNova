@@ -38,5 +38,6 @@ data class UserStory(
     val userStoryEpics: ImmutableList<UserStoryEpic>,
 
     val swimlane: Long?,
-    val wasPromotedFromTask: Boolean = false
+    val wasPromotedFromTask: Boolean = false,
+    val kanbanOrder: Long
 )

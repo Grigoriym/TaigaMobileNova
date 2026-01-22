@@ -8,6 +8,7 @@ import com.grappim.taigamobile.feature.projects.domain.canAddUserStory
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import javax.inject.Inject
@@ -30,7 +31,7 @@ class GetKanbanDataUseCase @Inject constructor(
                 ?: swimlanes.firstOrNull()
 
             KanbanData(
-                stories = userStories.await(),
+                stories = userStories.await().sortedBy { it.kanbanOrder }.toImmutableList(),
                 swimlanes = swimlanes,
                 statuses = filters.await(),
                 teamMembers = teamMembers.await(),

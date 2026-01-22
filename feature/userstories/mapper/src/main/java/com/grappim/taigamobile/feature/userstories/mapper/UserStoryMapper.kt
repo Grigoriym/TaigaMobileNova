@@ -64,7 +64,8 @@ class UserStoryMapper @Inject constructor(
             copyLinkUrl = url,
             userStoryEpics = epicsToDomain(resp.epics),
             swimlane = resp.swimlane,
-            wasPromotedFromTask = resp.fromTaskRef?.isNotEmpty() == true
+            wasPromotedFromTask = resp.fromTaskRef?.isNotEmpty() == true,
+            kanbanOrder = resp.kanbanOrder
         )
     }
 

@@ -43,5 +43,6 @@ fun getWorkItemResponseDTO(): WorkItemResponseDTO =
         severity = getRandomLong(),
         priority = getRandomLong(),
         generatedUserStories = persistentListOf(),
-        fromTaskRef = null
+        fromTaskRef = null,
+        kanbanOrder = getRandomLong()
     )
