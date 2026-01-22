@@ -33,9 +33,12 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -126,7 +129,8 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
             value = state.login,
             labelId = RString.login_username,
             onValueChange = state.onLoginValueChange,
-            isError = state.isLoginInputError
+            isError = state.isLoginInputError,
+            contentType = ContentType.Username
         )
 
         LoginTextField(
@@ -140,6 +144,7 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
             },
             keyboardType = KeyboardType.Password,
             isError = state.isPasswordInputError,
+            contentType = ContentType.Password,
             trailingIcon = {
                 if (state.isPasswordVisible) {
                     IconButton(onClick = { state.setIsPasswordVisible(false) }) {
@@ -200,7 +205,8 @@ fun LoginTextField(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Text,
     isError: Boolean = false,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    contentType: ContentType? = null
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -208,11 +214,18 @@ fun LoginTextField(
         TextStyle(fontWeight = FontWeight.Normal)
     )
 
+    val autofillModifier = if (contentType != null) {
+        Modifier.semantics { this.contentType = contentType }
+    } else {
+        Modifier
+    }
+
     OutlinedTextField(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 40.dp)
-            .padding(bottom = 6.dp),
+            .padding(bottom = 6.dp)
+            .then(autofillModifier),
         value = value,
         onValueChange = onValueChange,
         textStyle = textStyle,
