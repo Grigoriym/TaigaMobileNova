@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -143,6 +145,7 @@ fun WikiPageScreenContent(
                 .fillMaxSize()
                 .padding(horizontal = 16.dp, vertical = 4.dp)
                 .background(MaterialTheme.colorScheme.surface)
+                .verticalScroll(rememberScrollState())
         ) {
             WorkItemDescriptionWidget(
                 description = state.currentPage.content,
