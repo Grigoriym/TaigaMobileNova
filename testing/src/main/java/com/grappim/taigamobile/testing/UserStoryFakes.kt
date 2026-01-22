@@ -43,5 +43,6 @@ fun getUserStory(): UserStory = UserStory(
             color = getRandomString()
         )
     ),
-    swimlane = null
+    swimlane = null,
+    kanbanOrder = getRandomLong()
 )

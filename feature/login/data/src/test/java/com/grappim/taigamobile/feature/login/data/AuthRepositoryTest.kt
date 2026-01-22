@@ -142,7 +142,7 @@ internal class AuthRepositoryTest {
         verify(exactly = 0) {
             authStorage.setAuthCredentials(
                 token = response.authToken,
-                refreshToken = response.refresh ?: "missing"
+                refreshToken = response.refresh
             )
         }
         coVerify(exactly = 0) { taigaSessionStorage.setUserId(response.id) }
