@@ -13,7 +13,7 @@ dependencyAnalysis = "3.5.1"
 jacocoAggregation = "2.5.0"
 composeRules = "0.5.3"
 
-agp = "8.13.2"
+agp = "9.0.0"
 androidTools = "32.0.0"
 androidDesugarJdkLibs = "2.1.5"
 
