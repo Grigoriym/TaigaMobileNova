@@ -45,8 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
-import com.grappim.taigamobile.feature.users.domain.TeamMember
-import com.grappim.taigamobile.feature.userstories.domain.UserStory
+import com.grappim.taigamobile.feature.kanban.domain.KanbanUserStory
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.cardShadowElevation
 import com.grappim.taigamobile.uikit.theme.kanbanBoardTonalElevation
@@ -56,8 +55,10 @@ import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import com.grappim.taigamobile.utils.ui.toColor
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.toImmutableList
+
+private val cellOuterPadding = 8.dp
+private val cellPadding = 8.dp
+private val cellWidth = 280.dp
 
 @Composable
 fun KanbanBoardWidget(
@@ -66,9 +67,6 @@ fun KanbanBoardWidget(
     navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
 ) {
-    val cellOuterPadding = 8.dp
-    val cellPadding = 8.dp
-    val cellWidth = 280.dp
     val backgroundCellColor =
         MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
 
@@ -108,8 +106,6 @@ fun KanbanBoardWidget(
         }
     }
 
-    val storiesToDisplay = state.stories.filter { it.swimlane == state.selectedSwimlane?.id }
-
     Row(
         Modifier
             .fillMaxSize()
@@ -118,7 +114,7 @@ fun KanbanBoardWidget(
         Spacer(Modifier.width(cellPadding))
 
         state.statuses.forEach { status ->
-            val statusStories = storiesToDisplay.filter { it.status == status }
+            val statusStories = state.storiesByStatus[status].orEmpty()
 
             Column {
                 Header(
@@ -144,13 +140,15 @@ fun KanbanBoardWidget(
                         .background(backgroundCellColor)
                         .padding(cellPadding)
                 ) {
-                    items(statusStories) {
+                    items(statusStories) { kanbanStory ->
                         StoryItem(
-                            story = it,
-                            assignees = it.assignedUserIds.mapNotNull { id ->
-                                state.teamMembers.find { it.id == id }
-                            }.toImmutableList(),
-                            onTaskClick = { navigateToStory(it.id, it.ref) }
+                            kanbanUserStory = kanbanStory,
+                            onTaskClick = {
+                                navigateToStory(
+                                    kanbanStory.userStory.id,
+                                    kanbanStory.userStory.ref
+                                )
+                            }
                         )
                     }
 
@@ -228,7 +226,10 @@ private fun Header(
 
 @ExperimentalLayoutApi
 @Composable
-private fun StoryItem(story: UserStory, assignees: ImmutableList<TeamMember>, onTaskClick: () -> Unit) {
+private fun StoryItem(kanbanUserStory: KanbanUserStory, onTaskClick: () -> Unit) {
+    val story = kanbanUserStory.userStory
+    val assignees = kanbanUserStory.assignees
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
