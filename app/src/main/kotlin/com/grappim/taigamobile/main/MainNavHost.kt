@@ -31,6 +31,15 @@ import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorScreen
 import com.grappim.taigamobile.feature.projectselector.ui.navigateToProjectSelector
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
+import com.grappim.taigamobile.feature.settings.ui.about.SettingsAboutScreen
+import com.grappim.taigamobile.feature.settings.ui.about.SettingsAboutScreenRouteNavDestination
+import com.grappim.taigamobile.feature.settings.ui.about.goToSettingsAboutScreen
+import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreen
+import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreenNavDestination
+import com.grappim.taigamobile.feature.settings.ui.interfacescreen.goToSettingsInterfaceScreen
+import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreen
+import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreenNavDestination
+import com.grappim.taigamobile.feature.settings.ui.user.goToSettingsUserScreen
 import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
 import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
 import com.grappim.taigamobile.feature.tasks.ui.navigateToTask
@@ -60,6 +69,7 @@ fun MainNavHost(
             when (val dest = initialNavState.startDestination) {
                 is ProjectSelectorNavDestination ->
                     navController.navigateToProjectSelector(isFromLogin = dest.isFromLogin)
+
                 is DashboardNavDestination ->
                     navController.navigateToDashboardAsTopDestination()
             }
@@ -187,7 +197,29 @@ fun MainNavHost(
         }
 
         composable<SettingsNavDestination> {
-            SettingsScreen(showSnackbar = showSnackbar)
+            SettingsScreen(
+                goToAboutScreen = {
+                    navController.goToSettingsAboutScreen()
+                },
+                goToInterfaceScreen = {
+                    navController.goToSettingsInterfaceScreen()
+                },
+                goToUserScreen = {
+                    navController.goToSettingsUserScreen()
+                }
+            )
+        }
+
+        composable<SettingsAboutScreenRouteNavDestination> {
+            SettingsAboutScreen()
+        }
+
+        composable<SettingsInterfaceScreenNavDestination> {
+            SettingsInterfaceScreen()
+        }
+
+        composable<SettingsUserScreenNavDestination> {
+            SettingsUserScreen()
         }
 
         composable<SprintNavDestination> {

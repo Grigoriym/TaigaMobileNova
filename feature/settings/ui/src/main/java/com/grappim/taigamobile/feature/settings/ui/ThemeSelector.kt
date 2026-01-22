@@ -10,22 +10,19 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.core.storage.ThemeSettings
+import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceViewState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.utils.ui.asString
 
 @Composable
-fun ThemeSelector(state: SettingsState, modifier: Modifier = Modifier) {
+fun ThemeSelector(state: SettingsInterfaceViewState, modifier: Modifier = Modifier) {
     val context = LocalContext.current
 
     Column(modifier = modifier.fillMaxWidth()) {
@@ -62,7 +59,7 @@ private fun ThemeSelectorPreview() {
     TaigaMobileTheme {
         Surface {
             ThemeSelector(
-                state = SettingsState()
+                state = SettingsInterfaceViewState()
             )
         }
     }

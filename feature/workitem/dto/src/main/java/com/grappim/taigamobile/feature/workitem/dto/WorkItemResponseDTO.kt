@@ -66,5 +66,5 @@ data class WorkItemResponseDTO(
     @SerialName(value = "from_task_ref")
     val fromTaskRef: String?,
     @SerialName("kanban_order")
-    val kanbanOrder: Long
+    val kanbanOrder: Long?
 )

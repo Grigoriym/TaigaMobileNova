@@ -5,10 +5,10 @@ description: Reusable steps for Android build setup
 runs:
   using: "composite"
   steps:
-    - name: Set up Java 17
+    - name: Set up Java 21
       uses: actions/setup-java@v5
       with:
-        java-version: '17'
+        java-version: '21'
         distribution: 'temurin'
         cache: 'gradle'
 

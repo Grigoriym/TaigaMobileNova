@@ -39,5 +39,5 @@ data class UserStory(
 
     val swimlane: Long?,
     val wasPromotedFromTask: Boolean = false,
-    val kanbanOrder: Long
+    val kanbanOrder: Long?
 )
