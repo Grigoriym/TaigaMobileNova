@@ -64,7 +64,6 @@
     <string name="issues">Issues</string>
     <string name="issues_number">%d Issues</string>
     <string name="team">Team</string>
-    <string name="settings">Settings</string>
     <string name="more">More</string>
     <string name="kanban">Kanban</string>
 
@@ -287,12 +286,6 @@
     <string name="pages">Pages</string>
     <string name="pages_without_link">Pages without link</string>
 
-
-    <string name="credits_message">Made with ❤️ by EugeneTheDev. If you enjoy the app please consider rating it on Google Play and starring the project on GitHub</string>
-
-    <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
-    <string name="source_code">Source code</string>
-
     <string name="error_opening_link">No applications available to open the link</string>
 
     <string name="error_retrieving_due_date">Cannot get the Due Date</string>
@@ -333,4 +326,15 @@
 
     <string name="show_more">Show more</string>
     <string name="show_less">Show less</string>
+
+    <string name="settings">Settings</string>
+    <string name="settings_about">About</string>
+    <string name="github_repo_link">Github Link</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
+    <string name="source_code">Source code</string>
+    <string name="privacy_policy_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY.md</string>
+    <string name="settings_interface">Interface</string>
+    <string name="settings_user">User</string>
+
 </resources>
