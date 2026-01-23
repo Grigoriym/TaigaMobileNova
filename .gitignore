@@ -36,3 +36,5 @@
 taigamobilenova_keystore_release.jks
 /app/gplay/release/
 /app/fdroid/release/
+
+.aider.*
