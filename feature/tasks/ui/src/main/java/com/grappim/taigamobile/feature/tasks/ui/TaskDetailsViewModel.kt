@@ -8,7 +8,6 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.tasks.domain.Task
@@ -85,7 +84,6 @@ class TaskDetailsViewModel @Inject constructor(
     private val statusUIMapper: StatusUIMapper,
     private val tagUIMapper: TagUIMapper,
     private val dateTimeUtils: DateTimeUtils,
-    private val session: Session,
     private val fileUriManager: FileUriManager,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val historyRepository: HistoryRepository,

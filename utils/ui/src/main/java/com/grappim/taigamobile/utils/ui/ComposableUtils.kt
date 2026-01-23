@@ -1,8 +1,6 @@
 package com.grappim.taigamobile.utils.ui
 
 import androidx.compose.material3.ColorScheme
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
@@ -10,8 +8,6 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.graphics.toColorInt
-import androidx.paging.compose.LazyPagingItems
-import com.grappim.taigamobile.strings.RString
 import timber.log.Timber
 import kotlin.math.ln
 

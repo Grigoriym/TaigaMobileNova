@@ -2,7 +2,6 @@ package com.grappim.taigamobile.feature.workitem.ui.mappers
 
 import com.grappim.taigamobile.core.async.DefaultDispatcher
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
-import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUI
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import kotlinx.collections.immutable.ImmutableList

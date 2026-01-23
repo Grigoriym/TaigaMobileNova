@@ -10,7 +10,6 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
@@ -85,7 +84,6 @@ class IssueDetailsViewModel @Inject constructor(
     private val workItemEditStateRepository: WorkItemEditStateRepository,
     private val dateTimeUtils: DateTimeUtils,
     private val fileUriManager: FileUriManager,
-    private val session: Session,
     private val patchDataGenerator: PatchDataGenerator,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,

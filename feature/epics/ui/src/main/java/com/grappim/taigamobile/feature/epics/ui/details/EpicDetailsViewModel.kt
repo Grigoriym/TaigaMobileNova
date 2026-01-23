@@ -9,7 +9,6 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicDetailsDataUseCase
@@ -83,7 +82,6 @@ class EpicDetailsViewModel @Inject constructor(
     private val fileUriManager: FileUriManager,
     private val usersRepository: UsersRepository,
     private val taigaSessionStorage: TaigaSessionStorage,
-    private val session: Session,
     private val dateTimeUtils: DateTimeUtils,
     private val epicDetailsDataUseCase: EpicDetailsDataUseCase,
     private val statusUIMapper: StatusUIMapper,

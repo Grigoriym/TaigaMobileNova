@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.users.mapper
 
-import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getUserDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi

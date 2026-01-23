@@ -105,7 +105,7 @@ class WorkItemDueDateDelegateImplTest {
 
         val backgroundColor = sut.dueDateState.value.backgroundColor
         assertTrue(backgroundColor is StaticColor)
-        assertEquals(taigaGreenPositive, (backgroundColor as StaticColor).color)
+        assertEquals(taigaGreenPositive, backgroundColor.color)
     }
 
     @Test

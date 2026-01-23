@@ -161,7 +161,7 @@ class UserStoryDetailsViewModelTest {
 
         val state = sut.state.value
         assertTrue(state.toolbarTitle is NativeText.Arguments)
-        val toolbarTitle = state.toolbarTitle as NativeText.Arguments
+        val toolbarTitle = state.toolbarTitle
         assertEquals(RString.userstory_slug, toolbarTitle.id)
         assertEquals(listOf(ref), toolbarTitle.args)
     }
