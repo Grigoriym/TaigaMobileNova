@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.testing
 
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.dto.StatusExtraInfoDTO
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import kotlinx.collections.immutable.persistentListOf
@@ -46,3 +48,25 @@ fun getWorkItemResponseDTO(): WorkItemResponseDTO =
         fromTaskRef = null,
         kanbanOrder = getRandomLong()
     )
+
+fun getWorkItem(
+    id: Long = getRandomLong(),
+    taskType: CommonTaskType = CommonTaskType.Task,
+    createdDate: LocalDateTime = getRandomLocalDateTime(),
+    isBlocked: Boolean = getRandomBoolean(),
+    isClosed: Boolean = getRandomBoolean()
+): WorkItem = WorkItem(
+    id = id,
+    taskType = taskType,
+    createdDate = createdDate,
+    status = getStatus(),
+    ref = getRandomLong(),
+    title = getRandomString(),
+    isBlocked = isBlocked,
+    tags = persistentListOf(getTag(), getTag()),
+    isClosed = isClosed,
+    colors = persistentListOf("#FF0000", "#00FF00"),
+    assignee = getUser(),
+    blockedNote = getRandomString(),
+    project = getProjectExtraInfo()
+)

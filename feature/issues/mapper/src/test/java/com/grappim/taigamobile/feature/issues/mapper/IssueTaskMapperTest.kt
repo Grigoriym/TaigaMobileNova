@@ -19,6 +19,7 @@ import com.grappim.taigamobile.testing.getType
 import com.grappim.taigamobile.testing.getUser
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -64,7 +65,7 @@ class IssueTaskMapperTest {
         val response = getWorkItemResponseDTO()
         val user = getUser()
 
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -93,7 +94,7 @@ class IssueTaskMapperTest {
         val filtersData = getFiltersData()
         val user = getUser()
 
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -139,7 +140,7 @@ class IssueTaskMapperTest {
         val filtersData = getFiltersData()
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -164,7 +165,7 @@ class IssueTaskMapperTest {
         val filtersData = getFiltersData()
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -185,7 +186,7 @@ class IssueTaskMapperTest {
         val filtersData = getFiltersData()
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -211,7 +212,7 @@ class IssueTaskMapperTest {
         val secondTag = getTag()
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(

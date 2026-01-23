@@ -37,25 +37,9 @@ fun String.toColor(): Color = try {
 }
 
 // copy from library, because it is internal in library
+@Deprecated("check it")
 fun ColorScheme.surfaceColorAtElevationInternal(elevation: Dp): Color {
     if (elevation == 0.dp) return surface
     val alpha = ((4.5f * ln(elevation.value + 1)) + 2f) / 100f
     return primary.copy(alpha = alpha).compositeOver(surface)
-}
-
-@Composable
-inline fun Result<*>.SubscribeOnError(crossinline onError: (message: Int) -> Unit) =
-    (this as? ErrorResult)?.message?.let {
-        LaunchedEffect(this) {
-            onError(it)
-        }
-    }
-
-@Composable
-inline fun <T : Any> LazyPagingItems<T>.SubscribeOnError(crossinline onError: (message: Int) -> Unit) {
-    LaunchedEffect(loadState.hasError) {
-        if (loadState.hasError) {
-            onError(RString.common_error_message)
-        }
-    }
 }

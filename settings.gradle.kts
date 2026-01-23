@@ -20,9 +20,9 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 
 rootProject.name = "TaigaMobileNova"
 
-check(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_17)) {
+check(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
     """
-    TaigaMobile requires JDK 17+ but it is currently using JDK ${JavaVersion.current()}.
+    TaigaMobile requires JDK 21+ but it is currently using JDK ${JavaVersion.current()}.
     Java Home: [${System.getProperty("java.home")}]
     https://developer.android.com/build/jdks#jdk-config-in-studio
     """.trimIndent()

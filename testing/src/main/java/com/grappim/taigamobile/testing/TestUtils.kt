@@ -5,10 +5,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.core.net.toUri
 import java.io.File
 import java.time.LocalDate
-import java.time.OffsetDateTime
+import java.time.LocalDateTime
+import java.time.Year
 import kotlin.random.Random
-
-val nowDate = OffsetDateTime.now()
 
 val nowLocalDate = LocalDate.now()
 
@@ -17,6 +16,16 @@ fun getRandomLong(): Long = Random.nextLong()
 fun getRandomInt(): Int = Random.nextInt()
 
 fun getRandomBoolean(): Boolean = Random.nextBoolean()
+
+fun getRandomLocalDateTime(): LocalDateTime = LocalDateTime.of(
+    Random.nextInt(Year.MIN_VALUE, Year.MAX_VALUE),
+    Random.nextInt(1, 13),
+    Random.nextInt(1, 29),
+    Random.nextInt(0, 24),
+    Random.nextInt(0, 60),
+    Random.nextInt(0, 60),
+    Random.nextInt(0, 999999999)
+)
 
 @Suppress("MagicNumber")
 fun getRandomString(): String = List(15) {

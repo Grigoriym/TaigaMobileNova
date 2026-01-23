@@ -1,6 +1,8 @@
 package com.grappim.taigamobile.testing
 
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
+import com.grappim.taigamobile.feature.filters.domain.model.filters.StatusFilters
+import com.grappim.taigamobile.feature.filters.domain.model.filters.TagFilters
 import com.grappim.taigamobile.feature.filters.dto.EpicsFilterDTO
 import com.grappim.taigamobile.feature.filters.dto.FiltersDataDTO
 import com.grappim.taigamobile.feature.filters.dto.RolesFilterDTO
@@ -18,9 +20,8 @@ fun getFiltersData(): FiltersData = FiltersData(
     roles = persistentListOf(),
     epics = persistentListOf(),
     assignees = persistentListOf(),
-    createdBy = persistentListOf(),
-
-    )
+    createdBy = persistentListOf()
+)
 
 fun getFiltersDataDTO(): FiltersDataDTO = FiltersDataDTO(
     query = getRandomString(),
@@ -33,8 +34,8 @@ fun getFiltersDataDTO(): FiltersDataDTO = FiltersDataDTO(
         getRolesFilter()
     ),
     tags = listOf(
-        getTagsFilter(),
-        getTagsFilter()
+        getTagsFilterDTO(),
+        getTagsFilterDTO()
     ),
     statuses = listOf(
         getStatusesFilter(),
@@ -62,9 +63,17 @@ fun getFiltersDataDTO(): FiltersDataDTO = FiltersDataDTO(
     )
 )
 
-fun getTagsFilter(): TagsFilterDTO = TagsFilterDTO(
+fun getTagsFilterDTO(): TagsFilterDTO = TagsFilterDTO(
     name = getRandomString(),
     color = getRandomString(),
+    count = getRandomLong()
+)
+
+fun getTagFilters(
+    color: String = getRandomString()
+): TagFilters = TagFilters(
+    name = getRandomString(),
+    color = color,
     count = getRandomLong()
 )
 
@@ -91,4 +100,15 @@ fun getStatusesFilter(): StatusesFilterDTO = StatusesFilterDTO(
     color = getRandomString(),
     name = getRandomString(),
     count = getRandomLong()
+)
+
+fun getStatusFilters(
+    id: Long = getRandomLong(),
+    name: String = getRandomString(),
+    color: String = getRandomString()
+): StatusFilters = StatusFilters(
+    id = id,
+    name = name,
+    count = getRandomLong(),
+    color = color
 )

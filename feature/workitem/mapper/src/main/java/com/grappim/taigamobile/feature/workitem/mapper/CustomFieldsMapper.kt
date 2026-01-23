@@ -5,8 +5,8 @@ import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomField
 import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFieldType
 import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFieldValue
 import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
-import com.grappim.taigamobile.feature.workitem.dto.CustomAttributeResponseDTO
-import com.grappim.taigamobile.feature.workitem.dto.CustomAttributesValuesResponseDTO
+import com.grappim.taigamobile.feature.workitem.dto.customattribute.CustomAttributeResponseDTO
+import com.grappim.taigamobile.feature.workitem.dto.customattribute.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.customfield.CustomFieldTypeDTO
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import kotlinx.collections.immutable.toImmutableList

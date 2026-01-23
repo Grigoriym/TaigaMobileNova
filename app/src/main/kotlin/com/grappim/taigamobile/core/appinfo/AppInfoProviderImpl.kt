@@ -10,7 +10,7 @@ class AppInfoProviderImpl @Inject constructor() : AppInfoProvider {
         BuildConfig.BUILD_TYPE + " - " + BuildConfig.FLAVOR
 
     override fun isDebug(): Boolean = BuildConfig.DEBUG
-    override fun isFdroidBuild(): Boolean = false
+    override fun isFdroidBuild(): Boolean = BuildConfig.FLAVOR == "fdroid"
 
     override fun getVersionName(): String = BuildConfig.VERSION_NAME
 

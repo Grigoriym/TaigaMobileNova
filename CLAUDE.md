@@ -64,6 +64,21 @@ The project follows a feature-based modular architecture:
 ## Development Setup
 - Project uses Gradle Version Catalogs (`gradle/libs.versions.toml`) for dependency management
 
+## Testing
+- The `:testing` module contains shared testing utilities and fake data generators
+- **TestUtils.kt**: Provides random data generators:
+  - `getRandomString()`, `getRandomLong()`, `getRandomInt()`, `getRandomBoolean()`
+  - `getRandomUri()`, `getRandomFile()`, `getRandomColor()`
+  - `nowLocalDate` for date testing
+  - `testException` for exception testing
+- **Fake data generators** (in separate files like `AttachmentFakes.kt`, `UserFakes.kt`, etc.):
+  - `getAttachment()`, `getAttachmentDTO()`
+  - `getUser()`, `getStatus()`, `getTag()`, `getType()`, `getSeverity()`, `getPriority()`
+  - `getFiltersData()`, `getWorkItemResponseDTO()`, `getProjectExtraInfo()`
+- **Test rules**: `MainDispatcherRule`, `SavedStateHandleRule`
+- Use `UnconfinedTestDispatcher()` for coroutine testing
+- Tests use JUnit 4 with `kotlin.test` assertions and MockK for mocking
+
 # important-instruction-reminders
 
 - Do what has been asked; nothing more, nothing less.
