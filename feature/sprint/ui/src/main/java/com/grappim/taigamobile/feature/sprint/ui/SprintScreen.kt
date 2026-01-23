@@ -3,7 +3,6 @@ package com.grappim.taigamobile.feature.sprint.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
@@ -11,6 +10,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -28,14 +29,12 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
-import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import kotlinx.collections.immutable.toImmutableList
 import java.time.LocalDate
 
@@ -45,6 +44,7 @@ fun SprintScreen(
     goBack: () -> Unit,
     goToTaskScreen: (Long, CommonTaskType, Long) -> Unit,
     goToCreateTask: (CommonTaskType, Long?, Long) -> Unit,
+    updateData: Boolean = false,
     viewModel: SprintViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -76,6 +76,12 @@ fun SprintScreen(
                 }.toImmutableList()
             )
         )
+    }
+
+    LaunchedEffect(updateData) {
+        if (updateData) {
+            state.onRefresh()
+        }
     }
 
     BackHandler {
@@ -115,8 +121,6 @@ fun SprintScreen(
         onConfirm = state.onEditSprintConfirm
     )
 
-    TaigaLoadingDialog(state.isLoading)
-
     if (state.sprint != null) {
         SprintScreenContent(
             state = state,
@@ -141,18 +145,16 @@ fun SprintScreenContent(
     modifier: Modifier = Modifier,
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
 ) {
-    requireNotNull(state.sprint)
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.Start
-        ) {
-            SprintKanbanWidget(
-                state = state,
-                navigateToTask = navigateToTask,
-                navigateToCreateTask = navigateToCreateTask
-            )
-        }
+    PullToRefreshBox(
+        modifier = modifier.fillMaxSize(),
+        isRefreshing = state.isLoading,
+        onRefresh = state.onRefresh
+    ) {
+        SprintKanbanWidget(
+            state = state,
+            navigateToTask = navigateToTask,
+            navigateToCreateTask = navigateToCreateTask
+        )
     }
 }
 
@@ -161,7 +163,7 @@ private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Mo
     Box(modifier = modifier) {
         DropdownMenu(
             modifier = Modifier.background(
-                MaterialTheme.colorScheme.surfaceColorAtElevationInternal(
+                MaterialTheme.colorScheme.surfaceColorAtElevation(
                     dialogTonalElevation
                 )
             ),

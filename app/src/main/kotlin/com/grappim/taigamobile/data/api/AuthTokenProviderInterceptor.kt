@@ -2,7 +2,7 @@ package com.grappim.taigamobile.data.api
 
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.core.storage.AuthStorage
+import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response

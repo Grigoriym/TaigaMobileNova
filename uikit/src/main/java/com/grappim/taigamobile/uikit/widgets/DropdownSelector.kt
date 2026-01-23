@@ -13,6 +13,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,7 +26,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 /**
  * Dropdown selector with animated arrow
@@ -85,7 +85,7 @@ fun <T> DropdownSelector(
 
         DropdownMenu(
             modifier = Modifier.background(
-                MaterialTheme.colorScheme.surfaceColorAtElevationInternal(dialogTonalElevation)
+                MaterialTheme.colorScheme.surfaceColorAtElevation(dialogTonalElevation)
             ),
             expanded = isExpanded,
             onDismissRequest = {

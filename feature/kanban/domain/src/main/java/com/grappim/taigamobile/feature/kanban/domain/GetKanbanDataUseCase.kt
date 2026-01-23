@@ -29,15 +29,20 @@ class GetKanbanDataUseCase @Inject constructor(
     private val userStoriesRepository: UserStoriesRepository,
     private val projectsRepository: ProjectsRepository
 ) {
-    suspend fun getData(): Result<KanbanData> = resultOf {
+    suspend fun getData(storageSwimlane: Long?): Result<KanbanData> = resultOf {
         coroutineScope {
             val project = async { projectsRepository.getCurrentProjectSimple() }
             val userStories = async { userStoriesRepository.getUserStories() }
             val teamMembers = async { usersRepository.getTeamMembers(false) }
             val filters = async { filtersRepository.getStatuses(CommonTaskType.UserStory) }
             val swimlanes = swimlanesRepository.getSwimlanes()
-            val defaultSwimlane = swimlanes.find { it.id == project.await().defaultSwimlane }
-                ?: swimlanes.firstOrNull()
+            val defaultSwimlane = if (storageSwimlane != null) {
+                swimlanes.find { it.id == storageSwimlane }
+                    ?: swimlanes.firstOrNull()
+            } else {
+                swimlanes.find { it.id == project.await().defaultSwimlane }
+                    ?: swimlanes.firstOrNull()
+            }
 
             val stories = userStories.await().sortedBy { it.kanbanOrder }.toImmutableList()
             val statuses = filters.await()

@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,7 +54,6 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
 import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
-import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import com.grappim.taigamobile.utils.ui.toColor
 
 private val cellOuterPadding = 8.dp
@@ -67,93 +67,98 @@ fun KanbanBoardWidget(
     navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
 ) {
-    val backgroundCellColor =
-        MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
-
-    if (state.swimlanes.isNotEmpty()) {
-        Row(
-            modifier = modifier.padding(cellOuterPadding),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(RString.swimlane_title),
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Spacer(Modifier.width(8.dp))
-
-            DropdownSelector(
-                canModify = true,
-                items = state.swimlanes,
-                selectedItem = state.selectedSwimlane,
-                onItemSelect = state.onSelectSwimlane,
-                itemContent = {
-                    Text(
-                        text = it?.name ?: stringResource(RString.no_name),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = it?.let { MaterialTheme.colorScheme.onSurface }
-                            ?: MaterialTheme.colorScheme.primary
-                    )
-                },
-                selectedItemContent = {
-                    Text(
-                        text = it?.name ?: stringResource(RString.no_name),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            )
-        }
-    }
-
-    Row(
-        Modifier
-            .fillMaxSize()
-            .horizontalScroll(rememberScrollState())
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.Start
     ) {
-        Spacer(Modifier.width(cellPadding))
+        val backgroundCellColor =
+            MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation)
 
-        state.statuses.forEach { status ->
-            val statusStories = state.storiesByStatus[status].orEmpty()
+        if (state.swimlanes.isNotEmpty()) {
+            Row(
+                modifier = Modifier.padding(cellOuterPadding),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = stringResource(RString.swimlane_title),
+                    style = MaterialTheme.typography.titleLarge
+                )
 
-            Column {
-                Header(
-                    text = status.name,
-                    storiesCount = statusStories.size,
-                    cellWidth = cellWidth,
-                    cellOuterPadding = cellOuterPadding,
-                    stripeColor = status.color.toColor(),
-                    backgroundColor = backgroundCellColor,
-                    canAddUserStory = state.canAddUserStory,
-                    onAddClick = {
-                        navigateToCreateTask(
-                            status.id,
-                            state.selectedSwimlane?.id
+                Spacer(Modifier.width(8.dp))
+
+                DropdownSelector(
+                    canModify = true,
+                    items = state.swimlanes,
+                    selectedItem = state.selectedSwimlane,
+                    onItemSelect = state.onSelectSwimlane,
+                    itemContent = {
+                        Text(
+                            text = it?.name ?: stringResource(RString.no_name),
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = it?.let { MaterialTheme.colorScheme.onSurface }
+                                ?: MaterialTheme.colorScheme.primary
+                        )
+                    },
+                    selectedItemContent = {
+                        Text(
+                            text = it?.name ?: stringResource(RString.no_name),
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 )
+            }
+        }
 
-                LazyColumn(
-                    Modifier
-                        .fillMaxHeight()
-                        .width(cellWidth)
-                        .background(backgroundCellColor)
-                        .padding(cellPadding)
-                ) {
-                    items(statusStories) { kanbanStory ->
-                        StoryItem(
-                            kanbanUserStory = kanbanStory,
-                            onTaskClick = {
-                                navigateToStory(
-                                    kanbanStory.userStory.id,
-                                    kanbanStory.userStory.ref
-                                )
-                            }
-                        )
-                    }
+        Row(
+            Modifier
+                .fillMaxSize()
+                .horizontalScroll(rememberScrollState())
+        ) {
+            Spacer(Modifier.width(cellPadding))
 
-                    item {
-                        Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+            state.statuses.forEach { status ->
+                val statusStories = state.storiesByStatus[status].orEmpty()
+
+                Column {
+                    Header(
+                        text = status.name,
+                        storiesCount = statusStories.size,
+                        cellWidth = cellWidth,
+                        cellOuterPadding = cellOuterPadding,
+                        stripeColor = status.color.toColor(),
+                        backgroundColor = backgroundCellColor,
+                        canAddUserStory = state.canAddUserStory,
+                        onAddClick = {
+                            navigateToCreateTask(
+                                status.id,
+                                state.selectedSwimlane?.id
+                            )
+                        }
+                    )
+
+                    LazyColumn(
+                        Modifier
+                            .fillMaxHeight()
+                            .width(cellWidth)
+                            .background(backgroundCellColor)
+                            .padding(cellPadding)
+                    ) {
+                        items(statusStories) { kanbanStory ->
+                            StoryItem(
+                                kanbanUserStory = kanbanStory,
+                                onTaskClick = {
+                                    navigateToStory(
+                                        kanbanStory.userStory.id,
+                                        kanbanStory.userStory.ref
+                                    )
+                                }
+                            )
+                        }
+
+                        item {
+                            Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.navigationBars))
+                        }
                     }
                 }
             }

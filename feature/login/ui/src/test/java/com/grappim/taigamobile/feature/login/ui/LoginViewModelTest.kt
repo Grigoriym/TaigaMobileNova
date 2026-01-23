@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.login.ui
 
-import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
@@ -51,10 +50,10 @@ internal class LoginViewModelTest {
 
         coEvery { authRepository.auth(authData) } returns Result.success(Unit)
 
-        sut.state.value.onServerValueChange(TextFieldValue(server))
+        sut.state.value.onServerValueChange(server)
         sut.state.value.onAuthTypeChange(authType)
-        sut.state.value.onPasswordValueChange(TextFieldValue(password))
-        sut.state.value.onLoginValueChange(TextFieldValue(username))
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
 
         sut.loginSuccessful.test {
             sut.state.value.onActionDialogConfirm()
@@ -76,10 +75,10 @@ internal class LoginViewModelTest {
         val username = getRandomString()
         val incorrectServer = getRandomString()
 
-        sut.state.value.onServerValueChange(TextFieldValue(incorrectServer))
+        sut.state.value.onServerValueChange(incorrectServer)
         sut.state.value.onAuthTypeChange(authType)
-        sut.state.value.onPasswordValueChange(TextFieldValue(password))
-        sut.state.value.onLoginValueChange(TextFieldValue(username))
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
 
         sut.state.value.validateAuthData(authType)
 
@@ -96,10 +95,10 @@ internal class LoginViewModelTest {
         val password = getRandomString()
         val username = ""
 
-        sut.state.value.onServerValueChange(TextFieldValue(correctServer))
+        sut.state.value.onServerValueChange(correctServer)
         sut.state.value.onAuthTypeChange(authType)
-        sut.state.value.onPasswordValueChange(TextFieldValue(password))
-        sut.state.value.onLoginValueChange(TextFieldValue(username))
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
 
         sut.state.value.validateAuthData(authType)
 
@@ -116,10 +115,10 @@ internal class LoginViewModelTest {
         val password = ""
         val username = getRandomString()
 
-        sut.state.value.onServerValueChange(TextFieldValue(correctServer))
+        sut.state.value.onServerValueChange(correctServer)
         sut.state.value.onAuthTypeChange(authType)
-        sut.state.value.onPasswordValueChange(TextFieldValue(password))
-        sut.state.value.onLoginValueChange(TextFieldValue(username))
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
 
         sut.state.value.validateAuthData(authType)
 
@@ -137,10 +136,10 @@ internal class LoginViewModelTest {
         val username = getRandomString()
         val server = "http://10.0.2.2:9000"
 
-        sut.state.value.onServerValueChange(TextFieldValue(server))
+        sut.state.value.onServerValueChange(server)
         sut.state.value.onAuthTypeChange(authType)
-        sut.state.value.onPasswordValueChange(TextFieldValue(password))
-        sut.state.value.onLoginValueChange(TextFieldValue(username))
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
 
         sut.state.value.validateAuthData(authType)
 
@@ -183,22 +182,22 @@ internal class LoginViewModelTest {
     @Test
     fun `on setPassword should change the password`() {
         assertFalse(sut.state.value.isPasswordInputError)
-        assertEquals("", sut.state.value.password.text)
+        assertEquals("", sut.state.value.password)
 
-        sut.state.value.onPasswordValueChange(TextFieldValue("password"))
+        sut.state.value.onPasswordValueChange("password")
 
-        assertEquals("password", sut.state.value.password.text)
+        assertEquals("password", sut.state.value.password)
         assertFalse(sut.state.value.isPasswordInputError)
     }
 
     @Test
     fun `on setLogin should change the login`() {
         assertFalse(sut.state.value.isLoginInputError)
-        assertEquals("", sut.state.value.login.text)
+        assertEquals("", sut.state.value.login)
 
-        sut.state.value.onLoginValueChange(TextFieldValue("login"))
+        sut.state.value.onLoginValueChange("login")
 
-        assertEquals("login", sut.state.value.login.text)
+        assertEquals("login", sut.state.value.login)
         assertFalse(sut.state.value.isLoginInputError)
     }
 
@@ -207,11 +206,11 @@ internal class LoginViewModelTest {
         val newServerValue = getRandomString()
 
         assertFalse(sut.state.value.isServerInputError)
-        assertEquals(defaultServer, sut.state.value.server.text)
+        assertEquals(defaultServer, sut.state.value.server)
 
-        sut.state.value.onServerValueChange(TextFieldValue(newServerValue))
+        sut.state.value.onServerValueChange(newServerValue)
 
-        assertEquals(newServerValue, sut.state.value.server.text)
+        assertEquals(newServerValue, sut.state.value.server)
         assertFalse(sut.state.value.isServerInputError)
     }
 }

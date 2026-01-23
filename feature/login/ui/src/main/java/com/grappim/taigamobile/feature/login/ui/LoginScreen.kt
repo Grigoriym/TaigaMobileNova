@@ -198,9 +198,9 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
 
 @Composable
 fun LoginTextField(
-    value: TextFieldValue,
+    value: String,
     @StringRes labelId: Int,
-    onValueChange: (TextFieldValue) -> Unit,
+    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Text,
@@ -277,13 +277,13 @@ private fun LoginScreenPreview() {
     TaigaMobileTheme {
         LoginScreenContent(
             state = LoginState(
-                server = TextFieldValue("server"),
+                server = "server",
                 onServerValueChange = {},
                 isServerInputError = false,
-                login = TextFieldValue(),
+                login = "",
                 onLoginValueChange = {},
                 isLoginInputError = false,
-                password = TextFieldValue(),
+                password = "",
                 onPasswordValueChange = {},
                 isPasswordInputError = false,
                 isAlertVisible = false,
@@ -303,13 +303,13 @@ private fun LoginScreenErrorsPreview() {
     TaigaMobileTheme {
         LoginScreenContent(
             state = LoginState(
-                server = TextFieldValue("server"),
+                server = "server",
                 onServerValueChange = {},
                 isServerInputError = true,
-                login = TextFieldValue(),
+                login = "",
                 onLoginValueChange = {},
                 isLoginInputError = true,
-                password = TextFieldValue(),
+                password = "",
                 onPasswordValueChange = {},
                 isPasswordInputError = true,
                 isAlertVisible = false,
@@ -329,13 +329,13 @@ private fun LoginScreenAlertPreview() {
     TaigaMobileTheme {
         LoginScreenContent(
             state = LoginState(
-                server = TextFieldValue("server"),
+                server = "server",
                 onServerValueChange = {},
                 isServerInputError = true,
-                login = TextFieldValue(),
+                login = "",
                 onLoginValueChange = {},
                 isLoginInputError = true,
-                password = TextFieldValue(),
+                password = "",
                 onPasswordValueChange = {},
                 isPasswordInputError = true,
                 isAlertVisible = true,

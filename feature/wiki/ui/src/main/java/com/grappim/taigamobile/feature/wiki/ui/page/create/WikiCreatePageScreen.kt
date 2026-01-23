@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -94,7 +95,9 @@ fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier =
 
             HintTextField(
                 error = state.error,
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
                 hint = NativeText.Resource(RString.slug_hint),
                 value = state.slug,
                 onValueChange = { state.setSlug(it) }
@@ -103,7 +106,9 @@ fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier =
             Spacer(Modifier.height(8.dp))
 
             HintTextField(
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
                 hint = NativeText.Resource(RString.content_hint),
                 value = state.content,
                 onValueChange = { state.setContent(it) }

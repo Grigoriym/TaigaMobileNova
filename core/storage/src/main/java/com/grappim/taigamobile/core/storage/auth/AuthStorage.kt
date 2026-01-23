@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.core.storage
+package com.grappim.taigamobile.core.storage.auth
 
 import android.content.Context
 import android.content.SharedPreferences

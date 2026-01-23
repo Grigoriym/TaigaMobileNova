@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.data.interceptors
 
 import com.grappim.taigamobile.core.api.ApiConstants
-import com.grappim.taigamobile.core.storage.AuthStateManager
-import com.grappim.taigamobile.core.storage.AuthStorage
+import com.grappim.taigamobile.core.storage.auth.AuthStateManager
+import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.RefreshTokenRequest
 import okhttp3.Authenticator

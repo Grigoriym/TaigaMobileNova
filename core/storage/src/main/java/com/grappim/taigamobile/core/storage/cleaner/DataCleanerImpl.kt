@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.core.storage.cleaner
 
-import com.grappim.taigamobile.core.storage.AuthStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import javax.inject.Inject
 
 class DataCleanerImpl @Inject constructor(

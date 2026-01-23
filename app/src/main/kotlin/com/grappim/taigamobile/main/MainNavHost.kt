@@ -222,8 +222,11 @@ fun MainNavHost(
             SettingsUserScreen()
         }
 
-        composable<SprintNavDestination> {
+        composable<SprintNavDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             SprintScreen(
+                updateData = updateData,
                 showSnackbar = showSnackbar,
                 goBack = {
                     navController.setUpdateDataOnBack()
