@@ -2,8 +2,8 @@ package com.grappim.taigamobile.feature.issues.ui.model
 
 import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.feature.issues.domain.Issue
-import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import javax.inject.Inject

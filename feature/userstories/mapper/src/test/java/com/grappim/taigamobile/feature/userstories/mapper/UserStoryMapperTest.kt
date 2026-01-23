@@ -15,6 +15,7 @@ import com.grappim.taigamobile.testing.getTag
 import com.grappim.taigamobile.testing.getUser
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -60,7 +61,7 @@ class UserStoryMapperTest {
         val user = getUser()
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -100,7 +101,7 @@ class UserStoryMapperTest {
         val response = getWorkItemResponseDTO().copy(dueDateStatusDTO = DueDateStatusDTO.DueSoon)
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -121,7 +122,7 @@ class UserStoryMapperTest {
         )
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -138,7 +139,7 @@ class UserStoryMapperTest {
         val response = getWorkItemResponseDTO()
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
@@ -160,7 +161,7 @@ class UserStoryMapperTest {
         val secondTag = getTag()
 
         coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
+        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(

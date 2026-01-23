@@ -90,14 +90,17 @@ subprojects {
 
 private val coverageExclusions = listOf(
     "**/R.class",
-    "**/R\$*.class",
+    "**/R$*.class",
     "**/BuildConfig.*",
     "**/Manifest*.*",
-
     "**/*Module*.*",
-    "**/*Module",
     "**/*Dagger*.*",
     "**/*Hilt*.*",
+    "**/widgets/**",
+    "**/navigation/**",
+    "**/interceptors/**"
+) + listOf(
+    "**/*Module",
     "**/Hilt*",
     "**/*GeneratedInjector",
     "**/*HiltComponents*",
@@ -116,12 +119,10 @@ private val coverageExclusions = listOf(
     "**/TaigaApp",
     "**/DrawerDestination",
 
-    "**/*Screen",
     "**/*Activity",
     "**/*Screen*",
     "**/*Application",
-
-    "**/*JsonAdapter",
+    "**/*NavGraph*",
 
     "**/*NavDestination",
     "**/*Widget",
@@ -130,7 +131,20 @@ private val coverageExclusions = listOf(
     "**/TaskFilters",
     "**/MainNavHost",
 
-    "**/FileLoggingTree"
+    "**/FileLoggingTree",
+
+    "**/StorageJsonProver",
+    "**/ColorSerializer",
+    "**/ComposableUtils",
+    "**/ObserveAsEvents*",
+    "**/PreviewUtils*",
+    "**/JsonSerializableNavType",
+    "**/JsonSerializableNullableNavType",
+    "**/IconSource*",
+    "**/ColorSource",
+    "**/ScrumNavDestination",
+    "**/LifecycleEffects",
+    "**/*Preference"
 ).flatMap {
     listOf(
         "$it.class",
