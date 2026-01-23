@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.sprint
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -89,6 +90,7 @@ fun EditSprintDialog(state: SprintDialogState, onConfirm: () -> Unit) {
                     }
 
                     HintTextField(
+                        modifier = Modifier.fillMaxWidth(),
                         value = state.sprintNameValue,
                         onValueChange = state.onSetSprintNameValue,
                         hint = NativeText.Resource(RString.sprint_name_hint),

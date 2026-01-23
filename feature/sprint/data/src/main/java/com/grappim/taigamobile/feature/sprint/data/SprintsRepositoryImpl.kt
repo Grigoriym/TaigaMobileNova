@@ -15,6 +15,7 @@ import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.Flow
@@ -46,6 +47,7 @@ class SprintsRepositoryImpl @Inject constructor(
                     }
                 }
                 .associate { (story, tasks) -> story to tasks.await() }
+                .toImmutableMap()
             val issues = getSprintIssues(sprintId = sprintId)
             val storylessTasks = getSprintTasks(sprintId = sprintId)
             SprintData(

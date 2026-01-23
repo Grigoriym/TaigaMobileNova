@@ -22,11 +22,25 @@ class TaigaSessionStorage @Inject constructor(@ApplicationContext private val co
         private const val CURRENT_PROJECT_ID_KEY = "current_project_id"
         private const val USER_ID = "user_id"
         private const val THEME_SETTINGS = "theme_settings"
+
+        private const val KANBAN_DEFAULT_SWIMLINE = "kanban_default_swimline"
     }
 
     private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
         name = TAIGA_STORAGE_NAME
     )
+
+    private val kanbanDefaultSwimlineKey = longPreferencesKey(KANBAN_DEFAULT_SWIMLINE)
+    val kanbanDefaultSwimline: Flow<Long?> = context.dataStore.data
+        .map { prefs ->
+            prefs[kanbanDefaultSwimlineKey]
+        }
+
+    suspend fun setKanbanDefaultSwimline(value: Long) {
+        context.dataStore.edit { prefs ->
+            prefs[kanbanDefaultSwimlineKey] = value
+        }
+    }
 
     private val themeSettingKey = stringPreferencesKey(THEME_SETTINGS)
     val themeSettings: Flow<ThemeSettings> = context.dataStore.data

@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.login.data
 
-import com.grappim.taigamobile.core.storage.AuthStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.AuthRequest

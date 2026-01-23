@@ -1,22 +1,21 @@
 package com.grappim.taigamobile.feature.login.ui
 
-import androidx.compose.ui.text.input.TextFieldValue
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.utils.ui.NativeText
 
 data class LoginState(
-    val server: TextFieldValue,
-    val onServerValueChange: (TextFieldValue) -> Unit,
+    val server: String,
+    val onServerValueChange: (String) -> Unit,
     val isServerInputError: Boolean = false,
 
-    val login: TextFieldValue = TextFieldValue(),
-    val onLoginValueChange: (TextFieldValue) -> Unit,
+    val login: String = "",
+    val onLoginValueChange: (String) -> Unit,
     val isLoginInputError: Boolean = false,
 
     val error: NativeText = NativeText.Empty,
 
-    val password: TextFieldValue = TextFieldValue(),
-    val onPasswordValueChange: (TextFieldValue) -> Unit,
+    val password: String = "",
+    val onPasswordValueChange: (String) -> Unit,
     val isPasswordInputError: Boolean = false,
 
     val isAlertVisible: Boolean = false,

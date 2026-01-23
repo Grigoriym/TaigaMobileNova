@@ -3,10 +3,10 @@ package com.grappim.taigamobile.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.nav.DrawerItem
-import com.grappim.taigamobile.core.storage.AuthStateManager
-import com.grappim.taigamobile.core.storage.AuthStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
+import com.grappim.taigamobile.core.storage.auth.AuthStateManager
+import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple

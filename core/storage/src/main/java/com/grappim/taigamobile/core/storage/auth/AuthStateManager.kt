@@ -1,6 +1,8 @@
-package com.grappim.taigamobile.core.storage
+package com.grappim.taigamobile.core.storage.auth
 
 import com.grappim.taigamobile.core.async.ApplicationScope
+import com.grappim.taigamobile.core.storage.Session
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow

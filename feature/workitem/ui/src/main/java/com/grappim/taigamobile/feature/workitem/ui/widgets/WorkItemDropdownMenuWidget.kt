@@ -7,6 +7,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
@@ -15,7 +16,6 @@ import androidx.compose.ui.text.AnnotatedString
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 
 @Composable
 fun WorkItemDropdownMenuWidget(
@@ -36,7 +36,7 @@ fun WorkItemDropdownMenuWidget(
     Box(modifier = modifier) {
         DropdownMenu(
             modifier = Modifier.background(
-                MaterialTheme.colorScheme.surfaceColorAtElevationInternal(
+                MaterialTheme.colorScheme.surfaceColorAtElevation(
                     dialogTonalElevation
                 )
             ),

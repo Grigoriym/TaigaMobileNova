@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.core.storage
 
+import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.cleaner.DataCleaner
 import com.grappim.taigamobile.core.storage.cleaner.DataCleanerImpl
 import io.mockk.Runs

@@ -47,7 +47,8 @@ class SprintViewModel @Inject constructor(
             setIsDeleteDialogVisible = ::setIsDeleteDialogVisible,
             onDeleteSprint = ::deleteSprint,
             onEditSprintClick = ::onEditSprintClick,
-            onEditSprintConfirm = ::editSprint
+            onEditSprintConfirm = ::editSprint,
+            onRefresh = ::refresh
         )
     )
     val state = _state.asStateFlow()
@@ -61,8 +62,7 @@ class SprintViewModel @Inject constructor(
     private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
     init {
-        getPermissions()
-        loadData()
+        refresh()
     }
 
     private fun getPermissions() {
@@ -123,6 +123,11 @@ class SprintViewModel @Inject constructor(
                     _state.update { it.copy(isLoading = false) }
                 }
         }
+    }
+
+    private fun refresh() {
+        getPermissions()
+        loadData()
     }
 
     private fun editSprint() {
