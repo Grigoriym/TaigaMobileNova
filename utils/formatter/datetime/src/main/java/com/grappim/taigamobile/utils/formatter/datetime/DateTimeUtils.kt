@@ -12,4 +12,6 @@ interface DateTimeUtils {
     fun formatToMediumFormat(localDateTime: LocalDateTime): String
 
     fun parseToLocalDate(text: String): LocalDate
+
+    fun getLocalDateNow(): LocalDate
 }

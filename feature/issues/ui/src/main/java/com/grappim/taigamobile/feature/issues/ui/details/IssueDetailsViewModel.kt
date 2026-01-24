@@ -75,6 +75,9 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+private val type = CommonTaskType.Issue
+private val identifierType = TaskIdentifier.WorkItem(type)
+
 @HiltViewModel
 class IssueDetailsViewModel @Inject constructor(
     private val issueDetailsDataUseCase: IssueDetailsDataUseCase,
@@ -93,63 +96,63 @@ class IssueDetailsViewModel @Inject constructor(
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         historyRepository = historyRepository,
         workItemRepository = workItemRepository
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
-        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+        taskIdentifier = identifierType,
         workItemRepository = workItemRepository,
         fileUriManager = fileUriManager,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
     ),
     WorkItemDueDateDelegate by WorkItemDueDateDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
     ),
     WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
-        commonTaskType = CommonTaskType.Issue,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
-        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+        taskIdentifier = identifierType,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ) {
@@ -207,36 +210,36 @@ class IssueDetailsViewModel @Inject constructor(
         loadIssue()
 
         workItemEditStateRepository
-            .getTeamMemberUpdateFlow(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
+            .getTeamMemberUpdateFlow(issueId, identifierType)
             .onEach(::handleTeamMemberUpdate)
             .launchIn(viewModelScope)
 
         workItemEditStateRepository
-            .getTagsFlow(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
+            .getTagsFlow(issueId, identifierType)
             .onEach(::onNewTagsUpdate)
             .launchIn(viewModelScope)
 
         workItemEditStateRepository
-            .getDescriptionFlow(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
+            .getDescriptionFlow(issueId, identifierType)
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
 
         workItemEditStateRepository
-            .getSprintFlow(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
+            .getSprintFlow(issueId, identifierType)
             .onEach(::onNewSprintUpdate)
             .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
         super.onCleared()
-        workItemEditStateRepository.clearSession(issueId, TaskIdentifier.WorkItem(CommonTaskType.Issue))
+        workItemEditStateRepository.clearSession(issueId, identifierType)
         Timber.d("IssueDetailsViewModel cleared - session cleaned up for taskId: $issueId")
     }
 
     private fun onGoingToEditTags() {
         workItemEditStateRepository.setTags(
             workItemId = issueId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+            type = identifierType,
             tags = tagsState.value.tags
         )
     }
@@ -247,7 +250,7 @@ class IssueDetailsViewModel @Inject constructor(
         workItemEditStateRepository.setCurrentWatchers(
             ids = watchersIds,
             workItemId = issueId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Issue)
+            type = identifierType
         )
     }
 
@@ -255,7 +258,7 @@ class IssueDetailsViewModel @Inject constructor(
         val assigneeId = singleAssigneeState.value.assignees.firstOrNull()?.id
         workItemEditStateRepository.setCurrentAssignee(
             workItemId = issueId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+            type = identifierType,
             id = assigneeId
         )
     }
@@ -588,7 +591,7 @@ class IssueDetailsViewModel @Inject constructor(
             resultOf {
                 workItemRepository.deleteWorkItem(
                     workItemId = id,
-                    commonTaskType = CommonTaskType.Issue
+                    commonTaskType = type
                 )
             }.onSuccess {
                 _deleteTrigger.send(true)
@@ -742,7 +745,7 @@ class IssueDetailsViewModel @Inject constructor(
             issueDetailsDataUseCase.updateSprint(
                 version = currentIssue.version,
                 workItemId = currentIssue.id,
-                commonTaskType = CommonTaskType.Issue,
+                commonTaskType = type,
                 sprintId = newSprintId
             ).onSuccess { result ->
                 updateVersion(result.patchedData.newVersion)
@@ -844,7 +847,7 @@ class IssueDetailsViewModel @Inject constructor(
     private fun onGoingToEditSprint() {
         workItemEditStateRepository.setCurrentSprint(
             workItemId = issueId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+            type = identifierType,
             id = _state.value.sprint?.id
         )
     }
@@ -860,7 +863,7 @@ class IssueDetailsViewModel @Inject constructor(
             resultOf {
                 workItemRepository.promoteToUserStory(
                     workItemId = currentIssue.id,
-                    commonTaskType = CommonTaskType.Issue
+                    commonTaskType = type
                 )
             }.onSuccess { result ->
                 _state.update {

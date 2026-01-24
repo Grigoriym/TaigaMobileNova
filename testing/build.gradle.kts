@@ -25,7 +25,13 @@ dependencies {
     implementation(projects.feature.userstories.dto)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.epics.dto)
+    implementation(projects.feature.epics.domain)
     implementation(projects.feature.sprint.domain)
+    implementation(projects.feature.sprint.data)
+    implementation(projects.feature.swimlanes.data)
+    implementation(projects.feature.swimlanes.domain)
+    implementation(projects.feature.tasks.domain)
+    implementation(projects.feature.tasks.data)
     implementation(projects.utils.ui)
 
     api(libs.junit4)

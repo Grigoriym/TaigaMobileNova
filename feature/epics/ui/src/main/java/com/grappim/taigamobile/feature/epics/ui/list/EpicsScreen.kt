@@ -17,7 +17,7 @@ import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.filters.ui.TaskFilters
+import com.grappim.taigamobile.feature.filters.ui.TaskFiltersWidget
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -121,7 +121,7 @@ fun EpicsScreenContent(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.Start
     ) {
-        TaskFilters(
+        TaskFiltersWidget(
             selected = state.activeFilters,
             onSelect = state.selectFilters,
             data = state.filters,

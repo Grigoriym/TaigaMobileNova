@@ -29,4 +29,6 @@ class DateTimeUtilsImpl @Inject constructor(
     override fun parseLocalDateToString(localDate: LocalDate): String = isoDateFormatter.format(localDate)
 
     override fun parseToLocalDate(text: String): LocalDate = LocalDate.parse(text)
+
+    override fun getLocalDateNow(): LocalDate = LocalDate.now()
 }

@@ -30,7 +30,7 @@ import com.grappim.taigamobile.strings.RString
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
-fun FilterModalBottomSheet(
+fun FilterModalBottomSheetWidget(
     bottomSheetState: SheetState,
     unselectedFilters: FiltersData,
     isBottomSheetVisible: Boolean,

@@ -75,6 +75,9 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+private val type = CommonTaskType.Task
+private val taskIdentifier = TaskIdentifier.WorkItem(type)
+
 @HiltViewModel
 class TaskDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -94,63 +97,63 @@ class TaskDetailsViewModel @Inject constructor(
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         historyRepository = historyRepository,
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
-        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task),
+        taskIdentifier = taskIdentifier,
         workItemRepository = workItemRepository,
         fileUriManager = fileUriManager,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
     ),
     WorkItemDueDateDelegate by WorkItemDueDateDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
     ),
     WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         usersRepository = usersRepository
     ),
     WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
-        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task),
+        taskIdentifier = taskIdentifier,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ) {
@@ -206,31 +209,31 @@ class TaskDetailsViewModel @Inject constructor(
         loadTask()
 
         workItemEditStateRepository
-            .getTeamMemberUpdateFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
+            .getTeamMemberUpdateFlow(taskId, taskIdentifier)
             .onEach(::handleTeamMemberUpdate)
             .launchIn(viewModelScope)
 
         workItemEditStateRepository
-            .getTagsFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
+            .getTagsFlow(taskId, taskIdentifier)
             .onEach(::onNewTagsUpdate)
             .launchIn(viewModelScope)
 
         workItemEditStateRepository
-            .getDescriptionFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
+            .getDescriptionFlow(taskId, taskIdentifier)
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
         super.onCleared()
-        workItemEditStateRepository.clearSession(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
-        Timber.d("IssueDetailsViewModel cleared - session cleaned up for taskId: $taskId")
+        workItemEditStateRepository.clearSession(taskId, taskIdentifier)
+        Timber.d("TaskDetailsViewModel cleared - session cleaned up for taskId: $taskId")
     }
 
     private fun onGoingToEditTags() {
         workItemEditStateRepository.setTags(
             workItemId = taskId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Task),
+            type = taskIdentifier,
             tags = tagsState.value.tags
         )
     }
@@ -241,7 +244,7 @@ class TaskDetailsViewModel @Inject constructor(
         workItemEditStateRepository.setCurrentWatchers(
             ids = watchersIds,
             workItemId = taskId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Task)
+            type = taskIdentifier
         )
     }
 
@@ -249,7 +252,7 @@ class TaskDetailsViewModel @Inject constructor(
         val assigneeId = singleAssigneeState.value.assignees.firstOrNull()?.id
         workItemEditStateRepository.setCurrentAssignee(
             workItemId = taskId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Task),
+            type = taskIdentifier,
             id = assigneeId
         )
     }
@@ -824,7 +827,7 @@ class TaskDetailsViewModel @Inject constructor(
             resultOf {
                 workItemRepository.promoteToUserStory(
                     workItemId = currentTask.id,
-                    commonTaskType = CommonTaskType.Task
+                    commonTaskType = type
                 )
             }.onSuccess { result ->
                 _state.update {
