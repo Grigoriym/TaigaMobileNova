@@ -4,7 +4,14 @@ import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectExtraInfo
 import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectExtraInfoDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
 import kotlinx.collections.immutable.persistentListOf
+
+fun getProjectResponseDTO(): ProjectResponseDTO = ProjectResponseDTO(
+    id = getRandomLong(),
+    name = getRandomString(),
+    members = listOf(getProjectMemberDTO(), getProjectMemberDTO())
+)
 
 fun getProjectDTO(): ProjectDTO = ProjectDTO(
     id = getRandomLong(),

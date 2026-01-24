@@ -78,6 +78,7 @@ The project follows a feature-based modular architecture:
 - **Test rules**: `MainDispatcherRule`, `SavedStateHandleRule`
 - Use `UnconfinedTestDispatcher()` for coroutine testing
 - Tests use JUnit 4 with `kotlin.test` assertions and MockK for mocking
+- Test dependencies are automatically added via convention plugins - no need to check or modify build.gradle.kts when writing tests
 
 # important-instruction-reminders
 

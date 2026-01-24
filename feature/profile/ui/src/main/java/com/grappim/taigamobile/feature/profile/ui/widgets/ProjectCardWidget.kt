@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.profile.ui
+package com.grappim.taigamobile.feature.profile.ui.widgets
 
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.BorderStroke
@@ -33,7 +33,7 @@ import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
-fun ProjectCard(project: Project, isCurrent: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
+fun ProjectCardWidget(project: Project, isCurrent: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit = {}) {
     Surface(
         modifier = modifier
             .fillMaxWidth()

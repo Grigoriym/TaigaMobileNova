@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.testing
 
+import com.grappim.taigamobile.feature.projects.dto.ProjectMemberDTO
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.dto.UserDTO
@@ -35,4 +36,12 @@ fun getTeamMember(
     role = getRandomString(),
     username = getRandomString(),
     totalPower = getRandomInt()
+)
+
+fun getProjectMemberDTO(): ProjectMemberDTO = ProjectMemberDTO(
+    id = getRandomLong(),
+    photo = getRandomString(),
+    fullNameDisplay = getRandomString(),
+    roleName = getRandomString(),
+    username = getRandomString()
 )

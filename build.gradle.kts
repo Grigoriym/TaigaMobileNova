@@ -132,8 +132,10 @@ private val coverageExclusions = listOf(
     "**/MainNavHost",
 
     "**/FileLoggingTree",
+    "**/TryCatchExtensions",
 
     "**/StorageJsonProver",
+    "**/TaigaPermissionConverter",
     "**/ColorSerializer",
     "**/ComposableUtils",
     "**/ObserveAsEvents*",

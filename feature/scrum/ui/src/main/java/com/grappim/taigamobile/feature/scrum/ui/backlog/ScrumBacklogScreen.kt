@@ -20,7 +20,7 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
-import com.grappim.taigamobile.feature.filters.ui.TaskFilters
+import com.grappim.taigamobile.feature.filters.ui.TaskFiltersWidget
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
@@ -97,7 +97,7 @@ private fun BacklogContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        TaskFilters(
+        TaskFiltersWidget(
             selected = state.activeFilters,
             onSelect = state.onSelectFilters,
             data = filters,

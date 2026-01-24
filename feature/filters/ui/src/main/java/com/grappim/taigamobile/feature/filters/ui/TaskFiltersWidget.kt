@@ -43,7 +43,10 @@ import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.filters.domain.hasData
 import com.grappim.taigamobile.feature.filters.domain.model.filters.Filters
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
+import com.grappim.taigamobile.feature.filters.domain.model.filters.RoleFilters
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.Chip
 import com.grappim.taigamobile.uikit.widgets.badge.Badge
@@ -51,6 +54,7 @@ import com.grappim.taigamobile.uikit.widgets.editor.TextFieldStringWithHint
 import com.grappim.taigamobile.uikit.widgets.editor.searchFieldHorizontalPadding
 import com.grappim.taigamobile.uikit.widgets.editor.searchFieldVerticalPadding
 import com.grappim.taigamobile.utils.ui.toColor
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 
 /**
@@ -59,7 +63,7 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TaskFilters(
+fun TaskFiltersWidget(
     selected: FiltersData,
     onSelect: (FiltersData) -> Unit,
     data: FiltersData,
@@ -134,7 +138,7 @@ fun TaskFilters(
 
         Spacer(Modifier.height(space))
 
-        FilterModalBottomSheet(
+        FilterModalBottomSheetWidget(
             bottomSheetState = bottomSheetState,
             unselectedFilters = unselectedFilters,
             isBottomSheetVisible = isBottomSheetVisible,
@@ -252,59 +256,24 @@ internal fun FilterChip(
     }
 }
 
-// @PreviewDarkLight
-// @Composable
-// private fun TaskFiltersPreview() = TaigaMobileTheme {
-//    var selected by remember { mutableStateOf(FiltersDataDTO()) }
-//
-//    Column {
-//        Text("test")
-//
-//        TaskFilters(
-//            selected = selected,
-//            onSelect = { selected = it },
-//            data = FiltersDataDTO(
-//                assignees = listOf(
-//                    UsersFilterDTO(null, "", 2)
-//                ) + List(10) { UsersFilterDTO(it.toLong(), "Human $it", it % 3L) },
-//                roles = listOf(
-//                    RolesFilterDTO(0, "UX", 1),
-//                    RolesFilterDTO(1, "Developer", 4),
-//                    RolesFilterDTO(2, "Stakeholder", 0)
-//                ),
-//                tags = List(10) {
-//                    listOf(
-//                        TagsFilterDTO("#7E57C2", "tag ${it * 3}", 3),
-//                        TagsFilterDTO("#F57C00", "tag ${it * 3 + 1}", 4),
-//                        TagsFilterDTO("#C62828", "tag ${it * 3 + 2}", 0)
-//                    )
-//                }.flatten(),
-//                statuses = listOf(
-//                    StatusesFilterDTO(0, "#B0BEC5", "Backlog", 2),
-//                    StatusesFilterDTO(1, "#1E88E5", "In progress", 1),
-//                    StatusesFilterDTO(2, "#43A047", "Done", 3)
-//                ),
-//                priorities = listOf(
-//                    StatusesFilterDTO(0, "#29B6F6", "Low", 2),
-//                    StatusesFilterDTO(1, "#43A047", "Normal", 1),
-//                    StatusesFilterDTO(2, "#FBC02D", "High", 2)
-//                ),
-//                severities = listOf(
-//                    StatusesFilterDTO(0, "#29B6F6", "Minor", 2),
-//                    StatusesFilterDTO(1, "#43A047", "Normal", 1),
-//                    StatusesFilterDTO(2, "#FBC02D", "Major", 2),
-//                    StatusesFilterDTO(0, "#29B6F6", "Minor", 2),
-//                    StatusesFilterDTO(1, "#43A047", "Normal", 1),
-//                    StatusesFilterDTO(2, "#FBC02D", "Major", 2)
-//                ),
-//                types = listOf(
-//                    StatusesFilterDTO(0, "#F44336", "Bug", 2),
-//                    StatusesFilterDTO(1, "#C8E6C9", "Question", 1),
-//                    StatusesFilterDTO(2, "#C8E6C9", "Enhancement", 2)
-//                )
-//            )
-//        )
-//
-//        Text("Text")
-//    }
-// }
+@[Composable PreviewTaigaDarkLight]
+private fun TaskFiltersWidgetPreview() {
+    TaigaMobileTheme {
+        TaskFiltersWidget(
+            selected = FiltersData(
+                roles = persistentListOf(
+                    RoleFilters(
+                        color = "#AABBCC",
+                        name = "Role",
+                        id = 1,
+                        count = 2
+                    )
+                )
+            ),
+            onSelect = {},
+            data = FiltersData(),
+            searchQuery = "search",
+            setSearchQuery = {}
+        )
+    }
+}

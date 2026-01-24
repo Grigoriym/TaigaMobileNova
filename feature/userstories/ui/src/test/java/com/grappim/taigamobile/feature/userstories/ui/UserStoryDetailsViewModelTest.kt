@@ -17,7 +17,6 @@ import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
-import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.strings.RString
@@ -39,7 +38,7 @@ import io.mockk.verify
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Rule
@@ -50,7 +49,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class UserStoryDetailsViewModelTest {
+internal class UserStoryDetailsViewModelTest {
     private val userStoryId = getRandomLong()
     private val ref = getRandomLong()
 
@@ -88,19 +87,19 @@ class UserStoryDetailsViewModelTest {
     fun setup() {
         every {
             workItemEditStateRepository.getTeamMemberUpdateFlow(userStoryId, type)
-        } returns flowOf(TeamMemberUpdate.Clear)
+        } returns emptyFlow()
 
         every {
             workItemEditStateRepository.getTagsFlow(userStoryId, type)
-        } returns flowOf(persistentListOf())
+        } returns emptyFlow()
 
         every {
             workItemEditStateRepository.getDescriptionFlow(userStoryId, type)
-        } returns flowOf("")
+        } returns emptyFlow()
 
         every {
             workItemEditStateRepository.getEpicsFlow(userStoryId, type)
-        } returns flowOf(persistentListOf())
+        } returns emptyFlow()
     }
 
     private fun createViewModel() {
