@@ -1,3 +1,7 @@
+### Be sure
+1. to run `./gradlew ktlintFormat`
+2. then `./gradlew check`
+
 ### Describe your changes
 
 <!-- Thank you for your Pull Request. Please provide a description above. -->
