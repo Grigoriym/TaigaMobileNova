@@ -3,7 +3,10 @@ package com.grappim.taigamobile.feature.kanban.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.storage.Session
+<<<<<<< HEAD
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+=======
+>>>>>>> 829aa92f893d69e97d497e0f24301bf15811e19d
 import com.grappim.taigamobile.feature.kanban.domain.GetKanbanDataUseCase
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.filters.UsersFilters
@@ -26,7 +29,10 @@ import javax.inject.Inject
 @HiltViewModel
 class KanbanViewModel @Inject constructor(
     private val getKanbanDataUseCase: GetKanbanDataUseCase,
+<<<<<<< HEAD
     private val taigaSessionStorage: TaigaSessionStorage,
+=======
+>>>>>>> 829aa92f893d69e97d497e0f24301bf15811e19d
     private val session: Session
 ) : ViewModel() {
 

@@ -26,7 +26,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
+<<<<<<< HEAD
 import com.grappim.taigamobile.feature.filters.ui.FilterModalBottomSheetWidget
+=======
+import com.grappim.taigamobile.feature.filters.ui.FilterModalBottomSheet
+>>>>>>> 829aa92f893d69e97d497e0f24301bf15811e19d
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.badge.Badge
@@ -80,7 +84,11 @@ fun KanbanFilters(
 
     Spacer(Modifier.height(space))
 
+<<<<<<< HEAD
     FilterModalBottomSheetWidget(
+=======
+    FilterModalBottomSheet(
+>>>>>>> 829aa92f893d69e97d497e0f24301bf15811e19d
         bottomSheetState = bottomSheetState,
         unselectedFilters = unselectedFilters,
         isBottomSheetVisible = isBottomSheetVisible,
