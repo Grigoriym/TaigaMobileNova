@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 
-fun getTagUI(): TagUI = TagUI(
+fun getTagUI(): SelectableTagUI = SelectableTagUI(
     name = getRandomString(),
     color = getRandomColor(),
     isSelected = getRandomBoolean()

@@ -16,7 +16,7 @@ import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.strings.RString
@@ -135,8 +135,8 @@ internal class UserStoryDetailsViewModelTest {
         } returns getStatusUI()
 
         coEvery {
-            tagUIMapper.toUI(any<ImmutableList<Tag>>())
-        } returns persistentListOf<TagUI>()
+            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
+        } returns persistentListOf<SelectableTagUI>()
 
         coEvery {
             workItemsGenerator.getItems(
@@ -179,8 +179,8 @@ internal class UserStoryDetailsViewModelTest {
         } returns getStatusUI()
 
         coEvery {
-            tagUIMapper.toUI(any<ImmutableList<Tag>>())
-        } returns persistentListOf<TagUI>()
+            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
+        } returns persistentListOf<SelectableTagUI>()
 
         coEvery {
             workItemsGenerator.getItems(

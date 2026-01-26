@@ -19,6 +19,9 @@ dependencies {
     implementation(projects.utils.ui)
     implementation(projects.uikit)
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.projects.domain)
+    implementation(projects.feature.workitem.ui)
+    implementation(projects.feature.filters.domain)
 
     implementation(libs.coil.compose)
     implementation(libs.coil.okhttp)

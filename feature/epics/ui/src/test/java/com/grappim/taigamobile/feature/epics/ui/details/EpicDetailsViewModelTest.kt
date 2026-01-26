@@ -20,16 +20,13 @@ import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.WorkItemUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.SavedStateHandleRule
-import com.grappim.taigamobile.testing.getCustomFields
 import com.grappim.taigamobile.testing.getEpic
 import com.grappim.taigamobile.testing.getEpicDetailsData
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getStatusUI
-import com.grappim.taigamobile.testing.getTag
 import com.grappim.taigamobile.testing.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -136,7 +133,7 @@ class EpicDetailsViewModelTest {
         } returns getStatusUI()
 
         coEvery {
-            tagUIMapper.toUI(any<ImmutableList<Tag>>())
+            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
         } returns persistentListOf()
 
         coEvery {
@@ -182,7 +179,7 @@ class EpicDetailsViewModelTest {
         } returns getStatusUI()
 
         coEvery {
-            tagUIMapper.toUI(any<ImmutableList<Tag>>())
+            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
         } returns persistentListOf()
 
         coEvery {

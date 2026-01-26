@@ -11,10 +11,11 @@ import com.grappim.taigamobile.core.storage.db.entities.ProjectEntity
     entities = [
         ProjectEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
     autoMigrations = [
-        AutoMigration(from = 1, to = 2)
+        AutoMigration(from = 1, to = 2),
+        AutoMigration(from = 2, to = 3)
     ]
 )
 @TypeConverters(

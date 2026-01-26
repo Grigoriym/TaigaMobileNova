@@ -131,7 +131,7 @@ class TaskDetailsViewModelTest {
         } returns getStatusUI()
 
         coEvery {
-            tagUIMapper.toUI(any<ImmutableList<Tag>>())
+            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
         } returns persistentListOf()
 
         coEvery {
@@ -175,7 +175,7 @@ class TaskDetailsViewModelTest {
         } returns getStatusUI()
 
         coEvery {
-            tagUIMapper.toUI(any<ImmutableList<Tag>>())
+            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
         } returns persistentListOf()
 
         coEvery {

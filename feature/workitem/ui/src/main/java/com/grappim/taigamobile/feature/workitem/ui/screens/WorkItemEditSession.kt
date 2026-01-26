@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens
 
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -9,21 +9,21 @@ import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.channels.Channel
 
 class WorkItemEditSession(val workItemId: Long, val taskIdentifier: TaskIdentifier) {
-    val tagsChannel: Channel<PersistentList<TagUI>> = Channel()
+    val tagsChannel: Channel<PersistentList<SelectableTagUI>> = Channel()
     val descriptionChannel: Channel<String> = Channel()
     val teamMemberUpdateChannel: Channel<TeamMemberUpdate> = Channel()
     val sprintChannel: Channel<Long?> = Channel()
     val epicsChannel: Channel<PersistentList<Long>> = Channel()
 
-    private var _originalTags: PersistentList<TagUI> = persistentListOf()
-    val originalTags: ImmutableList<TagUI>
+    private var _originalTags: PersistentList<SelectableTagUI> = persistentListOf()
+    val originalTags: ImmutableList<SelectableTagUI>
         get() = _originalTags
 
     val originalTagsNames: ImmutableList<String>
         get() = _originalTags.map { it.name }.toImmutableList()
 
-    private var _currentTags: PersistentList<TagUI> = persistentListOf()
-    val currentTags: ImmutableList<TagUI>
+    private var _currentTags: PersistentList<SelectableTagUI> = persistentListOf()
+    val currentTags: ImmutableList<SelectableTagUI>
         get() = _currentTags
 
     private var _currentAssignee: Long? = null
@@ -50,7 +50,7 @@ class WorkItemEditSession(val workItemId: Long, val taskIdentifier: TaskIdentifi
     val currentType: TeamMemberEditType
         get() = requireNotNull(_currentType)
 
-    internal fun setTags(tags: PersistentList<TagUI>) {
+    internal fun setTags(tags: PersistentList<SelectableTagUI>) {
         _originalTags = tags
         _currentTags = tags
     }

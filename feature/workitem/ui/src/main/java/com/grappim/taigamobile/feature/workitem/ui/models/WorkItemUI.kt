@@ -17,7 +17,7 @@ data class WorkItemUI(
     val ref: Long,
     val title: String,
     val isBlocked: Boolean,
-    val tags: ImmutableList<TagUI>,
+    val tags: ImmutableList<SelectableTagUI>,
     val isClosed: Boolean,
     val colors: ImmutableList<String> = persistentListOf(),
     val assignee: User? = null

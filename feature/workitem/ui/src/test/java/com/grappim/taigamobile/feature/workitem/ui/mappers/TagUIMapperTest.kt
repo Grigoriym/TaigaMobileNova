@@ -30,7 +30,7 @@ class TagUIMapperTest {
         val colorString = "#RRGGBB"
 
         val tag = getTag(color = colorString)
-        val actual = sut.toUI(tag)
+        val actual = sut.toSelectableUI(tag)
 
         assertEquals(tag.name, actual.name)
         assertEquals(tag.color.toColor(), actual.color)
@@ -56,7 +56,7 @@ class TagUIMapperTest {
         val tag2 = getTag(color = colorString2)
         val tags = persistentListOf(tag1, tag2)
 
-        val actual = sut.toUI(tags)
+        val actual = sut.toSelectableUI(tags)
 
         assertEquals(2, actual.size)
         assertEquals(tag1.name, actual[0].name)
@@ -67,7 +67,7 @@ class TagUIMapperTest {
 
     @Test
     fun `toUI with empty list should return empty list`() = runTest {
-        val actual = sut.toUI(persistentListOf())
+        val actual = sut.toSelectableUI(persistentListOf())
 
         assertEquals(0, actual.size)
     }

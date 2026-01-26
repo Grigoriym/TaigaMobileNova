@@ -21,6 +21,7 @@ dependencies {
     implementation(projects.uikit)
 
     implementation(projects.feature.filters.domain)
+    implementation(projects.feature.projects.domain)
     implementation(projects.feature.users.domain)
     implementation(projects.feature.workitem.domain)
     implementation(projects.feature.history.domain)
@@ -33,6 +34,8 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
 
     implementation(libs.androidx.compose.material.icons.core)
+    implementation(libs.androidx.compose.material.icons.extended)
 
     implementation(libs.coil.compose)
+    implementation(libs.compose.colorpicker)
 }

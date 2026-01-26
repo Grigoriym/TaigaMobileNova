@@ -4,7 +4,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.utils.ui.toHex
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
@@ -24,14 +24,14 @@ class WorkItemTagsDelegateImpl(
     )
     override val tagsState: StateFlow<WorkItemTagsState> = _tagsState.asStateFlow()
 
-    override fun setInitialTags(tags: PersistentList<TagUI>) {
+    override fun setInitialTags(tags: PersistentList<SelectableTagUI>) {
         _tagsState.update {
             it.copy(tags = tags)
         }
     }
 
     override suspend fun handleTagRemove(
-        tag: TagUI,
+        tag: SelectableTagUI,
         version: Long,
         workItemId: Long,
         doOnPreExecute: (() -> Unit)?,
@@ -50,7 +50,7 @@ class WorkItemTagsDelegateImpl(
     }
 
     override suspend fun handleTagsUpdate(
-        newTags: PersistentList<TagUI>,
+        newTags: PersistentList<SelectableTagUI>,
         version: Long,
         workItemId: Long,
         doOnPreExecute: (() -> Unit)?,

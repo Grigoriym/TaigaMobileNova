@@ -45,8 +45,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitle
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
@@ -672,7 +672,7 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private fun onTagRemove(tag: TagUI) {
+    private fun onTagRemove(tag: SelectableTagUI) {
         viewModelScope.launch {
             handleTagRemove(
                 tag = tag,
@@ -691,7 +691,7 @@ class IssueDetailsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
+    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<SelectableTagUI>) {
         handleTagsUpdate(
             newTags = newTagsToUse,
             version = currentIssue.version,

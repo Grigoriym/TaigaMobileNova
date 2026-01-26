@@ -43,7 +43,7 @@ class WorkItemUIMapperTest {
         val formattedDate = "Dec 15, 2024"
 
         coEvery { statusUIMapper.toUI(workItem.status) } returns statusUI
-        coEvery { tagUIMapper.toUI(workItem.tags) } returns tagsUI
+        coEvery { tagUIMapper.toSelectableUI(workItem.tags) } returns tagsUI
         coEvery { dateTimeUtils.formatToMediumFormat(workItem.createdDate) } returns formattedDate
 
         val actual = sut.toUI(workItem)
@@ -76,8 +76,8 @@ class WorkItemUIMapperTest {
 
         coEvery { statusUIMapper.toUI(workItem1.status) } returns statusUI1
         coEvery { statusUIMapper.toUI(workItem2.status) } returns statusUI2
-        coEvery { tagUIMapper.toUI(workItem1.tags) } returns tagsUI1
-        coEvery { tagUIMapper.toUI(workItem2.tags) } returns tagsUI2
+        coEvery { tagUIMapper.toSelectableUI(workItem1.tags) } returns tagsUI1
+        coEvery { tagUIMapper.toSelectableUI(workItem2.tags) } returns tagsUI2
         coEvery { dateTimeUtils.formatToMediumFormat(workItem1.createdDate) } returns formattedDate1
         coEvery { dateTimeUtils.formatToMediumFormat(workItem2.createdDate) } returns formattedDate2
 

@@ -186,10 +186,12 @@ class WorkItemMapperTest {
         val dtos = listOf(dto1, dto2)
         val taskType = CommonTaskType.Issue
 
-        coEvery { statusesMapper.getStatus(any()) } returns getStatus()
-        coEvery { tagsMapper.toTags(any()) } returns persistentListOf()
-        coEvery { userMapper.toUser(any()) } returns getUser()
-        coEvery { projectMapper.toProjectExtraInfo(any()) } returns getProjectExtraInfo()
+        dtos.forEach {
+            coEvery { statusesMapper.getStatus(it) } returns getStatus()
+            coEvery { tagsMapper.toTags(it.tags) } returns persistentListOf(getTag())
+            coEvery { userMapper.toUser(it.assignedToExtraInfo!!) } returns getUser()
+            coEvery { projectMapper.toProjectExtraInfo(it.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        }
 
         val result = sut.toDomainList(dtos, taskType)
 
