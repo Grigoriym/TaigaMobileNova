@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -53,7 +54,6 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
 import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
-import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import com.grappim.taigamobile.utils.ui.toColor
 
 private val cellOuterPadding = 8.dp
@@ -72,7 +72,7 @@ fun KanbanBoardWidget(
         horizontalAlignment = Alignment.Start
     ) {
         val backgroundCellColor =
-            MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
+            MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation)
 
         val selectedAssignees = state.activeFilters.assignees
         val selectedAssigneeIds = selectedAssignees.mapNotNull { it.id }.toSet()
