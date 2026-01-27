@@ -41,7 +41,7 @@ data class WorkItemResponseDTO(
     val version: Long,
     @SerialName(value = "is_closed")
     val isClosed: Boolean,
-    val tags: List<List<String?>>?,
+    val tags: List<TagWithColor>?,
     val swimlane: Long?,
     @Serializable(with = LocalDateSerializer::class)
     @SerialName(value = "due_date")

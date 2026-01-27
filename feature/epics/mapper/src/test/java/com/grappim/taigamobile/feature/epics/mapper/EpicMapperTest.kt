@@ -229,7 +229,7 @@ class EpicMapperTest {
 
         coEvery { userMapper.toUser(any()) } returns user
         coEvery { projectMapper.toProjectExtraInfo(any()) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(any()) } returns persistentListOf(getTag())
+        coEvery { tagsMapper.toTags(tags = any()) } returns persistentListOf(getTag())
         coEvery { statusesMapper.getStatus(any()) } returns getStatus()
 
         val result = sut.toDomainList(listOf(response1, response2))

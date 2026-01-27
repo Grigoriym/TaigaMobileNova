@@ -29,17 +29,6 @@ import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorScreen
 import com.grappim.taigamobile.feature.projectselector.ui.navigateToProjectSelector
-import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
-import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
-import com.grappim.taigamobile.feature.settings.ui.about.SettingsAboutScreen
-import com.grappim.taigamobile.feature.settings.ui.about.SettingsAboutScreenRouteNavDestination
-import com.grappim.taigamobile.feature.settings.ui.about.goToSettingsAboutScreen
-import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreen
-import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreenNavDestination
-import com.grappim.taigamobile.feature.settings.ui.interfacescreen.goToSettingsInterfaceScreen
-import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreen
-import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreenNavDestination
-import com.grappim.taigamobile.feature.settings.ui.user.goToSettingsUserScreen
 import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
 import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
 import com.grappim.taigamobile.feature.tasks.ui.navigateToTask
@@ -49,6 +38,7 @@ import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
 import com.grappim.taigamobile.main.nav.epicNavGraph
 import com.grappim.taigamobile.main.nav.issueNavGraph
 import com.grappim.taigamobile.main.nav.scrumNavGraph
+import com.grappim.taigamobile.main.nav.settingsNavGraph
 import com.grappim.taigamobile.main.nav.taskNavGraph
 import com.grappim.taigamobile.main.nav.userStoryNavGraph
 import com.grappim.taigamobile.main.nav.wikiNavGraph
@@ -104,6 +94,7 @@ fun MainNavHost(
         )
 
         workItemEditsNavGraph(
+            showSnackbar = showSnackbar,
             navController = navController
         )
 
@@ -120,6 +111,11 @@ fun MainNavHost(
 
         scrumNavGraph(
             navController = navController
+        )
+
+        settingsNavGraph(
+            navController = navController,
+            showSnackbar = showSnackbar
         )
 
         composable<LoginNavDestination> {
@@ -194,32 +190,6 @@ fun MainNavHost(
                     )
                 }
             )
-        }
-
-        composable<SettingsNavDestination> {
-            SettingsScreen(
-                goToAboutScreen = {
-                    navController.goToSettingsAboutScreen()
-                },
-                goToInterfaceScreen = {
-                    navController.goToSettingsInterfaceScreen()
-                },
-                goToUserScreen = {
-                    navController.goToSettingsUserScreen()
-                }
-            )
-        }
-
-        composable<SettingsAboutScreenRouteNavDestination> {
-            SettingsAboutScreen()
-        }
-
-        composable<SettingsInterfaceScreenNavDestination> {
-            SettingsInterfaceScreen()
-        }
-
-        composable<SettingsUserScreenNavDestination> {
-            SettingsUserScreen()
         }
 
         composable<SprintNavDestination> { navBackStackEntry ->

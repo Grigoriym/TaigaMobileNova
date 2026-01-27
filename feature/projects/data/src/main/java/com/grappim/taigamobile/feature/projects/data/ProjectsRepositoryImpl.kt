@@ -5,10 +5,16 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.ProjectDao
+import com.grappim.taigamobile.feature.filters.domain.model.Tag
+import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
+import com.grappim.taigamobile.feature.projects.dto.tags.CreateTagRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.tags.DeleteTagRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.tags.EditTagRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.tags.MixTagsRequestDTO
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,7 +29,8 @@ class ProjectsRepositoryImpl @Inject constructor(
     private val projectsApi: ProjectsApi,
     private val projectMapper: ProjectMapper,
     private val projectDao: ProjectDao,
-    private val taigaSessionStorage: TaigaSessionStorage
+    private val taigaSessionStorage: TaigaSessionStorage,
+    private val tagsMapper: TagsMapper
 ) : ProjectsRepository {
     override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> = Pager(
         PagingConfig(
@@ -78,4 +85,49 @@ class ProjectsRepositoryImpl @Inject constructor(
         }
 
     override suspend fun getPermissions(): ImmutableList<TaigaPermission> = getCurrentProjectSimple().myPermissions
+
+    override suspend fun getTagsColors(): ImmutableList<Tag> {
+        val response = projectsApi.getProjectTagsColors(taigaSessionStorage.getCurrentProjectId())
+        return tagsMapper.toTags(response)
+    }
+
+    override suspend fun deleteTag(tagName: String) {
+        projectsApi.deleteTag(
+            projectId = taigaSessionStorage.getCurrentProjectId(),
+            request = DeleteTagRequestDTO(
+                tag = tagName
+            )
+        )
+    }
+
+    override suspend fun createTag(tagName: String, color: String) {
+        projectsApi.createTag(
+            projectId = taigaSessionStorage.getCurrentProjectId(),
+            request = CreateTagRequestDTO(
+                color = color,
+                tag = tagName
+            )
+        )
+    }
+
+    override suspend fun editTag(fromTagName: String, toTagName: String?, color: String?) {
+        projectsApi.editTag(
+            projectId = taigaSessionStorage.getCurrentProjectId(),
+            request = EditTagRequestDTO(
+                fromTag = fromTagName,
+                toTag = toTagName,
+                color = color
+            )
+        )
+    }
+
+    override suspend fun mixTags(fromTags: List<String>, toTag: String) {
+        projectsApi.mixTags(
+            projectId = taigaSessionStorage.getCurrentProjectId(),
+            request = MixTagsRequestDTO(
+                fromTags = fromTags,
+                toTag = toTag
+            )
+        )
+    }
 }

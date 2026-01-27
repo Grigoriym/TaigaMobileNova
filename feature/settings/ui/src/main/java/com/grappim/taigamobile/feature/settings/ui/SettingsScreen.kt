@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.TouchApp
@@ -19,9 +20,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
@@ -32,8 +36,15 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
-fun SettingsScreen(goToAboutScreen: () -> Unit, goToInterfaceScreen: () -> Unit, goToUserScreen: () -> Unit) {
+fun SettingsScreen(
+    goToAboutScreen: () -> Unit,
+    goToInterfaceScreen: () -> Unit,
+    goToUserScreen: () -> Unit,
+    goToAttributesScreen: () -> Unit,
+    viewModel: SettingsViewModel = hiltViewModel()
+) {
     val topBarController = LocalTopBarConfig.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -45,17 +56,21 @@ fun SettingsScreen(goToAboutScreen: () -> Unit, goToInterfaceScreen: () -> Unit,
     }
 
     SettingsScreenContent(
+        state = state,
         goToAboutScreen = goToAboutScreen,
         goToInterfaceScreen = goToInterfaceScreen,
-        goToUserScreen = goToUserScreen
+        goToUserScreen = goToUserScreen,
+        goToAttributesScreen = goToAttributesScreen
     )
 }
 
 @Composable
 fun SettingsScreenContent(
+    state: SettingsState,
     goToAboutScreen: () -> Unit = {},
     goToInterfaceScreen: () -> Unit = {},
-    goToUserScreen: () -> Unit = {}
+    goToUserScreen: () -> Unit = {},
+    goToAttributesScreen: () -> Unit = {}
 ) {
     Surface {
         Column(
@@ -80,6 +95,24 @@ fun SettingsScreenContent(
                     )
                 }
             )
+
+            if (state.canSeeAttributes) {
+                ListItem(
+                    modifier = Modifier
+                        .clickable {
+                            goToAttributesScreen()
+                        },
+                    headlineContent = {
+                        Text(text = stringResource(RString.settings_attributes))
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.Abc,
+                            contentDescription = "Attributes Screen"
+                        )
+                    }
+                )
+            }
 
             ListItem(
                 modifier = Modifier
@@ -118,5 +151,5 @@ fun SettingsScreenContent(
 @PreviewTaigaDarkLight
 @Composable
 private fun SettingsScreenPreviewOld() = TaigaMobileTheme {
-    SettingsScreenContent()
+    SettingsScreenContent(state = SettingsState())
 }

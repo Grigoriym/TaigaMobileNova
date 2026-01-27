@@ -330,10 +330,13 @@ class TaskMapperTest {
         val dtos = listOf(response1, response2)
 
         coEvery { userMapper.toUser(any()) } returns user
-        every { dueDateStatusMapper.toDomain(any()) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(any()) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(any()) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(any()) } returns getStatus()
+
+        dtos.forEach {
+            every { dueDateStatusMapper.toDomain(it.dueDateStatusDTO) } returns DueDateStatus.DueSoon
+            coEvery { projectMapper.toProjectExtraInfo(it.projectDTOExtraInfo) } returns getProjectExtraInfo()
+            coEvery { tagsMapper.toTags(tags = it.tags) } returns persistentListOf(getTag())
+            coEvery { statusesMapper.getStatus(resp = it) } returns getStatus()
+        }
 
         val result = sut.toDomainList(dtos)
 

@@ -5,7 +5,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.testException
@@ -234,8 +234,8 @@ class WorkItemTagsDelegateImplTest {
     fun `handleTagsUpdate should call repository with correct parameters`() = runTest {
         val version = getRandomLong()
         val workItemId = getRandomLong()
-        val tag1 = TagUI(name = "tag1", color = Color.Red)
-        val tag2 = TagUI(name = "tag2", color = Color.Blue)
+        val tag1 = SelectableTagUI(name = "tag1", color = Color.Red)
+        val tag2 = SelectableTagUI(name = "tag2", color = Color.Blue)
         val newTags = persistentListOf(tag1, tag2)
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
@@ -314,7 +314,7 @@ class WorkItemTagsDelegateImplTest {
     }
 
     private fun createTagUI(name: String = getRandomString(), color: Color = Color.Red, isSelected: Boolean = false) =
-        TagUI(
+        SelectableTagUI(
             name = name,
             color = color,
             isSelected = isSelected

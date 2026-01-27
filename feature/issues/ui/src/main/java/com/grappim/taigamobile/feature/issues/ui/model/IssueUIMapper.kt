@@ -31,7 +31,7 @@ class IssueUIMapper @Inject constructor(
             severity = issue.severity?.let { statusUIMapper.toUI(it) },
             assignedUserIds = issue.assignedUserIds,
             watcherUserIds = issue.watcherUserIds,
-            tags = tagUIMapper.toUI(issue.tags),
+            tags = tagUIMapper.toSelectableUI(issue.tags),
             promotedUserStories = issue.promotedUserStories
         )
     }

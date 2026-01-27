@@ -183,6 +183,11 @@ class ProjectMapperTest {
         isKanbanActivated = getRandomBoolean(),
         isIssuesActivated = getRandomBoolean(),
         isWikiActivated = getRandomBoolean(),
-        defaultSwimlane = getRandomLong()
+        defaultSwimlane = getRandomLong(),
+        isMember = getRandomBoolean(),
+        isAdmin = getRandomBoolean(),
+        isOwner = getRandomBoolean(),
+        description = getRandomString(),
+        avatarUrl = getRandomString()
     )
 }

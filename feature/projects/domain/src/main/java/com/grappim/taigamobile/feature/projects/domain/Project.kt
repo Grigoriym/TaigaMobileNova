@@ -9,7 +9,7 @@ data class Project(
     val isMember: Boolean,
     val isAdmin: Boolean,
     val isOwner: Boolean,
-    val description: String?,
+    val description: String,
     val avatarUrl: String?,
     val members: ImmutableList<Long>,
     val fansCount: Int,
@@ -34,5 +34,6 @@ data class ProjectSimple(
     val isKanbanActivated: Boolean,
     val isIssuesActivated: Boolean,
     val isWikiActivated: Boolean,
-    val defaultSwimlane: Long?
+    val defaultSwimlane: Long?,
+    val isAdmin: Boolean
 )

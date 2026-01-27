@@ -2,8 +2,15 @@ package com.grappim.taigamobile.feature.projects.data
 
 import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
+import com.grappim.taigamobile.feature.projects.dto.tags.CreateTagRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.tags.DeleteTagRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.tags.EditTagRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.tags.MixTagsRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.tags.TagsColorsResponse
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -31,4 +38,19 @@ interface ProjectsApi {
 
     @GET("projects/{id}")
     suspend fun getProject(@Path("id") projectId: Long): ProjectResponseDTO
+
+    @GET("projects/{id}/tags_colors")
+    suspend fun getProjectTagsColors(@Path("id") projectId: Long): TagsColorsResponse
+
+    @POST("projects/{projectId}/edit_tag")
+    suspend fun editTag(@Path("projectId") projectId: Long, @Body request: EditTagRequestDTO)
+
+    @POST("projects/{projectId}/create_tag")
+    suspend fun createTag(@Path("projectId") projectId: Long, @Body request: CreateTagRequestDTO)
+
+    @POST("projects/{projectId}/mix_tags")
+    suspend fun mixTags(@Path("projectId") projectId: Long, @Body request: MixTagsRequestDTO)
+
+    @POST("projects/{projectId}/delete_tag")
+    suspend fun deleteTag(@Path("projectId") projectId: Long, @Body request: DeleteTagRequestDTO)
 }

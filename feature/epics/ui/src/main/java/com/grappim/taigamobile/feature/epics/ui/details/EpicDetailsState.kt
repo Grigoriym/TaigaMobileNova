@@ -7,8 +7,8 @@ import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.Comment
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
@@ -49,7 +49,7 @@ data class EpicDetailsState(
     val removeWatcher: () -> Unit = {},
     val onRemoveMeFromWatchersClick: () -> Unit = {},
     val onAddMeToWatchersClick: () -> Unit = {},
-    val onTagRemove: (TagUI) -> Unit = {},
+    val onTagRemove: (SelectableTagUI) -> Unit = {},
 
     val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},

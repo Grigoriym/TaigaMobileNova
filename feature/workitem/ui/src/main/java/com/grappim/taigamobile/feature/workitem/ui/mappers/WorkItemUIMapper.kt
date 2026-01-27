@@ -26,7 +26,7 @@ class WorkItemUIMapper @Inject constructor(
             ref = workItem.ref,
             title = workItem.title,
             isBlocked = workItem.isBlocked,
-            tags = tagUIMapper.toUI(workItem.tags),
+            tags = tagUIMapper.toSelectableUI(workItem.tags),
             isClosed = workItem.isClosed,
             colors = workItem.colors,
             assignee = workItem.assignee

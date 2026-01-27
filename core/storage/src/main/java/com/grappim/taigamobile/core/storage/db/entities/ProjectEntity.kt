@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.core.storage.db.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
@@ -20,5 +21,14 @@ data class ProjectEntity(
     val isKanbanActivated: Boolean,
     val isIssuesActivated: Boolean,
     val isWikiActivated: Boolean,
-    val defaultSwimlane: Long?
+    val defaultSwimlane: Long?,
+    @ColumnInfo(defaultValue = "false")
+    val isAdmin: Boolean,
+    @ColumnInfo(defaultValue = "false")
+    val isMember: Boolean,
+    @ColumnInfo(defaultValue = "false")
+    val isOwner: Boolean,
+    @ColumnInfo(defaultValue = "")
+    val description: String,
+    val avatarUrl: String?
 )

@@ -44,8 +44,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWa
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
@@ -285,7 +285,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                         )
                     }
                     val tags = async {
-                        tagUIMapper.toUI(result.userStory.tags).toPersistentList()
+                        tagUIMapper.toSelectableUI(result.userStory.tags).toPersistentList()
                     }
                     val customFieldsStateItems = async {
                         customFieldsUIMapper.toUI(result.customFields)
@@ -772,7 +772,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
+    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<SelectableTagUI>) {
         handleTagsUpdate(
             newTags = newTagsToUse,
             version = currentUserStory.version,
@@ -789,7 +789,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         )
     }
 
-    private fun onTagRemove(tag: TagUI) {
+    private fun onTagRemove(tag: SelectableTagUI) {
         viewModelScope.launch {
             handleTagRemove(
                 tag = tag,

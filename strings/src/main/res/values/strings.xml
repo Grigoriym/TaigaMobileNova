@@ -128,7 +128,6 @@
 
     <string name="no_sprint">No sprint</string>
     <string name="link_to_epic">Link to epic</string>
-    <string name="add_tag">Add tag</string>
     <string name="created_by">Created by</string>
     <string name="last_modification">Last modification</string>
     <string name="assigned_to">Assigned to</string>
@@ -336,5 +335,16 @@
     <string name="privacy_policy_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY.md</string>
     <string name="settings_interface">Interface</string>
     <string name="settings_user">User</string>
+    <string name="settings_attributes">Attributes</string>
 
+    <string name="tag_color_in_use">(in use)</string>
+    <string name="presets">Presets</string>
+    <string name="selected_color">Selected color:</string>
+    <string name="tag_name">Tag Name</string>
+    <string name="add_tag">Add tag</string>
+    <string name="edit_tag">Edit tag</string>
+    <string name="merge_tags_title">Merge Tags</string>
+    <string name="merge_tags_instruction">Select main tag (radio), then tags to merge (checkbox)</string>
+    <string name="merge_tags_button">Merge %d tags</string>
+    <string name="merge_main_tag_label">MAIN</string>
 </resources>

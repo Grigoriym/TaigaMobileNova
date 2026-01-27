@@ -1,7 +1,10 @@
 package com.grappim.taigamobile.testing
 
+import com.grappim.taigamobile.core.storage.db.entities.ProjectEntity
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectExtraInfo
+import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
+import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectExtraInfoDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
@@ -69,4 +72,36 @@ fun getProjectExtraInfoDTO(): ProjectExtraInfoDTO = ProjectExtraInfoDTO(
     name = getRandomString(),
     slug = getRandomString(),
     logoSmallUrl = getRandomString()
+)
+
+fun getProjectEntity(): ProjectEntity = ProjectEntity(
+    id = getRandomLong(),
+    name = getRandomString(),
+    slug = getRandomString(),
+    myPermissions = listOf(TaigaPermission.VIEW_PROJECT, TaigaPermission.ADD_US),
+    isEpicsActivated = getRandomBoolean(),
+    isBacklogActivated = getRandomBoolean(),
+    isKanbanActivated = getRandomBoolean(),
+    isIssuesActivated = getRandomBoolean(),
+    isWikiActivated = getRandomBoolean(),
+    defaultSwimlane = getRandomLong(),
+    isAdmin = getRandomBoolean(),
+    isMember = getRandomBoolean(),
+    isOwner = getRandomBoolean(),
+    description = getRandomString(),
+    avatarUrl = getRandomString()
+)
+
+fun getProjectSimple(): ProjectSimple = ProjectSimple(
+    id = getRandomLong(),
+    name = getRandomString(),
+    slug = getRandomString(),
+    myPermissions = persistentListOf(TaigaPermission.VIEW_PROJECT),
+    isEpicsActivated = getRandomBoolean(),
+    isBacklogActivated = getRandomBoolean(),
+    isKanbanActivated = getRandomBoolean(),
+    isIssuesActivated = getRandomBoolean(),
+    isWikiActivated = getRandomBoolean(),
+    defaultSwimlane = getRandomLong(),
+    isAdmin = getRandomBoolean()
 )

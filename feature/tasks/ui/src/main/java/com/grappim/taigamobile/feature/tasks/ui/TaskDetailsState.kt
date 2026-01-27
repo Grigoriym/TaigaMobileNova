@@ -7,8 +7,8 @@ import com.grappim.taigamobile.feature.tasks.domain.Task
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.Comment
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -32,7 +32,7 @@ data class TaskDetailsState(
     val currentTask: Task? = null,
     val originalTask: Task? = null,
 
-    val onTagRemove: (TagUI) -> Unit = {},
+    val onTagRemove: (SelectableTagUI) -> Unit = {},
 
     val setDueDate: (Long?) -> Unit = {},
 

@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.issues.ui.model
 
 import com.grappim.taigamobile.feature.workitem.domain.PromotedUserStoryInfo
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import java.time.LocalDateTime
@@ -27,6 +27,6 @@ data class IssueUI(
     val assignedUserIds: List<Long>,
     val watcherUserIds: List<Long>,
 
-    val tags: ImmutableList<TagUI> = persistentListOf(),
+    val tags: ImmutableList<SelectableTagUI> = persistentListOf(),
     val promotedUserStories: ImmutableList<PromotedUserStoryInfo>
 )

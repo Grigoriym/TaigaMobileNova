@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens
 
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
@@ -35,7 +35,7 @@ class WorkItemEditStateRepository @Inject constructor() {
         }
     }
 
-    fun getTagsFlow(workItemId: Long, type: TaskIdentifier): Flow<PersistentList<TagUI>> =
+    fun getTagsFlow(workItemId: Long, type: TaskIdentifier): Flow<PersistentList<SelectableTagUI>> =
         getOrCreateSession(workItemId, type).tagsChannel.receiveAsFlow()
 
     fun getDescriptionFlow(workItemId: Long, type: TaskIdentifier): Flow<String> =
@@ -50,7 +50,7 @@ class WorkItemEditStateRepository @Inject constructor() {
     fun getEpicsFlow(workItemId: Long, type: TaskIdentifier): Flow<PersistentList<Long>> =
         getOrCreateSession(workItemId, type).epicsChannel.receiveAsFlow()
 
-    suspend fun updateTags(workItemId: Long, type: TaskIdentifier, tags: ImmutableList<TagUI>) {
+    suspend fun updateTags(workItemId: Long, type: TaskIdentifier, tags: ImmutableList<SelectableTagUI>) {
         val session = getOrCreateSession(workItemId, type)
         session.tagsChannel.send(tags.toPersistentList())
         session.clear()
@@ -92,7 +92,7 @@ class WorkItemEditStateRepository @Inject constructor() {
         session.clear()
     }
 
-    fun setTags(workItemId: Long, type: TaskIdentifier, tags: ImmutableList<TagUI>) {
+    fun setTags(workItemId: Long, type: TaskIdentifier, tags: ImmutableList<SelectableTagUI>) {
         val session = getOrCreateSession(workItemId, type)
         session.setTags(tags.toPersistentList())
     }
@@ -125,13 +125,13 @@ class WorkItemEditStateRepository @Inject constructor() {
     fun getCurrentType(workItemId: Long, type: TaskIdentifier): TeamMemberEditType =
         getOrCreateSession(workItemId, type).currentType
 
-    fun getOriginalTags(workItemId: Long, type: TaskIdentifier): ImmutableList<TagUI> =
+    fun getOriginalTags(workItemId: Long, type: TaskIdentifier): ImmutableList<SelectableTagUI> =
         getOrCreateSession(workItemId, type).originalTags
 
     fun getOriginalTagsNames(workItemId: Long, type: TaskIdentifier): ImmutableList<String> =
         getOrCreateSession(workItemId, type).originalTagsNames
 
-    fun getCurrentTags(workItemId: Long, type: TaskIdentifier): ImmutableList<TagUI> =
+    fun getCurrentTags(workItemId: Long, type: TaskIdentifier): ImmutableList<SelectableTagUI> =
         getOrCreateSession(workItemId, type).currentTags
 
     fun getCurrentAssignee(workItemId: Long, type: TaskIdentifier): Long? =
