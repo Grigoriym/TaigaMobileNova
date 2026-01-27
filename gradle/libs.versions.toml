@@ -5,7 +5,7 @@ compileSdk = "36"
 minSdk = "24"
 targetSdk = "36"
 
-detekt = "2.0.0-alpha.1"
+detekt = "2.0.0-alpha.2"
 ktlint = "14.0.1"
 moduleGraphAssertion = "2.9.0"
 gradleDoctor = "0.12.1"
