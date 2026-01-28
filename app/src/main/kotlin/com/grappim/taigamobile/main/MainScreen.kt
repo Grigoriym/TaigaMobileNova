@@ -161,18 +161,6 @@ private fun MainScreenContent(
                                 snackbarHostState.currentSnackbarData?.dismiss()
                             }
                         }
-                    },
-                    showSnackbarAction = { text, action ->
-                        scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                message = text.asString(context),
-                                actionLabel = action,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                            }
-                        }
                     }
                 )
 

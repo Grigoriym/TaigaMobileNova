@@ -2,7 +2,6 @@ package com.grappim.taigamobile.feature.teams.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,7 +12,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -37,7 +35,8 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import com.grappim.taigamobile.uikit.widgets.text.NothingToSeeHereText
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
+import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
@@ -61,7 +60,7 @@ fun TeamScreen(
         )
     }
     LaunchedEffect(state.error) {
-        if (state.error.isNotEmpty()) {
+        if (state.error.isNotEmpty() && state.teamMembers.isNotEmpty()) {
             showSnackbar(state.error)
         }
     }
@@ -74,7 +73,6 @@ fun TeamScreen(
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TeamScreenContent(
     state: TeamState,
@@ -87,13 +85,17 @@ fun TeamScreenContent(
         onRefresh = state.onRefresh
     ) {
         when {
+            state.teamMembers.isEmpty() && state.error.isNotEmpty() -> {
+                ErrorStateWidget(onRetry = {
+                    state.onRefresh()
+                })
+            }
+
             state.teamMembers.isEmpty() -> {
-                Box(
+                EmptyStateWidget(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    NothingToSeeHereText()
-                }
+                    message = NativeText.Resource(RString.no_team_members_found)
+                )
             }
 
             else -> {

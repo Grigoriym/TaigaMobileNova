@@ -28,6 +28,7 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
@@ -78,6 +79,13 @@ fun SprintScreen(
         )
     }
 
+    ObserveAsEvents(viewModel.snackBarMessage) { message ->
+        println("gregasd $message, ${state.sprint}")
+        if (message.isNotEmpty() && state.sprint != null) {
+            showSnackbar(message)
+        }
+    }
+
     LaunchedEffect(updateData) {
         if (updateData) {
             state.onRefresh()
@@ -90,12 +98,6 @@ fun SprintScreen(
 
     ObserveAsEvents(viewModel.deleteResult) {
         goBack()
-    }
-
-    LaunchedEffect(state.error) {
-        if (state.error.isNotEmpty()) {
-            showSnackbar(state.error)
-        }
     }
 
     SprintDropdownMenuWidget(
@@ -121,21 +123,19 @@ fun SprintScreen(
         onConfirm = state.onEditSprintConfirm
     )
 
-    if (state.sprint != null) {
-        SprintScreenContent(
-            state = state,
-            navigateToTask = { id, type, ref ->
-                goToTaskScreen(id, type, ref)
-            },
-            navigateToCreateTask = { type, parentId ->
-                goToCreateTask(
-                    type,
-                    parentId,
-                    state.sprint!!.id
-                )
-            }
-        )
-    }
+    SprintScreenContent(
+        state = state,
+        navigateToTask = { id, type, ref ->
+            goToTaskScreen(id, type, ref)
+        },
+        navigateToCreateTask = { type, parentId ->
+            goToCreateTask(
+                type,
+                parentId,
+                state.sprint!!.id
+            )
+        }
+    )
 }
 
 @Composable
@@ -150,11 +150,18 @@ fun SprintScreenContent(
         isRefreshing = state.isLoading,
         onRefresh = state.onRefresh
     ) {
-        SprintKanbanWidget(
-            state = state,
-            navigateToTask = navigateToTask,
-            navigateToCreateTask = navigateToCreateTask
-        )
+        if (state.error.isNotEmpty() && state.sprint == null) {
+            ErrorStateWidget(
+                message = state.error,
+                onRetry = state.onRefresh
+            )
+        } else {
+            SprintKanbanWidget(
+                state = state,
+                navigateToTask = navigateToTask,
+                navigateToCreateTask = navigateToCreateTask
+            )
+        }
     }
 }
 

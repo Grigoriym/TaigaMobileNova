@@ -51,7 +51,6 @@ fun MainNavHost(
     initialNavState: InitialNavState,
     navController: NavHostController,
     showSnackbar: (NativeText) -> Unit,
-    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
     LaunchedEffect(initialNavState.isReady) {
@@ -79,8 +78,7 @@ fun MainNavHost(
     ) {
         issueNavGraph(
             showSnackbar = showSnackbar,
-            navController = navController,
-            showSnackbarAction = showSnackbarAction
+            navController = navController
         )
 
         userStoryNavGraph(
@@ -100,8 +98,7 @@ fun MainNavHost(
 
         epicNavGraph(
             showSnackbar = showSnackbar,
-            navController = navController,
-            showSnackbarAction = showSnackbarAction
+            navController = navController
         )
 
         wikiNavGraph(

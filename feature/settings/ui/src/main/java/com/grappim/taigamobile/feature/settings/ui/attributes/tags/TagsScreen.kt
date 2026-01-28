@@ -54,6 +54,7 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
@@ -95,7 +96,7 @@ fun TagsScreen(showSnackbar: (NativeText) -> Unit, viewModel: TagsScreenViewMode
     }
 
     ObserveAsEvents(viewModel.snackBarMessage) { message ->
-        if (message.isNotEmpty()) {
+        if (message.isNotEmpty() && state.tags.isNotEmpty()) {
             showSnackbar(message)
         }
     }
@@ -131,22 +132,36 @@ fun TagsScreen(showSnackbar: (NativeText) -> Unit, viewModel: TagsScreenViewMode
 
 @Composable
 private fun TagsScreenContent(state: TagsScreenState) {
-    PullToRefreshBox(
-        modifier = Modifier.fillMaxSize(),
-        onRefresh = state.refresh,
-        isRefreshing = state.isLoading
-    ) {
-        Column {
-            if (state.isMergeMode) {
-                MergePreviewCard(state = state)
+    Column(modifier = Modifier.fillMaxSize()) {
+        if (state.isMergeMode) {
+            MergePreviewCard(state = state)
+            TagsListContent(state = state)
+        } else {
+            PullToRefreshBox(
+                modifier = Modifier.fillMaxSize(),
+                onRefresh = state.refresh,
+                isRefreshing = state.isLoading
+            ) {
+                TagsListContent(state = state)
             }
-            LazyColumn {
-                items(state.tags) { tag ->
-                    if (state.isMergeMode) {
-                        MergeTagItemWidget(state = state, tag = tag)
-                    } else {
-                        TagItemWidget(state = state, tag = tag)
-                    }
+        }
+    }
+}
+
+@Composable
+private fun TagsListContent(state: TagsScreenState) {
+    if (state.error.isNotEmpty() && state.tags.isEmpty()) {
+        ErrorStateWidget(
+            message = state.error,
+            onRetry = state.refresh
+        )
+    } else {
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            items(state.tags) { tag ->
+                if (state.isMergeMode) {
+                    MergeTagItemWidget(state = state, tag = tag)
+                } else {
+                    TagItemWidget(state = state, tag = tag)
                 }
             }
         }

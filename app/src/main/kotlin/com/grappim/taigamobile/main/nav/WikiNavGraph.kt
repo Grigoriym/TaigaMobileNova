@@ -63,6 +63,7 @@ fun NavGraphBuilder.wikiNavGraph(showSnackbar: (NativeText) -> Unit, navControll
 
     composable<WikiPagesNavDestination> {
         WikiPagesScreen(
+            showSnackbar = showSnackbar,
             goToWikiCreatePage = {
                 navController.navigate(route = WikiCreatePageNavDestination)
             },

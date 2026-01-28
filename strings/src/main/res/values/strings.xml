@@ -25,6 +25,7 @@
     <string name="permission_error">Error, you may not have sufficient permissions</string>
 
     <string name="nothing_to_see">Nothing to see here</string>
+    <string name="no_items_yet">No items yet</string>
 
     <string name="login_taiga_server">Taiga server url</string>
     <string name="login_username">Login</string>
@@ -63,7 +64,6 @@
     <string name="epics_number">%d Epics</string>
     <string name="issues">Issues</string>
     <string name="issues_number">%d Issues</string>
-    <string name="team">Team</string>
     <string name="more">More</string>
     <string name="kanban">Kanban</string>
 
@@ -289,6 +289,9 @@
 
     <string name="error_retrieving_due_date">Cannot get the Due Date</string>
 
+    <string name="team">Team</string>
+    <string name="no_team_members_found">No team members found</string>
+
     <!--    Sprint-->
     <string name="error_loading_user_stories">Failed to load user stories</string>
     <string name="error_loading_closed_stories">Failed to load closed user stories</string>
@@ -318,6 +321,8 @@
     <string name="error_internal_server">Internal server error. Please try again later.</string>
     <string name="error_loading_data">Failed to load data</string>
     <string name="error_loading_issues">Failed to load issues</string>
+    <string name="no_issues_found">No issues found</string>
+    <string name="no_epics_found">No epics found</string>
     <string name="error_loading_projects">Failed to load projects</string>
     <string name="retry">Retry</string>
 

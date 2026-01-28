@@ -10,6 +10,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit.TagEditDial
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit.TagEditDialogDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
 import com.grappim.taigamobile.utils.ui.getErrorMessage
@@ -229,8 +230,8 @@ class TagsScreenViewModel @Inject constructor(
         viewModelScope.launch {
             _state.update {
                 it.copy(
-                    isLoading = true
-
+                    isLoading = true,
+                    error = NativeText.Empty
                 )
             }
             resultOf {
@@ -249,7 +250,10 @@ class TagsScreenViewModel @Inject constructor(
 
                 showSnackbarSuspend(getErrorMessage(error))
                 _state.update {
-                    it.copy(isLoading = false)
+                    it.copy(
+                        isLoading = false,
+                        error = getErrorMessage(error)
+                    )
                 }
             }
         }

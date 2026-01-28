@@ -113,6 +113,7 @@ class EpicsViewModel @Inject constructor(
                     }
                 }.onFailure { error ->
                     Timber.e(error)
+                    showSnackbarSuspend(getErrorMessage(error))
                     _state.update {
                         it.copy(
                             isFiltersLoading = false,

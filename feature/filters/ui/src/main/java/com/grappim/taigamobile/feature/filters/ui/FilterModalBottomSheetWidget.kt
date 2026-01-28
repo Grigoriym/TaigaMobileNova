@@ -23,10 +23,13 @@ import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.asString
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
@@ -37,7 +40,7 @@ fun FilterModalBottomSheetWidget(
     setBottomSheetVisible: (Boolean) -> Unit,
     selected: FiltersData,
     onSelect: (FiltersData) -> Unit,
-    isFiltersError: Boolean = false,
+    filtersError: NativeText,
     onRetryFilters: () -> Unit = {},
     isFiltersLoading: Boolean = false
 ) {
@@ -48,7 +51,7 @@ fun FilterModalBottomSheetWidget(
             setBottomSheetVisible = setBottomSheetVisible,
             selected = selected,
             onSelect = onSelect,
-            isFiltersError = isFiltersError,
+            filtersError = filtersError,
             onRetryFilters = onRetryFilters,
             isFiltersLoading = isFiltersLoading
         )
@@ -62,7 +65,7 @@ private fun FilterModalBottomSheetContent(
     setBottomSheetVisible: (Boolean) -> Unit,
     selected: FiltersData,
     onSelect: (FiltersData) -> Unit,
-    isFiltersError: Boolean = false,
+    filtersError: NativeText,
     onRetryFilters: () -> Unit = {},
     isFiltersLoading: Boolean = false
 ) {
@@ -88,10 +91,11 @@ private fun FilterModalBottomSheetContent(
 
                 Spacer(Modifier.height(space))
 
-                if (isFiltersError) {
+                if (filtersError.isNotEmpty()) {
                     FilterErrorContent(
                         onRetry = onRetryFilters,
-                        isLoading = isFiltersLoading
+                        isLoading = isFiltersLoading,
+                        filtersError = filtersError
                     )
                 } else {
                     FilterNormalContent(
@@ -108,7 +112,8 @@ private fun FilterModalBottomSheetContent(
 }
 
 @Composable
-private fun FilterErrorContent(onRetry: () -> Unit, isLoading: Boolean) {
+private fun FilterErrorContent(onRetry: () -> Unit, isLoading: Boolean, filtersError: NativeText) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -116,7 +121,7 @@ private fun FilterErrorContent(onRetry: () -> Unit, isLoading: Boolean) {
         horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
     ) {
         Text(
-            text = stringResource(RString.common_error_message),
+            text = filtersError.asString(context),
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.padding(bottom = 16.dp)
         )

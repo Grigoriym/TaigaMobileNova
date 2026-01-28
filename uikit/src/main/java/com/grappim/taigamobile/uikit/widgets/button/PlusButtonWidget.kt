@@ -12,6 +12,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
@@ -28,8 +30,16 @@ fun PlusButtonWidget(
 ) {
     Icon(
         painter = painterResource(RDrawable.ic_add),
-        contentDescription = null,
+        contentDescription = "Add",
         tint = tint,
         modifier = modifier.size(26.dp)
     )
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun PlusButtonWidgetPreview() {
+    TaigaMobileTheme {
+        PlusButtonWidget()
+    }
 }

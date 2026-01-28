@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.users.data
 
-import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
 import com.grappim.taigamobile.feature.users.domain.TeamMember
@@ -37,7 +36,6 @@ class UsersRepositoryImplTest {
     private val projectsApi: ProjectsApi = mockk()
     private val taigaSessionStorage: TaigaSessionStorage = mockk()
     private val userMapper: UserMapper = mockk()
-    private val session: Session = mockk()
     private val teamMemberMapper: TeamMemberMapper = mockk()
     private val userStatsMapper: UserStatsMapper = mockk()
 
@@ -57,7 +55,6 @@ class UsersRepositoryImplTest {
             taigaSessionStorage = taigaSessionStorage,
             dispatcher = testDispatcher,
             userMapper = userMapper,
-            session = session,
             teamMemberMapper = teamMemberMapper,
             userStatsMapper = userStatsMapper
         )

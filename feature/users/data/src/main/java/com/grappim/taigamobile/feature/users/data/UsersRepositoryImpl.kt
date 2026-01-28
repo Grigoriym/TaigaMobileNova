@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.users.data
 
 import com.grappim.taigamobile.core.async.IoDispatcher
-import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
 import com.grappim.taigamobile.feature.users.domain.TeamMember
@@ -26,7 +25,6 @@ class UsersRepositoryImpl @Inject constructor(
     private val taigaSessionStorage: TaigaSessionStorage,
     @IoDispatcher private val dispatcher: CoroutineDispatcher,
     private val userMapper: UserMapper,
-    private val session: Session,
     private val teamMemberMapper: TeamMemberMapper,
     private val userStatsMapper: UserStatsMapper
 ) : UsersRepository {

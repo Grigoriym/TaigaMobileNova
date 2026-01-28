@@ -400,7 +400,6 @@ def emit_event(routing_key, data):
 
 ```kotlin
 // Kotlin example
-import java.util.UUID
 
 class ApiClient {
     private val sessionId = UUID.randomUUID().toString()
