@@ -20,17 +20,12 @@ import com.grappim.taigamobile.main.UPDATE_DATA_ON_BACK
 import com.grappim.taigamobile.main.setUpdateDataOnBack
 import com.grappim.taigamobile.utils.ui.NativeText
 
-fun NavGraphBuilder.epicNavGraph(
-    showSnackbar: (NativeText) -> Unit,
-    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
-    navController: NavHostController
-) {
+fun NavGraphBuilder.epicNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
     composable<EpicsNavDestination> { navBackStackEntry ->
         val updateData: Boolean =
             navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
         EpicsScreen(
             showSnackbar = showSnackbar,
-            showSnackbarAction = showSnackbarAction,
             goToCreateEpic = {
                 navController.navigateToCreateTask(type = CommonTaskType.Epic)
             },

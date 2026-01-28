@@ -32,8 +32,6 @@ fun WikiBookmarksScreen(
     val resources = LocalResources.current
 
     LaunchedEffect(Unit, state.canAddWikiLink) {
-        state.onOpen()
-
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.bookmarks),
@@ -54,11 +52,11 @@ fun WikiBookmarksScreen(
     }
 
     ObserveAsEvents(viewModel.onDeleteSuccess) {
-        state.onOpen()
+        state.refresh()
     }
 
     ObserveAsEvents(viewModel.snackBarMessage) { message ->
-        if (message.isNotEmpty()) {
+        if (message.isNotEmpty() && state.bookmarks.isNotEmpty()) {
             showSnackbar(message)
         }
     }
@@ -89,7 +87,7 @@ fun WikiBookmarksScreenContent(
         items = state.bookmarks,
         isLoading = state.isLoading,
         error = state.error,
-        onRetry = state.onOpen,
+        onRetry = state.refresh,
         navigateToCreate = navigateToCreateBookmark,
         canCreate = state.canAddWikiLink,
         onClick = goToPage,

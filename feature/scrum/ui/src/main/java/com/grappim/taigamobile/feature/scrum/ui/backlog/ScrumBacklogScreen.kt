@@ -33,6 +33,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
@@ -101,7 +102,7 @@ private fun BacklogContent(
             selected = state.activeFilters,
             onSelect = state.onSelectFilters,
             data = filters,
-            isFiltersError = state.filtersError.isNotEmpty(),
+            filtersError = state.filtersError,
             onRetryFilters = state.retryLoadFilters,
             isFiltersLoading = state.isFiltersLoading,
             searchQuery = searchQuery,
@@ -119,7 +120,7 @@ private fun BacklogContent(
             when {
                 stories.loadState.hasError && stories.itemCount == 0 -> {
                     ErrorStateWidget(
-                        message = NativeText.Resource(RString.error_loading_issues),
+                        message = stories.loadState.getErrorMessage(),
                         onRetry = { stories.refresh() }
                     )
                 }

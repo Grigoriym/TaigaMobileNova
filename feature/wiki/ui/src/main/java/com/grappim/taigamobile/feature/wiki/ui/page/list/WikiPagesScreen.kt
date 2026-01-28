@@ -22,6 +22,7 @@ import kotlinx.collections.immutable.toImmutableList
 
 @Composable
 fun WikiPagesScreen(
+    showSnackbar: (NativeText) -> Unit,
     goToWikiCreatePage: () -> Unit,
     goToWikiPage: (slug: String, id: Long) -> Unit,
     viewModel: WikiPagesViewModel = hiltViewModel()
@@ -31,8 +32,6 @@ fun WikiPagesScreen(
     val resources = LocalResources.current
 
     LaunchedEffect(Unit, state.canAddWikiPage) {
-        state.onOpen()
-
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.all_wiki_pages),
@@ -53,7 +52,13 @@ fun WikiPagesScreen(
     }
 
     ObserveAsEvents(viewModel.onDeleteSuccess) {
-        state.onOpen()
+        state.refresh()
+    }
+
+    ObserveAsEvents(viewModel.snackBarMessage) { message ->
+        if (message.isNotEmpty() && state.allPages.isNotEmpty()) {
+            showSnackbar(message)
+        }
     }
 
     ConfirmActionDialog(
@@ -82,7 +87,7 @@ fun WikiPagesScreenContent(
         items = state.allPages,
         isLoading = state.isLoading,
         error = state.error,
-        onRetry = state.onOpen,
+        onRetry = state.refresh,
         navigateToCreate = navigateToCreatePage,
         canCreate = state.canAddWikiPage,
         onClick = goToPage,

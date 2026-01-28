@@ -109,6 +109,7 @@ internal fun SprintKanbanWidget(
                             .padding(start = cellPadding)
                     ) {
                         UserStoryItem(
+                            isAddButtonVisible = state.sprint != null,
                             cellPadding = cellPadding,
                             cellWidth = userStoryHeadingWidth,
                             minCellHeight = minCellHeight,
@@ -150,6 +151,7 @@ internal fun SprintKanbanWidget(
                         .padding(start = cellPadding)
                 ) {
                     CategoryItem(
+                        isPlusButtonVisible = state.sprint != null,
                         titleId = RString.tasks_without_story,
                         cellPadding = cellPadding,
                         cellWidth = userStoryHeadingWidth,
@@ -193,7 +195,8 @@ internal fun SprintKanbanWidget(
                     padding = cellPadding,
                     backgroundColor = backgroundCellColor,
                     onAddClick = { navigateToCreateTask(CommonTaskType.Issue, null) },
-                    canCreateIssue = state.canCreateIssue
+                    canCreateIssue = state.canCreateIssue,
+                    isPlusButtonVisible = state.sprint != null
                 )
             }
 
@@ -256,7 +259,8 @@ private fun IssueHeader(
     padding: Dp,
     backgroundColor: Color,
     onAddClick: () -> Unit,
-    canCreateIssue: Boolean
+    canCreateIssue: Boolean,
+    isPlusButtonVisible: Boolean
 ) = Row(
     modifier = Modifier
         .width(width)
@@ -272,7 +276,7 @@ private fun IssueHeader(
         modifier = Modifier.weight(0.8f, fill = false)
     )
 
-    if (canCreateIssue) {
+    if (canCreateIssue && isPlusButtonVisible) {
         PlusButtonWidget(
             tint = MaterialTheme.colorScheme.outline,
             onClick = onAddClick,
@@ -283,6 +287,7 @@ private fun IssueHeader(
 
 @Composable
 private fun UserStoryItem(
+    isAddButtonVisible: Boolean,
     cellPadding: Dp,
     cellWidth: Dp,
     minCellHeight: Dp,
@@ -320,11 +325,13 @@ private fun UserStoryItem(
         )
     }
 
-    PlusButtonWidget(
-        tint = MaterialTheme.colorScheme.outline,
-        onClick = onAddClick,
-        modifier = Modifier.weight(0.2f)
-    )
+    if (isAddButtonVisible) {
+        PlusButtonWidget(
+            tint = MaterialTheme.colorScheme.outline,
+            onClick = onAddClick,
+            modifier = Modifier.weight(0.2f)
+        )
+    }
 }
 
 @Composable
@@ -334,7 +341,8 @@ private fun CategoryItem(
     cellWidth: Dp,
     minCellHeight: Dp,
     onAddClick: () -> Unit,
-    canCreateTasks: Boolean
+    canCreateTasks: Boolean,
+    isPlusButtonVisible: Boolean
 ) = Column(
     modifier = Modifier
         .padding(end = cellPadding, bottom = cellPadding)
@@ -352,7 +360,7 @@ private fun CategoryItem(
                 .padding(top = 4.dp)
         )
 
-        if (canCreateTasks) {
+        if (canCreateTasks && isPlusButtonVisible) {
             PlusButtonWidget(
                 tint = MaterialTheme.colorScheme.outline,
                 onClick = onAddClick,

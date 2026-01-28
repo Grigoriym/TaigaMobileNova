@@ -41,6 +41,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 
 @Composable
@@ -124,7 +125,9 @@ fun ProjectSelectorScreenContent(
             if (projects.loadState.hasError && projects.itemCount == 0) {
                 ErrorStateWidget(
                     modifier = Modifier.fillMaxSize(),
-                    message = NativeText.Resource(RString.error_loading_projects),
+                    message = projects.loadState.getErrorMessage(
+                        fallback = NativeText.Resource(RString.error_loading_projects)
+                    ),
                     onRetry = {
                         projects.refresh()
                     }

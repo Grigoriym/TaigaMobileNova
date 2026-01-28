@@ -21,17 +21,12 @@ import com.grappim.taigamobile.main.UPDATE_DATA_ON_BACK
 import com.grappim.taigamobile.main.setUpdateDataOnBack
 import com.grappim.taigamobile.utils.ui.NativeText
 
-fun NavGraphBuilder.issueNavGraph(
-    showSnackbar: (NativeText) -> Unit,
-    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
-    navController: NavHostController
-) {
+fun NavGraphBuilder.issueNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
     composable<IssuesNavDestination> { navBackStackEntry ->
         val updateData: Boolean =
             navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
         IssuesScreen(
             showSnackbar = showSnackbar,
-            showSnackbarAction = showSnackbarAction,
             goToCreateIssue = {
                 navController.navigateToCreateIssue()
             },

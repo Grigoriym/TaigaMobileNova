@@ -10,6 +10,7 @@ import kotlinx.collections.immutable.persistentSetOf
 
 data class TagsScreenState(
     val isLoading: Boolean = false,
+    val error: NativeText = NativeText.Empty,
     val isOperationLoading: Boolean = false,
     val tags: ImmutableList<TagUI> = persistentListOf(),
 

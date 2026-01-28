@@ -53,6 +53,7 @@ import com.grappim.taigamobile.uikit.widgets.badge.Badge
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldStringWithHint
 import com.grappim.taigamobile.uikit.widgets.editor.searchFieldHorizontalPadding
 import com.grappim.taigamobile.uikit.widgets.editor.searchFieldVerticalPadding
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -68,9 +69,9 @@ fun TaskFiltersWidget(
     onSelect: (FiltersData) -> Unit,
     data: FiltersData,
     searchQuery: String,
+    filtersError: NativeText,
     setSearchQuery: (String) -> Unit,
     modifier: Modifier = Modifier,
-    isFiltersError: Boolean = false,
     onRetryFilters: () -> Unit = {},
     isFiltersLoading: Boolean = false
 ) {
@@ -124,7 +125,7 @@ fun TaskFiltersWidget(
                     Badge(it.toString())
                 }
 
-                if (isFiltersError) {
+                if (filtersError.isNotEmpty()) {
                     Spacer(Modifier.width(space))
                     Icon(
                         imageVector = Icons.Default.Warning,
@@ -145,7 +146,7 @@ fun TaskFiltersWidget(
             setBottomSheetVisible = { isBottomSheetVisible = it },
             selected = selected,
             onSelect = onSelect,
-            isFiltersError = isFiltersError,
+            filtersError = filtersError,
             onRetryFilters = onRetryFilters,
             isFiltersLoading = isFiltersLoading
         )
@@ -273,7 +274,31 @@ private fun TaskFiltersWidgetPreview() {
             onSelect = {},
             data = FiltersData(),
             searchQuery = "search",
-            setSearchQuery = {}
+            setSearchQuery = {},
+            filtersError = NativeText.Empty
+        )
+    }
+}
+
+@[Composable PreviewTaigaDarkLight]
+private fun TaskFiltersWidgetErrorPreview() {
+    TaigaMobileTheme {
+        TaskFiltersWidget(
+            selected = FiltersData(
+                roles = persistentListOf(
+                    RoleFilters(
+                        color = "#AABBCC",
+                        name = "Role",
+                        id = 1,
+                        count = 2
+                    )
+                )
+            ),
+            onSelect = {},
+            data = FiltersData(),
+            searchQuery = "search",
+            setSearchQuery = {},
+            filtersError = NativeText.Simple("No internet connection")
         )
     }
 }
