@@ -80,7 +80,6 @@ fun SprintScreen(
     }
 
     ObserveAsEvents(viewModel.snackBarMessage) { message ->
-        println("gregasd $message, ${state.sprint}")
         if (message.isNotEmpty() && state.sprint != null) {
             showSnackbar(message)
         }
