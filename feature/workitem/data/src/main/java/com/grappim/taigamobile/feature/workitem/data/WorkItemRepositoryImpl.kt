@@ -56,16 +56,24 @@ class WorkItemRepositoryImpl @Inject constructor(
         forEach { (key, value) ->
             when (value) {
                 null -> put(key, JsonNull)
+
                 is Boolean -> put(key, value)
+
                 is Number -> put(key, value)
+
                 is String -> put(key, value)
+
                 is List<*> -> putJsonArray(key) {
                     value.forEach { item ->
                         when (item) {
                             null -> add(JsonNull)
+
                             is Boolean -> add(item)
+
                             is Number -> add(item)
+
                             is String -> add(item)
+
                             is List<*> -> {
                                 addJsonArray {
                                     item.forEach { nestedItem ->
@@ -79,6 +87,7 @@ class WorkItemRepositoryImpl @Inject constructor(
                                     }
                                 }
                             }
+
                             else -> add(JsonPrimitive(item.toString()))
                         }
                     }

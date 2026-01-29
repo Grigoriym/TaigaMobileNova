@@ -62,7 +62,7 @@ fun WikiPageScreen(
         topBarController.update(
             TopBarConfig(
                 title =
-                NativeText.Simple(state.link?.title ?: state.pageSlug),
+                    NativeText.Simple(state.link?.title ?: state.pageSlug),
                 navigationIcon = NavigationIconConfig.Back(),
                 actions = buildList {
                     if (state.shouldShowActions) {

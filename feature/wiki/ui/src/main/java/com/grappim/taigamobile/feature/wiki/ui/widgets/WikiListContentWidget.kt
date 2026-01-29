@@ -46,18 +46,21 @@ fun WikiListContentWidget(
                     CircularLoaderWidget()
                 }
             }
+
             error.isNotEmpty() && items.isEmpty() -> {
                 ErrorStateWidget(
                     onRetry = onRetry,
                     message = error
                 )
             }
+
             items.isEmpty() -> {
                 EmptyWikiDialogWidget(
                     createNewPage = navigateToCreate,
                     isButtonAvailable = canCreate
                 )
             }
+
             else -> {
                 WikiList(
                     items = items,

@@ -80,6 +80,7 @@ fun TaigaDrawerWidget(
                                                         imageVector = iconSource.imageVector,
                                                         contentDescription = stringResource(destination.label)
                                                     )
+
                                                     is IconSource.Resource -> Icon(
                                                         painter = painterResource(iconSource.resourceId),
                                                         contentDescription = stringResource(destination.label)
@@ -104,6 +105,7 @@ fun TaigaDrawerWidget(
                                                         imageVector = iconSource.imageVector,
                                                         contentDescription = stringResource(drawerItem.label)
                                                     )
+
                                                     is IconSource.Resource -> Icon(
                                                         painter = painterResource(iconSource.resourceId),
                                                         contentDescription = stringResource(drawerItem.label)

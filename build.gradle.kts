@@ -5,11 +5,13 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.hilt.android) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.jetbrains.kotlin.jvm) apply false
+
+    alias(libs.plugins.kotlin.android) apply false
 
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
@@ -17,7 +19,6 @@ plugins {
     alias(libs.plugins.dependencyAnalysis)
     alias(libs.plugins.jacocoAggregationResults)
     alias(libs.plugins.jacocoAggregationCoverage)
-    alias(libs.plugins.jetbrains.kotlin.jvm) apply false
 }
 
 doctor {
@@ -56,6 +57,7 @@ subprojects {
     }
 
     // https://github.com/cortinico/kotlin-android-template
+    // https://detekt.dev/docs/introduction/configurations/
     detekt {
         buildUponDefaultConfig = true
         parallel = true
@@ -67,7 +69,7 @@ subprojects {
     // ./gradlew ktlintFormat
     // ./gradlew addKtlintCheckGitPreCommitHook
     configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-        version.set("1.7.1")
+        version.set("1.8.0")
         android.set(true)
         ignoreFailures.set(false)
         verbose.set(true)
