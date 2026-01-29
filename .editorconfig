@@ -12,6 +12,7 @@ ktlint_compose_lambda-param-in-effect=disabled
 ktlint_compose_multiple-emitters-check=disabled
 compose_allowed_composition_locals = LocalTopBarConfig, LocalFilePicker, LocalScreenReadySignal
 max_line_length = 120
+ktlint_standard_kdoc = disabled
 
 [**/*Screen.kt]
 ktlint_compose_modifier-missing-check=disabled

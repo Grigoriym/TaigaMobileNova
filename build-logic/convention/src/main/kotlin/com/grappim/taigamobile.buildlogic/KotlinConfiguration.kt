@@ -32,27 +32,27 @@ internal fun Project.configureKotlinJvm() {
 }
 
 internal fun Project.configureKotlinAndroid(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
+    commonExtension: CommonExtension,
 ) {
     commonExtension.apply {
         compileSdk = libs.findVersion("compileSdk").get().toString().toInt()
 
-        defaultConfig {
+        defaultConfig.apply {
             minSdk = libs.findVersion("minSdk").get().toString().toInt()
         }
 
-        buildFeatures {
+        buildFeatures.apply {
             shaders = false
             buildConfig = true
         }
 
-        lint {
+        lint.apply {
             checkDependencies = false
             abortOnError = false
             warningsAsErrors = false
         }
 
-        compileOptions {
+        compileOptions.apply {
             sourceCompatibility = JavaVersion.VERSION_21
             targetCompatibility = JavaVersion.VERSION_21
             isCoreLibraryDesugaringEnabled = true
@@ -64,7 +64,7 @@ internal fun Project.configureKotlinAndroid(
             add("META-INF/LICENSE-notice.md")
         }
 
-        testOptions {
+        testOptions.apply {
             unitTests {
                 isReturnDefaultValues = true
                 isIncludeAndroidResources = true

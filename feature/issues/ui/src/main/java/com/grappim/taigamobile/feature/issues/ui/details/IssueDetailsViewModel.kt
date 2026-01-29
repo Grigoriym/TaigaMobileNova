@@ -458,7 +458,9 @@ class IssueDetailsViewModel @Inject constructor(
     private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
             TeamMemberUpdate.Clear -> {}
+
             is TeamMemberUpdate.Assignees -> {}
+
             is TeamMemberUpdate.Assignee -> {
                 onAssigneeUpdated(updateState.id)
             }

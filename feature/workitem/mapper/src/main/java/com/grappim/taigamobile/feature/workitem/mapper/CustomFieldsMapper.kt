@@ -51,7 +51,9 @@ class CustomFieldsMapper @Inject constructor(
                             }?.let { dateTimeUtils.parseToLocalDate(it) }
 
                             CustomFieldTypeDTO.Checkbox -> jsonPrimitive.booleanOrNull
+
                             CustomFieldTypeDTO.Number -> jsonPrimitive.doubleOrNull
+
                             else -> jsonPrimitive.contentOrNull
                         } ?: return@let null
                     )
