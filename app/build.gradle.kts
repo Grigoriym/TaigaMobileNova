@@ -173,8 +173,6 @@ dependencies {
 
     implementation(libs.timber)
 
-    implementation(libs.vanpra.color)
-
     implementation(libs.coil.core)
     implementation(libs.coil.okhttp)
     implementation(libs.coil.compose)

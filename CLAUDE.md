@@ -106,6 +106,7 @@ Note: Use `testFdroidDebugUnitTest` or `testGplayDebugUnitTest` variants. The ge
 
 - Do what has been asked; nothing more, nothing less.
 - Do not use early returns in Composable functions - use conditional wrapping instead
+- Lambda parameters in Composable functions must use present tense, not past tense (e.g., `onClick` not `onClicked`, `onColorSelect` not `onColorSelected`)
 - NEVER create files unless they're absolutely necessary for achieving your goal.
 - ALWAYS prefer editing an existing file to creating a new one.
 - NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.

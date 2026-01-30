@@ -47,7 +47,6 @@ timber = "5.0.1"
 coil = "3.3.0"
 retrofit = "3.0.0"
 okhttp = "5.3.2"
-vanpra = "0.9.0"
 junit4 = "4.13.2"
 turbine = "1.2.1"
 chucker = "4.3.0"
@@ -117,7 +116,6 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 retrofit-kotlin-serialization = { module = "com.squareup.retrofit2:converter-kotlinx-serialization", version.ref = "retrofit" }
 
-vanpra-color = { module = "io.github.vanpra.compose-material-dialogs:color", version.ref = "vanpra" }
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 okhttp-logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "okhttp" }
 
