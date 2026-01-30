@@ -65,6 +65,28 @@ The project follows a feature-based modular architecture:
 - Project uses Gradle Version Catalogs (`gradle/libs.versions.toml`) for dependency management
 
 ## Testing
+
+### Running Tests
+To run unit tests for a specific module and test class:
+```bash
+./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClassName"
+```
+
+Examples:
+```bash
+# Run all tests in a module
+./gradlew :feature:workitem:mapper:testFdroidDebugUnitTest
+
+# Run specific test class
+./gradlew :feature:workitem:mapper:testFdroidDebugUnitTest --tests "com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapperTest"
+
+# Run specific test method
+./gradlew :feature:workitem:mapper:testFdroidDebugUnitTest --tests "com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapperTest.toJsonObject should map null value to JsonNull"
+```
+
+Note: Use `testFdroidDebugUnitTest` or `testGplayDebugUnitTest` variants. The generic `test` task does not support `--tests` filter.
+
+### Testing Utilities
 - The `:testing` module contains shared testing utilities and fake data generators
 - **TestUtils.kt**: Provides random data generators:
   - `getRandomString()`, `getRandomLong()`, `getRandomInt()`, `getRandomBoolean()`

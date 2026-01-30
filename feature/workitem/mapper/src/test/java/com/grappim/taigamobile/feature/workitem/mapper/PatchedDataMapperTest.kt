@@ -9,19 +9,13 @@ import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.every
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class PatchedDataMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val dueDateStatusMapper: DueDateStatusMapper = mockk()
 
@@ -30,13 +24,12 @@ class PatchedDataMapperTest {
     @Before
     fun setup() {
         sut = PatchedDataMapper(
-            dispatcher = testDispatcher,
             dueDateStatusMapper = dueDateStatusMapper
         )
     }
 
     @Test
-    fun `toDomain should map version correctly`() = runTest {
+    fun `toDomain should map version correctly`() {
         val response = getWorkItemResponseDTO()
 
         every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.Set
@@ -47,7 +40,7 @@ class PatchedDataMapperTest {
     }
 
     @Test
-    fun `toDomain should map dueDateStatus correctly`() = runTest {
+    fun `toDomain should map dueDateStatus correctly`() {
         val response = getWorkItemResponseDTO().copy(dueDateStatusDTO = DueDateStatusDTO.DueSoon)
 
         every { dueDateStatusMapper.toDomain(DueDateStatusDTO.DueSoon) } returns DueDateStatus.DueSoon
@@ -58,7 +51,7 @@ class PatchedDataMapperTest {
     }
 
     @Test
-    fun `toDomain should handle null dueDateStatus`() = runTest {
+    fun `toDomain should handle null dueDateStatus`() {
         val response = getWorkItemResponseDTO().copy(dueDateStatusDTO = null)
 
         every { dueDateStatusMapper.toDomain(null) } returns null
@@ -69,7 +62,7 @@ class PatchedDataMapperTest {
     }
 
     @Test
-    fun `toDomainCustomAttrs should map version correctly`() = runTest {
+    fun `toDomainCustomAttrs should map version correctly`() {
         val version = getRandomLong()
         val response = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),
@@ -82,7 +75,7 @@ class PatchedDataMapperTest {
     }
 
     @Test
-    fun `fromWiki should map version correctly`() = runTest {
+    fun `fromWiki should map version correctly`() {
         val version = getRandomLong()
         val dto = createWikiPageDTO(version = version)
 
@@ -92,7 +85,7 @@ class PatchedDataMapperTest {
     }
 
     @Test
-    fun `fromWiki should always set dueDateStatus to null`() = runTest {
+    fun `fromWiki should always set dueDateStatus to null`() {
         val dto = createWikiPageDTO()
 
         val result = sut.fromWiki(dto)

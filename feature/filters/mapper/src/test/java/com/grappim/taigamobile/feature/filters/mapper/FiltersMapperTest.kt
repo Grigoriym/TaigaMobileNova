@@ -4,27 +4,21 @@ import com.grappim.taigamobile.feature.filters.dto.FiltersDataResponseDTO
 import com.grappim.taigamobile.feature.filters.dto.TagDTO
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class FiltersMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var sut: FiltersMapper
 
     @Before
     fun setup() {
-        sut = FiltersMapper(testDispatcher)
+        sut = FiltersMapper()
     }
 
     @Test
-    fun `toDomain should map assignees correctly and filter out null ids`() = runTest {
+    fun `toDomain should map assignees correctly and filter out null ids`() {
         val userWithId = FiltersDataResponseDTO.UserFilter(
             id = getRandomLong(),
             fullName = getRandomString(),
@@ -46,7 +40,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map createdBy correctly and filter out null ids`() = runTest {
+    fun `toDomain should map createdBy correctly and filter out null ids`() {
         val ownerWithId = FiltersDataResponseDTO.UserFilter(
             id = getRandomLong(),
             fullName = getRandomString(),
@@ -68,7 +62,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map statuses correctly`() = runTest {
+    fun `toDomain should map statuses correctly`() {
         val status = FiltersDataResponseDTO.Filter(
             id = getRandomLong(),
             name = getRandomString(),
@@ -88,7 +82,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should use default color when status color is null`() = runTest {
+    fun `toDomain should use default color when status color is null`() {
         val status = FiltersDataResponseDTO.Filter(
             id = getRandomLong(),
             name = getRandomString(),
@@ -104,7 +98,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map priorities correctly`() = runTest {
+    fun `toDomain should map priorities correctly`() {
         val priority = FiltersDataResponseDTO.Filter(
             id = getRandomLong(),
             name = getRandomString(),
@@ -124,7 +118,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should return empty priorities when null`() = runTest {
+    fun `toDomain should return empty priorities when null`() {
         val dto = createMinimalDTO(priorities = null)
 
         val result = sut.toDomain(dto)
@@ -133,7 +127,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map severities correctly`() = runTest {
+    fun `toDomain should map severities correctly`() {
         val severity = FiltersDataResponseDTO.Filter(
             id = getRandomLong(),
             name = getRandomString(),
@@ -153,7 +147,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should return empty severities when null`() = runTest {
+    fun `toDomain should return empty severities when null`() {
         val dto = createMinimalDTO(severities = null)
 
         val result = sut.toDomain(dto)
@@ -162,7 +156,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map roles correctly`() = runTest {
+    fun `toDomain should map roles correctly`() {
         val role = FiltersDataResponseDTO.Filter(
             id = getRandomLong(),
             name = getRandomString(),
@@ -182,7 +176,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should return empty roles when null`() = runTest {
+    fun `toDomain should return empty roles when null`() {
         val dto = createMinimalDTO(roles = null)
 
         val result = sut.toDomain(dto)
@@ -191,7 +185,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map tags correctly`() = runTest {
+    fun `toDomain should map tags correctly`() {
         val tag = TagDTO(
             name = getRandomString(),
             color = "#FF00FF",
@@ -208,7 +202,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should return empty tags when null`() = runTest {
+    fun `toDomain should return empty tags when null`() {
         val dto = createMinimalDTO(tags = null)
 
         val result = sut.toDomain(dto)
@@ -217,7 +211,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should use default color when tag color is null`() = runTest {
+    fun `toDomain should use default color when tag color is null`() {
         val tag = TagDTO(
             name = getRandomString(),
             color = null,
@@ -231,7 +225,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map types correctly`() = runTest {
+    fun `toDomain should map types correctly`() {
         val type = FiltersDataResponseDTO.Filter(
             id = getRandomLong(),
             name = getRandomString(),
@@ -251,7 +245,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should return empty types when null`() = runTest {
+    fun `toDomain should return empty types when null`() {
         val dto = createMinimalDTO(types = null)
 
         val result = sut.toDomain(dto)
@@ -260,7 +254,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map epics with formatted name`() = runTest {
+    fun `toDomain should map epics with formatted name`() {
         val epic = FiltersDataResponseDTO.EpicsFilter(
             id = getRandomLong(),
             ref = 42L,
@@ -278,7 +272,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should return empty name when epic subject is null`() = runTest {
+    fun `toDomain should return empty name when epic subject is null`() {
         val epic = FiltersDataResponseDTO.EpicsFilter(
             id = getRandomLong(),
             ref = 42L,
@@ -294,7 +288,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should return empty epics when null`() = runTest {
+    fun `toDomain should return empty epics when null`() {
         val dto = createMinimalDTO(epics = null)
 
         val result = sut.toDomain(dto)
@@ -303,7 +297,7 @@ class FiltersMapperTest {
     }
 
     @Test
-    fun `toDomain should map all fields correctly`() = runTest {
+    fun `toDomain should map all fields correctly`() {
         val assignee = FiltersDataResponseDTO.UserFilter(
             id = getRandomLong(),
             fullName = getRandomString(),

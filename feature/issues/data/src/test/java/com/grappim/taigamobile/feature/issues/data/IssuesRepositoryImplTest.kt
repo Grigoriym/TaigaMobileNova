@@ -13,7 +13,9 @@ import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -58,12 +60,12 @@ class IssuesRepositoryImplTest {
                 id = issueId
             )
         } returns mockResponse
-        coEvery { issueMapper.toDomain(mockResponse, filtersData) } returns expectedIssue
+        every { issueMapper.toDomain(mockResponse, filtersData) } returns expectedIssue
 
         val actual = sut.getIssue(issueId, filtersData)
 
         assertEquals(expectedIssue, actual)
         coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = issueId) }
-        coVerify { issueMapper.toDomain(mockResponse, filtersData) }
+        verify { issueMapper.toDomain(mockResponse, filtersData) }
     }
 }

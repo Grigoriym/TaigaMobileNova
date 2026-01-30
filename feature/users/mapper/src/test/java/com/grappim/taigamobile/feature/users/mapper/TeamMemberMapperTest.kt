@@ -4,25 +4,19 @@ import com.grappim.taigamobile.feature.projects.dto.ProjectMemberDTO
 import com.grappim.taigamobile.testing.getRandomInt
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class TeamMemberMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: TeamMemberMapper
 
     @Before
     fun setup() {
-        sut = TeamMemberMapper(dispatcher = testDispatcher)
+        sut = TeamMemberMapper()
     }
 
     private fun getProjectMemberDTO(
@@ -40,7 +34,7 @@ class TeamMemberMapperTest {
     )
 
     @Test
-    fun `toDomain should map all fields correctly`() = runTest {
+    fun `toDomain should map all fields correctly`() {
         val dto = getProjectMemberDTO()
         val totalPower = getRandomInt()
         val stats = mapOf(dto.id to totalPower)
@@ -57,7 +51,7 @@ class TeamMemberMapperTest {
     }
 
     @Test
-    fun `toDomain should handle null photo`() = runTest {
+    fun `toDomain should handle null photo`() {
         val dto = getProjectMemberDTO(photo = null)
         val stats = mapOf(dto.id to getRandomInt())
 
@@ -67,7 +61,7 @@ class TeamMemberMapperTest {
     }
 
     @Test
-    fun `toDomain should handle missing stats for member`() = runTest {
+    fun `toDomain should handle missing stats for member`() {
         val dto = getProjectMemberDTO()
         val stats = emptyMap<Long, Int>()
 
@@ -77,14 +71,14 @@ class TeamMemberMapperTest {
     }
 
     @Test
-    fun `toDomain should handle empty list`() = runTest {
+    fun `toDomain should handle empty list`() {
         val result = sut.toDomain(emptyList(), emptyMap())
 
         assertTrue(result.isEmpty())
     }
 
     @Test
-    fun `toDomain should map multiple members correctly`() = runTest {
+    fun `toDomain should map multiple members correctly`() {
         val dto1 = getProjectMemberDTO()
         val dto2 = getProjectMemberDTO()
         val dto3 = getProjectMemberDTO()
@@ -104,7 +98,7 @@ class TeamMemberMapperTest {
     }
 
     @Test
-    fun `toDomain should return immutable list`() = runTest {
+    fun `toDomain should return immutable list`() {
         val dto = getProjectMemberDTO()
         val stats = mapOf(dto.id to getRandomInt())
 

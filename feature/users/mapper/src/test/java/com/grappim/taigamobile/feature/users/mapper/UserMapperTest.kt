@@ -2,28 +2,22 @@ package com.grappim.taigamobile.feature.users.mapper
 
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getUserDTO
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class UserMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: UserMapper
 
     @Before
     fun setup() {
-        sut = UserMapper(ioDispatcher = testDispatcher)
+        sut = UserMapper()
     }
 
     @Test
-    fun `toUser should map all fields correctly`() = runTest {
+    fun `toUser should map all fields correctly`() {
         val dto = getUserDTO()
 
         val result = sut.toUser(dto)
@@ -38,7 +32,7 @@ class UserMapperTest {
     }
 
     @Test
-    fun `toUser should handle null id`() = runTest {
+    fun `toUser should handle null id`() {
         val dto = getUserDTO().copy(id = null)
 
         val result = sut.toUser(dto)
@@ -47,7 +41,7 @@ class UserMapperTest {
     }
 
     @Test
-    fun `toUser should handle null fullName`() = runTest {
+    fun `toUser should handle null fullName`() {
         val dto = getUserDTO().copy(fullName = null)
 
         val result = sut.toUser(dto)
@@ -56,7 +50,7 @@ class UserMapperTest {
     }
 
     @Test
-    fun `toUser should handle null photo`() = runTest {
+    fun `toUser should handle null photo`() {
         val dto = getUserDTO().copy(photo = null)
 
         val result = sut.toUser(dto)
@@ -65,7 +59,7 @@ class UserMapperTest {
     }
 
     @Test
-    fun `toUser should handle null bigPhoto`() = runTest {
+    fun `toUser should handle null bigPhoto`() {
         val dto = getUserDTO().copy(bigPhoto = null)
 
         val result = sut.toUser(dto)
@@ -74,7 +68,7 @@ class UserMapperTest {
     }
 
     @Test
-    fun `toUser should handle null name`() = runTest {
+    fun `toUser should handle null name`() {
         val dto = getUserDTO().copy(name = null)
 
         val result = sut.toUser(dto)
@@ -83,7 +77,7 @@ class UserMapperTest {
     }
 
     @Test
-    fun `toUser should handle null pk`() = runTest {
+    fun `toUser should handle null pk`() {
         val dto = getUserDTO().copy(pk = null)
 
         val result = sut.toUser(dto)
@@ -92,7 +86,7 @@ class UserMapperTest {
     }
 
     @Test
-    fun `toUser should preserve username`() = runTest {
+    fun `toUser should preserve username`() {
         val username = getRandomString()
         val dto = getUserDTO().copy(username = username)
 

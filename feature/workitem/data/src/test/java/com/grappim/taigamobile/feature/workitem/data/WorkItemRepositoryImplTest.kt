@@ -21,6 +21,7 @@ import com.grappim.taigamobile.feature.workitem.dto.customfield.CustomFieldTypeD
 import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
 import com.grappim.taigamobile.feature.workitem.mapper.AttachmentMapper
 import com.grappim.taigamobile.feature.workitem.mapper.CustomFieldsMapper
+import com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapper
 import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getAttachment
@@ -33,6 +34,7 @@ import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
 import kotlinx.collections.immutable.persistentListOf
@@ -57,6 +59,7 @@ class WorkItemRepositoryImplTest {
     private val usersRepository: UsersRepository = mockk()
     private val customFieldsMapper: CustomFieldsMapper = mockk()
     private val taigaSessionStorage: TaigaSessionStorage = mockk()
+    private val jsonObjectMapper: JsonObjectMapper = mockk()
 
     private lateinit var sut: WorkItemRepository
 
@@ -65,6 +68,10 @@ class WorkItemRepositoryImplTest {
     @Before
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
+        every { jsonObjectMapper.fromMapToJsonObject(any()) } answers {
+            val map = firstArg<Map<String, Any?>>()
+            JsonObjectMapper().fromMapToJsonObject(map)
+        }
 
         sut = WorkItemRepositoryImpl(
             workItemApi = workItemApi,
@@ -73,7 +80,8 @@ class WorkItemRepositoryImplTest {
             workItemMapper = workItemMapper,
             usersRepository = usersRepository,
             customFieldsMapper = customFieldsMapper,
-            taigaSessionStorage = taigaSessionStorage
+            taigaSessionStorage = taigaSessionStorage,
+            jsonObjectMapper = jsonObjectMapper
         )
     }
 
@@ -175,7 +183,7 @@ class WorkItemRepositoryImplTest {
                 payload = capture(jsonSlot)
             )
         } returns responseDto
-        coEvery { patchedDataMapper.toDomain(responseDto) } returns expectedPatchedData
+        every { patchedDataMapper.toDomain(responseDto) } returns expectedPatchedData
 
         val result = sut.patchData(
             version = version,
@@ -210,7 +218,7 @@ class WorkItemRepositoryImplTest {
                 payload = capture(jsonSlot)
             )
         } returns responseDto
-        coEvery { patchedDataMapper.toDomainCustomAttrs(responseDto) } returns expectedResult
+        every { patchedDataMapper.toDomainCustomAttrs(responseDto) } returns expectedResult
 
         val result = sut.patchCustomAttributes(
             customAttributesVersion = version,
@@ -240,7 +248,7 @@ class WorkItemRepositoryImplTest {
                 objectId = any()
             )
         } returns attachmentDto
-        coEvery { attachmentMapper.toDomain(attachmentDto) } returns expectedAttachment
+        every { attachmentMapper.toDomain(attachmentDto) } returns expectedAttachment
 
         val result = sut.addAttachment(
             workItemId = workItemId,
@@ -344,7 +352,7 @@ class WorkItemRepositoryImplTest {
                 payload = any()
             )
         } returns patchedDto
-        coEvery { patchedDataMapper.toDomain(patchedDto) } returns patchedData
+        every { patchedDataMapper.toDomain(patchedDto) } returns patchedData
         coEvery { usersRepository.getUsersList(newWatcherIds.toList()) } returns users
         coEvery { usersRepository.isAnyAssignedToMe(users) } returns true
 
@@ -376,7 +384,7 @@ class WorkItemRepositoryImplTest {
                 payload = any()
             )
         } returns patchedDto
-        coEvery { patchedDataMapper.toDomain(patchedDto) } returns patchedData
+        every { patchedDataMapper.toDomain(patchedDto) } returns patchedData
 
         val result = sut.updateWatchersData(
             version = version,
@@ -434,7 +442,7 @@ class WorkItemRepositoryImplTest {
                 taskPath = WorkItemPathPlural(taskType)
             )
         } returns values
-        coEvery { customFieldsMapper.toDomain(attributes, values) } returns expectedCustomFields
+        every { customFieldsMapper.toDomain(attributes, values) } returns expectedCustomFields
 
         val result = sut.getCustomFields(workItemId, taskType)
 
@@ -457,7 +465,7 @@ class WorkItemRepositoryImplTest {
                 projectId = projectId
             )
         } returns attachmentDtos
-        coEvery { attachmentMapper.toDomain(attachmentDtos) } returns expectedAttachments
+        every { attachmentMapper.toDomain(attachmentDtos) } returns expectedAttachments
 
         val result = sut.getWorkItemAttachments(workItemId, taskIdentifier)
 
@@ -478,7 +486,7 @@ class WorkItemRepositoryImplTest {
                 projectId = projectId
             )
         } returns attachmentDtos
-        coEvery { attachmentMapper.toDomain(attachmentDtos) } returns expectedAttachments
+        every { attachmentMapper.toDomain(attachmentDtos) } returns expectedAttachments
 
         val result = sut.getWorkItemAttachments(workItemId, taskIdentifier)
 
@@ -525,7 +533,7 @@ class WorkItemRepositoryImplTest {
                 payload = capture(jsonSlot)
             )
         } returns wikiPageDto
-        coEvery { patchedDataMapper.fromWiki(wikiPageDto) } returns expectedPatchedData
+        every { patchedDataMapper.fromWiki(wikiPageDto) } returns expectedPatchedData
 
         val result = sut.patchWikiPage(pageId, version, payload)
 
@@ -730,7 +738,7 @@ class WorkItemRepositoryImplTest {
                 objectId = any()
             )
         } returns attachmentDto
-        coEvery { attachmentMapper.toDomain(attachmentDto) } returns expectedAttachment
+        every { attachmentMapper.toDomain(attachmentDto) } returns expectedAttachment
 
         val result = sut.addAttachment(
             workItemId = workItemId,

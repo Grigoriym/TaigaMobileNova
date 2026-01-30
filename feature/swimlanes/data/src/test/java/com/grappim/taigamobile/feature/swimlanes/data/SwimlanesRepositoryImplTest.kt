@@ -8,7 +8,9 @@ import com.grappim.taigamobile.testing.getSwimlane
 import com.grappim.taigamobile.testing.getSwimlaneDTO
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -49,14 +51,14 @@ class SwimlanesRepositoryImplTest {
         )
 
         coEvery { swimlanesApi.getSwimlanes(projectId) } returns apiResponse
-        coEvery { swimlanesMapper.toListDomain(apiResponse) } returns expectedSwimlanes
+        every { swimlanesMapper.toListDomain(apiResponse) } returns expectedSwimlanes
 
         val result = sut.getSwimlanes()
 
         assertEquals(expectedSwimlanes, result)
         coVerify { taigaSessionStorage.getCurrentProjectId() }
         coVerify { swimlanesApi.getSwimlanes(projectId) }
-        coVerify { swimlanesMapper.toListDomain(apiResponse) }
+        verify { swimlanesMapper.toListDomain(apiResponse) }
     }
 
     @Test
@@ -65,7 +67,7 @@ class SwimlanesRepositoryImplTest {
         val expectedSwimlanes = persistentListOf<Swimlane>()
 
         coEvery { swimlanesApi.getSwimlanes(projectId) } returns apiResponse
-        coEvery { swimlanesMapper.toListDomain(apiResponse) } returns expectedSwimlanes
+        every { swimlanesMapper.toListDomain(apiResponse) } returns expectedSwimlanes
 
         val result = sut.getSwimlanes()
 
@@ -79,7 +81,7 @@ class SwimlanesRepositoryImplTest {
 
         val apiResponse = emptyList<SwimlaneDTO>()
         coEvery { swimlanesApi.getSwimlanes(customProjectId) } returns apiResponse
-        coEvery { swimlanesMapper.toListDomain(apiResponse) } returns persistentListOf()
+        every { swimlanesMapper.toListDomain(apiResponse) } returns persistentListOf()
 
         sut.getSwimlanes()
 

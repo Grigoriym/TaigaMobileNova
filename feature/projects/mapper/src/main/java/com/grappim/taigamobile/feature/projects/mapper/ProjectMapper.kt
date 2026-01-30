@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.projects.mapper
 
-import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.storage.db.entities.ProjectEntity
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectExtraInfo
@@ -11,34 +10,30 @@ import com.grappim.taigamobile.feature.projects.dto.ProjectExtraInfoDTO
 import com.grappim.taigamobile.feature.projects.dto.TaigaPermissionDTO
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class ProjectMapper @Inject constructor(@IoDispatcher private val ioDispatcher: CoroutineDispatcher) {
-    suspend fun toProject(dto: ProjectDTO): Project = withContext(ioDispatcher) {
-        Project(
-            id = dto.id,
-            name = dto.name,
-            slug = dto.slug,
-            isMember = dto.isMember,
-            isAdmin = dto.isAdmin,
-            isOwner = dto.isOwner,
-            description = dto.description,
-            avatarUrl = dto.avatarUrl,
-            members = dto.members.toImmutableList(),
-            fansCount = dto.fansCount,
-            watchersCount = dto.watchersCount,
-            isPrivate = dto.isPrivate,
-            myPermissions = dto.myPermissions.map { it.toDomain() }.toImmutableList(),
-            isEpicsActivated = dto.isEpicsActivated,
-            isBacklogActivated = dto.isBacklogActivated,
-            isKanbanActivated = dto.isKanbanActivated,
-            isIssuesActivated = dto.isIssuesActivated,
-            isWikiActivated = dto.isWikiActivated,
-            defaultSwimlane = dto.defaultSwimlane
-        )
-    }
+class ProjectMapper @Inject constructor() {
+    fun toProject(dto: ProjectDTO): Project = Project(
+        id = dto.id,
+        name = dto.name,
+        slug = dto.slug,
+        isMember = dto.isMember,
+        isAdmin = dto.isAdmin,
+        isOwner = dto.isOwner,
+        description = dto.description,
+        avatarUrl = dto.avatarUrl,
+        members = dto.members.toImmutableList(),
+        fansCount = dto.fansCount,
+        watchersCount = dto.watchersCount,
+        isPrivate = dto.isPrivate,
+        myPermissions = dto.myPermissions.map { it.toDomain() }.toImmutableList(),
+        isEpicsActivated = dto.isEpicsActivated,
+        isBacklogActivated = dto.isBacklogActivated,
+        isKanbanActivated = dto.isKanbanActivated,
+        isIssuesActivated = dto.isIssuesActivated,
+        isWikiActivated = dto.isWikiActivated,
+        defaultSwimlane = dto.defaultSwimlane
+    )
 
     fun toProjectExtraInfo(dto: ProjectExtraInfoDTO): ProjectExtraInfo = ProjectExtraInfo(
         id = dto.id,
@@ -47,24 +42,21 @@ class ProjectMapper @Inject constructor(@IoDispatcher private val ioDispatcher: 
         logoSmallUrl = dto.logoSmallUrl
     )
 
-    suspend fun toProjectSimple(entity: ProjectEntity): ProjectSimple = withContext(ioDispatcher) {
-        ProjectSimple(
-            id = entity.id,
-            name = entity.name,
-            slug = entity.slug,
-            myPermissions = entity.myPermissions.toImmutableList(),
-            isEpicsActivated = entity.isEpicsActivated,
-            isBacklogActivated = entity.isBacklogActivated,
-            isKanbanActivated = entity.isKanbanActivated,
-            isIssuesActivated = entity.isIssuesActivated,
-            isWikiActivated = entity.isWikiActivated,
-            defaultSwimlane = entity.defaultSwimlane,
-            isAdmin = entity.isAdmin
-        )
-    }
+    fun toProjectSimple(entity: ProjectEntity): ProjectSimple = ProjectSimple(
+        id = entity.id,
+        name = entity.name,
+        slug = entity.slug,
+        myPermissions = entity.myPermissions.toImmutableList(),
+        isEpicsActivated = entity.isEpicsActivated,
+        isBacklogActivated = entity.isBacklogActivated,
+        isKanbanActivated = entity.isKanbanActivated,
+        isIssuesActivated = entity.isIssuesActivated,
+        isWikiActivated = entity.isWikiActivated,
+        defaultSwimlane = entity.defaultSwimlane,
+        isAdmin = entity.isAdmin
+    )
 
-    suspend fun toListDomain(dto: List<ProjectDTO>): ImmutableList<Project> =
-        dto.map { toProject(it) }.toImmutableList()
+    fun toListDomain(dto: List<ProjectDTO>): ImmutableList<Project> = dto.map { toProject(it) }.toImmutableList()
 
     fun toEntity(project: Project): ProjectEntity = ProjectEntity(
         id = project.id,

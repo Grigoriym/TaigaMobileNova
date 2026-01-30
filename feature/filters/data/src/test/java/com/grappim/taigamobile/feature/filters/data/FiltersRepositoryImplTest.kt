@@ -3,19 +3,17 @@ package com.grappim.taigamobile.feature.filters.data
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
-import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
-import com.grappim.taigamobile.feature.filters.domain.model.filters.StatusFilters
 import com.grappim.taigamobile.feature.filters.dto.FiltersDataResponseDTO
 import com.grappim.taigamobile.feature.filters.mapper.FiltersMapper
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.testing.getFiltersData
 import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getStatusFilters
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -59,7 +57,7 @@ class FiltersRepositoryImplTest {
                 milestone = null
             )
         } returns mockResponse
-        coEvery { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
+        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
 
         val actual = sut.getFiltersData(taskType)
 
@@ -71,7 +69,7 @@ class FiltersRepositoryImplTest {
                 milestone = null
             )
         }
-        coVerify { filtersMapper.toDomain(mockResponse) }
+        verify { filtersMapper.toDomain(mockResponse) }
     }
 
     @Test
@@ -88,7 +86,7 @@ class FiltersRepositoryImplTest {
                 milestone = null
             )
         } returns mockResponse
-        coEvery { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
+        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
 
         sut.getFiltersData(taskType, isCommonTaskFromBacklog = false)
 
@@ -115,7 +113,7 @@ class FiltersRepositoryImplTest {
                 milestone = "null"
             )
         } returns mockResponse
-        coEvery { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
+        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
 
         sut.getFiltersData(taskType, isCommonTaskFromBacklog = true)
 
@@ -142,7 +140,7 @@ class FiltersRepositoryImplTest {
                 milestone = null
             )
         } returns mockResponse
-        coEvery { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
+        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
 
         val actual = sut.getFiltersData(taskType)
 
@@ -163,7 +161,7 @@ class FiltersRepositoryImplTest {
                 milestone = null
             )
         } returns mockResponse
-        coEvery { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
+        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
 
         val actual = sut.getFiltersData(taskType)
 
@@ -189,7 +187,7 @@ class FiltersRepositoryImplTest {
                 milestone = null
             )
         } returns mockResponse
-        coEvery { filtersMapper.toDomain(mockResponse) } returns filtersData
+        every { filtersMapper.toDomain(mockResponse) } returns filtersData
 
         val actual = sut.getStatuses(taskType)
 
@@ -216,7 +214,7 @@ class FiltersRepositoryImplTest {
                 milestone = null
             )
         } returns mockResponse
-        coEvery { filtersMapper.toDomain(mockResponse) } returns filtersData
+        every { filtersMapper.toDomain(mockResponse) } returns filtersData
 
         val actual = sut.getStatuses(taskType)
 

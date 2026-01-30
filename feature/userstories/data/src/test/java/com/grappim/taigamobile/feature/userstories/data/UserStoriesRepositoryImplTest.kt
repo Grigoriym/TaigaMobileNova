@@ -16,8 +16,10 @@ import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -64,13 +66,13 @@ class UserStoriesRepositoryImplTest {
                 id = userStoryId
             )
         } returns mockResponse
-        coEvery { userStoryMapper.toDomain(mockResponse) } returns expectedUserStory
+        every { userStoryMapper.toDomain(mockResponse) } returns expectedUserStory
 
         val actual = sut.getUserStory(userStoryId)
 
         assertEquals(expectedUserStory, actual)
         coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = userStoryId) }
-        coVerify { userStoryMapper.toDomain(mockResponse) }
+        verify { userStoryMapper.toDomain(mockResponse) }
     }
 
     @Test
@@ -139,7 +141,7 @@ class UserStoriesRepositoryImplTest {
             )
         } returns responses
 
-        coEvery { userStoryMapper.toListDomain(responses) } returns expected
+        every { userStoryMapper.toListDomain(responses) } returns expected
 
         val actual = sut.getUserStories(
             assignedId = assignedId,

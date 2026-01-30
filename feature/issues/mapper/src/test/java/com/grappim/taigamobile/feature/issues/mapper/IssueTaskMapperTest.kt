@@ -18,22 +18,15 @@ import com.grappim.taigamobile.testing.getTag
 import com.grappim.taigamobile.testing.getType
 import com.grappim.taigamobile.testing.getUser
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
-import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class IssueTaskMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val userMapper: UserMapper = mockk()
     private val statusesMapper: StatusesMapper = mockk()
@@ -47,10 +40,9 @@ class IssueTaskMapperTest {
 
     @Before
     fun setup() {
-        coEvery { serverStorage.server } returns "https://taiga.example.com"
+        every { serverStorage.server } returns "https://taiga.example.com"
 
         sut = IssueMapper(
-            ioDispatcher = testDispatcher,
             userMapper = userMapper,
             statusesMapper = statusesMapper,
             projectMapper = projectMapper,
@@ -61,16 +53,16 @@ class IssueTaskMapperTest {
     }
 
     @Test
-    fun `toDomain without filters should map basic fields correctly`() = runTest {
+    fun `toDomain without filters should map basic fields correctly`() {
         val response = getWorkItemResponseDTO()
         val user = getUser()
 
         every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -89,20 +81,20 @@ class IssueTaskMapperTest {
     }
 
     @Test
-    fun `toDomain should map basic fields correctly`() = runTest {
+    fun `toDomain should map basic fields correctly`() {
         val response = getWorkItemResponseDTO()
         val filtersData = getFiltersData()
         val user = getUser()
 
         every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-        coEvery { statusesMapper.getType(filtersData, response) } returns getType()
-        coEvery { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
-        coEvery { statusesMapper.getPriority(filtersData, response) } returns getPriority()
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { statusesMapper.getStatus(response) } returns getStatus()
+        every { statusesMapper.getType(filtersData, response) } returns getType()
+        every { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
+        every { statusesMapper.getPriority(filtersData, response) } returns getPriority()
 
         val result = sut.toDomain(response, filtersData)
 
@@ -121,7 +113,7 @@ class IssueTaskMapperTest {
     }
 
     @Test
-    fun `toDomain should handle null owner with error`() = runTest {
+    fun `toDomain should handle null owner with error`() {
         val response = getWorkItemResponseDTO().copy(owner = null)
         val filtersData = getFiltersData()
 
@@ -134,20 +126,20 @@ class IssueTaskMapperTest {
     }
 
     @Test
-    fun `toDomain should map due date status correctly`() = runTest {
+    fun `toDomain should map due date status correctly`() {
         val user = getUser()
         val response = getWorkItemResponseDTO().copy(dueDateStatusDTO = DueDateStatusDTO.DueSoon)
         val filtersData = getFiltersData()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-        coEvery { statusesMapper.getType(filtersData, response) } returns getType()
-        coEvery { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
-        coEvery { statusesMapper.getPriority(filtersData, response) } returns getPriority()
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
+        every { statusesMapper.getType(filtersData, response) } returns getType()
+        every { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
+        every { statusesMapper.getPriority(filtersData, response) } returns getPriority()
 
         val result = sut.toDomain(response, filtersData)
 
@@ -155,7 +147,7 @@ class IssueTaskMapperTest {
     }
 
     @Test
-    fun `toDomain should handle blocked note correctly`() = runTest {
+    fun `toDomain should handle blocked note correctly`() {
         val user = getUser()
         val blockedNote = getRandomString()
         val response = getWorkItemResponseDTO().copy(
@@ -164,15 +156,15 @@ class IssueTaskMapperTest {
         )
         val filtersData = getFiltersData()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-        coEvery { statusesMapper.getType(filtersData, response) } returns getType()
-        coEvery { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
-        coEvery { statusesMapper.getPriority(filtersData, response) } returns getPriority()
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
+        every { statusesMapper.getType(filtersData, response) } returns getType()
+        every { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
+        every { statusesMapper.getPriority(filtersData, response) } returns getPriority()
 
         val result = sut.toDomain(response, filtersData)
 
@@ -180,20 +172,20 @@ class IssueTaskMapperTest {
     }
 
     @Test
-    fun `toDomain should build correct copy link URL`() = runTest {
+    fun `toDomain should build correct copy link URL`() {
         val user = getUser()
         val response = getWorkItemResponseDTO()
         val filtersData = getFiltersData()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-        coEvery { statusesMapper.getType(filtersData, response) } returns getType()
-        coEvery { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
-        coEvery { statusesMapper.getPriority(filtersData, response) } returns getPriority()
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
+        every { statusesMapper.getType(filtersData, response) } returns getType()
+        every { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
+        every { statusesMapper.getPriority(filtersData, response) } returns getPriority()
 
         val result = sut.toDomain(response, filtersData)
 
@@ -203,7 +195,7 @@ class IssueTaskMapperTest {
     }
 
     @Test
-    fun `toDomain should map tags correctly from nested list`() = runTest {
+    fun `toDomain should map tags correctly from nested list`() {
         val user = getUser()
         val response = getWorkItemResponseDTO()
         val filtersData = getFiltersData()
@@ -211,18 +203,18 @@ class IssueTaskMapperTest {
         val firstTag = getTag()
         val secondTag = getTag()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
         every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns
             DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(
             firstTag,
             secondTag
         )
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-        coEvery { statusesMapper.getType(filtersData, response) } returns getType()
-        coEvery { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
-        coEvery { statusesMapper.getPriority(filtersData, response) } returns getPriority()
+        every { statusesMapper.getStatus(response) } returns getStatus()
+        every { statusesMapper.getType(filtersData, response) } returns getType()
+        every { statusesMapper.getSeverity(filtersData, response) } returns getSeverity()
+        every { statusesMapper.getPriority(filtersData, response) } returns getPriority()
 
         val result = sut.toDomain(response, filtersData)
 

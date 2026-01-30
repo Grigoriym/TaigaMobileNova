@@ -3,24 +3,19 @@ package com.grappim.taigamobile.feature.workitem.mapper
 import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiLinkDTO
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class WikiLinkMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: WikiLinkMapper
 
     @Before
     fun setup() {
-        sut = WikiLinkMapper(testDispatcher)
+        sut = WikiLinkMapper()
     }
 
     @Test

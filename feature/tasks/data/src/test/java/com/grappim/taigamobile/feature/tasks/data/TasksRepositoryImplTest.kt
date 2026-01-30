@@ -15,7 +15,9 @@ import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -57,13 +59,13 @@ class TasksRepositoryImplTest {
         val expectedTasks = persistentListOf(mockk<Task>(), mockk<Task>())
 
         coEvery { tasksApi.getTasks(userStory = storyId, project = projectId) } returns dtos
-        coEvery { taskMapper.toDomainList(dtos) } returns expectedTasks
+        every { taskMapper.toDomainList(dtos) } returns expectedTasks
 
         val result = sut.getUserStoryTasks(storyId)
 
         assertEquals(expectedTasks, result)
         coVerify { tasksApi.getTasks(userStory = storyId, project = projectId) }
-        coVerify { taskMapper.toDomainList(dtos) }
+        verify { taskMapper.toDomainList(dtos) }
     }
 
     @Test
@@ -73,7 +75,7 @@ class TasksRepositoryImplTest {
         val expectedTasks = persistentListOf<Task>()
 
         coEvery { tasksApi.getTasks(userStory = storyId, project = projectId) } returns dtos
-        coEvery { taskMapper.toDomainList(dtos) } returns expectedTasks
+        every { taskMapper.toDomainList(dtos) } returns expectedTasks
 
         val result = sut.getUserStoryTasks(storyId)
 
@@ -99,7 +101,7 @@ class TasksRepositoryImplTest {
                 sprint = sprintId
             )
         } returns dtos
-        coEvery { taskMapper.toDomainList(dtos) } returns expectedTasks
+        every { taskMapper.toDomainList(dtos) } returns expectedTasks
 
         val result = sut.getTasks(
             assignedId = assignedId,
@@ -128,7 +130,7 @@ class TasksRepositoryImplTest {
                 sprint = null
             )
         } returns dtos
-        coEvery { taskMapper.toDomainList(dtos) } returns expectedTasks
+        every { taskMapper.toDomainList(dtos) } returns expectedTasks
 
         val result = sut.getTasks()
 
@@ -142,13 +144,13 @@ class TasksRepositoryImplTest {
         val expectedTask = mockk<Task>()
 
         coEvery { workItemApi.getWorkItemById(taskPath = taskPath, id = taskId) } returns dto
-        coEvery { taskMapper.toDomain(dto) } returns expectedTask
+        every { taskMapper.toDomain(dto) } returns expectedTask
 
         val result = sut.getTask(taskId)
 
         assertEquals(expectedTask, result)
         coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = taskId) }
-        coVerify { taskMapper.toDomain(dto) }
+        verify { taskMapper.toDomain(dto) }
     }
 
     @Test
@@ -180,13 +182,13 @@ class TasksRepositoryImplTest {
         )
 
         coEvery { tasksApi.createTask(expectedRequest) } returns dto
-        coEvery { workItemMapper.toDomain(dto, CommonTaskType.Task) } returns expectedWorkItem
+        every { workItemMapper.toDomain(dto, CommonTaskType.Task) } returns expectedWorkItem
 
         val result = sut.createTask(title, description, parentId, sprintId)
 
         assertEquals(expectedWorkItem, result)
         coVerify { tasksApi.createTask(expectedRequest) }
-        coVerify { workItemMapper.toDomain(dto, CommonTaskType.Task) }
+        verify { workItemMapper.toDomain(dto, CommonTaskType.Task) }
     }
 
     @Test
@@ -205,7 +207,7 @@ class TasksRepositoryImplTest {
         )
 
         coEvery { tasksApi.createTask(expectedRequest) } returns dto
-        coEvery { workItemMapper.toDomain(dto, CommonTaskType.Task) } returns expectedWorkItem
+        every { workItemMapper.toDomain(dto, CommonTaskType.Task) } returns expectedWorkItem
 
         val result = sut.createTask(title, description, null, null)
 

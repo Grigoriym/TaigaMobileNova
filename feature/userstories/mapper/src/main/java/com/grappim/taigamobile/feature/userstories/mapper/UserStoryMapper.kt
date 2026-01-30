@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.userstories.mapper
 
-import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
 import com.grappim.taigamobile.core.storage.server.ServerStorage
@@ -15,12 +14,9 @@ import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class UserStoryMapper @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val userMapper: UserMapper,
     private val statusesMapper: StatusesMapper,
     private val projectMapper: ProjectMapper,
@@ -29,10 +25,10 @@ class UserStoryMapper @Inject constructor(
     private val serverStorage: ServerStorage
 ) {
 
-    suspend fun toListDomain(list: List<WorkItemResponseDTO>): ImmutableList<UserStory> =
+    fun toListDomain(list: List<WorkItemResponseDTO>): ImmutableList<UserStory> =
         list.map { toDomain(it) }.toImmutableList()
 
-    suspend fun toDomain(resp: WorkItemResponseDTO): UserStory = withContext(ioDispatcher) {
+    fun toDomain(resp: WorkItemResponseDTO): UserStory {
         val creatorId = resp.owner ?: error("Owner field is null")
 
         val server = serverStorage.server
@@ -40,7 +36,7 @@ class UserStoryMapper @Inject constructor(
             transformTaskTypeForCopyLink(CommonTaskType.UserStory)
         }/${resp.ref}"
 
-        UserStory(
+        return UserStory(
             id = resp.id,
             version = resp.version,
             createdDateTime = resp.createdDate,

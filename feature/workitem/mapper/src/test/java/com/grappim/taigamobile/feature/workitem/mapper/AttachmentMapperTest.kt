@@ -4,28 +4,22 @@ import com.grappim.taigamobile.feature.workitem.dto.AttachmentDTO
 import com.grappim.taigamobile.testing.getAttachmentDTO
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class AttachmentMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: AttachmentMapper
 
     @Before
     fun setup() {
-        sut = AttachmentMapper(testDispatcher)
+        sut = AttachmentMapper()
     }
 
     @Test
-    fun `toDomain should map single AttachmentDTO correctly`() = runTest {
+    fun `toDomain should map single AttachmentDTO correctly`() {
         val dto = getAttachmentDTO()
 
         val result = sut.toDomain(dto)
@@ -37,7 +31,7 @@ class AttachmentMapperTest {
     }
 
     @Test
-    fun `toDomain should map list of AttachmentDTOs correctly`() = runTest {
+    fun `toDomain should map list of AttachmentDTOs correctly`() {
         val dto1 = getAttachmentDTO()
         val dto2 = getAttachmentDTO()
         val dto3 = getAttachmentDTO()
@@ -63,7 +57,7 @@ class AttachmentMapperTest {
     }
 
     @Test
-    fun `toDomain should return empty list for empty input`() = runTest {
+    fun `toDomain should return empty list for empty input`() {
         val dtoList = emptyList<AttachmentDTO>()
 
         val result = sut.toDomain(dtoList)
@@ -72,7 +66,7 @@ class AttachmentMapperTest {
     }
 
     @Test
-    fun `toDomain should handle attachment with zero size`() = runTest {
+    fun `toDomain should handle attachment with zero size`() {
         val dto = AttachmentDTO(
             id = getRandomLong(),
             name = getRandomString(),
@@ -86,7 +80,7 @@ class AttachmentMapperTest {
     }
 
     @Test
-    fun `toDomain should handle attachment with special characters in name`() = runTest {
+    fun `toDomain should handle attachment with special characters in name`() {
         val specialName = "file (1) [copy].txt"
         val dto = AttachmentDTO(
             id = getRandomLong(),

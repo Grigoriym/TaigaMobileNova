@@ -5,22 +5,18 @@ import com.grappim.taigamobile.testing.getFiltersData
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class StatusesMapperTest {
 
-    private val testDispatcher = UnconfinedTestDispatcher()
     private lateinit var sut: StatusesMapper
 
     @Before
     fun setup() {
-        sut = StatusesMapper(testDispatcher)
+        sut = StatusesMapper()
     }
 
     @Test

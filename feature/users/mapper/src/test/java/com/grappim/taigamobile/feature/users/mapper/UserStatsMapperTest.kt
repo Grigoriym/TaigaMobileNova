@@ -3,28 +3,22 @@ package com.grappim.taigamobile.feature.users.mapper
 import com.grappim.taigamobile.feature.users.dto.StatsDTO
 import com.grappim.taigamobile.testing.getRandomInt
 import com.grappim.taigamobile.testing.getRandomString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class UserStatsMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: UserStatsMapper
 
     @Before
     fun setup() {
-        sut = UserStatsMapper(dispatcher = testDispatcher)
+        sut = UserStatsMapper()
     }
 
     @Test
-    fun `toDomain should map all fields correctly`() = runTest {
+    fun `toDomain should map all fields correctly`() {
         val dto = StatsDTO(
             roles = listOf(getRandomString(), getRandomString(), getRandomString()),
             totalNumClosedUserStories = getRandomInt(),
@@ -41,7 +35,7 @@ class UserStatsMapperTest {
     }
 
     @Test
-    fun `toDomain should handle empty roles list`() = runTest {
+    fun `toDomain should handle empty roles list`() {
         val dto = StatsDTO(
             roles = emptyList(),
             totalNumClosedUserStories = getRandomInt(),
@@ -55,7 +49,7 @@ class UserStatsMapperTest {
     }
 
     @Test
-    fun `toDomain should convert roles to immutable list`() = runTest {
+    fun `toDomain should convert roles to immutable list`() {
         val roles = listOf(getRandomString(), getRandomString())
         val dto = StatsDTO(
             roles = roles,
@@ -72,7 +66,7 @@ class UserStatsMapperTest {
     }
 
     @Test
-    fun `toDomain should handle zero values`() = runTest {
+    fun `toDomain should handle zero values`() {
         val dto = StatsDTO(
             roles = emptyList(),
             totalNumClosedUserStories = 0,
