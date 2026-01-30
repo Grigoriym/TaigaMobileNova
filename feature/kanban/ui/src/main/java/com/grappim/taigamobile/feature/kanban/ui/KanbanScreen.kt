@@ -2,12 +2,14 @@
 
 package com.grappim.taigamobile.feature.kanban.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -94,11 +96,21 @@ fun KanbanScreenContent(
         isRefreshing = state.isLoading,
         onRefresh = state.onRefresh
     ) {
-        KanbanBoardWidget(
-            state = state,
-            navigateToStory = navigateToStory,
-            navigateToCreateTask = navigateToCreateTask
-        )
+        Column(
+            horizontalAlignment = Alignment.Start
+        ) {
+            KanbanFilters(
+                selected = state.activeFilters,
+                data = state.filters,
+                onSelect = state.onSelectFilters
+            )
+
+            KanbanBoardWidget(
+                state = state,
+                navigateToStory = navigateToStory,
+                navigateToCreateTask = navigateToCreateTask
+            )
+        }
     }
 }
 
@@ -108,7 +120,8 @@ private fun KanbanScreenPreview() = TaigaMobileTheme {
     KanbanScreenContent(
         state = KanbanState(
             onRefresh = {},
-            onSelectSwimlane = {}
+            onSelectSwimlane = {},
+            onSelectFilters = {}
         )
     )
 }
