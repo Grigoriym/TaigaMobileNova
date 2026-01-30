@@ -10,9 +10,6 @@ import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonPrimitive
 import org.junit.Before
 import org.junit.Test
@@ -20,10 +17,7 @@ import java.time.LocalDate
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CustomFieldsMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val dateTimeUtils: DateTimeUtils = mockk()
 
@@ -32,13 +26,12 @@ class CustomFieldsMapperTest {
     @Before
     fun setup() {
         sut = CustomFieldsMapper(
-            ioDispatcher = testDispatcher,
             dateTimeUtils = dateTimeUtils
         )
     }
 
     @Test
-    fun `toDomain should map version correctly`() = runTest {
+    fun `toDomain should map version correctly`() {
         val version = getRandomLong()
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),
@@ -51,7 +44,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should sort fields by order`() = runTest {
+    fun `toDomain should sort fields by order`() {
         val attr1 = createAttribute(id = 1L, order = 3L)
         val attr2 = createAttribute(id = 2L, order = 1L)
         val attr3 = createAttribute(id = 3L, order = 2L)
@@ -69,7 +62,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map basic field properties`() = runTest {
+    fun `toDomain should map basic field properties`() {
         val id = getRandomLong()
         val name = getRandomString()
         val description = getRandomString()
@@ -87,7 +80,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should set description to null when empty`() = runTest {
+    fun `toDomain should set description to null when empty`() {
         val attr = createAttribute(description = "")
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),
@@ -100,7 +93,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should set description to null when null`() = runTest {
+    fun `toDomain should set description to null when null`() {
         val attr = createAttribute(description = null)
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),
@@ -113,7 +106,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map Text type correctly`() = runTest {
+    fun `toDomain should map Text type correctly`() {
         val textValue = getRandomString()
         val attr = createAttribute(id = 1L, type = CustomFieldTypeDTO.Text)
         val values = CustomAttributesValuesResponseDTO(
@@ -128,7 +121,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map Multiline type correctly`() = runTest {
+    fun `toDomain should map Multiline type correctly`() {
         val attr = createAttribute(type = CustomFieldTypeDTO.Multiline)
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),
@@ -141,7 +134,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map RichText type correctly`() = runTest {
+    fun `toDomain should map RichText type correctly`() {
         val attr = createAttribute(type = CustomFieldTypeDTO.RichText)
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),
@@ -154,7 +147,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map Date type correctly`() = runTest {
+    fun `toDomain should map Date type correctly`() {
         val dateString = "2024-12-31"
         val expectedDate = LocalDate.of(2024, 12, 31)
         val attr = createAttribute(id = 1L, type = CustomFieldTypeDTO.Date)
@@ -172,7 +165,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map Url type correctly`() = runTest {
+    fun `toDomain should map Url type correctly`() {
         val urlValue = "https://example.com"
         val attr = createAttribute(id = 1L, type = CustomFieldTypeDTO.Url)
         val values = CustomAttributesValuesResponseDTO(
@@ -187,7 +180,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map Dropdown type correctly`() = runTest {
+    fun `toDomain should map Dropdown type correctly`() {
         val dropdownValue = "option1"
         val attr = createAttribute(id = 1L, type = CustomFieldTypeDTO.Dropdown)
         val values = CustomAttributesValuesResponseDTO(
@@ -202,7 +195,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map Number type correctly`() = runTest {
+    fun `toDomain should map Number type correctly`() {
         val numberValue = 42.5
         val attr = createAttribute(id = 1L, type = CustomFieldTypeDTO.Number)
         val values = CustomAttributesValuesResponseDTO(
@@ -217,7 +210,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map Checkbox type correctly`() = runTest {
+    fun `toDomain should map Checkbox type correctly`() {
         val attr = createAttribute(id = 1L, type = CustomFieldTypeDTO.Checkbox)
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = mapOf("1" to JsonPrimitive(true)),
@@ -231,7 +224,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should return null value when attribute not in values map`() = runTest {
+    fun `toDomain should return null value when attribute not in values map`() {
         val attr = createAttribute(id = 1L)
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),
@@ -244,7 +237,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should return null value for empty date string`() = runTest {
+    fun `toDomain should return null value for empty date string`() {
         val attr = createAttribute(id = 1L, type = CustomFieldTypeDTO.Date)
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = mapOf("1" to JsonPrimitive("")),
@@ -257,7 +250,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should map extra options correctly`() = runTest {
+    fun `toDomain should map extra options correctly`() {
         val options = listOf("option1", "option2", "option3").toImmutableList()
         val attr = createAttribute(extra = options)
         val values = CustomAttributesValuesResponseDTO(
@@ -271,7 +264,7 @@ class CustomFieldsMapperTest {
     }
 
     @Test
-    fun `toDomain should handle null extra options`() = runTest {
+    fun `toDomain should handle null extra options`() {
         val attr = createAttribute(extra = null)
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),

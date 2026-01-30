@@ -16,7 +16,9 @@ import com.grappim.taigamobile.testing.getUser
 import com.grappim.taigamobile.testing.getUserDTO
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -123,13 +125,13 @@ class UsersRepositoryImplTest {
         val expectedStats = mockk<UserStats>()
 
         coEvery { usersApi.getUserStats(userId) } returns statsDTO
-        coEvery { userStatsMapper.toDomain(statsDTO) } returns expectedStats
+        every { userStatsMapper.toDomain(statsDTO) } returns expectedStats
 
         val result = sut.getUserStats(userId)
 
         assertEquals(expectedStats, result)
         coVerify { usersApi.getUserStats(userId) }
-        coVerify { userStatsMapper.toDomain(statsDTO) }
+        verify { userStatsMapper.toDomain(statsDTO) }
     }
 
     @Test
@@ -138,7 +140,7 @@ class UsersRepositoryImplTest {
         val expectedMembers = persistentListOf<TeamMember>()
 
         coEvery { projectsApi.getProject(projectId) } returns projectDTO
-        coEvery { teamMemberMapper.toDomain(projectDTO.members, emptyMap()) } returns expectedMembers
+        every { teamMemberMapper.toDomain(projectDTO.members, emptyMap()) } returns expectedMembers
 
         val result = sut.getTeamMembers(generateMemberStats = false)
 
@@ -154,12 +156,12 @@ class UsersRepositoryImplTest {
         val expectedMembers = persistentListOf<TeamMember>()
 
         coEvery { projectsApi.getProject(customProjectId) } returns projectDTO
-        coEvery { teamMemberMapper.toDomain(projectDTO.members, emptyMap()) } returns expectedMembers
+        every { teamMemberMapper.toDomain(projectDTO.members, emptyMap()) } returns expectedMembers
 
         val result = sut.getTeamMembersByProjectId(customProjectId, generateMemberStats = false)
 
         assertEquals(expectedMembers, result)
-        coVerify { teamMemberMapper.toDomain(projectDTO.members, emptyMap()) }
+        verify { teamMemberMapper.toDomain(projectDTO.members, emptyMap()) }
     }
 
     @Test
@@ -176,7 +178,7 @@ class UsersRepositoryImplTest {
 
         coEvery { projectsApi.getProject(projectId) } returns projectDTO
         coEvery { usersApi.getMemberStats(projectId) } returns memberStatsResponse
-        coEvery { teamMemberMapper.toDomain(projectDTO.members, any()) } returns expectedMembers
+        every { teamMemberMapper.toDomain(projectDTO.members, any()) } returns expectedMembers
 
         sut.getTeamMembersByProjectId(projectId, generateMemberStats = true)
 

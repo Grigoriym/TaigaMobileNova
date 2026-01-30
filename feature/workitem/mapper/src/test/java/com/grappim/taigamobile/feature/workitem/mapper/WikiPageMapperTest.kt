@@ -4,8 +4,6 @@ import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
 import com.grappim.taigamobile.testing.getRandomBoolean
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -13,16 +11,13 @@ import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class WikiPageMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: WikiPageMapper
 
     @Before
     fun setup() {
-        sut = WikiPageMapper(testDispatcher)
+        sut = WikiPageMapper()
     }
 
     @Test

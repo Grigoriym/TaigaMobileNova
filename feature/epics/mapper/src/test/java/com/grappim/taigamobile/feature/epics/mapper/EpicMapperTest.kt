@@ -11,21 +11,16 @@ import com.grappim.taigamobile.testing.getStatus
 import com.grappim.taigamobile.testing.getTag
 import com.grappim.taigamobile.testing.getUser
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
-import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class EpicMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val userMapper: UserMapper = mockk()
     private val statusesMapper: StatusesMapper = mockk()
@@ -37,10 +32,9 @@ class EpicMapperTest {
 
     @Before
     fun setup() {
-        coEvery { serverStorage.server } returns "https://taiga.example.com"
+        every { serverStorage.server } returns "https://taiga.example.com"
 
         sut = EpicMapper(
-            ioDispatcher = testDispatcher,
             serverStorage = serverStorage,
             statusesMapper = statusesMapper,
             userMapper = userMapper,
@@ -54,10 +48,10 @@ class EpicMapperTest {
         val response = getWorkItemResponseDTO()
         val user = getUser()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -95,10 +89,10 @@ class EpicMapperTest {
             blockedNote = blockedNote
         )
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -114,10 +108,10 @@ class EpicMapperTest {
             blockedNote = blockedNote
         )
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -129,10 +123,10 @@ class EpicMapperTest {
         val user = getUser()
         val response = getWorkItemResponseDTO()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -149,10 +143,10 @@ class EpicMapperTest {
         val firstTag = getTag()
         val secondTag = getTag()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(firstTag, secondTag)
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(firstTag, secondTag)
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -163,9 +157,9 @@ class EpicMapperTest {
     fun `toDomain should handle null assignee`() = runTest {
         val response = getWorkItemResponseDTO().copy(assignedToExtraInfo = null)
 
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -181,10 +175,10 @@ class EpicMapperTest {
         )
         val user = getUser()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -196,10 +190,10 @@ class EpicMapperTest {
         val response = getWorkItemResponseDTO().copy(description = null)
         val user = getUser()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -211,10 +205,10 @@ class EpicMapperTest {
         val response = getWorkItemResponseDTO().copy(watchers = null)
         val user = getUser()
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
+        every { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -227,10 +221,10 @@ class EpicMapperTest {
         val response2 = getWorkItemResponseDTO()
         val user = getUser()
 
-        coEvery { userMapper.toUser(any()) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(any()) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(tags = any()) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(any()) } returns getStatus()
+        every { userMapper.toUser(any()) } returns user
+        every { projectMapper.toProjectExtraInfo(any()) } returns getProjectExtraInfo()
+        every { tagsMapper.toTags(tags = any()) } returns persistentListOf(getTag())
+        every { statusesMapper.getStatus(any()) } returns getStatus()
 
         val result = sut.toDomainList(listOf(response1, response2))
 

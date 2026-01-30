@@ -22,19 +22,13 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class TaskMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val userMapper: UserMapper = mockk()
     private val statusesMapper: StatusesMapper = mockk()
@@ -51,7 +45,6 @@ class TaskMapperTest {
         coEvery { serverStorage.server } returns "https://taiga.example.com"
 
         sut = TaskMapper(
-            defaultDispatcher = testDispatcher,
             serverStorage = serverStorage,
             userMapper = userMapper,
             statusesMapper = statusesMapper,
@@ -63,7 +56,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should map basic fields correctly`() = runTest {
+    fun `toDomain should map basic fields correctly`() {
         val response = getWorkItemResponseDTO()
         val user = getUser()
 
@@ -90,7 +83,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should handle null owner with error`() = runTest {
+    fun `toDomain should handle null owner with error`() {
         val response = getWorkItemResponseDTO().copy(owner = null)
 
         try {
@@ -102,7 +95,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should map due date status correctly`() = runTest {
+    fun `toDomain should map due date status correctly`() {
         val user = getUser()
         val response = getWorkItemResponseDTO().copy(dueDateStatusDTO = DueDateStatusDTO.DueSoon)
 
@@ -119,7 +112,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should handle blocked note correctly when blocked`() = runTest {
+    fun `toDomain should handle blocked note correctly when blocked`() {
         val user = getUser()
         val blockedNote = getRandomString()
         val response = getWorkItemResponseDTO().copy(
@@ -139,7 +132,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should not include blocked note when not blocked`() = runTest {
+    fun `toDomain should not include blocked note when not blocked`() {
         val user = getUser()
         val blockedNote = getRandomString()
         val response = getWorkItemResponseDTO().copy(
@@ -159,7 +152,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should build correct copy link URL`() = runTest {
+    fun `toDomain should build correct copy link URL`() {
         val user = getUser()
         val response = getWorkItemResponseDTO()
 
@@ -177,7 +170,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should map tags correctly`() = runTest {
+    fun `toDomain should map tags correctly`() {
         val user = getUser()
         val response = getWorkItemResponseDTO()
         val firstTag = getTag()
@@ -197,7 +190,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should handle null assignee`() = runTest {
+    fun `toDomain should handle null assignee`() {
         val response = getWorkItemResponseDTO().copy(assignedToExtraInfo = null)
 
         every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
@@ -211,7 +204,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should use assignedUsers when available`() = runTest {
+    fun `toDomain should use assignedUsers when available`() {
         val user = getUser()
         val assignedUsers = listOf(getRandomLong(), getRandomLong(), getRandomLong())
         val response = getWorkItemResponseDTO().copy(assignedUsers = assignedUsers)
@@ -228,7 +221,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should fallback to assignedTo when assignedUsers is null`() = runTest {
+    fun `toDomain should fallback to assignedTo when assignedUsers is null`() {
         val user = getUser()
         val assignedTo = getRandomLong()
         val response = getWorkItemResponseDTO().copy(
@@ -248,7 +241,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should handle empty watchers`() = runTest {
+    fun `toDomain should handle empty watchers`() {
         val user = getUser()
         val response = getWorkItemResponseDTO().copy(watchers = null)
 
@@ -264,7 +257,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should handle null description`() = runTest {
+    fun `toDomain should handle null description`() {
         val user = getUser()
         val response = getWorkItemResponseDTO().copy(description = null)
 
@@ -280,7 +273,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should map userStory when present`() = runTest {
+    fun `toDomain should map userStory when present`() {
         val user = getUser()
         val userStoryShortInfoDTO = getUserStoryShortInfoDTO()
         val userStoryShortInfo = UserStoryShortInfo(
@@ -296,7 +289,7 @@ class TaskMapperTest {
         coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
         coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
         coEvery { statusesMapper.getStatus(response) } returns getStatus()
-        coEvery { userStoryShortInfoMapper.toDomain(userStoryShortInfoDTO) } returns userStoryShortInfo
+        every { userStoryShortInfoMapper.toDomain(userStoryShortInfoDTO) } returns userStoryShortInfo
 
         val result = sut.toDomain(response)
 
@@ -307,7 +300,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomain should handle null userStory`() = runTest {
+    fun `toDomain should handle null userStory`() {
         val user = getUser()
         val response = getWorkItemResponseDTO().copy(userStoryExtraInfo = null)
 
@@ -323,7 +316,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomainList should map list of DTOs correctly`() = runTest {
+    fun `toDomainList should map list of DTOs correctly`() {
         val user = getUser()
         val response1 = getWorkItemResponseDTO()
         val response2 = getWorkItemResponseDTO()
@@ -346,7 +339,7 @@ class TaskMapperTest {
     }
 
     @Test
-    fun `toDomainList should return empty list for empty input`() = runTest {
+    fun `toDomainList should return empty list for empty input`() {
         val result = sut.toDomainList(emptyList())
 
         assertEquals(0, result.size)

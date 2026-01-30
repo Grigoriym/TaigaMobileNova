@@ -10,27 +10,21 @@ import com.grappim.taigamobile.testing.getRandomBoolean
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class ProjectMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: ProjectMapper
 
     @Before
     fun setup() {
-        sut = ProjectMapper(ioDispatcher = testDispatcher)
+        sut = ProjectMapper()
     }
 
     @Test
-    fun `toProject should map all fields correctly`() = runTest {
+    fun `toProject should map all fields correctly`() {
         val dto = getProjectDTO()
 
         val result = sut.toProject(dto)
@@ -56,7 +50,7 @@ class ProjectMapperTest {
     }
 
     @Test
-    fun `toProject should map permissions correctly`() = runTest {
+    fun `toProject should map permissions correctly`() {
         val dto = getProjectDTO().copy(
             myPermissions = persistentListOf(
                 TaigaPermissionDTO.VIEW_PROJECT,
@@ -74,7 +68,7 @@ class ProjectMapperTest {
     }
 
     @Test
-    fun `toProjectExtraInfo should map all fields correctly`() = runTest {
+    fun `toProjectExtraInfo should map all fields correctly`() {
         val dto = getProjectExtraInfoDTO()
 
         val result = sut.toProjectExtraInfo(dto)
@@ -86,7 +80,7 @@ class ProjectMapperTest {
     }
 
     @Test
-    fun `toProjectSimple should map entity to domain`() = runTest {
+    fun `toProjectSimple should map entity to domain`() {
         val entity = getProjectEntity()
 
         val result = sut.toProjectSimple(entity)
@@ -104,7 +98,7 @@ class ProjectMapperTest {
     }
 
     @Test
-    fun `toListDomain should map list of DTOs`() = runTest {
+    fun `toListDomain should map list of DTOs`() {
         val dto1 = getProjectDTO()
         val dto2 = getProjectDTO()
 
@@ -116,14 +110,14 @@ class ProjectMapperTest {
     }
 
     @Test
-    fun `toListDomain should return empty list for empty input`() = runTest {
+    fun `toListDomain should return empty list for empty input`() {
         val result = sut.toListDomain(emptyList())
 
         assertEquals(0, result.size)
     }
 
     @Test
-    fun `toEntity from Project should map all fields correctly`() = runTest {
+    fun `toEntity from Project should map all fields correctly`() {
         val project = getProject()
 
         val result = sut.toEntity(project)
@@ -141,7 +135,7 @@ class ProjectMapperTest {
     }
 
     @Test
-    fun `toEntity from ProjectDTO should map all fields correctly`() = runTest {
+    fun `toEntity from ProjectDTO should map all fields correctly`() {
         val dto = getProjectDTO()
 
         val result = sut.toEntity(dto)
@@ -158,7 +152,7 @@ class ProjectMapperTest {
     }
 
     @Test
-    fun `toEntity from ProjectDTO should map permissions correctly`() = runTest {
+    fun `toEntity from ProjectDTO should map permissions correctly`() {
         val dto = getProjectDTO().copy(
             myPermissions = persistentListOf(
                 TaigaPermissionDTO.DELETE_ISSUE,

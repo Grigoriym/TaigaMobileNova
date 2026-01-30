@@ -13,11 +13,9 @@ import com.grappim.taigamobile.testing.getStatus
 import com.grappim.taigamobile.testing.getTag
 import com.grappim.taigamobile.testing.getUser
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
-import io.mockk.coEvery
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -25,10 +23,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class WorkItemMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val statusesMapper: StatusesMapper = mockk()
     private val userMapper: UserMapper = mockk()
@@ -40,7 +35,6 @@ class WorkItemMapperTest {
     @Before
     fun setup() {
         sut = WorkItemMapper(
-            dispatcher = testDispatcher,
             statusesMapper = statusesMapper,
             userMapper = userMapper,
             tagsMapper = tagsMapper,
@@ -85,10 +79,10 @@ class WorkItemMapperTest {
         val user = getUser()
         val projectExtraInfo = getProjectExtraInfo()
 
-        coEvery { statusesMapper.getStatus(dto) } returns status
-        coEvery { tagsMapper.toTags(dto.tags) } returns persistentListOf(tag)
-        coEvery { userMapper.toUser(dto.assignedToExtraInfo!!) } returns user
-        coEvery { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns projectExtraInfo
+        every { statusesMapper.getStatus(dto) } returns status
+        every { tagsMapper.toTags(dto.tags) } returns persistentListOf(tag)
+        every { userMapper.toUser(dto.assignedToExtraInfo!!) } returns user
+        every { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns projectExtraInfo
 
         val result = sut.toDomain(dto, taskType)
 
@@ -109,9 +103,9 @@ class WorkItemMapperTest {
         val dto = getWorkItemResponseDTO().copy(assignedToExtraInfo = null)
         val taskType = CommonTaskType.Task
 
-        coEvery { statusesMapper.getStatus(dto) } returns getStatus()
-        coEvery { tagsMapper.toTags(dto.tags) } returns persistentListOf()
-        coEvery { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { statusesMapper.getStatus(dto) } returns getStatus()
+        every { tagsMapper.toTags(dto.tags) } returns persistentListOf()
+        every { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns getProjectExtraInfo()
 
         val result = sut.toDomain(dto, taskType)
 
@@ -124,10 +118,10 @@ class WorkItemMapperTest {
         val dto = getWorkItemResponseDTO().copy(color = color, epics = null)
         val taskType = CommonTaskType.Issue
 
-        coEvery { statusesMapper.getStatus(dto) } returns getStatus()
-        coEvery { tagsMapper.toTags(dto.tags) } returns persistentListOf()
-        coEvery { userMapper.toUser(dto.assignedToExtraInfo!!) } returns getUser()
-        coEvery { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { statusesMapper.getStatus(dto) } returns getStatus()
+        every { tagsMapper.toTags(dto.tags) } returns persistentListOf()
+        every { userMapper.toUser(dto.assignedToExtraInfo!!) } returns getUser()
+        every { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns getProjectExtraInfo()
 
         val result = sut.toDomain(dto, taskType)
 
@@ -152,10 +146,10 @@ class WorkItemMapperTest {
         val dto = getWorkItemResponseDTO().copy(color = null, epics = listOf(epic1, epic2))
         val taskType = CommonTaskType.UserStory
 
-        coEvery { statusesMapper.getStatus(dto) } returns getStatus()
-        coEvery { tagsMapper.toTags(dto.tags) } returns persistentListOf()
-        coEvery { userMapper.toUser(dto.assignedToExtraInfo!!) } returns getUser()
-        coEvery { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { statusesMapper.getStatus(dto) } returns getStatus()
+        every { tagsMapper.toTags(dto.tags) } returns persistentListOf()
+        every { userMapper.toUser(dto.assignedToExtraInfo!!) } returns getUser()
+        every { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns getProjectExtraInfo()
 
         val result = sut.toDomain(dto, taskType)
 
@@ -169,10 +163,10 @@ class WorkItemMapperTest {
         val dto = getWorkItemResponseDTO().copy(color = null, epics = null)
         val taskType = CommonTaskType.Task
 
-        coEvery { statusesMapper.getStatus(dto) } returns getStatus()
-        coEvery { tagsMapper.toTags(dto.tags) } returns persistentListOf()
-        coEvery { userMapper.toUser(dto.assignedToExtraInfo!!) } returns getUser()
-        coEvery { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns getProjectExtraInfo()
+        every { statusesMapper.getStatus(dto) } returns getStatus()
+        every { tagsMapper.toTags(dto.tags) } returns persistentListOf()
+        every { userMapper.toUser(dto.assignedToExtraInfo!!) } returns getUser()
+        every { projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo) } returns getProjectExtraInfo()
 
         val result = sut.toDomain(dto, taskType)
 
@@ -187,10 +181,10 @@ class WorkItemMapperTest {
         val taskType = CommonTaskType.Issue
 
         dtos.forEach {
-            coEvery { statusesMapper.getStatus(it) } returns getStatus()
-            coEvery { tagsMapper.toTags(it.tags) } returns persistentListOf(getTag())
-            coEvery { userMapper.toUser(it.assignedToExtraInfo!!) } returns getUser()
-            coEvery { projectMapper.toProjectExtraInfo(it.projectDTOExtraInfo) } returns getProjectExtraInfo()
+            every { statusesMapper.getStatus(it) } returns getStatus()
+            every { tagsMapper.toTags(it.tags) } returns persistentListOf(getTag())
+            every { userMapper.toUser(it.assignedToExtraInfo!!) } returns getUser()
+            every { projectMapper.toProjectExtraInfo(it.projectDTOExtraInfo) } returns getProjectExtraInfo()
         }
 
         val result = sut.toDomainList(dtos, taskType)

@@ -11,8 +11,6 @@ import com.grappim.taigamobile.testing.getUserDTO
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -22,10 +20,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CommentsMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private val userMapper: UserMapper = mockk()
     private val projectsRepository: ProjectsRepository = mockk()
@@ -35,7 +30,6 @@ class CommentsMapperTest {
     @Before
     fun setup() {
         sut = CommentsMapper(
-            ioDispatcher = testDispatcher,
             userMapper = userMapper,
             projectsRepository = projectsRepository
         )

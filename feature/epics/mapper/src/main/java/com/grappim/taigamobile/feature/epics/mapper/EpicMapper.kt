@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.epics.mapper
 
-import com.grappim.taigamobile.core.async.IoDispatcher
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.transformTaskTypeForCopyLink
 import com.grappim.taigamobile.core.storage.server.ServerStorage
@@ -12,19 +11,16 @@ import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class EpicMapper @Inject constructor(
-    @IoDispatcher private val ioDispatcher: CoroutineDispatcher,
     private val serverStorage: ServerStorage,
     private val statusesMapper: StatusesMapper,
     private val userMapper: UserMapper,
     private val projectMapper: ProjectMapper,
     private val tagsMapper: TagsMapper
 ) {
-    suspend fun toDomain(resp: WorkItemResponseDTO): Epic = withContext(ioDispatcher) {
+    fun toDomain(resp: WorkItemResponseDTO): Epic {
         val creatorId = resp.owner ?: error("Owner field is null")
 
         val server = serverStorage.server
@@ -32,7 +28,7 @@ class EpicMapper @Inject constructor(
             transformTaskTypeForCopyLink(CommonTaskType.Epic)
         }/${resp.ref}"
 
-        Epic(
+        return Epic(
             id = resp.id,
             version = resp.version,
             createdDateTime = resp.createdDate,
@@ -56,6 +52,5 @@ class EpicMapper @Inject constructor(
         )
     }
 
-    suspend fun toDomainList(dtos: List<WorkItemResponseDTO>): ImmutableList<Epic> =
-        dtos.map { toDomain(it) }.toImmutableList()
+    fun toDomainList(dtos: List<WorkItemResponseDTO>): ImmutableList<Epic> = dtos.map { toDomain(it) }.toImmutableList()
 }

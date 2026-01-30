@@ -14,7 +14,9 @@ import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -58,13 +60,13 @@ class EpicsRepositoryImplTest {
                 id = epicId
             )
         } returns mockResponse
-        coEvery { epicMapper.toDomain(mockResponse) } returns expectedEpic
+        every { epicMapper.toDomain(mockResponse) } returns expectedEpic
 
         val actual = sut.getEpic(epicId)
 
         assertEquals(expectedEpic, actual)
         coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = epicId) }
-        coVerify { epicMapper.toDomain(mockResponse) }
+        verify { epicMapper.toDomain(mockResponse) }
     }
 
     @Test
@@ -82,7 +84,7 @@ class EpicsRepositoryImplTest {
                 watcherId = null
             )
         } returns mockResponses
-        coEvery { epicMapper.toDomainList(mockResponses) } returns expectedEpics
+        every { epicMapper.toDomainList(mockResponses) } returns expectedEpics
 
         val actual = sut.getEpics(projectId = projectId)
 
@@ -96,7 +98,7 @@ class EpicsRepositoryImplTest {
                 watcherId = null
             )
         }
-        coVerify { epicMapper.toDomainList(mockResponses) }
+        verify { epicMapper.toDomainList(mockResponses) }
     }
 
     @Test
@@ -117,7 +119,7 @@ class EpicsRepositoryImplTest {
                 watcherId = watcherId
             )
         } returns mockResponses
-        coEvery { epicMapper.toDomainList(mockResponses) } returns expectedEpics
+        every { epicMapper.toDomainList(mockResponses) } returns expectedEpics
 
         val actual = sut.getEpics(
             projectId = projectId,
@@ -187,7 +189,7 @@ class EpicsRepositoryImplTest {
                 watcherId = null
             )
         } returns mockResponses
-        coEvery { epicMapper.toDomainList(mockResponses) } returns expectedEpics
+        every { epicMapper.toDomainList(mockResponses) } returns expectedEpics
 
         val actual = sut.getEpics(projectId = projectId)
 

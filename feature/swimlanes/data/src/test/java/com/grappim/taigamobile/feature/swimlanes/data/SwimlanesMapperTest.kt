@@ -2,28 +2,22 @@ package com.grappim.taigamobile.feature.swimlanes.data
 
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SwimlanesMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: SwimlanesMapper
 
     @Before
     fun setup() {
-        sut = SwimlanesMapper(testDispatcher)
+        sut = SwimlanesMapper()
     }
 
     @Test
-    fun `toDomain should map single SwimlaneDTO correctly`() = runTest {
+    fun `toDomain should map single SwimlaneDTO correctly`() {
         val dto = SwimlaneDTO(
             id = getRandomLong(),
             name = getRandomString(),
@@ -38,7 +32,7 @@ class SwimlanesMapperTest {
     }
 
     @Test
-    fun `toListDomain should map list of SwimlaneDTOs correctly`() = runTest {
+    fun `toListDomain should map list of SwimlaneDTOs correctly`() {
         val dto1 = SwimlaneDTO(
             id = getRandomLong(),
             name = getRandomString(),
@@ -73,7 +67,7 @@ class SwimlanesMapperTest {
     }
 
     @Test
-    fun `toListDomain should return empty list for empty input`() = runTest {
+    fun `toListDomain should return empty list for empty input`() {
         val dtoList = emptyList<SwimlaneDTO>()
 
         val result = sut.toListDomain(dtoList)
@@ -82,7 +76,7 @@ class SwimlanesMapperTest {
     }
 
     @Test
-    fun `toDomain should handle swimlane with zero order`() = runTest {
+    fun `toDomain should handle swimlane with zero order`() {
         val dto = SwimlaneDTO(
             id = getRandomLong(),
             name = getRandomString(),
@@ -95,7 +89,7 @@ class SwimlanesMapperTest {
     }
 
     @Test
-    fun `toDomain should handle swimlane with special characters in name`() = runTest {
+    fun `toDomain should handle swimlane with special characters in name`() {
         val specialName = "Sprint [1] (active)"
         val dto = SwimlaneDTO(
             id = getRandomLong(),
@@ -109,7 +103,7 @@ class SwimlanesMapperTest {
     }
 
     @Test
-    fun `toListDomain should preserve order of items`() = runTest {
+    fun `toListDomain should preserve order of items`() {
         val dtos = (1..5).map { index ->
             SwimlaneDTO(
                 id = index.toLong(),
