@@ -9,12 +9,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
@@ -97,18 +95,8 @@ fun KanbanScreenContent(
         KanbanBoardWidget(
             state = state,
             navigateToStory = navigateToStory,
-            navigateToCreateTask = navigateToCreateTask
+            navigateToCreateTask = navigateToCreateTask,
+            onMoveStory = state.onMoveStory
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun KanbanScreenPreview() = TaigaMobileTheme {
-    KanbanScreenContent(
-        state = KanbanState(
-            onRefresh = {},
-            onSelectSwimlane = {}
-        )
-    )
 }

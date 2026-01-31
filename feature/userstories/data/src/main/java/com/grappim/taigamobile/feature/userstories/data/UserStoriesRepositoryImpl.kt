@@ -6,8 +6,10 @@ import androidx.paging.PagingData
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
+import com.grappim.taigamobile.feature.userstories.domain.UpdatedKanbanStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
+import com.grappim.taigamobile.feature.userstories.dto.BulkUpdateKanbanOrderRequest
 import com.grappim.taigamobile.feature.userstories.dto.CreateUserStoryRequest
 import com.grappim.taigamobile.feature.userstories.mapper.UserStoryMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
@@ -122,5 +124,32 @@ class UserStoriesRepositoryImpl @Inject constructor(
             taskPath = userStoryPlural,
             workItemId = id
         )
+    }
+
+    override suspend fun bulkUpdateKanbanOrder(
+        statusId: Long,
+        storyIds: List<Long>,
+        swimlaneId: Long?,
+        afterStoryId: Long?,
+        beforeStoryId: Long?
+    ): ImmutableList<UpdatedKanbanStory> {
+        val response = userStoriesApi.bulkUpdateKanbanOrder(
+            request = BulkUpdateKanbanOrderRequest(
+                projectId = taigaSessionStorage.getCurrentProjectId(),
+                statusId = statusId,
+                bulkUserstories = storyIds,
+                swimlaneId = swimlaneId,
+                afterUserstoryId = afterStoryId,
+                beforeUserstoryId = beforeStoryId
+            )
+        )
+        return response.map { item ->
+            UpdatedKanbanStory(
+                id = item.id,
+                status = item.status,
+                kanbanOrder = item.kanbanOrder,
+                swimlane = item.swimlane
+            )
+        }.toImmutableList()
     }
 }

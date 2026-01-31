@@ -32,4 +32,12 @@ interface UserStoriesRepository {
     suspend fun patchData(version: Long, userStoryId: Long, payload: ImmutableMap<String, Any?>): PatchedData
 
     suspend fun deleteUserStory(id: Long)
+
+    suspend fun bulkUpdateKanbanOrder(
+        statusId: Long,
+        storyIds: List<Long>,
+        swimlaneId: Long? = null,
+        afterStoryId: Long? = null,
+        beforeStoryId: Long? = null
+    ): ImmutableList<UpdatedKanbanStory>
 }

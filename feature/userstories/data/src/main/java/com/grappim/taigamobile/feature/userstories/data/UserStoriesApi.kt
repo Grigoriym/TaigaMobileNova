@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.feature.userstories.data
 
+import com.grappim.taigamobile.feature.userstories.dto.BulkUpdateKanbanOrderRequest
+import com.grappim.taigamobile.feature.userstories.dto.BulkUpdateKanbanOrderResponseItem
 import com.grappim.taigamobile.feature.userstories.dto.CreateUserStoryRequest
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import retrofit2.http.Body
@@ -12,6 +14,11 @@ interface UserStoriesApi {
 
     @POST("userstories")
     suspend fun createUserStory(@Body createUserStoryRequest: CreateUserStoryRequest): WorkItemResponseDTO
+
+    @POST("userstories/bulk_update_kanban_order")
+    suspend fun bulkUpdateKanbanOrder(
+        @Body request: BulkUpdateKanbanOrderRequest
+    ): List<BulkUpdateKanbanOrderResponseItem>
 
     @GET("userstories")
     suspend fun getUserStories(

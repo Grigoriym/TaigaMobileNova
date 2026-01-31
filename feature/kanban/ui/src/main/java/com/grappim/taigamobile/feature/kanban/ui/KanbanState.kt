@@ -26,5 +26,15 @@ data class KanbanState(
     val selectedSwimlane: Swimlane? = null,
     val onSelectSwimlane: (Swimlane?) -> Unit,
 
-    val canAddUserStory: Boolean = false
+    val canAddUserStory: Boolean = false,
+
+    val onMoveStory:
+    (storyId: Long, newStatusId: Long, swimlaneId: Long?, beforeStoryId: Long?, afterStoryId: Long?) -> Unit = {
+            _,
+            _,
+            _,
+            _,
+            _
+        ->
+    }
 )

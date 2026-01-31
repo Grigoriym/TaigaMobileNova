@@ -61,6 +61,27 @@ The project follows a feature-based modular architecture:
 - Navigation destinations are defined per feature
 - Dependency injection configured at module level
 
+### NativeText for Localized Strings
+Use `NativeText` (in `utils:ui`) to pass localized strings from ViewModels/domain to UI without requiring Context:
+
+```kotlin
+// In ViewModel or domain layer - define the text without Context
+sealed class NativeText {
+    data object Empty : NativeText()
+    data class Simple(val text: String) : NativeText()
+    data class Resource(@StringRes val id: Int) : NativeText()
+    data class Arguments(@StringRes val id: Int, val args: List<Any>) : NativeText()
+}
+
+// Example usage in ViewModel
+val errorMessage: NativeText = NativeText.Resource(RString.error_message)
+
+// In Composable - resolve to string with Context
+Text(text = errorMessage.asString(LocalContext.current))
+```
+
+This keeps ViewModels and domain layers Context-free while supporting localization.
+
 ## Development Setup
 - Project uses Gradle Version Catalogs (`gradle/libs.versions.toml`) for dependency management
 
