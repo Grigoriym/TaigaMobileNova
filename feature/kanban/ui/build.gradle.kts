@@ -23,6 +23,8 @@ dependencies {
     implementation(projects.feature.users.domain)
     implementation(projects.feature.userstories.domain)
     implementation(projects.feature.swimlanes.domain)
+    implementation(projects.feature.projects.domain)
+    implementation(projects.feature.workitem.domain)
 
     implementation(libs.androidx.navigation.compose)
     implementation(libs.coil.compose)

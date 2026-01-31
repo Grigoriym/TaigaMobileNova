@@ -35,7 +35,17 @@ class GetKanbanDataUseCase @Inject constructor(
             val userStories = async { userStoriesRepository.getUserStories() }
             val teamMembers = async { usersRepository.getTeamMembers(false) }
             val filters = async { filtersRepository.getStatuses(CommonTaskType.UserStory) }
-            val swimlanes = swimlanesRepository.getSwimlanes()
+            val rawSwimlanes = swimlanesRepository.getSwimlanes()
+
+            val stories = userStories.await().sortedBy { it.kanbanOrder }.toImmutableList()
+            val statuses = filters.await()
+            val members = teamMembers.await()
+
+            val swimlanes = buildSwimlanesWithUnclassified(
+                rawSwimlanes = rawSwimlanes,
+                stories = stories
+            )
+
             val defaultSwimlane = if (storageSwimlane != null) {
                 swimlanes.find { it.id == storageSwimlane }
                     ?: swimlanes.firstOrNull()
@@ -43,10 +53,6 @@ class GetKanbanDataUseCase @Inject constructor(
                 swimlanes.find { it.id == project.await().defaultSwimlane }
                     ?: swimlanes.firstOrNull()
             }
-
-            val stories = userStories.await().sortedBy { it.kanbanOrder }.toImmutableList()
-            val statuses = filters.await()
-            val members = teamMembers.await()
 
             val storiesByStatus = computeStoriesByStatus(
                 stories = stories,
@@ -67,6 +73,22 @@ class GetKanbanDataUseCase @Inject constructor(
         }
     }
 
+    private fun buildSwimlanesWithUnclassified(
+        rawSwimlanes: ImmutableList<Swimlane>,
+        stories: ImmutableList<UserStory>
+    ): ImmutableList<Swimlane> {
+        if (rawSwimlanes.isEmpty()) {
+            return rawSwimlanes
+        }
+
+        val hasUnclassifiedStories = stories.any { it.swimlane == null }
+        if (!hasUnclassifiedStories) {
+            return rawSwimlanes
+        }
+
+        return (listOf(Swimlane.unclassified()) + rawSwimlanes).toImmutableList()
+    }
+
     suspend fun computeStoriesByStatus(
         stories: ImmutableList<UserStory>,
         statuses: ImmutableList<Statuses>,
@@ -74,7 +96,7 @@ class GetKanbanDataUseCase @Inject constructor(
         swimlane: Swimlane?
     ): ImmutableMap<Statuses, ImmutableList<KanbanUserStory>> = withContext(Dispatchers.Default) {
         val teamMembersById = teamMembers.associateBy { it.id }
-        val filteredStories = stories.filter { it.swimlane == swimlane?.id }
+        val filteredStories = filterStoriesBySwimlane(stories, swimlane)
 
         statuses.associateWith { status ->
             filteredStories
@@ -90,4 +112,11 @@ class GetKanbanDataUseCase @Inject constructor(
                 .toImmutableList()
         }.toImmutableMap()
     }
+
+    private fun filterStoriesBySwimlane(stories: ImmutableList<UserStory>, swimlane: Swimlane?): List<UserStory> =
+        when {
+            swimlane == null -> stories
+            swimlane.isUnclassified -> stories.filter { it.swimlane == null }
+            else -> stories.filter { it.swimlane == swimlane.id }
+        }
 }
