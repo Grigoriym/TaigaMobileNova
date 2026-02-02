@@ -27,10 +27,10 @@ annotation class ApplicationScope
 @InstallIn(SingletonComponent::class)
 object CoroutinesModule {
 
-    @[Provides DefaultDispatcher]
+    @[Provides Singleton DefaultDispatcher]
     fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
 
-    @[Provides IoDispatcher]
+    @[Provides Singleton IoDispatcher]
     fun providesIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
 
     @[Provides Singleton ApplicationScope]

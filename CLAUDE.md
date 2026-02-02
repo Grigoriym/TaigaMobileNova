@@ -1,136 +1,134 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
-## Project Overview
-
-TaigaMobileNova is an unofficial Android client for the Taiga.io agile project management system. It's built using Kotlin, Jetpack Compose, and follows a modular architecture with clean separation of concerns.
+TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin, Jetpack Compose, and follows a modular MVVM + Clean Architecture.
 
 ## Architecture
 
-### Module Structure
-The project follows a feature-based modular architecture:
+**Module structure:** `app/` → `feature/` → `core/` → `utils/`
+- Features have data/domain/ui layers (sometimes dto/mapper)
+- Use `NativeText` (in `utils:ui`) for localized strings in ViewModels
+- Dependencies via Gradle Version Catalogs (`gradle/libs.versions.toml`)
+- Build plugins in `build-logic/`
 
-- **app/**: Main application module that aggregates all features
-- **core/**: Shared infrastructure modules
-  - `core:api`: Network layer and API definitions
-  - `core:domain`: Domain models and business logic
-  - `core:storage`: Data persistence layer
-  - `core:async`: Coroutines and async utilities
-  - `core:navigation`: Navigation definitions
-- **feature/**: Feature-specific modules (each with data/domain/ui layers)
-  - `feature:login`: Authentication
-  - `feature:dashboard`: Main dashboard
-  - `feature:projects`: Project management
-  - `feature:wiki`: Wiki functionality
-  - `feature:epics`, `feature:userstories`, `feature:tasks`, `feature:issues`: Agile work items
-  - `feature:kanban`: Kanban board
-  - `feature:sprint`: Sprint management
-- **uikit/**: Shared UI components and design system
-- **utils/**: Utility modules for formatting and UI helpers
-- **strings/**: Localization resources
-- **testing/**: Shared testing utilities
+**Stack:** Kotlin, Compose + Material3, Hilt, Navigation Compose, Retrofit + kotlinx.serialization, Coroutines, Coil
 
-### Technology Stack
-- **Language**: Kotlin
-- **UI**: Jetpack Compose with Material3
-- **Architecture**: MVVM with Clean Architecture
-- **Dependency Injection**: Dagger Hilt
-- **Navigation**: Jetpack Navigation Compose
-- **Networking**: Retrofit + OkHttp + kotlin Serialization
-- **Async**: Kotlin Coroutines
-- **Image Loading**: Coil
+## Navigation Pattern
 
-### Build Configuration
-- **Min SDK**: 24 (Android 7.0)
-- **Target SDK**: 36
-- **Build Tool**: Gradle with Kotlin DSL
-- **Custom Plugins**: Located in `build-logic/` for shared build configuration
-
-### Code Quality Tools
-- **Ktlint**: Enforces Kotlin style guide with Compose rules
-- **Detekt**: Static code analysis with custom configuration in `config/detekt/detekt.yml`
-- **Jacoco**: Code coverage reporting with exclusions for generated code
-- **Module Graph Assertion**: Ensures modular architecture constraints (max height: 10)
-
-### Key Patterns
-- Each feature module follows data/domain/ui layering and sometimes dto/mapper
-- Domain layer contains use cases and repository interfaces
-- Data layer implements repositories and handles API/storage
-- UI layer uses Compose with ViewModel + State pattern
-- Navigation destinations are defined per feature
-- Dependency injection configured at module level
-
-### NativeText for Localized Strings
-Use `NativeText` (in `utils:ui`) to pass localized strings from ViewModels/domain to UI without requiring Context:
-
+Destinations use `@Serializable` data classes/objects:
 ```kotlin
-// In ViewModel or domain layer - define the text without Context
-sealed class NativeText {
-    data object Empty : NativeText()
-    data class Simple(val text: String) : NativeText()
-    data class Resource(@StringRes val id: Int) : NativeText()
-    data class Arguments(@StringRes val id: Int, val args: List<Any>) : NativeText()
+@Serializable
+data class TaskDetailsNavDestination(val taskId: Long, val ref: Long)
+
+fun NavController.navigateToTask(taskId: Long, ref: Long) {
+    navigate(route = TaskDetailsNavDestination(taskId, ref))
 }
-
-// Example usage in ViewModel
-val errorMessage: NativeText = NativeText.Resource(RString.error_message)
-
-// In Composable - resolve to string with Context
-Text(text = errorMessage.asString(LocalContext.current))
 ```
 
-This keeps ViewModels and domain layers Context-free while supporting localization.
+ViewModels extract arguments via `SavedStateHandle.toRoute<T>()`:
+```kotlin
+private val route = savedStateHandle.toRoute<TaskDetailsNavDestination>()
+private val taskId = route.taskId
+```
 
-## Development Setup
-- Project uses Gradle Version Catalogs (`gradle/libs.versions.toml`) for dependency management
+## ViewModel + State Pattern
+
+State class contains data AND callback functions:
+```kotlin
+data class FeatureState(
+    val data: String = "",
+    val onDataChange: (String) -> Unit,
+    val isLoading: Boolean = false,
+    val error: NativeText = NativeText.Empty
+)
+```
+
+ViewModel exposes `StateFlow`, updates via `.update {}`:
+```kotlin
+private val _state = MutableStateFlow(FeatureState(onDataChange = ::setData, ...))
+val state = _state.asStateFlow()
+
+private fun setData(value: String) {
+    _state.update { it.copy(data = value) }
+}
+```
+
+Use `NativeText` for strings from ViewModel → resolve in UI with `text.asString(context)`.
+
+## Feature Module Structure
+
+```
+feature/{name}/
+├── data/     → API, DTOs, RepositoryImpl, Hilt module
+├── domain/   → Models, Repository interface
+└── ui/       → NavDestination, Screen, State, ViewModel
+```
 
 ## Testing
 
-### Running Tests
-To run unit tests for a specific module and test class:
 ```bash
-./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClassName"
+# Run tests (use fdroid or gplay variant)
+./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
 ```
 
-Examples:
-```bash
-# Run all tests in a module
-./gradlew :feature:workitem:mapper:testFdroidDebugUnitTest
+- `:testing` module has utilities: `getRandomString()`, `MainDispatcherRule`, fake generators
+- JUnit 4 + kotlin.test assertions + MockK
+- Test dependencies added automatically via convention plugins
 
-# Run specific test class
-./gradlew :feature:workitem:mapper:testFdroidDebugUnitTest --tests "com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapperTest"
+## Coding Guidelines
 
-# Run specific test method
-./gradlew :feature:workitem:mapper:testFdroidDebugUnitTest --tests "com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapperTest.toJsonObject should map null value to JsonNull"
-```
+**Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
 
-Note: Use `testFdroidDebugUnitTest` or `testGplayDebugUnitTest` variants. The generic `test` task does not support `--tests` filter.
+### Think Before Coding
 
-### Testing Utilities
-- The `:testing` module contains shared testing utilities and fake data generators
-- **TestUtils.kt**: Provides random data generators:
-  - `getRandomString()`, `getRandomLong()`, `getRandomInt()`, `getRandomBoolean()`
-  - `getRandomUri()`, `getRandomFile()`, `getRandomColor()`
-  - `nowLocalDate` for date testing
-  - `testException` for exception testing
-- **Fake data generators** (in separate files like `AttachmentFakes.kt`, `UserFakes.kt`, etc.):
-  - `getAttachment()`, `getAttachmentDTO()`
-  - `getUser()`, `getStatus()`, `getTag()`, `getType()`, `getSeverity()`, `getPriority()`
-  - `getFiltersData()`, `getWorkItemResponseDTO()`, `getProjectExtraInfo()`
-- **Test rules**: `MainDispatcherRule`, `SavedStateHandleRule`
-- Use `UnconfinedTestDispatcher()` for coroutine testing
-- Tests use JUnit 4 with `kotlin.test` assertions and MockK for mocking
-- Test dependencies are automatically added via convention plugins - no need to check or modify build.gradle.kts when writing tests
+**Don't assume. Don't hide confusion. Surface tradeoffs.**
 
-# important-instruction-reminders
+- State assumptions explicitly. If uncertain, ask.
+- If multiple interpretations exist, present them — don't pick silently.
+- If a simpler approach exists, say so. Push back when warranted.
+- If something is unclear, stop. Name what's confusing. Ask.
 
-- Do what has been asked; nothing more, nothing less.
-- Do not use early returns in Composable functions - use conditional wrapping instead
-- Lambda parameters in Composable functions must use present tense, not past tense (e.g., `onClick` not `onClicked`, `onColorSelect` not `onColorSelected`)
-- NEVER create files unless they're absolutely necessary for achieving your goal.
-- ALWAYS prefer editing an existing file to creating a new one.
-- NEVER proactively create documentation files (*.md) or README files. Only create documentation files if explicitly requested by the User.
-- DO NOT add comments to code unless explicitly requested by the user
-- Write clean, self-documenting code without unnecessary comments
-- If an action requires creating a module, then it is better to be done manually by the user
+### Simplicity First
+
+**Minimum code that solves the problem. Nothing speculative.**
+
+- No features beyond what was asked.
+- No abstractions for single-use code.
+- No "flexibility" or "configurability" that wasn't requested.
+- No error handling for impossible scenarios.
+- If you write 200 lines and it could be 50, rewrite it.
+
+Ask yourself: "Would a senior engineer say this is overcomplicated?" If yes, simplify.
+
+### Surgical Changes
+
+**Touch only what you must. Clean up only your own mess.**
+
+When editing existing code:
+- Don't "improve" adjacent code, comments, or formatting.
+- Don't refactor things that aren't broken.
+- Match existing style, even if you'd do it differently.
+- If you notice unrelated dead code, mention it — don't delete it.
+
+When your changes create orphans:
+- Remove imports/variables/functions that YOUR changes made unused.
+- Don't remove pre-existing dead code unless asked.
+
+The test: Every changed line should trace directly to the user's request.
+
+### Goal-Driven Execution
+
+**Define success criteria. Loop until verified.**
+
+Transform tasks into verifiable goals:
+- "Add validation" → "Write tests for invalid inputs, then make them pass"
+- "Fix the bug" → "Write a test that reproduces it, then make it pass"
+- "Refactor X" → "Ensure tests pass before and after"
+
+---
+
+**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
+
+## Android/Compose Rules
+
+- Do not use early returns in Composable functions — use conditional wrapping
+- Lambda parameters: present tense (`onClick` not `onClicked`)
