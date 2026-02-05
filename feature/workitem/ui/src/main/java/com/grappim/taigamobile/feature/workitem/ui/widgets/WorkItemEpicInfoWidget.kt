@@ -43,7 +43,8 @@ fun WorkItemEpicInfoWidget(
     modifier: Modifier = Modifier,
     onEpicClick: (UserStoryEpic) -> Unit = {},
     onEpicRemoveClick: (UserStoryEpic) -> Unit = {},
-    onLinkToEpicClick: () -> Unit = {}
+    onLinkToEpicClick: () -> Unit = {},
+    isOffline: Boolean
 ) {
     Column(
         modifier = modifier
@@ -79,7 +80,8 @@ fun WorkItemEpicInfoWidget(
         if (canModifyRelatedEpic) {
             AddButtonWidget(
                 text = stringResource(RString.link_to_epic),
-                onClick = onLinkToEpicClick
+                onClick = onLinkToEpicClick,
+                isOffline = isOffline
             )
         }
     }

@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.utils.ui.textColor
 
 /**
@@ -64,7 +64,7 @@ fun Chip(
 
 @Preview
 @Composable
-private fun ChipPreview() = TaigaMobileTheme {
+private fun ChipPreview() = TaigaMobilePreviewTheme {
     Box(modifier = Modifier.padding(10.dp)) {
         Chip {
             Text("Testing chip")

@@ -28,6 +28,7 @@ fun WikiListContentWidget(
     onRetry: () -> Unit,
     navigateToCreate: () -> Unit,
     canCreate: Boolean,
+    isOffline: Boolean,
     onClick: (slug: String, id: Long) -> Unit,
     modifier: Modifier = Modifier,
     canDeleteItem: Boolean = false,
@@ -57,7 +58,8 @@ fun WikiListContentWidget(
             items.isEmpty() -> {
                 EmptyWikiDialogWidget(
                     createNewPage = navigateToCreate,
-                    isButtonAvailable = canCreate
+                    isButtonAvailable = canCreate,
+                    isOffline = isOffline
                 )
             }
 
@@ -66,7 +68,8 @@ fun WikiListContentWidget(
                     items = items,
                     onClick = onClick,
                     onDeleteItemClick = onDeleteItemClick,
-                    canDeleteItem = canDeleteItem
+                    canDeleteItem = canDeleteItem,
+                    isOffline = isOffline
                 )
             }
         }
@@ -78,7 +81,8 @@ private fun WikiList(
     items: ImmutableList<WikiUIItem>,
     onClick: (slug: String, id: Long) -> Unit,
     onDeleteItemClick: ((Long) -> Unit)?,
-    canDeleteItem: Boolean
+    canDeleteItem: Boolean,
+    isOffline: Boolean
 ) {
     LazyColumn(
         modifier = Modifier
@@ -94,7 +98,8 @@ private fun WikiList(
                 title = item.title,
                 onClick = {
                     onClick(item.slug, item.id)
-                }
+                },
+                isOffline = isOffline
             )
         }
     }
@@ -110,7 +115,8 @@ private fun WikiListContentLoadingPreview() = TaigaMobileTheme {
         onRetry = {},
         navigateToCreate = {},
         canCreate = false,
-        onClick = { _, _ -> }
+        onClick = { _, _ -> },
+        isOffline = false
     )
 }
 
@@ -124,7 +130,8 @@ private fun WikiListContentErrorPreview() = TaigaMobileTheme {
         onRetry = {},
         navigateToCreate = {},
         canCreate = false,
-        onClick = { _, _ -> }
+        onClick = { _, _ -> },
+        isOffline = false
     )
 }
 
@@ -138,7 +145,8 @@ private fun WikiListContentEmptyPreview() = TaigaMobileTheme {
         onRetry = {},
         navigateToCreate = {},
         canCreate = true,
-        onClick = { _, _ -> }
+        onClick = { _, _ -> },
+        isOffline = false
     )
 }
 
@@ -156,6 +164,7 @@ private fun WikiListContentWithItemsPreview() = TaigaMobileTheme {
         onRetry = {},
         navigateToCreate = {},
         canCreate = true,
-        onClick = { _, _ -> }
+        onClick = { _, _ -> },
+        isOffline = false
     )
 }

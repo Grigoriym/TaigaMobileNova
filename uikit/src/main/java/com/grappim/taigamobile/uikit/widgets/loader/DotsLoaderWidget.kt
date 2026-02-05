@@ -20,9 +20,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 
 /**
  * Three dots pulsing
@@ -79,8 +79,8 @@ private fun Dot(scale: Float) = Spacer(
         )
 )
 
-@Preview(showBackground = true)
+@PreviewTaigaDarkLight
 @Composable
-private fun DotsLoaderPreview() = TaigaMobileTheme {
+private fun DotsLoaderPreview() = TaigaMobilePreviewTheme {
     DotsLoaderWidget()
 }

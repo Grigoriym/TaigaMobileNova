@@ -35,6 +35,7 @@ fun <T> DropdownSelector(
     items: List<T>,
     selectedItem: T,
     onItemSelect: (T) -> Unit,
+    isOffline: Boolean,
     itemContent: @Composable (T) -> Unit,
     selectedItemContent: @Composable (T) -> Unit,
     modifier: Modifier = Modifier,
@@ -57,7 +58,7 @@ fun <T> DropdownSelector(
             modifier = Modifier
                 .let { if (takeMaxWidth) it.fillMaxWidth() else it }
                 .then(
-                    if (canModify) {
+                    if (canModify && !isOffline) {
                         Modifier.clickable {
                             isExpanded = !isExpanded
                         }

@@ -38,3 +38,4 @@ taigamobilenova_keystore_release.jks
 /app/fdroid/release/
 
 .aider.*
+.aider*

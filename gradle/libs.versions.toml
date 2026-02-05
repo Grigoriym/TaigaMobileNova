@@ -83,6 +83,7 @@ androidx-paging-common = { module = "androidx.paging:paging-common", version.ref
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-room-paging = { module = "androidx.room:room-paging", version.ref = "room" }
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }

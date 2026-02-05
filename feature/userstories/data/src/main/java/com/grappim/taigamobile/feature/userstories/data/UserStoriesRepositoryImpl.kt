@@ -1,10 +1,13 @@
 package com.grappim.taigamobile.feature.userstories.data
 
+import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
+import androidx.paging.map
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.userstories.domain.UpdatedKanbanStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
@@ -13,6 +16,8 @@ import com.grappim.taigamobile.feature.userstories.dto.BulkUpdateKanbanOrderRequ
 import com.grappim.taigamobile.feature.userstories.dto.CreateUserStoryRequest
 import com.grappim.taigamobile.feature.userstories.mapper.UserStoryMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemRemoteMediator
+import com.grappim.taigamobile.feature.workitem.data.toDomain
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
@@ -21,7 +26,10 @@ import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 private val userStoryPlural = WorkItemPathPlural(CommonTaskType.UserStory)
@@ -32,26 +40,51 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val userStoryMapper: UserStoryMapper,
     private val workItemApi: WorkItemApi,
     private val workItemRepository: WorkItemRepository,
-    private val workItemMapper: WorkItemMapper
+    private val workItemMapper: WorkItemMapper,
+    private val workItemDao: WorkItemDao
 ) : UserStoriesRepository {
     private var userStoriesPagingSource: UserStoriesPagingSource? = null
 
-    override fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> = Pager(
-        PagingConfig(
-            pageSize = 10,
-            enablePlaceholders = false
-        )
-    ) {
-        UserStoriesPagingSource(
-            filters = filters,
-            taigaSessionStorage = taigaSessionStorage,
-            query = query,
-            workItemMapper = workItemMapper,
-            workItemApi = workItemApi
-        ).also {
-            userStoriesPagingSource = it
+    @OptIn(ExperimentalPagingApi::class, ExperimentalCoroutinesApi::class)
+    override fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
+        val hasFilters = filters.filtersNumber > 0 || query.isNotBlank()
+        if (hasFilters) {
+            return Pager(
+                PagingConfig(
+                    pageSize = 10,
+                    enablePlaceholders = false
+                )
+            ) {
+                UserStoriesPagingSource(
+                    filters = filters,
+                    taigaSessionStorage = taigaSessionStorage,
+                    query = query,
+                    workItemMapper = workItemMapper,
+                    workItemApi = workItemApi
+                ).also {
+                    userStoriesPagingSource = it
+                }
+            }.flow
         }
-    }.flow
+        return taigaSessionStorage.currentProjectIdFlow.flatMapLatest { projectId ->
+            Pager(
+                config = PagingConfig(
+                    pageSize = 10,
+                    enablePlaceholders = false
+                ),
+                remoteMediator = WorkItemRemoteMediator(
+                    taskType = CommonTaskType.UserStory,
+                    workItemApi = workItemApi,
+                    workItemDao = workItemDao,
+                    workItemMapper = workItemMapper,
+                    taigaSessionStorage = taigaSessionStorage
+                ),
+                pagingSourceFactory = { workItemDao.pagingSource(projectId, CommonTaskType.UserStory) }
+            ).flow.map { pagingData ->
+                pagingData.map { entity -> entity.toDomain() }
+            }
+        }
+    }
 
     override fun refreshUserStories() {
         userStoriesPagingSource?.invalidate()

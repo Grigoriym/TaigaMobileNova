@@ -1,0 +1,342 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 4,
+    "identityHash": "d13b703cc9e7dbabfe5b749dac2dee67",
+    "entities": [
+      {
+        "tableName": "project_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `name` TEXT NOT NULL, `slug` TEXT NOT NULL, `myPermissions` TEXT NOT NULL, `isEpicsActivated` INTEGER NOT NULL, `isBacklogActivated` INTEGER NOT NULL, `isKanbanActivated` INTEGER NOT NULL, `isIssuesActivated` INTEGER NOT NULL, `isWikiActivated` INTEGER NOT NULL, `defaultSwimlane` INTEGER, `isAdmin` INTEGER NOT NULL DEFAULT false, `isMember` INTEGER NOT NULL DEFAULT false, `isOwner` INTEGER NOT NULL DEFAULT false, `description` TEXT NOT NULL DEFAULT '', `avatarUrl` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "slug",
+            "columnName": "slug",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "myPermissions",
+            "columnName": "myPermissions",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isEpicsActivated",
+            "columnName": "isEpicsActivated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isBacklogActivated",
+            "columnName": "isBacklogActivated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isKanbanActivated",
+            "columnName": "isKanbanActivated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isIssuesActivated",
+            "columnName": "isIssuesActivated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isWikiActivated",
+            "columnName": "isWikiActivated",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "defaultSwimlane",
+            "columnName": "defaultSwimlane",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "isAdmin",
+            "columnName": "isAdmin",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "false"
+          },
+          {
+            "fieldPath": "isMember",
+            "columnName": "isMember",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "false"
+          },
+          {
+            "fieldPath": "isOwner",
+            "columnName": "isOwner",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "false"
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
+          },
+          {
+            "fieldPath": "avatarUrl",
+            "columnName": "avatarUrl",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        }
+      },
+      {
+        "tableName": "sprint_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `projectId` INTEGER NOT NULL, `name` TEXT NOT NULL, `order` INTEGER NOT NULL, `start` INTEGER NOT NULL, `end` INTEGER NOT NULL, `storiesCount` INTEGER NOT NULL, `isClosed` INTEGER NOT NULL, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectId",
+            "columnName": "projectId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "order",
+            "columnName": "order",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "start",
+            "columnName": "start",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "end",
+            "columnName": "end",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "storiesCount",
+            "columnName": "storiesCount",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isClosed",
+            "columnName": "isClosed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_sprint_table_projectId",
+            "unique": false,
+            "columnNames": [
+              "projectId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_sprint_table_projectId` ON `${TABLE_NAME}` (`projectId`)"
+          }
+        ]
+      },
+      {
+        "tableName": "work_item_table",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `taskType` TEXT NOT NULL, `projectId` INTEGER NOT NULL, `projectName` TEXT NOT NULL, `ref` INTEGER NOT NULL, `title` TEXT NOT NULL, `createdDate` INTEGER NOT NULL, `isClosed` INTEGER NOT NULL, `isBlocked` INTEGER NOT NULL, `blockedNote` TEXT, `statusId` INTEGER NOT NULL, `statusName` TEXT NOT NULL, `statusColor` TEXT NOT NULL, `assigneeId` INTEGER, `assigneeName` TEXT, `assigneePhoto` TEXT, `tagsJson` TEXT NOT NULL, `colorsJson` TEXT NOT NULL, `sprintId` INTEGER, `cachedAt` INTEGER NOT NULL, PRIMARY KEY(`id`, `taskType`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "taskType",
+            "columnName": "taskType",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectId",
+            "columnName": "projectId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "projectName",
+            "columnName": "projectName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "ref",
+            "columnName": "ref",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdDate",
+            "columnName": "createdDate",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isClosed",
+            "columnName": "isClosed",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isBlocked",
+            "columnName": "isBlocked",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blockedNote",
+            "columnName": "blockedNote",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "statusId",
+            "columnName": "statusId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusName",
+            "columnName": "statusName",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "statusColor",
+            "columnName": "statusColor",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assigneeId",
+            "columnName": "assigneeId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "assigneeName",
+            "columnName": "assigneeName",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "assigneePhoto",
+            "columnName": "assigneePhoto",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "tagsJson",
+            "columnName": "tagsJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "colorsJson",
+            "columnName": "colorsJson",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "sprintId",
+            "columnName": "sprintId",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "cachedAt",
+            "columnName": "cachedAt",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id",
+            "taskType"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_work_item_table_projectId",
+            "unique": false,
+            "columnNames": [
+              "projectId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_item_table_projectId` ON `${TABLE_NAME}` (`projectId`)"
+          },
+          {
+            "name": "index_work_item_table_sprintId",
+            "unique": false,
+            "columnNames": [
+              "sprintId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_work_item_table_sprintId` ON `${TABLE_NAME}` (`sprintId`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd13b703cc9e7dbabfe5b749dac2dee67')"
+    ]
+  }
+}

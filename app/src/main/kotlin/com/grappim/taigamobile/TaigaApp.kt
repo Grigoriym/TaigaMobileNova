@@ -6,8 +6,12 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.core.async.ApplicationScope
+import com.grappim.taigamobile.core.storage.cache.CacheManager
 import com.grappim.taigamobile.data.ImageLoaderProvider
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -22,12 +26,24 @@ class TaigaApp :
     @Inject
     lateinit var imageLoaderProvider: ImageLoaderProvider
 
+    @Inject
+    lateinit var cacheManager: CacheManager
+
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
+
     override fun onCreate() {
         super.onCreate()
         setupStrictMode()
 
         if (appInfoProvider.isDebug()) {
             Timber.plant(Timber.DebugTree())
+        }
+
+        // Clean expired cache on app start
+        applicationScope.launch {
+            cacheManager.cleanExpiredCache()
         }
     }
 

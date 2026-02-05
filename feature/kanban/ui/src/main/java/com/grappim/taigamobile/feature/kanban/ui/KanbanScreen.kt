@@ -35,6 +35,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.FilterModalBottomSheetWidget
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.badge.Badge
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -52,6 +53,7 @@ fun KanbanScreen(
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -76,6 +78,7 @@ fun KanbanScreen(
 
     if (state.error.isEmpty()) {
         KanbanScreenContent(
+            isOffline = isOffline,
             state = state,
             navigateToStory = { id, ref ->
                 goToTask(
@@ -106,6 +109,7 @@ fun KanbanScreen(
 @Composable
 fun KanbanScreenContent(
     state: KanbanState,
+    isOffline: Boolean,
     modifier: Modifier = Modifier,
     navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
@@ -127,6 +131,7 @@ fun KanbanScreenContent(
 
             KanbanBoardWidget(
                 state = state,
+                isOffline = isOffline,
                 navigateToStory = navigateToStory,
                 navigateToCreateTask = navigateToCreateTask,
                 onMoveStory = state.onMoveStory

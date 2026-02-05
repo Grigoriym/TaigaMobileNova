@@ -69,6 +69,7 @@ fun <T> DraggableItem(
     columnId: Any,
     index: Int,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     content: @Composable (isDragging: Boolean) -> Unit
 ) {
     val isBeingDragged = state.isItemBeingDragged(itemKey)
@@ -81,19 +82,25 @@ fun <T> DraggableItem(
                 itemOffset = bounds.topLeft
                 state.registerItemBounds(columnId, index, itemKey, bounds)
             }
-            .pointerInput(itemKey, columnId, index) {
-                detectDragGesturesAfterLongPress(
-                    onDragStart = { touchOffset ->
-                        state.onDragStart(item, itemKey, columnId, index, itemOffset, touchOffset)
-                    },
-                    onDrag = { change, dragAmount ->
-                        change.consume()
-                        state.onDrag(dragAmount)
-                    },
-                    onDragEnd = { state.onDragEnd() },
-                    onDragCancel = { state.onDragCancel() }
-                )
-            }
+            .then(
+                if (enabled) {
+                    Modifier.pointerInput(itemKey, columnId, index) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = { touchOffset ->
+                                state.onDragStart(item, itemKey, columnId, index, itemOffset, touchOffset)
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                state.onDrag(dragAmount)
+                            },
+                            onDragEnd = { state.onDragEnd() },
+                            onDragCancel = { state.onDragCancel() }
+                        )
+                    }
+                } else {
+                    Modifier
+                }
+            )
             .graphicsLayer {
                 alpha = if (isBeingDragged) 0.3f else 1f
             }

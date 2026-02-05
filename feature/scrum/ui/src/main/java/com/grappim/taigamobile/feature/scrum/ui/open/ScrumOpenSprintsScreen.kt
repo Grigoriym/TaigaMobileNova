@@ -11,6 +11,7 @@ import com.grappim.taigamobile.feature.scrum.ui.widgets.SprintsListContent
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
@@ -31,8 +32,9 @@ fun ScrumOpenSprintsScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val openSprints = viewModel.openSprints.collectAsLazyPagingItems()
     val sprintDialogState by viewModel.sprintDialogState.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(state.canAddSprint, isOffline) {
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.open_sprints),
@@ -41,6 +43,7 @@ fun ScrumOpenSprintsScreen(
                     if (state.canAddSprint) {
                         add(
                             TopBarActionIconButton(
+                                enabled = !isOffline,
                                 drawable = RDrawable.ic_add,
                                 contentDescription = "Add Sprint",
                                 onClick = state.onCreateSprintClick

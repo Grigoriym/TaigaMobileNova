@@ -13,10 +13,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
-fun TaigaTextButtonWidget(text: String, onClick: () -> Unit, modifier: Modifier = Modifier, icon: Int? = null) {
-    FilledTonalButton(modifier = modifier, onClick = onClick) {
+fun TaigaTextButtonWidget(
+    text: String,
+    isOffline: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: Int? = null
+) {
+    FilledTonalButton(modifier = modifier, onClick = onClick, enabled = !isOffline) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             icon?.let {
                 Icon(
@@ -34,4 +43,35 @@ fun TaigaTextButtonWidget(text: String, onClick: () -> Unit, modifier: Modifier 
             )
         }
     }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun TaigaTextButtonWidgetPreview() = TaigaMobilePreviewTheme {
+    TaigaTextButtonWidget(
+        text = "Button",
+        isOffline = false,
+        onClick = {}
+    )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun TaigaTextButtonWidgetWithIconPreview() = TaigaMobilePreviewTheme {
+    TaigaTextButtonWidget(
+        text = "Add item",
+        isOffline = false,
+        onClick = {},
+        icon = RDrawable.ic_add
+    )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun TaigaTextButtonWidgetOfflinePreview() = TaigaMobilePreviewTheme {
+    TaigaTextButtonWidget(
+        text = "Button",
+        isOffline = true,
+        onClick = {}
+    )
 }

@@ -2,6 +2,20 @@
 
 TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin, Jetpack Compose, and follows a modular MVVM + Clean Architecture.
 
+## Build Commands
+
+```bash
+# Build debug APK
+./gradlew :app:assembleDebug
+
+# Build specific flavor
+./gradlew :app:assembleGplayDebug
+./gradlew :app:assembleFdroidDebug
+
+# Run tests (use fdroid or gplay variant)
+./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
+```
+
 ## Architecture
 
 **Module structure:** `app/` → `feature/` → `core/` → `utils/`
@@ -10,7 +24,23 @@ TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin,
 - Dependencies via Gradle Version Catalogs (`gradle/libs.versions.toml`)
 - Build plugins in `build-logic/`
 
-**Stack:** Kotlin, Compose + Material3, Hilt, Navigation Compose, Retrofit + kotlinx.serialization, Coroutines, Coil
+**Tech Stack:**
+- Kotlin 2.3.0, JDK 21, Target SDK 36, Min SDK 24
+- Jetpack Compose with Material Design 3
+- Hilt 2.59 for DI (with KSP)
+- Retrofit 3.0.0 + OkHttp for networking
+- Navigation Compose 2.9.7 with type-safe routes
+- Kotlin Serialization for JSON
+- Coroutines, Coil 3.x for images
+
+**Convention Plugins** (in `build-logic/`):
+- `taigamobile.android.application` - Main app module
+- `taigamobile.android.library` - Android library with KSP
+- `taigamobile.android.library.compose` - Android library + Compose
+- `taigamobile.android.hilt` - Hilt DI for Android modules
+- `taigamobile.kotlin.hilt` - Hilt DI for Kotlin modules
+- `taigamobile.kotlin.serialization` - Kotlin Serialization setup
+- `taigamobile.kotlin.library` - Pure Kotlin library (no Android)
 
 ## Navigation Pattern
 
@@ -54,6 +84,30 @@ private fun setData(value: String) {
 
 Use `NativeText` for strings from ViewModel → resolve in UI with `text.asString(context)`.
 
+## One-off Events Pattern
+
+Use `Channel` + `receiveAsFlow()` for navigation, snackbars, and other one-off events. Never put these in UI state.
+
+```kotlin
+// ViewModel - use SnackbarDelegate or create Channel directly
+private val _navigateBack = Channel<Unit>()
+val navigateBack = _navigateBack.receiveAsFlow()
+
+// Screen - observe with ObserveAsEvents from utils.ui
+ObserveAsEvents(viewModel.navigateBack) { onNavigateBack() }
+```
+
+For snackbars, use `SnackbarDelegate` from `utils.ui`:
+```kotlin
+class MyViewModel @Inject constructor() : ViewModel(), SnackbarDelegate by SnackbarDelegateImpl() {
+    // Use showSnackbarSuspend(message) to show snackbars
+}
+```
+
+## Use Cases
+
+Use cases only when multiple repository calls are needed. For single repo calls, call repository directly from ViewModel.
+
 ## Feature Module Structure
 
 ```
@@ -63,12 +117,88 @@ feature/{name}/
 └── ui/       → NavDestination, Screen, State, ViewModel
 ```
 
-## Testing
+## Permissions Pattern
 
-```bash
-# Run tests (use fdroid or gplay variant)
-./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
+`TaigaPermission` enum defines all Taiga project permissions (VIEW_*, ADD_*, MODIFY_*, COMMENT_*, DELETE_* for each entity type).
+
+**Extension functions** in `ProjectPermissions.kt` on `ImmutableList<TaigaPermission>`:
+```kotlin
+permissions.canAddEpic()      // checks ADD_EPIC
+permissions.canModifyTask()   // checks MODIFY_TASK
+permissions.hasPermission(TaigaPermission.COMMENT_US)
 ```
+
+**Usage in ViewModels:** Map permission checks to state booleans:
+```kotlin
+data class FeatureState(
+    val canAddItem: Boolean = false,
+    val canModify: Boolean = false
+)
+
+// In ViewModel init or when project changes:
+_state.update {
+    it.copy(
+        canAddItem = permissions.canAddItem(),
+        canModify = permissions.canModifyItem()
+    )
+}
+```
+
+**UI behavior:** When permission is false, **hide** the action (don't show disabled buttons):
+```kotlin
+actions = buildList {
+    if (state.canAddItem) {
+        add(TopBarActionIconButton(...))
+    }
+}
+```
+
+## Offline State Pattern
+
+Use `LocalOfflineState` (from `uikit`) to disable write actions when offline.
+
+**Key difference from permissions:**
+- No permission → **hide** action (user can never do this)
+- Offline → **disable** action (user can do this, just not right now)
+
+**Reading offline state:**
+```kotlin
+val isOffline = LocalOfflineState.current
+```
+
+**List screens - disable top bar add button:**
+```kotlin
+LaunchedEffect(state.canAddItem, isOffline) {
+    topBarController.update(
+        TopBarConfig(
+            actions = buildList {
+                if (state.canAddItem) {
+                    add(TopBarActionIconButton(
+                        enabled = !isOffline,
+                        onClick = { ... }
+                    ))
+                }
+            }.toImmutableList()
+        )
+    )
+}
+```
+
+**Details screens - pass to widgets:**
+```kotlin
+WorkItemDropdownMenuWidget(
+    canDelete = state.canDelete,
+    canModify = state.canModify,
+    isOffline = isOffline  // disables delete, block, promote actions
+)
+
+CreateCommentBar(
+    canComment = state.canComment,
+    isOffline = isOffline  // disables text field and send button
+)
+```
+
+## Testing
 
 - `:testing` module has utilities: `getRandomString()`, `MainDispatcherRule`, fake generators
 - JUnit 4 + kotlin.test assertions + MockK
@@ -108,6 +238,7 @@ When editing existing code:
 - Don't refactor things that aren't broken.
 - Match existing style, even if you'd do it differently.
 - If you notice unrelated dead code, mention it — don't delete it.
+- Don't add UI elements or navigation that weren't asked for — if asked to create a settings screen, don't add a settings button to other screens unless explicitly requested.
 
 When your changes create orphans:
 - Remove imports/variables/functions that YOUR changes made unused.
@@ -124,6 +255,13 @@ Transform tasks into verifiable goals:
 - "Fix the bug" → "Write a test that reproduces it, then make it pass"
 - "Refactor X" → "Ensure tests pass before and after"
 
+For multi-step tasks, state a brief plan:
+```
+1. [Step] → verify: [check]
+2. [Step] → verify: [check]
+3. [Step] → verify: [check]
+```
+
 ---
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
@@ -132,3 +270,15 @@ Transform tasks into verifiable goals:
 
 - Do not use early returns in Composable functions — use conditional wrapping
 - Lambda parameters: present tense (`onClick` not `onClicked`)
+- Prefer `kotlinx-collections-immutable` (`ImmutableList`, `persistentListOf()`) over `List`/`MutableList` in state classes and Composable parameters for stable recomposition
+- For Composable Previews, use `@PreviewTaigaDarkLight` annotation and wrap content with `TaigaMobileThemePreview` (both from `uikit`):
+```kotlin
+@PreviewTaigaDarkLight
+@Composable
+private fun MyWidgetPreview() {
+    TaigaMobileThemePreview {
+        MyWidget(...)
+    }
+}
+```
+- Settings screens with fixed items use `Column` instead of `LazyColumn` — lazy loading unnecessary when item count is known and small

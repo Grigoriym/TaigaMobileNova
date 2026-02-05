@@ -19,7 +19,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.asString
@@ -68,6 +68,6 @@ fun ErrorStateWidget(
 
 @PreviewTaigaDarkLight
 @Composable
-private fun ErrorStateWidgetPreview() = TaigaMobileTheme {
+private fun ErrorStateWidgetPreview() = TaigaMobilePreviewTheme {
     ErrorStateWidget()
 }

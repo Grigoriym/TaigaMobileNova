@@ -28,6 +28,7 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.WorkItemDescriptionWidget
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -57,8 +58,9 @@ fun WikiPageScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val attachmentsState by viewModel.attachmentsState.collectAsStateWithLifecycle()
     val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
-    LaunchedEffect(Unit, state.shouldShowActions) {
+    LaunchedEffect(state.shouldShowActions) {
         topBarController.update(
             TopBarConfig(
                 title =
@@ -106,7 +108,8 @@ fun WikiPageScreen(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentSize(Alignment.TopEnd),
-        state = state
+        state = state,
+        isOffline = isOffline
     )
 
     TaigaLoadingDialog(isVisible = state.isLoading)
@@ -117,7 +120,8 @@ fun WikiPageScreen(
             attachmentsState = attachmentsState,
             descriptionState = descriptionState,
             onUserItemClick = goToProfile,
-            goToEditDescription = goToEditDescription
+            goToEditDescription = goToEditDescription,
+            isOffline = isOffline
         )
     }
 }
@@ -127,6 +131,7 @@ fun WikiPageScreenContent(
     state: WikiPageState,
     attachmentsState: WorkItemAttachmentsState,
     descriptionState: WorkItemDescriptionState,
+    isOffline: Boolean,
     goToEditDescription: (String, Long) -> Unit,
     modifier: Modifier = Modifier,
     onUserItemClick: (userId: Long) -> Unit = { _ -> }
@@ -156,7 +161,8 @@ fun WikiPageScreenContent(
                     )
                 },
                 descriptionState = descriptionState,
-                canModify = state.canModifyPage
+                canModify = state.canModifyPage,
+                isOffline = isOffline
             )
 
             TaigaHeightSpacer(sectionsPadding)
@@ -189,7 +195,8 @@ fun WikiPageScreenContent(
                 onAttachmentRemove = {
                     state.onAttachmentRemove(it)
                 },
-                canModify = state.canModifyPage
+                canModify = state.canModifyPage,
+                isOffline = isOffline
             )
 
             TaigaHeightSpacer(sectionsPadding)
@@ -206,7 +213,8 @@ private fun WikiPagePreview() {
             ),
             attachmentsState = WorkItemAttachmentsState(),
             goToEditDescription = { _, _ -> },
-            descriptionState = WorkItemDescriptionState()
+            descriptionState = WorkItemDescriptionState(),
+            isOffline = false
         )
     }
 }

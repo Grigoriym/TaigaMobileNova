@@ -5,6 +5,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,6 +27,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -81,75 +83,84 @@ private fun DashboardScreenContent(
     val containerColor = MaterialTheme.colorScheme.surfaceVariant
     val titleColor = MaterialTheme.colorScheme.onSurfaceVariant
 
-    LazyColumn(
-        modifier = modifier.fillMaxSize()
+    PullToRefreshBox(
+        modifier = modifier.fillMaxSize(),
+        onRefresh = {
+            state.retry()
+        },
+        isRefreshing = state.watchingSection.isLoading ||
+            state.myWorkSection.isLoading ||
+            state.recentActivitySection.isLoading ||
+            state.recentlyCompletedSection.isLoading
     ) {
-        item {
-            DashboardInfoBanner()
-        }
+        LazyColumn {
+            item {
+                DashboardInfoBanner()
+            }
 
-        item {
-            DashboardSectionCard(
-                titleRes = RString.dashboard_watching_title,
-                subtitleRes = RString.dashboard_watching_subtitle,
-                containerColor = containerColor,
-                titleColor = titleColor,
-                sectionState = state.watchingSection,
-                navigateToTask = navigateToTask,
-                showTimestamp = false,
-                showCheckmark = false,
-                onToggle = state.onToggleWatching,
-                onRetry = state.onRetryWatching
-            )
-        }
+            item {
+                DashboardSectionCard(
+                    titleRes = RString.dashboard_watching_title,
+                    subtitleRes = RString.dashboard_watching_subtitle,
+                    containerColor = containerColor,
+                    titleColor = titleColor,
+                    sectionState = state.watchingSection,
+                    navigateToTask = navigateToTask,
+                    showTimestamp = false,
+                    showCheckmark = false,
+                    onToggle = state.onToggleWatching,
+                    onRetry = state.onRetryWatching
+                )
+            }
 
-        item {
-            DashboardSectionCard(
-                titleRes = RString.dashboard_my_work_title,
-                subtitleRes = RString.dashboard_my_work_subtitle,
-                containerColor = containerColor,
-                titleColor = titleColor,
-                sectionState = state.myWorkSection,
-                navigateToTask = navigateToTask,
-                showTimestamp = false,
-                showCheckmark = false,
-                onToggle = state.onToggleMyWork,
-                onRetry = state.onRetryMyWork
-            )
-        }
+            item {
+                DashboardSectionCard(
+                    titleRes = RString.dashboard_my_work_title,
+                    subtitleRes = RString.dashboard_my_work_subtitle,
+                    containerColor = containerColor,
+                    titleColor = titleColor,
+                    sectionState = state.myWorkSection,
+                    navigateToTask = navigateToTask,
+                    showTimestamp = false,
+                    showCheckmark = false,
+                    onToggle = state.onToggleMyWork,
+                    onRetry = state.onRetryMyWork
+                )
+            }
 
-        item {
-            DashboardSectionCard(
-                titleRes = RString.dashboard_recent_activity_title,
-                subtitleRes = RString.dashboard_recent_activity_subtitle,
-                containerColor = containerColor,
-                titleColor = titleColor,
-                sectionState = state.recentActivitySection,
-                navigateToTask = navigateToTask,
-                showTimestamp = true,
-                showCheckmark = false,
-                onToggle = state.onToggleRecentActivity,
-                onRetry = state.onRetryRecentActivity
-            )
-        }
+            item {
+                DashboardSectionCard(
+                    titleRes = RString.dashboard_recent_activity_title,
+                    subtitleRes = RString.dashboard_recent_activity_subtitle,
+                    containerColor = containerColor,
+                    titleColor = titleColor,
+                    sectionState = state.recentActivitySection,
+                    navigateToTask = navigateToTask,
+                    showTimestamp = true,
+                    showCheckmark = false,
+                    onToggle = state.onToggleRecentActivity,
+                    onRetry = state.onRetryRecentActivity
+                )
+            }
 
-        item {
-            DashboardSectionCard(
-                titleRes = RString.dashboard_completed_title,
-                subtitleRes = RString.dashboard_completed_subtitle,
-                containerColor = containerColor,
-                titleColor = titleColor,
-                sectionState = state.recentlyCompletedSection,
-                navigateToTask = navigateToTask,
-                showTimestamp = false,
-                showCheckmark = true,
-                onToggle = state.onToggleRecentlyCompleted,
-                onRetry = state.onRetryRecentlyCompleted
-            )
-        }
+            item {
+                DashboardSectionCard(
+                    titleRes = RString.dashboard_completed_title,
+                    subtitleRes = RString.dashboard_completed_subtitle,
+                    containerColor = containerColor,
+                    titleColor = titleColor,
+                    sectionState = state.recentlyCompletedSection,
+                    navigateToTask = navigateToTask,
+                    showTimestamp = false,
+                    showCheckmark = true,
+                    onToggle = state.onToggleRecentlyCompleted,
+                    onRetry = state.onRetryRecentlyCompleted
+                )
+            }
 
-        item {
-            TaigaHeightSpacer(16.dp)
+            item {
+                TaigaHeightSpacer(16.dp)
+            }
         }
     }
 }

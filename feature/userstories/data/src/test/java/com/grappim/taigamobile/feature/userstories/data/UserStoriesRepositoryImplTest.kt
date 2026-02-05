@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.userstories.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.mapper.UserStoryMapper
@@ -37,6 +38,7 @@ class UserStoriesRepositoryImplTest {
     private val workItemApi: WorkItemApi = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
     private val workItemMapper: WorkItemMapper = mockk()
+    private val workItemDao: WorkItemDao = mockk()
 
     private lateinit var sut: UserStoriesRepository
 
@@ -50,7 +52,8 @@ class UserStoriesRepositoryImplTest {
             userStoryMapper = userStoryMapper,
             workItemApi = workItemApi,
             workItemRepository = workItemRepository,
-            workItemMapper = workItemMapper
+            workItemMapper = workItemMapper,
+            workItemDao = workItemDao
         )
     }
 

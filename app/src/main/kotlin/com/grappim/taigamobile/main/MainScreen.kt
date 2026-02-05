@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.main
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -31,7 +32,9 @@ import androidx.navigation.NavController
 import com.grappim.taigamobile.core.nav.DrawerDestination
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.banner.OfflineIndicatorBanner
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
@@ -50,16 +53,19 @@ fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
     val state by viewModel.state.collectAsStateWithLifecycle()
     val initialNavState by viewModel.initialNavState.collectAsStateWithLifecycle()
+    val isOffline by viewModel.isOffline.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(
-        LocalTopBarConfig provides topBarController
+        LocalTopBarConfig provides topBarController,
+        LocalOfflineState provides isOffline
     ) {
         val topBarConfig = topBarController.config
         MainScreenContent(
             viewModel = viewModel,
             topBarConfig = topBarConfig,
             state = state,
-            initialNavState = initialNavState
+            initialNavState = initialNavState,
+            isOffline = isOffline
         )
     }
 }
@@ -69,7 +75,8 @@ private fun MainScreenContent(
     viewModel: MainViewModel,
     topBarConfig: TopBarConfig,
     state: MainScreenState,
-    initialNavState: InitialNavState
+    initialNavState: InitialNavState,
+    isOffline: Boolean
 ) {
     val appState = rememberMainAppState()
 
@@ -146,23 +153,26 @@ private fun MainScreenContent(
                 }
             },
             content = { paddingValues ->
-                MainNavHost(
-                    modifier = Modifier.padding(paddingValues),
-                    initialNavState = initialNavState,
-                    navController = appState.navController,
-                    showSnackbar = { text ->
-                        scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                message = text.asString(context),
-                                actionLabel = resources.getString(RString.close),
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                snackbarHostState.currentSnackbarData?.dismiss()
+                Column(modifier = Modifier.padding(paddingValues)) {
+                    OfflineIndicatorBanner(isOffline = isOffline)
+
+                    MainNavHost(
+                        initialNavState = initialNavState,
+                        navController = appState.navController,
+                        showSnackbar = { text ->
+                            scope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = text.asString(context),
+                                    actionLabel = resources.getString(RString.close),
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                }
                             }
                         }
-                    }
-                )
+                    )
+                }
 
                 /**
                  * It is required to place it below MainNavHost because as per documentation

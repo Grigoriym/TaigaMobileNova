@@ -14,13 +14,17 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.Chip
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
+import java.time.LocalDate
 
 @Composable
 fun WorkItemSprintInfoWidget(
     sprint: Sprint?,
+    isOffline: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isSprintLoading: Boolean = false
@@ -28,9 +32,15 @@ fun WorkItemSprintInfoWidget(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {
-                onClick()
-            }
+            .then(
+                if (!isOffline) {
+                    Modifier.clickable {
+                        onClick()
+                    }
+                } else {
+                    Modifier
+                }
+            )
     ) {
         TaigaHeightSpacer(4.dp)
 
@@ -60,5 +70,78 @@ fun WorkItemSprintInfoWidget(
             }
         }
         TaigaHeightSpacer(4.dp)
+    }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WorkItemSprintInfoWidgetWithSprintPreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemSprintInfoWidget(
+            sprint = Sprint(
+                id = 1L,
+                name = "Sprint 1",
+                order = 1,
+                start = LocalDate.now(),
+                end = LocalDate.now().plusDays(14),
+                storiesCount = 5,
+                isClosed = false
+            ),
+            onClick = {},
+            isOffline = false
+        )
+    }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WorkItemSprintInfoWidgetNoSprintPreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemSprintInfoWidget(
+            sprint = null,
+            onClick = {},
+            isOffline = false
+        )
+    }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WorkItemSprintInfoWidgetLoadingPreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemSprintInfoWidget(
+            sprint = Sprint(
+                id = 1L,
+                name = "Sprint 1",
+                order = 1,
+                start = LocalDate.now(),
+                end = LocalDate.now().plusDays(14),
+                storiesCount = 5,
+                isClosed = false
+            ),
+            onClick = {},
+            isSprintLoading = true,
+            isOffline = false
+        )
+    }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WorkItemSprintInfoWidgetOfflinePreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemSprintInfoWidget(
+            sprint = Sprint(
+                id = 1L,
+                name = "Sprint 1",
+                order = 1,
+                start = LocalDate.now(),
+                end = LocalDate.now().plusDays(14),
+                storiesCount = 5,
+                isClosed = false
+            ),
+            onClick = {},
+            isOffline = true
+        )
     }
 }

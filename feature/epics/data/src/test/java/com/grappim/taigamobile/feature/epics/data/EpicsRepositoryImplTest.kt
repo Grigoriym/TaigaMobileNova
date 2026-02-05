@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.epics.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.epics.dto.LinkToEpicRequestDTO
@@ -32,6 +33,7 @@ class EpicsRepositoryImplTest {
     private val workItemApi: WorkItemApi = mockk()
     private val epicMapper: EpicMapper = mockk()
     private val workItemMapper: WorkItemMapper = mockk()
+    private val workItemDao: WorkItemDao = mockk()
 
     private lateinit var sut: EpicsRepository
 
@@ -44,7 +46,8 @@ class EpicsRepositoryImplTest {
             taigaSessionStorage = taigaSessionStorage,
             workItemApi = workItemApi,
             epicMapper = epicMapper,
-            workItemMapper = workItemMapper
+            workItemMapper = workItemMapper,
+            workItemDao = workItemDao
         )
     }
 

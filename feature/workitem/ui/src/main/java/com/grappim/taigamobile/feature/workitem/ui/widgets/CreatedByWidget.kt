@@ -10,6 +10,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import java.time.LocalDateTime
 
@@ -34,5 +36,37 @@ fun CreatedByWidget(
                 createdDateTime = createdDateTime
             )
         }
+    }
+}
+
+private fun previewUser() = User(
+    id = 1L,
+    fullName = "John Doe",
+    photo = null,
+    bigPhoto = null,
+    username = "johndoe"
+)
+
+@Composable
+@PreviewTaigaDarkLight
+private fun CreatedByWidgetPreview() {
+    TaigaMobilePreviewTheme {
+        CreatedByWidget(
+            creator = previewUser(),
+            createdDateTime = null,
+            goToProfile = {}
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun CreatedByWidgetWithDateTimePreview() {
+    TaigaMobilePreviewTheme {
+        CreatedByWidget(
+            creator = previewUser(),
+            createdDateTime = LocalDateTime.of(2024, 1, 15, 14, 30),
+            goToProfile = {}
+        )
     }
 }

@@ -45,6 +45,7 @@ import timber.log.Timber
 
 @Composable
 fun AttachmentsSectionWidget(
+    isOffline: Boolean,
     attachmentsState: WorkItemAttachmentsState,
     onAttachmentAdd: (uri: Uri?) -> Unit,
     onAttachmentRemove: (Attachment) -> Unit,
@@ -70,7 +71,8 @@ fun AttachmentsSectionWidget(
                     onRemoveClick = {
                         onAttachmentRemove(item)
                     },
-                    canModify = canModify
+                    canModify = canModify,
+                    isOffline = isOffline
                 )
 
                 if (index < attachmentsState.attachments.lastIndex) {
@@ -84,6 +86,7 @@ fun AttachmentsSectionWidget(
                 DotsLoaderWidget()
             } else if (canModify) {
                 Button(
+                    enabled = !isOffline,
                     onClick = {
                         filePicker.requestFile { uri ->
                             onAttachmentAdd(uri)
@@ -98,7 +101,12 @@ fun AttachmentsSectionWidget(
 }
 
 @Composable
-private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit, canModify: Boolean = false) {
+private fun AttachmentItem(
+    attachment: Attachment,
+    isOffline: Boolean,
+    onRemoveClick: () -> Unit,
+    canModify: Boolean = false
+) {
     val uriHandler = LocalUriHandler.current
 
     var isAlertVisible by rememberSaveable { mutableStateOf(false) }
@@ -151,6 +159,7 @@ private fun AttachmentItem(attachment: Attachment, onRemoveClick: () -> Unit, ca
 
             if (canModify) {
                 IconButton(
+                    enabled = !isOffline,
                     modifier = Modifier
                         .size(32.dp)
                         .clip(CircleShape),
@@ -191,7 +200,8 @@ private fun AttachmentsSectionWidgetExpandedPreview() {
             ),
             onAttachmentAdd = {},
             onAttachmentRemove = {},
-            canModify = true
+            canModify = true,
+            isOffline = false
         )
     }
 }
@@ -207,7 +217,8 @@ private fun AttachmentsSectionWidgetPreview() {
             ),
             onAttachmentAdd = {},
             onAttachmentRemove = {},
-            canModify = true
+            canModify = true,
+            isOffline = false
         )
     }
 }
@@ -223,7 +234,8 @@ private fun AttachmentItemPreview() {
                 sizeInBytes = 123235L,
                 url = ""
             ),
-            onRemoveClick = {}
+            onRemoveClick = {},
+            isOffline = false
         )
     }
 }

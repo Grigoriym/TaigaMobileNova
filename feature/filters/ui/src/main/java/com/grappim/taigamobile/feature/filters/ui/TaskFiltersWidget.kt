@@ -45,7 +45,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.filters.Filters
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.filters.RoleFilters
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.Chip
@@ -259,7 +259,7 @@ internal fun FilterChip(
 
 @[Composable PreviewTaigaDarkLight]
 private fun TaskFiltersWidgetPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         TaskFiltersWidget(
             selected = FiltersData(
                 roles = persistentListOf(
@@ -282,7 +282,7 @@ private fun TaskFiltersWidgetPreview() {
 
 @[Composable PreviewTaigaDarkLight]
 private fun TaskFiltersWidgetErrorPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         TaskFiltersWidget(
             selected = FiltersData(
                 roles = persistentListOf(

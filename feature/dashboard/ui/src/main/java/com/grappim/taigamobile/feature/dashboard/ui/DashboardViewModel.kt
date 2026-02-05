@@ -39,7 +39,8 @@ class DashboardViewModel @Inject constructor(
             onRetryWatching = ::loadWatching,
             onRetryMyWork = ::loadMyWork,
             onRetryRecentActivity = ::loadRecentActivity,
-            onRetryRecentlyCompleted = ::loadRecentlyCompleted
+            onRetryRecentlyCompleted = ::loadRecentlyCompleted,
+            retry = ::loadAll
         )
     )
     val state = _state.asStateFlow()

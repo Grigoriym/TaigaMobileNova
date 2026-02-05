@@ -67,6 +67,7 @@ private val minCellHeight = 80.dp
 
 @Composable
 internal fun SprintKanbanWidget(
+    isOffline: Boolean,
     state: SprintState,
     modifier: Modifier = Modifier,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit = { _, _, _ -> },
@@ -114,6 +115,7 @@ internal fun SprintKanbanWidget(
                             cellWidth = userStoryHeadingWidth,
                             minCellHeight = minCellHeight,
                             userStory = story,
+                            isOffline = isOffline,
                             onAddClick = { navigateToCreateTask(CommonTaskType.Task, story.id) },
                             onUserStoryClick = {
                                 navigateToTask(
@@ -157,6 +159,7 @@ internal fun SprintKanbanWidget(
                         cellWidth = userStoryHeadingWidth,
                         minCellHeight = minCellHeight,
                         canCreateTasks = state.canCreateTasks,
+                        isOffline = isOffline,
                         onAddClick = { navigateToCreateTask(CommonTaskType.Task, null) }
                     )
 
@@ -196,7 +199,8 @@ internal fun SprintKanbanWidget(
                     backgroundColor = backgroundCellColor,
                     onAddClick = { navigateToCreateTask(CommonTaskType.Issue, null) },
                     canCreateIssue = state.canCreateIssue,
-                    isPlusButtonVisible = state.sprint != null
+                    isPlusButtonVisible = state.sprint != null,
+                    isOffline = isOffline
                 )
             }
 
@@ -260,7 +264,8 @@ private fun IssueHeader(
     backgroundColor: Color,
     onAddClick: () -> Unit,
     canCreateIssue: Boolean,
-    isPlusButtonVisible: Boolean
+    isPlusButtonVisible: Boolean,
+    isOffline: Boolean
 ) = Row(
     modifier = Modifier
         .width(width)
@@ -280,7 +285,8 @@ private fun IssueHeader(
         PlusButtonWidget(
             tint = MaterialTheme.colorScheme.outline,
             onClick = onAddClick,
-            modifier = Modifier.weight(0.2f)
+            modifier = Modifier.weight(0.2f),
+            isOffline = isOffline
         )
     }
 }
@@ -292,6 +298,7 @@ private fun UserStoryItem(
     cellWidth: Dp,
     minCellHeight: Dp,
     userStory: WorkItem,
+    isOffline: Boolean,
     onAddClick: () -> Unit,
     onUserStoryClick: () -> Unit
 ) = Row(
@@ -329,7 +336,8 @@ private fun UserStoryItem(
         PlusButtonWidget(
             tint = MaterialTheme.colorScheme.outline,
             onClick = onAddClick,
-            modifier = Modifier.weight(0.2f)
+            modifier = Modifier.weight(0.2f),
+            isOffline = isOffline
         )
     }
 }
@@ -342,7 +350,8 @@ private fun CategoryItem(
     minCellHeight: Dp,
     onAddClick: () -> Unit,
     canCreateTasks: Boolean,
-    isPlusButtonVisible: Boolean
+    isPlusButtonVisible: Boolean,
+    isOffline: Boolean
 ) = Column(
     modifier = Modifier
         .padding(end = cellPadding, bottom = cellPadding)
@@ -364,7 +373,8 @@ private fun CategoryItem(
             PlusButtonWidget(
                 tint = MaterialTheme.colorScheme.outline,
                 onClick = onAddClick,
-                modifier = Modifier.weight(0.2f)
+                modifier = Modifier.weight(0.2f),
+                isOffline = isOffline
             )
         }
     }
@@ -446,7 +456,8 @@ private fun TaskItem(task: WorkItem, onTaskClick: () -> Unit) = Surface(
 private fun SprintKanbanWidgetPreview() {
     TaigaMobileTheme {
         SprintKanbanWidget(
-            state = SprintState()
+            state = SprintState(),
+            isOffline = false
         )
     }
 }

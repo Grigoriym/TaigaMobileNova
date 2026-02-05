@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.issues.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.issues.mapper.IssueMapper
@@ -31,6 +32,7 @@ class IssuesRepositoryImplTest {
     private val workItemApi: WorkItemApi = mockk()
 
     private val workItemMapper: WorkItemMapper = mockk()
+    private val workItemDao: WorkItemDao = mockk()
 
     private lateinit var sut: IssuesRepository
 
@@ -43,7 +45,8 @@ class IssuesRepositoryImplTest {
             taigaSessionStorage = taigaSessionStorage,
             issueMapper = issueMapper,
             workItemApi = workItemApi,
-            workItemMapper = workItemMapper
+            workItemMapper = workItemMapper,
+            workItemDao = workItemDao
         )
     }
 

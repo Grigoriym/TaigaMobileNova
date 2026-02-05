@@ -114,7 +114,8 @@ class TaskDetailsViewModel @Inject constructor(
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         historyRepository = historyRepository,
         commonTaskType = type,
-        workItemRepository = workItemRepository
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = taskIdentifier,

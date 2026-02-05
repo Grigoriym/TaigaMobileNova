@@ -23,6 +23,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.TaskFiltersWidget
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -48,8 +49,9 @@ fun ScrumBacklogScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val stories = viewModel.userStories.collectAsLazyPagingItems()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(state.canAddUserStory, isOffline) {
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.backlog),
@@ -58,6 +60,7 @@ fun ScrumBacklogScreen(
                     if (state.canAddUserStory) {
                         add(
                             TopBarActionIconButton(
+                                enabled = !isOffline,
                                 drawable = RDrawable.ic_add,
                                 contentDescription = "Add User Story",
                                 onClick = goToCreateUserStory

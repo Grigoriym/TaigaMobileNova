@@ -72,7 +72,10 @@ fun TaigaTopAppBar(
                 topBarConfig.actions.forEach { action ->
                     when (action) {
                         is TopBarActionIconButton -> {
-                            IconButton(onClick = action.onClick) {
+                            IconButton(
+                                onClick = action.onClick,
+                                enabled = action.enabled
+                            ) {
                                 Icon(
                                     painter = painterResource(action.drawable),
                                     contentDescription = action.contentDescription
@@ -81,7 +84,10 @@ fun TaigaTopAppBar(
                         }
 
                         is TopBarActionTextButton -> {
-                            TextButton(onClick = action.onClick) {
+                            TextButton(
+                                onClick = action.onClick,
+                                enabled = action.enabled
+                            ) {
                                 Text(text = action.text.asString(context))
                             }
                         }

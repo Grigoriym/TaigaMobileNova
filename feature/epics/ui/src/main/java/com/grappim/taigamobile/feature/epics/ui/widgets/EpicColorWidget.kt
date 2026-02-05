@@ -19,7 +19,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -39,7 +38,7 @@ import androidx.compose.ui.window.Dialog
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.utils.ui.toColor
@@ -51,7 +50,8 @@ fun EpicColorWidget(
     epicColor: String?,
     modifier: Modifier = Modifier,
     canModify: Boolean = true,
-    onColorPick: (Color) -> Unit = {}
+    onColorPick: (Color) -> Unit = {},
+    isOffline: Boolean
 ) {
     val colorToUse = epicColor.orEmpty().toColor()
     var isDialogVisible by remember { mutableStateOf(false) }
@@ -82,7 +82,7 @@ fun EpicColorWidget(
                 .clip(MaterialTheme.shapes.small)
                 .background(color = colorToUse)
                 .then(
-                    if (canModify) {
+                    if (canModify && !isOffline) {
                         Modifier.clickable { isDialogVisible = true }
                     } else {
                         Modifier
@@ -194,53 +194,48 @@ private fun EpicColorPickerDialogContent(initialColor: Color, onDismiss: () -> U
 @PreviewTaigaDarkLight
 @Composable
 private fun EpicColorWidgetPreview() {
-    TaigaMobileTheme {
-        Surface {
-            EpicColorWidget(
-                isEpicColorLoading = false,
-                epicColor = "#E57373"
-            )
-        }
+    TaigaMobilePreviewTheme {
+        EpicColorWidget(
+            isEpicColorLoading = false,
+            epicColor = "#E57373",
+            isOffline = false
+        )
     }
 }
 
 @PreviewTaigaDarkLight
 @Composable
 private fun EpicColorWidgetLoadingPreview() {
-    TaigaMobileTheme {
-        Surface {
-            EpicColorWidget(
-                isEpicColorLoading = true,
-                epicColor = "#81C784"
-            )
-        }
+    TaigaMobilePreviewTheme {
+        EpicColorWidget(
+            isEpicColorLoading = true,
+            epicColor = "#81C784",
+            isOffline = false
+        )
     }
 }
 
 @PreviewTaigaDarkLight
 @Composable
 private fun EpicColorWidgetNotModifiablePreview() {
-    TaigaMobileTheme {
-        Surface {
-            EpicColorWidget(
-                isEpicColorLoading = false,
-                epicColor = "#64B5F6",
-                canModify = false
-            )
-        }
+    TaigaMobilePreviewTheme {
+        EpicColorWidget(
+            isEpicColorLoading = false,
+            epicColor = "#64B5F6",
+            canModify = false,
+            isOffline = false
+        )
     }
 }
 
 @PreviewTaigaDarkLight
 @Composable
 private fun EpicColorPickerDialogPreview() {
-    TaigaMobileTheme {
-        Surface {
-            EpicColorPickerDialogContent(
-                initialColor = Color(0xFFE57373),
-                onDismiss = {},
-                onColorSelect = {}
-            )
-        }
+    TaigaMobilePreviewTheme {
+        EpicColorPickerDialogContent(
+            initialColor = Color(0xFFE57373),
+            onDismiss = {},
+            onColorSelect = {}
+        )
     }
 }

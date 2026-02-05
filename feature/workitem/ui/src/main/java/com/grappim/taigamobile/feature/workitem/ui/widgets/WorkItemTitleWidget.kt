@@ -20,10 +20,13 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 
 @Composable
 fun WorkItemTitleWidget(
+    isOffline: Boolean,
     titleState: WorkItemTitleState,
     onTitleSave: () -> Unit,
     modifier: Modifier = Modifier,
@@ -75,7 +78,7 @@ fun WorkItemTitleWidget(
                     modifier = Modifier
                         .fillMaxWidth()
                         .then(
-                            if (canModify) {
+                            if (canModify && !isOffline) {
                                 Modifier.clickable {
                                     titleState.setIsTitleEditable(true)
                                 }
@@ -89,5 +92,92 @@ fun WorkItemTitleWidget(
                 )
             }
         }
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemTitleWidgetDisplayPreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemTitleWidget(
+            titleState = WorkItemTitleState(
+                currentTitle = "Implement user authentication flow",
+                isTitleEditable = false
+            ),
+            onTitleSave = {},
+            canModify = true,
+            isOffline = false
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemTitleWidgetEditablePreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemTitleWidget(
+            titleState = WorkItemTitleState(
+                currentTitle = "Implement user authentication flow",
+                isTitleEditable = true,
+                onTitleChange = {},
+                onCancelClick = {},
+                setIsTitleEditable = {}
+            ),
+            onTitleSave = {},
+            canModify = true,
+            isOffline = false
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemTitleWidgetLoadingPreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemTitleWidget(
+            titleState = WorkItemTitleState(
+                currentTitle = "Implement user authentication flow",
+                isTitleEditable = true,
+                isTitleLoading = true,
+                onTitleChange = {},
+                onCancelClick = {},
+                setIsTitleEditable = {}
+            ),
+            onTitleSave = {},
+            canModify = true,
+            isOffline = false
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemTitleWidgetOfflinePreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemTitleWidget(
+            titleState = WorkItemTitleState(
+                currentTitle = "Implement user authentication flow",
+                isTitleEditable = false
+            ),
+            onTitleSave = {},
+            canModify = true,
+            isOffline = true
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemTitleWidgetNoModifyPreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemTitleWidget(
+            titleState = WorkItemTitleState(
+                currentTitle = "Implement user authentication flow",
+                isTitleEditable = false
+            ),
+            onTitleSave = {},
+            canModify = false,
+            isOffline = false
+        )
     }
 }

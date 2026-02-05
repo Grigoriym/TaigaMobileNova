@@ -54,6 +54,7 @@ import java.time.format.FormatStyle
 
 @Composable
 fun CustomFieldsSectionWidget(
+    isOffline: Boolean,
     customFieldsState: WorkItemCustomFieldsState,
     onCustomFieldSave: (CustomFieldItemState) -> Unit,
     modifier: Modifier = Modifier,
@@ -83,7 +84,8 @@ fun CustomFieldsSectionWidget(
                         onItemChange = customFieldsState.onCustomFieldChange,
                         onItemSave = onCustomFieldSave,
                         onItemEdit = customFieldsState.onCustomFieldEditToggle,
-                        canModify = canModify
+                        canModify = canModify,
+                        isOffline = isOffline
                     )
                     if (index < customFieldsState.customFieldStateItems.lastIndex) {
                         HorizontalDivider(
@@ -107,6 +109,7 @@ fun CustomFieldsSectionWidget(
 private fun CustomFieldWidget(
     editingItemIds: ImmutableSet<Long>,
     item: CustomFieldItemState,
+    isOffline: Boolean,
     onItemChange: (CustomFieldItemState) -> Unit,
     onItemSave: (CustomFieldItemState) -> Unit,
     onItemEdit: (CustomFieldItemState) -> Unit,
@@ -153,26 +156,30 @@ private fun CustomFieldWidget(
                     is TextItemState -> CustomFieldTextItemWidget(
                         item = item,
                         onItemChange = onItemChange,
-                        canModify = canModify
+                        canModify = canModify,
+                        isOffline = isOffline
                     )
 
                     is MultilineTextItemState -> CustomFieldMultilineItemWidget(
                         item = item,
                         onItemChange = onItemChange,
-                        canModify = canModify
+                        canModify = canModify,
+                        isOffline = isOffline
                     )
 
                     is RichTextItemState -> CustomFieldRichTextItemWidget(
                         item = item,
                         onItemChange = onItemChange,
                         isEditMode = isEditMode,
-                        canModify = canModify
+                        canModify = canModify,
+                        isOffline = isOffline
                     )
 
                     is NumberItemState -> CustomFieldNumberItemWidget(
                         item = item,
                         onItemChange = onItemChange,
-                        canModify = canModify
+                        canModify = canModify,
+                        isOffline = isOffline
                     )
 
                     is UrlItemState -> {
@@ -180,7 +187,8 @@ private fun CustomFieldWidget(
                             item = item,
                             onItemChange = onItemChange,
                             isEditMode = isEditMode,
-                            canModify = canModify
+                            canModify = canModify,
+                            isOffline = isOffline
                         )
                     }
 
@@ -188,7 +196,8 @@ private fun CustomFieldWidget(
                         CustomFieldDateItemWidget(
                             item = item,
                             onItemChange = onItemChange,
-                            canModify = canModify
+                            canModify = canModify,
+                            isOffline = isOffline
                         )
                     }
 
@@ -196,7 +205,8 @@ private fun CustomFieldWidget(
                         CustomFieldCheckboxWidget(
                             item = item,
                             onItemChange = onItemChange,
-                            canModify = canModify
+                            canModify = canModify,
+                            isOffline = isOffline
                         )
                     }
 
@@ -204,7 +214,8 @@ private fun CustomFieldWidget(
                         CustomFieldDropdownItemWidget(
                             item = item,
                             onItemChange = onItemChange,
-                            canModify = canModify
+                            canModify = canModify,
+                            isOffline = isOffline
                         )
                     }
                 }
@@ -215,6 +226,7 @@ private fun CustomFieldWidget(
                     TaigaWidthSpacer(4.dp)
 
                     IconButton(
+                        enabled = !isOffline,
                         onClick = {
                             onItemEdit(item)
                         },
@@ -259,6 +271,7 @@ private fun CustomFieldWidget(
 @Composable
 private fun CustomFieldTextItemWidget(
     item: TextItemState,
+    isOffline: Boolean,
     onItemChange: (TextItemState) -> Unit,
     modifier: Modifier = Modifier,
     canModify: Boolean = false
@@ -271,13 +284,14 @@ private fun CustomFieldTextItemWidget(
         },
         placeholder = stringResource(RString.custom_field_text),
         singleLine = true,
-        enabled = canModify
+        enabled = canModify && !isOffline
     )
 }
 
 @Composable
 private fun CustomFieldMultilineItemWidget(
     item: MultilineTextItemState,
+    isOffline: Boolean,
     onItemChange: (MultilineTextItemState) -> Unit,
     modifier: Modifier = Modifier,
     canModify: Boolean = false
@@ -290,13 +304,14 @@ private fun CustomFieldMultilineItemWidget(
         },
         placeholder = stringResource(RString.custom_field_multiline),
         singleLine = false,
-        enabled = canModify
+        enabled = canModify && !isOffline
     )
 }
 
 @Composable
 private fun CustomFieldNumberItemWidget(
     item: NumberItemState,
+    isOffline: Boolean,
     onItemChange: (NumberItemState) -> Unit,
     modifier: Modifier = Modifier,
     canModify: Boolean = false
@@ -309,7 +324,7 @@ private fun CustomFieldNumberItemWidget(
         },
         placeholder = stringResource(RString.custom_field_number),
         singleLine = true,
-        enabled = canModify,
+        enabled = canModify && !isOffline,
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Number
         )
@@ -319,6 +334,7 @@ private fun CustomFieldNumberItemWidget(
 @Composable
 private fun CustomFieldDateItemWidget(
     item: DateItemState,
+    isOffline: Boolean,
     onItemChange: (DateItemState) -> Unit,
     modifier: Modifier = Modifier,
     canModify: Boolean = false
@@ -378,6 +394,7 @@ private fun CustomFieldDateItemWidget(
                 Spacer(Modifier.width(4.dp))
 
                 IconButton(
+                    enabled = !isOffline,
                     onClick = {
                         isDatePickerVisible = false
                         onItemChange(item.copy(currentValue = null))
@@ -402,6 +419,7 @@ private fun CustomFieldUrlItemWidget(
     item: UrlItemState,
     onItemChange: (UrlItemState) -> Unit,
     isEditMode: Boolean,
+    isOffline: Boolean,
     modifier: Modifier = Modifier,
     canModify: Boolean = false
 ) {
@@ -416,7 +434,7 @@ private fun CustomFieldUrlItemWidget(
         },
         placeholder = stringResource(RString.custom_field_url),
         singleLine = true,
-        enabled = isEditMode && canModify,
+        enabled = isEditMode && canModify && !isOffline,
         keyboardOptions = KeyboardOptions.Default.copy(
             keyboardType = KeyboardType.Uri
         ),
@@ -452,6 +470,7 @@ private fun CustomFieldUrlItemWidget(
 @Composable
 private fun CustomFieldCheckboxWidget(
     item: CheckboxItemState,
+    isOffline: Boolean,
     onItemChange: (CheckboxItemState) -> Unit,
     modifier: Modifier = Modifier,
     canModify: Boolean = false
@@ -463,7 +482,7 @@ private fun CustomFieldCheckboxWidget(
         Checkbox(
             modifier = Modifier.padding(6.dp),
             checked = item.currentValue,
-            enabled = canModify,
+            enabled = canModify && !isOffline,
             onCheckedChange = {
                 onItemChange(item.copy(currentValue = it))
             }
@@ -474,12 +493,13 @@ private fun CustomFieldCheckboxWidget(
 @Composable
 private fun CustomFieldRichTextItemWidget(
     isEditMode: Boolean,
+    isOffline: Boolean,
     item: RichTextItemState,
     onItemChange: (RichTextItemState) -> Unit,
     modifier: Modifier = Modifier,
     canModify: Boolean = false
 ) {
-    if (isEditMode && canModify) {
+    if (isEditMode && canModify && !isOffline) {
         CustomFieldTextWidget(
             modifier = modifier,
             value = item.currentValue,
@@ -505,6 +525,7 @@ private fun CustomFieldRichTextItemWidget(
 
 @Composable
 private fun CustomFieldDropdownItemWidget(
+    isOffline: Boolean,
     item: DropdownItemState,
     onItemChange: (DropdownItemState) -> Unit,
     modifier: Modifier = Modifier,
@@ -518,7 +539,7 @@ private fun CustomFieldDropdownItemWidget(
     ) {
         DropdownSelector(
             modifier = Modifier.padding(16.dp),
-            canModify = canModify,
+            canModify = canModify && !isOffline,
             items = item.options?.toList() ?: emptyList(),
             selectedItem = option,
             onItemSelect = {
@@ -547,7 +568,8 @@ private fun CustomFieldDropdownItemWidget(
             },
             takeMaxWidth = true,
             horizontalArrangement = Arrangement.SpaceBetween,
-            tint = MaterialTheme.colorScheme.primary
+            tint = MaterialTheme.colorScheme.primary,
+            isOffline = isOffline
         )
     }
 }

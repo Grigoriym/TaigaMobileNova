@@ -44,14 +44,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
@@ -274,7 +273,7 @@ fun LoginTextField(
 
 @[Composable PreviewTaigaDarkLight]
 private fun LoginScreenPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         LoginScreenContent(
             state = LoginState(
                 server = "server",
@@ -300,7 +299,7 @@ private fun LoginScreenPreview() {
 
 @[Composable PreviewTaigaDarkLight]
 private fun LoginScreenErrorsPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         LoginScreenContent(
             state = LoginState(
                 server = "server",
@@ -326,7 +325,7 @@ private fun LoginScreenErrorsPreview() {
 
 @[Composable PreviewTaigaDarkLight]
 private fun LoginScreenAlertPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         LoginScreenContent(
             state = LoginState(
                 server = "server",
