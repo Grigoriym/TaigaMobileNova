@@ -22,7 +22,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +41,6 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
-import kotlinx.coroutines.launch
 
 @Composable
 fun KanbanScreen(
@@ -144,17 +142,13 @@ private fun KanbanFilters(
     val unselectedFilters = data - selected
     val space = 6.dp
 
-    val coroutineScope = rememberCoroutineScope()
-
     val bottomSheetState = rememberModalBottomSheetState()
     var isBottomSheetVisible by remember { mutableStateOf(false) }
 
     FilledTonalButton(
         onClick = {
-            coroutineScope.launch {
-                if (!bottomSheetState.isVisible) {
-                    isBottomSheetVisible = true
-                }
+            if (!bottomSheetState.isVisible) {
+                isBottomSheetVisible = true
             }
         },
         enabled = data.assignees.isNotEmpty(),
