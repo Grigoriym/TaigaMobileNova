@@ -2,11 +2,12 @@ package com.grappim.taigamobile.feature.kanban.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
-import com.grappim.taigamobile.feature.filters.domain.model.filters.UsersFilters
 import com.grappim.taigamobile.feature.kanban.domain.GetKanbanDataUseCase
 import com.grappim.taigamobile.feature.kanban.domain.KanbanUserStory
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
@@ -35,6 +36,7 @@ class KanbanViewModel @Inject constructor(
     private val getKanbanDataUseCase: GetKanbanDataUseCase,
     private val taigaSessionStorage: TaigaSessionStorage,
     private val userStoriesRepository: UserStoriesRepository,
+    private val filtersRepository: FiltersRepository,
     private val session: Session
 ) : ViewModel() {
 
@@ -45,6 +47,7 @@ class KanbanViewModel @Inject constructor(
             onRefresh = ::refresh,
             onSelectSwimlane = ::selectSwimlane,
             onSelectFilters = ::selectFilters,
+            onRetryFilters = ::loadFiltersData,
             onMoveStory = ::moveStory,
             activeFilters = initialFilters,
             filtersBySwimlane = persistentMapOf(null to initialFilters)
@@ -80,6 +83,7 @@ class KanbanViewModel @Inject constructor(
         }
 
         getKanbanData()
+        loadFiltersData()
     }
 
     private fun getKanbanData() {
@@ -93,25 +97,21 @@ class KanbanViewModel @Inject constructor(
             getKanbanDataUseCase.getData(
                 storageSwimlane = taigaSessionStorage.kanbanDefaultSwimline.first()
             ).onSuccess { result ->
-                val filters = buildAssigneeFilters(
-                    teamMembers = result.teamMembers,
-                    stories = result.stories
-                )
-                val updatedActiveFilters = _state.value.activeFilters.updateData(filters)
                 val defaultSwimlaneId = result.defaultSwimlane?.id
+                val activeFiltersForSwimlane = _state.value.filtersBySwimlane[defaultSwimlaneId]
+                    ?: _state.value.activeFilters
                 val filtersBySwimlane = _state.value.filtersBySwimlane
                     .toMutableMap()
-                    .apply { put(defaultSwimlaneId, updatedActiveFilters) }
+                    .apply { put(defaultSwimlaneId, activeFiltersForSwimlane) }
                     .toPersistentMap()
                 val storiesByStatus = computeStoriesByStatusWithFilters(
                     stories = result.stories,
                     statuses = result.statuses,
                     teamMembers = result.teamMembers,
                     swimlane = result.defaultSwimlane,
-                    activeFilters = updatedActiveFilters
+                    activeFilters = activeFiltersForSwimlane
                 )
 
-                session.changeKanbanFilters(updatedActiveFilters)
                 _state.update {
                     it.copy(
                         isLoading = false,
@@ -122,8 +122,8 @@ class KanbanViewModel @Inject constructor(
                         canAddUserStory = result.canAddUserStory,
                         selectedSwimlane = result.defaultSwimlane,
                         storiesByStatus = storiesByStatus,
-                        filters = filters,
-                        activeFilters = updatedActiveFilters,
+                        filters = it.filters,
+                        activeFilters = activeFiltersForSwimlane,
                         filtersBySwimlane = filtersBySwimlane
                     )
                 }
@@ -141,6 +141,56 @@ class KanbanViewModel @Inject constructor(
 
     private fun refresh() {
         getKanbanData()
+    }
+
+    private fun loadFiltersData() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isFiltersLoading = true,
+                    filtersError = NativeText.Empty
+                )
+            }
+
+            runCatching { filtersRepository.getFiltersData(CommonTaskType.UserStory) }
+                .onSuccess { result ->
+                    val currentSwimlaneId = _state.value.selectedSwimlane?.id
+                    val updatedActiveFilters = _state.value.activeFilters.updateData(result)
+
+                    session.changeKanbanFilters(updatedActiveFilters)
+
+                    val updatedFiltersBySwimlane = _state.value.filtersBySwimlane
+                        .toMutableMap()
+                        .apply { put(currentSwimlaneId, updatedActiveFilters) }
+                        .toPersistentMap()
+
+                    val filteredStories = computeStoriesByStatusWithFilters(
+                        stories = _state.value.stories,
+                        statuses = _state.value.statuses,
+                        teamMembers = _state.value.teamMembers,
+                        swimlane = _state.value.selectedSwimlane,
+                        activeFilters = updatedActiveFilters
+                    )
+
+                    _state.update {
+                        it.copy(
+                            isFiltersLoading = false,
+                            filters = result,
+                            activeFilters = updatedActiveFilters,
+                            filtersBySwimlane = updatedFiltersBySwimlane,
+                            storiesByStatus = filteredStories
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    _state.update {
+                        it.copy(
+                            isFiltersLoading = false,
+                            filtersError = getErrorMessage(error)
+                        )
+                    }
+                }
+        }
     }
 
     private fun selectSwimlane(swimlane: Swimlane?) {
@@ -299,47 +349,6 @@ class KanbanViewModel @Inject constructor(
         }
     }
 
-    private fun buildAssigneeFilters(
-        teamMembers: ImmutableList<TeamMember>,
-        stories: ImmutableList<UserStory>
-    ): FiltersData {
-        val counts = mutableMapOf<Long?, Long>()
-        teamMembers.forEach { counts[it.id] = 0L }
-        counts[null] = 0L
-
-        stories.forEach { story ->
-            if (story.assignedUserIds.isEmpty()) {
-                counts[null] = counts.getOrDefault(null, 0L) + 1
-            } else {
-                story.assignedUserIds.forEach { id ->
-                    counts[id] = counts.getOrDefault(id, 0L) + 1
-                }
-            }
-        }
-
-        val assigneeFilters = counts.mapNotNull { (id, count) ->
-            if (id == null) {
-                UsersFilters(
-                    id = null,
-                    name = "",
-                    count = count
-                )
-            } else {
-                teamMembers.find { it.id == id }?.let { member ->
-                    UsersFilters(
-                        id = member.id,
-                        name = member.name,
-                        count = count
-                    )
-                }
-            }
-        }.sortedBy { it.name }.toImmutableList()
-
-        return FiltersData(
-            assignees = assigneeFilters
-        )
-    }
-
     private suspend fun computeStoriesByStatusWithFilters(
         stories: ImmutableList<UserStory>,
         statuses: ImmutableList<Statuses>,
@@ -353,33 +362,66 @@ class KanbanViewModel @Inject constructor(
             teamMembers = teamMembers,
             swimlane = swimlane
         )
-        return filterStoriesByAssignees(
+        return filterStories(
             storiesByStatus = storiesByStatus,
             activeFilters = activeFilters
         )
     }
 
-    private fun filterStoriesByAssignees(
+    private fun filterStories(
         storiesByStatus: ImmutableMap<Statuses, ImmutableList<KanbanUserStory>>,
         activeFilters: FiltersData
     ): ImmutableMap<Statuses, ImmutableList<KanbanUserStory>> {
-        val selectedAssignees = activeFilters.assignees
-        if (selectedAssignees.isEmpty()) {
+        val selectedAssigneeIds = activeFilters.assignees.mapNotNull { it.id }.toSet()
+        val includeUnassigned = activeFilters.assignees.any { it.id == null }
+
+        val selectedCreatorIds = activeFilters.createdBy.mapNotNull { it.id }.toSet()
+        val selectedTags = activeFilters.tags.map { it.name }.toSet()
+        val selectedEpicIds = activeFilters.epics.map { it.id }.toSet()
+        val selectedRoles = activeFilters.roles.map { it.name }.toSet()
+
+        val hasNoFilters = selectedAssigneeIds.isEmpty() && !includeUnassigned &&
+            selectedCreatorIds.isEmpty() &&
+            selectedTags.isEmpty() &&
+            selectedEpicIds.isEmpty() &&
+            selectedRoles.isEmpty()
+
+        if (hasNoFilters) {
             return storiesByStatus
         }
 
-        val selectedAssigneeIds = selectedAssignees.mapNotNull { it.id }.toSet()
-        val includeUnassigned = selectedAssignees.any { it.id == null }
+        return storiesByStatus.mapValues { (_, stories) ->
+            stories.filter { story ->
+                val userStory = story.userStory
 
-        return storiesByStatus
-            .mapValues { (_, stories) ->
-                stories.filter { story ->
-                    val assignedIds = story.userStory.assignedUserIds
+                if (selectedAssigneeIds.isNotEmpty() || includeUnassigned) {
+                    val assignedIds = userStory.assignedUserIds
                     val hasAssignee = assignedIds.any { selectedAssigneeIds.contains(it) }
                     val isUnassigned = assignedIds.isEmpty()
-                    hasAssignee || (includeUnassigned && isUnassigned)
-                }.toImmutableList()
-            }
-            .toImmutableMap()
+                    if (!(hasAssignee || (includeUnassigned && isUnassigned))) return@filter false
+                }
+
+                if (selectedCreatorIds.isNotEmpty()) {
+                    if (!selectedCreatorIds.contains(userStory.creatorId)) return@filter false
+                }
+
+                if (selectedTags.isNotEmpty()) {
+                    val matchesTag = userStory.tags.any { selectedTags.contains(it.name) }
+                    if (!matchesTag) return@filter false
+                }
+
+                if (selectedEpicIds.isNotEmpty()) {
+                    val matchesEpic = userStory.userStoryEpics.any { selectedEpicIds.contains(it.id) }
+                    if (!matchesEpic) return@filter false
+                }
+
+                if (selectedRoles.isNotEmpty()) {
+                    val matchesRole = story.assignees.any { selectedRoles.contains(it.role) }
+                    if (!matchesRole) return@filter false
+                }
+
+                true
+            }.toImmutableList()
+        }.toImmutableMap()
     }
 }

@@ -30,7 +30,10 @@ data class KanbanState(
     val filters: FiltersData = FiltersData(),
     val activeFilters: FiltersData = FiltersData(),
     val filtersBySwimlane: ImmutableMap<Long?, FiltersData> = persistentMapOf(),
+    val filtersError: NativeText = NativeText.Empty,
+    val isFiltersLoading: Boolean = false,
     val onSelectFilters: (FiltersData) -> Unit = {},
+    val onRetryFilters: () -> Unit = {},
 
     val canAddUserStory: Boolean = false,
 

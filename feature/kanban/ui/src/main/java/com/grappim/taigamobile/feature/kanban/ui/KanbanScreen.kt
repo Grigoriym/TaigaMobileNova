@@ -119,7 +119,10 @@ fun KanbanScreenContent(
             KanbanFilters(
                 selected = state.activeFilters,
                 data = state.filters,
-                onSelect = state.onSelectFilters
+                onSelect = state.onSelectFilters,
+                onRetryFilters = state.onRetryFilters,
+                filtersError = state.filtersError,
+                isFiltersLoading = state.isFiltersLoading
             )
 
             KanbanBoardWidget(
@@ -137,6 +140,9 @@ private fun KanbanFilters(
     selected: FiltersData,
     data: FiltersData,
     onSelect: (FiltersData) -> Unit,
+    onRetryFilters: () -> Unit,
+    filtersError: NativeText,
+    isFiltersLoading: Boolean,
     modifier: Modifier = Modifier
 ) {
     val unselectedFilters = data - selected
@@ -183,8 +189,8 @@ private fun KanbanFilters(
         setBottomSheetVisible = { isBottomSheetVisible = it },
         selected = selected,
         onSelect = onSelect,
-        filtersError = NativeText.Empty,
-        onRetryFilters = {},
-        isFiltersLoading = false
+        filtersError = filtersError,
+        onRetryFilters = onRetryFilters,
+        isFiltersLoading = isFiltersLoading
     )
 }
