@@ -67,79 +67,13 @@ fun KanbanBoardWidget(
     navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
 ) {
-<<<<<<< HEAD
+    val backgroundCellColor =
+        MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation)
+
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.Start
-=======
-    val backgroundCellColor =
-        MaterialTheme.colorScheme.surfaceColorAtElevationInternal(kanbanBoardTonalElevation)
-
-    val selectedAssignees = state.activeFilters.assignees
-    val selectedAssigneeIds = selectedAssignees.mapNotNull { it.id }.toSet()
-    val includeUnassigned = selectedAssignees.any { it.id == null }
-
-    if (state.swimlanes.isNotEmpty()) {
-        Row(
-            modifier = modifier.padding(cellOuterPadding),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(RString.swimlane_title),
-                style = MaterialTheme.typography.titleLarge
-            )
-
-            Spacer(Modifier.width(8.dp))
-
-            DropdownSelector(
-                canModify = true,
-                items = state.swimlanes,
-                selectedItem = state.selectedSwimlane,
-                onItemSelect = state.onSelectSwimlane,
-                itemContent = {
-                    Text(
-                        text = it?.name ?: stringResource(RString.no_name),
-                        style = MaterialTheme.typography.bodyLarge,
-                        color = it?.let { MaterialTheme.colorScheme.onSurface }
-                            ?: MaterialTheme.colorScheme.primary
-                    )
-                },
-                selectedItemContent = {
-                    Text(
-                        text = it?.name ?: stringResource(RString.no_name),
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                }
-            )
-        }
-    }
-
-    val storiesToDisplay = state.stories
-        .filter { it.swimlane == state.selectedSwimlane?.id }
-        .filter { story ->
-            if (selectedAssignees.isEmpty()) {
-                true
-            } else {
-                val hasAssignee = story.assignedUserIds.any { selectedAssigneeIds.contains(it) }
-                val isUnassigned = story.assignedUserIds.isEmpty()
-                hasAssignee || (includeUnassigned && isUnassigned)
-            }
-        }
-
-    Row(
-        Modifier
-            .fillMaxSize()
-            .horizontalScroll(rememberScrollState())
->>>>>>> 829aa92f893d69e97d497e0f24301bf15811e19d
     ) {
-        val backgroundCellColor =
-            MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation)
-
-        val selectedAssignees = state.activeFilters.assignees
-        val selectedAssigneeIds = selectedAssignees.mapNotNull { it.id }.toSet()
-        val includeUnassigned = selectedAssignees.any { it.id == null }
-
         if (state.swimlanes.isNotEmpty()) {
             Row(
                 modifier = Modifier.padding(cellOuterPadding),
@@ -184,16 +118,7 @@ fun KanbanBoardWidget(
             Spacer(Modifier.width(cellPadding))
 
             state.statuses.forEach { status ->
-                val statusStories = state.storiesByStatus[status].orEmpty().filter { kanbanStory ->
-                    if (selectedAssignees.isEmpty()) {
-                        true
-                    } else {
-                        val assignedIds = kanbanStory.userStory.assignedUserIds
-                        val hasAssignee = assignedIds.any { selectedAssigneeIds.contains(it) }
-                        val isUnassigned = assignedIds.isEmpty()
-                        hasAssignee || (includeUnassigned && isUnassigned)
-                    }
-                }
+                val statusStories = state.storiesByStatus[status].orEmpty()
 
                 Column {
                     Header(
