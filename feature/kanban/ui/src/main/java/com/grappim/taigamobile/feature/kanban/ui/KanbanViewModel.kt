@@ -390,37 +390,42 @@ class KanbanViewModel @Inject constructor(
             return storiesByStatus
         }
 
+        fun KanbanUserStory.matchesAssignees(): Boolean {
+            if (selectedAssigneeIds.isEmpty() && !includeUnassigned) return true
+
+            val assignedIds = userStory.assignedUserIds
+            val hasAssignee = assignedIds.any { selectedAssigneeIds.contains(it) }
+            val isUnassigned = assignedIds.isEmpty()
+            return hasAssignee || (includeUnassigned && isUnassigned)
+        }
+
+        fun KanbanUserStory.matchesCreators(): Boolean {
+            if (selectedCreatorIds.isEmpty()) return true
+            return selectedCreatorIds.contains(userStory.creatorId)
+        }
+
+        fun KanbanUserStory.matchesTags(): Boolean {
+            if (selectedTags.isEmpty()) return true
+            return userStory.tags.any { selectedTags.contains(it.name) }
+        }
+
+        fun KanbanUserStory.matchesEpics(): Boolean {
+            if (selectedEpicIds.isEmpty()) return true
+            return userStory.userStoryEpics.any { selectedEpicIds.contains(it.id) }
+        }
+
+        fun KanbanUserStory.matchesRoles(): Boolean {
+            if (selectedRoles.isEmpty()) return true
+            return assignees.any { selectedRoles.contains(it.role) }
+        }
+
         return storiesByStatus.mapValues { (_, stories) ->
             stories.filter { story ->
-                val userStory = story.userStory
-
-                if (selectedAssigneeIds.isNotEmpty() || includeUnassigned) {
-                    val assignedIds = userStory.assignedUserIds
-                    val hasAssignee = assignedIds.any { selectedAssigneeIds.contains(it) }
-                    val isUnassigned = assignedIds.isEmpty()
-                    if (!(hasAssignee || (includeUnassigned && isUnassigned))) return@filter false
-                }
-
-                if (selectedCreatorIds.isNotEmpty()) {
-                    if (!selectedCreatorIds.contains(userStory.creatorId)) return@filter false
-                }
-
-                if (selectedTags.isNotEmpty()) {
-                    val matchesTag = userStory.tags.any { selectedTags.contains(it.name) }
-                    if (!matchesTag) return@filter false
-                }
-
-                if (selectedEpicIds.isNotEmpty()) {
-                    val matchesEpic = userStory.userStoryEpics.any { selectedEpicIds.contains(it.id) }
-                    if (!matchesEpic) return@filter false
-                }
-
-                if (selectedRoles.isNotEmpty()) {
-                    val matchesRole = story.assignees.any { selectedRoles.contains(it.role) }
-                    if (!matchesRole) return@filter false
-                }
-
-                true
+                story.matchesAssignees() &&
+                    story.matchesCreators() &&
+                    story.matchesTags() &&
+                    story.matchesEpics() &&
+                    story.matchesRoles()
             }.toImmutableList()
         }.toImmutableMap()
     }
