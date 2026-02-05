@@ -54,10 +54,20 @@ class Session @Inject constructor(
         _issuesFilters.value = filters
     }
 
+    private val _kanbanFilters = MutableStateFlow(getFiltersOrEmpty(FILTERS_KANBAN))
+    val kanbanFilters: StateFlow<FiltersData> = _kanbanFilters
+    fun changeKanbanFilters(filters: FiltersData) {
+        sharedPreferences.edit {
+            putString(FILTERS_KANBAN, json.encodeToString(filters))
+        }
+        _kanbanFilters.value = filters
+    }
+
     fun resetFilters() {
         changeScrumFilters(FiltersData())
         changeEpicsFilters(FiltersData())
         changeIssuesFilters(FiltersData())
+        changeKanbanFilters(FiltersData())
     }
 
     fun reset() {
@@ -70,5 +80,6 @@ class Session @Inject constructor(
         private const val FILTERS_SCRUM = "filters_scrum"
         private const val FILTERS_EPICS = "filters_epics"
         private const val FILTERS_ISSUES = "filters_issues"
+        private const val FILTERS_KANBAN = "filters_kanban"
     }
 }
