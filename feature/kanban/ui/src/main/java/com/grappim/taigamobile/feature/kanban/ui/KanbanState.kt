@@ -29,6 +29,7 @@ data class KanbanState(
 
     val filters: FiltersData = FiltersData(),
     val activeFilters: FiltersData = FiltersData(),
+    val filtersBySwimlane: ImmutableMap<Long?, FiltersData> = persistentMapOf(),
     val onSelectFilters: (FiltersData) -> Unit = {},
 
     val canAddUserStory: Boolean = false,

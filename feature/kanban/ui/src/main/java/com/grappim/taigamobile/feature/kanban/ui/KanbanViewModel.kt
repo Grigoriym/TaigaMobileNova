@@ -18,8 +18,10 @@ import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
+import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -36,13 +38,16 @@ class KanbanViewModel @Inject constructor(
     private val session: Session
 ) : ViewModel() {
 
+    private val initialFilters = session.kanbanFilters.value
+
     private val _state = MutableStateFlow(
         KanbanState(
             onRefresh = ::refresh,
             onSelectSwimlane = ::selectSwimlane,
             onSelectFilters = ::selectFilters,
             onMoveStory = ::moveStory,
-            activeFilters = session.kanbanFilters.value
+            activeFilters = initialFilters,
+            filtersBySwimlane = persistentMapOf(null to initialFilters)
         )
     )
     val state = _state.asStateFlow()
@@ -58,10 +63,17 @@ class KanbanViewModel @Inject constructor(
                     swimlane = currentState.selectedSwimlane,
                     activeFilters = filters
                 )
+
+                val updatedFiltersBySwimlane = currentState.filtersBySwimlane
+                    .toMutableMap()
+                    .apply { put(currentState.selectedSwimlane?.id, filters) }
+                    .toPersistentMap()
+
                 _state.update {
                     it.copy(
                         activeFilters = filters,
-                        storiesByStatus = filteredStoriesByStatus
+                        storiesByStatus = filteredStoriesByStatus,
+                        filtersBySwimlane = updatedFiltersBySwimlane
                     )
                 }
             }
@@ -86,6 +98,11 @@ class KanbanViewModel @Inject constructor(
                     stories = result.stories
                 )
                 val updatedActiveFilters = _state.value.activeFilters.updateData(filters)
+                val defaultSwimlaneId = result.defaultSwimlane?.id
+                val filtersBySwimlane = _state.value.filtersBySwimlane
+                    .toMutableMap()
+                    .apply { put(defaultSwimlaneId, updatedActiveFilters) }
+                    .toPersistentMap()
                 val storiesByStatus = computeStoriesByStatusWithFilters(
                     stories = result.stories,
                     statuses = result.statuses,
@@ -106,7 +123,8 @@ class KanbanViewModel @Inject constructor(
                         selectedSwimlane = result.defaultSwimlane,
                         storiesByStatus = storiesByStatus,
                         filters = filters,
-                        activeFilters = updatedActiveFilters
+                        activeFilters = updatedActiveFilters,
+                        filtersBySwimlane = filtersBySwimlane
                     )
                 }
             }.onFailure { error ->
@@ -132,17 +150,28 @@ class KanbanViewModel @Inject constructor(
                 taigaSessionStorage.setKanbanDefaultSwimline(swimlaneId)
             }
 
+            val swimlaneFilters = currentState.filtersBySwimlane[swimlane?.id]
+                ?: FiltersData()
+
             val filteredStories = computeStoriesByStatusWithFilters(
                 stories = currentState.stories,
                 statuses = currentState.statuses,
                 teamMembers = currentState.teamMembers,
                 swimlane = swimlane,
-                activeFilters = _state.value.activeFilters
+                activeFilters = swimlaneFilters
             )
+
+            val updatedFiltersBySwimlane = currentState.filtersBySwimlane
+                .toMutableMap()
+                .apply { put(swimlane?.id, swimlaneFilters) }
+                .toPersistentMap()
+
             _state.update {
                 it.copy(
                     selectedSwimlane = swimlane,
-                    storiesByStatus = filteredStories
+                    storiesByStatus = filteredStories,
+                    activeFilters = swimlaneFilters,
+                    filtersBySwimlane = updatedFiltersBySwimlane
                 )
             }
         }
@@ -243,7 +272,31 @@ class KanbanViewModel @Inject constructor(
     }
 
     private fun selectFilters(filters: FiltersData) {
+        val currentSwimlaneId = _state.value.selectedSwimlane?.id
         session.changeKanbanFilters(filters)
+
+        val updatedFiltersBySwimlane = _state.value.filtersBySwimlane
+            .toMutableMap()
+            .apply { put(currentSwimlaneId, filters) }
+            .toPersistentMap()
+
+        viewModelScope.launch {
+            val filteredStories = computeStoriesByStatusWithFilters(
+                stories = _state.value.stories,
+                statuses = _state.value.statuses,
+                teamMembers = _state.value.teamMembers,
+                swimlane = _state.value.selectedSwimlane,
+                activeFilters = filters
+            )
+
+            _state.update {
+                it.copy(
+                    activeFilters = filters,
+                    storiesByStatus = filteredStories,
+                    filtersBySwimlane = updatedFiltersBySwimlane
+                )
+            }
+        }
     }
 
     private fun buildAssigneeFilters(
