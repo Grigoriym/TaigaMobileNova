@@ -2,6 +2,7 @@
 
 package com.grappim.taigamobile.feature.kanban.ui
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
@@ -92,11 +93,19 @@ fun KanbanScreenContent(
         isRefreshing = state.isLoading,
         onRefresh = state.onRefresh
     ) {
-        KanbanBoardWidget(
-            state = state,
-            navigateToStory = navigateToStory,
-            navigateToCreateTask = navigateToCreateTask,
-            onMoveStory = state.onMoveStory
-        )
+        Column(modifier = Modifier.fillMaxSize()) {
+            KanbanFilters(
+                selected = state.activeFilters,
+                data = state.filters,
+                onSelect = state.onSelectFilters
+            )
+
+            KanbanBoardWidget(
+                state = state,
+                navigateToStory = navigateToStory,
+                navigateToCreateTask = navigateToCreateTask,
+                onMoveStory = state.onMoveStory
+            )
+        }
     }
 }
