@@ -3,7 +3,6 @@ package com.grappim.taigamobile.feature.kanban.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
@@ -19,7 +18,6 @@ import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toImmutableMap
 import kotlinx.collections.immutable.toPersistentMap
@@ -36,11 +34,10 @@ class KanbanViewModel @Inject constructor(
     private val getKanbanDataUseCase: GetKanbanDataUseCase,
     private val taigaSessionStorage: TaigaSessionStorage,
     private val userStoriesRepository: UserStoriesRepository,
-    private val filtersRepository: FiltersRepository,
-    private val session: Session
+    private val filtersRepository: FiltersRepository
 ) : ViewModel() {
 
-    private val initialFilters = session.kanbanFilters.value
+    private var allFilters = FiltersData()
 
     private val _state = MutableStateFlow(
         KanbanState(
@@ -48,40 +45,12 @@ class KanbanViewModel @Inject constructor(
             onSelectSwimlane = ::selectSwimlane,
             onSelectFilters = ::selectFilters,
             onRetryFilters = ::loadFiltersData,
-            onMoveStory = ::moveStory,
-            activeFilters = initialFilters,
-            filtersBySwimlane = persistentMapOf(null to initialFilters)
+            onMoveStory = ::moveStory
         )
     )
     val state = _state.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            session.kanbanFilters.collect { filters ->
-                val currentState = _state.value
-                val filteredStoriesByStatus = computeStoriesByStatusWithFilters(
-                    stories = currentState.stories,
-                    statuses = currentState.statuses,
-                    teamMembers = currentState.teamMembers,
-                    swimlane = currentState.selectedSwimlane,
-                    activeFilters = filters
-                )
-
-                val updatedFiltersBySwimlane = currentState.filtersBySwimlane
-                    .toMutableMap()
-                    .apply { put(currentState.selectedSwimlane?.id, filters) }
-                    .toPersistentMap()
-
-                _state.update {
-                    it.copy(
-                        activeFilters = filters,
-                        storiesByStatus = filteredStoriesByStatus,
-                        filtersBySwimlane = updatedFiltersBySwimlane
-                    )
-                }
-            }
-        }
-
         getKanbanData()
         loadFiltersData()
     }
@@ -97,19 +66,19 @@ class KanbanViewModel @Inject constructor(
             getKanbanDataUseCase.getData(
                 storageSwimlane = taigaSessionStorage.kanbanDefaultSwimline.first()
             ).onSuccess { result ->
-                val defaultSwimlaneId = result.defaultSwimlane?.id
-                val activeFiltersForSwimlane = _state.value.filtersBySwimlane[defaultSwimlaneId]
-                    ?: _state.value.activeFilters
-                val filtersBySwimlane = _state.value.filtersBySwimlane
-                    .toMutableMap()
-                    .apply { put(defaultSwimlaneId, activeFiltersForSwimlane) }
-                    .toPersistentMap()
+                val activeFiltersForSwimlane = _state.value.filtersBySwimlane[result.defaultSwimlane?.id]
+                    ?: FiltersData()
                 val storiesByStatus = computeStoriesByStatusWithFilters(
                     stories = result.stories,
                     statuses = result.statuses,
                     teamMembers = result.teamMembers,
                     swimlane = result.defaultSwimlane,
                     activeFilters = activeFiltersForSwimlane
+                )
+                val scopedFilters = computeSwimlaneFilters(
+                    stories = result.stories,
+                    teamMembers = result.teamMembers,
+                    swimlane = result.defaultSwimlane
                 )
 
                 _state.update {
@@ -122,9 +91,8 @@ class KanbanViewModel @Inject constructor(
                         canAddUserStory = result.canAddUserStory,
                         selectedSwimlane = result.defaultSwimlane,
                         storiesByStatus = storiesByStatus,
-                        filters = it.filters,
-                        activeFilters = activeFiltersForSwimlane,
-                        filtersBySwimlane = filtersBySwimlane
+                        filters = scopedFilters,
+                        activeFilters = activeFiltersForSwimlane
                     )
                 }
             }.onFailure { error ->
@@ -154,31 +122,18 @@ class KanbanViewModel @Inject constructor(
 
             runCatching { filtersRepository.getFiltersData(CommonTaskType.UserStory) }
                 .onSuccess { result ->
-                    val currentSwimlaneId = _state.value.selectedSwimlane?.id
-                    val updatedActiveFilters = _state.value.activeFilters.updateData(result)
-
-                    session.changeKanbanFilters(updatedActiveFilters)
-
-                    val updatedFiltersBySwimlane = _state.value.filtersBySwimlane
-                        .toMutableMap()
-                        .apply { put(currentSwimlaneId, updatedActiveFilters) }
-                        .toPersistentMap()
-
-                    val filteredStories = computeStoriesByStatusWithFilters(
-                        stories = _state.value.stories,
-                        statuses = _state.value.statuses,
-                        teamMembers = _state.value.teamMembers,
-                        swimlane = _state.value.selectedSwimlane,
-                        activeFilters = updatedActiveFilters
+                    allFilters = result
+                    val currentState = _state.value
+                    val scopedFilters = computeSwimlaneFilters(
+                        stories = currentState.stories,
+                        teamMembers = currentState.teamMembers,
+                        swimlane = currentState.selectedSwimlane
                     )
 
                     _state.update {
                         it.copy(
                             isFiltersLoading = false,
-                            filters = result,
-                            activeFilters = updatedActiveFilters,
-                            filtersBySwimlane = updatedFiltersBySwimlane,
-                            storiesByStatus = filteredStories
+                            filters = scopedFilters
                         )
                     }
                 }
@@ -203,6 +158,12 @@ class KanbanViewModel @Inject constructor(
             val swimlaneFilters = currentState.filtersBySwimlane[swimlane?.id]
                 ?: FiltersData()
 
+            val scopedFilters = computeSwimlaneFilters(
+                stories = currentState.stories,
+                teamMembers = currentState.teamMembers,
+                swimlane = swimlane
+            )
+
             val filteredStories = computeStoriesByStatusWithFilters(
                 stories = currentState.stories,
                 statuses = currentState.statuses,
@@ -221,6 +182,7 @@ class KanbanViewModel @Inject constructor(
                     selectedSwimlane = swimlane,
                     storiesByStatus = filteredStories,
                     activeFilters = swimlaneFilters,
+                    filters = scopedFilters,
                     filtersBySwimlane = updatedFiltersBySwimlane
                 )
             }
@@ -323,7 +285,6 @@ class KanbanViewModel @Inject constructor(
 
     private fun selectFilters(filters: FiltersData) {
         val currentSwimlaneId = _state.value.selectedSwimlane?.id
-        session.changeKanbanFilters(filters)
 
         val updatedFiltersBySwimlane = _state.value.filtersBySwimlane
             .toMutableMap()
@@ -365,6 +326,83 @@ class KanbanViewModel @Inject constructor(
         return filterStories(
             storiesByStatus = storiesByStatus,
             activeFilters = activeFilters
+        )
+    }
+
+    private fun filterStoriesForSwimlane(stories: ImmutableList<UserStory>, swimlane: Swimlane?): List<UserStory> =
+        when {
+            swimlane == null -> stories
+            swimlane.isUnclassified -> stories.filter { it.swimlane == null }
+            else -> stories.filter { it.swimlane == swimlane.id }
+        }
+
+    private fun computeSwimlaneFilters(
+        stories: ImmutableList<UserStory>,
+        teamMembers: ImmutableList<TeamMember>,
+        swimlane: Swimlane?
+    ): FiltersData {
+        if (allFilters.filtersNumber == 0) return FiltersData()
+
+        val swimlaneStories = filterStoriesForSwimlane(stories, swimlane)
+
+        val assigneeCounts = mutableMapOf<Long?, Long>()
+        val creatorCounts = mutableMapOf<Long, Long>()
+        val statusCounts = mutableMapOf<Long, Long>()
+        val tagCounts = mutableMapOf<String, Long>()
+        val epicCounts = mutableMapOf<Long, Long>()
+        for (story in swimlaneStories) {
+            if (story.assignedUserIds.isEmpty()) {
+                assigneeCounts[null] = (assigneeCounts[null] ?: 0) + 1
+            }
+            for (id in story.assignedUserIds) {
+                assigneeCounts[id] = (assigneeCounts[id] ?: 0) + 1
+            }
+            creatorCounts[story.creatorId] = (creatorCounts[story.creatorId] ?: 0) + 1
+            story.status?.id?.let { statusId ->
+                statusCounts[statusId] = (statusCounts[statusId] ?: 0) + 1
+            }
+            for (tag in story.tags) {
+                tagCounts[tag.name] = (tagCounts[tag.name] ?: 0) + 1
+            }
+            for (epic in story.userStoryEpics) {
+                epicCounts[epic.id] = (epicCounts[epic.id] ?: 0) + 1
+            }
+        }
+
+        val teamMemberById = teamMembers.associateBy { it.id }
+        val roleCounts = mutableMapOf<String, Long>()
+        for ((id, count) in assigneeCounts) {
+            if (id != null) {
+                val role = teamMemberById[id]?.role ?: continue
+                roleCounts[role] = (roleCounts[role] ?: 0) + count
+            }
+        }
+
+        return allFilters.copy(
+            assignees = allFilters.assignees.mapNotNull { filter ->
+                val count = assigneeCounts[filter.id] ?: return@mapNotNull null
+                filter.copy(count = count)
+            }.toImmutableList(),
+            createdBy = allFilters.createdBy.mapNotNull { filter ->
+                val count = filter.id?.let { creatorCounts[it] } ?: return@mapNotNull null
+                filter.copy(count = count)
+            }.toImmutableList(),
+            statuses = allFilters.statuses.mapNotNull { filter ->
+                val count = statusCounts[filter.id] ?: return@mapNotNull null
+                filter.copy(count = count)
+            }.toImmutableList(),
+            tags = allFilters.tags.mapNotNull { filter ->
+                val count = tagCounts[filter.name] ?: return@mapNotNull null
+                filter.copy(count = count)
+            }.toImmutableList(),
+            epics = allFilters.epics.mapNotNull { filter ->
+                val count = filter.id?.let { epicCounts[it] } ?: return@mapNotNull null
+                filter.copy(count = count)
+            }.toImmutableList(),
+            roles = allFilters.roles.mapNotNull { filter ->
+                val count = roleCounts[filter.name] ?: return@mapNotNull null
+                filter.copy(count = count)
+            }.toImmutableList()
         )
     }
 
