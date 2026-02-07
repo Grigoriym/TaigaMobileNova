@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.kanban.ui
 
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
+import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.kanban.domain.KanbanUserStory
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import com.grappim.taigamobile.feature.users.domain.TeamMember
@@ -25,6 +26,14 @@ data class KanbanState(
 
     val selectedSwimlane: Swimlane? = null,
     val onSelectSwimlane: (Swimlane?) -> Unit,
+
+    val filters: FiltersData = FiltersData(),
+    val activeFilters: FiltersData = FiltersData(),
+    val filtersBySwimlane: ImmutableMap<Long?, FiltersData> = persistentMapOf(),
+    val filtersError: NativeText = NativeText.Empty,
+    val isFiltersLoading: Boolean = false,
+    val onSelectFilters: (FiltersData) -> Unit = {},
+    val onRetryFilters: () -> Unit = {},
 
     val canAddUserStory: Boolean = false,
 
