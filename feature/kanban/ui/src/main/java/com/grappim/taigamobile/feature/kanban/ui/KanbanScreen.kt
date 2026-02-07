@@ -34,8 +34,8 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
 import com.grappim.taigamobile.feature.filters.ui.FilterModalBottomSheetWidget
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
+import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.badge.Badge
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig

@@ -162,6 +162,7 @@ testAggregation {
         exclude(rootProject)
         exclude(projects.testing)
         exclude(projects.uikit)
+        exclude(projects.tools.seed)
     }
     coverage {
         exclude(coverageExclusions)
