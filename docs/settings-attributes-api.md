@@ -47,7 +47,7 @@ All endpoints require authentication and project admin permissions.
 
 ### Epic Statuses
 
-#### Endpoints
+#### Epic Status Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -70,7 +70,7 @@ data class EpicStatus(
 )
 ```
 
-#### Create/Update Request
+#### Epic Status Create/Update Request
 
 ```kotlin
 data class EpicStatusRequest(
@@ -86,7 +86,7 @@ data class EpicStatusRequest(
 
 ### User Story Statuses
 
-#### Endpoints
+#### US Status Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -111,7 +111,7 @@ data class UserStoryStatus(
 )
 ```
 
-#### Create/Update Request
+#### US Status Create/Update Request
 
 ```kotlin
 data class UserStoryStatusRequest(
@@ -140,7 +140,7 @@ data class WipLimitRequest(
 
 ### Task Statuses
 
-#### Endpoints
+#### Task Status Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -167,7 +167,7 @@ data class TaskStatus(
 
 ### Issue Statuses
 
-#### Endpoints
+#### Issue Status Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -196,7 +196,7 @@ data class IssueStatus(
 
 Points are used for story point estimation in User Stories.
 
-### Endpoints
+### Points Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -217,7 +217,7 @@ data class Point(
 )
 ```
 
-### Create/Update Request
+### Points Create/Update Request
 
 ```kotlin
 data class PointRequest(
@@ -234,7 +234,7 @@ data class PointRequest(
 
 Priorities are used for Issues only.
 
-### Endpoints
+### Priorities Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -255,7 +255,7 @@ data class Priority(
 )
 ```
 
-### Create/Update Request
+### Priorities Create/Update Request
 
 ```kotlin
 data class PriorityRequest(
@@ -272,7 +272,7 @@ data class PriorityRequest(
 
 Severities are used for Issues only.
 
-### Endpoints
+### Severities Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -299,7 +299,7 @@ data class Severity(
 
 Issue types categorize Issues (e.g., Bug, Enhancement, Question).
 
-### Endpoints
+### Issue Types Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -326,7 +326,7 @@ data class IssueType(
 
 Custom fields allow defining additional attributes for Epics, User Stories, Tasks, and Issues.
 
-### Endpoints
+### Custom Fields Endpoints
 
 #### Custom Field Definitions
 
@@ -382,7 +382,7 @@ object CustomFieldType {
 }
 ```
 
-### Create/Update Request
+### Custom Fields Create/Update Request
 
 ```kotlin
 data class CustomAttributeRequest(
@@ -405,6 +405,7 @@ data class CustomAttributesValues(
 ```
 
 **Note:** The `attributes_values` map uses the custom attribute ID as the key (as a string), and the value type depends on the field type:
+
 - `text`, `multiline`, `richtext`, `url` -> `String`
 - `date` -> `String` (ISO date format)
 - `dropdown` -> `String` (selected option)
@@ -417,7 +418,7 @@ data class CustomAttributesValues(
 
 Tags are project-wide labels that can be applied to any item.
 
-### Endpoints
+### Tags Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -488,7 +489,7 @@ data class MixTagsRequest(
 
 Due date statuses define visual indicators based on proximity to due date.
 
-### Endpoints
+### Due Dates Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -516,7 +517,7 @@ data class DueDateStatus(
 )
 ```
 
-### Create/Update Request
+### Due Dates Create/Update Request
 
 ```kotlin
 data class DueDateStatusRequest(
@@ -544,7 +545,7 @@ data class CreateDefaultDueDatesRequest(
 
 Swimlanes are horizontal lanes in the Kanban board for organizing User Stories.
 
-### Endpoints
+### Swimlanes Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -661,6 +662,7 @@ data class ValidationError(
 ### Delete Constraints
 
 When deleting statuses, priorities, severities, or issue types, you **must** provide a `moveTo` parameter specifying which value should replace the deleted one on existing items. The API will reject deletion if:
+
 - No `moveTo` is specified
 - The `moveTo` value doesn't exist
 - This is the last remaining value (cannot delete all)
@@ -686,7 +688,7 @@ When no color is specified for items that support colors, the default color is: 
 
 ### Kotlin-Specific Recommendations
 
-7. **JSON Serialization**: Use `@SerialName` annotations for snake_case field mapping:
+1. **JSON Serialization**: Use `@SerialName` annotations for snake_case field mapping:
    ```kotlin
    @Serializable
    data class EpicStatus(
@@ -700,18 +702,18 @@ When no color is specified for items that support colors, the default color is: 
    )
    ```
 
-8. **DateTime Parsing**: Use `java.time.OffsetDateTime` or `kotlinx-datetime` for parsing ISO 8601 dates:
+2. **DateTime Parsing**: Use `java.time.OffsetDateTime` or `kotlinx-datetime` for parsing ISO 8601 dates:
    ```kotlin
    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssZ")
    val dateTime = OffsetDateTime.parse(dateString, formatter)
    ```
 
-9. **Nullable vs Non-Null**: Pay attention to nullable fields:
+3. **Nullable vs Non-Null**: Pay attention to nullable fields:
    - Use `Int?` for: `wip_limit`, `days_to_due`, `value` (Points)
    - Use `Long` for: `order` in Swimlane and CustomAttributes
    - Use `String?` for: `color` (in responses it's non-null, but requests accept null)
 
-10. **Rate Limiting**: Implement retry with exponential backoff for 429 responses:
+4. **Rate Limiting**: Implement retry with exponential backoff for 429 responses:
     ```kotlin
     sealed class ApiResult<T> {
         data class Success<T>(val data: T) : ApiResult<T>()
@@ -739,12 +741,14 @@ The following details have been verified against the Django backend source code:
 ### 2. Nullable Fields Summary
 
 **Truly Nullable (`null=True` in Django → use nullable type in Kotlin):**
+
 - `wip_limit` (UserStoryStatus, SwimlaneUserStoryStatus)
 - `days_to_due` (DueDateStatus models)
 - `value` (Points)
 - `extra` (CustomAttributes - JSONField)
 
 **Not Nullable but has Default Value:**
+
 - `is_closed` → `Boolean` (default `false`)
 - `is_archived` → `Boolean` (default `false`)
 - `by_default` → `Boolean` (default `false`)
@@ -752,6 +756,7 @@ The following details have been verified against the Django backend source code:
 - `order` → `Int`/`Long` (default `10` or `timestamp_ms`)
 
 **Not Nullable, Can Be Empty String:**
+
 - `description` (CustomAttributes) → `String` (default `""`)
 
 ### 3. Maximum String Lengths

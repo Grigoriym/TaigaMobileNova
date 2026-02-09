@@ -17,12 +17,14 @@ Research and implementation plan for adding offline capabilities to TaigaMobileN
 ### What's Been Implemented
 
 #### Phase 1: Infrastructure
+
 - `core/storage/.../network/NetworkMonitor.kt` - Interface
 - `core/storage/.../network/NetworkMonitorImpl.kt` - Uses ConnectivityManager, tracks multiple networks
 - `testing/.../FakeNetworkMonitor.kt` - Test fake
 - Database bumped to version 4 with auto-migration
 
 #### Phase 2: Core Entities
+
 - `core/storage/.../db/entities/SprintEntity.kt` - Sprint cache
 - `core/storage/.../db/entities/WorkItemEntity.kt` - Generic work item (UserStory/Task/Issue/Epic)
 - `core/storage/.../db/dao/SprintDao.kt` - Including `pagingSource()` for RemoteMediator
@@ -30,36 +32,43 @@ Research and implementation plan for adding offline capabilities to TaigaMobileN
 - `core/storage/.../db/CacheTypeConverters.kt` - LocalDate, LocalDateTime, CommonTaskType
 
 #### Phase 3: Repository Changes
+
 - `feature/sprint/data/.../SprintsRepositoryImpl.kt` - Cache-first for getSprints(), getSprintUserStories(), etc.
 - `feature/workitem/data/.../WorkItemRepositoryImpl.kt` - Cache-first for getWorkItems()
 - `feature/sprint/data/.../SprintEntityMapper.kt` - Entity ↔ Domain conversion
 - `feature/workitem/data/.../WorkItemEntityMapper.kt` - Entity ↔ Domain conversion
 
 #### Phase 4: Paging with Cache
+
 - `feature/sprint/data/.../SprintRemoteMediator.kt` - ✅ Implemented
 - `SprintsRepositoryImpl.getSprintsPaging()` - Uses RemoteMediator + Room as source of truth
 - WorkItem paging (Issues, UserStories, Epics) - ⏸️ **DEFERRED** due to complex server-side filters
 
 #### Phase 5: UI Updates
+
 - `uikit/.../widgets/banner/OfflineIndicatorBanner.kt` - Orange animated banner
 - `strings/.../strings.xml` - Added `offline_banner_message`
 - `app/.../MainViewModel.kt` - Exposes `isOffline: StateFlow<Boolean>`
 - `app/.../MainScreen.kt` - Shows banner when offline
 
 #### Phase 6: Cache Management
+
 - `core/storage/.../cache/CacheManager.kt` - Interface
 - `core/storage/.../cache/CacheManagerImpl.kt` - 24h TTL, project/all cleanup
 - `core/storage/.../cleaner/DataCleanerImpl.kt` - Clears cache on logout
 - `app/.../TaigaApp.kt` - Cleans expired cache on app start
 
 #### Phase 7: Disable Write Actions When Offline (In Progress)
+
 **Approach:** Use `CompositionLocal` to provide offline state to all screens.
 
 **Key difference from permissions:**
+
 - No permission → **hide** action (user can never do this)
 - Offline → **disable** action (user can do this, just not right now)
 
 **Infrastructure (✅ DONE):**
+
 - `uikit/.../state/LocalOfflineState.kt` - CompositionLocal for offline state
 - `app/.../MainScreen.kt` - Provides `LocalOfflineState` via `CompositionLocalProvider`
 - `uikit/.../topbar/TopBarConfig.kt` - Added `enabled` parameter to action buttons
@@ -88,6 +97,7 @@ CreateCommentBar(..., isOffline = isOffline)
 ```
 
 **Screens updated:**
+
 - ✅ Epics: list (add button), details (dropdown, comment bar)
 - ✅ User Stories: list, details
 - ✅ Tasks: list, details
@@ -101,22 +111,26 @@ CreateCommentBar(..., isOffline = isOffline)
 ### Future Work (Optional)
 
 **Kanban drag-and-drop:**
+
 - Gesture-based, not button-based
 - Would need to intercept drag events and prevent drop when offline
 - Consider showing toast/snackbar if user tries to drag while offline
 
 **WorkItem RemoteMediator (Complex)**
 The WorkItem paging sources have complex server-side filters:
+
 - Assignees, created by, watchers
 - Statuses, priorities, severities, types
 - Tags, epics, roles
 
 To implement RemoteMediator for these would require:
+
 1. Deciding filter caching strategy (cache per filter combo vs cache all + client filter)
 2. Potentially significant changes to filter handling
 3. Consider if the complexity is worth it vs current cache-first approach
 
-**Additional UI Polish**
+#### Additional UI Polish
+
 - "Last updated" timestamp display
 - Stale data color coding
 

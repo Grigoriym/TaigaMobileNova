@@ -25,6 +25,7 @@ TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin,
 - Build plugins in `build-logic/`
 
 **Tech Stack:**
+
 - Kotlin 2.3.0, JDK 21, Target SDK 36, Min SDK 24
 - Jetpack Compose with Material Design 3
 - Hilt 2.59 for DI (with KSP)
@@ -34,6 +35,7 @@ TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin,
 - Coroutines, Coil 3.x for images
 
 **Convention Plugins** (in `build-logic/`):
+
 - `taigamobile.android.application` - Main app module
 - `taigamobile.android.library` - Android library with KSP
 - `taigamobile.android.library.compose` - Android library + Compose
@@ -158,6 +160,7 @@ actions = buildList {
 Use `LocalOfflineState` (from `uikit`) to disable write actions when offline.
 
 **Key difference from permissions:**
+
 - No permission → **hide** action (user can never do this)
 - Offline → **disable** action (user can do this, just not right now)
 
@@ -276,6 +279,7 @@ For multi-step tasks, state a brief plan:
 - Lambda parameters: present tense (`onClick` not `onClicked`)
 - Prefer `kotlinx-collections-immutable` (`ImmutableList`, `persistentListOf()`) over `List`/`MutableList` in state classes and Composable parameters for stable recomposition
 - For Composable Previews, use `@PreviewTaigaDarkLight` annotation and wrap content with `TaigaMobileThemePreview` (both from `uikit`):
+
 ```kotlin
 @PreviewTaigaDarkLight
 @Composable
@@ -285,4 +289,5 @@ private fun MyWidgetPreview() {
     }
 }
 ```
+
 - Settings screens with fixed items use `Column` instead of `LazyColumn` — lazy loading unnecessary when item count is known and small

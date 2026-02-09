@@ -7,6 +7,7 @@ This document explains how the `TaigaTopAppBar` component is implemented and use
 `TaigaTopAppBar` is a global, screen-controlled top bar component that uses Material3's `CenterAlignedTopAppBar`. Each screen configures the top bar through a centralized controller, eliminating prop drilling and providing consistent behavior across the app.
 
 **Key characteristics:**
+
 - Global state via `CompositionLocal`
 - Screen-level configuration ownership
 - Immutable configuration objects
@@ -129,6 +130,7 @@ fun TaigaTopAppBar(
 ```
 
 **Parameters:**
+
 - `isVisible`: Controls whether the top bar is shown
 - `drawerState`: Material3 drawer state for menu icon integration
 - `topBarConfig`: Current configuration from controller
@@ -321,6 +323,7 @@ LaunchedEffect(Unit) {
 ### Menu Icon Behavior
 
 When `NavigationIconConfig.Menu` is used, the component:
+
 1. Hides the software keyboard
 2. Toggles the drawer open/closed state
 
