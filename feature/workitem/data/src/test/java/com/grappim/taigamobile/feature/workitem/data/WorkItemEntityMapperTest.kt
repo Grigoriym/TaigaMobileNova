@@ -3,7 +3,6 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.db.entities.WorkItemEntity
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
-import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getWorkItem
