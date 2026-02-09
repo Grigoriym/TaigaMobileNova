@@ -266,6 +266,10 @@ For multi-step tasks, state a brief plan:
 
 **These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
 
+## Error Handling
+
+- Never swallow exceptions silently. Every `catch` block must at least log the exception with `Timber.e(e)`.
+
 ## Android/Compose Rules
 
 - Do not use early returns in Composable functions — use conditional wrapping

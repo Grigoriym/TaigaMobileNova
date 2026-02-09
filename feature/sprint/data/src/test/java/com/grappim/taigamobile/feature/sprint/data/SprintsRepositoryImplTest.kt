@@ -2,11 +2,15 @@ package com.grappim.taigamobile.feature.sprint.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.SprintDao
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
+import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
+import com.grappim.taigamobile.testing.FakeNetworkMonitor
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getSprint
@@ -36,6 +40,9 @@ class SprintsRepositoryImplTest {
     private val workItemMapper: WorkItemMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
     private val sprintMapper: SprintMapper = mockk()
+    private val sprintDao: SprintDao = mockk()
+    private val workItemDao: WorkItemDao = mockk()
+    private val networkMonitor: NetworkMonitor = FakeNetworkMonitor()
 
     private lateinit var sut: SprintsRepository
 
@@ -51,7 +58,10 @@ class SprintsRepositoryImplTest {
             filtersRepository = filtersRepository,
             workItemMapper = workItemMapper,
             workItemApi = workItemApi,
-            sprintMapper = sprintMapper
+            sprintMapper = sprintMapper,
+            sprintDao = sprintDao,
+            workItemDao = workItemDao,
+            networkMonitor = networkMonitor
         )
     }
 
@@ -62,6 +72,8 @@ class SprintsRepositoryImplTest {
 
         coEvery { sprintApi.getSprints(project = projectId, isClosed = false) } returns dtos
         coEvery { sprintMapper.toDomainList(dtos) } returns expectedSprints
+        coJustRun { sprintDao.deleteByProjectId(projectId) }
+        coJustRun { sprintDao.insertAll(any()) }
 
         val result = sut.getSprints(isClosed = false)
 
@@ -76,6 +88,8 @@ class SprintsRepositoryImplTest {
 
         coEvery { sprintApi.getSprints(project = projectId, isClosed = true) } returns dtos
         coEvery { sprintMapper.toDomainList(dtos) } returns expectedSprints
+        coJustRun { sprintDao.deleteByProjectId(projectId) }
+        coJustRun { sprintDao.insertAll(any()) }
 
         val result = sut.getSprints(isClosed = true)
 
@@ -103,7 +117,7 @@ class SprintsRepositoryImplTest {
         val sprintId = getRandomLong()
         val taskPath = WorkItemPathPlural(CommonTaskType.UserStory)
         val dtos = listOf(getWorkItemResponseDTO(), getWorkItemResponseDTO())
-        val expectedStories = persistentListOf(
+        val stories = persistentListOf(
             getWorkItem(taskType = CommonTaskType.UserStory),
             getWorkItem(taskType = CommonTaskType.UserStory)
         )
@@ -115,11 +129,13 @@ class SprintsRepositoryImplTest {
                 sprint = sprintId
             )
         } returns dtos
-        coEvery { workItemMapper.toDomainList(dtos, CommonTaskType.UserStory) } returns expectedStories
+        coEvery { workItemMapper.toDomainList(dtos, CommonTaskType.UserStory) } returns stories
+        coJustRun { workItemDao.deleteByProjectIdAndType(projectId, CommonTaskType.UserStory) }
+        coJustRun { workItemDao.insertAll(any()) }
 
         val result = sut.getSprintUserStories(sprintId)
 
-        assertEquals(expectedStories, result)
+        assertEquals(stories, result)
     }
 
     @Test
@@ -138,6 +154,7 @@ class SprintsRepositoryImplTest {
             )
         } returns dtos
         coEvery { workItemMapper.toDomainList(dtos, CommonTaskType.Task) } returns expectedTasks
+        coJustRun { workItemDao.insertAll(any()) }
 
         val result = sut.getSprintTasks(sprintId)
 
@@ -167,6 +184,7 @@ class SprintsRepositoryImplTest {
             )
         } returns dtos
         coEvery { workItemMapper.toDomainList(dtos, CommonTaskType.Issue) } returns expectedIssues
+        coJustRun { workItemDao.insertAll(any()) }
 
         val result = sut.getSprintIssues(sprintId)
 
@@ -238,6 +256,8 @@ class SprintsRepositoryImplTest {
         coEvery { sprintApi.getSprint(sprintId) } returns sprintDto
         coEvery { sprintMapper.toDomain(sprintDto) } returns expectedSprint
         coEvery { filtersRepository.getStatuses(CommonTaskType.Task) } returns statuses
+        coJustRun { workItemDao.deleteByProjectIdAndType(any(), any()) }
+        coJustRun { workItemDao.insertAll(any()) }
 
         coEvery {
             workItemApi.getWorkItems(

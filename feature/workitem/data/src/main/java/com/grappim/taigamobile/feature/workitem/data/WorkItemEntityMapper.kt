@@ -8,8 +8,8 @@ import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import timber.log.Timber
 
 private val json = Json { ignoreUnknownKeys = true }
 
@@ -91,6 +91,7 @@ private fun parseTagsJson(tagsJson: String): kotlinx.collections.immutable.Immut
             }
             .toImmutableList()
     } catch (e: Exception) {
+        Timber.e(e)
         persistentListOf()
     }
 }
@@ -105,6 +106,7 @@ private fun parseColorsJson(colorsJson: String): kotlinx.collections.immutable.I
     return try {
         json.decodeFromString<List<String>>(colorsJson).toImmutableList()
     } catch (e: Exception) {
+        Timber.e(e)
         persistentListOf()
     }
 }

@@ -37,6 +37,7 @@ import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import timber.log.Timber
 import javax.inject.Inject
 
 class WorkItemRepositoryImpl @Inject constructor(
@@ -91,7 +92,7 @@ class WorkItemRepositoryImpl @Inject constructor(
                 }
                 return items
             } catch (e: Exception) {
-                // Fall through to cache
+                Timber.e(e)
             }
         }
 

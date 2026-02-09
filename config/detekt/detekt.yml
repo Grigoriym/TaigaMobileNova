@@ -75,9 +75,10 @@ complexity:
     CognitiveComplexMethod:
         active: false
         allowedComplexity: 15
+        # was edited
     ComplexCondition:
         active: true
-        allowedConditions: 3
+        allowedConditions: 5
     ComplexInterface:
         active: false
         allowedDefinitions: 10

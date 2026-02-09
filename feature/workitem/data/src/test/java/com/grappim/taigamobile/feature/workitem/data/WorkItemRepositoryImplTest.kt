@@ -3,6 +3,8 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
+import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchedCustomAttributes
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
@@ -24,6 +26,7 @@ import com.grappim.taigamobile.feature.workitem.mapper.CustomFieldsMapper
 import com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapper
 import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
+import com.grappim.taigamobile.testing.FakeNetworkMonitor
 import com.grappim.taigamobile.testing.getAttachment
 import com.grappim.taigamobile.testing.getAttachmentDTO
 import com.grappim.taigamobile.testing.getRandomLong
@@ -60,6 +63,8 @@ class WorkItemRepositoryImplTest {
     private val customFieldsMapper: CustomFieldsMapper = mockk()
     private val taigaSessionStorage: TaigaSessionStorage = mockk()
     private val jsonObjectMapper: JsonObjectMapper = mockk()
+    private val workItemDao: WorkItemDao = mockk()
+    private val networkMonitor: NetworkMonitor = FakeNetworkMonitor()
 
     private lateinit var sut: WorkItemRepository
 
@@ -68,6 +73,7 @@ class WorkItemRepositoryImplTest {
     @Before
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
+        coJustRun { workItemDao.insertAll(any()) }
         every { jsonObjectMapper.fromMapToJsonObject(any()) } answers {
             val map = firstArg<Map<String, Any?>>()
             JsonObjectMapper().fromMapToJsonObject(map)
@@ -81,7 +87,9 @@ class WorkItemRepositoryImplTest {
             usersRepository = usersRepository,
             customFieldsMapper = customFieldsMapper,
             taigaSessionStorage = taigaSessionStorage,
-            jsonObjectMapper = jsonObjectMapper
+            jsonObjectMapper = jsonObjectMapper,
+            workItemDao = workItemDao,
+            networkMonitor = networkMonitor
         )
     }
 

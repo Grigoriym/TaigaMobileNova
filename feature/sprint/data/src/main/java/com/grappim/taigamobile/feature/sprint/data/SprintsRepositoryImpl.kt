@@ -31,6 +31,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import timber.log.Timber
 import java.time.LocalDate
 import javax.inject.Inject
 
@@ -112,7 +113,7 @@ class SprintsRepositoryImpl @Inject constructor(
                 workItemDao.insertAll(items.toEntityList(sprintId))
                 return items
             } catch (e: Exception) {
-                // Fall through to cache
+                Timber.e(e)
             }
         }
 
@@ -136,7 +137,7 @@ class SprintsRepositoryImpl @Inject constructor(
                 sprintDao.insertAll(sprints.toEntityList(projectId))
                 return sprints
             } catch (e: Exception) {
-                // Network failed, fall through to cache
+                Timber.e(e)
             }
         }
 
@@ -167,7 +168,7 @@ class SprintsRepositoryImpl @Inject constructor(
                 workItemDao.insertAll(items.toEntityList(sprintId))
                 return items
             } catch (e: Exception) {
-                // Fall through to cache
+                Timber.e(e)
             }
         }
 
@@ -192,7 +193,7 @@ class SprintsRepositoryImpl @Inject constructor(
                 workItemDao.insertAll(items.toEntityList(sprintId))
                 return items
             } catch (e: Exception) {
-                // Fall through to cache
+                Timber.e(e)
             }
         }
 
