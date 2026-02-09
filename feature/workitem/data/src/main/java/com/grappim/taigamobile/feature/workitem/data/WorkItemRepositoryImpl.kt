@@ -45,6 +45,7 @@ class WorkItemRepositoryImpl @Inject constructor(
     private val patchedDataMapper: PatchedDataMapper,
     private val attachmentMapper: AttachmentMapper,
     private val workItemMapper: WorkItemMapper,
+    private val workItemEntityMapper: WorkItemEntityMapper,
     private val usersRepository: UsersRepository,
     private val customFieldsMapper: CustomFieldsMapper,
     private val taigaSessionStorage: TaigaSessionStorage,
@@ -88,7 +89,7 @@ class WorkItemRepositoryImpl @Inject constructor(
                 if (assignedId == null && watcherId == null && isBlocked == null &&
                     modifiedDateGte == null && finishDateGte == null
                 ) {
-                    workItemDao.insertAll(items.toEntityList(milestoneId))
+                    workItemDao.insertAll(workItemEntityMapper.toEntityList(items, milestoneId))
                 }
                 return items
             } catch (e: Exception) {
@@ -108,7 +109,7 @@ class WorkItemRepositoryImpl @Inject constructor(
                 (isClosed == null || entity.isClosed == isClosed) &&
                     (assignedId == null || entity.assigneeId == assignedId)
             }
-            .toDomainList()
+            .let { workItemEntityMapper.toDomainList(it) }
             .toImmutableList()
     }
 

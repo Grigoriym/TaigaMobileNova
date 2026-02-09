@@ -16,8 +16,8 @@ import com.grappim.taigamobile.feature.userstories.dto.BulkUpdateKanbanOrderRequ
 import com.grappim.taigamobile.feature.userstories.dto.CreateUserStoryRequest
 import com.grappim.taigamobile.feature.userstories.mapper.UserStoryMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemRemoteMediator
-import com.grappim.taigamobile.feature.workitem.data.toDomain
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
@@ -41,6 +41,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val workItemApi: WorkItemApi,
     private val workItemRepository: WorkItemRepository,
     private val workItemMapper: WorkItemMapper,
+    private val workItemEntityMapper: WorkItemEntityMapper,
     private val workItemDao: WorkItemDao
 ) : UserStoriesRepository {
     private var userStoriesPagingSource: UserStoriesPagingSource? = null
@@ -77,11 +78,12 @@ class UserStoriesRepositoryImpl @Inject constructor(
                     workItemApi = workItemApi,
                     workItemDao = workItemDao,
                     workItemMapper = workItemMapper,
+                    workItemEntityMapper = workItemEntityMapper,
                     taigaSessionStorage = taigaSessionStorage
                 ),
                 pagingSourceFactory = { workItemDao.pagingSource(projectId, CommonTaskType.UserStory) }
             ).flow.map { pagingData ->
-                pagingData.map { entity -> entity.toDomain() }
+                pagingData.map { entity -> workItemEntityMapper.toDomain(entity) }
             }
         }
     }

@@ -8,6 +8,7 @@ import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.filters.domain.FiltersRepository
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.FakeNetworkMonitor
@@ -22,6 +23,7 @@ import com.grappim.taigamobile.testing.nowLocalDate
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -38,6 +40,7 @@ class SprintsRepositoryImplTest {
     private val taigaSessionStorage: TaigaSessionStorage = mockk()
     private val filtersRepository: FiltersRepository = mockk()
     private val workItemMapper: WorkItemMapper = mockk()
+    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
     private val sprintMapper: SprintMapper = mockk()
     private val sprintDao: SprintDao = mockk()
@@ -51,12 +54,14 @@ class SprintsRepositoryImplTest {
     @Before
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
+        every { workItemEntityMapper.toEntityList(any(), any()) } returns emptyList()
 
         sut = SprintsRepositoryImpl(
             sprintApi = sprintApi,
             taigaSessionStorage = taigaSessionStorage,
             filtersRepository = filtersRepository,
             workItemMapper = workItemMapper,
+            workItemEntityMapper = workItemEntityMapper,
             workItemApi = workItemApi,
             sprintMapper = sprintMapper,
             sprintDao = sprintDao,

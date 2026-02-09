@@ -20,6 +20,7 @@ class WorkItemRemoteMediator(
     private val workItemApi: WorkItemApi,
     private val workItemDao: WorkItemDao,
     private val workItemMapper: WorkItemMapper,
+    private val workItemEntityMapper: WorkItemEntityMapper,
     private val taigaSessionStorage: TaigaSessionStorage
 ) : RemoteMediator<Int, WorkItemEntity>() {
 
@@ -54,7 +55,7 @@ class WorkItemRemoteMediator(
             )
 
             val items = workItemMapper.toDomainList(response.body() ?: emptyList(), taskType)
-            val entities = items.toEntityList()
+            val entities = workItemEntityMapper.toEntityList(items)
 
             if (loadType == LoadType.REFRESH) {
                 workItemDao.deleteByProjectIdAndType(projectId, taskType)

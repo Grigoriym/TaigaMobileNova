@@ -16,8 +16,7 @@ import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.sprint.domain.SprintData
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.toDomainList
-import com.grappim.taigamobile.feature.workitem.data.toEntityList
+import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
@@ -40,6 +39,7 @@ class SprintsRepositoryImpl @Inject constructor(
     private val taigaSessionStorage: TaigaSessionStorage,
     private val filtersRepository: FiltersRepository,
     private val workItemMapper: WorkItemMapper,
+    private val workItemEntityMapper: WorkItemEntityMapper,
     private val workItemApi: WorkItemApi,
     private val sprintMapper: SprintMapper,
     private val sprintDao: SprintDao,
@@ -110,7 +110,7 @@ class SprintsRepositoryImpl @Inject constructor(
                 val items = workItemMapper.toDomainList(response, CommonTaskType.UserStory)
                 // Cache results
                 workItemDao.deleteByProjectIdAndType(projectId, CommonTaskType.UserStory)
-                workItemDao.insertAll(items.toEntityList(sprintId))
+                workItemDao.insertAll(workItemEntityMapper.toEntityList(items, sprintId))
                 return items
             } catch (e: Exception) {
                 Timber.e(e)
@@ -120,7 +120,7 @@ class SprintsRepositoryImpl @Inject constructor(
         return workItemDao.getByProjectIdAndSprint(projectId, sprintId)
             .first()
             .filter { it.taskType == CommonTaskType.UserStory }
-            .toDomainList()
+            .let { workItemEntityMapper.toDomainList(it) }
             .toImmutableList()
     }
 
@@ -165,7 +165,7 @@ class SprintsRepositoryImpl @Inject constructor(
                     userStory = "null"
                 )
                 val items = workItemMapper.toDomainList(response, CommonTaskType.Task)
-                workItemDao.insertAll(items.toEntityList(sprintId))
+                workItemDao.insertAll(workItemEntityMapper.toEntityList(items, sprintId))
                 return items
             } catch (e: Exception) {
                 Timber.e(e)
@@ -175,7 +175,7 @@ class SprintsRepositoryImpl @Inject constructor(
         return workItemDao.getByProjectIdAndSprint(projectId, sprintId)
             .first()
             .filter { it.taskType == CommonTaskType.Task }
-            .toDomainList()
+            .let { workItemEntityMapper.toDomainList(it) }
             .toImmutableList()
     }
 
@@ -190,7 +190,7 @@ class SprintsRepositoryImpl @Inject constructor(
                     sprint = sprintId
                 )
                 val items = workItemMapper.toDomainList(response, CommonTaskType.Issue)
-                workItemDao.insertAll(items.toEntityList(sprintId))
+                workItemDao.insertAll(workItemEntityMapper.toEntityList(items, sprintId))
                 return items
             } catch (e: Exception) {
                 Timber.e(e)
@@ -200,7 +200,7 @@ class SprintsRepositoryImpl @Inject constructor(
         return workItemDao.getByProjectIdAndSprint(projectId, sprintId)
             .first()
             .filter { it.taskType == CommonTaskType.Issue }
-            .toDomainList()
+            .let { workItemEntityMapper.toDomainList(it) }
             .toImmutableList()
     }
 

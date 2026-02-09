@@ -14,8 +14,8 @@ import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.issues.dto.CreateIssueRequestDTO
 import com.grappim.taigamobile.feature.issues.mapper.IssueMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemRemoteMediator
-import com.grappim.taigamobile.feature.workitem.data.toDomain
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
@@ -31,6 +31,7 @@ class IssuesRepositoryImpl @Inject constructor(
     private val issueMapper: IssueMapper,
     private val workItemApi: WorkItemApi,
     private val workItemMapper: WorkItemMapper,
+    private val workItemEntityMapper: WorkItemEntityMapper,
     private val workItemDao: WorkItemDao
 ) : IssuesRepository {
     private var issuesPagingSource: IssuesPagingSource? = null
@@ -67,11 +68,12 @@ class IssuesRepositoryImpl @Inject constructor(
                     workItemApi = workItemApi,
                     workItemDao = workItemDao,
                     workItemMapper = workItemMapper,
+                    workItemEntityMapper = workItemEntityMapper,
                     taigaSessionStorage = taigaSessionStorage
                 ),
                 pagingSourceFactory = { workItemDao.pagingSource(projectId, CommonTaskType.Issue) }
             ).flow.map { pagingData ->
-                pagingData.map { entity -> entity.toDomain() }
+                pagingData.map { entity -> workItemEntityMapper.toDomain(entity) }
             }
         }
     }

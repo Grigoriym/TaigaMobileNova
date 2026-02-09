@@ -59,6 +59,7 @@ class WorkItemRepositoryImplTest {
     private val patchedDataMapper: PatchedDataMapper = mockk()
     private val attachmentMapper: AttachmentMapper = mockk()
     private val workItemMapper: WorkItemMapper = mockk()
+    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
     private val usersRepository: UsersRepository = mockk()
     private val customFieldsMapper: CustomFieldsMapper = mockk()
     private val taigaSessionStorage: TaigaSessionStorage = mockk()
@@ -74,6 +75,7 @@ class WorkItemRepositoryImplTest {
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
         coJustRun { workItemDao.insertAll(any()) }
+        every { workItemEntityMapper.toEntityList(any(), any()) } returns emptyList()
         every { jsonObjectMapper.fromMapToJsonObject(any()) } answers {
             val map = firstArg<Map<String, Any?>>()
             JsonObjectMapper().fromMapToJsonObject(map)
@@ -84,6 +86,7 @@ class WorkItemRepositoryImplTest {
             patchedDataMapper = patchedDataMapper,
             attachmentMapper = attachmentMapper,
             workItemMapper = workItemMapper,
+            workItemEntityMapper = workItemEntityMapper,
             usersRepository = usersRepository,
             customFieldsMapper = customFieldsMapper,
             taigaSessionStorage = taigaSessionStorage,
