@@ -39,7 +39,7 @@ mockk = "1.14.9"
 navigation = "2.9.7"
 activity-compose = "1.12.3"
 lifecycle = "2.10.0"
-paging = "3.4.0"
+paging = "3.4.1"
 room = "2.8.4"
 
 robolectric = "4.16.1"
