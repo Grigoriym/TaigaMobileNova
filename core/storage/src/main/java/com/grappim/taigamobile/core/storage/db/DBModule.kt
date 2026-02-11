@@ -28,6 +28,7 @@ class DBModule {
         "taigamobilenova_${infoProvider.getBuildType()}.db"
     ).addTypeConverter(taigaPermissionConverter)
         .addTypeConverter(cacheTypeConverters)
+        .fallbackToDestructiveMigration(true)
         .build()
 
     @[Provides Singleton]

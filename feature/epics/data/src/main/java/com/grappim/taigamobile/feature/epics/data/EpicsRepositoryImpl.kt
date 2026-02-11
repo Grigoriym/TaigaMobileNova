@@ -36,8 +36,6 @@ class EpicsRepositoryImpl @Inject constructor(
     private val workItemDao: WorkItemDao
 ) : EpicsRepository {
 
-    private var epicsPagingSource: EpicsPagingSource? = null
-
     @OptIn(ExperimentalPagingApi::class, ExperimentalCoroutinesApi::class)
     override fun getEpicsPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
         val hasFilters = filters.filtersNumber > 0 || query.isNotBlank()
@@ -54,9 +52,7 @@ class EpicsRepositoryImpl @Inject constructor(
                         query = query,
                         workItemApi = workItemApi,
                         workItemMapper = workItemMapper
-                    ).also {
-                        epicsPagingSource = it
-                    }
+                    )
                 }
             ).flow
         }
@@ -79,10 +75,6 @@ class EpicsRepositoryImpl @Inject constructor(
                 pagingData.map { entity -> workItemEntityMapper.toDomain(entity) }
             }
         }
-    }
-
-    override fun refreshEpics() {
-        epicsPagingSource?.invalidate()
     }
 
     override suspend fun getEpics(

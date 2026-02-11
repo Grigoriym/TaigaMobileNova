@@ -34,7 +34,6 @@ class IssuesRepositoryImpl @Inject constructor(
     private val workItemEntityMapper: WorkItemEntityMapper,
     private val workItemDao: WorkItemDao
 ) : IssuesRepository {
-    private var issuesPagingSource: IssuesPagingSource? = null
 
     @OptIn(ExperimentalPagingApi::class, ExperimentalCoroutinesApi::class)
     override fun getIssuesPaging(filtersData: FiltersData, query: String): Flow<PagingData<WorkItem>> {
@@ -52,9 +51,7 @@ class IssuesRepositoryImpl @Inject constructor(
                     query = query,
                     workItemApi = workItemApi,
                     workItemMapper = workItemMapper
-                ).also {
-                    issuesPagingSource = it
-                }
+                )
             }.flow
         }
         return taigaSessionStorage.currentProjectIdFlow.flatMapLatest { projectId ->
@@ -76,10 +73,6 @@ class IssuesRepositoryImpl @Inject constructor(
                 pagingData.map { entity -> workItemEntityMapper.toDomain(entity) }
             }
         }
-    }
-
-    override fun refreshIssues() {
-        issuesPagingSource?.invalidate()
     }
 
     override suspend fun getIssue(id: Long, filtersData: FiltersData): Issue {

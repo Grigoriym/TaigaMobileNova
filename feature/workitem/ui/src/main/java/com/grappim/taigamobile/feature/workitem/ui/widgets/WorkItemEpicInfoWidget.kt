@@ -65,7 +65,8 @@ fun WorkItemEpicInfoWidget(
                     canModifyRelatedEpic = canModifyRelatedEpic,
                     userStoryEpic = epic,
                     onEpicClick = onEpicClick,
-                    onEpicRemoveClick = onEpicRemoveClick
+                    onEpicRemoveClick = onEpicRemoveClick,
+                    isOffline = isOffline
                 )
             }
 
@@ -91,6 +92,7 @@ fun WorkItemEpicInfoWidget(
 private fun EpicInfoWidget(
     canModifyRelatedEpic: Boolean,
     userStoryEpic: UserStoryEpic,
+    isOffline: Boolean,
     onEpicClick: (UserStoryEpic) -> Unit = {},
     onEpicRemoveClick: (UserStoryEpic) -> Unit = {}
 ) {
@@ -113,6 +115,7 @@ private fun EpicInfoWidget(
             .heightIn(min = 56.dp),
         shape = RoundedCornerShape(corner = CornerSize(8.dp)),
         color = MaterialTheme.colorScheme.surface,
+        enabled = !isOffline,
         onClick = {
             onEpicClick(userStoryEpic)
         }
@@ -145,6 +148,7 @@ private fun EpicInfoWidget(
 
             if (canModifyRelatedEpic) {
                 IconButton(
+                    enabled = !isOffline,
                     onClick = { isAlertVisible = true }
                 ) {
                     Icon(

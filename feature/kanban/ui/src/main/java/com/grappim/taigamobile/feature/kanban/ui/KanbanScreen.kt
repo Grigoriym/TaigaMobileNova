@@ -162,7 +162,6 @@ private fun KanbanFilters(
                 isBottomSheetVisible = true
             }
         },
-        enabled = data.assignees.isNotEmpty(),
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp, vertical = 8.dp)

@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class, ExperimentalPagingApi::class)
+
 package com.grappim.taigamobile.feature.userstories.data
 
 import androidx.paging.ExperimentalPagingApi
@@ -44,9 +46,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
     private val workItemEntityMapper: WorkItemEntityMapper,
     private val workItemDao: WorkItemDao
 ) : UserStoriesRepository {
-    private var userStoriesPagingSource: UserStoriesPagingSource? = null
 
-    @OptIn(ExperimentalPagingApi::class, ExperimentalCoroutinesApi::class)
     override fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
         val hasFilters = filters.filtersNumber > 0 || query.isNotBlank()
         if (hasFilters) {
@@ -62,9 +62,7 @@ class UserStoriesRepositoryImpl @Inject constructor(
                     query = query,
                     workItemMapper = workItemMapper,
                     workItemApi = workItemApi
-                ).also {
-                    userStoriesPagingSource = it
-                }
+                )
             }.flow
         }
         return taigaSessionStorage.currentProjectIdFlow.flatMapLatest { projectId ->
@@ -86,10 +84,6 @@ class UserStoriesRepositoryImpl @Inject constructor(
                 pagingData.map { entity -> workItemEntityMapper.toDomain(entity) }
             }
         }
-    }
-
-    override fun refreshUserStories() {
-        userStoriesPagingSource?.invalidate()
     }
 
     override suspend fun getUserStory(id: Long): UserStory {

@@ -7,6 +7,7 @@ import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.issues.mapper.IssueMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getFiltersData
@@ -34,6 +35,8 @@ class IssuesRepositoryImplTest {
     private val workItemMapper: WorkItemMapper = mockk()
     private val workItemDao: WorkItemDao = mockk()
 
+    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
+
     private lateinit var sut: IssuesRepository
 
     private val taskPath = WorkItemPathPlural(CommonTaskType.Issue)
@@ -46,7 +49,8 @@ class IssuesRepositoryImplTest {
             issueMapper = issueMapper,
             workItemApi = workItemApi,
             workItemMapper = workItemMapper,
-            workItemDao = workItemDao
+            workItemDao = workItemDao,
+            workItemEntityMapper = workItemEntityMapper
         )
     }
 
