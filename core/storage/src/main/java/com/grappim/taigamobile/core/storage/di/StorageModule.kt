@@ -1,9 +1,13 @@
 package com.grappim.taigamobile.core.storage.di
 
+import com.grappim.taigamobile.core.storage.cache.CacheManager
+import com.grappim.taigamobile.core.storage.cache.CacheManagerImpl
 import com.grappim.taigamobile.core.storage.cleaner.DataCleaner
 import com.grappim.taigamobile.core.storage.cleaner.DataCleanerImpl
 import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapper
 import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapperImpl
+import com.grappim.taigamobile.core.storage.network.NetworkMonitor
+import com.grappim.taigamobile.core.storage.network.NetworkMonitorImpl
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorageImpl
 import dagger.Binds
@@ -23,4 +27,10 @@ interface StorageModule {
 
     @[Binds Singleton]
     fun bindDataCleaner(impl: DataCleanerImpl): DataCleaner
+
+    @[Binds Singleton]
+    fun bindNetworkMonitor(impl: NetworkMonitorImpl): NetworkMonitor
+
+    @[Binds Singleton]
+    fun bindCacheManager(impl: CacheManagerImpl): CacheManager
 }

@@ -14,12 +14,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.theme.taigaRed
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.Chip
 import com.grappim.taigamobile.utils.ui.textColor
 import com.grappim.taigamobile.utils.ui.toColor
@@ -89,13 +89,24 @@ fun CommonTaskTitle(
     }
 }
 
-@Preview(showBackground = true)
+@PreviewTaigaDarkLight
 @Composable
-private fun CommonTaskTitlePreview() = TaigaMobileTheme {
+private fun CommonTaskTitleBlockedPreview() = TaigaMobilePreviewTheme {
     CommonTaskTitle(
         ref = 42,
         title = "Some title",
-        tags = listOf(Tag("one", "#25A28C"), Tag("two", "#25A28C")),
+        tags = listOf(Tag("#23A18C", "one"), Tag("#25A266", "two")),
         isBlocked = true
+    )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun CommonTaskTitlePreview() = TaigaMobilePreviewTheme {
+    CommonTaskTitle(
+        ref = 42,
+        title = "Some title",
+        tags = listOf(Tag("#23A18C", "one"), Tag("#25A266", "two")),
+        isBlocked = false
     )
 }

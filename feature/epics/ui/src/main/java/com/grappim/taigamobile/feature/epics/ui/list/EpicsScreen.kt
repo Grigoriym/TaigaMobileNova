@@ -17,7 +17,8 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.filters.ui.TaskFiltersWidget
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
@@ -48,11 +49,12 @@ fun EpicsScreen(
     viewModel: EpicsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
+    val isOffline = LocalOfflineState.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val epics = viewModel.epics.collectAsLazyPagingItems()
     val query by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(state.canAddEpic, isOffline) {
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.epics),
@@ -63,6 +65,7 @@ fun EpicsScreen(
                             TopBarActionIconButton(
                                 drawable = RDrawable.ic_add,
                                 contentDescription = "Add",
+                                enabled = !isOffline,
                                 onClick = {
                                     goToCreateEpic()
                                 }
@@ -162,7 +165,7 @@ fun EpicsScreenContent(
 @PreviewTaigaDarkLight
 @Composable
 private fun EpicsScreenPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         EpicsScreenContent(
             state = EpicsState(),
             goToEpic = { _, _, _ -> },

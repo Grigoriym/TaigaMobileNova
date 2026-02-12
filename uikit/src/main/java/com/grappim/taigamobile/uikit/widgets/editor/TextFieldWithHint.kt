@@ -48,7 +48,8 @@ fun HintTextField(
     error: NativeText = NativeText.Empty,
     singleLine: Boolean = false,
     shape: Shape = OutlinedTextFieldDefaults.shape,
-    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    enabled: Boolean = true
 ) {
     val context = LocalContext.current
 
@@ -58,6 +59,7 @@ fun HintTextField(
         value = value,
         shape = shape,
         singleLine = singleLine,
+        enabled = enabled,
         placeholder = {
             Text(text = hint.asString(context))
         },

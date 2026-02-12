@@ -23,7 +23,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -31,7 +31,12 @@ import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
-fun CreateCommentBar(onButtonClick: (String) -> Unit, modifier: Modifier = Modifier, canComment: Boolean = false) {
+fun CreateCommentBar(
+    isOffline: Boolean,
+    onButtonClick: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    canComment: Boolean = false
+) {
     if (canComment) {
         Surface(
             modifier = modifier
@@ -55,7 +60,8 @@ fun CreateCommentBar(onButtonClick: (String) -> Unit, modifier: Modifier = Modif
                     value = commentTextValue,
                     onValueChange = { commentTextValue = it },
                     hint = NativeText.Resource(RString.comment_hint),
-                    maxLines = 3
+                    maxLines = 3,
+                    enabled = !isOffline
                 )
 
                 TaigaWidthSpacer(6.dp)
@@ -68,9 +74,16 @@ fun CreateCommentBar(onButtonClick: (String) -> Unit, modifier: Modifier = Modif
                             commentTextValue = ""
                         }
                     },
+                    enabled = !isOffline,
                     modifier = Modifier
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
+                        .background(
+                            if (isOffline) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
+                            } else {
+                                MaterialTheme.colorScheme.primary
+                            }
+                        )
                 ) {
                     Icon(
                         painter = painterResource(RDrawable.ic_send),
@@ -85,10 +98,11 @@ fun CreateCommentBar(onButtonClick: (String) -> Unit, modifier: Modifier = Modif
 
 @[Composable PreviewTaigaDarkLight]
 private fun CreateCommentBarPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         CreateCommentBar(
             onButtonClick = {},
-            canComment = true
+            canComment = true,
+            isOffline = false
         )
     }
 }

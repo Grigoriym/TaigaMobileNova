@@ -3,6 +3,7 @@ package com.grappim.taigamobile.uikit.theme
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -51,4 +52,13 @@ fun TaigaMobileTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Compo
         typography = typography,
         content = content
     )
+}
+
+@Composable
+fun TaigaMobilePreviewTheme(content: @Composable () -> Unit) {
+    TaigaMobileTheme {
+        Surface {
+            content()
+        }
+    }
 }

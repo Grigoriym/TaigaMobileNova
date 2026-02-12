@@ -22,6 +22,7 @@ import com.grappim.taigamobile.utils.ui.textColor
 
 @Composable
 fun TagItemWidget(
+    isOffline: Boolean,
     tag: SelectableTagUI,
     onRemoveClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -43,6 +44,7 @@ fun TagItemWidget(
                 Spacer(Modifier.width(2.dp))
 
                 IconButton(
+                    enabled = !isOffline,
                     modifier = Modifier
                         .size(26.dp)
                         .clip(CircleShape),

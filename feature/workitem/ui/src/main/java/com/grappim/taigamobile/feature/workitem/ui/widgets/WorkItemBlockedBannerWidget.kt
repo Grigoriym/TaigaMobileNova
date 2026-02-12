@@ -18,9 +18,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.theme.taigaRed
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
-import kotlin.text.isNotEmpty
 
 @Composable
 fun WorkItemBlockedBannerWidget(blockedNote: String?, modifier: Modifier = Modifier) {
@@ -55,5 +56,25 @@ fun WorkItemBlockedBannerWidget(blockedNote: String?, modifier: Modifier = Modif
             }
             Spacer(Modifier.height(10.dp))
         }
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemBlockedBannerWidgetWithNotePreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemBlockedBannerWidget(
+            blockedNote = "Waiting for API changes to be deployed"
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemBlockedBannerWidgetEmptyNotePreview() {
+    TaigaMobilePreviewTheme {
+        WorkItemBlockedBannerWidget(
+            blockedNote = ""
+        )
     }
 }

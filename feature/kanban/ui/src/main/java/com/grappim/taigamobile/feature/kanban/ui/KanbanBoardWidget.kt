@@ -84,6 +84,7 @@ private val cellWidth = 280.dp
 @Composable
 fun KanbanBoardWidget(
     state: KanbanState,
+    isOffline: Boolean,
     modifier: Modifier = Modifier,
     navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> },
@@ -127,7 +128,8 @@ fun KanbanBoardWidget(
                 SwimlaneSelector(
                     swimlanes = state.swimlanes,
                     selectedSwimlane = state.selectedSwimlane,
-                    onSelectSwimlane = state.onSelectSwimlane
+                    onSelectSwimlane = state.onSelectSwimlane,
+                    isOffline = isOffline
                 )
             }
 
@@ -142,6 +144,7 @@ fun KanbanBoardWidget(
                     val statusStories = state.storiesByStatus[status].orEmpty().toImmutableList()
 
                     KanbanColumn(
+                        isOffline = isOffline,
                         state = dragDropState,
                         status = status,
                         stories = statusStories,
@@ -170,7 +173,8 @@ private fun swimlaneDisplayName(swimlane: Swimlane?): String = when {
 private fun SwimlaneSelector(
     swimlanes: ImmutableList<Swimlane>,
     selectedSwimlane: Swimlane?,
-    onSelectSwimlane: (Swimlane?) -> Unit
+    onSelectSwimlane: (Swimlane?) -> Unit,
+    isOffline: Boolean
 ) {
     Row(
         modifier = Modifier.padding(cellOuterPadding),
@@ -185,6 +189,7 @@ private fun SwimlaneSelector(
 
         DropdownSelector(
             canModify = true,
+            isOffline = isOffline,
             items = swimlanes,
             selectedItem = selectedSwimlane,
             onItemSelect = onSelectSwimlane,
@@ -214,6 +219,7 @@ private fun SwimlaneSelector(
 private fun KanbanColumn(
     state: MultiColumnDragDropState<KanbanUserStory>,
     status: Statuses,
+    isOffline: Boolean,
     stories: ImmutableList<KanbanUserStory>,
     cellWidth: Dp,
     cellOuterPadding: Dp,
@@ -241,7 +247,8 @@ private fun KanbanColumn(
                 backgroundColor = backgroundCellColor,
                 canAddUserStory = canAddUserStory,
                 isDropTarget = isTargetColumn,
-                onAddClick = onAddClick
+                onAddClick = onAddClick,
+                isOffline = isOffline
             )
 
             LazyColumn(
@@ -270,7 +277,8 @@ private fun KanbanColumn(
                         item = kanbanStory,
                         itemKey = kanbanStory.userStory.id,
                         columnId = status.id,
-                        index = index
+                        index = index,
+                        enabled = !isOffline
                     ) { isDragging ->
                         StoryItemContent(
                             kanbanUserStory = kanbanStory,
@@ -331,6 +339,7 @@ private fun DraggedStoryOverlay(story: KanbanUserStory, offset: Offset, cellWidt
 @Composable
 private fun Header(
     text: String,
+    isOffline: Boolean,
     storiesCount: Int,
     cellWidth: Dp,
     cellOuterPadding: Dp,
@@ -388,6 +397,7 @@ private fun Header(
 
         if (canAddUserStory) {
             PlusButtonWidget(
+                isOffline = isOffline,
                 tint = MaterialTheme.colorScheme.outline,
                 onClick = onAddClick,
                 modifier = Modifier.weight(0.2f)
@@ -553,7 +563,7 @@ private fun previewKanbanState() = KanbanState(
 @Composable
 private fun KanbanBoardWidgetPreview() {
     TaigaMobileTheme {
-        KanbanBoardWidget(state = previewKanbanState())
+        KanbanBoardWidget(state = previewKanbanState(), isOffline = false)
     }
 }
 
@@ -597,7 +607,8 @@ private fun HeaderPreview() {
             backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation),
             canAddUserStory = true,
             isDropTarget = false,
-            onAddClick = {}
+            onAddClick = {},
+            isOffline = false
         )
     }
 }
@@ -615,7 +626,9 @@ private fun HeaderDropTargetPreview() {
             backgroundColor = MaterialTheme.colorScheme.surfaceColorAtElevation(kanbanBoardTonalElevation),
             canAddUserStory = true,
             isDropTarget = true,
-            onAddClick = {}
+            onAddClick = {},
+            isOffline = false
+
         )
     }
 }
@@ -632,7 +645,8 @@ private fun KanbanBoardWidgetWithSwimlanesPreview() {
                     Swimlane(id = 3L, name = "Mobile", order = 3L)
                 ),
                 selectedSwimlane = Swimlane(id = 1L, name = "Backend", order = 1L)
-            )
+            ),
+            isOffline = false
         )
     }
 }

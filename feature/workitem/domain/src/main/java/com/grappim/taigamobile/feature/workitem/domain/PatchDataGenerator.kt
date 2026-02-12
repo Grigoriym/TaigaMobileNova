@@ -29,4 +29,5 @@ interface PatchDataGenerator {
     fun getSprint(sprintId: Long?): ImmutableMap<String, Any?>
 
     fun getWikiContent(content: String): ImmutableMap<String, Any?>
+    fun getComment(comment: String): ImmutableMap<String, Any?>
 }

@@ -10,15 +10,27 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.StaticColor
 import com.grappim.taigamobile.utils.ui.asColor
 import com.grappim.taigamobile.utils.ui.asString
-import kotlinx.collections.immutable.ImmutableSet
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentSetOf
 
 @Composable
-fun WorkItemBadgesWidget(badgeState: WorkItemBadgeState, modifier: Modifier = Modifier, canModify: Boolean = true) {
+fun WorkItemBadgesWidget(
+    isOffline: Boolean,
+    badgeState: WorkItemBadgeState,
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
+) {
     val context = LocalContext.current
     Card(
         modifier = modifier
@@ -43,9 +55,95 @@ fun WorkItemBadgesWidget(badgeState: WorkItemBadgeState, modifier: Modifier = Mo
                         badgeState.onBadgeClick(item)
                     },
                     isLoading = item in badgeState.updatingBadges,
-                    isClickable = canModify
+                    isClickable = canModify,
+                    isOffline = isOffline
                 )
             }
         }
+    }
+}
+
+private fun previewBadges() = persistentSetOf(
+    SelectableWorkItemBadgeStatus(
+        options = persistentListOf(),
+        currentValue = StatusUI(
+            id = 1L,
+            title = NativeText.Simple("In Progress"),
+            color = StaticColor(Color(0xFF4CAF50))
+        )
+    ),
+    SelectableWorkItemBadgeType(
+        options = persistentListOf(),
+        currentValue = StatusUI(
+            id = 2L,
+            title = NativeText.Simple("Bug"),
+            color = StaticColor(Color(0xFFE53935))
+        )
+    ),
+    SelectableWorkItemBadgePriority(
+        options = persistentListOf(),
+        currentValue = StatusUI(
+            id = 3L,
+            title = NativeText.Simple("High"),
+            color = StaticColor(Color(0xFFFF9800))
+        )
+    )
+)
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemBadgesWidgetPreview() {
+    TaigaMobileTheme {
+        WorkItemBadgesWidget(
+            badgeState = WorkItemBadgeState(
+                workItemBadges = previewBadges()
+            ),
+            canModify = true,
+            isOffline = false
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemBadgesWidgetLoadingPreview() {
+    val badges = previewBadges()
+    TaigaMobileTheme {
+        WorkItemBadgesWidget(
+            badgeState = WorkItemBadgeState(
+                workItemBadges = badges,
+                updatingBadges = persistentSetOf(badges.first())
+            ),
+            canModify = true,
+            isOffline = false
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemBadgesWidgetOfflinePreview() {
+    TaigaMobileTheme {
+        WorkItemBadgesWidget(
+            badgeState = WorkItemBadgeState(
+                workItemBadges = previewBadges()
+            ),
+            canModify = true,
+            isOffline = true
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun WorkItemBadgesWidgetReadOnlyPreview() {
+    TaigaMobileTheme {
+        WorkItemBadgesWidget(
+            badgeState = WorkItemBadgeState(
+                workItemBadges = previewBadges()
+            ),
+            canModify = false,
+            isOffline = false
+        )
     }
 }

@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.icon.TaigaIcon
 
@@ -63,7 +63,7 @@ fun TaigaOutlinedButton(
 
 @[Composable PreviewTaigaDarkLight]
 private fun PlatoOutlinedButtonImageVector() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         TaigaOutlinedButton(
             text = "Login",
             onClick = {},

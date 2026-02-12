@@ -115,7 +115,8 @@ class EpicDetailsViewModel @Inject constructor(
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         commonTaskType = epicTaskType,
         historyRepository = historyRepository,
-        workItemRepository = workItemRepository
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = TaskIdentifier.WorkItem(epicTaskType),

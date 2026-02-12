@@ -5,6 +5,7 @@ import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.CreatedCommentData
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -20,7 +21,8 @@ import kotlinx.coroutines.flow.update
 class WorkItemCommentsDelegateImpl(
     private val commonTaskType: CommonTaskType,
     private val historyRepository: HistoryRepository,
-    private val workItemRepository: WorkItemRepository
+    private val workItemRepository: WorkItemRepository,
+    private val patchDataGenerator: PatchDataGenerator
 ) : WorkItemCommentsDelegate {
 
     private val _commentsState = MutableStateFlow(
@@ -45,9 +47,7 @@ class WorkItemCommentsDelegateImpl(
 
         resultOf {
             coroutineScope {
-                val payload = persistentMapOf(
-                    "comment" to comment
-                )
+                val payload = patchDataGenerator.getComment(comment)
 
                 val patchedData = async {
                     workItemRepository.patchData(

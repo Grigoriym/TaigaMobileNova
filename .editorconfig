@@ -10,7 +10,7 @@ ij_kotlin_imports_layout=*,java.**,javax.**,kotlin.**,^
 ##Investigate all this stuff
 ktlint_compose_lambda-param-in-effect=disabled
 ktlint_compose_multiple-emitters-check=disabled
-compose_allowed_composition_locals = LocalTopBarConfig, LocalFilePicker, LocalScreenReadySignal
+compose_allowed_composition_locals = LocalTopBarConfig, LocalFilePicker, LocalScreenReadySignal, LocalOfflineState
 max_line_length = 120
 ktlint_standard_kdoc = disabled
 
@@ -21,6 +21,9 @@ ktlint_compose_modifier-missing-check=disabled
 ktlint_standard_property-naming = disabled
 
 [**/TaigaSpacers.kt]
+ktlint_compose_modifier-missing-check=disabled
+
+[**/Theme.kt]
 ktlint_compose_modifier-missing-check=disabled
 
 [**/Modifiers.kt]

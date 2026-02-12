@@ -12,34 +12,38 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 
 @Composable
 fun PlusButtonWidget(
+    isOffline: Boolean,
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.primary,
     onClick: () -> Unit = {}
-) = IconButton(
-    onClick = onClick,
-    modifier = Modifier
-        .padding(top = 2.dp)
-        .size(32.dp)
-        .clip(CircleShape)
 ) {
-    Icon(
-        painter = painterResource(RDrawable.ic_add),
-        contentDescription = "Add",
-        tint = tint,
-        modifier = modifier.size(26.dp)
-    )
+    IconButton(
+        enabled = !isOffline,
+        onClick = onClick,
+        modifier = modifier
+            .padding(top = 2.dp)
+            .size(32.dp)
+            .clip(CircleShape)
+    ) {
+        Icon(
+            painter = painterResource(RDrawable.ic_add),
+            contentDescription = "Add",
+            tint = tint,
+            modifier = Modifier.size(26.dp)
+        )
+    }
 }
 
 @Composable
 @PreviewTaigaDarkLight
 private fun PlusButtonWidgetPreview() {
-    TaigaMobileTheme {
-        PlusButtonWidget()
+    TaigaMobilePreviewTheme {
+        PlusButtonWidget(isOffline = false)
     }
 }

@@ -7,6 +7,7 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.core.storage.auth.AuthStateManager
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
+import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
@@ -33,8 +34,17 @@ class MainViewModel @Inject constructor(
     authStorage: AuthStorage,
     private val authStateManager: AuthStateManager,
     projectsRepository: ProjectsRepository,
-    private val drawerItemsBuilder: DrawerItemsBuilder
+    private val drawerItemsBuilder: DrawerItemsBuilder,
+    networkMonitor: NetworkMonitor
 ) : ViewModel() {
+
+    val isOffline: StateFlow<Boolean> = networkMonitor.isOnline
+        .map { isOnline -> !isOnline }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
 
     private val _state = MutableStateFlow(
         MainScreenState(

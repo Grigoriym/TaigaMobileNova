@@ -34,6 +34,7 @@ import com.grappim.taigamobile.utils.ui.textColor
 @Composable
 fun WorkItemClickableBadgeWidget(
     title: String,
+    isOffline: Boolean,
     color: Color,
     onClick: () -> Unit,
     isLoading: Boolean,
@@ -60,7 +61,7 @@ fun WorkItemClickableBadgeWidget(
         Row(
             modifier = Modifier
                 .then(
-                    if (isClickable) {
+                    if (isClickable && !isOffline) {
                         Modifier.clickable(
                             indication = ripple(),
                             onClick = onClick,
@@ -81,7 +82,7 @@ fun WorkItemClickableBadgeWidget(
                 overflow = TextOverflow.Ellipsis
             )
 
-            if (isClickable) {
+            if (isClickable && !isOffline) {
                 Image(
                     painter = painterResource(RDrawable.ic_arrow_down),
                     contentDescription = null,

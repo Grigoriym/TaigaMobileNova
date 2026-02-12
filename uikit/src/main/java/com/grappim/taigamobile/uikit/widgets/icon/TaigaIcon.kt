@@ -10,7 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 
 @Composable
@@ -46,7 +46,7 @@ fun TaigaIcon(
 
 @[Composable PreviewTaigaDarkLight]
 private fun PlatoIconPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         TaigaIcon(
             imageVector = Icons.Filled.Menu
         )

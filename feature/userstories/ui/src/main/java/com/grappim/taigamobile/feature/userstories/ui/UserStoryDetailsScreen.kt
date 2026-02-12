@@ -52,6 +52,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesW
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.WorkItemTagsWidget
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
 import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
@@ -80,6 +81,7 @@ fun UserStoryDetailsScreen(
     viewModel: UserStoryDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
+    val isOffline = LocalOfflineState.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -238,7 +240,8 @@ fun UserStoryDetailsScreen(
                 state.onBlockToggle(false, null)
             },
             canDelete = state.canDeleteUserStory,
-            canModify = state.canEditUserStory
+            canModify = state.canEditUserStory,
+            isOffline = isOffline
         )
 
         UserStoryDetailsScreenContent(
@@ -259,7 +262,8 @@ fun UserStoryDetailsScreen(
             goToEditAssignee = goToEditAssignee,
             goToEditWatchers = goToEditWatchers,
             goToEpic = goToEpic,
-            goToEditEpics = goToEditEpics
+            goToEditEpics = goToEditEpics,
+            isOffline = isOffline
         )
     }
 }
@@ -277,6 +281,7 @@ private fun UserStoryDetailsScreenContent(
     dueDateState: WorkItemDueDateState,
     assigneesState: WorkItemMultipleAssigneesState,
     descriptionState: WorkItemDescriptionState,
+    isOffline: Boolean,
     goToEditDescription: (description: String, id: Long) -> Unit,
     goToEditTags: (id: Long) -> Unit,
     goToProfile: (Long) -> Unit,
@@ -305,14 +310,16 @@ private fun UserStoryDetailsScreenContent(
                 WorkItemTitleWidget(
                     titleState = titleState,
                     onTitleSave = state.onTitleSave,
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 WorkItemBlockedBannerWidget(blockedNote = state.currentUserStory.blockedNote)
 
                 WorkItemBadgesWidget(
                     badgeState = badgeState,
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 WorkItemEpicInfoWidget(
@@ -325,6 +332,7 @@ private fun UserStoryDetailsScreenContent(
                     onEpicRemoveClick = { epic ->
                         state.onEpicRemoveClick(epic.id)
                     },
+                    isOffline = isOffline,
                     onLinkToEpicClick = {
                         state.onGoingToEditEpics()
                         goToEditEpics(state.currentUserStory.id)
@@ -352,7 +360,8 @@ private fun UserStoryDetailsScreenContent(
                         )
                     },
                     descriptionState = descriptionState,
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 WorkItemTagsWidget(
@@ -362,7 +371,8 @@ private fun UserStoryDetailsScreenContent(
                         state.onEditTags()
                         goToEditTags(state.currentUserStory.id)
                     },
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 WorkItemDueDateWidget(
@@ -370,7 +380,8 @@ private fun UserStoryDetailsScreenContent(
                     setDueDate = { value ->
                         state.setDueDate(value)
                     },
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 CreatedByWidget(
@@ -387,7 +398,8 @@ private fun UserStoryDetailsScreenContent(
                         state.onGoingToEditAssignees()
                         goToEditAssignee(state.currentUserStory.id)
                     },
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 WatchersWidget(
@@ -399,13 +411,15 @@ private fun UserStoryDetailsScreenContent(
                     },
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
                     onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick,
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 CustomFieldsSectionWidget(
                     customFieldsState = customFieldsState,
                     onCustomFieldSave = state.onCustomFieldSave,
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 AttachmentsSectionWidget(
@@ -416,7 +430,8 @@ private fun UserStoryDetailsScreenContent(
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
                     },
-                    canModify = state.canEditUserStory
+                    canModify = state.canEditUserStory,
+                    isOffline = isOffline
                 )
 
                 CommentsSectionWidget(
@@ -430,7 +445,8 @@ private fun UserStoryDetailsScreenContent(
         }
         CreateCommentBar(
             onButtonClick = state.onCreateCommentClick,
-            canComment = state.canComment
+            canComment = state.canComment,
+            isOffline = isOffline
         )
     }
 }

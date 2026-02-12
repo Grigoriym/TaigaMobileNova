@@ -15,7 +15,7 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 
 @Composable
-fun WikiPageDropDownMenuWidget(state: WikiPageState, modifier: Modifier = Modifier) {
+fun WikiPageDropDownMenuWidget(state: WikiPageState, isOffline: Boolean, modifier: Modifier = Modifier) {
     if (state.canModifyPage) {
         Box(
             modifier = modifier
@@ -28,6 +28,7 @@ fun WikiPageDropDownMenuWidget(state: WikiPageState, modifier: Modifier = Modifi
                 onDismissRequest = { state.setDropdownMenuExpanded(false) }
             ) {
                 DropdownMenuItem(
+                    enabled = !isOffline,
                     onClick = {
                         state.setDropdownMenuExpanded(false)
                         state.setDeleteAlertVisible(true)

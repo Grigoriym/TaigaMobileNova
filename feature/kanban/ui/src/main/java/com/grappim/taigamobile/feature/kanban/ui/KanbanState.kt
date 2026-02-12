@@ -16,6 +16,7 @@ data class KanbanState(
     val statuses: ImmutableList<Statuses> = persistentListOf(),
     val swimlanes: ImmutableList<Swimlane> = persistentListOf(),
     val storiesByStatus: ImmutableMap<Statuses, ImmutableList<KanbanUserStory>> = persistentMapOf(),
+    val unfilteredStoriesByStatus: ImmutableMap<Statuses, ImmutableList<KanbanUserStory>> = persistentMapOf(),
 
     val stories: ImmutableList<UserStory> = persistentListOf(),
     val teamMembers: ImmutableList<TeamMember> = persistentListOf(),

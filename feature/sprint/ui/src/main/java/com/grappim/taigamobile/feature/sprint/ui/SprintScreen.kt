@@ -25,6 +25,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -51,6 +52,7 @@ fun SprintScreen(
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sprintDialogState by viewModel.sprintDialogState.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
     LaunchedEffect(state.sprintToolbarTitle, state.sprintToolbarSubtitle) {
         topBarController.update(
@@ -103,7 +105,8 @@ fun SprintScreen(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentSize(Alignment.TopEnd),
-        state = state
+        state = state,
+        isOffline = isOffline
     )
 
     ConfirmActionDialog(
@@ -123,6 +126,7 @@ fun SprintScreen(
     )
 
     SprintScreenContent(
+        isOffline = isOffline,
         state = state,
         navigateToTask = { id, type, ref ->
             goToTaskScreen(id, type, ref)
@@ -139,6 +143,7 @@ fun SprintScreen(
 
 @Composable
 fun SprintScreenContent(
+    isOffline: Boolean,
     state: SprintState,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier,
@@ -156,6 +161,7 @@ fun SprintScreenContent(
             )
         } else {
             SprintKanbanWidget(
+                isOffline = isOffline,
                 state = state,
                 navigateToTask = navigateToTask,
                 navigateToCreateTask = navigateToCreateTask
@@ -165,7 +171,7 @@ fun SprintScreenContent(
 }
 
 @Composable
-private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Modifier) {
+private fun SprintDropdownMenuWidget(isOffline: Boolean, state: SprintState, modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
         DropdownMenu(
             modifier = Modifier.background(
@@ -178,6 +184,7 @@ private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Mo
         ) {
             if (state.canEdit) {
                 DropdownMenuItem(
+                    enabled = !isOffline,
                     onClick = {
                         state.setIsMenuExpanded(false)
                         state.onEditSprintClick()
@@ -193,6 +200,7 @@ private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Mo
 
             if (state.canDelete) {
                 DropdownMenuItem(
+                    enabled = !isOffline,
                     onClick = {
                         state.setIsMenuExpanded(false)
                         state.setIsDeleteDialogVisible(true)
@@ -224,6 +232,7 @@ private fun SprintScreenPreview() = TaigaMobileTheme {
                 isClosed = false
             )
         ),
-        navigateToTask = { _, _, _ -> }
+        navigateToTask = { _, _, _ -> },
+        isOffline = false
     )
 }

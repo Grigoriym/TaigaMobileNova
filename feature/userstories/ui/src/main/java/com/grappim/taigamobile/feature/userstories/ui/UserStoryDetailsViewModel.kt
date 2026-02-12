@@ -113,7 +113,8 @@ class UserStoryDetailsViewModel @Inject constructor(
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         historyRepository = historyRepository,
         commonTaskType = CommonTaskType.UserStory,
-        workItemRepository = workItemRepository
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory),

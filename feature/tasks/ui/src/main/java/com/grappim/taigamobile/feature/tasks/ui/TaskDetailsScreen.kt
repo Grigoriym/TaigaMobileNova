@@ -49,6 +49,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesW
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.WorkItemTagsWidget
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
 import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
@@ -91,6 +92,7 @@ fun TaskDetailsScreen(
     val blockState by viewModel.blockState.collectAsStateWithLifecycle()
     val assigneesState by viewModel.singleAssigneeState.collectAsStateWithLifecycle()
     val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -241,7 +243,8 @@ fun TaskDetailsScreen(
                 state.onPromoteClick()
             },
             canModify = state.canModifyTask,
-            canDelete = state.canDeleteTask
+            canDelete = state.canDeleteTask,
+            isOffline = isOffline
         )
 
         TaskDetailsScreenContent(
@@ -260,7 +263,8 @@ fun TaskDetailsScreen(
             goToEditTags = goToEditTags,
             goToProfile = goToProfile,
             goToEditAssignee = goToEditAssignee,
-            goToEditWatchers = goToEditWatchers
+            goToEditWatchers = goToEditWatchers,
+            isOffline = isOffline
         )
     }
 }
@@ -278,6 +282,7 @@ private fun TaskDetailsScreenContent(
     dueDateState: WorkItemDueDateState,
     assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
+    isOffline: Boolean,
     goToEditDescription: (description: String, id: Long) -> Unit,
     goToEditTags: (id: Long) -> Unit,
     goToProfile: (Long) -> Unit,
@@ -304,14 +309,16 @@ private fun TaskDetailsScreenContent(
                 WorkItemTitleWidget(
                     titleState = titleState,
                     onTitleSave = state.onTitleSave,
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 WorkItemBlockedBannerWidget(blockedNote = state.currentTask.blockedNote)
 
                 WorkItemBadgesWidget(
                     badgeState = badgeState,
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 WorkItemDescriptionWidget(
@@ -323,7 +330,8 @@ private fun TaskDetailsScreenContent(
                         )
                     },
                     descriptionState = descriptionState,
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 WorkItemTagsWidget(
@@ -333,7 +341,8 @@ private fun TaskDetailsScreenContent(
                         state.onGoingToEditTags()
                         goToEditTags(state.currentTask.id)
                     },
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 WorkItemDueDateWidget(
@@ -341,7 +350,8 @@ private fun TaskDetailsScreenContent(
                     setDueDate = { value ->
                         state.setDueDate(value)
                     },
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 CreatedByWidget(
@@ -359,7 +369,8 @@ private fun TaskDetailsScreenContent(
                         state.onGoingToEditAssignee()
                         goToEditAssignee(state.currentTask.id)
                     },
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 WatchersWidget(
@@ -371,13 +382,15 @@ private fun TaskDetailsScreenContent(
                     },
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
                     onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick,
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 CustomFieldsSectionWidget(
                     customFieldsState = customFieldsState,
                     onCustomFieldSave = state.onCustomFieldSave,
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 AttachmentsSectionWidget(
@@ -388,7 +401,8 @@ private fun TaskDetailsScreenContent(
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
                     },
-                    canModify = state.canModifyTask
+                    canModify = state.canModifyTask,
+                    isOffline = isOffline
                 )
 
                 CommentsSectionWidget(
@@ -402,7 +416,8 @@ private fun TaskDetailsScreenContent(
         }
         CreateCommentBar(
             onButtonClick = state.onCreateCommentClick,
-            canComment = state.canComment
+            canComment = state.canComment,
+            isOffline = isOffline
         )
     }
 }

@@ -20,6 +20,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 @Composable
 fun WorkItemDropdownMenuWidget(
     isExpanded: Boolean,
+    isOffline: Boolean,
     onDismissRequest: () -> Unit,
     showSnackbar: (NativeText) -> Unit,
     url: String,
@@ -67,6 +68,7 @@ fun WorkItemDropdownMenuWidget(
                         onDismissRequest()
                         setDeleteAlertVisible(true)
                     },
+                    enabled = !isOffline,
                     text = {
                         Text(
                             text = stringResource(RString.delete),
@@ -82,6 +84,7 @@ fun WorkItemDropdownMenuWidget(
                         onDismissRequest()
                         onPromoteClick()
                     },
+                    enabled = !isOffline,
                     text = {
                         Text(
                             text = stringResource(
@@ -103,6 +106,7 @@ fun WorkItemDropdownMenuWidget(
                             setBlockDialogVisible(true)
                         }
                     },
+                    enabled = !isOffline,
                     text = {
                         Text(
                             text = stringResource(

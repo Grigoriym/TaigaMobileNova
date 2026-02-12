@@ -18,7 +18,8 @@ import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.feature.filters.ui.TaskFiltersWidget
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
@@ -52,8 +53,9 @@ fun IssuesScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val issues = viewModel.issues.collectAsLazyPagingItems()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(state.canCreateIssue, isOffline) {
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.issues),
@@ -62,6 +64,7 @@ fun IssuesScreen(
                     if (state.canCreateIssue) {
                         add(
                             TopBarActionIconButton(
+                                enabled = !isOffline,
                                 drawable = RDrawable.ic_add,
                                 contentDescription = "Add",
                                 onClick = {
@@ -163,7 +166,7 @@ fun IssuesScreenContent(
 
 @PreviewTaigaDarkLight
 @Composable
-private fun IssuesScreenPreview() = TaigaMobileTheme {
+private fun IssuesScreenPreview() = TaigaMobilePreviewTheme {
     IssuesScreenContent(
         navigateToTask = { _, _ -> },
         state = IssuesState(),

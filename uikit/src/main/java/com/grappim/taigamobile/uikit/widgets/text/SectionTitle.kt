@@ -33,7 +33,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
@@ -140,7 +140,7 @@ fun SectionTitleExpandable(
 @Composable
 @PreviewTaigaDarkLight
 private fun SectionTitleExpandablePreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         SectionTitleExpandable(
             text = "3 Attachments",
             isExpanded = true,

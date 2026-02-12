@@ -47,4 +47,5 @@ class PatchDataGeneratorImpl @Inject constructor() : PatchDataGenerator {
     override fun getSprint(sprintId: Long?): ImmutableMap<String, Any?> = persistentMapOf("milestone" to sprintId)
 
     override fun getWikiContent(content: String): ImmutableMap<String, Any?> = persistentMapOf("content" to content)
+    override fun getComment(comment: String): ImmutableMap<String, Any?> = persistentMapOf("comment" to comment)
 }

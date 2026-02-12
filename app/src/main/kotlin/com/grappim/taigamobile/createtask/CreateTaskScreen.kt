@@ -14,14 +14,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
@@ -114,9 +114,9 @@ fun CreateTaskScreenContent(state: CreateTaskState, modifier: Modifier = Modifie
     }
 }
 
-@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@PreviewTaigaDarkLight
 @Composable
-private fun CreateTaskScreenPreview() = TaigaMobileTheme {
+private fun CreateTaskScreenPreview() = TaigaMobilePreviewTheme {
     CreateTaskScreenContent(
         state = CreateTaskState(
             setTitle = {},

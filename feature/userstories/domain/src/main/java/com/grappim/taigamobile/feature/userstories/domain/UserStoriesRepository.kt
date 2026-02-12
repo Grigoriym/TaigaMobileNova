@@ -11,8 +11,6 @@ import kotlinx.coroutines.flow.Flow
 interface UserStoriesRepository {
     fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>>
 
-    fun refreshUserStories()
-
     suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem>
 
     suspend fun createUserStory(subject: String, description: String, status: Long?, swimlane: Long?): WorkItem

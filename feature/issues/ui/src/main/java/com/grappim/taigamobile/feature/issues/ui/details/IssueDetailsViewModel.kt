@@ -113,7 +113,8 @@ class IssueDetailsViewModel @Inject constructor(
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         commonTaskType = type,
         historyRepository = historyRepository,
-        workItemRepository = workItemRepository
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = identifierType,

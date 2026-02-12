@@ -29,5 +29,7 @@ data class DashboardState(
     val onRetryWatching: () -> Unit = {},
     val onRetryMyWork: () -> Unit = {},
     val onRetryRecentActivity: () -> Unit = {},
-    val onRetryRecentlyCompleted: () -> Unit = {}
+    val onRetryRecentlyCompleted: () -> Unit = {},
+
+    val retry: () -> Unit = {}
 )

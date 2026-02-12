@@ -3,6 +3,8 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
+import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
@@ -26,13 +28,16 @@ import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import timber.log.Timber
 import javax.inject.Inject
 
 class WorkItemRepositoryImpl @Inject constructor(
@@ -40,10 +45,13 @@ class WorkItemRepositoryImpl @Inject constructor(
     private val patchedDataMapper: PatchedDataMapper,
     private val attachmentMapper: AttachmentMapper,
     private val workItemMapper: WorkItemMapper,
+    private val workItemEntityMapper: WorkItemEntityMapper,
     private val usersRepository: UsersRepository,
     private val customFieldsMapper: CustomFieldsMapper,
     private val taigaSessionStorage: TaigaSessionStorage,
-    private val jsonObjectMapper: JsonObjectMapper
+    private val jsonObjectMapper: JsonObjectMapper,
+    private val workItemDao: WorkItemDao,
+    private val networkMonitor: NetworkMonitor
 ) : WorkItemRepository {
 
     override suspend fun getWorkItems(
@@ -60,20 +68,49 @@ class WorkItemRepositoryImpl @Inject constructor(
         milestoneId: Long?,
         pageSize: Int?
     ): ImmutableList<WorkItem> {
-        val response = workItemApi.getWorkItems(
-            taskPath = WorkItemPathPlural(commonTaskType),
-            project = projectId,
-            assignedId = assignedId,
-            isClosed = isClosed,
-            watcherId = watcherId,
-            isDashboard = isDashboard,
-            isBlocked = isBlocked,
-            modifiedDateGte = modifiedDateGte,
-            finishDateGte = finishDateGte,
-            sprint = milestoneId,
-            pageSize = pageSize
-        )
-        return workItemMapper.toDomainList(response, commonTaskType)
+        // Try network first if online
+        if (networkMonitor.isOnline.value) {
+            try {
+                val response = workItemApi.getWorkItems(
+                    taskPath = WorkItemPathPlural(commonTaskType),
+                    project = projectId,
+                    assignedId = assignedId,
+                    isClosed = isClosed,
+                    watcherId = watcherId,
+                    isDashboard = isDashboard,
+                    isBlocked = isBlocked,
+                    modifiedDateGte = modifiedDateGte,
+                    finishDateGte = finishDateGte,
+                    sprint = milestoneId,
+                    pageSize = pageSize
+                )
+                val items = workItemMapper.toDomainList(response, commonTaskType)
+                // Cache results (only for simple queries without filters that are hard to replicate)
+                if (assignedId == null && watcherId == null && isBlocked == null &&
+                    modifiedDateGte == null && finishDateGte == null
+                ) {
+                    workItemDao.insertAll(workItemEntityMapper.toEntityList(items, milestoneId))
+                }
+                return items
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
+
+        // Return cached data
+        val cached = if (milestoneId != null) {
+            workItemDao.getByProjectIdAndSprint(projectId, milestoneId).first()
+        } else {
+            workItemDao.getByProjectIdAndType(projectId, commonTaskType).first()
+        }
+
+        return cached
+            .filter { entity ->
+                (isClosed == null || entity.isClosed == isClosed) &&
+                    (assignedId == null || entity.assigneeId == assignedId)
+            }
+            .let { workItemEntityMapper.toDomainList(it) }
+            .toImmutableList()
     }
 
     override suspend fun patchData(

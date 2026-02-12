@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Label
 import androidx.compose.material.icons.filled.Sell
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -19,7 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -76,6 +75,6 @@ fun AttributesScreenContent(goToTagsScreen: () -> Unit = {}) {
 
 @PreviewTaigaDarkLight
 @Composable
-private fun AttributesScreenPreview() = TaigaMobileTheme {
+private fun AttributesScreenPreview() = TaigaMobilePreviewTheme {
     AttributesScreenContent()
 }
