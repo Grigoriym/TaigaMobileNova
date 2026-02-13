@@ -12,7 +12,7 @@ import kotlinx.collections.immutable.persistentListOf
 data class TopBarConfig(
     val title: NativeText = NativeText.Empty,
     val subtitle: NativeText = NativeText.Empty,
-    val navigationIcon: NavigationIconConfig = NavigationIconConfig.Back(),
+    val navigationIcon: NavigationIconConfig = NavigationIconConfig.None,
     val actions: ImmutableList<TopBarAction> = persistentListOf()
 )
 
@@ -23,10 +23,12 @@ sealed interface TopBarAction {
 data class TopBarActionIconButton(
     @DrawableRes val drawable: Int,
     val contentDescription: String = "",
+    val enabled: Boolean = true,
     override val onClick: () -> Unit
 ) : TopBarAction
 
-data class TopBarActionTextButton(val text: NativeText, override val onClick: () -> Unit) : TopBarAction
+data class TopBarActionTextButton(val text: NativeText, val enabled: Boolean = true, override val onClick: () -> Unit) :
+    TopBarAction
 
 sealed interface NavigationIconConfig {
     object None : NavigationIconConfig

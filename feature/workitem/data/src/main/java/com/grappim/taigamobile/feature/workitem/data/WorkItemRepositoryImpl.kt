@@ -3,6 +3,8 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
+import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
@@ -20,26 +22,22 @@ import com.grappim.taigamobile.feature.workitem.dto.CreateWorkItemRequestDTO
 import com.grappim.taigamobile.feature.workitem.dto.PromoteToUserStoryRequestDTO
 import com.grappim.taigamobile.feature.workitem.mapper.AttachmentMapper
 import com.grappim.taigamobile.feature.workitem.mapper.CustomFieldsMapper
+import com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapper
 import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
-import kotlinx.serialization.json.JsonNull
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
-import kotlinx.serialization.json.add
-import kotlinx.serialization.json.addJsonArray
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.put
-import kotlinx.serialization.json.putJsonArray
+import kotlinx.coroutines.flow.first
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import timber.log.Timber
 import javax.inject.Inject
 
 class WorkItemRepositoryImpl @Inject constructor(
@@ -47,52 +45,14 @@ class WorkItemRepositoryImpl @Inject constructor(
     private val patchedDataMapper: PatchedDataMapper,
     private val attachmentMapper: AttachmentMapper,
     private val workItemMapper: WorkItemMapper,
+    private val workItemEntityMapper: WorkItemEntityMapper,
     private val usersRepository: UsersRepository,
     private val customFieldsMapper: CustomFieldsMapper,
-    private val taigaSessionStorage: TaigaSessionStorage
+    private val taigaSessionStorage: TaigaSessionStorage,
+    private val jsonObjectMapper: JsonObjectMapper,
+    private val workItemDao: WorkItemDao,
+    private val networkMonitor: NetworkMonitor
 ) : WorkItemRepository {
-
-    private fun Map<String, Any?>.toJsonObject(): JsonObject = buildJsonObject {
-        forEach { (key, value) ->
-            when (value) {
-                null -> put(key, JsonNull)
-                is Boolean -> put(key, value)
-                is Number -> put(key, value)
-                is String -> put(key, value)
-                is List<*> -> putJsonArray(key) {
-                    value.forEach { item ->
-                        when (item) {
-                            null -> add(JsonNull)
-                            is Boolean -> add(item)
-                            is Number -> add(item)
-                            is String -> add(item)
-                            is List<*> -> {
-                                addJsonArray {
-                                    item.forEach { nestedItem ->
-                                        when (nestedItem) {
-                                            null -> add(JsonNull)
-                                            is Boolean -> add(nestedItem)
-                                            is Number -> add(nestedItem)
-                                            is String -> add(nestedItem)
-                                            else -> add(JsonPrimitive(nestedItem.toString()))
-                                        }
-                                    }
-                                }
-                            }
-                            else -> add(JsonPrimitive(item.toString()))
-                        }
-                    }
-                }
-
-                is Map<*, *> -> {
-                    @Suppress("UNCHECKED_CAST")
-                    put(key, (value as Map<String, Any?>).toJsonObject())
-                }
-
-                else -> put(key, value.toString())
-            }
-        }
-    }
 
     override suspend fun getWorkItems(
         commonTaskType: CommonTaskType,
@@ -108,20 +68,49 @@ class WorkItemRepositoryImpl @Inject constructor(
         milestoneId: Long?,
         pageSize: Int?
     ): ImmutableList<WorkItem> {
-        val response = workItemApi.getWorkItems(
-            taskPath = WorkItemPathPlural(commonTaskType),
-            project = projectId,
-            assignedId = assignedId,
-            isClosed = isClosed,
-            watcherId = watcherId,
-            isDashboard = isDashboard,
-            isBlocked = isBlocked,
-            modifiedDateGte = modifiedDateGte,
-            finishDateGte = finishDateGte,
-            sprint = milestoneId,
-            pageSize = pageSize
-        )
-        return workItemMapper.toDomainList(response, commonTaskType)
+        // Try network first if online
+        if (networkMonitor.isOnline.value) {
+            try {
+                val response = workItemApi.getWorkItems(
+                    taskPath = WorkItemPathPlural(commonTaskType),
+                    project = projectId,
+                    assignedId = assignedId,
+                    isClosed = isClosed,
+                    watcherId = watcherId,
+                    isDashboard = isDashboard,
+                    isBlocked = isBlocked,
+                    modifiedDateGte = modifiedDateGte,
+                    finishDateGte = finishDateGte,
+                    sprint = milestoneId,
+                    pageSize = pageSize
+                )
+                val items = workItemMapper.toDomainList(response, commonTaskType)
+                // Cache results (only for simple queries without filters that are hard to replicate)
+                if (assignedId == null && watcherId == null && isBlocked == null &&
+                    modifiedDateGte == null && finishDateGte == null
+                ) {
+                    workItemDao.insertAll(workItemEntityMapper.toEntityList(items, milestoneId))
+                }
+                return items
+            } catch (e: Exception) {
+                Timber.e(e)
+            }
+        }
+
+        // Return cached data
+        val cached = if (milestoneId != null) {
+            workItemDao.getByProjectIdAndSprint(projectId, milestoneId).first()
+        } else {
+            workItemDao.getByProjectIdAndType(projectId, commonTaskType).first()
+        }
+
+        return cached
+            .filter { entity ->
+                (isClosed == null || entity.isClosed == isClosed) &&
+                    (assignedId == null || entity.assigneeId == assignedId)
+            }
+            .let { workItemEntityMapper.toDomainList(it) }
+            .toImmutableList()
     }
 
     override suspend fun patchData(
@@ -134,7 +123,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         val result = workItemApi.patchWorkItem(
             taskPath = WorkItemPathPlural(commonTaskType),
             id = workItemId,
-            payload = editedMap.toJsonObject()
+            payload = jsonObjectMapper.fromMapToJsonObject(editedMap)
         )
         return patchedDataMapper.toDomain(result)
     }
@@ -149,7 +138,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         val result = workItemApi.patchCustomAttributesValues(
             taskPath = WorkItemPathPlural(commonTaskType),
             taskId = workItemId,
-            payload = editedMap.toJsonObject()
+            payload = jsonObjectMapper.fromMapToJsonObject(editedMap)
         )
         return patchedDataMapper.toDomainCustomAttrs(result)
     }
@@ -288,7 +277,7 @@ class WorkItemRepositoryImpl @Inject constructor(
         val editedMap = payload.toPersistentMap().put("version", version)
         val response = workItemApi.patchWikiPage(
             pageId = pageId,
-            payload = editedMap.toJsonObject()
+            payload = jsonObjectMapper.fromMapToJsonObject(editedMap)
         )
         return patchedDataMapper.fromWiki(response)
     }

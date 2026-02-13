@@ -36,12 +36,8 @@ comments:
     active: true
     AbsentOrWrongFileLicense:
         active: false
-        licenseTemplateFile: 'license.template'
         licenseTemplateIsRegex: false
-    CommentOverPrivateFunction:
-        active: false
-    CommentOverPrivateProperty:
-        active: false
+        licenseTemplate: ''
     DeprecatedBlockTag:
         active: false
     EndOfSentenceFormat:
@@ -79,9 +75,10 @@ complexity:
     CognitiveComplexMethod:
         active: false
         allowedComplexity: 15
+        # was edited
     ComplexCondition:
         active: true
-        allowedConditions: 3
+        allowedConditions: 5
     ComplexInterface:
         active: false
         allowedDefinitions: 10
@@ -628,8 +625,8 @@ style:
         allowedPatterns: ''
     ForbiddenImport:
         active: false
-        imports: []
-        forbiddenPatterns: ''
+        forbiddenImports: []
+        allowedImports: []
     ForbiddenMethodCall:
         active: false
         methods:
@@ -765,8 +762,6 @@ style:
         active: false
         acceptableLength: 4
         allowNonStandardGrouping: false
-    UnnecessaryAnnotationUseSiteTarget:
-        active: false
     UnnecessaryAny:
         active: false
     UnnecessaryApply:
@@ -867,7 +862,7 @@ Compose:
     CompositionLocalAllowlist:
         active: false
         # -- You can optionally define a list of CompositionLocals that are allowed here
-        allowedCompositionLocals: LocalTopBarConfig, LocalFilePicker
+        allowedCompositionLocals:
     CompositionLocalNaming:
         active: true
     ContentEmitterReturningValues:

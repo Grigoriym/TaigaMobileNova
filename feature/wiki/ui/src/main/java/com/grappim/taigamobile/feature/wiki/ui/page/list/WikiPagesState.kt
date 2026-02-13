@@ -7,7 +7,7 @@ import kotlinx.collections.immutable.persistentListOf
 
 data class WikiPagesState(
     val allPages: ImmutableList<WikiUIItem> = persistentListOf(),
-    val onOpen: () -> Unit = {},
+    val refresh: () -> Unit = {},
     val isLoading: Boolean = false,
     val error: NativeText = NativeText.Empty,
     val canAddWikiPage: Boolean = false,

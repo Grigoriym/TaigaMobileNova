@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface EpicsRepository {
     fun getEpicsPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>>
-    fun refreshEpics()
 
     suspend fun getEpics(
         projectId: Long,

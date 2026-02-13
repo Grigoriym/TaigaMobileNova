@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
+import com.grappim.taigamobile.feature.profile.ui.widgets.ProjectCardWidget
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
@@ -162,7 +163,7 @@ fun ProfileScreenContent(state: ProfileState, modifier: Modifier = Modifier) {
             }
 
             items(state.projects) {
-                ProjectCard(
+                ProjectCardWidget(
                     project = it,
                     isCurrent = it.id == state.currentProjectId
                 )

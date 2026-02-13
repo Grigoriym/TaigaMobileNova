@@ -8,31 +8,11 @@
 .externalNativeBuild
 .cxx
 
-/core/build/
-/feature/build/
-/feature/dashboard/build
-/feature/epics/build
-/feature/issues/build
-/feature/login/build
-/feature/projects/build
-/feature/sprint/build
-/feature/userstories/build
-/feature/wiki/build
-/utils/build
-/feature/kanban/build/
-/feature/settings/build/
-/feature/users/build/
-/feature/filters/build/
-/feature/profile/build/
-/feature/teams/build/
-/feature/swimlanes/build/
-/feature/scrum/build/
-/feature/projectselector/build/
-/feature/history/build/
-/feature/tasks/build/
-/feature/workitem/build/
-/utils/formatter/build/
+**/build
 
 taigamobilenova_keystore_release.jks
 /app/gplay/release/
 /app/fdroid/release/
+
+.aider.*
+.aider*

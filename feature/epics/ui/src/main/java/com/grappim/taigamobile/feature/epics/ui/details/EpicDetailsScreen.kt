@@ -50,6 +50,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.WorkItemBadgesW
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.WorkItemTagsWidget
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.CreateCommentBar
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
@@ -77,6 +78,7 @@ fun EpicDetailsScreen(
     viewModel: EpicDetailsViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
+    val isOffline = LocalOfflineState.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -227,7 +229,8 @@ fun EpicDetailsScreen(
                 state.onBlockToggle(false, null)
             },
             canDelete = state.canDeleteEpic,
-            canModify = state.canModifyEpic
+            canModify = state.canModifyEpic,
+            isOffline = isOffline
         )
 
         EpicDetailsScreenContent(
@@ -241,6 +244,7 @@ fun EpicDetailsScreen(
             customFieldsState = customFieldsState,
             assigneesState = assigneesState,
             descriptionState = descriptionState,
+            isOffline = isOffline,
             goToEditTags = goToEditTags,
             goToEditDescription = goToEditDescription,
             goToProfile = goToProfile,
@@ -263,6 +267,7 @@ private fun EpicDetailsScreenContent(
     customFieldsState: WorkItemCustomFieldsState,
     assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
+    isOffline: Boolean,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String, Long) -> Unit,
     goToEditTags: (id: Long) -> Unit,
@@ -291,20 +296,23 @@ private fun EpicDetailsScreenContent(
                 WorkItemTitleWidget(
                     titleState = titleState,
                     onTitleSave = state.onTitleSave,
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
                 WorkItemBlockedBannerWidget(blockedNote = state.currentEpic.blockedNote)
 
                 WorkItemBadgesWidget(
                     badgeState = badgeState,
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
 
                 EpicColorWidget(
                     isEpicColorLoading = state.isEpicColorLoading,
                     epicColor = state.currentEpic.epicColor,
                     onColorPick = state.onEpicColorPick,
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
 
                 WorkItemDescriptionWidget(
@@ -316,7 +324,8 @@ private fun EpicDetailsScreenContent(
                         )
                     },
                     descriptionState = descriptionState,
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
 
                 WorkItemTagsWidget(
@@ -326,7 +335,8 @@ private fun EpicDetailsScreenContent(
                         state.onGoingToEditTags()
                         goToEditTags(state.currentEpic.id)
                     },
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
 
                 CreatedByWidget(
@@ -344,7 +354,8 @@ private fun EpicDetailsScreenContent(
                         state.onGoingToEditAssignee()
                         goToEditAssignee(state.currentEpic.id)
                     },
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
 
                 WatchersWidget(
@@ -356,13 +367,15 @@ private fun EpicDetailsScreenContent(
                     },
                     onAddMeToWatchersClick = state.onAddMeToWatchersClick,
                     onRemoveMeFromWatchersClick = state.onRemoveMeFromWatchersClick,
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
 
                 CustomFieldsSectionWidget(
                     customFieldsState = customFieldsState,
                     onCustomFieldSave = state.onCustomFieldSave,
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
 
                 WorkItemsSectionWidget(
@@ -381,7 +394,8 @@ private fun EpicDetailsScreenContent(
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)
                     },
-                    canModify = state.canModifyEpic
+                    canModify = state.canModifyEpic,
+                    isOffline = isOffline
                 )
 
                 CommentsSectionWidget(
@@ -395,7 +409,8 @@ private fun EpicDetailsScreenContent(
         }
         CreateCommentBar(
             onButtonClick = state.onCreateCommentClick,
-            canComment = state.canComment
+            canComment = state.canComment,
+            isOffline = isOffline
         )
     }
 }

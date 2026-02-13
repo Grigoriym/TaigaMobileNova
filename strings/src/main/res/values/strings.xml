@@ -24,7 +24,10 @@
     <string name="common_error_message">An error has occurred. Check your connection</string>
     <string name="permission_error">Error, you may not have sufficient permissions</string>
 
+    <string name="offline_banner_message">You are offline. Showing cached data.</string>
+
     <string name="nothing_to_see">Nothing to see here</string>
+    <string name="no_items_yet">No items yet</string>
 
     <string name="login_taiga_server">Taiga server url</string>
     <string name="login_username">Login</string>
@@ -63,8 +66,6 @@
     <string name="epics_number">%d Epics</string>
     <string name="issues">Issues</string>
     <string name="issues_number">%d Issues</string>
-    <string name="team">Team</string>
-    <string name="settings">Settings</string>
     <string name="more">More</string>
     <string name="kanban">Kanban</string>
 
@@ -129,7 +130,6 @@
 
     <string name="no_sprint">No sprint</string>
     <string name="link_to_epic">Link to epic</string>
-    <string name="add_tag">Add tag</string>
     <string name="created_by">Created by</string>
     <string name="last_modification">Last modification</string>
     <string name="assigned_to">Assigned to</string>
@@ -287,15 +287,12 @@
     <string name="pages">Pages</string>
     <string name="pages_without_link">Pages without link</string>
 
-
-    <string name="credits_message">Made with ❤️ by EugeneTheDev. If you enjoy the app please consider rating it on Google Play and starring the project on GitHub</string>
-
-    <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
-    <string name="source_code">Source code</string>
-
     <string name="error_opening_link">No applications available to open the link</string>
 
     <string name="error_retrieving_due_date">Cannot get the Due Date</string>
+
+    <string name="team">Team</string>
+    <string name="no_team_members_found">No team members found</string>
 
     <!--    Sprint-->
     <string name="error_loading_user_stories">Failed to load user stories</string>
@@ -326,10 +323,35 @@
     <string name="error_internal_server">Internal server error. Please try again later.</string>
     <string name="error_loading_data">Failed to load data</string>
     <string name="error_loading_issues">Failed to load issues</string>
+    <string name="no_issues_found">No issues found</string>
+    <string name="no_epics_found">No epics found</string>
+    <string name="error_loading_projects">Failed to load projects</string>
     <string name="retry">Retry</string>
 
     <string name="epic_color">Epic Color:</string>
 
     <string name="show_more">Show more</string>
     <string name="show_less">Show less</string>
+
+    <string name="settings">Settings</string>
+    <string name="settings_about">About</string>
+    <string name="github_repo_link">Github Link</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
+    <string name="source_code">Source code</string>
+    <string name="privacy_policy_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY.md</string>
+    <string name="settings_interface">Interface</string>
+    <string name="settings_user">User</string>
+    <string name="settings_attributes">Attributes</string>
+
+    <string name="tag_color_in_use">(in use)</string>
+    <string name="presets">Presets</string>
+    <string name="selected_color">Selected color:</string>
+    <string name="tag_name">Tag Name</string>
+    <string name="add_tag">Add tag</string>
+    <string name="edit_tag">Edit tag</string>
+    <string name="merge_tags_title">Merge Tags</string>
+    <string name="merge_tags_instruction">Select main tag (radio), then tags to merge (checkbox)</string>
+    <string name="merge_tags_button">Merge %d tags</string>
+    <string name="merge_main_tag_label">MAIN</string>
 </resources>

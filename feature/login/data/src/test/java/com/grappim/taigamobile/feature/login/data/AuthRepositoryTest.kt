@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.login.data
 
-import com.grappim.taigamobile.core.storage.AuthStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.data.api.AuthApi
 import com.grappim.taigamobile.feature.login.data.model.AuthRequest
@@ -142,7 +142,7 @@ internal class AuthRepositoryTest {
         verify(exactly = 0) {
             authStorage.setAuthCredentials(
                 token = response.authToken,
-                refreshToken = response.refresh ?: "missing"
+                refreshToken = response.refresh
             )
         }
         coVerify(exactly = 0) { taigaSessionStorage.setUserId(response.id) }

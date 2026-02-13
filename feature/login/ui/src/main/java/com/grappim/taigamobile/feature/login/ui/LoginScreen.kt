@@ -33,22 +33,24 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentType
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
@@ -126,7 +128,8 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
             value = state.login,
             labelId = RString.login_username,
             onValueChange = state.onLoginValueChange,
-            isError = state.isLoginInputError
+            isError = state.isLoginInputError,
+            contentType = ContentType.Username
         )
 
         LoginTextField(
@@ -140,6 +143,7 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
             },
             keyboardType = KeyboardType.Password,
             isError = state.isPasswordInputError,
+            contentType = ContentType.Password,
             trailingIcon = {
                 if (state.isPasswordVisible) {
                     IconButton(onClick = { state.setIsPasswordVisible(false) }) {
@@ -193,14 +197,15 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
 
 @Composable
 fun LoginTextField(
-    value: TextFieldValue,
+    value: String,
     @StringRes labelId: Int,
-    onValueChange: (TextFieldValue) -> Unit,
+    onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     visualTransformation: VisualTransformation = VisualTransformation.None,
     keyboardType: KeyboardType = KeyboardType.Text,
     isError: Boolean = false,
-    trailingIcon: @Composable (() -> Unit)? = null
+    trailingIcon: @Composable (() -> Unit)? = null,
+    contentType: ContentType? = null
 ) {
     val focusManager = LocalFocusManager.current
 
@@ -208,11 +213,18 @@ fun LoginTextField(
         TextStyle(fontWeight = FontWeight.Normal)
     )
 
+    val autofillModifier = if (contentType != null) {
+        Modifier.semantics { this.contentType = contentType }
+    } else {
+        Modifier
+    }
+
     OutlinedTextField(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 40.dp)
-            .padding(bottom = 6.dp),
+            .padding(bottom = 6.dp)
+            .then(autofillModifier),
         value = value,
         onValueChange = onValueChange,
         textStyle = textStyle,
@@ -261,16 +273,16 @@ fun LoginTextField(
 
 @[Composable PreviewTaigaDarkLight]
 private fun LoginScreenPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         LoginScreenContent(
             state = LoginState(
-                server = TextFieldValue("server"),
+                server = "server",
                 onServerValueChange = {},
                 isServerInputError = false,
-                login = TextFieldValue(),
+                login = "",
                 onLoginValueChange = {},
                 isLoginInputError = false,
-                password = TextFieldValue(),
+                password = "",
                 onPasswordValueChange = {},
                 isPasswordInputError = false,
                 isAlertVisible = false,
@@ -287,16 +299,16 @@ private fun LoginScreenPreview() {
 
 @[Composable PreviewTaigaDarkLight]
 private fun LoginScreenErrorsPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         LoginScreenContent(
             state = LoginState(
-                server = TextFieldValue("server"),
+                server = "server",
                 onServerValueChange = {},
                 isServerInputError = true,
-                login = TextFieldValue(),
+                login = "",
                 onLoginValueChange = {},
                 isLoginInputError = true,
-                password = TextFieldValue(),
+                password = "",
                 onPasswordValueChange = {},
                 isPasswordInputError = true,
                 isAlertVisible = false,
@@ -313,16 +325,16 @@ private fun LoginScreenErrorsPreview() {
 
 @[Composable PreviewTaigaDarkLight]
 private fun LoginScreenAlertPreview() {
-    TaigaMobileTheme {
+    TaigaMobilePreviewTheme {
         LoginScreenContent(
             state = LoginState(
-                server = TextFieldValue("server"),
+                server = "server",
                 onServerValueChange = {},
                 isServerInputError = true,
-                login = TextFieldValue(),
+                login = "",
                 onLoginValueChange = {},
                 isLoginInputError = true,
-                password = TextFieldValue(),
+                password = "",
                 onPasswordValueChange = {},
                 isPasswordInputError = true,
                 isAlertVisible = true,

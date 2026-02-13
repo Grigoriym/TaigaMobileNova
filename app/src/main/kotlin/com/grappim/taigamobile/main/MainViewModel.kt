@@ -3,12 +3,16 @@ package com.grappim.taigamobile.main
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.nav.DrawerItem
-import com.grappim.taigamobile.core.storage.AuthStateManager
-import com.grappim.taigamobile.core.storage.AuthStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
+import com.grappim.taigamobile.core.storage.auth.AuthStateManager
+import com.grappim.taigamobile.core.storage.auth.AuthStorage
+import com.grappim.taigamobile.core.storage.network.NetworkMonitor
+import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
+import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -16,6 +20,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -29,8 +34,17 @@ class MainViewModel @Inject constructor(
     authStorage: AuthStorage,
     private val authStateManager: AuthStateManager,
     projectsRepository: ProjectsRepository,
-    private val drawerItemsBuilder: DrawerItemsBuilder
+    private val drawerItemsBuilder: DrawerItemsBuilder,
+    networkMonitor: NetworkMonitor
 ) : ViewModel() {
+
+    val isOffline: StateFlow<Boolean> = networkMonitor.isOnline
+        .map { isOnline -> !isOnline }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = false
+        )
 
     private val _state = MutableStateFlow(
         MainScreenState(
@@ -42,7 +56,30 @@ class MainViewModel @Inject constructor(
 
     val logoutEvent = authStateManager.logoutEvents
 
-    val isLoggedIn = authStorage.isLoggedIn
+    val initialNavState: StateFlow<InitialNavState> = combine(
+        authStorage.isLoggedIn,
+        taigaSessionStorage.currentProjectIdFlow
+    ) { isLoggedIn, projectId ->
+        val isProjectSelected = projectId != -1L
+        val startDestination: Any = when {
+            !isLoggedIn -> LoginNavDestination
+            !isProjectSelected -> ProjectSelectorNavDestination(isFromLogin = true)
+            else -> DashboardNavDestination
+        }
+        InitialNavState(
+            isReady = true,
+            startDestination = startDestination,
+            isProjectSelected = isProjectSelected
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = InitialNavState(
+            isReady = false,
+            isProjectSelected = false,
+            startDestination = LoginNavDestination
+        )
+    )
 
     val currentProject: StateFlow<ProjectSimple?> = projectsRepository.getCurrentProjectFlow()
         .stateIn(
@@ -83,3 +120,5 @@ class MainViewModel @Inject constructor(
         _state.update { it.copy(isLogoutConfirmationVisible = isVisible) }
     }
 }
+
+data class InitialNavState(val isReady: Boolean, val isProjectSelected: Boolean, val startDestination: Any)

@@ -41,7 +41,7 @@ data class WorkItemResponseDTO(
     val version: Long,
     @SerialName(value = "is_closed")
     val isClosed: Boolean,
-    val tags: List<List<String?>>?,
+    val tags: List<TagWithColor>?,
     val swimlane: Long?,
     @Serializable(with = LocalDateSerializer::class)
     @SerialName(value = "due_date")
@@ -64,5 +64,7 @@ data class WorkItemResponseDTO(
     @SerialName(value = "generated_user_stories")
     val generatedUserStories: List<GeneratedUserStoryDTO>?,
     @SerialName(value = "from_task_ref")
-    val fromTaskRef: String?
+    val fromTaskRef: String?,
+    @SerialName("kanban_order")
+    val kanbanOrder: Long?
 )

@@ -20,6 +20,10 @@ dependencies {
     implementation(projects.feature.workitem.mapper)
 
     implementation(projects.feature.users.domain)
+    implementation(projects.feature.filters.domain)
+    implementation(projects.feature.projects.domain)
 
     implementation(libs.retrofit)
+
+    implementation(libs.androidx.paging.common)
 }

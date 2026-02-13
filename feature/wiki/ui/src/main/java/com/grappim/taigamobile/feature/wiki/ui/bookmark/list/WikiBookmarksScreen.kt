@@ -10,6 +10,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.wiki.ui.widgets.WikiListContentWidget
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -30,10 +31,9 @@ fun WikiBookmarksScreen(
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val resources = LocalResources.current
+    val isOffline = LocalOfflineState.current
 
-    LaunchedEffect(Unit, state.canAddWikiLink) {
-        state.onOpen()
-
+    LaunchedEffect(state.canAddWikiLink, isOffline) {
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.bookmarks),
@@ -42,6 +42,7 @@ fun WikiBookmarksScreen(
                     if (state.canAddWikiLink) {
                         add(
                             TopBarActionIconButton(
+                                enabled = !isOffline,
                                 drawable = RDrawable.ic_add,
                                 contentDescription = "Add",
                                 onClick = goToWikiCreateBookmark
@@ -54,11 +55,11 @@ fun WikiBookmarksScreen(
     }
 
     ObserveAsEvents(viewModel.onDeleteSuccess) {
-        state.onOpen()
+        state.refresh()
     }
 
     ObserveAsEvents(viewModel.snackBarMessage) { message ->
-        if (message.isNotEmpty()) {
+        if (message.isNotEmpty() && state.bookmarks.isNotEmpty()) {
             showSnackbar(message)
         }
     }
@@ -74,13 +75,15 @@ fun WikiBookmarksScreen(
     WikiBookmarksScreenContent(
         state = state,
         navigateToCreateBookmark = goToWikiCreateBookmark,
-        goToPage = goToWikiPage
+        goToPage = goToWikiPage,
+        isOffline = isOffline
     )
 }
 
 @Composable
 fun WikiBookmarksScreenContent(
     state: WikiBookmarksState,
+    isOffline: Boolean,
     modifier: Modifier = Modifier,
     navigateToCreateBookmark: () -> Unit = {},
     goToPage: (slug: String, id: Long) -> Unit = { _, _ -> }
@@ -89,18 +92,19 @@ fun WikiBookmarksScreenContent(
         items = state.bookmarks,
         isLoading = state.isLoading,
         error = state.error,
-        onRetry = state.onOpen,
+        onRetry = state.refresh,
         navigateToCreate = navigateToCreateBookmark,
         canCreate = state.canAddWikiLink,
         onClick = goToPage,
         canDeleteItem = state.canDeleteWikiLink,
         onDeleteItemClick = state.onDeleteClick,
-        modifier = modifier
+        modifier = modifier,
+        isOffline = isOffline
     )
 }
 
 @Preview
 @Composable
 private fun WikiBookmarksScreenPreview() {
-    WikiBookmarksScreenContent(state = WikiBookmarksState())
+    WikiBookmarksScreenContent(state = WikiBookmarksState(), isOffline = false)
 }

@@ -12,6 +12,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -43,33 +45,38 @@ fun HintTextField(
     onValueChange: (String) -> Unit,
     hint: NativeText,
     modifier: Modifier = Modifier,
-    error: NativeText = NativeText.Empty
+    error: NativeText = NativeText.Empty,
+    singleLine: Boolean = false,
+    shape: Shape = OutlinedTextFieldDefaults.shape,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    enabled: Boolean = true
 ) {
     val context = LocalContext.current
 
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-    ) {
-        OutlinedTextField(
-            modifier = Modifier.fillMaxWidth(),
-            isError = error.isNotEmpty(),
-            value = value,
-            placeholder = {
-                Text(text = hint.asString(context))
-            },
-            onValueChange = onValueChange,
-            supportingText = {
-                if (error.isNotEmpty()) {
-                    Text(
-                        modifier = Modifier.fillMaxWidth(),
-                        text = error.asString(context),
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
+    OutlinedTextField(
+        modifier = modifier,
+        isError = error.isNotEmpty(),
+        value = value,
+        shape = shape,
+        singleLine = singleLine,
+        enabled = enabled,
+        placeholder = {
+            Text(text = hint.asString(context))
+        },
+        maxLines = maxLines,
+        onValueChange = onValueChange,
+        supportingText = if (error.isNotEmpty()) {
+            {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = error.asString(context),
+                    color = MaterialTheme.colorScheme.error
+                )
             }
-        )
-    }
+        } else {
+            null
+        }
+    )
 }
 
 @Composable

@@ -28,6 +28,7 @@ import kotlinx.collections.immutable.ImmutableList
 
 @Composable
 fun MultipleAssignedToWidget(
+    isOffline: Boolean,
     assigneesState: WorkItemMultipleAssigneesState,
     goToProfile: (Long) -> Unit,
     onAssignToMe: () -> Unit,
@@ -45,12 +46,14 @@ fun MultipleAssignedToWidget(
         onAssignToMe = onAssignToMe,
         onAddAssigneeClick = onAddAssigneeClick,
         isPlural = true,
-        canModify = canModify
+        canModify = canModify,
+        isOffline = isOffline
     )
 }
 
 @Composable
 fun SingleAssignedToWidget(
+    isOffline: Boolean,
     assigneeState: WorkItemSingleAssigneeState,
     goToProfile: (Long) -> Unit,
     onAssignToMe: () -> Unit,
@@ -69,12 +72,14 @@ fun SingleAssignedToWidget(
         onUnassign = onUnassign,
         onAssignToMe = onAssignToMe,
         onAddAssigneeClick = onAddAssigneeClick,
-        canModify = canModify
+        canModify = canModify,
+        isOffline = isOffline
     )
 }
 
 @Composable
 private fun AssignedToWidget(
+    isOffline: Boolean,
     assignees: ImmutableList<User>,
     isAssigneesLoading: Boolean,
     goToProfile: (Long) -> Unit,
@@ -104,7 +109,8 @@ private fun AssignedToWidget(
                 onRemoveUserClick = {
                     onRemoveAssigneeClick(item)
                 },
-                canModify = canModify
+                canModify = canModify,
+                isOffline = isOffline
             )
 
             if (index < assignees.lastIndex) {
@@ -128,7 +134,8 @@ private fun AssignedToWidget(
                 }
                 AddButtonWidget(
                     text = stringResource(addText),
-                    onClick = onAddAssigneeClick
+                    onClick = onAddAssigneeClick,
+                    isOffline = isOffline
                 )
 
                 if (onUnassign != null || !isAssignedToMe) {
@@ -146,6 +153,7 @@ private fun AssignedToWidget(
                     TaigaTextButtonWidget(
                         text = stringResource(buttonText),
                         icon = buttonIcon,
+                        isOffline = isOffline,
                         onClick = {
                             if (isAssignedToMe) {
                                 onUnassign?.invoke()

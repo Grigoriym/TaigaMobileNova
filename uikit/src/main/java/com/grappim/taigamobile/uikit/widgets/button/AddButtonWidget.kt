@@ -11,14 +11,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 
 /**
  * Text button with plus icon on the left
  */
 @Composable
-fun AddButtonWidget(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    FilledTonalButton(modifier = modifier, onClick = onClick) {
+fun AddButtonWidget(isOffline: Boolean, text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    FilledTonalButton(modifier = modifier, onClick = onClick, enabled = !isOffline) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
                 painter = painterResource(RDrawable.ic_add),
@@ -27,5 +29,21 @@ fun AddButtonWidget(text: String, onClick: () -> Unit, modifier: Modifier = Modi
             Spacer(Modifier.width(6.dp))
             Text(text)
         }
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun AddButtonWidgetPreview() {
+    TaigaMobileTheme {
+        AddButtonWidget(isOffline = false, text = "Add item", onClick = {})
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun AddButtonWidgetOfflinePreview() {
+    TaigaMobileTheme {
+        AddButtonWidget(isOffline = true, text = "Add item", onClick = {})
     }
 }

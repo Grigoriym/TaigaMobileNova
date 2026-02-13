@@ -20,9 +20,10 @@ import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.filters.domain.model.filters.FiltersData
-import com.grappim.taigamobile.feature.filters.ui.TaskFilters
+import com.grappim.taigamobile.feature.filters.ui.TaskFiltersWidget
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -33,6 +34,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.collections.immutable.toImmutableList
 
 @Composable
@@ -47,8 +49,9 @@ fun ScrumBacklogScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val stories = viewModel.userStories.collectAsLazyPagingItems()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(state.canAddUserStory, isOffline) {
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.backlog),
@@ -57,6 +60,7 @@ fun ScrumBacklogScreen(
                     if (state.canAddUserStory) {
                         add(
                             TopBarActionIconButton(
+                                enabled = !isOffline,
                                 drawable = RDrawable.ic_add,
                                 contentDescription = "Add User Story",
                                 onClick = goToCreateUserStory
@@ -97,11 +101,11 @@ private fun BacklogContent(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxWidth()
     ) {
-        TaskFilters(
+        TaskFiltersWidget(
             selected = state.activeFilters,
             onSelect = state.onSelectFilters,
             data = filters,
-            isFiltersError = state.filtersError.isNotEmpty(),
+            filtersError = state.filtersError,
             onRetryFilters = state.retryLoadFilters,
             isFiltersLoading = state.isFiltersLoading,
             searchQuery = searchQuery,
@@ -119,7 +123,7 @@ private fun BacklogContent(
             when {
                 stories.loadState.hasError && stories.itemCount == 0 -> {
                     ErrorStateWidget(
-                        message = NativeText.Resource(RString.error_loading_issues),
+                        message = stories.loadState.getErrorMessage(),
                         onRetry = { stories.refresh() }
                     )
                 }

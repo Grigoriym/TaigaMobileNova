@@ -5,17 +5,19 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.uikit.FilePicker
 import com.grappim.taigamobile.uikit.LocalFilePicker
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
+import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -32,13 +34,19 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private val viewModel: MainViewModel by viewModels()
+    private val screenReadySignalController = ScreenReadySignalController()
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        installSplashScreen()
+        installSplashScreen().apply {
+            setKeepOnScreenCondition {
+                screenReadySignalController.isReady.value.not()
+            }
+        }
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
         setContent {
-            val viewModel: MainViewModel = hiltViewModel()
             val theme by viewModel.theme.collectAsState()
 
             val darkTheme = when (theme) {
@@ -49,7 +57,8 @@ class MainActivity : AppCompatActivity() {
 
             TaigaMobileTheme(darkTheme) {
                 CompositionLocalProvider(
-                    LocalFilePicker provides filePicker
+                    LocalFilePicker provides filePicker,
+                    LocalScreenReadySignal provides screenReadySignalController
                 ) {
                     MainContent(viewModel)
                 }

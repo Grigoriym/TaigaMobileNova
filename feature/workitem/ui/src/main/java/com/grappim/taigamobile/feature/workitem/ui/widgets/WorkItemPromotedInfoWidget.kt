@@ -18,14 +18,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.workitem.domain.PromotedUserStoryInfo
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 @Composable
 fun WorkItemPromotedInfoWidget(
     infos: ImmutableList<PromotedUserStoryInfo>,
     modifier: Modifier = Modifier,
-    onInfoClick: (PromotedUserStoryInfo) -> Unit = {}
+    onInfoClick: (PromotedUserStoryInfo) -> Unit = {},
+    isOffline: Boolean
 ) {
     if (infos.isNotEmpty()) {
         Column(
@@ -44,7 +48,8 @@ fun WorkItemPromotedInfoWidget(
             infos.forEach { info ->
                 UserStoryInfoWidget(
                     info = info,
-                    onInfoClick = onInfoClick
+                    onInfoClick = onInfoClick,
+                    isOffline = isOffline
                 )
             }
 
@@ -54,13 +59,18 @@ fun WorkItemPromotedInfoWidget(
 }
 
 @Composable
-private fun UserStoryInfoWidget(info: PromotedUserStoryInfo, onInfoClick: (PromotedUserStoryInfo) -> Unit = {}) {
+private fun UserStoryInfoWidget(
+    info: PromotedUserStoryInfo,
+    isOffline: Boolean,
+    onInfoClick: (PromotedUserStoryInfo) -> Unit = {}
+) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 56.dp),
         shape = RoundedCornerShape(corner = CornerSize(8.dp)),
         color = MaterialTheme.colorScheme.surface,
+        enabled = !isOffline,
         onClick = {
             onInfoClick(info)
         }
@@ -79,4 +89,58 @@ private fun UserStoryInfoWidget(info: PromotedUserStoryInfo, onInfoClick: (Promo
             )
         }
     }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WorkItemPromotedInfoWidgetPreview() = TaigaMobileTheme {
+    WorkItemPromotedInfoWidget(
+        infos = persistentListOf(
+            PromotedUserStoryInfo(
+                id = 1,
+                ref = 101,
+                subject = "User authentication flow",
+                titleToDisplay = "#101 User authentication flow"
+            )
+        ),
+        isOffline = false
+    )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WorkItemPromotedInfoWidgetMultiplePreview() = TaigaMobileTheme {
+    WorkItemPromotedInfoWidget(
+        infos = persistentListOf(
+            PromotedUserStoryInfo(
+                id = 1,
+                ref = 101,
+                subject = "User authentication flow",
+                titleToDisplay = "#101 User authentication flow"
+            ),
+            PromotedUserStoryInfo(
+                id = 2,
+                ref = 102,
+                subject = "Password reset feature",
+                titleToDisplay = "#102 Password reset feature"
+            )
+        ),
+        isOffline = false
+    )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WorkItemPromotedInfoWidgetOfflinePreview() = TaigaMobileTheme {
+    WorkItemPromotedInfoWidget(
+        infos = persistentListOf(
+            PromotedUserStoryInfo(
+                id = 1,
+                ref = 101,
+                subject = "User authentication flow",
+                titleToDisplay = "#101 User authentication flow"
+            )
+        ),
+        isOffline = true
+    )
 }

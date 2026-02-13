@@ -14,10 +14,11 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSp
 import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSprintScreen
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditTeamMemberNavDestination
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditTeamMemberScreen
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.typeMapOf
 import kotlin.reflect.typeOf
 
-fun NavGraphBuilder.workItemEditsNavGraph(navController: NavHostController) {
+fun NavGraphBuilder.workItemEditsNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
     composable<WorkItemEditDescriptionNavDestination>(
         typeMap = typeMapOf(
             listOf(
@@ -49,6 +50,7 @@ fun NavGraphBuilder.workItemEditsNavGraph(navController: NavHostController) {
         )
     ) {
         WorkItemEditTagsScreen(
+            showSnackbar = showSnackbar,
             goBack = {
                 navController.popBackStack()
             }

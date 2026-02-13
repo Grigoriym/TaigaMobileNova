@@ -8,7 +8,6 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.tasks.domain.Task
@@ -19,6 +18,7 @@ import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
@@ -41,12 +41,11 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitle
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegateImpl
-import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
@@ -76,6 +75,9 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
+private val type = CommonTaskType.Task
+private val taskIdentifier = TaskIdentifier.WorkItem(type)
+
 @HiltViewModel
 class TaskDetailsViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
@@ -85,7 +87,6 @@ class TaskDetailsViewModel @Inject constructor(
     private val statusUIMapper: StatusUIMapper,
     private val tagUIMapper: TagUIMapper,
     private val dateTimeUtils: DateTimeUtils,
-    private val session: Session,
     private val fileUriManager: FileUriManager,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val historyRepository: HistoryRepository,
@@ -96,63 +97,64 @@ class TaskDetailsViewModel @Inject constructor(
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         historyRepository = historyRepository,
-        commonTaskType = CommonTaskType.Task,
-        workItemRepository = workItemRepository
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
-        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task),
+        taskIdentifier = taskIdentifier,
         workItemRepository = workItemRepository,
         fileUriManager = fileUriManager,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
     ),
     WorkItemDueDateDelegate by WorkItemDueDateDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
     ),
     WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
     WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
-        commonTaskType = CommonTaskType.Task,
+        commonTaskType = type,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         usersRepository = usersRepository
     ),
     WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
-        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task),
+        taskIdentifier = taskIdentifier,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ) {
@@ -208,31 +210,31 @@ class TaskDetailsViewModel @Inject constructor(
         loadTask()
 
         workItemEditStateRepository
-            .getTeamMemberUpdateFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
+            .getTeamMemberUpdateFlow(taskId, taskIdentifier)
             .onEach(::handleTeamMemberUpdate)
             .launchIn(viewModelScope)
 
         workItemEditStateRepository
-            .getTagsFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
+            .getTagsFlow(taskId, taskIdentifier)
             .onEach(::onNewTagsUpdate)
             .launchIn(viewModelScope)
 
         workItemEditStateRepository
-            .getDescriptionFlow(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
+            .getDescriptionFlow(taskId, taskIdentifier)
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
         super.onCleared()
-        workItemEditStateRepository.clearSession(taskId, TaskIdentifier.WorkItem(CommonTaskType.Task))
-        Timber.d("IssueDetailsViewModel cleared - session cleaned up for taskId: $taskId")
+        workItemEditStateRepository.clearSession(taskId, taskIdentifier)
+        Timber.d("TaskDetailsViewModel cleared - session cleaned up for taskId: $taskId")
     }
 
     private fun onGoingToEditTags() {
         workItemEditStateRepository.setTags(
             workItemId = taskId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Task),
+            type = taskIdentifier,
             tags = tagsState.value.tags
         )
     }
@@ -243,7 +245,7 @@ class TaskDetailsViewModel @Inject constructor(
         workItemEditStateRepository.setCurrentWatchers(
             ids = watchersIds,
             workItemId = taskId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Task)
+            type = taskIdentifier
         )
     }
 
@@ -251,7 +253,7 @@ class TaskDetailsViewModel @Inject constructor(
         val assigneeId = singleAssigneeState.value.assignees.firstOrNull()?.id
         workItemEditStateRepository.setCurrentAssignee(
             workItemId = taskId,
-            type = TaskIdentifier.WorkItem(CommonTaskType.Task),
+            type = taskIdentifier,
             id = assigneeId
         )
     }
@@ -277,7 +279,7 @@ class TaskDetailsViewModel @Inject constructor(
                         )
                     }
                     val tags = async {
-                        tagUIMapper.toUI(result.task.tags).toPersistentList()
+                        tagUIMapper.toSelectableUI(result.task.tags).toPersistentList()
                     }
                     val customFieldsStateItems = async {
                         customFieldsUIMapper.toUI(result.customFields)
@@ -704,7 +706,9 @@ class TaskDetailsViewModel @Inject constructor(
     private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
             TeamMemberUpdate.Clear -> {}
+
             is TeamMemberUpdate.Assignees -> {}
+
             is TeamMemberUpdate.Assignee -> {
                 onAssigneeUpdated(updateState.id)
             }
@@ -779,7 +783,7 @@ class TaskDetailsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
+    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<SelectableTagUI>) {
         handleTagsUpdate(
             newTags = newTagsToUse,
             version = currentTask.version,
@@ -796,7 +800,7 @@ class TaskDetailsViewModel @Inject constructor(
         )
     }
 
-    private fun onTagRemove(tag: TagUI) {
+    private fun onTagRemove(tag: SelectableTagUI) {
         viewModelScope.launch {
             handleTagRemove(
                 tag = tag,
@@ -826,7 +830,7 @@ class TaskDetailsViewModel @Inject constructor(
             resultOf {
                 workItemRepository.promoteToUserStory(
                     workItemId = currentTask.id,
-                    commonTaskType = CommonTaskType.Task
+                    commonTaskType = type
                 )
             }.onSuccess { result ->
                 _state.update {

@@ -89,8 +89,10 @@ fun getIssueUI(): IssueUI = IssueUI(
     promotedUserStories = persistentListOf()
 )
 
-fun getTag(): Tag = Tag(
-    color = getRandomString(),
+fun getTag(
+    color: String = getRandomString()
+): Tag = Tag(
+    color = color,
     name = getRandomString()
 )
 

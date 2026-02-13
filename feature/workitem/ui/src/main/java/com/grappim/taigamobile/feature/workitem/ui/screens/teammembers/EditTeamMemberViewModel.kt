@@ -7,7 +7,7 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
-import com.grappim.taigamobile.feature.workitem.ui.models.TeamMemberUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.TeamMemberUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberEditType
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.utils.ui.typeMapOf

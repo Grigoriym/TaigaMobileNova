@@ -23,6 +23,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.grappim.taigamobile.feature.users.domain.User
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
@@ -77,6 +80,7 @@ fun TeamUserWidget(
 
 @Composable
 fun TeamUserWithActionWidget(
+    isOffline: Boolean,
     user: User,
     goToProfile: (Long) -> Unit,
     onRemoveUserClick: () -> Unit,
@@ -94,13 +98,88 @@ fun TeamUserWithActionWidget(
         )
 
         if (canModify) {
-            IconButton(onClick = onRemoveUserClick) {
+            IconButton(
+                onClick = onRemoveUserClick,
+                enabled = !isOffline
+            ) {
                 Icon(
                     painter = painterResource(RDrawable.ic_remove),
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.outline
+                    contentDescription = null
                 )
             }
         }
+    }
+}
+
+private fun previewUser() = User(
+    id = 1L,
+    fullName = "John Doe",
+    photo = null,
+    bigPhoto = null,
+    username = "johndoe"
+)
+
+@Composable
+@PreviewTaigaDarkLight
+private fun TeamUserWidgetPreview() {
+    TaigaMobilePreviewTheme {
+        TeamUserWidget(
+            user = previewUser(),
+            goToProfile = {}
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun TeamUserWidgetWithDateTimePreview() {
+    TaigaMobilePreviewTheme {
+        TeamUserWidget(
+            user = previewUser(),
+            goToProfile = {},
+            createdDateTime = LocalDateTime.of(2024, 1, 15, 14, 30)
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun TeamUserWithActionWidgetPreview() {
+    TaigaMobilePreviewTheme {
+        TeamUserWithActionWidget(
+            user = previewUser(),
+            goToProfile = {},
+            onRemoveUserClick = {},
+            canModify = true,
+            isOffline = false
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun TeamUserWithActionWidgetOfflinePreview() {
+    TaigaMobilePreviewTheme {
+        TeamUserWithActionWidget(
+            user = previewUser(),
+            goToProfile = {},
+            onRemoveUserClick = {},
+            canModify = true,
+            isOffline = true
+        )
+    }
+}
+
+@Composable
+@PreviewTaigaDarkLight
+private fun TeamUserWithActionWidgetNoModifyPreview() {
+    TaigaMobilePreviewTheme {
+        TeamUserWithActionWidget(
+            user = previewUser(),
+            goToProfile = {},
+            onRemoveUserClick = {},
+            canModify = false,
+            isOffline = false
+        )
     }
 }

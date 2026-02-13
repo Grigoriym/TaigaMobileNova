@@ -17,6 +17,9 @@ dependencies {
     implementation(projects.feature.projects.dto)
     implementation(projects.feature.projects.mapper)
 
+    implementation(projects.feature.filters.mapper)
+    implementation(projects.feature.filters.domain)
+
     implementation(libs.androidx.paging.common)
     implementation(libs.retrofit)
 }

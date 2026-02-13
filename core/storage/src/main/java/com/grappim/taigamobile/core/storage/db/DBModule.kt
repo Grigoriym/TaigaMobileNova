@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.room.Room
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.storage.db.dao.ProjectDao
+import com.grappim.taigamobile.core.storage.db.dao.SprintDao
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,14 +20,23 @@ class DBModule {
     fun provideDb(
         @ApplicationContext context: Context,
         infoProvider: AppInfoProvider,
-        taigaPermissionConverter: TaigaPermissionConverter
+        taigaPermissionConverter: TaigaPermissionConverter,
+        cacheTypeConverters: CacheTypeConverters
     ): TaigaDB = Room.databaseBuilder(
         context,
         TaigaDB::class.java,
         "taigamobilenova_${infoProvider.getBuildType()}.db"
     ).addTypeConverter(taigaPermissionConverter)
+        .addTypeConverter(cacheTypeConverters)
+        .fallbackToDestructiveMigration(true)
         .build()
 
     @[Provides Singleton]
     fun provideProjectDao(db: TaigaDB): ProjectDao = db.projectDao()
+
+    @[Provides Singleton]
+    fun provideSprintDao(db: TaigaDB): SprintDao = db.sprintDao()
+
+    @[Provides Singleton]
+    fun provideWorkItemDao(db: TaigaDB): WorkItemDao = db.workItemDao()
 }

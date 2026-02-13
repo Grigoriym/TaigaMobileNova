@@ -16,6 +16,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSpri
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.delegates.SnackbarDelegateImpl
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -25,8 +27,6 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import timber.log.Timber
-import java.time.format.DateTimeFormatter
-import java.time.format.FormatStyle
 import javax.inject.Inject
 
 @HiltViewModel
@@ -36,6 +36,7 @@ class SprintViewModel @Inject constructor(
     private val dateTimeUtils: DateTimeUtils,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemSprintDelegate by WorkItemSprintDelegateImpl(
         dateTimeUtils = dateTimeUtils,
         sprintsRepository = sprintsRepository
@@ -47,7 +48,8 @@ class SprintViewModel @Inject constructor(
             setIsDeleteDialogVisible = ::setIsDeleteDialogVisible,
             onDeleteSprint = ::deleteSprint,
             onEditSprintClick = ::onEditSprintClick,
-            onEditSprintConfirm = ::editSprint
+            onEditSprintConfirm = ::editSprint,
+            onRefresh = ::refresh
         )
     )
     val state = _state.asStateFlow()
@@ -58,28 +60,23 @@ class SprintViewModel @Inject constructor(
     private val _deleteResult = Channel<Unit>()
     val deleteResult = _deleteResult.receiveAsFlow()
 
-    private val dateFormatter = DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
-
     init {
-        getPermissions()
-        loadData()
+        refresh()
     }
 
-    private fun getPermissions() {
-        viewModelScope.launch {
-            val perm = projectsRepository.getPermissions()
-            val canEdit = perm.canModifyMilestone()
-            val canDelete = perm.canDeleteMilestone()
-            val canShowTopBarActions = canEdit || canDelete
-            _state.update {
-                it.copy(
-                    canEdit = canEdit,
-                    canDelete = canDelete,
-                    canShowTopBarActions = canShowTopBarActions,
-                    canCreateIssue = perm.canAddIssue(),
-                    canCreateTasks = perm.canAddTask()
-                )
-            }
+    private suspend fun getPermissions() {
+        val perm = projectsRepository.getPermissions()
+        val canEdit = perm.canModifyMilestone()
+        val canDelete = perm.canDeleteMilestone()
+        val canShowTopBarActions = canEdit || canDelete
+        _state.update {
+            it.copy(
+                canEdit = canEdit,
+                canDelete = canDelete,
+                canShowTopBarActions = canShowTopBarActions,
+                canCreateIssue = perm.canAddIssue(),
+                canCreateTasks = perm.canAddTask()
+            )
         }
     }
 
@@ -95,33 +92,45 @@ class SprintViewModel @Inject constructor(
         }
     }
 
-    private fun loadData() {
-        viewModelScope.launch {
-            _state.update { it.copy(isLoading = true) }
+    private suspend fun loadData() {
+        _state.update { it.copy(isLoading = true, error = NativeText.Empty) }
 
-            sprintsRepository.getSprintData(sprintId)
-                .onSuccess { result ->
-                    _state.update {
-                        it.copy(
-                            sprint = result.sprint,
-                            sprintToolbarTitle = NativeText.Simple(result.sprint.name),
-                            sprintToolbarSubtitle = NativeText.Arguments(
-                                id = RString.sprint_dates_template,
-                                args = listOf(
-                                    result.sprint.start.format(dateFormatter),
-                                    result.sprint.end.format(dateFormatter)
-                                )
-                            ),
-                            isLoading = false,
-                            statuses = result.statuses,
-                            storiesWithTasks = result.storiesWithTasks,
-                            storylessTasks = result.storylessTasks,
-                            issues = result.issues
-                        )
-                    }
-                }.onFailure {
-                    _state.update { it.copy(isLoading = false) }
+        sprintsRepository.getSprintData(sprintId)
+            .onSuccess { result ->
+                _state.update {
+                    it.copy(
+                        sprint = result.sprint,
+                        sprintToolbarTitle = NativeText.Simple(result.sprint.name),
+                        sprintToolbarSubtitle = NativeText.Arguments(
+                            id = RString.sprint_dates_template,
+                            args = listOf(
+                                dateTimeUtils.formatToMediumFormat(result.sprint.start),
+                                dateTimeUtils.formatToMediumFormat(result.sprint.end)
+                            )
+                        ),
+                        isLoading = false,
+                        statuses = result.statuses,
+                        storiesWithTasks = result.storiesWithTasks,
+                        storylessTasks = result.storylessTasks,
+                        issues = result.issues
+                    )
                 }
+            }.onFailure { error ->
+                Timber.e(error)
+                showSnackbarSuspend(getErrorMessage(error))
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = getErrorMessage(error)
+                    )
+                }
+            }
+    }
+
+    private fun refresh() {
+        viewModelScope.launch {
+            getPermissions()
+            loadData()
         }
     }
 

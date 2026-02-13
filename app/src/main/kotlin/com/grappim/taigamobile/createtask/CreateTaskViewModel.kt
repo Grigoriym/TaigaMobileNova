@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.createtask
 
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -48,7 +47,7 @@ class CreateTaskViewModel @Inject constructor(
     val creationResult = _creationResult.receiveAsFlow()
 
     private fun onCreateTask() {
-        val title = state.value.title.text.trim()
+        val title = state.value.title.trim()
         if (title.isEmpty()) {
             _state.update {
                 it.copy(
@@ -64,7 +63,7 @@ class CreateTaskViewModel @Inject constructor(
             )
         }
 
-        val description = state.value.description.text.trim()
+        val description = state.value.description.trim()
 
         viewModelScope.launch {
             createWorkItemUseCase.createTask(
@@ -95,13 +94,13 @@ class CreateTaskViewModel @Inject constructor(
         }
     }
 
-    private fun setTitle(title: TextFieldValue) {
+    private fun setTitle(title: String) {
         _state.update {
             it.copy(title = title)
         }
     }
 
-    private fun setDescription(description: TextFieldValue) {
+    private fun setDescription(description: String) {
         _state.update {
             it.copy(description = description)
         }

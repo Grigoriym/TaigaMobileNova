@@ -1,4 +1,4 @@
-import com.android.build.gradle.LibraryExtension
+import com.android.build.api.dsl.LibraryExtension
 import com.grappim.taigamobile.buildlogic.configureFlavors
 import com.grappim.taigamobile.buildlogic.configureKotlinAndroid
 import com.grappim.taigamobile.buildlogic.libs
@@ -12,12 +12,12 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
         with(target) {
             with(pluginManager) {
                 apply("com.android.library")
-                apply("org.jetbrains.kotlin.android")
                 apply("com.google.devtools.ksp")
+
+                apply("org.jetbrains.kotlin.android")
             }
 
             extensions.configure<LibraryExtension> {
-                defaultConfig.targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
                 configureKotlinAndroid(this)
                 configureFlavors(this)
             }

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -20,6 +21,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -38,6 +40,7 @@ fun WikiCreateBookmarkScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.create_new_bookmark),
+                navigationIcon = NavigationIconConfig.Back(),
                 actions = persistentListOf(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_save,
@@ -77,7 +80,9 @@ fun WikiCreateBookmarkScreenContent(state: WikiCreateBookmarkState, modifier: Mo
 
             HintTextField(
                 error = state.error,
-                modifier = Modifier.padding(horizontal = 8.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 8.dp),
                 hint = NativeText.Resource(RString.title_hint),
                 value = state.title,
                 onValueChange = { state.setTitle(it) }

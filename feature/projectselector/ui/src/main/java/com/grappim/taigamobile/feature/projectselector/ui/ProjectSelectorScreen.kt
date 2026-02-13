@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.projectselector.ui
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -27,22 +29,24 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.SubscribeOnError
+import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 
 @Composable
 fun ProjectSelectorScreen(
-    showMessage: (message: Int) -> Unit,
+    goBack: () -> Unit,
     onProjectSelect: () -> Unit,
     viewModel: ProjectSelectorViewModel = hiltViewModel()
 ) {
@@ -54,7 +58,12 @@ fun ProjectSelectorScreen(
             TopBarConfig(
                 title = NativeText.Resource(RString.project_selector),
                 navigationIcon = if (state.isFromLogin) {
-                    NavigationIconConfig.Back()
+                    NavigationIconConfig.Back(
+                        onBackClick = {
+                            state.onGoingBackAfterLogIn()
+                            goBack()
+                        }
+                    )
                 } else {
                     NavigationIconConfig.Menu
                 }
@@ -62,15 +71,18 @@ fun ProjectSelectorScreen(
         )
     }
 
-    val lazyProjectItems = viewModel.projects.collectAsLazyPagingItems()
+    val projects = viewModel.projects.collectAsLazyPagingItems()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
-    lazyProjectItems.SubscribeOnError(showMessage)
+    BackHandler(state.isFromLogin) {
+        state.onGoingBackAfterLogIn()
+        goBack()
+    }
 
     ProjectSelectorScreenContent(
         state = state,
         searchQuery = searchQuery,
-        projects = lazyProjectItems,
+        projects = projects,
         selectProject = {
             state.setProject(it)
             onProjectSelect()
@@ -103,15 +115,37 @@ fun ProjectSelectorScreenContent(
         )
         Spacer(modifier = Modifier.height(10.dp))
 
-        LazyColumn {
-            items(projects.itemCount) { index ->
-                val project = projects[index]
-                if (project != null) {
-                    ItemProject(
-                        projectDTO = project,
-                        currentProjectId = state.currentProjectId,
-                        onClick = { selectProject(project) }
-                    )
+        PullToRefreshBox(
+            modifier = Modifier.fillMaxSize(),
+            onRefresh = {
+                projects.refresh()
+            },
+            isRefreshing = projects.loadState.refresh is LoadState.Loading
+        ) {
+            if (projects.loadState.hasError && projects.itemCount == 0) {
+                ErrorStateWidget(
+                    modifier = Modifier.fillMaxSize(),
+                    message = projects.loadState.getErrorMessage(
+                        fallback = NativeText.Resource(RString.error_loading_projects)
+                    ),
+                    onRetry = {
+                        projects.refresh()
+                    }
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(projects.itemCount) { index ->
+                        val project = projects[index]
+                        if (project != null) {
+                            ItemProject(
+                                projectDTO = project,
+                                currentProjectId = state.currentProjectId,
+                                onClick = { selectProject(project) }
+                            )
+                        }
+                    }
                 }
             }
         }

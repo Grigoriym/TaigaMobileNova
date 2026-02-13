@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.grappim.taigamobile.feature.scrum.ui.backlog
 
 import androidx.lifecycle.ViewModel
@@ -29,7 +31,6 @@ import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
-@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ScrumBacklogViewModel @Inject constructor(
     private val session: Session,

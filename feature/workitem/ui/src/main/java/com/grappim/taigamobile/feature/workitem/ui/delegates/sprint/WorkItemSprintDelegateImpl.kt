@@ -35,8 +35,8 @@ class WorkItemSprintDelegateImpl(
     override val sprintDialogState: StateFlow<SprintDialogState> = _sprintDialogState.asStateFlow()
 
     override fun setInitialSprint(start: LocalDate?, end: LocalDate?, sprintName: String) {
-        val defaultStart = start ?: LocalDate.now()
-        val defaultEnd = end ?: LocalDate.now().plusDays(14)
+        val defaultStart = start ?: dateTimeUtils.getLocalDateNow()
+        val defaultEnd = end ?: dateTimeUtils.getLocalDateNow().plusDays(14)
 
         val startToDisplay = dateTimeUtils.formatToMediumFormat(defaultStart)
         val endToDisplay = dateTimeUtils.formatToMediumFormat(defaultEnd)

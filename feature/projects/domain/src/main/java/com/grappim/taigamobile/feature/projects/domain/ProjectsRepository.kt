@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.projects.domain
 
 import androidx.paging.PagingData
+import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
@@ -18,4 +19,9 @@ interface ProjectsRepository {
     suspend fun getPermissions(): ImmutableList<TaigaPermission>
 
     suspend fun fetchAndSaveProjectInfo()
+    suspend fun getTagsColors(): ImmutableList<Tag>
+    suspend fun deleteTag(tagName: String)
+    suspend fun createTag(tagName: String, color: String)
+    suspend fun editTag(fromTagName: String, toTagName: String?, color: String?)
+    suspend fun mixTags(fromTags: List<String>, toTag: String)
 }

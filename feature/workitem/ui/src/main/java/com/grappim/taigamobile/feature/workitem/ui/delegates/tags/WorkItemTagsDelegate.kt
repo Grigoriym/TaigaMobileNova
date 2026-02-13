@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.tags
 
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
@@ -8,10 +8,10 @@ import kotlinx.coroutines.flow.StateFlow
 interface WorkItemTagsDelegate {
     val tagsState: StateFlow<WorkItemTagsState>
 
-    fun setInitialTags(tags: PersistentList<TagUI>)
+    fun setInitialTags(tags: PersistentList<SelectableTagUI>)
 
     suspend fun handleTagRemove(
-        tag: TagUI,
+        tag: SelectableTagUI,
         version: Long,
         workItemId: Long,
         doOnPreExecute: (() -> Unit)? = null,
@@ -20,7 +20,7 @@ interface WorkItemTagsDelegate {
     )
 
     suspend fun handleTagsUpdate(
-        newTags: PersistentList<TagUI>,
+        newTags: PersistentList<SelectableTagUI>,
         version: Long,
         workItemId: Long,
         doOnPreExecute: (() -> Unit)? = null,
@@ -29,4 +29,7 @@ interface WorkItemTagsDelegate {
     )
 }
 
-data class WorkItemTagsState(val tags: PersistentList<TagUI> = persistentListOf(), val areTagsLoading: Boolean = false)
+data class WorkItemTagsState(
+    val tags: PersistentList<SelectableTagUI> = persistentListOf(),
+    val areTagsLoading: Boolean = false
+)

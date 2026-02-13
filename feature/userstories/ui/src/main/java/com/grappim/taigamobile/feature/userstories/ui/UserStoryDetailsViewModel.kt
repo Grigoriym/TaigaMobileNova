@@ -8,7 +8,6 @@ import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.Session
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -19,6 +18,7 @@ import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
@@ -41,12 +41,11 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitle
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegateImpl
-import com.grappim.taigamobile.feature.workitem.ui.models.CustomFieldsUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.feature.workitem.ui.models.StatusUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
@@ -87,7 +86,6 @@ class UserStoryDetailsViewModel @Inject constructor(
     private val statusUIMapper: StatusUIMapper,
     private val tagUIMapper: TagUIMapper,
     private val dateTimeUtils: DateTimeUtils,
-    private val session: Session,
     private val fileUriManager: FileUriManager,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val historyRepository: HistoryRepository,
@@ -115,7 +113,8 @@ class UserStoryDetailsViewModel @Inject constructor(
     WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         historyRepository = historyRepository,
         commonTaskType = CommonTaskType.UserStory,
-        workItemRepository = workItemRepository
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
     ),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory),
@@ -287,7 +286,7 @@ class UserStoryDetailsViewModel @Inject constructor(
                         )
                     }
                     val tags = async {
-                        tagUIMapper.toUI(result.userStory.tags).toPersistentList()
+                        tagUIMapper.toSelectableUI(result.userStory.tags).toPersistentList()
                     }
                     val customFieldsStateItems = async {
                         customFieldsUIMapper.toUI(result.customFields)
@@ -699,7 +698,9 @@ class UserStoryDetailsViewModel @Inject constructor(
     private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
             TeamMemberUpdate.Clear -> {}
+
             is TeamMemberUpdate.Assignee -> {}
+
             is TeamMemberUpdate.Assignees -> {
                 onAssigneeUpdated(updateState.ids)
             }
@@ -774,7 +775,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         }
     }
 
-    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<TagUI>) {
+    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<SelectableTagUI>) {
         handleTagsUpdate(
             newTags = newTagsToUse,
             version = currentUserStory.version,
@@ -791,7 +792,7 @@ class UserStoryDetailsViewModel @Inject constructor(
         )
     }
 
-    private fun onTagRemove(tag: TagUI) {
+    private fun onTagRemove(tag: SelectableTagUI) {
         viewModelScope.launch {
             handleTagRemove(
                 tag = tag,

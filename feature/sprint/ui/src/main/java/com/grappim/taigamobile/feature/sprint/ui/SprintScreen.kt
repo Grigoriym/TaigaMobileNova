@@ -3,7 +3,6 @@ package com.grappim.taigamobile.feature.sprint.ui
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.wrapContentSize
@@ -11,6 +10,8 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -24,18 +25,18 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
-import com.grappim.taigamobile.utils.ui.surfaceColorAtElevationInternal
 import kotlinx.collections.immutable.toImmutableList
 import java.time.LocalDate
 
@@ -45,11 +46,13 @@ fun SprintScreen(
     goBack: () -> Unit,
     goToTaskScreen: (Long, CommonTaskType, Long) -> Unit,
     goToCreateTask: (CommonTaskType, Long?, Long) -> Unit,
+    updateData: Boolean = false,
     viewModel: SprintViewModel = hiltViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val sprintDialogState by viewModel.sprintDialogState.collectAsStateWithLifecycle()
+    val isOffline = LocalOfflineState.current
 
     LaunchedEffect(state.sprintToolbarTitle, state.sprintToolbarSubtitle) {
         topBarController.update(
@@ -78,6 +81,18 @@ fun SprintScreen(
         )
     }
 
+    ObserveAsEvents(viewModel.snackBarMessage) { message ->
+        if (message.isNotEmpty() && state.sprint != null) {
+            showSnackbar(message)
+        }
+    }
+
+    LaunchedEffect(updateData) {
+        if (updateData) {
+            state.onRefresh()
+        }
+    }
+
     BackHandler {
         goBack()
     }
@@ -86,17 +101,12 @@ fun SprintScreen(
         goBack()
     }
 
-    LaunchedEffect(state.error) {
-        if (state.error.isNotEmpty()) {
-            showSnackbar(state.error)
-        }
-    }
-
     SprintDropdownMenuWidget(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentSize(Alignment.TopEnd),
-        state = state
+        state = state,
+        isOffline = isOffline
     )
 
     ConfirmActionDialog(
@@ -115,39 +125,43 @@ fun SprintScreen(
         onConfirm = state.onEditSprintConfirm
     )
 
-    TaigaLoadingDialog(state.isLoading)
-
-    if (state.sprint != null) {
-        SprintScreenContent(
-            state = state,
-            navigateToTask = { id, type, ref ->
-                goToTaskScreen(id, type, ref)
-            },
-            navigateToCreateTask = { type, parentId ->
-                goToCreateTask(
-                    type,
-                    parentId,
-                    state.sprint!!.id
-                )
-            }
-        )
-    }
+    SprintScreenContent(
+        isOffline = isOffline,
+        state = state,
+        navigateToTask = { id, type, ref ->
+            goToTaskScreen(id, type, ref)
+        },
+        navigateToCreateTask = { type, parentId ->
+            goToCreateTask(
+                type,
+                parentId,
+                state.sprint!!.id
+            )
+        }
+    )
 }
 
 @Composable
 fun SprintScreenContent(
+    isOffline: Boolean,
     state: SprintState,
     navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     modifier: Modifier = Modifier,
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
 ) {
-    requireNotNull(state.sprint)
-    Box(modifier = modifier.fillMaxSize()) {
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            horizontalAlignment = Alignment.Start
-        ) {
+    PullToRefreshBox(
+        modifier = modifier.fillMaxSize(),
+        isRefreshing = state.isLoading,
+        onRefresh = state.onRefresh
+    ) {
+        if (state.error.isNotEmpty() && state.sprint == null) {
+            ErrorStateWidget(
+                message = state.error,
+                onRetry = state.onRefresh
+            )
+        } else {
             SprintKanbanWidget(
+                isOffline = isOffline,
                 state = state,
                 navigateToTask = navigateToTask,
                 navigateToCreateTask = navigateToCreateTask
@@ -157,11 +171,11 @@ fun SprintScreenContent(
 }
 
 @Composable
-private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Modifier) {
+private fun SprintDropdownMenuWidget(isOffline: Boolean, state: SprintState, modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
         DropdownMenu(
             modifier = Modifier.background(
-                MaterialTheme.colorScheme.surfaceColorAtElevationInternal(
+                MaterialTheme.colorScheme.surfaceColorAtElevation(
                     dialogTonalElevation
                 )
             ),
@@ -170,6 +184,7 @@ private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Mo
         ) {
             if (state.canEdit) {
                 DropdownMenuItem(
+                    enabled = !isOffline,
                     onClick = {
                         state.setIsMenuExpanded(false)
                         state.onEditSprintClick()
@@ -185,6 +200,7 @@ private fun SprintDropdownMenuWidget(state: SprintState, modifier: Modifier = Mo
 
             if (state.canDelete) {
                 DropdownMenuItem(
+                    enabled = !isOffline,
                     onClick = {
                         state.setIsMenuExpanded(false)
                         state.setIsDeleteDialogVisible(true)
@@ -216,6 +232,7 @@ private fun SprintScreenPreview() = TaigaMobileTheme {
                 isClosed = false
             )
         ),
-        navigateToTask = { _, _, _ -> }
+        navigateToTask = { _, _, _ -> },
+        isOffline = false
     )
 }

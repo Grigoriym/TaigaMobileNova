@@ -15,16 +15,16 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
 internal fun Project.configureKotlinJvm() {
     extensions.configure<JavaPluginExtension> {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
 
         toolchain {
-            languageVersion.set(JavaLanguageVersion.of(17))
+            languageVersion.set(JavaLanguageVersion.of(21))
         }
     }
     tasks.withType<KotlinJvmCompile>().configureEach {
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_17)
+            jvmTarget.set(JvmTarget.JVM_21)
             allWarningsAsErrors.set(false)
             freeCompilerArgs.add("-Xannotation-default-target=param-property")
         }
@@ -32,29 +32,29 @@ internal fun Project.configureKotlinJvm() {
 }
 
 internal fun Project.configureKotlinAndroid(
-    commonExtension: CommonExtension<*, *, *, *, *, *>,
+    commonExtension: CommonExtension,
 ) {
     commonExtension.apply {
         compileSdk = libs.findVersion("compileSdk").get().toString().toInt()
 
-        defaultConfig {
+        defaultConfig.apply {
             minSdk = libs.findVersion("minSdk").get().toString().toInt()
         }
 
-        buildFeatures {
+        buildFeatures.apply {
             shaders = false
             buildConfig = true
         }
 
-        lint {
+        lint.apply {
             checkDependencies = false
             abortOnError = false
             warningsAsErrors = false
         }
 
-        compileOptions {
-            sourceCompatibility = JavaVersion.VERSION_17
-            targetCompatibility = JavaVersion.VERSION_17
+        compileOptions.apply {
+            sourceCompatibility = JavaVersion.VERSION_21
+            targetCompatibility = JavaVersion.VERSION_21
             isCoreLibraryDesugaringEnabled = true
         }
         packaging.resources.excludes.apply {
@@ -64,7 +64,7 @@ internal fun Project.configureKotlinAndroid(
             add("META-INF/LICENSE-notice.md")
         }
 
-        testOptions {
+        testOptions.apply {
             unitTests {
                 isReturnDefaultValues = true
                 isIncludeAndroidResources = true

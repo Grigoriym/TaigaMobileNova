@@ -5,7 +5,9 @@ import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.persistentMapOf
 
 data class SprintState(
     val sprint: Sprint? = null,
@@ -13,9 +15,11 @@ data class SprintState(
     val sprintToolbarSubtitle: NativeText = NativeText.Empty,
 
     val statuses: ImmutableList<Statuses> = persistentListOf(),
-    val storiesWithTasks: Map<WorkItem, List<WorkItem>> = emptyMap(),
+    val storiesWithTasks: ImmutableMap<WorkItem, List<WorkItem>> = persistentMapOf(),
     val issues: ImmutableList<WorkItem> = persistentListOf(),
     val storylessTasks: ImmutableList<WorkItem> = persistentListOf(),
+
+    val onRefresh: () -> Unit = {},
 
     val isLoading: Boolean = false,
     val error: NativeText = NativeText.Empty,

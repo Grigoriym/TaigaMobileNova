@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.main
 
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
@@ -15,6 +17,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -25,10 +28,13 @@ import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.grappim.taigamobile.core.nav.DrawerDestination
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.banner.OfflineIndicatorBanner
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
@@ -36,6 +42,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.utils.ui.asString
 import com.grappim.taigamobile.widget.TaigaDrawerWidget
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -45,17 +52,20 @@ import timber.log.Timber
 fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val isLogged by viewModel.isLoggedIn.collectAsStateWithLifecycle()
+    val initialNavState by viewModel.initialNavState.collectAsStateWithLifecycle()
+    val isOffline by viewModel.isOffline.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(
-        LocalTopBarConfig provides topBarController
+        LocalTopBarConfig provides topBarController,
+        LocalOfflineState provides isOffline
     ) {
         val topBarConfig = topBarController.config
         MainScreenContent(
             viewModel = viewModel,
             topBarConfig = topBarConfig,
             state = state,
-            isLogged = isLogged
+            initialNavState = initialNavState,
+            isOffline = isOffline
         )
     }
 }
@@ -65,7 +75,8 @@ private fun MainScreenContent(
     viewModel: MainViewModel,
     topBarConfig: TopBarConfig,
     state: MainScreenState,
-    isLogged: Boolean
+    initialNavState: InitialNavState,
+    isOffline: Boolean
 ) {
     val appState = rememberMainAppState()
 
@@ -76,26 +87,18 @@ private fun MainScreenContent(
     val drawerItems by viewModel.drawerItems.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val keyboardController = LocalSoftwareKeyboardController.current
 
-    /**
-     * On any navigation event hide the keyboard, close the drawer if it is open
-     */
     LaunchedEffect(Unit) {
-        appState.navController.addOnDestinationChangedListener({ nc, _, _ ->
-            keyboardController?.hide()
-            if (drawerState.isOpen) {
-                scope.launch {
-                    drawerState.close()
-                }
-            }
-        })
-
         viewModel.logoutEvent.onEach {
             Timber.d("Logout Event with $it")
             appState.navController.navigateToLoginAsTopDestination()
         }.launchIn(this)
     }
+
+    RegisterOnDestinationChangedListenerSideEffect(
+        navController = appState.navController,
+        coroutineScope = scope
+    )
 
     ConfirmActionDialog(
         title = stringResource(RString.logout_title),
@@ -122,7 +125,9 @@ private fun MainScreenContent(
                 appState.navigateToTopLevelDestination(item)
             }
         },
-        gesturesEnabled = appState.areDrawerGesturesEnabled
+        gesturesEnabled = appState.areDrawerGesturesEnabled &&
+            initialNavState.isReady &&
+            initialNavState.isProjectSelected
     ) {
         Scaffold(
             modifier = Modifier.imePadding(),
@@ -148,46 +153,63 @@ private fun MainScreenContent(
                 }
             },
             content = { paddingValues ->
-                MainNavHost(
-                    modifier = Modifier.padding(paddingValues),
-                    isLoggedIn = isLogged,
-                    navController = appState.navController,
-                    showMessage = { message ->
-                        scope.launch {
-                            val strMessage = resources.getString(message)
-                            snackbarHostState.showSnackbar(
-                                message = strMessage,
-                                actionLabel = null,
-                                duration = SnackbarDuration.Short
-                            )
-                        }
-                    },
-                    showSnackbar = { text ->
-                        scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                message = text.asString(context),
-                                actionLabel = resources.getString(RString.close),
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                snackbarHostState.currentSnackbarData?.dismiss()
+                Column(modifier = Modifier.padding(paddingValues)) {
+                    OfflineIndicatorBanner(isOffline = isOffline)
+
+                    MainNavHost(
+                        initialNavState = initialNavState,
+                        navController = appState.navController,
+                        showSnackbar = { text ->
+                            scope.launch {
+                                val result = snackbarHostState.showSnackbar(
+                                    message = text.asString(context),
+                                    actionLabel = resources.getString(RString.close),
+                                    duration = SnackbarDuration.Short
+                                )
+                                if (result == SnackbarResult.ActionPerformed) {
+                                    snackbarHostState.currentSnackbarData?.dismiss()
+                                }
                             }
                         }
-                    },
-                    showSnackbarAction = { text, action ->
-                        scope.launch {
-                            val result = snackbarHostState.showSnackbar(
-                                message = text.asString(context),
-                                actionLabel = action,
-                                duration = SnackbarDuration.Short
-                            )
-                            if (result == SnackbarResult.ActionPerformed) {
-                                snackbarHostState.currentSnackbarData?.dismiss()
-                            }
-                        }
+                    )
+                }
+
+                /**
+                 * It is required to place it below MainNavHost because as per documentation
+                 * "If multiple BackHandler are present in the composition,
+                 * the one that is composed last among all enabled handlers will be invoked."
+                 * And with that this one will be called, otherwise on clicking back
+                 * we will go back in navigation but drawer will stay opened
+                 *
+                 * The second condition drawerState.isAnimationRunning is needed to fix an issue
+                 * when the drawer is visibly fully opened but is not opened actually
+                 */
+                BackHandler(drawerState.isOpen || drawerState.isAnimationRunning) {
+                    scope.launch {
+                        drawerState.close()
                     }
-                )
+                }
             }
         )
+    }
+}
+
+@Composable
+private fun RegisterOnDestinationChangedListenerSideEffect(
+    navController: NavController,
+    coroutineScope: CoroutineScope
+) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    DisposableEffect(navController, coroutineScope) {
+        val listener = NavController.OnDestinationChangedListener { _, _, _ ->
+
+            keyboardController?.hide()
+        }
+
+        navController.addOnDestinationChangedListener(listener)
+        onDispose {
+            navController.removeOnDestinationChangedListener(listener)
+        }
     }
 }

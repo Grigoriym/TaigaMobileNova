@@ -11,6 +11,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.grappim.taigamobile.feature.wiki.ui.model.WikiUIItem
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.utils.ui.NativeText
@@ -25,6 +28,7 @@ fun WikiListContentWidget(
     onRetry: () -> Unit,
     navigateToCreate: () -> Unit,
     canCreate: Boolean,
+    isOffline: Boolean,
     onClick: (slug: String, id: Long) -> Unit,
     modifier: Modifier = Modifier,
     canDeleteItem: Boolean = false,
@@ -34,75 +38,133 @@ fun WikiListContentWidget(
         modifier = modifier.fillMaxSize(),
         horizontalAlignment = Alignment.Start
     ) {
-        if (isLoading) {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center
-            ) {
-                CircularLoaderWidget()
+        when {
+            isLoading -> {
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularLoaderWidget()
+                }
+            }
+
+            error.isNotEmpty() && items.isEmpty() -> {
+                ErrorStateWidget(
+                    onRetry = onRetry,
+                    message = error
+                )
+            }
+
+            items.isEmpty() -> {
+                EmptyWikiDialogWidget(
+                    createNewPage = navigateToCreate,
+                    isButtonAvailable = canCreate,
+                    isOffline = isOffline
+                )
+            }
+
+            else -> {
+                WikiList(
+                    items = items,
+                    onClick = onClick,
+                    onDeleteItemClick = onDeleteItemClick,
+                    canDeleteItem = canDeleteItem,
+                    isOffline = isOffline
+                )
             }
         }
-
-        if (items.isEmpty() && !isLoading && error.isEmpty()) {
-            EmptyWikiDialogWidget(
-                createNewPage = navigateToCreate,
-                isButtonAvailable = canCreate
-            )
-        }
-
-        if (error.isNotEmpty() && items.isEmpty()) {
-            ErrorStateWidget(
-                onRetry = onRetry,
-                message = error
-            )
-        }
-
-        WikiList(
-            items = items,
-            onClick = onClick,
-            onDeleteItemClick = onDeleteItemClick,
-            canDeleteItem = canDeleteItem
-        )
     }
 }
 
 @Composable
 private fun WikiList(
-    onDeleteItemClick: ((Long) -> Unit)? = null,
-    canDeleteItem: Boolean = false,
-    items: ImmutableList<WikiUIItem> = persistentListOf(),
-    onClick: (slug: String, id: Long) -> Unit = { _, _ -> }
+    items: ImmutableList<WikiUIItem>,
+    onClick: (slug: String, id: Long) -> Unit,
+    onDeleteItemClick: ((Long) -> Unit)?,
+    canDeleteItem: Boolean,
+    isOffline: Boolean
 ) {
-    Box(
-        modifier = Modifier.fillMaxSize(),
-        contentAlignment = Alignment.TopStart
+    LazyColumn(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.surface)
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.surface),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            LazyColumn {
-                items(items) { item ->
-                    WikiItemWidget(
-                        onDeleteItemClick = {
-                            onDeleteItemClick?.invoke(item.id)
-                        },
-                        canDeleteItem = canDeleteItem,
-                        title = item.title,
-                        onClick = {
-                            onClick(item.slug, item.id)
-                        }
-                    )
-                }
-            }
-        }
-
-        if (items.isEmpty()) {
-            EmptyWikiDialogWidget(
-                isButtonAvailable = false
+        items(items) { item ->
+            WikiItemWidget(
+                onDeleteItemClick = {
+                    onDeleteItemClick?.invoke(item.id)
+                },
+                canDeleteItem = canDeleteItem,
+                title = item.title,
+                onClick = {
+                    onClick(item.slug, item.id)
+                },
+                isOffline = isOffline
             )
         }
     }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WikiListContentLoadingPreview() = TaigaMobileTheme {
+    WikiListContentWidget(
+        items = persistentListOf(),
+        isLoading = true,
+        error = NativeText.Empty,
+        onRetry = {},
+        navigateToCreate = {},
+        canCreate = false,
+        onClick = { _, _ -> },
+        isOffline = false
+    )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WikiListContentErrorPreview() = TaigaMobileTheme {
+    WikiListContentWidget(
+        items = persistentListOf(),
+        isLoading = false,
+        error = NativeText.Resource(RString.error_loading_data),
+        onRetry = {},
+        navigateToCreate = {},
+        canCreate = false,
+        onClick = { _, _ -> },
+        isOffline = false
+    )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WikiListContentEmptyPreview() = TaigaMobileTheme {
+    WikiListContentWidget(
+        items = persistentListOf(),
+        isLoading = false,
+        error = NativeText.Empty,
+        onRetry = {},
+        navigateToCreate = {},
+        canCreate = true,
+        onClick = { _, _ -> },
+        isOffline = false
+    )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun WikiListContentWithItemsPreview() = TaigaMobileTheme {
+    WikiListContentWidget(
+        items = persistentListOf(
+            WikiUIItem(id = 1, title = "Getting Started", slug = "getting-started"),
+            WikiUIItem(id = 2, title = "API Documentation", slug = "api-docs"),
+            WikiUIItem(id = 3, title = "Contributing Guide", slug = "contributing")
+        ),
+        isLoading = false,
+        error = NativeText.Empty,
+        onRetry = {},
+        navigateToCreate = {},
+        canCreate = true,
+        onClick = { _, _ -> },
+        isOffline = false
+    )
 }

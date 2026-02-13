@@ -5,11 +5,13 @@ import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
-    alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.compose.compiler) apply false
     alias(libs.plugins.hilt.android) apply false
     alias(libs.plugins.kotlin.serialization) apply false
+    alias(libs.plugins.jetbrains.kotlin.jvm) apply false
+
+    alias(libs.plugins.kotlin.android) apply false
 
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
@@ -17,7 +19,6 @@ plugins {
     alias(libs.plugins.dependencyAnalysis)
     alias(libs.plugins.jacocoAggregationResults)
     alias(libs.plugins.jacocoAggregationCoverage)
-    alias(libs.plugins.jetbrains.kotlin.jvm) apply false
 }
 
 doctor {
@@ -48,56 +49,69 @@ allprojects {
     }
 }
 
+val excludedFromLinting = setOf(":tools:seed")
+
 subprojects {
-    apply {
-        plugin("dev.detekt")
-        plugin("org.jlleitschuh.gradle.ktlint")
-        plugin("com.autonomousapps.dependency-analysis")
-    }
-
-    // https://github.com/cortinico/kotlin-android-template
-    detekt {
-        buildUponDefaultConfig = true
-        parallel = true
-        config.setFrom(rootProject.files("config/detekt/detekt.yml"))
-        allRules = false
-    }
-
-    // ./gradlew --continue ktlintCheck
-    // ./gradlew ktlintFormat
-    // ./gradlew addKtlintCheckGitPreCommitHook
-    configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-        version.set("1.7.1")
-        android.set(true)
-        ignoreFailures.set(false)
-        verbose.set(true)
-        outputColorName.set("RED")
-        outputToConsole.set(true)
-        reporters {
-            reporter(ReporterType.PLAIN)
-            reporter(ReporterType.CHECKSTYLE)
-            reporter(ReporterType.HTML)
-            reporter(ReporterType.JSON)
+    if (path !in excludedFromLinting) {
+        apply {
+            plugin("dev.detekt")
+            plugin("org.jlleitschuh.gradle.ktlint")
         }
     }
 
-    // https://stackoverflow.com/questions/77527617/using-version-catalog-in-gradle-kotlin-build-for-subprojects
-    dependencies {
-        ktlintRuleset(rootProject.libs.composeRules.ktlint)
-        detektPlugins(rootProject.libs.composeRules.detekt)
+    apply {
+        plugin("com.autonomousapps.dependency-analysis")
+    }
+
+    if (path !in excludedFromLinting) {
+        // https://github.com/cortinico/kotlin-android-template
+        // https://detekt.dev/docs/introduction/configurations/
+        detekt {
+            buildUponDefaultConfig = true
+            parallel = true
+            config.setFrom(rootProject.files("config/detekt/detekt.yml"))
+            allRules = false
+        }
+
+        // ./gradlew --continue ktlintCheck
+        // ./gradlew ktlintFormat
+        // ./gradlew addKtlintCheckGitPreCommitHook
+        configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
+            version.set("1.8.0")
+            android.set(true)
+            ignoreFailures.set(false)
+            verbose.set(true)
+            outputColorName.set("RED")
+            outputToConsole.set(true)
+            reporters {
+                reporter(ReporterType.PLAIN)
+                reporter(ReporterType.CHECKSTYLE)
+                reporter(ReporterType.HTML)
+                reporter(ReporterType.JSON)
+            }
+        }
+
+        // https://stackoverflow.com/questions/77527617/using-version-catalog-in-gradle-kotlin-build-for-subprojects
+        dependencies {
+            ktlintRuleset(rootProject.libs.composeRules.ktlint)
+            detektPlugins(rootProject.libs.composeRules.detekt)
+        }
     }
 }
 
 private val coverageExclusions = listOf(
     "**/R.class",
-    "**/R\$*.class",
+    "**/R$*.class",
     "**/BuildConfig.*",
     "**/Manifest*.*",
-
     "**/*Module*.*",
-    "**/*Module",
     "**/*Dagger*.*",
     "**/*Hilt*.*",
+    "**/widgets/**",
+    "**/navigation/**",
+    "**/interceptors/**"
+) + listOf(
+    "**/*Module",
     "**/Hilt*",
     "**/*GeneratedInjector",
     "**/*HiltComponents*",
@@ -116,12 +130,10 @@ private val coverageExclusions = listOf(
     "**/TaigaApp",
     "**/DrawerDestination",
 
-    "**/*Screen",
     "**/*Activity",
     "**/*Screen*",
     "**/*Application",
-
-    "**/*JsonAdapter",
+    "**/*NavGraph*",
 
     "**/*NavDestination",
     "**/*Widget",
@@ -130,7 +142,22 @@ private val coverageExclusions = listOf(
     "**/TaskFilters",
     "**/MainNavHost",
 
-    "**/FileLoggingTree"
+    "**/FileLoggingTree",
+    "**/TryCatchExtensions",
+
+    "**/StorageJsonProver",
+    "**/TaigaPermissionConverter",
+    "**/ColorSerializer",
+    "**/ComposableUtils",
+    "**/ObserveAsEvents*",
+    "**/PreviewUtils*",
+    "**/JsonSerializableNavType",
+    "**/JsonSerializableNullableNavType",
+    "**/IconSource*",
+    "**/ColorSource",
+    "**/ScrumNavDestination",
+    "**/LifecycleEffects",
+    "**/*Preference"
 ).flatMap {
     listOf(
         "$it.class",
@@ -144,6 +171,7 @@ testAggregation {
         exclude(rootProject)
         exclude(projects.testing)
         exclude(projects.uikit)
+        exclude(projects.tools.seed)
     }
     coverage {
         exclude(coverageExclusions)

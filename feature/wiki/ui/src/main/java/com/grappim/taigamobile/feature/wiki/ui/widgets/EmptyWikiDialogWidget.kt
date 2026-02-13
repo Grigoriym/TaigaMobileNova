@@ -23,6 +23,7 @@ import com.grappim.taigamobile.uikit.widgets.button.TaigaTextButtonWidget
 
 @Composable
 fun EmptyWikiDialogWidget(
+    isOffline: Boolean,
     modifier: Modifier = Modifier,
     createNewPage: () -> Unit = {},
     isButtonAvailable: Boolean = true
@@ -58,7 +59,8 @@ fun EmptyWikiDialogWidget(
             if (isButtonAvailable) {
                 TaigaTextButtonWidget(
                     text = stringResource(RString.create_new_page),
-                    onClick = createNewPage
+                    onClick = createNewPage,
+                    isOffline = isOffline
                 )
             }
         }
@@ -68,5 +70,5 @@ fun EmptyWikiDialogWidget(
 @Preview(showBackground = true)
 @Composable
 private fun EmptyWikiDialogPreview() {
-    EmptyWikiDialogWidget()
+    EmptyWikiDialogWidget(isOffline = false)
 }

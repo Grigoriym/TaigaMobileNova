@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.login.ui
 
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.api.ApiConstants
@@ -33,7 +32,7 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
 
     private val _state = MutableStateFlow(
         LoginState(
-            server = TextFieldValue(serverStorage.server),
+            server = serverStorage.server,
             onServerValueChange = ::setServer,
             onLoginValueChange = ::setLogin,
             onPasswordValueChange = ::setPassword,
@@ -68,19 +67,19 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
 
     private fun login() {
         setIsAlertVisible(false)
-        val taigaServer = _state.value.server.text.trim()
+        val taigaServer = _state.value.server.trim()
         val authType = _state.value.authType
-        val password = _state.value.password.text.trim()
-        val username = _state.value.login.text.trim()
+        val password = _state.value.password.trim()
+        val username = _state.value.login.trim()
 
         login(AuthData(taigaServer, authType, password, username))
     }
 
     private fun validateAuthData(authType: AuthType) {
         onAuthTypeChange(authType)
-        val isServerInputError = !_state.value.server.text.matches(Regex(SERVER_REGEX))
-        val isLoginInputError = _state.value.login.text.isBlank()
-        val isPasswordInputError = _state.value.password.text.isBlank()
+        val isServerInputError = !_state.value.server.matches(Regex(SERVER_REGEX))
+        val isLoginInputError = _state.value.login.isBlank()
+        val isPasswordInputError = _state.value.password.isBlank()
 
         _state.update {
             it.copy(
@@ -91,7 +90,7 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
         }
 
         if (!(isServerInputError || isLoginInputError || isPasswordInputError)) {
-            if (_state.value.server.text.startsWith(ApiConstants.HTTP_SCHEME)) {
+            if (_state.value.server.startsWith(ApiConstants.HTTP_SCHEME)) {
                 setIsAlertVisible(true)
             } else {
                 login()
@@ -131,7 +130,7 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
         }
     }
 
-    private fun setPassword(newValue: TextFieldValue) {
+    private fun setPassword(newValue: String) {
         _state.update {
             it.copy(
                 password = newValue,
@@ -140,7 +139,7 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
         }
     }
 
-    private fun setLogin(newValue: TextFieldValue) {
+    private fun setLogin(newValue: String) {
         _state.update {
             it.copy(
                 login = newValue,
@@ -149,7 +148,7 @@ class LoginViewModel @Inject constructor(private val authRepository: AuthReposit
         }
     }
 
-    private fun setServer(newValue: TextFieldValue) {
+    private fun setServer(newValue: String) {
         _state.update {
             it.copy(
                 server = newValue,

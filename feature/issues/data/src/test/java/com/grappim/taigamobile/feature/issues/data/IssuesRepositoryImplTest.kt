@@ -2,10 +2,12 @@ package com.grappim.taigamobile.feature.issues.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.issues.mapper.IssueMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getFiltersData
@@ -13,7 +15,9 @@ import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
@@ -29,6 +33,9 @@ class IssuesRepositoryImplTest {
     private val workItemApi: WorkItemApi = mockk()
 
     private val workItemMapper: WorkItemMapper = mockk()
+    private val workItemDao: WorkItemDao = mockk()
+
+    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
 
     private lateinit var sut: IssuesRepository
 
@@ -41,7 +48,9 @@ class IssuesRepositoryImplTest {
             taigaSessionStorage = taigaSessionStorage,
             issueMapper = issueMapper,
             workItemApi = workItemApi,
-            workItemMapper = workItemMapper
+            workItemMapper = workItemMapper,
+            workItemDao = workItemDao,
+            workItemEntityMapper = workItemEntityMapper
         )
     }
 
@@ -58,12 +67,12 @@ class IssuesRepositoryImplTest {
                 id = issueId
             )
         } returns mockResponse
-        coEvery { issueMapper.toDomain(mockResponse, filtersData) } returns expectedIssue
+        every { issueMapper.toDomain(mockResponse, filtersData) } returns expectedIssue
 
         val actual = sut.getIssue(issueId, filtersData)
 
         assertEquals(expectedIssue, actual)
         coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = issueId) }
-        coVerify { issueMapper.toDomain(mockResponse, filtersData) }
+        verify { issueMapper.toDomain(mockResponse, filtersData) }
     }
 }

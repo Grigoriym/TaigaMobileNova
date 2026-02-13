@@ -15,13 +15,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.Chip
 import com.grappim.taigamobile.utils.ui.textColor
 
 @Composable
-fun TagItemWidget(tag: TagUI, onRemoveClick: () -> Unit, modifier: Modifier = Modifier, canModify: Boolean = true) {
+fun TagItemWidget(
+    isOffline: Boolean,
+    tag: SelectableTagUI,
+    onRemoveClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    canModify: Boolean = true
+) {
     val textColor = tag.color.textColor()
 
     Chip(
@@ -38,6 +44,7 @@ fun TagItemWidget(tag: TagUI, onRemoveClick: () -> Unit, modifier: Modifier = Mo
                 Spacer(Modifier.width(2.dp))
 
                 IconButton(
+                    enabled = !isOffline,
                     modifier = Modifier
                         .size(26.dp)
                         .clip(CircleShape),

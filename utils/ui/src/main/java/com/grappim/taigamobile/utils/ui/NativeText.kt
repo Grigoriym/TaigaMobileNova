@@ -21,6 +21,7 @@ sealed class NativeText {
 @Suppress("SpreadOperator")
 fun NativeText.asString(context: Context): String = when (this) {
     is NativeText.Arguments -> context.getString(id, *args.toTypedArray())
+
     is NativeText.Multi -> {
         val builder = StringBuilder()
         for (t in text) {
@@ -36,7 +37,9 @@ fun NativeText.asString(context: Context): String = when (this) {
     )
 
     is NativeText.Resource -> context.getString(id)
+
     is NativeText.Simple -> text
+
     is NativeText.Empty -> ""
 }
 
@@ -55,7 +58,9 @@ fun getErrorMessage(exception: Throwable): NativeText = if (exception is Network
         )
 
         NetworkException.ERROR_TIMEOUT -> NativeText.Resource(RString.timeout_exceeded)
+
         NetworkException.ERROR_NETWORK_IO -> NativeText.Resource(RString.connection_failed)
+
         NetworkException.ERROR_UNDEFINED -> NativeText.Resource(RString.request_failed)
 
         NetworkException.ERROR_UNAUTHORIZED -> NativeText.Resource(

@@ -17,7 +17,6 @@ dependencies {
     implementation(projects.feature.users.domain)
     implementation(projects.core.navigation)
 
-    implementation(libs.vanpra.color)
     implementation(libs.coil.compose)
     implementation(libs.coil.okhttp)
     implementation(libs.material)

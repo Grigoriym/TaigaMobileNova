@@ -8,11 +8,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.strings.RString
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.FormatStyle
@@ -42,10 +42,9 @@ internal fun SprintItem(sprint: Sprint, goToSprint: (Sprint) -> Unit = {}) {
     )
 }
 
-@PreviewLightDark
-@Preview(showBackground = true)
+@PreviewTaigaDarkLight
 @Composable
-private fun SprintPreview() = TaigaMobileTheme {
+private fun SprintPreview() = TaigaMobilePreviewTheme {
     SprintItem(
         Sprint(
             id = 0L,

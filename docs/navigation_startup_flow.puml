@@ -1,0 +1,91 @@
+@startuml Navigation Startup Flow
+
+title App Startup Navigation Flow with Screen Ready Signal
+
+skinparam backgroundColor #FEFEFE
+skinparam sequence {
+    ArrowColor #333333
+    LifeLineBorderColor #333333
+    ParticipantBorderColor #333333
+    ParticipantBackgroundColor #E8E8E8
+    NoteBackgroundColor #FFFFCC
+}
+
+participant "SplashScreen" as Splash
+participant "MainActivity" as Activity
+participant "MainViewModel" as VM
+participant "NavHost" as Nav
+participant "LoginScreen" as Login
+participant "ProjectSelectorScreen" as ProjectSelector
+participant "DashboardScreen" as Dashboard
+
+== Use Case 1: User Not Logged In ==
+
+Activity -> VM: Observe initialNavState
+VM --> Activity: isReady=false
+note right: Splash stays visible
+
+VM -> VM: Load auth state from DataStore
+VM --> Activity: isReady=true\nstartDestination=LoginNavDestination
+
+Activity -> Nav: LaunchedEffect triggers
+note right: startDestination is Login,\nno navigation needed
+
+Nav -> Login: Compose LoginScreen
+Login -> Login: Check: startDestination is LoginNavDestination?
+note right #lightblue: YES - this is the target
+Login -> Activity: signalReady()
+
+Activity -> Splash: Dismiss splash
+note right #lightgreen: User sees LoginScreen
+
+== Use Case 2: Logged In, No Project Selected ==
+
+Activity -> VM: Observe initialNavState
+VM --> Activity: isReady=false
+note right: Splash stays visible
+
+VM -> VM: Load auth state from DataStore
+VM --> Activity: isReady=true\nstartDestination=ProjectSelectorNavDestination
+
+Nav -> Login: Compose LoginScreen (startDestination)
+Login -> Login: Check: startDestination is LoginNavDestination?
+note right #pink: NO - not the target, don't signal
+
+Activity -> Nav: LaunchedEffect triggers
+Nav -> Nav: Navigate to ProjectSelector
+note right: Login stays in backstack
+
+Nav -> ProjectSelector: Compose ProjectSelectorScreen
+ProjectSelector -> ProjectSelector: Check: startDestination is ProjectSelectorNavDestination?
+note right #lightblue: YES - this is the target
+ProjectSelector -> Activity: signalReady()
+
+Activity -> Splash: Dismiss splash
+note right #lightgreen: User sees ProjectSelectorScreen\n(can press back to go to Login)
+
+== Use Case 3: Logged In, Project Selected ==
+
+Activity -> VM: Observe initialNavState
+VM --> Activity: isReady=false
+note right: Splash stays visible
+
+VM -> VM: Load auth state from DataStore
+VM --> Activity: isReady=true\nstartDestination=DashboardNavDestination
+
+Nav -> Login: Compose LoginScreen (startDestination)
+Login -> Login: Check: startDestination is LoginNavDestination?
+note right #pink: NO - not the target, don't signal
+
+Activity -> Nav: LaunchedEffect triggers
+Nav -> Nav: Navigate to Dashboard\n(clear backstack)
+
+Nav -> Dashboard: Compose DashboardScreen
+Dashboard -> Dashboard: Check: startDestination is DashboardNavDestination?
+note right #lightblue: YES - this is the target
+Dashboard -> Activity: signalReady()
+
+Activity -> Splash: Dismiss splash
+note right #lightgreen: User sees DashboardScreen
+
+@enduml

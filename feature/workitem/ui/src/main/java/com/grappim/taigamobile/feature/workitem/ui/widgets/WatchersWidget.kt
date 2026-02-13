@@ -25,6 +25,7 @@ import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 
 @Composable
 fun WatchersWidget(
+    isOffline: Boolean,
     watchersState: WorkItemWatchersState,
     goToProfile: (Long) -> Unit,
     onAddWatcherClick: () -> Unit,
@@ -50,7 +51,8 @@ fun WatchersWidget(
                 onRemoveUserClick = {
                     watchersState.onRemoveWatcherClick(item.actualId)
                 },
-                canModify = canModify
+                canModify = canModify,
+                isOffline = isOffline
             )
 
             if (index < watchersState.watchers.lastIndex) {
@@ -69,7 +71,8 @@ fun WatchersWidget(
             if (canModify) {
                 AddButtonWidget(
                     text = stringResource(RString.add_watcher),
-                    onClick = onAddWatcherClick
+                    onClick = onAddWatcherClick,
+                    isOffline = isOffline
                 )
 
                 Spacer(modifier = Modifier.width(16.dp))
@@ -84,6 +87,7 @@ fun WatchersWidget(
             TaigaTextButtonWidget(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
+                isOffline = isOffline,
                 onClick = {
                     if (watchersState.isWatchedByMe) {
                         onRemoveMeFromWatchersClick()

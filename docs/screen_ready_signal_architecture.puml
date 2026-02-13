@@ -1,0 +1,73 @@
+@startuml Screen Ready Signal Architecture
+
+title Screen Ready Signal - Component Architecture
+
+skinparam backgroundColor #FEFEFE
+skinparam component {
+    BackgroundColor #E8E8E8
+    BorderColor #333333
+}
+skinparam note {
+    BackgroundColor #FFFFCC
+}
+
+package "MainActivity" {
+    [SplashScreen] as Splash
+    [ScreenReadyController] as Controller
+}
+
+package "Compose UI" {
+    package "MainContent" {
+        [CompositionLocalProvider] as Provider
+        [MainNavHost] as NavHost
+    }
+
+    package "Screens" {
+        [LoginScreen] as Login
+        [ProjectSelectorScreen] as ProjectSelector
+        [DashboardScreen] as Dashboard
+    }
+}
+
+package "ViewModel" {
+    [MainViewModel] as VM
+    [InitialNavState] as NavState
+}
+
+VM --> NavState : produces
+NavState --> NavHost : determines navigation
+
+Controller --> Provider : provided via\nLocalScreenReady
+Provider --> Login : accessible via\nLocalScreenReady.current
+Provider --> ProjectSelector : accessible via\nLocalScreenReady.current
+Provider --> Dashboard : accessible via\nLocalScreenReady.current
+
+Login --> Controller : signalReady()
+ProjectSelector --> Controller : signalReady()
+Dashboard --> Controller : signalReady()
+
+Controller --> Splash : isReady controls\nsplash dismissal
+
+note bottom of Controller
+    ScreenReadyController {
+        - _isReady: MutableStateFlow<Boolean>
+        + isReady: StateFlow<Boolean>
+        + signalReady()
+    }
+end note
+
+note bottom of NavState
+    InitialNavState {
+        isReady: Boolean
+        isProjectSelected: Boolean
+        startDestination: Any
+    }
+end note
+
+note right of Splash
+    setKeepOnScreenCondition {
+        !controller.isReady.value
+    }
+end note
+
+@enduml

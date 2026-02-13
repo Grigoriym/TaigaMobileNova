@@ -2,8 +2,6 @@ plugins {
     alias(libs.plugins.taigamobile.android.application)
     alias(libs.plugins.taigamobile.android.hilt)
     alias(libs.plugins.taigamobile.kotlin.serialization)
-    alias(libs.plugins.ksp)
-    alias(libs.plugins.compose.compiler)
     alias(libs.plugins.moduleGraphAssertion)
 }
 
@@ -14,8 +12,8 @@ android {
         applicationId = "com.grappim.taigamobile"
         testApplicationId = "com.grappim.taigamobile.tests"
 
-        versionCode = 37
-        versionName = "2.0.6"
+        versionCode = 38
+        versionName = "2.0.7"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -142,8 +140,6 @@ dependencies {
     implementation(projects.feature.workitem.mapper)
     implementation(projects.feature.workitem.dto)
 
-    implementation(kotlin("reflect"))
-
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.viewmodel.compose)
@@ -177,8 +173,6 @@ dependencies {
 
     implementation(libs.timber)
 
-    implementation(libs.vanpra.color)
-
     implementation(libs.coil.core)
     implementation(libs.coil.okhttp)
     implementation(libs.coil.compose)
@@ -186,9 +180,9 @@ dependencies {
     debugImplementation(libs.chucker)
     releaseImplementation(libs.chucker.noop)
 
-    // can be removed eventually with dagger update
-    // https://github.com/google/dagger/issues/5001#issuecomment-3687444052
-    ksp("org.jetbrains.kotlin:kotlin-metadata-jvm:2.3.0")
+    ksp(libs.kotlin.metadata)
+
+    testImplementation(libs.robolectric)
 }
 
 moduleGraphAssert {

@@ -33,7 +33,7 @@ class WikiPagesViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(
         WikiPagesState(
-            onOpen = ::onOpen,
+            refresh = ::loadData,
             onDeleteClick = ::onDeleteClick,
             onConfirmDelete = ::onConfirmDelete,
             onDismissDeleteDialog = ::onDismissDeleteDialog
@@ -44,15 +44,24 @@ class WikiPagesViewModel @Inject constructor(
     private val _onDeleteSuccess = Channel<Unit>()
     val onDeleteSuccess = _onDeleteSuccess.receiveAsFlow()
 
-    private fun getPermissions() {
+    init {
+        loadData()
+    }
+
+    private fun loadData() {
         viewModelScope.launch {
-            val perms = projectsRepository.getPermissions()
-            _state.update {
-                it.copy(
-                    canAddWikiPage = perms.canAddWikiPage(),
-                    canDeleteWikiPage = perms.canDeleteWikiPage()
-                )
-            }
+            getPermissions()
+            fetchPages()
+        }
+    }
+
+    private suspend fun getPermissions() {
+        val perms = projectsRepository.getPermissions()
+        _state.update {
+            it.copy(
+                canAddWikiPage = perms.canAddWikiPage(),
+                canDeleteWikiPage = perms.canDeleteWikiPage()
+            )
         }
     }
 
@@ -107,41 +116,38 @@ class WikiPagesViewModel @Inject constructor(
         }
     }
 
-    private fun onOpen() {
-        getPermissions()
+    private suspend fun fetchPages() {
+        _state.update {
+            it.copy(
+                isLoading = true,
+                error = NativeText.Empty
+            )
+        }
+        resultOf {
+            wikiRepository.getProjectWikiPages()
+        }.onSuccess { pages ->
+            val allPages = pages.map { page ->
+                WikiUIItem(
+                    id = page.id,
+                    title = page.slug,
+                    slug = page.slug
+                )
+            }.toImmutableList()
 
-        viewModelScope.launch {
             _state.update {
                 it.copy(
-                    isLoading = true,
-                    error = NativeText.Empty
+                    allPages = allPages,
+                    isLoading = false
                 )
             }
-            resultOf {
-                wikiRepository.getProjectWikiPages()
-            }.onSuccess { pages ->
-                val allPages = pages.map { page ->
-                    WikiUIItem(
-                        id = page.id,
-                        title = page.slug,
-                        slug = page.slug
-                    )
-                }.toImmutableList()
-
-                _state.update {
-                    it.copy(
-                        allPages = allPages,
-                        isLoading = false
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
+        }.onFailure { error ->
+            Timber.e(error)
+            showSnackbarSuspend(getErrorMessage(error))
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    error = getErrorMessage(error)
+                )
             }
         }
     }

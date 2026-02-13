@@ -5,7 +5,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -29,17 +29,8 @@ import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorScreen
 import com.grappim.taigamobile.feature.projectselector.ui.navigateToProjectSelector
-import com.grappim.taigamobile.feature.scrum.ui.ScrumBacklogDestination
-import com.grappim.taigamobile.feature.scrum.ui.ScrumClosedSprintsDestination
-import com.grappim.taigamobile.feature.scrum.ui.ScrumOpenSprintsDestination
-import com.grappim.taigamobile.feature.scrum.ui.backlog.ScrumBacklogScreen
-import com.grappim.taigamobile.feature.scrum.ui.closed.ScrumClosedSprintsScreen
-import com.grappim.taigamobile.feature.scrum.ui.open.ScrumOpenSprintsScreen
-import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
-import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
 import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
-import com.grappim.taigamobile.feature.sprint.ui.navigateToSprintScreen
 import com.grappim.taigamobile.feature.tasks.ui.navigateToTask
 import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
 import com.grappim.taigamobile.feature.teams.ui.TeamScreen
@@ -47,38 +38,47 @@ import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
 import com.grappim.taigamobile.main.nav.epicNavGraph
 import com.grappim.taigamobile.main.nav.issueNavGraph
 import com.grappim.taigamobile.main.nav.scrumNavGraph
+import com.grappim.taigamobile.main.nav.settingsNavGraph
 import com.grappim.taigamobile.main.nav.taskNavGraph
 import com.grappim.taigamobile.main.nav.userStoryNavGraph
 import com.grappim.taigamobile.main.nav.wikiNavGraph
 import com.grappim.taigamobile.main.nav.workItemEditsNavGraph
+import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
 import com.grappim.taigamobile.utils.ui.NativeText
 
 @Composable
 fun MainNavHost(
-    isLoggedIn: Boolean,
+    initialNavState: InitialNavState,
     navController: NavHostController,
-    showMessage: (message: Int) -> Unit,
     showSnackbar: (NativeText) -> Unit,
-    showSnackbarAction: (message: NativeText, actionLabel: String?) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    LaunchedEffect(initialNavState.isReady) {
+        if (initialNavState.isReady) {
+            when (val dest = initialNavState.startDestination) {
+                is ProjectSelectorNavDestination ->
+                    navController.navigateToProjectSelector(isFromLogin = dest.isFromLogin)
+
+                is DashboardNavDestination ->
+                    navController.navigateToDashboardAsTopDestination()
+            }
+        }
+    }
+
     NavHost(
         modifier = modifier,
         navController = navController,
-        startDestination = remember {
-            if (isLoggedIn) DashboardNavDestination else LoginNavDestination
-        },
+        startDestination = LoginNavDestination,
         enterTransition = {
-            fadeIn(animationSpec = tween(100))
+            fadeIn(animationSpec = tween(150))
         },
         exitTransition = {
-            fadeOut(animationSpec = tween(100))
+            fadeOut(animationSpec = tween(150))
         }
     ) {
         issueNavGraph(
             showSnackbar = showSnackbar,
-            navController = navController,
-            showSnackbarAction = showSnackbarAction
+            navController = navController
         )
 
         userStoryNavGraph(
@@ -92,13 +92,13 @@ fun MainNavHost(
         )
 
         workItemEditsNavGraph(
+            showSnackbar = showSnackbar,
             navController = navController
         )
 
         epicNavGraph(
             showSnackbar = showSnackbar,
-            navController = navController,
-            showSnackbarAction = showSnackbarAction
+            navController = navController
         )
 
         wikiNavGraph(
@@ -110,7 +110,18 @@ fun MainNavHost(
             navController = navController
         )
 
+        settingsNavGraph(
+            navController = navController,
+            showSnackbar = showSnackbar
+        )
+
         composable<LoginNavDestination> {
+            val screenReadySignal = LocalScreenReadySignal.current
+            LaunchedEffect(initialNavState.isReady) {
+                if (initialNavState.isReady && initialNavState.startDestination is LoginNavDestination) {
+                    screenReadySignal.signalReady()
+                }
+            }
             LoginScreen(
                 onShowSnackbar = showSnackbar,
                 onLoginSuccess = {
@@ -120,8 +131,16 @@ fun MainNavHost(
         }
 
         composable<ProjectSelectorNavDestination> {
+            val screenReadySignal = LocalScreenReadySignal.current
+            LaunchedEffect(initialNavState.isReady) {
+                if (initialNavState.isReady && initialNavState.startDestination is ProjectSelectorNavDestination) {
+                    screenReadySignal.signalReady()
+                }
+            }
             ProjectSelectorScreen(
-                showMessage = showMessage,
+                goBack = {
+                    navController.popBackStack()
+                },
                 onProjectSelect = {
                     navController.navigateToDashboardAsTopDestination()
                 }
@@ -129,6 +148,12 @@ fun MainNavHost(
         }
 
         composable<DashboardNavDestination> {
+            val screenReadySignal = LocalScreenReadySignal.current
+            LaunchedEffect(initialNavState.isReady) {
+                if (initialNavState.isReady && initialNavState.startDestination is DashboardNavDestination) {
+                    screenReadySignal.signalReady()
+                }
+            }
             DashboardScreen(
                 navigateToTaskScreen = { id, type, ref ->
                     navController.navigate(id, type, ref)
@@ -164,12 +189,11 @@ fun MainNavHost(
             )
         }
 
-        composable<SettingsNavDestination> {
-            SettingsScreen(showSnackbar = showSnackbar)
-        }
-
-        composable<SprintNavDestination> {
+        composable<SprintNavDestination> { navBackStackEntry ->
+            val updateData: Boolean =
+                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             SprintScreen(
+                updateData = updateData,
                 showSnackbar = showSnackbar,
                 goBack = {
                     navController.setUpdateDataOnBack()

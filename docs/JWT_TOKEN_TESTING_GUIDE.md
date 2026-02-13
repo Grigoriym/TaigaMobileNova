@@ -375,12 +375,6 @@ curl -X POST http://localhost:9000/api/v1/auth/refresh \
 ### Kotlin Implementation
 
 ```kotlin
-import kotlinx.coroutines.*
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerialName
-import java.util.concurrent.locks.ReentrantReadWriteLock
-import kotlin.concurrent.read
-import kotlin.concurrent.write
 
 @Serializable
 data class AuthTokens(

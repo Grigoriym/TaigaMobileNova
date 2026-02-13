@@ -33,10 +33,10 @@ class WikiBookmarksViewModel @Inject constructor(
 
     private val _state = MutableStateFlow(
         WikiBookmarksState(
-            onOpen = ::onOpen,
             onDeleteClick = ::onDeleteClick,
             onConfirmDelete = ::onConfirmDelete,
-            onDismissDeleteDialog = ::onDismissDeleteDialog
+            onDismissDeleteDialog = ::onDismissDeleteDialog,
+            refresh = ::loadData
         )
     )
     val state: StateFlow<WikiBookmarksState> = _state.asStateFlow()
@@ -44,15 +44,24 @@ class WikiBookmarksViewModel @Inject constructor(
     private val _onDeleteSuccess = Channel<Unit>()
     val onDeleteSuccess = _onDeleteSuccess.receiveAsFlow()
 
-    private fun getPermissions() {
+    init {
+        loadData()
+    }
+
+    private fun loadData() {
         viewModelScope.launch {
-            val perms = projectsRepository.getPermissions()
-            _state.update {
-                it.copy(
-                    canAddWikiLink = perms.canAddWikiLink(),
-                    canDeleteWikiLink = perms.canDeleteWikiLink()
-                )
-            }
+            getPermissions()
+            fetchBookmarks()
+        }
+    }
+
+    private suspend fun getPermissions() {
+        val perms = projectsRepository.getPermissions()
+        _state.update {
+            it.copy(
+                canAddWikiLink = perms.canAddWikiLink(),
+                canDeleteWikiLink = perms.canDeleteWikiLink()
+            )
         }
     }
 
@@ -97,50 +106,47 @@ class WikiBookmarksViewModel @Inject constructor(
                 _onDeleteSuccess.send(Unit)
             }.onFailure { error ->
                 Timber.e(error)
+                showSnackbarSuspend(getErrorMessage(error))
                 _state.update {
                     it.copy(
                         isLoading = false
                     )
                 }
-                showSnackbarSuspend(getErrorMessage(error))
             }
         }
     }
 
-    private fun onOpen() {
-        getPermissions()
-
-        viewModelScope.launch {
+    private suspend fun fetchBookmarks() {
+        _state.update {
+            it.copy(
+                isLoading = true,
+                error = NativeText.Empty
+            )
+        }
+        resultOf {
+            wikiRepository.getWikiLinks()
+        }.onSuccess { result ->
+            val bookmarks = result.map { link ->
+                WikiUIItem(
+                    id = link.id,
+                    title = link.title,
+                    slug = link.ref
+                )
+            }.toImmutableList()
             _state.update {
                 it.copy(
-                    isLoading = true,
-                    error = NativeText.Empty
+                    bookmarks = bookmarks,
+                    isLoading = false
                 )
             }
-            resultOf {
-                wikiRepository.getWikiLinks()
-            }.onSuccess { result ->
-                val bookmarks = result.map { link ->
-                    WikiUIItem(
-                        id = link.id,
-                        title = link.title,
-                        slug = link.ref
-                    )
-                }.toImmutableList()
-                _state.update {
-                    it.copy(
-                        bookmarks = bookmarks,
-                        isLoading = false
-                    )
-                }
-            }.onFailure { error ->
-                Timber.e(error)
-                _state.update {
-                    it.copy(
-                        isLoading = false,
-                        error = getErrorMessage(error)
-                    )
-                }
+        }.onFailure { error ->
+            Timber.e(error)
+            showSnackbarSuspend(getErrorMessage(error))
+            _state.update {
+                it.copy(
+                    isLoading = false,
+                    error = getErrorMessage(error)
+                )
             }
         }
     }

@@ -7,11 +7,12 @@ import kotlinx.collections.immutable.persistentListOf
 
 data class WikiBookmarksState(
     val bookmarks: ImmutableList<WikiUIItem> = persistentListOf(),
-    val onOpen: () -> Unit = {},
     val isLoading: Boolean = false,
     val error: NativeText = NativeText.Empty,
     val canAddWikiLink: Boolean = false,
     val canDeleteWikiLink: Boolean = false,
+
+    val refresh: () -> Unit = {},
 
     val onDeleteClick: (Long) -> Unit = {},
     val isRemoveBookmarkDialogVisible: Boolean = false,

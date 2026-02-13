@@ -2,14 +2,16 @@ package com.grappim.taigamobile
 
 import android.app.Application
 import android.os.StrictMode
-import android.util.Log
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.core.async.ApplicationScope
+import com.grappim.taigamobile.core.storage.cache.CacheManager
 import com.grappim.taigamobile.data.ImageLoaderProvider
-import com.grappim.taigamobile.utils.FileLoggingTree
 import dagger.hilt.android.HiltAndroidApp
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -23,27 +25,25 @@ class TaigaApp :
 
     @Inject
     lateinit var imageLoaderProvider: ImageLoaderProvider
-    private var fileLoggingTree: FileLoggingTree? = null
+
+    @Inject
+    lateinit var cacheManager: CacheManager
+
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
 
     override fun onCreate() {
         super.onCreate()
         setupStrictMode()
 
-        val minLoggingPriority = if (appInfoProvider.isDebug()) {
+        if (appInfoProvider.isDebug()) {
             Timber.plant(Timber.DebugTree())
-            Log.DEBUG
-        } else {
-            Log.WARN
         }
 
-        try {
-            fileLoggingTree = FileLoggingTree(
-                applicationContext.getExternalFilesDir("logs")!!.absolutePath,
-                minLoggingPriority
-            )
-            Timber.plant(fileLoggingTree!!)
-        } catch (e: NullPointerException) {
-            Timber.e(e, "Cannot setup FileLoggingTree, skipping")
+        // Clean expired cache on app start
+        applicationScope.launch {
+            cacheManager.cleanExpiredCache()
         }
     }
 
