@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
@@ -28,17 +27,18 @@ class WorkItemMultipleAssigneesDelegateImplTest {
     private val workItemRepository: WorkItemRepository = mockk()
     private val usersRepository: UsersRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
-    private val taigaSessionStorage: TaigaSessionStorage = mockk()
+    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
 
     private fun createSut(
         commonTaskType: CommonTaskType = CommonTaskType.UserStory
-    ): WorkItemMultipleAssigneesDelegateImpl = WorkItemMultipleAssigneesDelegateImpl(
-        commonTaskType = commonTaskType,
-        workItemRepository = workItemRepository,
-        usersRepository = usersRepository,
-        patchDataGenerator = patchDataGenerator,
-        taigaSessionStorage = taigaSessionStorage
-    )
+    ): com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesDelegateImpl =
+        _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesDelegateImpl(
+            commonTaskType = commonTaskType,
+            workItemRepository = workItemRepository,
+            usersRepository = usersRepository,
+            patchDataGenerator = patchDataGenerator,
+            taigaSessionStorage = taigaSessionStorage
+        )
 
     @Test
     fun `initial state should have empty assignees and no loading`() {

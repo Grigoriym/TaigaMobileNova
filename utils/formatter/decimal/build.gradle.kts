@@ -1,4 +1,8 @@
 plugins {
-    alias(libs.plugins.taigamobile.kotlin.library)
-    alias(libs.plugins.taigamobile.kotlin.hilt)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.di)
+}
+
+android {
+    namespace = "com.grappim.taigamobile.utils.formatter.decimal"
 }

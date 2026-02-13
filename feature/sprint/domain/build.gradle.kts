@@ -1,12 +1,20 @@
 plugins {
-    alias(libs.plugins.taigamobile.kotlin.library)
+    alias(libs.plugins.taigamobile.kmp.library)
 }
 
-dependencies {
-    implementation(projects.core.domain)
+android {
+    namespace = "com.grappim.taigamobile.feature.sprint.domain"
+}
 
-    implementation(projects.feature.workitem.domain)
-    implementation(projects.feature.filters.domain)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.core.domain)
 
-    implementation(libs.androidx.paging.common)
+            implementation(projects.feature.workitem.domain)
+            implementation(projects.feature.filters.domain)
+
+            implementation(libs.androidx.paging.common)
+        }
+    }
 }

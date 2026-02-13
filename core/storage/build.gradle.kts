@@ -1,33 +1,47 @@
 plugins {
-    alias(libs.plugins.taigamobile.android.library)
-    alias(libs.plugins.taigamobile.android.hilt)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.di)
+//    alias(libs.plugins.taigamobile.android.hilt)
     alias(libs.plugins.taigamobile.android.library.compose)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
+    alias(libs.plugins.taigamobile.kmp.serialization)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.androidx.room)
+}
+
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            implementation(libs.androidx.room.ktx)
+            implementation(libs.androidx.room.paging)
+            implementation(libs.androidx.datastore.android)
+        }
+        commonMain.dependencies {
+            implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.sqlite.bundled)
+
+            implementation(projects.core.domain)
+            implementation(projects.core.asyncKmp)
+            implementation(projects.core.appinfoApi)
+            implementation(projects.utils.ui)
+
+            implementation(projects.feature.filters.domain)
+            implementation(projects.feature.projects.domain)
+
+            implementation(libs.androidx.datastore.core)
+        }
+    }
+}
+
+room {
+    schemaDirectory("$projectDir/schemas")
 }
 
 android {
     namespace = "com.grappim.taigamobile.core.storage"
-
-    ksp {
-        arg("room.schemaLocation", "$projectDir/schemas")
-        arg("room.incremental", "true")
-        arg("room.expandProjection", "true")
-    }
 }
 
 dependencies {
-    implementation(projects.core.domain)
-    implementation(projects.core.async)
-    implementation(projects.core.appinfoApi)
-    implementation(projects.utils.ui)
-
-    implementation(projects.feature.filters.domain)
-    implementation(projects.feature.projects.domain)
-
-    implementation(libs.androidx.datastore.android)
-
-    implementation(libs.androidx.room.runtime)
-    ksp(libs.androidx.room.compiler)
-    implementation(libs.androidx.room.ktx)
-    implementation(libs.androidx.room.paging)
+    add("kspAndroid", libs.androidx.room.compiler)
+//    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
+//    add("kspIosArm64", libs.androidx.room.compiler)
 }

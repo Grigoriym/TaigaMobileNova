@@ -1,0 +1,223 @@
+package com.grappim.taigamobile.feature.projectselector.ui
+
+import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.collectAsLazyPagingItems
+import com.grappim.taigamobile.feature.projects.domain.Project
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.error_loading_projects
+import com.grappim.taigamobile.strings.generated.resources.project_admin
+import com.grappim.taigamobile.strings.generated.resources.project_member
+import com.grappim.taigamobile.strings.generated.resources.project_name_template
+import com.grappim.taigamobile.strings.generated.resources.project_owner
+import com.grappim.taigamobile.strings.generated.resources.project_selector
+import com.grappim.taigamobile.strings.generated.resources.search_projects_hint
+import com.grappim.taigamobile.uikit.generated.resources.ic_check
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.getErrorMessage
+import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
+import org.jetbrains.compose.resources.painterResource
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
+
+@Composable
+fun ProjectSelectorScreen(
+    goBack: () -> Unit,
+    onProjectSelect: () -> Unit,
+    viewModel: ProjectSelectorViewModel = koinViewModel()
+) {
+    val topBarController = LocalTopBarConfig.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        topBarController.update(
+            TopBarConfig(
+                title = NativeText.Resource(RString.project_selector),
+                navigationIcon = if (state.isFromLogin) {
+                    NavigationIconConfig.Back(
+                        onBackClick = {
+                            state.onGoingBackAfterLogIn()
+                            goBack()
+                        }
+                    )
+                } else {
+                    NavigationIconConfig.Menu
+                }
+            )
+        )
+    }
+
+    val projects = viewModel.projects.collectAsLazyPagingItems()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+
+    BackHandler(state.isFromLogin) {
+        state.onGoingBackAfterLogIn()
+        goBack()
+    }
+
+    ProjectSelectorScreenContent(
+        state = state,
+        searchQuery = searchQuery,
+        projects = projects,
+        selectProject = {
+            state.setProject(it)
+            onProjectSelect()
+        }
+    )
+}
+
+@Composable
+fun ProjectSelectorScreenContent(
+    state: ProjectSelectorState,
+    searchQuery: String,
+    projects: LazyPagingItems<Project>,
+    modifier: Modifier = Modifier,
+    selectProject: (Project) -> Unit = {}
+) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .padding(horizontal = 10.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        OutlinedTextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = searchQuery,
+            onValueChange = state.setProjectsQuery,
+            shape = RoundedCornerShape(16.dp),
+            placeholder = {
+                Text(stringResource(RString.search_projects_hint))
+            }
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+
+        PullToRefreshBox(
+            modifier = Modifier.fillMaxSize(),
+            onRefresh = {
+                projects.refresh()
+            },
+            isRefreshing = projects.loadState.refresh is LoadState.Loading
+        ) {
+            if (projects.loadState.hasError && projects.itemCount == 0) {
+                ErrorStateWidget(
+                    modifier = Modifier.fillMaxSize(),
+                    message = projects.loadState.getErrorMessage(
+                        fallback = NativeText.Resource(RString.error_loading_projects)
+                    ),
+                    onRetry = {
+                        projects.refresh()
+                    }
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(projects.itemCount) { index ->
+                        val project = projects[index]
+                        if (project != null) {
+                            ItemProject(
+                                projectDTO = project,
+                                currentProjectId = state.currentProjectId,
+                                onClick = { selectProject(project) }
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ItemProject(projectDTO: Project, currentProjectId: Long, onClick: () -> Unit = {}) {
+    Surface(
+        onClick = onClick,
+        shape = MaterialTheme.shapes.large
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(Modifier.weight(0.8f)) {
+                projectDTO.takeIf { it.isMember || it.isAdmin || it.isOwner }?.let {
+                    Text(
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        text = stringResource(
+                            when {
+                                projectDTO.isOwner -> RString.project_owner
+                                projectDTO.isAdmin -> RString.project_admin
+                                else -> RString.project_member
+                            }
+                        )
+                    )
+                }
+
+                Text(
+                    text = stringResource(RString.project_name_template).format(
+                        projectDTO.name,
+                        projectDTO.slug
+                    )
+                )
+            }
+
+            if (projectDTO.id == currentProjectId) {
+                Image(
+                    painter = painterResource(RDrawable.ic_check),
+                    contentDescription = null,
+                    colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+                    modifier = Modifier.weight(0.2f)
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, backgroundColor = 0xFFFFFFFF)
+@Composable
+private fun ProjectSelectorScreenPreview() = TaigaMobilePreviewTheme {
+    ProjectSelectorScreenContent(
+        projects = getPagingPreviewItems(),
+        searchQuery = "",
+        state = ProjectSelectorState(
+            currentProjectId = 1L,
+            setProjectsQuery = {},
+            setProject = {}
+        )
+    )
+}

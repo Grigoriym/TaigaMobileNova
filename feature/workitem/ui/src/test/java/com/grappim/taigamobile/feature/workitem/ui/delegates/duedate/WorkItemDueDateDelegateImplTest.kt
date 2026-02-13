@@ -9,9 +9,9 @@ import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.nowLocalDate
 import com.grappim.taigamobile.testing.testException
-import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
-import com.grappim.taigamobile.uikit.theme.taigaOrange
-import com.grappim.taigamobile.uikit.theme.taigaRed
+import com.grappim.taigamobile.uikit.dragdrop.theme.taigaGreenPositive
+import com.grappim.taigamobile.uikit.dragdrop.theme.taigaOrange
+import com.grappim.taigamobile.uikit.dragdrop.theme.taigaRed
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
@@ -30,7 +30,7 @@ import kotlin.test.assertTrue
 
 class WorkItemDueDateDelegateImplTest {
 
-    private lateinit var sut: WorkItemDueDateDelegateImpl
+    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
@@ -38,12 +38,13 @@ class WorkItemDueDateDelegateImplTest {
 
     @Before
     fun setup() {
-        sut = WorkItemDueDateDelegateImpl(
-            commonTaskType = commonTaskType,
-            workItemRepository = workItemRepository,
-            patchDataGenerator = patchDataGenerator,
-            dateTimeUtils = dateTimeUtils
-        )
+        sut =
+            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl(
+                commonTaskType = commonTaskType,
+                workItemRepository = workItemRepository,
+                patchDataGenerator = patchDataGenerator,
+                dateTimeUtils = dateTimeUtils
+            )
     }
 
     @Test

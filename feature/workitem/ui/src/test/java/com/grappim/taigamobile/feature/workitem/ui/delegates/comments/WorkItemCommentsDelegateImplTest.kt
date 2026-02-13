@@ -27,7 +27,7 @@ import kotlin.test.assertTrue
 
 class WorkItemCommentsDelegateImplTest {
 
-    private lateinit var sut: WorkItemCommentsDelegate
+    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
     private val commonTaskType = CommonTaskType.Issue
     private val historyRepository: HistoryRepository = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
@@ -35,12 +35,13 @@ class WorkItemCommentsDelegateImplTest {
 
     @Before
     fun setup() {
-        sut = WorkItemCommentsDelegateImpl(
-            commonTaskType = commonTaskType,
-            historyRepository = historyRepository,
-            workItemRepository = workItemRepository,
-            patchDataGenerator = patchDataGenerator
-        )
+        sut =
+            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl(
+                commonTaskType = commonTaskType,
+                historyRepository = historyRepository,
+                workItemRepository = workItemRepository,
+                patchDataGenerator = patchDataGenerator
+            )
     }
 
     private fun createComment(id: String = getRandomString(), canDelete: Boolean = false): Comment = Comment(

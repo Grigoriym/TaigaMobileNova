@@ -11,18 +11,19 @@ import kotlin.test.assertTrue
 
 class WorkItemBlockDelegateImplTest {
 
-    private lateinit var sut: WorkItemBlockDelegate
+    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegate
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
 
     @Before
     fun setup() {
-        sut = WorkItemBlockDelegateImpl(
-            commonTaskType = commonTaskType,
-            workItemRepository = workItemRepository,
-            patchDataGenerator = patchDataGenerator
-        )
+        sut =
+            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegateImpl(
+                commonTaskType = commonTaskType,
+                workItemRepository = workItemRepository,
+                patchDataGenerator = patchDataGenerator
+            )
     }
 
     @Test

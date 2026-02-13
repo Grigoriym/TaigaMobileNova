@@ -27,14 +27,15 @@ class WorkItemSprintDelegateImplTest {
     private val dateTimeUtils: DateTimeUtils = mockk()
     private val sprintsRepository: SprintsRepository = mockk()
 
-    private lateinit var sut: WorkItemSprintDelegateImpl
+    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegateImpl
 
     @Before
     fun setup() {
-        sut = WorkItemSprintDelegateImpl(
-            dateTimeUtils = dateTimeUtils,
-            sprintsRepository = sprintsRepository
-        )
+        sut =
+            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegateImpl(
+                dateTimeUtils = dateTimeUtils,
+                sprintsRepository = sprintsRepository
+            )
     }
 
     @Test

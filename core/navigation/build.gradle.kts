@@ -1,15 +1,19 @@
 plugins {
-    alias(libs.plugins.taigamobile.android.library)
-    alias(libs.plugins.taigamobile.android.library.compose)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.library.compose)
 }
 
 android {
     namespace = "com.grappim.taigamobile.core.navigation"
 }
 
-dependencies {
-    implementation(projects.core.domain)
-
-    implementation(libs.androidx.hilt.navigation.compose)
-    implementation(libs.androidx.navigation.compose)
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            implementation(libs.androidx.navigation.compose)
+        }
+        commonMain.dependencies {
+            implementation(projects.core.domain)
+        }
+    }
 }

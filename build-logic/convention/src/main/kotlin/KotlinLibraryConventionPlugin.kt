@@ -10,13 +10,14 @@ class KotlinLibraryConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply("java-library")
                 apply("org.jetbrains.kotlin.jvm")
-                apply("com.google.devtools.ksp")
+//                apply("com.google.devtools.ksp")
             }
             configureKotlinJvm()
 
             dependencies {
                 "implementation"(libs.findLibrary("kotlinx.coroutines.core").get())
                 "implementation"(libs.findLibrary("kotlinx.collections").get())
+                "implementation"(libs.findLibrary("kotlinx.date.time").get())
             }
         }
     }

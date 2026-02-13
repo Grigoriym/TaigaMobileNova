@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 
 class WorkItemCustomFieldsDelegateImplTest {
 
-    private lateinit var sut: WorkItemCustomFieldsDelegate
+    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
@@ -20,12 +20,13 @@ class WorkItemCustomFieldsDelegateImplTest {
 
     @Before
     fun setup() {
-        sut = WorkItemCustomFieldsDelegateImpl(
-            commonTaskType = commonTaskType,
-            workItemRepository = workItemRepository,
-            patchDataGenerator = patchDataGenerator,
-            dateTimeUtils = dateTimeUtils
-        )
+        sut =
+            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl(
+                commonTaskType = commonTaskType,
+                workItemRepository = workItemRepository,
+                patchDataGenerator = patchDataGenerator,
+                dateTimeUtils = dateTimeUtils
+            )
     }
 
     @Test

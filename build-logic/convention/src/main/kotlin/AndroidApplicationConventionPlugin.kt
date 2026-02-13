@@ -17,7 +17,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
         with(target) {
             apply(plugin = "com.android.application")
             apply(plugin = "org.jetbrains.kotlin.plugin.compose")
-            apply(plugin = "com.google.devtools.ksp")
+//            apply(plugin = "com.google.devtools.ksp")
 
             apply(plugin = "org.jetbrains.kotlin.android")
 
@@ -84,6 +84,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             }
             dependencies {
                 "implementation"(libs.findLibrary("androidx.core.ktx").get())
+
+                add("implementation", project(":core:logger"))
 
                 add("testImplementation", kotlin("test"))
                 add("testImplementation", project(":testing"))

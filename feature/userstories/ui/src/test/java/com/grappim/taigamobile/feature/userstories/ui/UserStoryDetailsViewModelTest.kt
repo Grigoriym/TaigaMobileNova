@@ -3,9 +3,9 @@ package com.grappim.taigamobile.feature.userstories.ui
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
+import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryDetailsDataUseCase
@@ -77,7 +77,7 @@ internal class UserStoryDetailsViewModelTest {
     private val customFieldsUIMapper: CustomFieldsUIMapper = mockk()
     private val historyRepository: HistoryRepository = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
-    private val taigaSessionStorage: TaigaSessionStorage = mockk()
+    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
     private val usersRepository: UsersRepository = mockk()
     private val epicsRepository: EpicsRepository = mockk()
 
@@ -131,7 +131,7 @@ internal class UserStoryDetailsViewModelTest {
         } returns Result.success(userStoryDetailsData)
 
         coEvery {
-            statusUIMapper.toUI(any<com.grappim.taigamobile.feature.filters.domain.model.Statuses>())
+            statusUIMapper.toUI(any<Statuses>())
         } returns getStatusUI()
 
         coEvery {
@@ -175,7 +175,7 @@ internal class UserStoryDetailsViewModelTest {
         } returns Result.success(userStoryDetailsData)
 
         coEvery {
-            statusUIMapper.toUI(any<com.grappim.taigamobile.feature.filters.domain.model.Statuses>())
+            statusUIMapper.toUI(any<Statuses>())
         } returns getStatusUI()
 
         coEvery {

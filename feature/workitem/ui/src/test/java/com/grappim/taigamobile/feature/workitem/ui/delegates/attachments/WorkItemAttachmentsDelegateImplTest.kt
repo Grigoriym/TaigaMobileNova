@@ -3,13 +3,12 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 import android.net.Uri
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.testing.getAttachment
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.testException
-import com.grappim.taigamobile.utils.ui.file.AttachmentInfo
+import com.grappim.taigamobile.utils.ui.AttachmentInfo
 import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -23,17 +22,18 @@ import kotlin.test.assertTrue
 class WorkItemAttachmentsDelegateImplTest {
 
     private val workItemRepository: WorkItemRepository = mockk()
-    private val taigaSessionStorage: TaigaSessionStorage = mockk()
+    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
     private val fileUriManager: FileUriManager = mockk()
 
     private fun createSut(
         taskIdentifier: TaskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task)
-    ): WorkItemAttachmentsDelegateImpl = WorkItemAttachmentsDelegateImpl(
-        taskIdentifier = taskIdentifier,
-        workItemRepository = workItemRepository,
-        taigaSessionStorage = taigaSessionStorage,
-        fileUriManager = fileUriManager
-    )
+    ): com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl =
+        _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl(
+            taskIdentifier = taskIdentifier,
+            workItemRepository = workItemRepository,
+            taigaSessionStorage = taigaSessionStorage,
+            fileUriManager = fileUriManager
+        )
 
     @Test
     fun `initial state should have empty attachments and no loading`() {

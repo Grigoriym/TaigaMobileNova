@@ -7,30 +7,33 @@ plugins {
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.compose.compiler) apply false
-    alias(libs.plugins.hilt.android) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
-
+    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.android.kotlin.multiplatform.library) apply false
+    alias(libs.plugins.android.lint) apply false
+    alias(libs.plugins.koin.compiler) apply false
     alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.composeMultiplatform) apply false
 
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
-    alias(libs.plugins.gradleDoctor)
-    alias(libs.plugins.dependencyAnalysis)
+//    alias(libs.plugins.gradleDoctor)
+//    alias(libs.plugins.dependencyAnalysis)
     alias(libs.plugins.jacocoAggregationResults)
     alias(libs.plugins.jacocoAggregationCoverage)
 }
 
-doctor {
-    enableTestCaching.set(false)
-    disallowCleanTaskDependencies.set(true)
-    warnWhenJetifierEnabled.set(true)
-    javaHome {
-        ensureJavaHomeMatches.set(false)
-        ensureJavaHomeIsSet.set(false)
-        failOnError.set(false)
-    }
-}
+//doctor {
+//    enableTestCaching.set(false)
+//    disallowCleanTaskDependencies.set(true)
+//    warnWhenJetifierEnabled.set(true)
+//    javaHome {
+//        ensureJavaHomeMatches.set(false)
+//        ensureJavaHomeIsSet.set(false)
+//        failOnError.set(false)
+//    }
+//}
 
 allprojects {
     tasks.withType<Test> {
@@ -59,9 +62,9 @@ subprojects {
         }
     }
 
-    apply {
-        plugin("com.autonomousapps.dependency-analysis")
-    }
+//    apply {
+//        plugin("com.autonomousapps.dependency-analysis")
+//    }
 
     if (path !in excludedFromLinting) {
         // https://github.com/cortinico/kotlin-android-template

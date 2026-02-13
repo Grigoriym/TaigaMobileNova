@@ -21,14 +21,14 @@ import kotlin.test.assertTrue
 
 class WorkItemTitleDelegateImplTest {
 
-    private lateinit var sut: WorkItemTitleDelegateImpl
+    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
 
     @Before
     fun setup() {
-        sut = WorkItemTitleDelegateImpl(
+        sut = _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl(
             commonTaskType = commonTaskType,
             workItemRepository = workItemRepository,
             patchDataGenerator = patchDataGenerator

@@ -1,8 +1,8 @@
 plugins {
-    alias(libs.plugins.taigamobile.kotlin.library)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-dependencies {
-    implementation(libs.kotlinx.serialization.json)
+android {
+    namespace = "com.grappim.taigamobile.core.serialization"
 }

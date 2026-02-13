@@ -78,6 +78,7 @@ internal fun Project.configureKotlinAndroid(
         "coreLibraryDesugaring"(libs.findLibrary("android.desugarJdkLibs").get())
         "implementation"(libs.findLibrary("kotlinx.coroutines.android").get())
         "implementation"(libs.findLibrary("kotlinx.collections").get())
+        "implementation"(libs.findLibrary("kotlinx.date.time").get())
 
         add("testImplementation", kotlin("test"))
         add("testImplementation", project(":testing"))

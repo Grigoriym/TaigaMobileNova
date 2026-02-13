@@ -12,18 +12,19 @@ import kotlin.test.assertNull
 
 class WorkItemBadgeDelegateImplTest {
 
-    private lateinit var sut: WorkItemBadgeDelegate
+    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
 
     @Before
     fun setup() {
-        sut = WorkItemBadgeDelegateImpl(
-            commonTaskType = commonTaskType,
-            workItemRepository = workItemRepository,
-            patchDataGenerator = patchDataGenerator
-        )
+        sut =
+            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl(
+                commonTaskType = commonTaskType,
+                workItemRepository = workItemRepository,
+                patchDataGenerator = patchDataGenerator
+            )
     }
 
     @Test

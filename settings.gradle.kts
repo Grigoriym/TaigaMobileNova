@@ -1,3 +1,17 @@
+@file:Suppress("UnstableApiUsage")
+
+include(":composeApp")
+
+
+include(":feature:login:dto")
+
+
+include(":core:logger")
+
+rootProject.name = "TaigaMobileNova"
+
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     includeBuild("build-logic")
     repositories {
@@ -16,9 +30,9 @@ dependencyResolutionManagement {
     }
 }
 
-enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
-
-rootProject.name = "TaigaMobileNova"
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
+}
 
 check(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
     """
@@ -28,7 +42,6 @@ check(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
     """.trimIndent()
 }
 
-include(":app")
 include(":feature:login:domain")
 include(":uikit")
 include(":utils:ui")
@@ -38,8 +51,6 @@ include(":feature:login:data")
 include(":core:api")
 include(":core:storage")
 include(":core:domain")
-include(":core:async")
-include(":core:async-android")
 include(":core:appinfo-api")
 include(":feature:dashboard:ui")
 include(":feature:dashboard:domain")
@@ -79,7 +90,6 @@ include(":feature:history:data")
 include(":feature:history:domain")
 include(":feature:swimlanes:domain")
 include(":feature:kanban:domain")
-include(":feature:kanban:data")
 include(":utils:formatter:decimal")
 include(":feature:workitem:ui")
 include(":feature:workitem:domain")
@@ -105,3 +115,4 @@ include(":feature:issues:mapper")
 include(":feature:tasks:mapper")
 include(":core:serialization")
 include(":tools:seed")
+include(":core:async-kmp")

@@ -6,13 +6,14 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
+import org.gradle.kotlin.dsl.project
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             with(pluginManager) {
                 apply("com.android.library")
-                apply("com.google.devtools.ksp")
+//                apply("com.google.devtools.ksp")
 
                 apply("org.jetbrains.kotlin.android")
             }
@@ -26,6 +27,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
                 "implementation"(libs.findLibrary("androidx.core.ktx").get())
                 "implementation"(libs.findLibrary("androidx.appcompat").get())
                 "implementation"(libs.findLibrary("timber").get())
+                add("implementation", project(":core:logger"))
             }
         }
     }

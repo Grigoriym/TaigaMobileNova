@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.filters.mapper
 
-import com.grappim.taigamobile.feature.filters.domain.model.filters.StatusFilters
+import com.grappim.taigamobile.feature.filters.domain.model.StatusFilters
 import com.grappim.taigamobile.testing.getFiltersData
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO

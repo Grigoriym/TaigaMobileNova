@@ -30,7 +30,7 @@ jobs:
         uses: ./.github/actions/android-setup-composite-action
 
       - name: Assemble gradle fdroid project
-        run: ./gradlew assembleFdroidDebug
+        run: ./gradlew :composeApp:assembleFdroidDebug
 
       - name: Assemble gradle gplay project
-        run: ./gradlew assembleGplayDebug
+        run: ./gradlew :composeApp:assembleGplayDebug

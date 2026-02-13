@@ -5,15 +5,15 @@ TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin,
 ## Build Commands
 
 ```bash
-# Build debug APK
-./gradlew :app:assembleDebug
-
-# Build specific flavor
-./gradlew :app:assembleGplayDebug
-./gradlew :app:assembleFdroidDebug
+# Build debug APK (composeApp is the application module since KMP migration)
+./gradlew :composeApp:assembleGplayDebug
+./gradlew :composeApp:assembleFdroidDebug
 
 # Run tests (use fdroid or gplay variant)
 ./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
+
+# Force Koin compiler logs (only printed when compiler actually runs; skipped on UP-TO-DATE)
+./gradlew :composeApp:compileGplayDebugKotlinAndroid --rerun-tasks
 ```
 
 ## Architecture
@@ -28,20 +28,20 @@ TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin,
 
 - Kotlin 2.3.0, JDK 21, Target SDK 36, Min SDK 24
 - Jetpack Compose with Material Design 3
-- Hilt 2.59 for DI (with KSP)
-- Retrofit 3.0.0 + OkHttp for networking
+- Koin (with `io.insert-koin.compiler.plugin` IR/FIR plugin) for DI
+- Ktor for networking
 - Navigation Compose 2.9.7 with type-safe routes
 - Kotlin Serialization for JSON
 - Coroutines, Coil 3.x for images
+- Room 2.8.4 + BundledSQLiteDriver (KMP-ready)
+- Kotlin Multiplatform (Android-only target currently)
 
 **Convention Plugins** (in `build-logic/`):
 
-- `taigamobile.android.application` - Main app module
-- `taigamobile.android.library` - Android library with KSP
+- `taigamobile.kmp.library` - KMP Android library base
+- `taigamobile.kmp.di` - Applies `io.insert-koin.compiler.plugin` + Koin dependencies
+- `taigamobile.kmp.serialization` - Kotlin Serialization setup
 - `taigamobile.android.library.compose` - Android library + Compose
-- `taigamobile.android.hilt` - Hilt DI for Android modules
-- `taigamobile.kotlin.hilt` - Hilt DI for Kotlin modules
-- `taigamobile.kotlin.serialization` - Kotlin Serialization setup
 - `taigamobile.kotlin.library` - Pure Kotlin library (no Android)
 
 ## Navigation Pattern
@@ -114,10 +114,48 @@ Use cases only when multiple repository calls are needed. For single repo calls,
 
 ```
 feature/{name}/
-├── data/     → API, DTOs, RepositoryImpl, Hilt module
+├── data/     → API, DTOs, RepositoryImpl, Koin module
 ├── domain/   → Models, Repository interface
 └── ui/       → NavDestination, Screen, State, ViewModel
 ```
+
+## Koin DI Pattern (KMP)
+
+The project uses Koin's IR/FIR compiler plugin (`io.insert-koin.compiler.plugin`). **Do not use KSP for Koin** — the IR plugin replaces it.
+
+**The `@Configuration` problem in KMP:** Classes in `commonMain` appear as `KtLightSourceElement` during `androidMain` compilation → the FIR plugin cannot detect `@Configuration` → no auto-injection hint is generated.
+
+**Fix: use `actual class` in `androidMain` as the `@Configuration` entry point:**
+
+```kotlin
+// commonMain — no @Configuration here
+@Module
+class MyModule {
+    @Single fun provideX(): X = X()
+}
+
+@Module
+expect class PlatformMyModule
+
+// androidMain — @Configuration here, detected correctly by FIR
+@Module(includes = [MyModule::class])
+@Configuration
+actual class PlatformMyModule
+```
+
+The `actual class` gets auto-injected by Phase 3. The `expect class` is intentionally skipped by Koin FIR.
+
+**Existing examples in this project:**
+- `PlatformComponentModule` (`composeApp`) — global `@ComponentScan("com.grappim.taigamobile")`
+- `PlatformStorageModule` (`core:storage`) — DataStore + storage providers
+- `PlatformDBModule` (`core:storage`) — Room database builder (Android-specific)
+
+**Adding a new platform target** only requires a new `actual class` in that target's source set providing platform-specific dependencies (e.g., the `RoomDatabase.Builder`). All common logic stays in `commonMain`.
+
+**IDE false positives to ignore:**
+- "Unresolved reference" on Koin-generated `module()` extensions
+- "Expect and actual declared in same module" on `actual class` in `androidMain`
+- These are IDE issues; Gradle compiles correctly
 
 ## Permissions Pattern
 
