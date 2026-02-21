@@ -3,7 +3,6 @@ package com.grappim.taigamobile.utils.ui
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
-import androidx.core.graphics.toColorInt
 import com.grappim.taigamobile.core.logger.logcat
 
 /**
@@ -24,7 +23,7 @@ fun Color.textColor() = if (luminance() < 0.5) Color.White else Color.Black
 
 @Deprecated("use com.grappim.taigamobile.utils.ui.ColorMapper")
 fun String.toColor(): Color = try {
-    Color(this.toColorInt())
+    Color(fromStringToInt(this))
 } catch (e: Exception) {
     logcat(throwable = e) {
         "Error parsing color: $this"

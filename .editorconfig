@@ -45,3 +45,6 @@ ktlint_standard_filename=disabled
 
 [**/Koin.android.kt]
 ktlint_standard_filename=disabled
+
+[**/Koin.jvm.kt]
+ktlint_standard_filename=disabled

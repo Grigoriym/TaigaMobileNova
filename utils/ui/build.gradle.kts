@@ -7,13 +7,16 @@ plugins {
 
 kotlin {
     sourceSets {
-        androidMain.dependencies {
+        commonMain.dependencies {
             implementation(projects.strings)
             implementation(projects.core.domain)
             implementation(projects.core.asyncKmp)
 
             implementation(libs.androidx.paging.compose)
-            implementation(libs.androidx.navigation.compose)
+        }
+
+        jvmMain.dependencies {
+            implementation(libs.ktor.core)
         }
     }
 }

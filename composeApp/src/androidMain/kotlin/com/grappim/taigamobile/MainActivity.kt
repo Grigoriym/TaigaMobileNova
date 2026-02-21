@@ -11,9 +11,9 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.grappim.taigamobile.composeapp.main.MainContent
-import com.grappim.taigamobile.composeapp.main.MainViewModel
 import com.grappim.taigamobile.core.storage.ThemeSettings
+import com.grappim.taigamobile.main.MainContent
+import com.grappim.taigamobile.main.MainViewModel
 import com.grappim.taigamobile.uikit.FilePicker
 import com.grappim.taigamobile.uikit.LocalFilePicker
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme

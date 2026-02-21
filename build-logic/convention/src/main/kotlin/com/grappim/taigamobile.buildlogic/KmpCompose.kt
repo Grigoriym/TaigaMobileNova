@@ -29,12 +29,10 @@ internal fun Project.configureKmpCompose() {
                 implementation(libs.findLibrary("androidx.navigation.compose").get())
                 implementation(libs.findLibrary("compose.ui.tooling.preview").get())
             }
-//            jvmMain.dependencies {
-//                implementation(libs.findLibrary("compose.navigation.desktop").get())
-//            }
-//            iosMain.dependencies {
-//                implementation(libs.findLibrary("compose.navigation.ios").get())
-//            }
+            jvmMain.dependencies {
+                implementation(libs.findLibrary("compose.desktop").get())
+                implementation(libs.findLibrary("compose.navigation.desktop").get())
+            }
         }
     }
 }

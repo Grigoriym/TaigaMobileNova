@@ -13,11 +13,7 @@ fun Project.configureKmp() {
             }
         }
 
-//        jvm()
-
-//        iosX64()
-//        iosArm64()
-//        iosSimulatorArm64()
+        jvm()
 
         sourceSets.apply {
             commonMain.dependencies {
@@ -32,6 +28,9 @@ fun Project.configureKmp() {
             commonTest.dependencies {
                 implementation(kotlin("test"))
                 implementation(project(":testing"))
+            }
+            jvmMain.dependencies {
+                implementation(libs.findLibrary("kotlinx.coroutines.swing").get())
             }
         }
     }

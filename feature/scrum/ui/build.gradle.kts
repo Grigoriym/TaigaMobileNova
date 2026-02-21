@@ -28,7 +28,7 @@ kotlin {
             implementation(projects.feature.workitem.domain)
             implementation(projects.feature.workitem.ui)
 
-            implementation(libs.androidx.paging.runtime)
+            implementation(libs.androidx.paging.common)
             implementation(libs.androidx.paging.compose)
         }
     }

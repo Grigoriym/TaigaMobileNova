@@ -67,6 +67,7 @@ colorpicker = "1.1.3"
 kotlinStdlib = "2.3.10"
 kotlinTest = "2.3.10"
 junit = "1.3.0"
+android-svg = "1.4"
 
 androidx-lifecycle = "2.9.6"
 
@@ -80,6 +81,9 @@ compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "compose-mu
 compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "compose-multiplatform" }
 compose-icons = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "composeIcons" }
 compose-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "composeIcons" }
+compose-desktop = { module = "org.jetbrains.compose.desktop:desktop", version.ref = "compose-multiplatform" }
+
+android-svg = { module = "com.caverock:androidsvg-aar", version.ref = "android-svg" }
 
 compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose-kmp" }
 compose-navigation-desktop = { module = "org.jetbrains.androidx.navigation:navigation-compose-desktop", version.ref = "navigation-compose-kmp" }
@@ -97,6 +101,7 @@ android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-collections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections" }
 kotlin-metadata = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin" }

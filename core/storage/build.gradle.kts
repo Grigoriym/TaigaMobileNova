@@ -1,8 +1,7 @@
 plugins {
     alias(libs.plugins.taigamobile.kmp.library)
     alias(libs.plugins.taigamobile.kmp.di)
-//    alias(libs.plugins.taigamobile.android.hilt)
-    alias(libs.plugins.taigamobile.android.library.compose)
+    alias(libs.plugins.taigamobile.kmp.library.compose)
     alias(libs.plugins.taigamobile.kmp.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.androidx.room)
@@ -28,6 +27,7 @@ kotlin {
             implementation(projects.feature.projects.domain)
 
             implementation(libs.androidx.datastore.core)
+            implementation(libs.androidx.paging.common)
         }
     }
 }
@@ -42,6 +42,5 @@ android {
 
 dependencies {
     add("kspAndroid", libs.androidx.room.compiler)
-//    add("kspIosSimulatorArm64", libs.androidx.room.compiler)
-//    add("kspIosArm64", libs.androidx.room.compiler)
+    add("kspJvm", libs.androidx.room.compiler)
 }

@@ -19,7 +19,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class WorkItemAttachmentsDelegateImplTest {
+internal class WorkItemAttachmentsDelegateImplTest {
 
     private val workItemRepository: WorkItemRepository = mockk()
     private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
@@ -27,8 +27,8 @@ class WorkItemAttachmentsDelegateImplTest {
 
     private fun createSut(
         taskIdentifier: TaskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task)
-    ): com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl =
-        _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl(
+    ): WorkItemAttachmentsDelegateImpl =
+        WorkItemAttachmentsDelegateImpl(
             taskIdentifier = taskIdentifier,
             workItemRepository = workItemRepository,
             taigaSessionStorage = taigaSessionStorage,

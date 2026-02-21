@@ -6,6 +6,11 @@ import org.koin.core.annotation.Module
 import org.koin.core.annotation.Qualifier
 import org.koin.core.annotation.Single
 
+/**
+ * On taiga-front the 8 symbols after the decimal point are displayed.
+ */
+internal const val PATTERN_SIMPLE_DECIMAL = "###.########"
+
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
 annotation class DecimalFormatSimple

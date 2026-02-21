@@ -3,6 +3,7 @@ package com.grappim.taigamobile.utils.ui.file
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import androidx.core.graphics.toColorInt
 import com.grappim.taigamobile.core.asynckmp.IoDispatcher
 import com.grappim.taigamobile.utils.ui.AttachmentInfo
 import kotlinx.coroutines.CoroutineDispatcher
@@ -17,6 +18,7 @@ class FileUriManagerImpl(
 ) : FileUriManager {
     override suspend fun retrieveAttachmentInfo(uri: Uri): AttachmentInfo = withContext(ioDispatcher) {
         val fileName = getFileName(uri)
+        "".toColorInt()
         val bytes = getByteList(uri)
         AttachmentInfo(
             name = fileName,
