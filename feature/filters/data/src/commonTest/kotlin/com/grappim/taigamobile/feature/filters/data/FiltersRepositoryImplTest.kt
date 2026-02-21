@@ -10,6 +10,7 @@ import com.grappim.taigamobile.testing.getStatusFilters
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import okhttp3.internal.tls.OkHostnameVerifier.verify
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals

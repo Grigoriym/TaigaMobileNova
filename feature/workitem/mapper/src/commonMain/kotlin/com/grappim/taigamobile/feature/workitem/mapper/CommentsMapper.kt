@@ -8,10 +8,7 @@ import com.grappim.taigamobile.feature.workitem.dto.CommentDTO
 import org.koin.core.annotation.Factory
 
 @Factory
-class CommentsMapper(
-    private val userMapper: UserMapper,
-    private val projectsRepository: ProjectsRepository
-) {
+class CommentsMapper(private val userMapper: UserMapper, private val projectsRepository: ProjectsRepository) {
     suspend fun toDomain(dto: CommentDTO, currentUserId: Long): Comment = Comment(
         id = dto.id,
         author = userMapper.toUser(dto.author),

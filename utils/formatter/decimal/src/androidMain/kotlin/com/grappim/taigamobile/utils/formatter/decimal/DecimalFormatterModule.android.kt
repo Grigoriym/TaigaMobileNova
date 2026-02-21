@@ -8,15 +8,12 @@ import java.text.DecimalFormatSymbols
  */
 private const val PATTERN_SIMPLE_DECIMAL = "###.########"
 
-private class AndroidDecimalFormatter: DecimalFormatter {
+private class AndroidDecimalFormatter : DecimalFormatter {
     private val df = DecimalFormat(
         PATTERN_SIMPLE_DECIMAL,
         DecimalFormatSymbols().apply { decimalSeparator = '.' }
     )
-    override fun format(value: Double): String {
-        return df.format(value)
-    }
-
+    override fun format(value: Double): String = df.format(value)
 }
 
 actual fun createDecimalFormatter(): DecimalFormatter = AndroidDecimalFormatter()

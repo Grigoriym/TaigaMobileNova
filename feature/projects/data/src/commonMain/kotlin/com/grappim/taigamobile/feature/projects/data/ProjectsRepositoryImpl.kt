@@ -3,7 +3,7 @@ package com.grappim.taigamobile.feature.projects.data
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.ProjectDao
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
@@ -30,7 +30,7 @@ class ProjectsRepositoryImpl(
     private val projectsApi: ProjectsApi,
     private val projectMapper: ProjectMapper,
     private val projectDao: ProjectDao,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val tagsMapper: TagsMapper
 ) : ProjectsRepository {
     override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> = Pager(

@@ -8,7 +8,7 @@ android {
 }
 
 kotlin {
-    sourceSets{
+    sourceSets {
         androidMain.dependencies {
             implementation(libs.ktor.client.okhttp)
         }

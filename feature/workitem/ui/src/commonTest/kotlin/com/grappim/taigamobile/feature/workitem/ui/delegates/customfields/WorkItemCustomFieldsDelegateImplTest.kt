@@ -12,7 +12,8 @@ import kotlin.test.assertTrue
 
 class WorkItemCustomFieldsDelegateImplTest {
 
-    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
+    private lateinit var sut:
+        com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()

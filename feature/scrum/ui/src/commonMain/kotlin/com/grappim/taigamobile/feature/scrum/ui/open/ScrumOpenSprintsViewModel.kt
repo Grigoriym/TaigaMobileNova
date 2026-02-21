@@ -7,6 +7,7 @@ import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canAddMilestone
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegateImpl
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,7 +23,7 @@ class ScrumOpenSprintsViewModel(
     private val projectsRepository: ProjectsRepository,
     dateTimeUtils: DateTimeUtils
 ) : ViewModel(),
-    WorkItemSprintDelegate by _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSprintDelegateImpl(
+    WorkItemSprintDelegate by WorkItemSprintDelegateImpl(
         dateTimeUtils = dateTimeUtils,
         sprintsRepository = sprintsRepository
     ) {

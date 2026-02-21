@@ -6,10 +6,7 @@ import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import org.koin.core.annotation.Factory
 
 @Factory
-class IssueUIMapper(
-    private val statusUIMapper: StatusUIMapper,
-    private val tagUIMapper: TagUIMapper
-) {
+class IssueUIMapper(private val statusUIMapper: StatusUIMapper, private val tagUIMapper: TagUIMapper) {
     fun toUI(issue: Issue): IssueUI = IssueUI(
         id = issue.id,
         version = issue.version,

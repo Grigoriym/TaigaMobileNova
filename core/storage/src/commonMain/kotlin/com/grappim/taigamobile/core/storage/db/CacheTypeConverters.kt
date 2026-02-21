@@ -24,13 +24,11 @@ class CacheTypeConverters(@param:DbJsonQualifier private val json: Json) {
     fun fromLocalDate(date: LocalDate?): Long? = date?.toEpochDays()
 
     @TypeConverter
-    fun toLocalDate(epochDay: Long?): LocalDate? =
-        epochDay?.let { LocalDate.Companion.fromEpochDays(it.toInt()) }
+    fun toLocalDate(epochDay: Long?): LocalDate? = epochDay?.let { LocalDate.Companion.fromEpochDays(it.toInt()) }
 
     // LocalDateTime converters (stored as epoch millis UTC)
     @TypeConverter
-    fun fromLocalDateTime(dateTime: LocalDateTime?): Long? =
-        dateTime?.toInstant(TimeZone.UTC)?.toEpochMilliseconds()
+    fun fromLocalDateTime(dateTime: LocalDateTime?): Long? = dateTime?.toInstant(TimeZone.UTC)?.toEpochMilliseconds()
 
     @TypeConverter
     fun toLocalDateTime(epochMillis: Long?): LocalDateTime? = epochMillis?.let {

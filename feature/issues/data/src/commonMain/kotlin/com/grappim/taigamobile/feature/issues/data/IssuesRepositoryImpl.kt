@@ -6,7 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.Issue
@@ -28,7 +28,7 @@ import org.koin.core.annotation.Single
 @Single(binds = [IssuesRepository::class])
 class IssuesRepositoryImpl(
     private val issuesApi: IssuesApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val issueMapper: IssueMapper,
     private val workItemApi: WorkItemApi,
     private val workItemMapper: WorkItemMapper,

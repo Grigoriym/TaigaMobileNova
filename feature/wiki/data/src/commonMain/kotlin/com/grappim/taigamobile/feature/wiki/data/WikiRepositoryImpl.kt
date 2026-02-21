@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.wiki.data
 
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiLink
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
@@ -13,7 +13,7 @@ import org.koin.core.annotation.Single
 @Single(binds = [WikiRepository::class])
 class WikiRepositoryImpl(
     private val wikiApi: WikiApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val wikiPageMapper: WikiPageMapper,
     private val wikiLinkMapper: WikiLinkMapper
 ) : WikiRepository {

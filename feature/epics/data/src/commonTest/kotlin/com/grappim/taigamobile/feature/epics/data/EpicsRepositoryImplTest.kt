@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.epics.dto.LinkToEpicRequestDTO
 import com.grappim.taigamobile.feature.epics.mapper.EpicMapper
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
@@ -14,6 +15,7 @@ import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import okhttp3.internal.tls.OkHostnameVerifier.verify
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals

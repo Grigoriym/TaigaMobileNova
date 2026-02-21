@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.login.data
 
 import com.grappim.taigamobile.core.asynckmp.IoDispatcher
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
@@ -16,7 +16,7 @@ import org.koin.core.annotation.Single
 class AuthRepositoryImpl(
     private val authApi: AuthApi,
     private val serverStorage: ServerStorage,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val authStorage: AuthStorage,
     @param:IoDispatcher private val dispatcher: CoroutineDispatcher
 ) : AuthRepository {

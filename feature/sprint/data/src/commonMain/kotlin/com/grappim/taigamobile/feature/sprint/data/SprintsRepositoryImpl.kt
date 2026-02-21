@@ -8,7 +8,7 @@ import androidx.paging.map
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.SprintDao
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.core.storage.network.NetworkMonitor
@@ -37,7 +37,7 @@ import org.koin.core.annotation.Single
 @Single(binds = [SprintsRepository::class])
 class SprintsRepositoryImpl(
     private val sprintApi: SprintApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val filtersRepository: FiltersRepository,
     private val workItemMapper: WorkItemMapper,
     private val workItemEntityMapper: WorkItemEntityMapper,

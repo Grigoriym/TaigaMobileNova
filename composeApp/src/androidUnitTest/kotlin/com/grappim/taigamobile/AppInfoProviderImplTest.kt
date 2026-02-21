@@ -1,7 +1,7 @@
 package com.grappim.taigamobile
 
-import com.grappim.taigamobile.data.AppInfoProviderImpl
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.data.AppInfoProviderImpl
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -6,10 +6,9 @@ import kotlinx.collections.immutable.toImmutableList
 import org.koin.core.annotation.Factory
 
 @Factory
-class SprintMapper() {
+class SprintMapper {
 
-    fun toDomainList(dto: List<SprintResponseDTO>): ImmutableList<Sprint> =
-        dto.map { toDomain(it) }.toImmutableList()
+    fun toDomainList(dto: List<SprintResponseDTO>): ImmutableList<Sprint> = dto.map { toDomain(it) }.toImmutableList()
 
     fun toDomain(dto: SprintResponseDTO): Sprint = Sprint(
         id = dto.id,

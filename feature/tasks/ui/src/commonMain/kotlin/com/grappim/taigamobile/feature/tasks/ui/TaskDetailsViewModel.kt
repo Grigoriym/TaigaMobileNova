@@ -9,7 +9,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.tasks.domain.Task
 import com.grappim.taigamobile.feature.tasks.domain.TaskDetailsDataUseCase
@@ -92,7 +92,7 @@ class TaskDetailsViewModel(
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val usersRepository: UsersRepository,
     private val workItemEditStateRepository: WorkItemEditStateRepository
 ) : ViewModel(),

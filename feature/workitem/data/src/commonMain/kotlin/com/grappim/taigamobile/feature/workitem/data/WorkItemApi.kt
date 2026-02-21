@@ -24,9 +24,7 @@ import kotlinx.serialization.json.JsonObject
 import org.koin.core.annotation.Single
 
 @Single
-class WorkItemApi(
-    private val httpClient: HttpClient
-) {
+class WorkItemApi(private val httpClient: HttpClient) {
 
     // Work Item
     suspend fun getWorkItemById(taskPath: String, id: Long): WorkItemResponseDTO =
@@ -99,31 +97,23 @@ class WorkItemApi(
         if (page == null) headers.append("x-disable-pagination", "true")
     }
 
-    suspend fun createWorkItem(
-        taskPath: String,
-        createRequest: CreateWorkItemRequestDTO
-    ): WorkItemResponseDTO = httpClient.post(taskPath) {
-        setBody(createRequest)
-    }.body()
+    suspend fun createWorkItem(taskPath: String, createRequest: CreateWorkItemRequestDTO): WorkItemResponseDTO =
+        httpClient.post(taskPath) {
+            setBody(createRequest)
+        }.body()
 
-    suspend fun getWorkItemByRef(
-        taskPath: String,
-        project: Long,
-        ref: Long
-    ): WorkItemResponseDTO = httpClient.get("$taskPath/by_ref") {
-        url {
-            parameters.append("project", project.toString())
-            parameters.append("ref", ref.toString())
-        }
-    }.body()
+    suspend fun getWorkItemByRef(taskPath: String, project: Long, ref: Long): WorkItemResponseDTO =
+        httpClient.get("$taskPath/by_ref") {
+            url {
+                parameters.append("project", project.toString())
+                parameters.append("ref", ref.toString())
+            }
+        }.body()
 
-    suspend fun patchWorkItem(
-        taskPath: String,
-        id: Long,
-        payload: JsonObject
-    ): WorkItemResponseDTO = httpClient.patch("$taskPath/$id") {
-        setBody(payload)
-    }.body()
+    suspend fun patchWorkItem(taskPath: String, id: Long, payload: JsonObject): WorkItemResponseDTO =
+        httpClient.patch("$taskPath/$id") {
+            setBody(payload)
+        }.body()
 
     suspend fun unwatchWorkItem(taskPath: String, workItemId: Long) {
         httpClient.post("$taskPath/$workItemId/unwatch").discardRemaining()
@@ -137,26 +127,20 @@ class WorkItemApi(
         httpClient.delete("$taskPath/$workItemId").discardRemaining()
     }
 
-    suspend fun promoteToUserStory(
-        taskPath: String,
-        workItemId: Long,
-        body: PromoteToUserStoryRequestDTO
-    ): List<Long> = httpClient.post("$taskPath/$workItemId/promote_to_user_story") {
-        setBody(body)
-    }.body()
+    suspend fun promoteToUserStory(taskPath: String, workItemId: Long, body: PromoteToUserStoryRequestDTO): List<Long> =
+        httpClient.post("$taskPath/$workItemId/promote_to_user_story") {
+            setBody(body)
+        }.body()
 
     // Attachments
 
-    suspend fun getAttachments(
-        taskPath: String,
-        objectId: Long,
-        projectId: Long
-    ): List<AttachmentDTO> = httpClient.get("$taskPath/attachments") {
-        url {
-            parameters.append("object_id", objectId.toString())
-            parameters.append("project", projectId.toString())
-        }
-    }.body()
+    suspend fun getAttachments(taskPath: String, objectId: Long, projectId: Long): List<AttachmentDTO> =
+        httpClient.get("$taskPath/attachments") {
+            url {
+                parameters.append("object_id", objectId.toString())
+                parameters.append("project", projectId.toString())
+            }
+        }.body()
 
     suspend fun deleteAttachment(taskPath: String, attachmentId: Long) {
         httpClient.delete("$taskPath/attachments/$attachmentId").discardRemaining()
@@ -188,34 +172,27 @@ class WorkItemApi(
 
     // Custom Attributes
 
-    suspend fun getCustomAttributes(
-        taskPath: String,
-        projectId: Long
-    ): List<CustomAttributeResponseDTO> = httpClient.get("$taskPath-custom-attributes") {
-        url {
-            parameters.append("project", projectId.toString())
-        }
-    }.body()
+    suspend fun getCustomAttributes(taskPath: String, projectId: Long): List<CustomAttributeResponseDTO> =
+        httpClient.get("$taskPath-custom-attributes") {
+            url {
+                parameters.append("project", projectId.toString())
+            }
+        }.body()
 
-    suspend fun getCustomAttributesValues(
-        taskPath: String,
-        id: Long
-    ): CustomAttributesValuesResponseDTO =
+    suspend fun getCustomAttributesValues(taskPath: String, id: Long): CustomAttributesValuesResponseDTO =
         httpClient.get("$taskPath/custom-attributes-values/$id").body()
 
     // Wiki
 
-    suspend fun patchWikiPage(pageId: Long, payload: JsonObject): WikiPageDTO =
-        httpClient.patch("wiki/$pageId") {
-            setBody(payload)
-        }.body()
+    suspend fun patchWikiPage(pageId: Long, payload: JsonObject): WikiPageDTO = httpClient.patch("wiki/$pageId") {
+        setBody(payload)
+    }.body()
 
     suspend fun patchCustomAttributesValues(
         taskPath: String,
         taskId: Long,
         payload: JsonObject
-    ): CustomAttributesValuesResponseDTO =
-        httpClient.patch("$taskPath/custom-attributes-values/$taskId") {
-            setBody(payload)
-        }.body()
+    ): CustomAttributesValuesResponseDTO = httpClient.patch("$taskPath/custom-attributes-values/$taskId") {
+        setBody(payload)
+    }.body()
 }

@@ -10,8 +10,7 @@ import org.koin.core.annotation.Factory
 private const val DEFAULT_CACHE_TTL_MS = 24 * 60 * 60 * 1000L
 
 @Factory(binds = [CacheManager::class])
-class CacheManagerImpl(private val sprintDao: SprintDao, private val workItemDao: WorkItemDao) :
-    CacheManager {
+class CacheManagerImpl(private val sprintDao: SprintDao, private val workItemDao: WorkItemDao) : CacheManager {
 
     override suspend fun cleanExpiredCache() {
         val expirationThreshold = System.currentTimeMillis() - DEFAULT_CACHE_TTL_MS

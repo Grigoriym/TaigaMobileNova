@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
@@ -18,10 +18,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class TeamViewModel(
-    private val usersRepository: UsersRepository,
-    taigaSessionStorage: KmpTaigaSessionStorage
-) : ViewModel() {
+class TeamViewModel(private val usersRepository: UsersRepository, taigaSessionStorage: TaigaSessionStorage) :
+    ViewModel() {
 
     private val _state = MutableStateFlow(
         TeamState(

@@ -15,19 +15,13 @@ import kotlinx.coroutines.sync.withLock
 /**
  * Result of a token refresh call.
  */
-data class RefreshedTokens(
-    val authToken: String,
-    val refreshToken: String
-)
+data class RefreshedTokens(val authToken: String, val refreshToken: String)
 
 /**
  * Ktor plugin that handles 401 responses by refreshing the auth token.
  * Replaces OkHttp's TaigaBearerTokenAuthenticator.
  */
-class TokenRefreshPlugin(
-    private val authStorage: AuthStorage,
-    private val tokenRefresher: TokenRefresher
-) {
+class TokenRefreshPlugin(private val authStorage: AuthStorage, private val tokenRefresher: TokenRefresher) {
 
     class Config {
         lateinit var authStorage: AuthStorage

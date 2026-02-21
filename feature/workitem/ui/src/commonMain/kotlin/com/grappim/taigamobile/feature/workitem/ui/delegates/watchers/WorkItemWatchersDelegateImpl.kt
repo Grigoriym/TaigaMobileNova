@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.watchers
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
@@ -20,7 +20,7 @@ class WorkItemWatchersDelegateImpl(
     private val workItemRepository: WorkItemRepository,
     private val usersRepository: UsersRepository,
     private val patchDataGenerator: PatchDataGenerator,
-    private val taigaSessionStorage: KmpTaigaSessionStorage
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : WorkItemWatchersDelegate {
 
     private val _watchersState = MutableStateFlow(

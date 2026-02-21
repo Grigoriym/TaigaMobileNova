@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.issues.domain.GetProfileDataUseCase
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
@@ -19,7 +19,7 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 class ProfileViewModel(
     private val getProfileDataUseCase: GetProfileDataUseCase,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 

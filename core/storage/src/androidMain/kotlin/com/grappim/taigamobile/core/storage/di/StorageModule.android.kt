@@ -5,8 +5,9 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStoreFile
 import com.grappim.taigamobile.core.storage.KmpSession
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
@@ -29,67 +30,40 @@ class AuthDataStoreModule {
     fun provideAuthStorage(context: Context): AuthStorage = AuthStorage(createAuthDataStore(context))
 
     @Single
-    fun provideSessionStorage(
-        context: Context,
-        colorMapper: ColorMapper
-    ): KmpTaigaSessionStorage = KmpTaigaSessionStorage(createSessionDataStore(context), colorMapper)
+    fun provideSessionStorage(context: Context, colorMapper: ColorMapper): TaigaSessionStorage =
+        TaigaSessionStorage(createSessionDataStore(context), colorMapper)
 
     @Single
-    fun provideSession(
-        context: Context,
-        @StorageJsonQualifier json: Json
-    ): KmpSession = KmpSession(createSessionFiltersDataStore(context), json)
+    fun provideSession(context: Context, @StorageJsonQualifier json: Json): KmpSession =
+        KmpSession(createSessionFiltersDataStore(context), json)
 }
 
-fun createSessionDataStore(context: Context): DataStore<Preferences> =
-    PreferenceDataStoreFactory.createWithPath(
-        migrations = listOf(
-            SharedPreferencesMigration(
-                context = context,
-                sharedPreferencesName = "taiga_session_storage"
-            )
-        ),
-        produceFile = {
-            context.filesDir.resolve(SESSION_DATA_STORE_FILE_NAME).absolutePath.toPath()
-        }
-    )
+fun createSessionDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
+    produceFile = {
+        context.preferencesDataStoreFile(TAIGA_SESSION_STORAGE).absolutePath.toPath()
+    }
+)
 
-fun createSessionFiltersDataStore(context: Context): DataStore<Preferences> =
-    PreferenceDataStoreFactory.createWithPath(
-        migrations = listOf(
-            SharedPreferencesMigration(
-                context = context,
-                sharedPreferencesName = "session"
-            )
-        ),
-        produceFile = {
-            context.filesDir.resolve(SESSION_FILTERS_DATA_STORE_FILE_NAME).absolutePath.toPath()
-        }
-    )
+fun createSessionFiltersDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
+    migrations = listOf(
+        SharedPreferencesMigration(
+            context = context,
+            sharedPreferencesName = "session"
+        )
+    ),
+    produceFile = {
+        context.preferencesDataStoreFile(SESSION_FILTERS_DATA_STORE_FILE_NAME).absolutePath.toPath()
+    }
+)
 
-fun createAuthDataStore(context: Context): DataStore<Preferences> =
-    PreferenceDataStoreFactory.createWithPath(
-        migrations = listOf(
-            SharedPreferencesMigration(
-                context = context,
-                sharedPreferencesName = "auth_storage"
-            )
-        ),
-        produceFile = {
-            context.filesDir.resolve(AUTH_DATA_STORE_FILE_NAME).absolutePath.toPath()
-        }
-    )
-
-internal const val SERVER_DATA_STORE_FILE_NAME = "taiga_server_storage.preferences_pb"
-fun createServerDataStore(context: Context): DataStore<Preferences> =
-    PreferenceDataStoreFactory.createWithPath(
-        migrations = listOf(
-            SharedPreferencesMigration(
-                context = context,
-                sharedPreferencesName = "taiga_server_storage_name"
-            )
-        ),
-        produceFile = {
-            context.filesDir.resolve(SERVER_DATA_STORE_FILE_NAME).absolutePath.toPath()
-        }
-    )
+fun createAuthDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
+    migrations = listOf(
+        SharedPreferencesMigration(
+            context = context,
+            sharedPreferencesName = "auth_storage"
+        )
+    ),
+    produceFile = {
+        context.preferencesDataStoreFile(AUTH_DATA_STORE_FILE_NAME).absolutePath.toPath()
+    }
+)

@@ -8,7 +8,7 @@ android {
     namespace = "com.grappim.taigamobile.feature.wiki.ui"
 }
 
-kotlin{
+kotlin {
     sourceSets {
         commonMain.dependencies {
             implementation(projects.strings)

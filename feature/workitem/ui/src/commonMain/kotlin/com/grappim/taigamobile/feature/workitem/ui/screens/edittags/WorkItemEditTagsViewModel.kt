@@ -9,7 +9,7 @@ import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.LogPriority
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit.TagEditDialogDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit.TagEditDialogDelegateImpl
@@ -37,7 +37,7 @@ class WorkItemEditTagsViewModel(
     private val tagUIMapper: TagUIMapper,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
     private val projectsRepository: ProjectsRepository,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     savedStateHandle: SavedStateHandle
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),

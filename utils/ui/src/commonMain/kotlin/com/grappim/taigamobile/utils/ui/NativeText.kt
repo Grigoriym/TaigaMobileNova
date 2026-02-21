@@ -32,11 +32,8 @@ sealed class NativeText {
     data object Empty : NativeText()
     data class Simple(val text: String) : NativeText()
     data class Resource(val stringResource: StringResource) : NativeText()
-    data class Plural(
-        val pluralStringResource: PluralStringResource,
-        val number: Int,
-        val args: List<Any>
-    ) : NativeText()
+    data class Plural(val pluralStringResource: PluralStringResource, val number: Int, val args: List<Any>) :
+        NativeText()
     data class Arguments(val stringResource: StringResource, val args: List<Any>) : NativeText()
     data class Multi(val text: List<NativeText>) : NativeText()
 
@@ -77,7 +74,9 @@ fun NativeText.asString(): String = when (this) {
 @Suppress("SpreadOperator")
 fun NativeText.asStringBlocking(): String = when (this) {
     is NativeText.Arguments -> runBlocking { getString(stringResource, *args.toTypedArray()) }
+
     is NativeText.Multi -> text.joinToString("") { it.asStringBlocking() }
+
     is NativeText.Plural -> runBlocking {
         getPluralString(
             pluralStringResource,
@@ -85,8 +84,11 @@ fun NativeText.asStringBlocking(): String = when (this) {
             *args.toTypedArray()
         )
     }
+
     is NativeText.Resource -> runBlocking { getString(stringResource) }
+
     is NativeText.Simple -> text
+
     is NativeText.Empty -> ""
 }
 

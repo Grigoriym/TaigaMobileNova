@@ -19,9 +19,7 @@ class UserStoriesApi(private val httpClient: HttpClient) {
             setBody(createUserStoryRequest)
         }.body()
 
-    suspend fun bulkUpdateKanbanOrder(
-        request: BulkUpdateKanbanOrderRequest
-    ): List<BulkUpdateKanbanOrderResponseItem> =
+    suspend fun bulkUpdateKanbanOrder(request: BulkUpdateKanbanOrderRequest): List<BulkUpdateKanbanOrderResponseItem> =
         httpClient.post("userstories/bulk_update_kanban_order") {
             setBody(request)
         }.body()
@@ -43,7 +41,7 @@ class UserStoriesApi(private val httpClient: HttpClient) {
         ownerIds: String? = null,
         roles: String? = null,
         statuses: String? = null,
-        tags: String? = null,
+        tags: String? = null
     ): List<WorkItemResponseDTO> = httpClient.get("userstories") {
         url {
             if (project != null) parameters.append("project", project.toString())

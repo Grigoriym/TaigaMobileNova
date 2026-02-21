@@ -16,10 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
-class KmpSession(
-    private val dataStore: DataStore<Preferences>,
-    @param:StorageJsonQualifier private val json: Json
-) {
+class KmpSession(private val dataStore: DataStore<Preferences>, @param:StorageJsonQualifier private val json: Json) {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     companion object {

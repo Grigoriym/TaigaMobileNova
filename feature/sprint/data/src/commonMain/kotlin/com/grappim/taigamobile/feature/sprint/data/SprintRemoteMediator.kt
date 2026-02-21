@@ -5,7 +5,7 @@ import androidx.paging.LoadType
 import androidx.paging.PagingState
 import androidx.paging.RemoteMediator
 import com.grappim.taigamobile.core.api.hasNextPage
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.SprintDao
 import com.grappim.taigamobile.core.storage.db.entities.SprintEntity
 import io.ktor.client.call.body
@@ -18,7 +18,7 @@ class SprintRemoteMediator(
     private val sprintApi: SprintApi,
     private val sprintDao: SprintDao,
     private val sprintMapper: SprintMapper,
-    private val taigaSessionStorage: KmpTaigaSessionStorage
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : RemoteMediator<Int, SprintEntity>() {
 
     override suspend fun load(loadType: LoadType, state: PagingState<Int, SprintEntity>): MediatorResult {

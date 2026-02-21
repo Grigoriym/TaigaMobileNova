@@ -53,8 +53,7 @@ class ProjectsApi(private val httpClient: HttpClient) {
         }
     }.body()
 
-    suspend fun getProject(projectId: Long): ProjectResponseDTO =
-        httpClient.get("projects/$projectId").body()
+    suspend fun getProject(projectId: Long): ProjectResponseDTO = httpClient.get("projects/$projectId").body()
 
     suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse =
         httpClient.get("projects/$projectId/tags_colors").body()

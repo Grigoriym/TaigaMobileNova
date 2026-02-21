@@ -34,7 +34,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     private val screenReadySignalController =
         ScreenReadySignalController()
 

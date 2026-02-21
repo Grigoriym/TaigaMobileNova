@@ -6,10 +6,7 @@ import com.grappim.taigamobile.core.storage.utils.string
 import org.koin.core.annotation.Single
 
 @Single(binds = [ServerStorage::class])
-class ServerStorageImpl (
-    private val context: Context,
-    private val appInfoProvider: AppInfoProvider
-) : ServerStorage {
+class ServerStorageImpl(private val context: Context, private val appInfoProvider: AppInfoProvider) : ServerStorage {
 
     companion object {
         private const val SERVER_STORAGE_NAME = "taiga_server_storage_name"

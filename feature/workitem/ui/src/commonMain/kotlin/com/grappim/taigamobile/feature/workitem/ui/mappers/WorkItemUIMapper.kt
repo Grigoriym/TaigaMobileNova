@@ -28,7 +28,6 @@ class WorkItemUIMapper(
         assignee = workItem.assignee
     )
 
-
     fun toUI(list: ImmutableList<WorkItem>): ImmutableList<WorkItemUI> = list.map {
         toUI(it)
     }.toPersistentList()

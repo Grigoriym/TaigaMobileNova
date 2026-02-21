@@ -18,9 +18,7 @@ import kotlinx.collections.immutable.toImmutableList
 import org.koin.core.annotation.Factory
 
 @Factory
-class CustomFieldsUIMapper(
-    @param:DecimalFormatSimple private val dfSimple: DecimalFormatter
-) {
+class CustomFieldsUIMapper(@param:DecimalFormatSimple private val dfSimple: DecimalFormatter) {
     fun toUI(customFields: CustomFields): ImmutableList<CustomFieldItemState> = customFields.fields.map { field ->
         when (field.type) {
             CustomFieldType.Text -> {

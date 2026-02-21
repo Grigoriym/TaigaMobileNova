@@ -19,8 +19,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class LoginViewModel(private val authRepository: AuthRepository, serverStorage: ServerStorage) :
-    ViewModel() {
+class LoginViewModel(private val authRepository: AuthRepository, serverStorage: ServerStorage) : ViewModel() {
 
     companion object {
         private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""

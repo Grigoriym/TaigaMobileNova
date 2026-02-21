@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.composeapp.DrawerItem
 import com.grappim.taigamobile.composeapp.DrawerItemsBuilder
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.core.storage.auth.AuthStateManager
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
@@ -31,7 +31,7 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class MainViewModel(
-    taigaSessionStorage: KmpTaigaSessionStorage,
+    taigaSessionStorage: TaigaSessionStorage,
     authStorage: AuthStorage,
     private val authStateManager: AuthStateManager,
     projectsRepository: ProjectsRepository,

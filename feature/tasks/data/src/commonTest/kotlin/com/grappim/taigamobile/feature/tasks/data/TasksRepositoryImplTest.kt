@@ -4,6 +4,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.tasks.domain.Task
 import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
 import com.grappim.taigamobile.feature.tasks.mapper.TaskMapper
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
@@ -13,6 +14,7 @@ import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import okhttp3.internal.tls.OkHostnameVerifier.verify
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals

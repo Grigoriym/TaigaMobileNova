@@ -2,7 +2,6 @@ package com.grappim.taigamobile.feature.workitem.ui.widgets.customfields
 
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
 
 sealed interface CustomFieldItemState {
     val id: Long

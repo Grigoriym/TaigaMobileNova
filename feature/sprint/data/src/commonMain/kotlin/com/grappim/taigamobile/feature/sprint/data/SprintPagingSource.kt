@@ -4,14 +4,14 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.grappim.taigamobile.core.api.defaultTryCatch
 import com.grappim.taigamobile.core.api.hasNextPage
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import io.ktor.client.call.body
 
 class SprintPagingSource(
     private val sprintApi: SprintApi,
     private val isClosed: Boolean,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val sprintMapper: SprintMapper
 ) : PagingSource<Int, Sprint>() {
     override fun getRefreshKey(state: PagingState<Int, Sprint>): Int? = state.anchorPosition?.let { anchorPosition ->

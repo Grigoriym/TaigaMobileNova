@@ -5,7 +5,7 @@ import androidx.paging.PagingState
 import com.grappim.taigamobile.core.api.defaultTryCatch
 import com.grappim.taigamobile.core.api.hasNextPage
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.commaString
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.tagsCommaString
@@ -17,7 +17,7 @@ import io.ktor.client.call.body
 
 class EpicsPagingSource(
     private val filters: FiltersData,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val query: String,
     private val workItemApi: WorkItemApi,
     private val workItemMapper: WorkItemMapper

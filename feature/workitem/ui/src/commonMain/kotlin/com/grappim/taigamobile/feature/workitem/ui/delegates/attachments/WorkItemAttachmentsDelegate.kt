@@ -7,7 +7,8 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
 
 interface WorkItemAttachmentsDelegate {
-    val attachmentsState: StateFlow<com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState>
+    val attachmentsState:
+        StateFlow<com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState>
 
     suspend fun handleAddAttachment(
         workItemId: Long,

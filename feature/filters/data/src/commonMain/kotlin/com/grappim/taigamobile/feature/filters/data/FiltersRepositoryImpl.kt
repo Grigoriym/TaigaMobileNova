@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.filters.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
@@ -15,7 +15,7 @@ import org.koin.core.annotation.Single
 @Single(binds = [FiltersRepository::class])
 class FiltersRepositoryImpl(
     private val filtersApi: FiltersApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val filtersMapper: FiltersMapper
 ) : FiltersRepository {
 

@@ -25,7 +25,7 @@ class EpicsApi(private val httpClient: HttpClient) {
         assignedIds: String? = null,
         ownerIds: String? = null,
         statuses: String? = null,
-        tags: String? = null,
+        tags: String? = null
     ): List<WorkItemResponseDTO> = httpClient.get("epics") {
         url {
             if (page != null) parameters.append("page", page.toString())

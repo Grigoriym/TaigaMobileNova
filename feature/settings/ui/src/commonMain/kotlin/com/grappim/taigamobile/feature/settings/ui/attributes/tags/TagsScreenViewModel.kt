@@ -5,7 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit.TagEditDialogDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit.TagEditDialogDelegateImpl
@@ -27,7 +27,7 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 class TagsScreenViewModel(
     private val projectsRepository: ProjectsRepository,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val tagUIMapper: TagUIMapper
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),

@@ -6,7 +6,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
@@ -29,7 +29,7 @@ import org.koin.core.annotation.Single
 @Single(binds = [EpicsRepository::class])
 class EpicsRepositoryImpl(
     private val epicsApi: EpicsApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val workItemApi: WorkItemApi,
     private val epicMapper: EpicMapper,
     private val workItemMapper: WorkItemMapper,

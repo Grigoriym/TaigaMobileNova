@@ -14,10 +14,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
-class KmpTaigaSessionStorage(
-    private val dataStore: DataStore<Preferences>,
-    private val colorMapper: ColorMapper
-) {
+class TaigaSessionStorage(private val dataStore: DataStore<Preferences>, private val colorMapper: ColorMapper) {
     companion object {
         private val CURRENT_PROJECT_ID_KEY = longPreferencesKey("current_project_id")
         private val USER_ID_KEY = longPreferencesKey("user_id")

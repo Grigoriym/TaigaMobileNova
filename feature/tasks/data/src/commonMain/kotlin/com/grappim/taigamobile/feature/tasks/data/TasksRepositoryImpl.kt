@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.tasks.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.tasks.domain.Task
 import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
 import com.grappim.taigamobile.feature.tasks.mapper.TaskMapper
@@ -15,7 +15,7 @@ import org.koin.core.annotation.Single
 @Single(binds = [TasksRepository::class])
 class TasksRepositoryImpl(
     private val tasksApi: TasksApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val workItemApi: WorkItemApi,
     private val taskMapper: TaskMapper,
     private val workItemMapper: WorkItemMapper

@@ -9,7 +9,7 @@ import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import org.koin.core.annotation.Factory
 
 @Factory
-class CreateWorkItemUseCase (
+class CreateWorkItemUseCase(
     private val tasksRepository: TasksRepository,
     private val issuesRepository: IssuesRepository,
     private val userStoriesRepository: UserStoriesRepository,

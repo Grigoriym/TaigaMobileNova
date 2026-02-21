@@ -10,7 +10,7 @@ android {
 }
 
 kotlin {
-    sourceSets{
+    sourceSets {
         commonMain.dependencies {
             implementation(projects.strings)
             implementation(projects.core.api)

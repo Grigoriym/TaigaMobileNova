@@ -14,28 +14,23 @@ import org.koin.core.annotation.Single
 @Single
 class SprintApi(private val httpClient: HttpClient) {
 
-    suspend fun getSprintsPaging(
-        project: Long,
-        page: Int,
-        isClosed: Boolean
-    ): HttpResponse = httpClient.get("milestones") {
-        url {
-            parameters.append("project", project.toString())
-            parameters.append("page", page.toString())
-            parameters.append("closed", isClosed.toString())
-        }
-    }
-
-    suspend fun getSprints(project: Long, isClosed: Boolean): List<SprintResponseDTO> =
+    suspend fun getSprintsPaging(project: Long, page: Int, isClosed: Boolean): HttpResponse =
         httpClient.get("milestones") {
             url {
                 parameters.append("project", project.toString())
+                parameters.append("page", page.toString())
                 parameters.append("closed", isClosed.toString())
             }
-        }.body()
+        }
 
-    suspend fun getSprint(sprintId: Long): SprintResponseDTO =
-        httpClient.get("milestones/$sprintId").body()
+    suspend fun getSprints(project: Long, isClosed: Boolean): List<SprintResponseDTO> = httpClient.get("milestones") {
+        url {
+            parameters.append("project", project.toString())
+            parameters.append("closed", isClosed.toString())
+        }
+    }.body()
+
+    suspend fun getSprint(sprintId: Long): SprintResponseDTO = httpClient.get("milestones/$sprintId").body()
 
     suspend fun createSprint(request: CreateSprintRequest) {
         httpClient.post("milestones") {

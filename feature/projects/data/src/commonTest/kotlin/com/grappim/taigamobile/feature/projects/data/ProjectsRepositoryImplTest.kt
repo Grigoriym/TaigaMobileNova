@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.projects.data
 
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.ProjectDao
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository

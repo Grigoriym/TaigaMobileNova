@@ -2,7 +2,7 @@ package com.grappim.taigamobile.feature.settings.ui.interfacescreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.theme_dark
@@ -18,8 +18,7 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class SettingsInterfaceViewModel(private val taigaSessionStorage: KmpTaigaSessionStorage) :
-    ViewModel() {
+class SettingsInterfaceViewModel(private val taigaSessionStorage: TaigaSessionStorage) : ViewModel() {
 
     private val _state = MutableStateFlow(
         SettingsInterfaceViewState(

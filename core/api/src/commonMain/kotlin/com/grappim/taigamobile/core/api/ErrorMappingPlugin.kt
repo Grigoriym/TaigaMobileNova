@@ -17,9 +17,7 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.util.AttributeKey
 import kotlinx.serialization.json.Json
 
-class ErrorMappingPlugin(
-    private val json: Json
-) {
+class ErrorMappingPlugin(private val json: Json) {
     class Config {
         lateinit var json: Json
     }

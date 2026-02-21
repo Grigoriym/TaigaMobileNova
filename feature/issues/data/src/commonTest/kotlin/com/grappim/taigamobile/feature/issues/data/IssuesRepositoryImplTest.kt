@@ -5,6 +5,7 @@ import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.issues.mapper.IssueMapper
+import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getFiltersData
@@ -12,6 +13,7 @@ import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import okhttp3.internal.tls.OkHostnameVerifier.verify
 import org.junit.Before
 import org.junit.Test
 import kotlin.test.assertEquals

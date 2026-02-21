@@ -3,7 +3,7 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.users.domain.User
@@ -45,7 +45,7 @@ class WorkItemRepositoryImpl(
     private val workItemEntityMapper: WorkItemEntityMapper,
     private val usersRepository: UsersRepository,
     private val customFieldsMapper: CustomFieldsMapper,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val jsonObjectMapper: JsonObjectMapper,
     private val workItemDao: WorkItemDao,
     private val networkMonitor: NetworkMonitor

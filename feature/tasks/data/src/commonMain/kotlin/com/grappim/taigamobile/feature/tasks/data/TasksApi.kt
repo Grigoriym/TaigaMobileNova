@@ -9,9 +9,7 @@ import io.ktor.client.request.setBody
 import org.koin.core.annotation.Single
 
 @Single
-class TasksApi(
-    private val httpClient: HttpClient
-) {
+class TasksApi(private val httpClient: HttpClient) {
     suspend fun getTasks(
         userStory: Any? = null,
         project: Long? = null,
@@ -34,8 +32,7 @@ class TasksApi(
         if (page == null) headers.append("x-disable-pagination", "true")
     }.body()
 
-    suspend fun createTask(createTaskRequestDTO: CreateTaskRequestDTO): WorkItemResponseDTO =
-        httpClient.post("tasks") {
-            setBody(createTaskRequestDTO)
-        }.body()
+    suspend fun createTask(createTaskRequestDTO: CreateTaskRequestDTO): WorkItemResponseDTO = httpClient.post("tasks") {
+        setBody(createTaskRequestDTO)
+    }.body()
 }

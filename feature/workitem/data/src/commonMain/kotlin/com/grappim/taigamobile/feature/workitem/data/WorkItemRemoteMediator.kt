@@ -8,7 +8,7 @@ import com.grappim.taigamobile.core.api.defaultTryCatch
 import com.grappim.taigamobile.core.api.hasNextPage
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.core.storage.db.entities.WorkItemEntity
 import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
@@ -24,7 +24,7 @@ class WorkItemRemoteMediator(
     private val workItemDao: WorkItemDao,
     private val workItemMapper: WorkItemMapper,
     private val workItemEntityMapper: WorkItemEntityMapper,
-    private val taigaSessionStorage: KmpTaigaSessionStorage
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : RemoteMediator<Int, WorkItemEntity>() {
 
     override suspend fun load(loadType: LoadType, state: PagingState<Int, WorkItemEntity>): MediatorResult =

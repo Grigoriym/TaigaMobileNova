@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.dashboard.domain.GetMyWorkItemsUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetRecentActivityUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetRecentlyCompletedItemsUseCase
@@ -21,7 +21,7 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class DashboardViewModel(
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val getWatchingItemsUseCase: GetWatchingItemsUseCase,
     private val getMyWorkItemsUseCase: GetMyWorkItemsUseCase,
     private val getRecentActivityUseCase: GetRecentActivityUseCase,

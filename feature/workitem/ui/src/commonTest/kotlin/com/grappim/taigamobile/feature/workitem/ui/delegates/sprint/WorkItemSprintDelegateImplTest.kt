@@ -2,6 +2,8 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.sprint
 
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.sprint_name_empty
+import com.grappim.taigamobile.strings.generated.resources.sprint_start_date_empty
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.nowLocalDate

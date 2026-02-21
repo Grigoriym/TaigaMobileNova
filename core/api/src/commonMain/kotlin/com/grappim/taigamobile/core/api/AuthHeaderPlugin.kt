@@ -8,10 +8,7 @@ import io.ktor.client.plugins.HttpSend
 import io.ktor.client.plugins.plugin
 import io.ktor.util.AttributeKey
 
-class AuthHeaderPlugin(
-    private val authStorage: AuthStorage,
-    private val appInfoProvider: AppInfoProvider
-) {
+class AuthHeaderPlugin(private val authStorage: AuthStorage, private val appInfoProvider: AppInfoProvider) {
 
     class Config {
         lateinit var authStorage: AuthStorage

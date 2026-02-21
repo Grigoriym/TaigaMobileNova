@@ -8,8 +8,7 @@ import org.koin.core.annotation.Single
 @Single
 class SwimlanesApi(private val httpClient: HttpClient) {
 
-    suspend fun getSwimlanes(project: Long): List<SwimlaneDTO> =
-        httpClient.get("swimlanes") {
-            url { parameters.append("project", project.toString()) }
-        }.body()
+    suspend fun getSwimlanes(project: Long): List<SwimlaneDTO> = httpClient.get("swimlanes") {
+        url { parameters.append("project", project.toString()) }
+    }.body()
 }

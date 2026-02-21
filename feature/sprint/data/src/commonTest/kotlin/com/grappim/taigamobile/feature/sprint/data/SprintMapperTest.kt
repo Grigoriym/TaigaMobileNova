@@ -106,7 +106,6 @@ class SprintMapperTest {
 
     @Test
     fun `toDomain should map dates correctly`() = runTest {
-
         val startDate = LocalDate.parse("2024-01-01")
         val endDate = LocalDate.parse("2024-01-14")
         val dto = getSprintResponseDTO().copy(

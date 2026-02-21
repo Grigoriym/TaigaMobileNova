@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.users.data
 
 import com.grappim.taigamobile.core.asynckmp.IoDispatcher
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.users.domain.User
@@ -23,7 +23,7 @@ import org.koin.core.annotation.Single
 class UsersRepositoryImpl(
     private val usersApi: UsersApi,
     private val projectsApi: ProjectsApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     @param:IoDispatcher private val dispatcher: CoroutineDispatcher,
     private val userMapper: UserMapper,
     private val teamMemberMapper: TeamMemberMapper,

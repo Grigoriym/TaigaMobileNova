@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.di)
 }
 
-android{
+android {
     namespace = "com.grappim.taigamobile.feature.tasks.domain"
 }
 

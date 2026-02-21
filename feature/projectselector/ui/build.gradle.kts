@@ -9,8 +9,8 @@ android {
     namespace = "com.grappim.taigamobile.feature.projectselector.ui"
 }
 
-kotlin{
-    sourceSets{
+kotlin {
+    sourceSets {
         commonMain.dependencies {
             implementation(projects.strings)
             implementation(projects.uikit)

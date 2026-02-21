@@ -26,8 +26,8 @@ class WorkItemSingleAssigneeDelegateImplTest {
     private val usersRepository: UsersRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
 
-    private fun createSut(commonTaskType: CommonTaskType = CommonTaskType.Task): com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl =
-        _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl(
+    private fun createSut(commonTaskType: CommonTaskType = CommonTaskType.Task): WorkItemSingleAssigneeDelegateImpl =
+        WorkItemSingleAssigneeDelegateImpl(
             commonTaskType = commonTaskType,
             workItemRepository = workItemRepository,
             usersRepository = usersRepository,

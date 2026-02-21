@@ -9,7 +9,6 @@ import com.grappim.taigamobile.core.storage.db.dao.ProjectDao
 import com.grappim.taigamobile.core.storage.db.dao.SprintDao
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import kotlinx.serialization.json.Json
-import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Qualifier
 import org.koin.core.annotation.Single
@@ -19,14 +18,13 @@ import org.koin.core.annotation.Single
 annotation class DbJsonQualifier
 
 @Module
-@Configuration
 class DBModule {
 
     @Single
     fun provideDb(
         builder: RoomDatabase.Builder<TaigaDB>,
         taigaPermissionConverter: TaigaPermissionConverter,
-        cacheTypeConverters: CacheTypeConverters,
+        cacheTypeConverters: CacheTypeConverters
     ): TaigaDB = builder
         .addTypeConverter(taigaPermissionConverter)
         .addTypeConverter(cacheTypeConverters)

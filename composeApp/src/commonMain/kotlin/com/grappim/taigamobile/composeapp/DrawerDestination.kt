@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.composeapp
 
-import com.grappim.taigamobile.feature.kanban.ui.KanbanNavDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavOptions
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.epics.ui.list.EpicsNavDestination
 import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
+import com.grappim.taigamobile.feature.kanban.ui.KanbanNavDestination
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import com.grappim.taigamobile.feature.scrum.ui.ScrumBacklogDestination
 import com.grappim.taigamobile.feature.scrum.ui.ScrumClosedSprintsDestination

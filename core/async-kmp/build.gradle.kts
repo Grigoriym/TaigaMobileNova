@@ -10,13 +10,13 @@ android {
     namespace = "com.grappim.taigamobile.core.asynckmp"
 }
 
-//kotlin {
+// kotlin {
 //    androidLibrary {
 //        namespace = "com.grappim.taigamobile.core.asynckmp"
 //    }
-//}
+// }
 
-//kotlin {
+// kotlin {
 //
 //    // Target declarations - add or remove as needed below. These define
 //    // which platforms this KMP module supports.
@@ -110,4 +110,4 @@ android {
 //            }
 //        }
 //    }
-//}
+// }

@@ -7,10 +7,8 @@ import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 
 @Single(binds = [DatabaseWrapper::class])
-class DatabaseWrapperImpl(
-    private val db: TaigaDB,
-    @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher
-) : DatabaseWrapper {
+class DatabaseWrapperImpl(private val db: TaigaDB, @param:IoDispatcher private val ioDispatcher: CoroutineDispatcher) :
+    DatabaseWrapper {
 
     override suspend fun clearAllTables() = withContext(ioDispatcher) {
         db.clearAllTables()

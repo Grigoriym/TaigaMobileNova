@@ -22,7 +22,7 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class WorkItemMultipleAssigneesDelegateImplTest {
+internal class WorkItemMultipleAssigneesDelegateImplTest {
 
     private val workItemRepository: WorkItemRepository = mockk()
     private val usersRepository: UsersRepository = mockk()
@@ -31,14 +31,13 @@ class WorkItemMultipleAssigneesDelegateImplTest {
 
     private fun createSut(
         commonTaskType: CommonTaskType = CommonTaskType.UserStory
-    ): com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesDelegateImpl =
-        _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple.WorkItemMultipleAssigneesDelegateImpl(
-            commonTaskType = commonTaskType,
-            workItemRepository = workItemRepository,
-            usersRepository = usersRepository,
-            patchDataGenerator = patchDataGenerator,
-            taigaSessionStorage = taigaSessionStorage
-        )
+    ): WorkItemMultipleAssigneesDelegateImpl = WorkItemMultipleAssigneesDelegateImpl(
+        commonTaskType = commonTaskType,
+        workItemRepository = workItemRepository,
+        usersRepository = usersRepository,
+        patchDataGenerator = patchDataGenerator,
+        taigaSessionStorage = taigaSessionStorage
+    )
 
     @Test
     fun `initial state should have empty assignees and no loading`() {

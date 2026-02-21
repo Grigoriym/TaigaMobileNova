@@ -9,18 +9,16 @@ import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
-@Module
+@Module(includes = [DBModule::class])
 @Configuration
 actual class PlatformDBModule {
 
     @Single
-    fun provideDatabaseBuilder(
-        context: Context,
-        infoProvider: AppInfoProvider,
-    ): RoomDatabase.Builder<TaigaDB> = Room.databaseBuilder<TaigaDB>(
-        context = context.applicationContext,
-        name = context.applicationContext
-            .getDatabasePath("taigamobilenova_${infoProvider.getBuildType()}.db")
-            .absolutePath,
-    )
+    fun provideDatabaseBuilder(context: Context, infoProvider: AppInfoProvider): RoomDatabase.Builder<TaigaDB> =
+        Room.databaseBuilder<TaigaDB>(
+            context = context.applicationContext,
+            name = context.applicationContext
+                .getDatabasePath("taigamobilenova_${infoProvider.getBuildType()}.db")
+                .absolutePath
+        )
 }

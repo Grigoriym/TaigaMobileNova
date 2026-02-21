@@ -7,7 +7,7 @@ import androidx.navigation.toRoute
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.storage.KmpSession
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.cleaner.DataCleaner
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
@@ -25,7 +25,7 @@ import org.koin.core.annotation.KoinViewModel
 class ProjectSelectorViewModel(
     private val projectsRepository: ProjectsRepository,
     private val session: KmpSession,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val dataCleaner: DataCleaner,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {

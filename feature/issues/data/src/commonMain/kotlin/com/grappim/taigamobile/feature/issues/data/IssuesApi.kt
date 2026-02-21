@@ -27,7 +27,7 @@ class IssuesApi(private val httpClient: HttpClient) {
         types: String? = null,
         roles: String? = null,
         statuses: String? = null,
-        tags: String? = null,
+        tags: String? = null
     ): List<WorkItemResponseDTO> = httpClient.get("issues") {
         url {
             if (page != null) parameters.append("page", page.toString())

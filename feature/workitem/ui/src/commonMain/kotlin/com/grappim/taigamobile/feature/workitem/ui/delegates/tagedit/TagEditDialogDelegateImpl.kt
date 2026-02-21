@@ -3,7 +3,7 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit
 import androidx.compose.ui.graphics.Color
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.editdialog.TagEditDialogState
@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.update
 
 class TagEditDialogDelegateImpl(
     private val projectsRepository: ProjectsRepository,
-    private val taigaSessionStorage: KmpTaigaSessionStorage
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : TagEditDialogDelegate {
 
     private var tagToEdit: TagUI? = null

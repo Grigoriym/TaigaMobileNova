@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiPageUseCase
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
@@ -36,7 +36,7 @@ import org.koin.core.annotation.KoinViewModel
 class WikiPageViewModel(
     private val wikiPageUseCase: WikiPageUseCase,
     private val workItemRepository: WorkItemRepository,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val fileUriManager: FileUriManager,
     private val patchDataGenerator: PatchDataGenerator,
     private val workItemEditStateRepository: WorkItemEditStateRepository,

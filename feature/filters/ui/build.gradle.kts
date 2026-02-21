@@ -9,7 +9,7 @@ android {
 }
 
 kotlin {
-    sourceSets{
+    sourceSets {
         commonMain.dependencies {
             implementation(projects.feature.filters.domain)
 

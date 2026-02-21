@@ -8,7 +8,7 @@ android {
 }
 
 kotlin {
-    sourceSets{
+    sourceSets {
         commonMain.dependencies {
             implementation(projects.core.domain)
             implementation(projects.core.asyncKmp)

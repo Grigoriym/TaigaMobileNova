@@ -12,16 +12,12 @@ import io.ktor.client.request.setBody
 import org.koin.core.annotation.Single
 
 @Single
-class AuthApi(
-    @param:AuthHttpClient private val authClient: HttpClient
-) {
-    suspend fun auth(authRequest: AuthRequest): AuthResponse =
-        authClient.post("auth") {
-            setBody(authRequest)
-        }.body()
+class AuthApi(@param:AuthHttpClient private val authClient: HttpClient) {
+    suspend fun auth(authRequest: AuthRequest): AuthResponse = authClient.post("auth") {
+        setBody(authRequest)
+    }.body()
 
-    suspend fun refresh(request: RefreshTokenRequest): RefreshTokenResponse =
-        authClient.post("auth/refresh") {
-            setBody(request)
-        }.body()
+    suspend fun refresh(request: RefreshTokenRequest): RefreshTokenResponse = authClient.post("auth/refresh") {
+        setBody(request)
+    }.body()
 }

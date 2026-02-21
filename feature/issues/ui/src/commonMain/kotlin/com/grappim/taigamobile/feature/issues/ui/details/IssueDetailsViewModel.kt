@@ -11,7 +11,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.ui.model.IssueUI
@@ -91,7 +91,7 @@ class IssueDetailsViewModel(
     private val patchDataGenerator: PatchDataGenerator,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val usersRepository: UsersRepository,
     private val issueUIMapper: IssueUIMapper
 ) : ViewModel(),

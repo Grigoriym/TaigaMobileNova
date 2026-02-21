@@ -4,7 +4,8 @@ import androidx.paging.PagingSource
 import androidx.paging.PagingState
 import com.grappim.taigamobile.core.api.defaultTryCatch
 import com.grappim.taigamobile.core.api.hasNextPage
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import io.ktor.client.call.body
@@ -13,7 +14,7 @@ class ProjectsPagingSource(
     private val projectsApi: ProjectsApi,
     private val query: String,
     private val projectMapper: ProjectMapper,
-    private val taigaSessionStorage: KmpTaigaSessionStorage
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : PagingSource<Int, Project>() {
     override fun getRefreshKey(state: PagingState<Int, Project>): Int? = state.anchorPosition?.let { anchorPosition ->
         val anchorPage = state.closestPageToPosition(anchorPosition)
@@ -38,6 +39,9 @@ class ProjectsPagingSource(
             )
         },
         catchBlock = { e ->
+            logcat(throwable = e) {
+                "Error loading projects"
+            }
             LoadResult.Error(e)
         }
     )

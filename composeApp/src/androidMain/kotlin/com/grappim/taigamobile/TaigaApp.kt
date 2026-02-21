@@ -2,6 +2,10 @@ package com.grappim.taigamobile
 
 import android.app.Application
 import android.os.StrictMode
+import coil3.ImageLoader
+import coil3.PlatformContext
+import coil3.SingletonImageLoader
+import com.grappim.taigamobile.composeapp.data.ImageLoaderProvider
 import com.grappim.taigamobile.composeapp.di.KoinApp
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.logger.TimberLogger
@@ -15,13 +19,12 @@ import org.koin.plugin.module.dsl.startKoin
 import timber.log.Timber
 
 class TaigaApp :
-    Application()
-//    SingletonImageLoader.Factory
-{
+    Application(),
+    SingletonImageLoader.Factory {
 
     private val appInfoProvider: AppInfoProvider by inject()
 
-//    private val imageLoaderProvider: ImageLoaderProvider by inject()
+    private val imageLoaderProvider: ImageLoaderProvider by inject()
 
     private val cacheManager: CacheManager by inject()
 
@@ -44,7 +47,7 @@ class TaigaApp :
         }
     }
 
-//    override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoaderProvider.provide()
+    override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoaderProvider.provide()
 
     private fun setupLogger() {
         if (appInfoProvider.isDebug()) {

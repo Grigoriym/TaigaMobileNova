@@ -3,7 +3,7 @@ package com.grappim.taigamobile.feature.issues.ui
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
@@ -67,7 +67,7 @@ internal class IssueDetailsViewModelTest {
     private val patchDataGenerator: PatchDataGenerator = mockk()
     private val historyRepository: HistoryRepository = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
+    private val taigaSessionStorage: TaigaSessionStorage = mockk()
     private val usersRepository: UsersRepository = mockk()
     private val issueUIMapper: IssueUIMapper = mockk()
 

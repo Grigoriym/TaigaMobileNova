@@ -10,7 +10,7 @@ android {
 }
 
 kotlin {
-    sourceSets{
+    sourceSets {
         commonMain.dependencies {
             implementation(projects.feature.issues.domain)
             implementation(projects.feature.history.domain)

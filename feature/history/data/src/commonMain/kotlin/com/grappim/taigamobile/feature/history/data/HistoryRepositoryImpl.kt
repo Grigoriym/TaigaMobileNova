@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.history.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.getSingularPath
@@ -13,7 +13,7 @@ import org.koin.core.annotation.Single
 @Single(binds = [HistoryRepository::class])
 class HistoryRepositoryImpl(
     private val historyApi: HistoryApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val commentsMapper: CommentsMapper
 ) : HistoryRepository {
 

@@ -10,7 +10,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicDetailsDataUseCase
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
@@ -20,14 +20,25 @@ import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
@@ -70,7 +81,7 @@ class EpicDetailsViewModel(
     private val historyRepository: HistoryRepository,
     private val fileUriManager: FileUriManager,
     private val usersRepository: UsersRepository,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val dateTimeUtils: DateTimeUtils,
     private val epicDetailsDataUseCase: EpicDetailsDataUseCase,
     private val statusUIMapper: StatusUIMapper,
@@ -78,60 +89,61 @@ class EpicDetailsViewModel(
     private val tagUIMapper: TagUIMapper,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val workItemUIMapper: WorkItemUIMapper,
-    private val workItemEditStateRepository: com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
+    private val workItemEditStateRepository:
+    com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate by _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl(
+    WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
+    WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
         taskIdentifier = TaskIdentifier.WorkItem(epicTaskType),
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
+    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
+    WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
         commonTaskType = epicTaskType,
         historyRepository = historyRepository,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
+    WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = TaskIdentifier.WorkItem(epicTaskType),
         workItemRepository = workItemRepository,
         fileUriManager = fileUriManager,
         taigaSessionStorage = taigaSessionStorage
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
+    WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
+    WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
+    WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
         usersRepository = usersRepository,
         patchDataGenerator = patchDataGenerator,
         taigaSessionStorage = taigaSessionStorage
     ),
-    com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
+    WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
         commonTaskType = epicTaskType,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
@@ -266,7 +278,9 @@ class EpicDetailsViewModel(
         }
     }
 
-    private suspend fun handleTeamMemberUpdate(updateState: com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate) {
+    private suspend fun handleTeamMemberUpdate(
+        updateState: com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
+    ) {
         when (updateState) {
             com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate.Clear -> {}
 

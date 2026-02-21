@@ -15,10 +15,8 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class SettingsUserScreenViewModel(
-    private val usersRepository: UsersRepository,
-    serverStorage: ServerStorage
-) : ViewModel() {
+class SettingsUserScreenViewModel(private val usersRepository: UsersRepository, serverStorage: ServerStorage) :
+    ViewModel() {
 
     private val _state = MutableStateFlow(
         SettingsUserScreenState(

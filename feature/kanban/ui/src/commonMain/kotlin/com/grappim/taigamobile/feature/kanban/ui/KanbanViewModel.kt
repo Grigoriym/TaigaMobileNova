@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
@@ -30,7 +30,7 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 class KanbanViewModel(
     private val getKanbanDataUseCase: GetKanbanDataUseCase,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val userStoriesRepository: UserStoriesRepository,
     private val filtersRepository: FiltersRepository
 ) : ViewModel() {

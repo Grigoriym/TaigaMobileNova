@@ -24,7 +24,7 @@ plugins {
     alias(libs.plugins.jacocoAggregationCoverage)
 }
 
-//doctor {
+// doctor {
 //    enableTestCaching.set(false)
 //    disallowCleanTaskDependencies.set(true)
 //    warnWhenJetifierEnabled.set(true)
@@ -33,7 +33,7 @@ plugins {
 //        ensureJavaHomeIsSet.set(false)
 //        failOnError.set(false)
 //    }
-//}
+// }
 
 allprojects {
     tasks.withType<Test> {

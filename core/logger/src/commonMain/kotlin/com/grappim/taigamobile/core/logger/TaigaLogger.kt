@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.core.logger
 
+import com.grappim.taigamobile.core.logger.TaigaLogger.Companion.install
+import com.grappim.taigamobile.core.logger.TaigaLogger.Companion.uninstall
 import kotlin.concurrent.Volatile
 
 /**
@@ -8,12 +10,7 @@ import kotlin.concurrent.Volatile
  */
 interface TaigaLogger {
 
-    fun log(
-        priority: LogPriority,
-        tag: String?,
-        throwable: Throwable?,
-        message: () -> String,
-    )
+    fun log(priority: LogPriority, tag: String?, throwable: Throwable?, message: () -> String)
 
     companion object {
         @Volatile
@@ -34,12 +31,7 @@ interface TaigaLogger {
     }
 
     private object NoLog : TaigaLogger {
-        override fun log(
-            priority: LogPriority,
-            tag: String?,
-            throwable: Throwable?,
-            message: () -> String,
-        ) {
+        override fun log(priority: LogPriority, tag: String?, throwable: Throwable?, message: () -> String) {
             // no-op
         }
     }

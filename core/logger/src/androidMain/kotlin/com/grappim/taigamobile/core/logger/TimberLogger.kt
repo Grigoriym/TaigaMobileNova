@@ -4,12 +4,7 @@ import timber.log.Timber
 
 class TimberLogger : TaigaLogger {
 
-    override fun log(
-        priority: LogPriority,
-        tag: String?,
-        throwable: Throwable?,
-        message: () -> String,
-    ) {
+    override fun log(priority: LogPriority, tag: String?, throwable: Throwable?, message: () -> String) {
         val timberPriority = when (priority) {
             LogPriority.VERBOSE -> android.util.Log.VERBOSE
             LogPriority.DEBUG -> android.util.Log.DEBUG

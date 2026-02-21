@@ -2,7 +2,7 @@ package com.grappim.taigamobile.core.storage.auth
 
 import com.grappim.taigamobile.core.asynckmp.ApplicationScope
 import com.grappim.taigamobile.core.storage.KmpSession
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -14,7 +14,7 @@ import org.koin.core.annotation.Single
 @Single
 class AuthStateManager(
     private val session: KmpSession,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val authStorage: AuthStorage,
     private val databaseWrapper: DatabaseWrapper,
     @param:ApplicationScope private val applicationScope: CoroutineScope

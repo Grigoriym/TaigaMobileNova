@@ -8,7 +8,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.KmpTaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.userstories.domain.UpdatedKanbanStory
@@ -39,7 +39,7 @@ private val userStoryPlural = CommonTaskType.UserStory.getPluralPath()
 @Single(binds = [UserStoriesRepository::class])
 class UserStoriesRepositoryImpl(
     private val userStoriesApi: UserStoriesApi,
-    private val taigaSessionStorage: KmpTaigaSessionStorage,
+    private val taigaSessionStorage: TaigaSessionStorage,
     private val userStoryMapper: UserStoryMapper,
     private val workItemApi: WorkItemApi,
     private val workItemRepository: WorkItemRepository,

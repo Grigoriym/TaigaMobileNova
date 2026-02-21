@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.dashboard.ui
 
 import androidx.navigation.NavController
-import popUpToTop
 import kotlinx.serialization.Serializable
+import popUpToTop
 
 @Serializable
 data object DashboardNavDestination
