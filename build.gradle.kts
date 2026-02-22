@@ -1,7 +1,3 @@
-import org.gradle.api.tasks.testing.logging.TestExceptionFormat
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
-
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
@@ -20,69 +16,6 @@ plugins {
     alias(libs.plugins.ktlint)
     alias(libs.plugins.jacocoAggregationResults)
     alias(libs.plugins.jacocoAggregationCoverage)
-}
-
-allprojects {
-    tasks.withType<Test> {
-        failFast = true
-        // https://github.com/gradle/gradle/issues/33619#issuecomment-2913519014
-        failOnNoDiscoveredTests = false
-        reports {
-            html.required.set(true)
-        }
-        testLogging {
-            events(TestLogEvent.PASSED, TestLogEvent.SKIPPED, TestLogEvent.FAILED)
-            showStandardStreams = true
-            exceptionFormat = TestExceptionFormat.FULL
-            showExceptions = true
-        }
-    }
-}
-
-val excludedFromLinting = setOf(":tools:seed", ":testing")
-
-subprojects {
-    if (path !in excludedFromLinting) {
-        apply {
-            plugin("dev.detekt")
-            plugin("org.jlleitschuh.gradle.ktlint")
-        }
-    }
-
-    if (path !in excludedFromLinting) {
-        // https://github.com/cortinico/kotlin-android-template
-        // https://detekt.dev/docs/introduction/configurations/
-        detekt {
-            buildUponDefaultConfig = true
-            parallel = true
-            config.setFrom(rootProject.files("config/detekt/detekt.yml"))
-            allRules = false
-        }
-
-        // ./gradlew --continue ktlintCheck
-        // ./gradlew ktlintFormat
-        // ./gradlew addKtlintCheckGitPreCommitHook
-        configure<org.jlleitschuh.gradle.ktlint.KtlintExtension> {
-            version.set("1.8.0")
-            android.set(true)
-            ignoreFailures.set(false)
-            verbose.set(true)
-            outputColorName.set("RED")
-            outputToConsole.set(true)
-            reporters {
-                reporter(ReporterType.PLAIN)
-                reporter(ReporterType.CHECKSTYLE)
-                reporter(ReporterType.HTML)
-                reporter(ReporterType.JSON)
-            }
-        }
-
-        // https://stackoverflow.com/questions/77527617/using-version-catalog-in-gradle-kotlin-build-for-subprojects
-        dependencies {
-            ktlintRuleset(rootProject.libs.composeRules.ktlint)
-            detektPlugins(rootProject.libs.composeRules.detekt)
-        }
-    }
 }
 
 private val coverageExclusions = listOf(

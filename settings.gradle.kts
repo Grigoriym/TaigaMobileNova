@@ -1,11 +1,5 @@
 @file:Suppress("UnstableApiUsage")
 
-include(":composeApp")
-
-include(":feature:login:dto")
-
-include(":core:logger")
-
 rootProject.name = "TaigaMobileNova"
 
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
@@ -114,3 +108,6 @@ include(":feature:tasks:mapper")
 include(":core:serialization")
 include(":tools:seed")
 include(":core:async-kmp")
+include(":composeApp")
+include(":feature:login:dto")
+include(":core:logger")

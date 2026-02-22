@@ -23,9 +23,6 @@ internal fun Project.configureKmpCompose() {
                 implementation(libs.findLibrary("androidx.savedstate").get())
 
                 implementation(libs.findLibrary("compose.navigation").get())
-
-                //todo maybe not needed everywhere, just in strings
-                implementation(libs.findLibrary("compose.components.resources").get())
             }
             androidMain.dependencies {
                 implementation(libs.findLibrary("androidx.navigation.compose").get())

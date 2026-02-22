@@ -1,6 +1,8 @@
 
 import com.android.build.api.dsl.LibraryExtension
 import com.grappim.taigamobile.buildlogic.configureKmp
+import com.grappim.taigamobile.buildlogic.configureLinting
+import com.grappim.taigamobile.buildlogic.configureTests
 import com.grappim.taigamobile.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -20,6 +22,8 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             }
 
             configureKmp()
+            configureTests()
+            configureLinting()
         }
     }
 }
