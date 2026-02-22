@@ -124,6 +124,7 @@ compose.desktop {
         )
 
         nativeDistributions {
+            modules("jdk.unsupported")
             targetFormats(TargetFormat.Deb, TargetFormat.Dmg, TargetFormat.Msi)
             packageName = libs.versions.app.name.get()
             packageVersion = libs.versions.version.name.get()
