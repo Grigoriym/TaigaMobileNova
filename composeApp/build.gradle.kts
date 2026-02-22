@@ -90,6 +90,12 @@ android {
         }
     }
 
+    sourceSets {
+        getByName("debug") {
+            manifest.srcFile("src/androidDebug/AndroidManifest.xml")
+        }
+    }
+
     bundle {
         language {
             enableSplit = false
