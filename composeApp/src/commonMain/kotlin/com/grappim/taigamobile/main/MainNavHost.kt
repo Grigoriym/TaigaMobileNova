@@ -45,6 +45,8 @@ import com.grappim.taigamobile.nav.wikiNavGraph
 import com.grappim.taigamobile.nav.workItemEditsNavGraph
 import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.typeMapOf
+import kotlin.reflect.typeOf
 
 @Composable
 fun MainNavHost(
@@ -218,7 +220,9 @@ fun MainNavHost(
             )
         }
 
-        composable<CreateTaskNavDestination> {
+        composable<CreateTaskNavDestination>(
+            typeMap = typeMapOf(listOf(typeOf<CommonTaskType>()))
+        ) {
             CreateTaskScreen(
                 showSnackbar = showSnackbar,
                 navigateOnTaskCreated = { id, type, ref ->

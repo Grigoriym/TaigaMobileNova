@@ -5,8 +5,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class ScreenReadySignalController {
-    private val _isReady = MutableStateFlow(false)
+class ScreenReadySignalController(defaultValue: Boolean = false) {
+    private val _isReady = MutableStateFlow(defaultValue)
     val isReady: StateFlow<Boolean> = _isReady.asStateFlow()
 
     fun signalReady() {

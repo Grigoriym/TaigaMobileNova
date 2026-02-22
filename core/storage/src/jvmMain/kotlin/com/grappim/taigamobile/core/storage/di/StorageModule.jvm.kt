@@ -35,21 +35,21 @@ class AuthDataStoreModule {
 
 fun createSessionDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
-        val file = File(System.getProperty("java.io.tmpdir"), TAIGA_SESSION_STORAGE)
+        val file = File(System.getProperty("java.io.tmpdir"), "$TAIGA_SESSION_STORAGE$PREFS_EXT")
         file.absolutePath
     }
 )
 
 fun createSessionFiltersDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
-        val file = File(System.getProperty("java.io.tmpdir"), SESSION_FILTERS_DATA_STORE_FILE_NAME)
+        val file = File(System.getProperty("java.io.tmpdir"), "$SESSION_FILTERS_DATA_STORE_FILE_NAME$PREFS_EXT")
         file.absolutePath
     }
 )
 
 fun createAuthDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
-        val file = File(System.getProperty("java.io.tmpdir"), AUTH_DATA_STORE_FILE_NAME)
+        val file = File(System.getProperty("java.io.tmpdir"), "$AUTH_DATA_STORE_FILE_NAME$PREFS_EXT")
         file.absolutePath
     }
 )

@@ -107,7 +107,7 @@ if (!isGooglePlayBuild) {
 
 compose.desktop {
     application {
-        mainClass = "com.grappim.taigamobile.MainKt"
+        mainClass = "com.grappim.taigamobile.TaigaMobileDesktopKt"
     }
 }
 

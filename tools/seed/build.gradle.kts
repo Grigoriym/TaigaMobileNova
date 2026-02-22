@@ -4,10 +4,6 @@ plugins {
     application
 }
 
-application {
-    mainClass.set("com.grappim.taigamobile.tools.seed.MainKt")
-}
-
 dependencies {
     implementation(libs.ktor.core)
     implementation(libs.ktor.cio)
