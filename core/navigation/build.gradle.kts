@@ -9,9 +9,6 @@ android {
 
 kotlin {
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.androidx.navigation.compose)
-        }
         commonMain.dependencies {
             implementation(projects.core.domain)
         }

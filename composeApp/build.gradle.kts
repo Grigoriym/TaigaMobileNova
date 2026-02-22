@@ -105,6 +105,12 @@ if (!isGooglePlayBuild) {
     }
 }
 
+compose.desktop {
+    application {
+        mainClass = "com.grappim.taigamobile.MainKt"
+    }
+}
+
 kotlin {
     configureKmp()
 
@@ -221,6 +227,10 @@ kotlin {
                 implementation(projects.feature.workitem.mapper)
                 implementation(projects.feature.workitem.dto)
             }
+        }
+
+        jvmMain.dependencies {
+            implementation(compose.desktop.currentOs)
         }
 
         commonTest {

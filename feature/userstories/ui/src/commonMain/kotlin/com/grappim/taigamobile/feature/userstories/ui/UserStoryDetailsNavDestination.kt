@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.userstories.ui
 
 import androidx.navigation.NavController
+import com.grappim.taigamobile.core.navigation.navigateAndPopCurrent
 import kotlinx.serialization.Serializable
-import navigateAndPopCurrent
 
 @Serializable
 data class UserStoryDetailsNavDestination(val userStoryId: Long, val ref: Long)

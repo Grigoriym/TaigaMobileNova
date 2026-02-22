@@ -21,13 +21,13 @@ fun main() {
     }
 
     application {
-        val viewModel = koinViewModel<MainViewModel>()
         Window(
             onCloseRequest = ::exitApplication,
             title = stringResource(RString.app_name),
             alwaysOnTop = true,
             state = rememberWindowState(width = 600.dp, height = 800.dp)
         ) {
+            val viewModel = koinViewModel<MainViewModel>()
             MainContent(viewModel)
         }
     }
