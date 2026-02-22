@@ -16,7 +16,7 @@ class KmpLibraryComposeConventionPlugin : Plugin<Project> {
             configureKmpCompose()
 
             dependencies {
-                "debugImplementation"(libs.findLibrary("compose.ui.tooling").get())
+                "debugImplementation"(libs.findLibrary("jetbrains.compose.ui.tooling").get())
             }
         }
     }

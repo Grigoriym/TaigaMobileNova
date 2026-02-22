@@ -7,6 +7,8 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 fun Project.configureKmp() {
     extensions.configure<KotlinMultiplatformExtension> {
+        jvmToolchain(21)
+
         androidTarget {
             compilerOptions {
                 jvmTarget.set(JvmTarget.JVM_21)

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.taigamobile.kmp.library)
     alias(libs.plugins.taigamobile.kmp.di)
+    alias(libs.plugins.taigamobile.kmp.network)
     alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
@@ -10,14 +11,7 @@ android {
 
 kotlin {
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
-        }
-        jvmMain.dependencies {
-            implementation(libs.ktor.client.okhttp)
-        }
         commonMain.dependencies {
-            implementation(libs.ktor.core)
             implementation(libs.ktor.contentNegotiation)
             implementation(libs.ktor.logging)
             implementation(libs.ktor.serialization.json)

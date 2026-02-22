@@ -1,7 +1,6 @@
 plugins {
-    alias(libs.plugins.taigamobile.kotlin.library)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
-    application
+    alias(libs.plugins.kotlin.serialization)
+    kotlin("jvm")
 }
 
 dependencies {
@@ -11,5 +10,8 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.logging)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.collections)
+    implementation(libs.kotlinx.date.time)
     implementation(libs.slf4j.simple)
 }

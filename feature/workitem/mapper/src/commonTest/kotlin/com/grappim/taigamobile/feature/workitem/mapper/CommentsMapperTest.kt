@@ -8,6 +8,8 @@ import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
 import com.grappim.taigamobile.testing.getUser
 import com.grappim.taigamobile.testing.getUserDTO
+import com.grappim.taigamobile.testing.nowLocalDate
+import com.grappim.taigamobile.testing.nowLocalDateTime
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
@@ -22,7 +24,7 @@ import kotlin.test.assertTrue
 
 class CommentsMapperTest {
 
-    private val userMapper: UserMapper = mockk()
+    private val userMapper: UserMapper = UserMapper()
     private val projectsRepository: ProjectsRepository = mockk()
 
     private lateinit var sut: CommentsMapper
@@ -39,8 +41,8 @@ class CommentsMapperTest {
     fun `toDomain should map basic fields correctly`() = runTest {
         val userDTO = getUserDTO()
         val user = getUser()
-        val postDateTime = LocalDateTime.now()
-        val deleteDate = LocalDateTime.now().plusDays(1)
+        val postDateTime = nowLocalDateTime
+        val deleteDate = nowLocalDateTime.plusDays(1)
         val commentId = getRandomString()
         val commentText = getRandomString()
         val currentUserId = getRandomLong()
@@ -53,7 +55,6 @@ class CommentsMapperTest {
             deleteDate = deleteDate
         )
 
-        coEvery { userMapper.toUser(userDTO) } returns user
         coEvery { projectsRepository.getPermissions() } returns persistentListOf()
 
         val result = sut.toDomain(dto, currentUserId)
@@ -75,11 +76,10 @@ class CommentsMapperTest {
             id = getRandomString(),
             author = userDTO,
             text = getRandomString(),
-            postDateTime = LocalDateTime.now(),
+            postDateTime = nowLocalDateTime,
             deleteDate = null
         )
 
-        coEvery { userMapper.toUser(userDTO) } returns user
         coEvery { projectsRepository.getPermissions() } returns persistentListOf()
 
         val result = sut.toDomain(dto, currentUserId)
@@ -97,11 +97,10 @@ class CommentsMapperTest {
             id = getRandomString(),
             author = userDTO,
             text = getRandomString(),
-            postDateTime = LocalDateTime.now(),
+            postDateTime = nowLocalDateTime,
             deleteDate = null
         )
 
-        coEvery { userMapper.toUser(userDTO) } returns user
         coEvery { projectsRepository.getPermissions() } returns persistentListOf(TaigaPermission.MODIFY_PROJECT)
 
         val result = sut.toDomain(dto, authorId)
@@ -119,11 +118,10 @@ class CommentsMapperTest {
             id = getRandomString(),
             author = userDTO,
             text = getRandomString(),
-            postDateTime = LocalDateTime.now(),
+            postDateTime = nowLocalDateTime,
             deleteDate = null
         )
 
-        coEvery { userMapper.toUser(userDTO) } returns user
         coEvery { projectsRepository.getPermissions() } returns persistentListOf()
 
         val result = sut.toDomain(dto, authorId)
@@ -142,7 +140,7 @@ class CommentsMapperTest {
             id = getRandomString(),
             author = userDTO,
             text = getRandomString(),
-            postDateTime = LocalDateTime.now(),
+            postDateTime = nowLocalDateTime,
             deleteDate = null
         )
 
@@ -165,7 +163,7 @@ class CommentsMapperTest {
             id = getRandomString(),
             author = userDTO,
             text = getRandomString(),
-            postDateTime = LocalDateTime.now(),
+            postDateTime = nowLocalDateTime,
             deleteDate = null
         )
 
@@ -187,7 +185,7 @@ class CommentsMapperTest {
             id = getRandomString(),
             author = userDTO,
             text = getRandomString(),
-            postDateTime = LocalDateTime.now(),
+            postDateTime = nowLocalDateTime,
             deleteDate = null
         )
 

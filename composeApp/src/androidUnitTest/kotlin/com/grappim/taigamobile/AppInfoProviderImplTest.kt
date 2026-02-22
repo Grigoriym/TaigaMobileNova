@@ -1,7 +1,6 @@
 package com.grappim.taigamobile
 
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.data.AppInfoProviderImpl
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,7 +14,7 @@ class AppInfoProviderImplTest {
 
     @Before
     fun setup() {
-        sut = AppInfoProviderImpl()
+        sut = `AppInfoProviderImpl.android`()
     }
 
     @Test

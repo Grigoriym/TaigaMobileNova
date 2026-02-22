@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.workitem.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
@@ -56,13 +57,13 @@ class WorkItemRepositoryImplTest {
 
     private val workItemApi: WorkItemApi = mockk()
     private val patchedDataMapper: PatchedDataMapper = mockk()
-    private val attachmentMapper: AttachmentMapper = mockk()
+    private val attachmentMapper: AttachmentMapper = AttachmentMapper()
     private val workItemMapper: WorkItemMapper = mockk()
     private val workItemEntityMapper: WorkItemEntityMapper = mockk()
     private val usersRepository: UsersRepository = mockk()
     private val customFieldsMapper: CustomFieldsMapper = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val jsonObjectMapper: JsonObjectMapper = mockk()
+    private val taigaSessionStorage: TaigaSessionStorage = mockk()
+    private val jsonObjectMapper: JsonObjectMapper = JsonObjectMapper()
     private val workItemDao: WorkItemDao = mockk()
     private val networkMonitor: NetworkMonitor = FakeNetworkMonitor()
 

@@ -1,4 +1,4 @@
-package com.grappim.taigamobile
+package com.grappim.taigamobile.data
 
 import android.annotation.SuppressLint
 import android.content.Context

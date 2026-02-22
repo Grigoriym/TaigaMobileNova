@@ -8,7 +8,7 @@ inline fun Any.logcat(
 ) {
     TaigaLogger.logger.log(
         priority = priority,
-        tag = tag ?: "gregasd ${this::class.simpleName}",
+        tag = tag ?: this::class.simpleName,
         throwable = throwable,
         message = message
     )

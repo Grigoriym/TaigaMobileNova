@@ -4,10 +4,11 @@ import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
 import com.grappim.taigamobile.testing.getRandomBoolean
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getRandomString
+import com.grappim.taigamobile.testing.nowLocalDateTime
 import kotlinx.coroutines.test.runTest
+import kotlinx.datetime.LocalDateTime
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -97,8 +98,8 @@ class WikiPageMapperTest {
         content: String = getRandomString(),
         ownerId: Long? = getRandomLong(),
         lastModifierId: Long? = getRandomLong(),
-        createdDate: LocalDateTime = LocalDateTime.now(),
-        modifiedDate: LocalDateTime = LocalDateTime.now(),
+        createdDate: LocalDateTime = nowLocalDateTime,
+        modifiedDate: LocalDateTime = nowLocalDateTime,
         html: String = getRandomString(),
         editions: Long = getRandomLong(),
         version: Long = getRandomLong(),

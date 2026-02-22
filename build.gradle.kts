@@ -18,22 +18,9 @@ plugins {
 
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
-//    alias(libs.plugins.gradleDoctor)
-//    alias(libs.plugins.dependencyAnalysis)
     alias(libs.plugins.jacocoAggregationResults)
     alias(libs.plugins.jacocoAggregationCoverage)
 }
-
-// doctor {
-//    enableTestCaching.set(false)
-//    disallowCleanTaskDependencies.set(true)
-//    warnWhenJetifierEnabled.set(true)
-//    javaHome {
-//        ensureJavaHomeMatches.set(false)
-//        ensureJavaHomeIsSet.set(false)
-//        failOnError.set(false)
-//    }
-// }
 
 allprojects {
     tasks.withType<Test> {
@@ -52,7 +39,7 @@ allprojects {
     }
 }
 
-val excludedFromLinting = setOf(":tools:seed")
+val excludedFromLinting = setOf(":tools:seed", ":testing")
 
 subprojects {
     if (path !in excludedFromLinting) {
@@ -61,10 +48,6 @@ subprojects {
             plugin("org.jlleitschuh.gradle.ktlint")
         }
     }
-
-//    apply {
-//        plugin("com.autonomousapps.dependency-analysis")
-//    }
 
     if (path !in excludedFromLinting) {
         // https://github.com/cortinico/kotlin-android-template

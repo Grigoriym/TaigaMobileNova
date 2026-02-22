@@ -1,6 +1,7 @@
 import com.grappim.taigamobile.buildlogic.AppBuildTypes
 import com.grappim.taigamobile.buildlogic.configureFlavors
 import com.grappim.taigamobile.buildlogic.configureKmp
+import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -16,18 +17,28 @@ koinCompiler {
 }
 
 android {
-    namespace = "com.grappim.taigamobile"
-    compileSdk = 36
+    val isGooglePlayBuild = project.gradle.startParameter.taskRequests.toString().contains("Gplay")
+    if (!isGooglePlayBuild) {
+        dependenciesInfo {
+            includeInApk = false
+            includeInBundle = false
+        }
+    }
+
+    namespace = libs.versions.app.pkg.get().toString()
+    compileSdk = libs.versions.compileSdk.get().toString().toInt()
 
     defaultConfig {
-        applicationId = "com.grappim.taigamobile"
-        testApplicationId = "com.grappim.taigamobile.test"
+        applicationId = libs.versions.app.pkg.get().toString()
+        testApplicationId = "${libs.versions.app.pkg.get()}.test"
 
-        minSdk = 24
-        targetSdk = 36
+        minSdk = libs.versions.minSdk.get().toString().toInt()
+        targetSdk = libs.versions.targetSdk.get().toString().toInt()
 
-        versionCode = 38
-        versionName = "2.0.7"
+        versionCode = libs.versions.version.code.get().toString().toInt()
+        versionName = libs.versions.version.name.get().toString()
+
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
@@ -95,23 +106,49 @@ android {
     }
 }
 
-val isGooglePlayBuild = project.gradle.startParameter.taskRequests.toString().contains("Gplay")
-if (!isGooglePlayBuild) {
-    android {
-        dependenciesInfo {
-            includeInApk = false
-            includeInBundle = false
+compose.desktop {
+    application {
+        mainClass = "com.grappim.taigamobile.TaigaMobileDesktopKt"
+
+        jvmArgs += listOf(
+            "-Xmx256m",
+            "-Xms64m",
+            "-XX:+UseSerialGC",
+            "-XX:MaxMetaspaceSize=128m"
+        )
+
+        nativeDistributions {
+            targetFormats(TargetFormat.Deb, TargetFormat.Dmg, TargetFormat.Msi)
+            packageName = libs.versions.app.name.get()
+            packageVersion = libs.versions.version.name.get()
+            description = libs.versions.app.description.get()
+            vendor = libs.versions.app.vendor.get()
+            copyright = "Copyright 2026 ${libs.versions.app.vendor.get()}"
+
+            linux {
+                iconFile.set(project.file("../info/art/taiga-mobile-logo.png"))
+
+                debMaintainer = libs.versions.app.vendor.get()
+                debPackageVersion = libs.versions.version.name.get()
+                appCategory = libs.versions.app.category.get()
+                menuGroup = libs.versions.app.menugroup.get()
+                shortcut = true
+            }
+            windows {
+                iconFile.set(project.file("../info/art/taiga-mobile-logo.png"))
+
+                menuGroup = libs.versions.app.menugroup.get()
+                shortcut = true
+            }
         }
     }
 }
 
-compose.desktop {
-    application {
-        mainClass = "com.grappim.taigamobile.TaigaMobileDesktopKt"
-    }
-}
-
 kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
+    }
+
     configureKmp()
 
     androidTarget {

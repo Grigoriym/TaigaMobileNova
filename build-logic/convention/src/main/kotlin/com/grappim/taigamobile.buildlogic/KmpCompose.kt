@@ -11,7 +11,7 @@ internal fun Project.configureKmpCompose() {
                 implementation(libs.findLibrary("compose.runtime").get())
                 implementation(libs.findLibrary("compose.foundation").get())
                 implementation(libs.findLibrary("compose.ui").get())
-                implementation(libs.findLibrary("compose.ui.tooling.preview").get())
+                implementation(libs.findLibrary("jetbrains.compose.ui.tooling.preview").get())
                 implementation(libs.findLibrary("compose.material3").get())
                 implementation(libs.findLibrary("compose.material").get())
                 implementation(libs.findLibrary("compose.icons").get())

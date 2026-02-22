@@ -29,32 +29,11 @@ dependencies {
     compileOnly(libs.android.tools.common)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.gradlePlugin)
-//    compileOnly(libs.ksp.gradlePlugin)
     compileOnly(libs.compose.multiplatform.gradlePlugin)
 }
 
 gradlePlugin {
     plugins {
-        register("androidApplication") {
-            id = libs.plugins.taigamobile.android.application.get().pluginId
-            implementationClass = "AndroidApplicationConventionPlugin"
-        }
-        register("androidLibrary") {
-            id = libs.plugins.taigamobile.android.library.asProvider().get().pluginId
-            implementationClass = "AndroidLibraryConventionPlugin"
-        }
-        register("androidLibraryCompose") {
-            id = libs.plugins.taigamobile.android.library.compose.get().pluginId
-            implementationClass = "AndroidLibraryComposeConventionPlugin"
-        }
-        register("kotlinSerialization") {
-            id = libs.plugins.taigamobile.kotlin.serialization.get().pluginId
-            implementationClass = "KotlinSerializationConventionPlugin"
-        }
-        register("kotlinLibrary") {
-            id = libs.plugins.taigamobile.kotlin.library.get().pluginId
-            implementationClass = "KotlinLibraryConventionPlugin"
-        }
         register("kmpLibrary") {
             id = libs.plugins.taigamobile.kmp.library.asProvider().get().pluginId
             implementationClass = "KmpLibraryConventionPlugin"
@@ -70,6 +49,10 @@ gradlePlugin {
         register("kmpDi") {
             id = libs.plugins.taigamobile.kmp.di.get().pluginId
             implementationClass = "KmpDiConventionPlugin"
+        }
+        register("kmpNetwork") {
+            id = libs.plugins.taigamobile.kmp.network.get().pluginId
+            implementationClass = "KmpNetworkConventionPlugin"
         }
     }
 }
