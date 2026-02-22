@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalComposeUiApi::class)
-
 package com.grappim.taigamobile.feature.workitem.ui.screens.edittags
 
 import androidx.compose.foundation.background
@@ -22,11 +20,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.editdialog.TagEditDialog
 import com.grappim.taigamobile.strings.RString
@@ -97,9 +96,13 @@ fun WorkItemEditTagsScreen(
         }
     }
 
-    BackHandler {
-        state.onBackClick()
-    }
+    NavigationBackHandler(
+        state = rememberNavigationEventState(NavigationEventInfo.None),
+        isBackEnabled = true,
+        onBackCompleted = {
+            state.onBackClick()
+        }
+    )
 
     ObserveAsEvents(viewModel.onBackAction, isImmediate = false) {
         goBack()

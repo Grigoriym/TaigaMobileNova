@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalComposeUiApi::class)
-
 package com.grappim.taigamobile.feature.workitem.ui.screens.teammembers
 
 import androidx.compose.foundation.clickable
@@ -23,13 +21,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import coil3.compose.AsyncImage
 import com.grappim.taigamobile.feature.workitem.ui.models.TeamMemberUI
 import com.grappim.taigamobile.strings.RString
@@ -77,9 +76,13 @@ fun WorkItemEditTeamMemberScreen(goBack: () -> Unit, viewModel: EditTeamMemberVi
         )
     }
 
-    BackHandler {
-        state.setIsDialogVisible(!state.isDialogVisible)
-    }
+    NavigationBackHandler(
+        state = rememberNavigationEventState(NavigationEventInfo.None),
+        isBackEnabled = true,
+        onBackCompleted = {
+            state.setIsDialogVisible(!state.isDialogVisible)
+        }
+    )
 
     ConfirmActionDialog(
         isVisible = state.isDialogVisible,

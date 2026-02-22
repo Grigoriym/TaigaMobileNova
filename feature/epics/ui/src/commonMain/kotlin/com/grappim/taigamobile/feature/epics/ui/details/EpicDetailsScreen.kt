@@ -17,11 +17,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.epics.ui.widgets.EpicColorWidget
 import com.grappim.taigamobile.feature.epics.ui.widgets.WorkItemsSectionWidget
@@ -61,7 +62,6 @@ import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
-@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EpicDetailsScreen(
     showSnackbar: (message: NativeText) -> Unit,
@@ -120,9 +120,13 @@ fun EpicDetailsScreen(
         }
     }
 
-    BackHandler {
-        goBack()
-    }
+    NavigationBackHandler(
+        state = rememberNavigationEventState(NavigationEventInfo.None),
+        isBackEnabled = true,
+        onBackCompleted = {
+            goBack()
+        }
+    )
 
     ObserveAsEvents(viewModel.snackBarMessage) { message ->
         if (message !is NativeText.Empty) {

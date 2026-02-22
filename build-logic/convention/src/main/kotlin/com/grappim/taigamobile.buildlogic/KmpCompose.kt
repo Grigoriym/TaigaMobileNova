@@ -15,7 +15,6 @@ internal fun Project.configureKmpCompose() {
                 implementation(libs.findLibrary("compose.material3").get())
                 implementation(libs.findLibrary("compose.material").get())
                 implementation(libs.findLibrary("compose.icons").get())
-                implementation(libs.findLibrary("jetbrains.compose.ui.backhandler").get())
                 implementation(libs.findLibrary("jetbrains.compose.navigationevent").get())
 
                 implementation(libs.findLibrary("androidx.lifecycle.runtime.compose").get())
