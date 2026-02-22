@@ -117,6 +117,10 @@ kotlin {
     sourceSets {
         commonMain {
             dependencies {
+                implementation(libs.filekit.core)
+                implementation(libs.filekit.dialogs)
+                implementation(libs.filekit.dialogs.compose)
+
                 implementation(libs.compose.icons.extended)
 
                 implementation(projects.utils.ui)

@@ -15,7 +15,7 @@ actual class PlatformDBModule {
     fun getDatabaseBuilder(): RoomDatabase.Builder<TaigaDB> {
         val dbFile = File(System.getProperty("java.io.tmpdir"), "taigamobilenova.db")
         return Room.databaseBuilder<TaigaDB>(
-            name = dbFile.absolutePath,
+            name = dbFile.absolutePath
         )
     }
 }

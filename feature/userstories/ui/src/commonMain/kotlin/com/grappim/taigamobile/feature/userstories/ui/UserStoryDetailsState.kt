@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.userstories.ui
 
-import android.net.Uri
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.users.domain.User
@@ -12,6 +11,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.utils.ui.NativeText
+import io.github.vinceglb.filekit.PlatformFile
 
 data class UserStoryDetailsState(
     val toolbarTitle: NativeText = NativeText.Empty,
@@ -47,7 +47,7 @@ data class UserStoryDetailsState(
 
     val onCustomFieldSave: (CustomFieldItemState) -> Unit = {},
 
-    val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
+    val onAttachmentAdd: (file: PlatformFile?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},
 
     val onCommentRemove: (Comment) -> Unit = {},

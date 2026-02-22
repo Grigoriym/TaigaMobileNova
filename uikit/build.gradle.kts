@@ -29,7 +29,6 @@ kotlin {
             implementation(projects.utils.formatter.datetime)
 
             implementation(libs.coil.compose)
-            implementation(libs.coil.ktor)
 
             implementation(libs.androidx.paging.compose)
             implementation(libs.androidx.paging.common)

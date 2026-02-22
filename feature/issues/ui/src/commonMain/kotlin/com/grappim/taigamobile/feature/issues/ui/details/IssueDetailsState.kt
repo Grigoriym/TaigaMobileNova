@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.issues.ui.details
 
-import android.net.Uri
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.ui.model.IssueUI
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
@@ -12,6 +11,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.utils.ui.NativeText
+import io.github.vinceglb.filekit.PlatformFile
 
 data class IssueDetailsState(
     val isLoading: Boolean = false,
@@ -40,7 +40,7 @@ data class IssueDetailsState(
 
     val onCustomFieldSave: (CustomFieldItemState) -> Unit = {},
 
-    val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
+    val onAttachmentAdd: (file: PlatformFile?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},
 
     val toolbarTitle: NativeText,

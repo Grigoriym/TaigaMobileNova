@@ -18,15 +18,13 @@ import org.junit.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 
-class WorkItemDescriptionDelegateImplTest {
+internal class WorkItemDescriptionDelegateImplTest {
 
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
 
-    private fun createSut(
-        taskIdentifier: TaskIdentifier
-    ): com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl =
-        _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl(
+    private fun createSut(taskIdentifier: TaskIdentifier): WorkItemDescriptionDelegateImpl =
+        WorkItemDescriptionDelegateImpl(
             taskIdentifier = taskIdentifier,
             workItemRepository = workItemRepository,
             patchDataGenerator = patchDataGenerator

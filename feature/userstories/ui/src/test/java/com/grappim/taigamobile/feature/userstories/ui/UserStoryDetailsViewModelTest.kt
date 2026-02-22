@@ -30,7 +30,6 @@ import com.grappim.taigamobile.testing.getUserStoryDetailsData
 import com.grappim.taigamobile.testing.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every

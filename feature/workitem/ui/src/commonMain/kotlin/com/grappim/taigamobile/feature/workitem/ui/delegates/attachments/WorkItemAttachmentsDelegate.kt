@@ -1,18 +1,18 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 
-import android.net.Uri
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
+import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow
 
 interface WorkItemAttachmentsDelegate {
     val attachmentsState:
-        StateFlow<com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState>
+        StateFlow<WorkItemAttachmentsState>
 
     suspend fun handleAddAttachment(
         workItemId: Long,
-        uri: Uri?,
+        file: PlatformFile?,
         doOnPreExecute: (() -> Unit)? = null,
         doOnSuccess: (() -> Unit)? = null,
         doOnError: suspend (Throwable) -> Unit

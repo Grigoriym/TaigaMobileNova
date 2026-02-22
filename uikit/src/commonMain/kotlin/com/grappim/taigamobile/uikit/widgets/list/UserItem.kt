@@ -14,11 +14,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.grappim.taigamobile.uikit.generated.resources.default_avatar
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.PreviewUtils
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.utils.formatter.datetime.platformFormatMediumDateTime
@@ -72,7 +72,7 @@ fun UserItem(
     }
 }
 
-@Preview(showBackground = true)
+@PreviewTaigaDarkLight
 @Composable
 private fun UserItemPreview() = TaigaMobilePreviewTheme {
     UserItem(

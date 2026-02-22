@@ -9,11 +9,14 @@ import com.grappim.taigamobile.main.MainContent
 import com.grappim.taigamobile.main.MainViewModel
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.app_name
+import io.github.vinceglb.filekit.FileKit
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.plugin.module.dsl.startKoin
 
 fun main() {
+    FileKit.init(appId = "com.grappim.taigamobile")
+
     startKoin<KoinApp> {
     }
 

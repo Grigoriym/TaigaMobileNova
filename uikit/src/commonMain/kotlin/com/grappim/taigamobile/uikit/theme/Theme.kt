@@ -1,18 +1,15 @@
 package com.grappim.taigamobile.uikit.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorPalette = darkColorScheme(
+internal val DarkColorPalette = darkColorScheme(
     primary = taigaGreen,
     onPrimary = Color.White,
     secondary = taigaGreenDark,
@@ -22,7 +19,7 @@ private val DarkColorPalette = darkColorScheme(
     surface = taigaDarkBackground
 )
 
-private val LightColorPalette = lightColorScheme(
+internal val LightColorPalette = lightColorScheme(
     primary = taigaGreen,
     secondary = taigaGreenDark,
     secondaryContainer = taigaGreenLight.copy(alpha = 0.5f),
@@ -32,23 +29,12 @@ private val LightColorPalette = lightColorScheme(
 )
 
 @Composable
-fun TaigaMobileTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    val colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-        if (darkTheme) {
-            dynamicDarkColorScheme(LocalContext.current)
-        } else {
-            dynamicLightColorScheme(LocalContext.current)
-        }
-    } else {
-        if (darkTheme) {
-            DarkColorPalette
-        } else {
-            LightColorPalette
-        }
-    }
+expect fun colorScheme(darkTheme: Boolean): ColorScheme
 
+@Composable
+fun TaigaMobileTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = colors,
+        colorScheme = colorScheme(darkTheme),
         typography = typography,
         content = content
     )

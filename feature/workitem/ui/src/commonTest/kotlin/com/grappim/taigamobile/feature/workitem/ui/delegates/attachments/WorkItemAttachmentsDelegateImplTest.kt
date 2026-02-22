@@ -27,13 +27,12 @@ internal class WorkItemAttachmentsDelegateImplTest {
 
     private fun createSut(
         taskIdentifier: TaskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task)
-    ): WorkItemAttachmentsDelegateImpl =
-        WorkItemAttachmentsDelegateImpl(
-            taskIdentifier = taskIdentifier,
-            workItemRepository = workItemRepository,
-            taigaSessionStorage = taigaSessionStorage,
-            fileUriManager = fileUriManager
-        )
+    ): WorkItemAttachmentsDelegateImpl = WorkItemAttachmentsDelegateImpl(
+        taskIdentifier = taskIdentifier,
+        workItemRepository = workItemRepository,
+        taigaSessionStorage = taigaSessionStorage,
+        fileUriManager = fileUriManager
+    )
 
     @Test
     fun `initial state should have empty attachments and no loading`() {

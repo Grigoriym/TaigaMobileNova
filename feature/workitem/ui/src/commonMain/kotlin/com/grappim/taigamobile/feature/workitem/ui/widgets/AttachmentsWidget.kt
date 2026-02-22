@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.workitem.ui.widgets
 
-import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -35,7 +34,6 @@ import com.grappim.taigamobile.strings.generated.resources.add_attachment
 import com.grappim.taigamobile.strings.generated.resources.attachments_template
 import com.grappim.taigamobile.strings.generated.resources.remove_attachment_text
 import com.grappim.taigamobile.strings.generated.resources.remove_attachment_title
-import com.grappim.taigamobile.uikit.LocalFilePicker
 import com.grappim.taigamobile.uikit.generated.resources.ic_attachment
 import com.grappim.taigamobile.uikit.generated.resources.ic_delete
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
@@ -44,6 +42,10 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.dialogs.FileKitMode
+import io.github.vinceglb.filekit.dialogs.FileKitType
+import io.github.vinceglb.filekit.dialogs.compose.rememberFilePickerLauncher
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -52,12 +54,18 @@ import org.jetbrains.compose.resources.stringResource
 fun AttachmentsSectionWidget(
     isOffline: Boolean,
     attachmentsState: WorkItemAttachmentsState,
-    onAttachmentAdd: (uri: Uri?) -> Unit,
+    onAttachmentAdd: (file: PlatformFile?) -> Unit,
     onAttachmentRemove: (Attachment) -> Unit,
     modifier: Modifier = Modifier,
     canModify: Boolean = false
 ) {
-    val filePicker = LocalFilePicker.current
+    val singleLauncher = rememberFilePickerLauncher(
+        mode = FileKitMode.Single,
+        type = FileKitType.File()
+    ) { file ->
+        onAttachmentAdd(file)
+    }
+
     Column(modifier = modifier) {
         SectionTitleExpandable(
             text = stringResource(RString.attachments_template).format(attachmentsState.attachments.size),
@@ -93,9 +101,7 @@ fun AttachmentsSectionWidget(
                 Button(
                     enabled = !isOffline,
                     onClick = {
-                        filePicker.requestFile { uri ->
-                            onAttachmentAdd(uri)
-                        }
+                        singleLauncher.launch()
                     }
                 ) {
                     Text(text = stringResource(RString.add_attachment))

@@ -2,7 +2,6 @@
 
 package com.grappim.taigamobile.feature.epics.ui.details
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +17,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.core.domain.CommonTaskType
@@ -60,6 +61,7 @@ import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun EpicDetailsScreen(
     showSnackbar: (message: NativeText) -> Unit,
@@ -384,8 +386,8 @@ private fun EpicDetailsScreenContent(
 
                 AttachmentsSectionWidget(
                     attachmentsState = attachmentsState,
-                    onAttachmentAdd = { uri ->
-                        state.onAttachmentAdd(uri)
+                    onAttachmentAdd = { file ->
+                        state.onAttachmentAdd(file)
                     },
                     onAttachmentRemove = {
                         state.onAttachmentRemove(it)

@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
-import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
@@ -13,6 +12,7 @@ import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.utils.ui.NativeText
+import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
@@ -51,7 +51,7 @@ data class EpicDetailsState(
     val onAddMeToWatchersClick: () -> Unit = {},
     val onTagRemove: (SelectableTagUI) -> Unit = {},
 
-    val onAttachmentAdd: (uri: Uri?) -> Unit = { _ -> },
+    val onAttachmentAdd: (file: PlatformFile?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},
 
     val onCommentRemove: (Comment) -> Unit = {},

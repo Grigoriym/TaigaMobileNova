@@ -10,10 +10,10 @@ import org.junit.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class WorkItemCustomFieldsDelegateImplTest {
+internal class WorkItemCustomFieldsDelegateImplTest {
 
     private lateinit var sut:
-        com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
+        WorkItemCustomFieldsDelegate
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
@@ -22,7 +22,7 @@ class WorkItemCustomFieldsDelegateImplTest {
     @Before
     fun setup() {
         sut =
-            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl(
+            WorkItemCustomFieldsDelegateImpl(
                 commonTaskType = commonTaskType,
                 workItemRepository = workItemRepository,
                 patchDataGenerator = patchDataGenerator,

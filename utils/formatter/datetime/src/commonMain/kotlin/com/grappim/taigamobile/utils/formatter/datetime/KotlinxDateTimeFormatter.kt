@@ -13,6 +13,6 @@ class KotlinxDateTimeFormatter {
     fun formatMediumDateTime(dateTime: LocalDateTime): String = platformFormatMediumDateTime(dateTime)
 }
 
-internal expect fun platformFormatMediumDate(date: LocalDate): String
+expect fun platformFormatMediumDate(date: LocalDate): String
 
-internal expect fun platformFormatMediumDateTime(dateTime: LocalDateTime): String
+expect fun platformFormatMediumDateTime(dateTime: LocalDateTime): String

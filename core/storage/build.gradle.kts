@@ -11,11 +11,11 @@ kotlin {
     sourceSets {
         androidMain.dependencies {
             implementation(libs.androidx.room.ktx)
-            implementation(libs.androidx.room.paging)
             implementation(libs.androidx.datastore.android)
         }
         commonMain.dependencies {
             implementation(libs.androidx.room.runtime)
+            implementation(libs.androidx.room.paging)
             implementation(libs.androidx.sqlite.bundled)
 
             implementation(projects.core.domain)

@@ -1,11 +1,8 @@
 package com.grappim.taigamobile.utils.formatter.datetime
 
+import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 
-internal actual fun platformFormatMediumDate(date: kotlinx.datetime.LocalDate): String {
-    return date.toString()
-}
+actual fun platformFormatMediumDate(date: LocalDate): String = date.toString()
 
-internal actual fun platformFormatMediumDateTime(dateTime: LocalDateTime): String {
-    return dateTime.toString()
-}
+actual fun platformFormatMediumDateTime(dateTime: LocalDateTime): String = dateTime.toString()

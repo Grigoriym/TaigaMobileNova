@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.tasks.ui
 
-import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -58,8 +57,8 @@ import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
@@ -88,7 +87,6 @@ class TaskDetailsViewModel(
     private val statusUIMapper: StatusUIMapper,
     private val tagUIMapper: TagUIMapper,
     private val dateTimeUtils: DateTimeUtils,
-    private val fileUriManager: FileUriManager,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
@@ -121,7 +119,6 @@ class TaskDetailsViewModel(
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = taskIdentifier,
         workItemRepository = workItemRepository,
-        fileUriManager = fileUriManager,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
@@ -422,8 +419,8 @@ class TaskDetailsViewModel(
         }
     }
 
-    private fun onAttachmentAdd(uri: Uri?) {
-        if (uri == null) {
+    private fun onAttachmentAdd(file: PlatformFile?) {
+        if (file == null) {
             _state.update {
                 it.copy(
                     error = NativeText.Resource(RString.common_error_message)
@@ -435,7 +432,7 @@ class TaskDetailsViewModel(
         viewModelScope.launch {
             handleAddAttachment(
                 workItemId = currentTask.id,
-                uri = uri,
+                file = file,
                 doOnPreExecute = {
                     clearError()
                 },

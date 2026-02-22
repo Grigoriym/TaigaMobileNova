@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.workitem.ui.widgets
 
-import android.content.ClipData
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material3.DropdownMenu
@@ -9,9 +8,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
-import androidx.compose.ui.text.AnnotatedString
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.block
 import com.grappim.taigamobile.strings.generated.resources.copy_link
@@ -21,8 +21,11 @@ import com.grappim.taigamobile.strings.generated.resources.promote_to_user_story
 import com.grappim.taigamobile.strings.generated.resources.unblock
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.toClipEntry
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun WorkItemDropdownMenuWidget(
     isExpanded: Boolean,
@@ -40,6 +43,8 @@ fun WorkItemDropdownMenuWidget(
     canModify: Boolean = false
 ) {
     val clipboardManager = LocalClipboard.current
+    val scope = rememberCoroutineScope()
+
     Box(modifier = modifier) {
         DropdownMenu(
             modifier = Modifier.background(
@@ -52,13 +57,11 @@ fun WorkItemDropdownMenuWidget(
         ) {
             DropdownMenuItem(
                 onClick = {
-                    onDismissRequest()
-                    val clip = ClipData.newPlainText(
-                        "Copy Link",
-                        AnnotatedString(url)
-                    )
-                    clipboardManager.nativeClipboard.setPrimaryClip(clip)
-                    showSnackbar(NativeText.Resource(RString.copy_link_successfully))
+                    scope.launch {
+                        onDismissRequest()
+                        clipboardManager.setClipEntry(url.toClipEntry())
+                        showSnackbar(NativeText.Resource(RString.copy_link_successfully))
+                    }
                 },
                 text = {
                     Text(

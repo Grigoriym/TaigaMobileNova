@@ -48,3 +48,9 @@ ktlint_standard_filename=disabled
 
 [**/Koin.jvm.kt]
 ktlint_standard_filename=disabled
+
+[**/DBModule.jvm.kt]
+ktlint_standard_filename=disabled
+
+[**/DBModule.android.kt]
+ktlint_standard_filename=disabled

@@ -40,3 +40,7 @@
 # Keep attributes needed for serialization
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
+
+# https://filekit.mintlify.app/core/setup#proguard-configuration
+-keep class com.sun.jna.** { *; }
+-keep class * implements com.sun.jna.** { *; }

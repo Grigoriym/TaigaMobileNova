@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.uikit.widgets.list
 
-import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -11,7 +10,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
@@ -22,13 +20,15 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitle
+import org.jetbrains.compose.resources.StringResource
+import org.jetbrains.compose.resources.stringResource
 
 fun LazyListScope.simpleTasksListWithTitle(
     navigateToTask: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     commonTasks: List<WorkItem> = emptyList(),
     commonTasksLazy: LazyPagingItems<WorkItem>? = null,
     keysHash: Int = 0,
-    @StringRes titleText: Int? = null,
+    titleText: StringResource? = null,
     topPadding: Dp = 0.dp,
     horizontalPadding: Dp = 0.dp,
     bottomPadding: Dp = 0.dp,

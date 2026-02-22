@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.main
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.imePadding
@@ -26,6 +25,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
 import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.TaigaDrawerWidget
 import com.grappim.taigamobile.core.logger.logcat
@@ -188,11 +190,15 @@ private fun MainScreenContent(
                  * The second condition drawerState.isAnimationRunning is needed to fix an issue
                  * when the drawer is visibly fully opened but is not opened actually
                  */
-                BackHandler(drawerState.isOpen || drawerState.isAnimationRunning) {
-                    scope.launch {
-                        drawerState.close()
+                NavigationBackHandler(
+                    state = rememberNavigationEventState(NavigationEventInfo.None),
+                    isBackEnabled = drawerState.isOpen || drawerState.isAnimationRunning,
+                    onBackCompleted = {
+                        scope.launch {
+                            drawerState.close()
+                        }
                     }
-                }
+                )
             }
         )
     }

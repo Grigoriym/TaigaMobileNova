@@ -1,13 +1,15 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 
-import android.net.Uri
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
+import com.grappim.taigamobile.utils.ui.AttachmentInfo
+import io.github.vinceglb.filekit.PlatformFile
+import io.github.vinceglb.filekit.name
+import io.github.vinceglb.filekit.readBytes
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,8 +19,7 @@ import kotlinx.coroutines.flow.update
 class WorkItemAttachmentsDelegateImpl(
     private val taskIdentifier: TaskIdentifier,
     private val workItemRepository: WorkItemRepository,
-    private val taigaSessionStorage: TaigaSessionStorage,
-    private val fileUriManager: FileUriManager
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : WorkItemAttachmentsDelegate {
 
     private val _attachmentsState = MutableStateFlow(
@@ -31,7 +32,7 @@ class WorkItemAttachmentsDelegateImpl(
 
     override suspend fun handleAddAttachment(
         workItemId: Long,
-        uri: Uri?,
+        file: PlatformFile?,
         doOnPreExecute: (() -> Unit)?,
         doOnSuccess: (() -> Unit)?,
         doOnError: suspend (Throwable) -> Unit
@@ -40,7 +41,7 @@ class WorkItemAttachmentsDelegateImpl(
             it.copy(areAttachmentsLoading = true)
         }
 
-        if (uri == null) {
+        if (file == null) {
             _attachmentsState.update {
                 it.copy(areAttachmentsLoading = false)
             }
@@ -50,8 +51,10 @@ class WorkItemAttachmentsDelegateImpl(
         doOnPreExecute?.invoke()
 
         resultOf {
-            val attachmentInfo = fileUriManager.retrieveAttachmentInfo(uri)
-
+            val attachmentInfo = AttachmentInfo(
+                name = file.name,
+                fileBytes = file.readBytes().toList()
+            )
             workItemRepository.addAttachment(
                 workItemId = workItemId,
                 fileName = attachmentInfo.name,

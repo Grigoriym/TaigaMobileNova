@@ -1,7 +1,9 @@
 import com.grappim.taigamobile.buildlogic.configureKmp
 import com.grappim.taigamobile.buildlogic.configureKmpCompose
+import com.grappim.taigamobile.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.kotlin.dsl.dependencies
 
 class KmpLibraryComposeConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
@@ -12,6 +14,10 @@ class KmpLibraryComposeConventionPlugin : Plugin<Project> {
             }
             configureKmp()
             configureKmpCompose()
+
+            dependencies {
+                "debugImplementation"(libs.findLibrary("compose.ui.tooling").get())
+            }
         }
     }
 }

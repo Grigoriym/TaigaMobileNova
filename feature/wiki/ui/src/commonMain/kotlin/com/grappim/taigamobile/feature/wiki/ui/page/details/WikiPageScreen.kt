@@ -191,8 +191,8 @@ fun WikiPageScreenContent(
 
             AttachmentsSectionWidget(
                 attachmentsState = attachmentsState,
-                onAttachmentAdd = { uri ->
-                    state.onAttachmentAdd(uri)
+                onAttachmentAdd = { file ->
+                    state.onAttachmentAdd(file)
                 },
                 onAttachmentRemove = {
                     state.onAttachmentRemove(it)

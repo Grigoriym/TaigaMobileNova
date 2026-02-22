@@ -28,9 +28,9 @@ import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-class WorkItemDueDateDelegateImplTest {
+internal class WorkItemDueDateDelegateImplTest {
 
-    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
+    private lateinit var sut: WorkItemDueDateDelegateImpl
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
@@ -39,7 +39,7 @@ class WorkItemDueDateDelegateImplTest {
     @Before
     fun setup() {
         sut =
-            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl(
+            WorkItemDueDateDelegateImpl(
                 commonTaskType = commonTaskType,
                 workItemRepository = workItemRepository,
                 patchDataGenerator = patchDataGenerator,

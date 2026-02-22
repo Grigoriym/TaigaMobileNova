@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.details
 
-import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -20,8 +19,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -37,7 +36,6 @@ class WikiPageViewModel(
     private val wikiPageUseCase: WikiPageUseCase,
     private val workItemRepository: WorkItemRepository,
     private val taigaSessionStorage: TaigaSessionStorage,
-    private val fileUriManager: FileUriManager,
     private val patchDataGenerator: PatchDataGenerator,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
     savedStateHandle: SavedStateHandle
@@ -45,8 +43,7 @@ class WikiPageViewModel(
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = TaskIdentifier.Wiki,
         workItemRepository = workItemRepository,
-        taigaSessionStorage = taigaSessionStorage,
-        fileUriManager = fileUriManager
+        taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
         taskIdentifier = TaskIdentifier.Wiki,
@@ -156,11 +153,11 @@ class WikiPageViewModel(
         }
     }
 
-    private fun onAttachmentAdd(uri: Uri?) {
+    private fun onAttachmentAdd(file: PlatformFile?) {
         viewModelScope.launch {
             handleAddAttachment(
                 workItemId = currentPage.id,
-                uri = uri,
+                file = file,
                 doOnPreExecute = {
                     _state.update { it.copy(error = NativeText.Empty) }
                 },

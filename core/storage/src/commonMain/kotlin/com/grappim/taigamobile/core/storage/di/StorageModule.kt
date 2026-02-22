@@ -1,6 +1,10 @@
 package com.grappim.taigamobile.core.storage.di
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.Preferences
 import kotlinx.serialization.json.Json
+import okio.Path.Companion.toPath
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Qualifier
@@ -26,3 +30,7 @@ class StorageModule {
 
 @Module
 expect class PlatformStorageModule
+
+fun createDataStore(producePath: () -> String): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
+    produceFile = { producePath().toPath() }
+)

@@ -2,7 +2,6 @@
 
 package com.grappim.taigamobile.feature.issues.ui.details
 
-import android.net.Uri
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -59,8 +58,8 @@ import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
@@ -87,7 +86,6 @@ class IssueDetailsViewModel(
     private val workItemsGenerator: WorkItemsGenerator,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
     private val dateTimeUtils: DateTimeUtils,
-    private val fileUriManager: FileUriManager,
     private val patchDataGenerator: PatchDataGenerator,
     private val historyRepository: HistoryRepository,
     private val workItemRepository: WorkItemRepository,
@@ -120,7 +118,6 @@ class IssueDetailsViewModel(
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = identifierType,
         workItemRepository = workItemRepository,
-        fileUriManager = fileUriManager,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
@@ -816,8 +813,8 @@ class IssueDetailsViewModel(
         }
     }
 
-    private fun onAttachmentAdd(uri: Uri?) {
-        if (uri == null) {
+    private fun onAttachmentAdd(file: PlatformFile?) {
+        if (file == null) {
             _state.update {
                 it.copy(
                     error = NativeText.Resource(RString.common_error_message)
@@ -829,7 +826,7 @@ class IssueDetailsViewModel(
         viewModelScope.launch {
             handleAddAttachment(
                 workItemId = currentIssue.id,
-                uri = uri,
+                file = file,
                 doOnPreExecute = {
                     clearError()
                 },

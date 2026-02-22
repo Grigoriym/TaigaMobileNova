@@ -12,6 +12,10 @@ android {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            implementation(libs.filekit.dialogs)
+            api(libs.filekit.core)
+            implementation(libs.filekit.dialogs.compose)
+
             implementation(projects.strings)
             implementation(projects.core.api)
             implementation(projects.core.domain)

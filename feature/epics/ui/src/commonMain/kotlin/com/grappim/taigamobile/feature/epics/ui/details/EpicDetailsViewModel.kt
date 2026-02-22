@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
-import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
@@ -47,6 +46,7 @@ import com.grappim.taigamobile.feature.workitem.ui.mappers.WorkItemUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.strings.RString
@@ -56,9 +56,9 @@ import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.toHex
+import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toPersistentList
@@ -79,7 +79,6 @@ class EpicDetailsViewModel(
     private val workItemRepository: WorkItemRepository,
     private val patchDataGenerator: PatchDataGenerator,
     private val historyRepository: HistoryRepository,
-    private val fileUriManager: FileUriManager,
     private val usersRepository: UsersRepository,
     private val taigaSessionStorage: TaigaSessionStorage,
     private val dateTimeUtils: DateTimeUtils,
@@ -89,8 +88,7 @@ class EpicDetailsViewModel(
     private val tagUIMapper: TagUIMapper,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val workItemUIMapper: WorkItemUIMapper,
-    private val workItemEditStateRepository:
-    com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
+    private val workItemEditStateRepository: WorkItemEditStateRepository
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
@@ -122,7 +120,6 @@ class EpicDetailsViewModel(
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = TaskIdentifier.WorkItem(epicTaskType),
         workItemRepository = workItemRepository,
-        fileUriManager = fileUriManager,
         taigaSessionStorage = taigaSessionStorage
     ),
     WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
@@ -727,8 +724,8 @@ class EpicDetailsViewModel(
         }
     }
 
-    private fun onAttachmentAdd(uri: Uri?) {
-        if (uri == null) {
+    private fun onAttachmentAdd(file: PlatformFile?) {
+        if (file == null) {
             _state.update {
                 it.copy(
                     error = NativeText.Resource(RString.common_error_message)
@@ -740,7 +737,7 @@ class EpicDetailsViewModel(
         viewModelScope.launch {
             handleAddAttachment(
                 workItemId = currentEpic.id,
-                uri = uri,
+                file = file,
                 doOnPreExecute = {
                     clearError()
                 },
