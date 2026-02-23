@@ -5,5 +5,5 @@ actual fun formatColor(color: Int): String {
 }
 
 actual fun String.formatStringKmp(vararg args: Any?): String {
-    return this.format(args)
+    return this.format(*args)
 }
