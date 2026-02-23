@@ -25,6 +25,7 @@ import com.grappim.taigamobile.strings.generated.resources.userstory
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
 import com.grappim.taigamobile.utils.formatter.datetime.platformFormatMediumDateTime
+import com.grappim.taigamobile.utils.ui.formatStringKmp
 import com.grappim.taigamobile.utils.ui.toColor
 import org.jetbrains.compose.resources.stringResource
 
@@ -100,7 +101,7 @@ fun CommonTaskItem(
         Text(
             text = commonTask.assignee?.fullName?.let {
                 stringResource(RString.assignee_pattern)
-                    .format(it)
+                    .formatStringKmp(it)
             } ?: stringResource(RString.unassigned),
             color = MaterialTheme.colorScheme.primary,
             style = MaterialTheme.typography.bodyMedium

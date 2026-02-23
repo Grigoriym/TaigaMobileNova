@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import kotlinx.datetime.LocalDateTime
+import kotlin.time.Clock
 
 const val WORK_ITEM_TABLE = "work_item_table"
 
@@ -42,5 +43,5 @@ data class WorkItemEntity(
     // Sprint/milestone ID for filtering
     val sprintId: Long?,
     // Cache metadata
-    val cachedAt: Long = System.currentTimeMillis()
+    val cachedAt: Long = Clock.System.now().toEpochMilliseconds()
 )

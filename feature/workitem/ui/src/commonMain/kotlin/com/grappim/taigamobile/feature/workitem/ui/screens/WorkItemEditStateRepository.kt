@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens
 
+import com.grappim.taigamobile.core.asynckmp.ThreadSafeMap
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
@@ -9,7 +10,6 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.receiveAsFlow
 import org.koin.core.annotation.Single
-import java.util.concurrent.ConcurrentHashMap
 
 /**
  * Though it is better than my initial attempt for such behavior
@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Single
 class WorkItemEditStateRepository {
 
-    private val sessions = ConcurrentHashMap<String, WorkItemEditSession>()
+    private val sessions = ThreadSafeMap<String, WorkItemEditSession>()
 
     private fun getSessionKey(workItemId: Long, type: TaskIdentifier): String = when (type) {
         is TaskIdentifier.WorkItem -> "${type.commonTaskType.name}_$workItemId"

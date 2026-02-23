@@ -41,6 +41,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.formatStringKmp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -115,7 +116,7 @@ fun ProfileScreenContent(state: ProfileState, modifier: Modifier = Modifier) {
                 Text(
                     text = stringResource(
                         RString.username_template
-                    ).format(state.user?.username.orEmpty()),
+                    ).formatStringKmp(state.user?.username.orEmpty()),
                     color = MaterialTheme.colorScheme.outline,
                     style = MaterialTheme.typography.bodyLarge
                 )

@@ -13,6 +13,7 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.PreviewUtils
 import com.grappim.taigamobile.utils.formatter.datetime.platformFormatMediumDate
+import com.grappim.taigamobile.utils.ui.formatStringKmp
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
@@ -31,7 +32,7 @@ internal fun SprintItem(sprint: Sprint, goToSprint: (Sprint) -> Unit = {}) {
         },
         supportingContent = {
             Text(
-                stringResource(RString.sprint_dates_template).format(
+                stringResource(RString.sprint_dates_template).formatStringKmp(
                     platformFormatMediumDate(sprint.start),
                     platformFormatMediumDate(sprint.end)
                 )

@@ -16,7 +16,7 @@ fun String?.fixNullColor() = if (this == null || this.isEmpty()) {
 }
 
 @Deprecated("use com.grappim.taigamobile.utils.ui.ColorMapper")
-fun Color.toHex(): String = "#%08X".format(toArgb()).replace("#FF", "#")
+fun Color.toHex(): String = formatColor(toArgb()).replace("#FF", "#")
 
 // calculate optimal text color for colored background background
 fun Color.textColor() = if (luminance() < 0.5) Color.White else Color.Black

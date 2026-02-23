@@ -60,6 +60,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.list.CommonTaskItem
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
+import com.grappim.taigamobile.utils.ui.formatStringKmp
 import com.grappim.taigamobile.utils.ui.toColor
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
@@ -435,7 +436,7 @@ private fun TaskItem(task: WorkItem, onTaskClick: () -> Unit) = Surface(
 
             Text(
                 text = task.assignee?.fullName?.let {
-                    stringResource(RString.assignee_pattern).format(it)
+                    stringResource(RString.assignee_pattern).formatStringKmp(it)
                 } ?: stringResource(RString.unassigned),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyMedium

@@ -31,6 +31,9 @@ internal fun Project.configureKmpCompose() {
                 implementation(libs.findLibrary("compose.desktop").get())
                 implementation(libs.findLibrary("compose.navigation.desktop").get())
             }
+            iosMain.dependencies {
+
+            }
         }
     }
 }

@@ -8,6 +8,9 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 fun Project.configureKmp() {
     extensions.configure<KotlinMultiplatformExtension> {
         jvmToolchain(21)
+        compilerOptions {
+            freeCompilerArgs.add("-Xexpect-actual-classes")
+        }
 
         androidTarget {
             compilerOptions {
@@ -16,6 +19,9 @@ fun Project.configureKmp() {
         }
 
         jvm()
+
+        iosArm64()
+        iosSimulatorArm64()
 
         sourceSets.apply {
             commonMain.dependencies {
@@ -33,6 +39,9 @@ fun Project.configureKmp() {
             }
             jvmMain.dependencies {
                 implementation(libs.findLibrary("kotlinx.coroutines.swing").get())
+            }
+            iosMain.dependencies {
+                implementation(libs.findLibrary("kotlinx.coroutines.core").get())
             }
         }
     }

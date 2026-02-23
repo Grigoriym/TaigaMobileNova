@@ -7,6 +7,7 @@ import androidx.savedstate.write
 import kotlinx.serialization.KSerializer
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.serializer
+import kotlin.jvm.JvmSuppressWildcards
 import kotlin.reflect.KType
 
 fun typeMapOf(ktypes: List<KType>): Map<KType, @JvmSuppressWildcards NavType<*>> = ktypes.associate {

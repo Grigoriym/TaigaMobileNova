@@ -31,6 +31,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.formatStringKmp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -84,7 +85,7 @@ private fun SettingsUserScreenContent(state: SettingsUserScreenState) {
                     )
 
                     Text(
-                        text = stringResource(RString.username_template).format(state.user.username),
+                        text = stringResource(RString.username_template).formatStringKmp(state.user.username),
                         style = MaterialTheme.typography.titleMedium
                     )
 

@@ -18,6 +18,10 @@ kotlin {
         jvmMain.dependencies {
             implementation(libs.ktor.core)
         }
+
+        iosMain.dependencies {
+            implementation(libs.ktor.core)
+        }
     }
 }
 

@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import kotlinx.datetime.LocalDate
+import kotlin.time.Clock
 
 const val SPRINT_TABLE = "sprint_table"
 
@@ -21,5 +22,5 @@ data class SprintEntity(
     val end: LocalDate,
     val storiesCount: Int,
     val isClosed: Boolean,
-    val cachedAt: Long = System.currentTimeMillis()
+    val cachedAt: Long = Clock.System.now().toEpochMilliseconds()
 )

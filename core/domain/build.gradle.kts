@@ -6,3 +6,11 @@ plugins {
 android {
     namespace = "com.grappim.taigamobile.core.domain"
 }
+
+kotlin{
+    sourceSets{
+        iosMain.dependencies {
+            implementation(libs.kotlinx.io.core)
+        }
+    }
+}

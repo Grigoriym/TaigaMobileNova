@@ -20,6 +20,9 @@ class KmpNetworkConventionPlugin : Plugin<Project> {
                     commonMain.dependencies {
                         implementation(libs.findLibrary("ktor.core").get())
                     }
+                    iosMain.dependencies {
+                        implementation(libs.findLibrary("ktor.client.darwin").get())
+                    }
                 }
             }
         }

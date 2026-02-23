@@ -31,6 +31,7 @@ import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
+import com.grappim.taigamobile.utils.ui.formatStringKmp
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -44,7 +45,7 @@ fun CommentsSectionWidget(
     if (commentsState.comments.isNotEmpty()) {
         Column(modifier = modifier) {
             SectionTitleExpandable(
-                text = stringResource(RString.comments_template).format(commentsState.comments.size),
+                text = stringResource(RString.comments_template).formatStringKmp(commentsState.comments.size),
                 isExpanded = commentsState.isCommentsWidgetExpanded,
                 onExpandClick = {
                     commentsState.setIsCommentsWidgetExpanded(!commentsState.isCommentsWidgetExpanded)
