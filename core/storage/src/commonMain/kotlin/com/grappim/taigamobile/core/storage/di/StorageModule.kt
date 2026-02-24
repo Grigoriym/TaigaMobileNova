@@ -19,6 +19,9 @@ internal const val TAIGA_SESSION_STORAGE = "taiga_session_storage"
 annotation class StorageJsonQualifier
 
 @Module
+expect class PlatformStorageModule
+
+@Module
 @ComponentScan
 class StorageModule {
 
@@ -27,9 +30,6 @@ class StorageModule {
         ignoreUnknownKeys = true
     }
 }
-
-@Module
-expect class PlatformStorageModule
 
 fun createDataStore(producePath: () -> String): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
     produceFile = { producePath().toPath() }

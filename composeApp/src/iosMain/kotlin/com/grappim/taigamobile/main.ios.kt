@@ -20,10 +20,11 @@ fun MainViewController(): UIViewController = ComposeUIViewController(
         onFocusBehavior = OnFocusBehavior.DoNothing
     }
 ) {
+    startKoin<KoinApp> {  }
+
     NSLogLogger.install()
     val screenReadySignalController =
         ScreenReadySignalController(true)
-    startKoin<KoinApp> {  }
     TaigaMobileTheme {
         CompositionLocalProvider(
             LocalScreenReadySignal provides screenReadySignalController

@@ -44,3 +44,5 @@
 # https://filekit.mintlify.app/core/setup#proguard-configuration
 -keep class com.sun.jna.** { *; }
 -keep class * implements com.sun.jna.** { *; }
+
+-keep class * extends androidx.room.RoomDatabase { <init>(); }

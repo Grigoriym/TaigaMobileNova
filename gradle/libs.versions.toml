@@ -142,6 +142,8 @@ koin-compose = { module = "io.insert-koin:koin-compose" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }
 koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
 koin-navigation2 = { module = "io.insert-koin:koin-androidx-compose-navigation" }
+koin-test = { module = "io.insert-koin:koin-test" }
+koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4" }
 
 kermit = { module = "co.touchlab:kermit", version.ref = "kermit" }
 

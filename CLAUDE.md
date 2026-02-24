@@ -1,15 +1,22 @@
 # CLAUDE.md
 
-TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin, Jetpack Compose, and follows a modular MVVM + Clean Architecture.
+TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io targeting Android, iOS, and Desktop. Built with Kotlin, Compose Multiplatform, and follows a modular MVVM + Clean Architecture.
 
 ## Build Commands
 
 ```bash
-# Build debug APK (composeApp is the application module since KMP migration)
+# Android - build debug APK
 ./gradlew :composeApp:assembleGplayDebug
 ./gradlew :composeApp:assembleFdroidDebug
 
-# Run tests (use fdroid or gplay variant)
+# Desktop - run or package
+./gradlew :composeApp:run
+./gradlew :composeApp:packageDistributionForCurrentOS   # Deb / Dmg / Msi
+
+# iOS - build the framework (then open iosApp/iosApp.xcodeproj in Xcode)
+./gradlew :composeApp:assembleReleaseXCFramework
+
+# Run tests (use fdroid or gplay variant for Android)
 ./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
 
 # Force Koin compiler logs (only printed when compiler actually runs; skipped on UP-TO-DATE)
@@ -24,25 +31,32 @@ TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin,
 - Dependencies via Gradle Version Catalogs (`gradle/libs.versions.toml`)
 - Build plugins in `build-logic/`
 
+**Platforms:**
+
+- **Android** — `androidTarget()`, Min SDK 24, Target SDK 36, flavors: Gplay / Fdroid
+- **iOS** — `iosArm64()` + `iosSimulatorArm64()`, static framework `TaigaMobileNovaIos`; entry point in `main.ios.kt`
+- **Desktop/JVM** — `jvm()`, entry point `TaigaMobileDesktop.kt`; packages Deb/Dmg/Msi
+
 **Tech Stack:**
 
-- Kotlin 2.3.0, JDK 21, Target SDK 36, Min SDK 24
-- Jetpack Compose with Material Design 3
+- Kotlin 2.3.x, JDK 21
+- Compose Multiplatform with Material Design 3
 - Koin (with `io.insert-koin.compiler.plugin` IR/FIR plugin) for DI
-- Ktor for networking
-- Navigation Compose 2.9.7 with type-safe routes
+- Ktor for networking (OkHttp on Android/JVM, Darwin on iOS)
+- Navigation Compose (KMP) with type-safe routes
 - Kotlin Serialization for JSON
-- Coroutines, Coil 3.x for images
+- Coroutines, Coil 3.x for images (KMP-ready)
 - Room 2.8.4 + BundledSQLiteDriver (KMP-ready)
-- Kotlin Multiplatform (Android-only target currently)
+- Timber for logging (Android-specific)
 
 **Convention Plugins** (in `build-logic/`):
 
-- `taigamobile.kmp.library` - KMP Android library base
+- `taigamobile.kmp.library` - KMP base (Android + iOS + JVM targets, coroutines, collections)
+- `taigamobile.kmp.library.compose` - Adds Compose Multiplatform across all targets
 - `taigamobile.kmp.di` - Applies `io.insert-koin.compiler.plugin` + Koin dependencies
 - `taigamobile.kmp.serialization` - Kotlin Serialization setup
-- `taigamobile.android.library.compose` - Android library + Compose
-- `taigamobile.kotlin.library` - Pure Kotlin library (no Android)
+- `taigamobile.kmp.network` - Ktor with platform-specific engines (OkHttp / Darwin)
+- `taigamobile.kotlin.library` - Pure Kotlin library (no Android/KMP)
 
 ## Navigation Pattern
 
@@ -146,9 +160,9 @@ actual class PlatformMyModule
 The `actual class` gets auto-injected by Phase 3. The `expect class` is intentionally skipped by Koin FIR.
 
 **Existing examples in this project:**
-- `PlatformComponentModule` (`composeApp`) — global `@ComponentScan("com.grappim.taigamobile")`
-- `PlatformStorageModule` (`core:storage`) — DataStore + storage providers
-- `PlatformDBModule` (`core:storage`) — Room database builder (Android-specific)
+- `PlatformComponentModule` (`composeApp`) — global `@ComponentScan("com.grappim.taigamobile")`; `actual class` exists in `androidMain`, `iosMain`, and `jvmMain`
+- `PlatformStorageModule` (`core:storage`) — DataStore + storage providers; platform `actual class` per target
+- `PlatformDBModule` (`core:storage`) — Room database builder; Android-specific `actual class`
 
 **Adding a new platform target** only requires a new `actual class` in that target's source set providing platform-specific dependencies (e.g., the `RoomDatabase.Builder`). All common logic stays in `commonMain`.
 
@@ -311,7 +325,7 @@ For multi-step tasks, state a brief plan:
 
 - Never swallow exceptions silently. Every `catch` block must at least log the exception with `Timber.e(e)`.
 
-## Android/Compose Rules
+## Compose / Platform Rules
 
 - Do not use early returns in Composable functions — use conditional wrapping
 - Lambda parameters: present tense (`onClick` not `onClicked`)
