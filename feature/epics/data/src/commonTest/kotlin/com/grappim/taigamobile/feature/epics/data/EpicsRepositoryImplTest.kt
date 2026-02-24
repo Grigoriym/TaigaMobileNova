@@ -1,13 +1,11 @@
 package com.grappim.taigamobile.feature.epics.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.epics.dto.LinkToEpicRequestDTO
 import com.grappim.taigamobile.feature.epics.mapper.EpicMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getRandomLong
@@ -28,8 +26,6 @@ class EpicsRepositoryImplTest {
     private val workItemApi: WorkItemApi = mockk()
     private val epicMapper: EpicMapper = mockk()
     private val workItemMapper: WorkItemMapper = mockk()
-    private val workItemDao: WorkItemDao = mockk()
-    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
 
     private lateinit var sut: EpicsRepository
 
@@ -43,8 +39,6 @@ class EpicsRepositoryImplTest {
             workItemApi = workItemApi,
             epicMapper = epicMapper,
             workItemMapper = workItemMapper,
-            workItemDao = workItemDao,
-            workItemEntityMapper = workItemEntityMapper
         )
     }
 

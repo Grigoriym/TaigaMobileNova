@@ -1,12 +1,10 @@
 package com.grappim.taigamobile.feature.userstories.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.mapper.UserStoryMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
@@ -31,8 +29,6 @@ class UserStoriesRepositoryImplTest {
     private val workItemApi: WorkItemApi = mockk()
     private val workItemRepository: WorkItemRepository = mockk()
     private val workItemMapper: WorkItemMapper = mockk()
-    private val workItemDao: WorkItemDao = mockk()
-    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
 
     private lateinit var sut: UserStoriesRepository
 
@@ -47,8 +43,6 @@ class UserStoriesRepositoryImplTest {
             workItemApi = workItemApi,
             workItemRepository = workItemRepository,
             workItemMapper = workItemMapper,
-            workItemDao = workItemDao,
-            workItemEntityMapper = workItemEntityMapper
         )
     }
 

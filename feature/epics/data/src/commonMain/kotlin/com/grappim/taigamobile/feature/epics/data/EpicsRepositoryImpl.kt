@@ -1,29 +1,21 @@
 package com.grappim.taigamobile.feature.epics.data
 
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.map
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
-import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.epics.dto.LinkToEpicRequestDTO
 import com.grappim.taigamobile.feature.epics.mapper.EpicMapper
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
-import com.grappim.taigamobile.feature.workitem.data.WorkItemRemoteMediator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import kotlinx.collections.immutable.ImmutableList
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
 
 @Single(binds = [EpicsRepository::class])
@@ -33,49 +25,21 @@ class EpicsRepositoryImpl(
     private val workItemApi: WorkItemApi,
     private val epicMapper: EpicMapper,
     private val workItemMapper: WorkItemMapper,
-    private val workItemEntityMapper: WorkItemEntityMapper,
-    private val workItemDao: WorkItemDao
 ) : EpicsRepository {
 
-    @OptIn(ExperimentalPagingApi::class, ExperimentalCoroutinesApi::class)
     override fun getEpicsPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
-        val hasFilters = filters.filtersNumber > 0 || query.isNotBlank()
-        if (hasFilters) {
-            return Pager(
-                config = PagingConfig(
-                    pageSize = 10,
-                    enablePlaceholders = false
-                ),
-                pagingSourceFactory = {
-                    EpicsPagingSource(
-                        filters = filters,
-                        taigaSessionStorage = taigaSessionStorage,
-                        query = query,
-                        workItemApi = workItemApi,
-                        workItemMapper = workItemMapper
-                    )
-                }
-            ).flow
-        }
-        return taigaSessionStorage.currentProjectIdFlow.flatMapLatest { projectId ->
-            Pager(
-                config = PagingConfig(
-                    pageSize = 10,
-                    enablePlaceholders = false
-                ),
-                remoteMediator = WorkItemRemoteMediator(
-                    taskType = CommonTaskType.Epic,
+        return Pager(
+            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+            pagingSourceFactory = {
+                EpicsPagingSource(
+                    filters = filters,
+                    taigaSessionStorage = taigaSessionStorage,
+                    query = query,
                     workItemApi = workItemApi,
-                    workItemDao = workItemDao,
-                    workItemMapper = workItemMapper,
-                    workItemEntityMapper = workItemEntityMapper,
-                    taigaSessionStorage = taigaSessionStorage
-                ),
-                pagingSourceFactory = { workItemDao.pagingSource(projectId, CommonTaskType.Epic) }
-            ).flow.map { pagingData ->
-                pagingData.map { entity -> workItemEntityMapper.toDomain(entity) }
+                    workItemMapper = workItemMapper
+                )
             }
-        }
+        ).flow
     }
 
     override suspend fun getEpics(

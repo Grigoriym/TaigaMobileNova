@@ -1,15 +1,10 @@
-@file:OptIn(ExperimentalCoroutinesApi::class, ExperimentalPagingApi::class)
-
 package com.grappim.taigamobile.feature.userstories.data
 
-import androidx.paging.ExperimentalPagingApi
 import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
-import androidx.paging.map
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
-import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.userstories.domain.UpdatedKanbanStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
@@ -18,8 +13,6 @@ import com.grappim.taigamobile.feature.userstories.dto.BulkUpdateKanbanOrderRequ
 import com.grappim.taigamobile.feature.userstories.dto.CreateUserStoryRequest
 import com.grappim.taigamobile.feature.userstories.mapper.UserStoryMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
-import com.grappim.taigamobile.feature.workitem.data.WorkItemRemoteMediator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
@@ -28,10 +21,7 @@ import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.toImmutableList
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
 
 private val userStoryPlural = CommonTaskType.UserStory.getPluralPath()
@@ -44,47 +34,20 @@ class UserStoriesRepositoryImpl(
     private val workItemApi: WorkItemApi,
     private val workItemRepository: WorkItemRepository,
     private val workItemMapper: WorkItemMapper,
-    private val workItemEntityMapper: WorkItemEntityMapper,
-    private val workItemDao: WorkItemDao
 ) : UserStoriesRepository {
 
     override fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
-        val hasFilters = filters.filtersNumber > 0 || query.isNotBlank()
-        if (hasFilters) {
-            return Pager(
-                PagingConfig(
-                    pageSize = 10,
-                    enablePlaceholders = false
-                )
-            ) {
-                UserStoriesPagingSource(
-                    filters = filters,
-                    taigaSessionStorage = taigaSessionStorage,
-                    query = query,
-                    workItemMapper = workItemMapper,
-                    workItemApi = workItemApi
-                )
-            }.flow
-        }
-        return taigaSessionStorage.currentProjectIdFlow.flatMapLatest { projectId ->
-            Pager(
-                config = PagingConfig(
-                    pageSize = 10,
-                    enablePlaceholders = false
-                ),
-                remoteMediator = WorkItemRemoteMediator(
-                    taskType = CommonTaskType.UserStory,
-                    workItemApi = workItemApi,
-                    workItemDao = workItemDao,
-                    workItemMapper = workItemMapper,
-                    workItemEntityMapper = workItemEntityMapper,
-                    taigaSessionStorage = taigaSessionStorage
-                ),
-                pagingSourceFactory = { workItemDao.pagingSource(projectId, CommonTaskType.UserStory) }
-            ).flow.map { pagingData ->
-                pagingData.map { entity -> workItemEntityMapper.toDomain(entity) }
-            }
-        }
+        return Pager(
+            PagingConfig(pageSize = 10, enablePlaceholders = false)
+        ) {
+            UserStoriesPagingSource(
+                filters = filters,
+                taigaSessionStorage = taigaSessionStorage,
+                query = query,
+                workItemMapper = workItemMapper,
+                workItemApi = workItemApi
+            )
+        }.flow
     }
 
     override suspend fun getUserStory(id: Long): UserStory {

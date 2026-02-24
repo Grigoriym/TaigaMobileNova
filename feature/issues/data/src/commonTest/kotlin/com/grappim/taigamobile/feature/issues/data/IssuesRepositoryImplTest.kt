@@ -1,12 +1,10 @@
 package com.grappim.taigamobile.feature.issues.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.issues.mapper.IssueMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.getFiltersData
 import com.grappim.taigamobile.testing.getRandomLong
@@ -25,11 +23,7 @@ class IssuesRepositoryImplTest {
     private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
     private val issueMapper: IssueMapper = mockk()
     private val workItemApi: WorkItemApi = mockk()
-
     private val workItemMapper: WorkItemMapper = mockk()
-    private val workItemDao: WorkItemDao = mockk()
-
-    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
 
     private lateinit var sut: IssuesRepository
 
@@ -43,8 +37,6 @@ class IssuesRepositoryImplTest {
             issueMapper = issueMapper,
             workItemApi = workItemApi,
             workItemMapper = workItemMapper,
-            workItemDao = workItemDao,
-            workItemEntityMapper = workItemEntityMapper
         )
     }
 
