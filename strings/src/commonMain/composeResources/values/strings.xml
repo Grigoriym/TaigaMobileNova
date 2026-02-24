@@ -45,7 +45,7 @@
 
     <!-- Dashboard sections -->
     <string name="dashboard_watching_title">👀 WATCHING</string>
-    <string name="dashboard_watching_subtitle">Items I\'m monitoring</string>
+    <string name="dashboard_watching_subtitle">Items I'm monitoring</string>
     <string name="dashboard_my_work_title">📋 MY WORK</string>
     <string name="dashboard_my_work_subtitle">Items assigned to me</string>
     <string name="dashboard_recent_activity_title">🆕 RECENT ACTIVITY</string>
@@ -259,7 +259,7 @@
     <string name="status_with_number_template" translatable="false">%1$s - %2$d</string>
 
     <!-- settings -->
-    <string name="username_template" translatable="false">\@%1$s</string>
+    <string name="username_template" translatable="false">@%1$s</string>
     <string name="logout_title">Log out</string>
     <string name="logout_text">Are you sure you want to log out?</string>
 
@@ -278,7 +278,7 @@
     <string name="bookmarks">Bookmarks</string>
     <string name="all_wiki_pages">All wiki pages</string>
     <string name="empty_wiki_dialog_title">There are no wiki pages…</string>
-    <string name="empty_wiki_dialog_subtitle">Let\'s add a new one?</string>
+    <string name="empty_wiki_dialog_subtitle">Let's add a new one?</string>
     <string name="create_new_page">Create new page</string>
     <string name="create_new_bookmark">Create new bookmark</string>
     <string name="new_link_name">Link name</string>
@@ -299,7 +299,7 @@
     <string name="error_loading_closed_stories">Failed to load closed user stories</string>
     <string name="error_loading_open_user_stories">Failed to load open user stories</string>
 
-    <string name="sprint_name_empty">Sprint name shouldn\'t be empty</string>
+    <string name="sprint_name_empty">Sprint name shouldn't be empty</string>
     <string name="sprint_start_date_empty">Sprint start date is not set</string>
     <string name="sprint_end_date_empty">Sprint end date is not set</string>
 
