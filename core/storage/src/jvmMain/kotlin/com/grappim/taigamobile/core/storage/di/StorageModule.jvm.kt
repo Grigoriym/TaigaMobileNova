@@ -7,7 +7,6 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
-import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
@@ -15,11 +14,9 @@ import java.io.File
 
 @Module(includes = [AuthDataStoreModule::class, StorageModule::class])
 @Configuration
-@ComponentScan
 actual class PlatformStorageModule
 
 @Module
-@ComponentScan
 class AuthDataStoreModule {
 
     @Single
@@ -35,21 +32,19 @@ class AuthDataStoreModule {
 
 fun createSessionDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
-        val file = File(System.getProperty("java.io.tmpdir"), "$TAIGA_SESSION_STORAGE$PREFS_EXT")
-        file.absolutePath
+        File(System.getProperty("java.io.tmpdir"), "$TAIGA_SESSION_STORAGE$PREFS_EXT").absolutePath
     }
 )
 
 fun createSessionFiltersDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
-        val file = File(System.getProperty("java.io.tmpdir"), "$SESSION_FILTERS_DATA_STORE_FILE_NAME$PREFS_EXT")
-        file.absolutePath
+        File(
+            System.getProperty("java.io.tmpdir"),
+            "$SESSION_FILTERS_DATA_STORE_FILE_NAME$PREFS_EXT"
+        ).absolutePath
     }
 )
 
 fun createAuthDataStore(): DataStore<Preferences> = createDataStore(
-    producePath = {
-        val file = File(System.getProperty("java.io.tmpdir"), "$AUTH_DATA_STORE_FILE_NAME$PREFS_EXT")
-        file.absolutePath
-    }
+    producePath = { File(System.getProperty("java.io.tmpdir"), "$AUTH_DATA_STORE_FILE_NAME$PREFS_EXT").absolutePath }
 )
