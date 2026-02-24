@@ -18,7 +18,6 @@ internal const val TAIGA_SESSION_STORAGE = "taiga_session_storage"
 @Qualifier
 annotation class StorageJsonQualifier
 
-@Module
 expect class PlatformStorageModule
 
 @Module

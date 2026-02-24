@@ -51,19 +51,20 @@ Platform init:
 
 **Rule:** `@Configuration` goes ONLY on `actual class` in platform source sets, NEVER on `expect class` in `commonMain`.
 
+**Also omit `@Module` from the `expect class`.** Koin FIR explicitly skips `expect` classes ("Skipping expect class" in debug log), so `@Module` there is a no-op. More importantly, if the `expect` has `@Module` (implicitly `@Module(includes = [])`) but the `actual` has `@Module(includes = [SomeModule::class])`, the Kotlin compiler emits a warning: _"Annotation `@Module()` has different arguments on actual declaration"_. Removing `@Module` from the `expect` eliminates the warning with no functional impact.
+
 ```kotlin
-// commonMain — NO @Configuration here
-@Module
+// commonMain — no @Module, no @Configuration
 expect class PlatformXyzModule
 
-// androidMain / iosMain / jvmMain — @Configuration HERE
+// androidMain / iosMain / jvmMain — all Koin annotations go here
 @Module(includes = [CommonXyzModule::class])
 @Configuration
 actual class PlatformXyzModule { ... }
 ```
 
 When adding a new multiplatform module that has platform-specific beans:
-1. Declare `expect class` in `commonMain` with `@Module` only
+1. Declare a bare `expect class` in `commonMain` (no annotations)
 2. Create `actual class` in each platform source set with `@Module(includes = [...])` + `@Configuration`
 
 ---
@@ -86,6 +87,31 @@ When adding a new multiplatform module that has platform-specific beans:
 | `DecimalFormatterModule` | utils/formatter/decimal/commonMain | `@DecimalFormatSimple DecimalFormatter` |
 
 Feature modules have **no explicit `@Module` classes** — they rely entirely on `@ComponentScan` auto-discovery via `AppModule`. Every `@Single`, `@Factory`, `@ViewModel` annotated class under `com.grappim.taigamobile` is auto-discovered.
+
+---
+
+## Annotation Reference
+
+### Definition types
+
+| Annotation | Lifecycle |
+|------------|-----------|
+| `@Single` | Singleton — one instance per Koin scope |
+| `@Factory` | New instance per `get()` call |
+| `@KoinViewModel` | Android ViewModel (scoped to its owner) |
+
+### Parameter annotations
+
+| Annotation | Purpose |
+|------------|---------|
+| `@InjectedParam` | Runtime parameter — passed via `parametersOf()` at injection site |
+| `@Property("key")` | Koin property value from `koin.properties` or `setProperty()` |
+| `@Provided` | External/framework type — skips compile-time validation |
+| `@Named("qualifier")` | Simple string qualifier (alternative to custom qualifier annotations) |
+
+`@Provided` is the annotation-based equivalent of the `withInstance<T>(...)` calls in `KoinGraphTest` — use it when a constructor parameter is supplied by the framework (e.g., `Context`) rather than Koin.
+
+`@Named` works for one-off cases; prefer custom qualifier annotations (e.g., `@IoDispatcher`) for reusable qualifiers, as they are type-safe and refactor-friendly.
 
 ---
 

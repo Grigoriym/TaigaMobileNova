@@ -50,5 +50,4 @@ class DBModule {
     }
 }
 
-@Module
 expect class PlatformDBModule

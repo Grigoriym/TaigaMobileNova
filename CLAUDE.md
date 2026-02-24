@@ -133,43 +133,9 @@ feature/{name}/
 └── ui/       → NavDestination, Screen, State, ViewModel
 ```
 
-## Koin DI Pattern (KMP)
+## Koin DI
 
-The project uses Koin's IR/FIR compiler plugin (`io.insert-koin.compiler.plugin`). **Do not use KSP for Koin** — the IR plugin replaces it.
-
-**The `@Configuration` problem in KMP:** Classes in `commonMain` appear as `KtLightSourceElement` during `androidMain` compilation → the FIR plugin cannot detect `@Configuration` → no auto-injection hint is generated.
-
-**Fix: use `actual class` in `androidMain` as the `@Configuration` entry point:**
-
-```kotlin
-// commonMain — no @Configuration here
-@Module
-class MyModule {
-    @Single fun provideX(): X = X()
-}
-
-@Module
-expect class PlatformMyModule
-
-// androidMain — @Configuration here, detected correctly by FIR
-@Module(includes = [MyModule::class])
-@Configuration
-actual class PlatformMyModule
-```
-
-The `actual class` gets auto-injected by Phase 3. The `expect class` is intentionally skipped by Koin FIR.
-
-**Existing examples in this project:**
-- `PlatformComponentModule` (`composeApp`) — global `@ComponentScan("com.grappim.taigamobile")`; `actual class` exists in `androidMain`, `iosMain`, and `jvmMain`
-- `PlatformStorageModule` (`core:storage`) — DataStore + storage providers; platform `actual class` per target
-- `PlatformDBModule` (`core:storage`) — Room database builder; Android-specific `actual class`
-
-**Adding a new platform target** only requires a new `actual class` in that target's source set providing platform-specific dependencies (e.g., the `RoomDatabase.Builder`). All common logic stays in `commonMain`.
-
-**IDE false positives to ignore:**
-- "Unresolved reference" on Koin-generated `module()` extensions
-- "Expect and actual declared in same module" on `actual class` in `androidMain`
-- These are IDE issues; Gradle compiles correctly
+For DI patterns, the `expect/actual @Configuration` rule, module registry, qualifier map, and troubleshooting, see the **koin-expert** subagent (`.claude/agents/koin-expert.md`). Never use KSP — this project uses `io.insert-koin.compiler.plugin` exclusively.
 
 ## Permissions Pattern
 
