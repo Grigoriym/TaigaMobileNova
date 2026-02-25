@@ -161,7 +161,7 @@ kover {
                     "**.LifecycleEffects\$*",
                     "**.*Preference",
                     "**.*PreferenceKt",
-                    "**.*Preference\$*",
+                    "**.*Preference\$*"
                 )
             }
         }

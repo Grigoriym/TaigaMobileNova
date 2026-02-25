@@ -1,37 +1,31 @@
 package com.grappim.taigamobile.feature.swimlanes.data
 
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
-import com.grappim.taigamobile.testing.models.getSwimlane
+import com.grappim.taigamobile.testing.api.FakeSwimlanesApi
 import com.grappim.taigamobile.testing.models.getSwimlaneDTO
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SwimlanesRepositoryImplTest {
 
-    private val swimlanesApi: SwimlanesApi = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val swimlanesMapper: SwimlanesMapper = mockk()
+    private val projectId = getRandomLong()
+    private val swimlanesApi = FakeSwimlanesApi()
+    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage(
+        currentProjectId = projectId
+    )
+    private val swimlanesMapper: SwimlanesMapper = SwimlanesMapper()
 
     private lateinit var sut: SwimlanesRepository
 
-    private val projectId = getRandomLong()
-
     @BeforeTest
     fun setup() {
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-
         sut = SwimlanesRepositoryImpl(
             swimlanesApi = swimlanesApi,
             taigaSessionStorage = taigaSessionStorage,
@@ -41,32 +35,22 @@ class SwimlanesRepositoryImplTest {
 
     @Test
     fun `getSwimlanes should return mapped swimlanes`() = runTest {
-        val swimlaneDTO1 = getSwimlaneDTO()
-        val swimlaneDTO2 = getSwimlaneDTO()
-        val apiResponse = listOf(swimlaneDTO1, swimlaneDTO2)
-        val expectedSwimlanes = persistentListOf(
-            getSwimlane(),
-            getSwimlane()
+        val dto1 = getSwimlaneDTO()
+        val dto2 = getSwimlaneDTO()
+        swimlanesApi.swimlanesResult = listOf(dto1, dto2)
+        val expected = persistentListOf(
+            Swimlane(id = dto1.id, name = dto1.name, order = dto1.order),
+            Swimlane(id = dto2.id, name = dto2.name, order = dto2.order)
         )
-
-        coEvery { swimlanesApi.getSwimlanes(projectId) } returns apiResponse
-        every { swimlanesMapper.toListDomain(apiResponse) } returns expectedSwimlanes
 
         val result = sut.getSwimlanes()
 
-        assertEquals(expectedSwimlanes, result)
-        coVerify { taigaSessionStorage.getCurrentProjectId() }
-        coVerify { swimlanesApi.getSwimlanes(projectId) }
-        verify { swimlanesMapper.toListDomain(apiResponse) }
+        assertEquals(expected, result)
     }
 
     @Test
     fun `getSwimlanes should return empty list when no swimlanes`() = runTest {
-        val apiResponse = emptyList<SwimlaneDTO>()
-        val expectedSwimlanes = persistentListOf<Swimlane>()
-
-        coEvery { swimlanesApi.getSwimlanes(projectId) } returns apiResponse
-        every { swimlanesMapper.toListDomain(apiResponse) } returns expectedSwimlanes
+        swimlanesApi.swimlanesResult = emptyList()
 
         val result = sut.getSwimlanes()
 
@@ -75,15 +59,10 @@ class SwimlanesRepositoryImplTest {
 
     @Test
     fun `getSwimlanes should use current project id from session`() = runTest {
-        val customProjectId = getRandomLong()
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns customProjectId
-
-        val apiResponse = emptyList<SwimlaneDTO>()
-        coEvery { swimlanesApi.getSwimlanes(customProjectId) } returns apiResponse
-        every { swimlanesMapper.toListDomain(apiResponse) } returns persistentListOf()
+        swimlanesApi.swimlanesResult = emptyList()
 
         sut.getSwimlanes()
 
-        coVerify { swimlanesApi.getSwimlanes(customProjectId) }
+        assertEquals(projectId, swimlanesApi.lastProjectId)
     }
 }

@@ -75,6 +75,7 @@ kotlin {
 
             api(projects.utils.ui)
             api(projects.utils.formatter.datetime)
+            api(projects.utils.formatter.decimal)
         }
     }
 }

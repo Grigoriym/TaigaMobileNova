@@ -1,7 +1,5 @@
 package com.grappim.taigamobile.feature.projects.data
 
-import com.grappim.taigamobile.core.storage.TaigaSessionStorage
-import com.grappim.taigamobile.core.storage.db.dao.ProjectDao
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
@@ -10,11 +8,14 @@ import com.grappim.taigamobile.feature.projects.dto.tags.DeleteTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.EditTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.MixTagsRequestDTO
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
+import com.grappim.taigamobile.testing.api.FakeProjectsApi
+import com.grappim.taigamobile.testing.dao.FakeProjectDao
 import com.grappim.taigamobile.testing.models.getProject
 import com.grappim.taigamobile.testing.models.getProjectDTO
 import com.grappim.taigamobile.testing.models.getProjectEntity
 import com.grappim.taigamobile.testing.models.getProjectSimple
 import com.grappim.taigamobile.testing.models.getTag
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
@@ -25,12 +26,12 @@ import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
 class ProjectsRepositoryImplTest {
-    private val projectsApi = mockk<ProjectsApi>()
-    private val projectMapper = mockk<ProjectMapper>()
+    private val projectsApi = FakeProjectsApi()
+    private val projectMapper = ProjectMapper()
 
-    private val projectDao = mockk<ProjectDao>()
-    private val tagsMapper = mockk<TagsMapper>()
-    private val taigaSessionStorage = mockk<TaigaSessionStorage>()
+    private val projectDao = FakeProjectDao()
+    private val tagsMapper = TagsMapper()
+    private val taigaSessionStorage = FakeTaigaSessionStorage()
 
     private val sut: ProjectsRepository = ProjectsRepositoryImpl(
         projectsApi = projectsApi,

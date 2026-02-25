@@ -1,6 +1,7 @@
-### Be sure
-1. to run `./gradlew ktlintFormat`
-2. then `./gradlew check`
+### Be sure to run locally
+1. `./gradlew ktlintFormat`
+2. `./gradlew detekt`
+3. `./gradlew allTests -x testDebugUnitTest`
 
 ### Describe your changes
 
