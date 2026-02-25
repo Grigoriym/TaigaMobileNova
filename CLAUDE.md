@@ -137,6 +137,10 @@ feature/{name}/
 
 For DI patterns, the `expect/actual @Configuration` rule, module registry, qualifier map, and troubleshooting, see the **koin-expert** subagent (`.claude/agents/koin-expert.md`). Never use KSP — this project uses `io.insert-koin.compiler.plugin` exclusively.
 
+## uikit Components
+
+For available Composable components, theme tokens, TopBarController usage, drag-and-drop, and offline/permission UI patterns, see the **uikit-guide** subagent (`.claude/agents/uikit-guide.md`). Consult it before creating any new widget.
+
 ## Permissions Pattern
 
 `TaigaPermission` enum defines all Taiga project permissions (VIEW_*, ADD_*, MODIFY_*, COMMENT_*, DELETE_* for each entity type).
@@ -148,30 +152,7 @@ permissions.canModifyTask()   // checks MODIFY_TASK
 permissions.hasPermission(TaigaPermission.COMMENT_US)
 ```
 
-**Usage in ViewModels:** Map permission checks to state booleans:
-```kotlin
-data class FeatureState(
-    val canAddItem: Boolean = false,
-    val canModify: Boolean = false
-)
-
-// In ViewModel init or when project changes:
-_state.update {
-    it.copy(
-        canAddItem = permissions.canAddItem(),
-        canModify = permissions.canModifyItem()
-    )
-}
-```
-
-**UI behavior:** When permission is false, **hide** the action (don't show disabled buttons):
-```kotlin
-actions = buildList {
-    if (state.canAddItem) {
-        add(TopBarActionIconButton(...))
-    }
-}
-```
+**UI behavior:** When permission is false, **hide** the action (don't show disabled buttons). Map permission checks to boolean fields in state, set from the permissions list in ViewModel init.
 
 ## Offline State Pattern
 
@@ -182,42 +163,7 @@ Use `LocalOfflineState` (from `uikit`) to disable write actions when offline.
 - No permission → **hide** action (user can never do this)
 - Offline → **disable** action (user can do this, just not right now)
 
-**Reading offline state:**
-```kotlin
-val isOffline = LocalOfflineState.current
-```
-
-**List screens - disable top bar add button:**
-```kotlin
-LaunchedEffect(state.canAddItem, isOffline) {
-    topBarController.update(
-        TopBarConfig(
-            actions = buildList {
-                if (state.canAddItem) {
-                    add(TopBarActionIconButton(
-                        enabled = !isOffline,
-                        onClick = { ... }
-                    ))
-                }
-            }.toImmutableList()
-        )
-    )
-}
-```
-
-**Details screens - pass to widgets:**
-```kotlin
-WorkItemDropdownMenuWidget(
-    canDelete = state.canDelete,
-    canModify = state.canModify,
-    isOffline = isOffline  // disables delete, block, promote actions
-)
-
-CreateCommentBar(
-    canComment = state.canComment,
-    isOffline = isOffline  // disables text field and send button
-)
-```
+Read offline state with `val isOffline = LocalOfflineState.current`, then pass it to uikit widgets (`AddButtonWidget`, `CreateCommentBar`, `DropdownSelector`, `TopBarActionIconButton`, etc.) which disable themselves when `isOffline = true`.
 
 ## Testing
 
@@ -267,26 +213,6 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-### Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
 ## Error Handling
 
 - Never swallow exceptions silently. Every `catch` block must at least log the exception with `Timber.e(e)`.
@@ -296,13 +222,13 @@ For multi-step tasks, state a brief plan:
 - Do not use early returns in Composable functions — use conditional wrapping
 - Lambda parameters: present tense (`onClick` not `onClicked`)
 - Prefer `kotlinx-collections-immutable` (`ImmutableList`, `persistentListOf()`) over `List`/`MutableList` in state classes and Composable parameters for stable recomposition
-- For Composable Previews, use `@PreviewTaigaDarkLight` annotation and wrap content with `TaigaMobileThemePreview` (both from `uikit`):
+- For Composable Previews, use `@PreviewTaigaDarkLight` annotation and wrap content with `TaigaMobilePreviewTheme` (both from `uikit`):
 
 ```kotlin
 @PreviewTaigaDarkLight
 @Composable
 private fun MyWidgetPreview() {
-    TaigaMobileThemePreview {
+    TaigaMobilePreviewTheme {
         MyWidget(...)
     }
 }
