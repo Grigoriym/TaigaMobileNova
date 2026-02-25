@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.ui.mappers
 
-import com.grappim.taigamobile.testing.getStatusUI
-import com.grappim.taigamobile.testing.getTagUI
-import com.grappim.taigamobile.testing.getWorkItem
+import com.grappim.taigamobile.testing.models.getStatusUI
+import com.grappim.taigamobile.testing.models.getTagUI
+import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -10,7 +10,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -25,7 +25,7 @@ class WorkItemUIMapperTest {
 
     private lateinit var sut: WorkItemUIMapper
 
-    @Before
+    @BeforeTest
     fun setUp() {
         sut = WorkItemUIMapper(
             dispatcher = testDispatcher,

@@ -12,15 +12,15 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.NumberIt
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.RichTextItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.TextItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.UrlItemState
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.nowLocalDate
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDate
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import java.text.DecimalFormat
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertIs
@@ -34,7 +34,7 @@ class CustomFieldsUIMapperTest {
 
     private lateinit var sut: CustomFieldsUIMapper
 
-    @Before
+    @BeforeTest
     fun setUp() {
         sut = CustomFieldsUIMapper(
             ioDispatcher = testDispatcher,

@@ -9,48 +9,18 @@ import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
-import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
-import com.grappim.taigamobile.testing.FakeServerStorage
-import com.grappim.taigamobile.testing.FakeTaigaSessionStorage
-import com.grappim.taigamobile.testing.FakeWorkItemApi
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.api.FakeEpicsApi
+import com.grappim.taigamobile.testing.api.FakeWorkItemApi
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.storage.FakeServerStorage
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.getRandomLong
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-
-private class FakeEpicsApi : EpicsApi {
-    data class LinkToEpicCall(val epicId: Long, val request: LinkToEpicRequestDTO)
-    data class UnlinkFromEpicCall(val epicId: Long, val userStoryId: Long)
-
-    val linkCalls = mutableListOf<LinkToEpicCall>()
-    val unlinkCalls = mutableListOf<UnlinkFromEpicCall>()
-
-    override suspend fun getEpics(
-        page: Int?,
-        pageSize: Int,
-        project: Long?,
-        query: String?,
-        assignedId: Long?,
-        isClosed: Boolean?,
-        watcherId: Long?,
-        assignedIds: String?,
-        ownerIds: String?,
-        statuses: String?,
-        tags: String?
-    ) = emptyList<WorkItemResponseDTO>()
-
-    override suspend fun linkToEpic(epicId: Long, linkToEpicRequest: LinkToEpicRequestDTO) {
-        linkCalls += LinkToEpicCall(epicId, linkToEpicRequest)
-    }
-
-    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
-        unlinkCalls += UnlinkFromEpicCall(epicId, userStoryId)
-    }
-}
 
 class EpicsRepositoryImplTest {
 

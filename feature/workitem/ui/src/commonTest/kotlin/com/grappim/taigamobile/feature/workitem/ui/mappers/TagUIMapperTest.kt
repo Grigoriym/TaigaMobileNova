@@ -1,13 +1,13 @@
 package com.grappim.taigamobile.feature.workitem.ui.mappers
 
-import com.grappim.taigamobile.testing.getTag
-import com.grappim.taigamobile.testing.getTagFilters
+import com.grappim.taigamobile.testing.models.getTag
+import com.grappim.taigamobile.testing.models.getTagFilters
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -18,7 +18,7 @@ class TagUIMapperTest {
 
     private lateinit var sut: TagUIMapper
 
-    @Before
+    @BeforeTest
     fun setUp() {
         sut = TagUIMapper(
             dispatcher = testDispatcher

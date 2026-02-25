@@ -10,17 +10,28 @@ android {
 
 kotlin {
     sourceSets {
+        androidMain.dependencies {
+            api(project.dependencies.platform(libs.koin.bom))
+            api(libs.koin.test)
+            api(libs.koin.test.junit4)
+            api(libs.robolectric)
+            api(libs.junit4)
+            api(libs.androidx.test.core)
+        }
         commonMain.dependencies {
             implementation(libs.compose.ui)
 
             api(libs.turbine)
             api(libs.kotlinx.coroutines.test)
 
+            implementation(libs.androidx.paging.common)
+
             implementation(projects.core.domain)
             implementation(projects.core.storage)
 
             implementation(projects.feature.filters.domain)
             implementation(projects.feature.filters.dto)
+            implementation(projects.feature.filters.data)
             implementation(projects.feature.issues.domain)
             implementation(projects.feature.issues.ui)
             implementation(projects.feature.projects.domain)
@@ -35,10 +46,13 @@ kotlin {
             implementation(projects.feature.userstories.domain)
             implementation(projects.feature.epics.dto)
             implementation(projects.feature.epics.domain)
+            implementation(projects.feature.epics.data)
             implementation(projects.feature.sprint.domain)
             implementation(projects.feature.sprint.data)
             implementation(projects.feature.swimlanes.data)
             implementation(projects.feature.swimlanes.domain)
+            implementation(projects.feature.history.data)
+            implementation(projects.feature.history.domain)
             implementation(projects.feature.tasks.domain)
             implementation(projects.feature.tasks.data)
             implementation(projects.utils.ui)

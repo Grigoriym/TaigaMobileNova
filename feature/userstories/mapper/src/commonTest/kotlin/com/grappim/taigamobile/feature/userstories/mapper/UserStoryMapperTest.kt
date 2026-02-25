@@ -8,13 +8,13 @@ import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
-import com.grappim.taigamobile.testing.FakeServerStorage
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getTag
-import com.grappim.taigamobile.testing.getUser
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
-import org.junit.Before
-import org.junit.Test
+import com.grappim.taigamobile.testing.models.getTag
+import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.storage.FakeServerStorage
+import com.grappim.taigamobile.testing.utils.getRandomString
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
@@ -29,7 +29,7 @@ class UserStoryMapperTest {
 
     private lateinit var sut: UserStoryMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = UserStoryMapper(
             userMapper = userMapper,

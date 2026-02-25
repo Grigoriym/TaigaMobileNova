@@ -5,7 +5,6 @@ import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.grappim.taigamobile.di.KoinApp
 import org.junit.After
-import org.junit.Test
 import org.junit.runner.RunWith
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.stopKoin
@@ -13,6 +12,7 @@ import org.koin.plugin.module.dsl.startKoin
 import org.koin.test.check.checkModules
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
+import kotlin.test.Test
 
 @RunWith(RobolectricTestRunner::class)
 @Config(application = Application::class, sdk = [34])

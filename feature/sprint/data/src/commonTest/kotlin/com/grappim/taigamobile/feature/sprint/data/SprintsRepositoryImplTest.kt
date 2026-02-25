@@ -11,14 +11,14 @@ import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.FakeNetworkMonitor
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getSprint
-import com.grappim.taigamobile.testing.getSprintResponseDTO
-import com.grappim.taigamobile.testing.getStatus
-import com.grappim.taigamobile.testing.getWorkItem
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
-import com.grappim.taigamobile.testing.nowLocalDate
+import com.grappim.taigamobile.testing.models.getSprint
+import com.grappim.taigamobile.testing.models.getSprintResponseDTO
+import com.grappim.taigamobile.testing.models.getStatus
+import com.grappim.taigamobile.testing.models.getWorkItem
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDate
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
@@ -27,8 +27,8 @@ import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -50,7 +50,7 @@ class SprintsRepositoryImplTest {
 
     private val projectId = getRandomLong()
 
-    @Before
+    @BeforeTest
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
         every { workItemEntityMapper.toEntityList(any(), any()) } returns emptyList()

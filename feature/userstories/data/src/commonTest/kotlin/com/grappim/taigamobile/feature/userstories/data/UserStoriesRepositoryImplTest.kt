@@ -8,16 +8,16 @@ import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getUserStory
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.models.getUserStory
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentMap
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.internal.tls.OkHostnameVerifier.verify
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -34,7 +34,7 @@ class UserStoriesRepositoryImplTest {
 
     private val taskPath = WorkItemPathPlural(CommonTaskType.UserStory)
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = UserStoriesRepositoryImpl(
             userStoriesApi = userStoriesApi,

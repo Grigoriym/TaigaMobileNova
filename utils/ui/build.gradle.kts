@@ -28,7 +28,3 @@ kotlin {
 android {
     namespace = "com.grappim.taigamobile.utils.ui"
 }
-
-dependencies {
-    testImplementation(libs.robolectric)
-}

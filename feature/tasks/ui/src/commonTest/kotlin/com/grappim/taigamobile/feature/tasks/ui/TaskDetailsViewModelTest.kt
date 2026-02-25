@@ -6,55 +6,45 @@ import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
-import com.grappim.taigamobile.feature.tasks.domain.TaskDetailsDataUseCase
+import com.grappim.taigamobile.feature.tasks.domain.TaskDetailsData
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItem
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.task_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getTask
-import com.grappim.taigamobile.testing.getTaskDetailsData
-import com.grappim.taigamobile.testing.testException
-import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
+import com.grappim.taigamobile.testing.models.getTask
+import com.grappim.taigamobile.testing.models.getTaskDetailsData
+import com.grappim.taigamobile.testing.models.getWorkItem
+import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
+import com.grappim.taigamobile.testing.repo.FakeUsersRepository
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.usecases.FakeTaskDetailsDataUseCase
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
+import com.grappim.taigamobile.testing.utils.FakePatchDataGenerator
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.testException
+import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.LocalDate
-import kotlinx.datetime.LocalDateTime
-import org.junit.Before
-import org.junit.Test
 import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-private class FakeDateTimeUtils : DateTimeUtils {
-    override fun retrieveEpochMillisAtStartOfDay(localDate: LocalDate): Long = 0L
-    override fun fromMillisToLocalDate(millis: Long): LocalDate = LocalDate(2024, 1, 1)
-    override fun parseLocalDateToString(localDate: LocalDate): String = localDate.toString()
-    override fun formatToMediumFormat(localDate: LocalDate): String = "Jan 1, 2024"
-    override fun formatToMediumFormat(localDateTime: LocalDateTime): String = "Jan 1, 2024"
-    override fun parseToLocalDate(text: String): LocalDate = LocalDate(2024, 1, 1)
-    override fun getLocalDateNow(): LocalDate = LocalDate(2024, 1, 1)
-}
-
-class TaskDetailsViewModelTest {
+internal class TaskDetailsViewModelTest {
     private val taskId = getRandomLong()
     private val ref = getRandomLong()
 
@@ -72,35 +62,21 @@ class TaskDetailsViewModelTest {
         dispatcher = UnconfinedTestDispatcher(),
         statusUIMapper = statusUIMapper
     )
-    private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
-
-    private val taskDetailsDataUseCase: TaskDetailsDataUseCase = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
-    private val fileUriManager: FileUriManager = mockk()
-    private val customFieldsUIMapper: CustomFieldsUIMapper = mockk()
-    private val historyRepository: HistoryRepository = mockk()
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val usersRepository: UsersRepository = mockk()
-    private val workItemEditStateRepository: WorkItemEditStateRepository = mockk(relaxed = true)
+    private val dateTimeUtils = FakeDateTimeUtils()
+    private val taskDetailsDataUseCase = FakeTaskDetailsDataUseCase()
+    private val patchDataGenerator: PatchDataGenerator = FakePatchDataGenerator()
+    private val historyRepository: HistoryRepository = FakeHistoryRepository()
+    private val workItemRepository = FakeWorkItemRepository()
+    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
+    private val usersRepository: UsersRepository = FakeUsersRepository()
+    private val workItemEditStateRepository = WorkItemEditStateRepository()
+    private val customFieldsUIMapper = CustomFieldsUIMapper(dfSimple = createDecimalFormatter())
 
     private lateinit var sut: TaskDetailsViewModel
 
-    @Before
+    @BeforeTest
     fun setup() {
         mainDispatcherRule.setup()
-
-        every {
-            workItemEditStateRepository.getTeamMemberUpdateFlow(taskId, type)
-        } returns flowOf(TeamMemberUpdate.Clear)
-
-        every {
-            workItemEditStateRepository.getTagsFlow(taskId, type)
-        } returns emptyFlow()
-
-        every {
-            workItemEditStateRepository.getDescriptionFlow(taskId, type)
-        } returns emptyFlow()
     }
 
     @AfterTest
@@ -117,7 +93,6 @@ class TaskDetailsViewModelTest {
             statusUIMapper = statusUIMapper,
             tagUIMapper = tagUIMapper,
             dateTimeUtils = dateTimeUtils,
-            fileUriManager = fileUriManager,
             customFieldsUIMapper = customFieldsUIMapper,
             historyRepository = historyRepository,
             workItemRepository = workItemRepository,
@@ -127,45 +102,28 @@ class TaskDetailsViewModelTest {
         )
     }
 
-    private fun setupSuccessfulLoad() {
-        val taskDetailsData = getTaskDetailsData(
-            task = getTask(id = taskId)
-        )
-
-        coEvery {
-            taskDetailsDataUseCase.getTaskData(taskId)
-        } returns Result.success(taskDetailsData)
-
-        coEvery {
-            customFieldsUIMapper.toUI(any())
-        } returns persistentListOf()
+    private fun setupSuccessfulLoad(taskDetailsData: TaskDetailsData? = null) {
+        val data = taskDetailsData ?: getTaskDetailsData(task = getTask(id = taskId))
+        taskDetailsDataUseCase.getTaskDataResult = Result.success(data)
     }
 
     @Test
-    fun `initial state should have correct toolbar title`() = runTest {
+    fun `initial state should have correct toolbar title`() {
         setupSuccessfulLoad()
 
         createViewModel()
 
         val state = sut.state.value
-        assertTrue(state.toolbarTitle is NativeText.Arguments)
-        val toolbarTitle = state.toolbarTitle
-        assertEquals(RString.task_slug, toolbarTitle.id)
+        val toolbarTitle = state.toolbarTitle as NativeText.Arguments
+        assertEquals(RString.task_slug, toolbarTitle.stringResource)
         assertEquals(listOf(ref), toolbarTitle.args)
     }
 
     @Test
-    fun `loadTask success should update state correctly`() = runTest {
+    fun `loadTask success should update state correctly`() {
         val task = getTask(id = taskId)
         val taskDetailsData = getTaskDetailsData(task = task)
-
-        coEvery {
-            taskDetailsDataUseCase.getTaskData(taskId)
-        } returns Result.success(taskDetailsData)
-
-        coEvery {
-            customFieldsUIMapper.toUI(any())
-        } returns persistentListOf()
+        setupSuccessfulLoad(taskDetailsData)
 
         createViewModel()
 
@@ -183,10 +141,8 @@ class TaskDetailsViewModelTest {
     }
 
     @Test
-    fun `loadTask failure should update state with error`() = runTest {
-        coEvery {
-            taskDetailsDataUseCase.getTaskData(taskId)
-        } returns Result.failure(testException)
+    fun `loadTask failure should update state with error`() {
+        taskDetailsDataUseCase.getTaskDataResult = Result.failure(testException)
 
         createViewModel()
 
@@ -196,7 +152,7 @@ class TaskDetailsViewModelTest {
     }
 
     @Test
-    fun `setDropdownMenuExpanded should update state`() = runTest {
+    fun `setDropdownMenuExpanded should update state`() {
         setupSuccessfulLoad()
         createViewModel()
 
@@ -212,19 +168,17 @@ class TaskDetailsViewModelTest {
     }
 
     @Test
-    fun `retryLoadTask should reload data`() = runTest {
+    fun `retryLoadTask should reload data`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.retryLoadTask()
 
-        coVerify(exactly = 2) {
-            taskDetailsDataUseCase.getTaskData(taskId)
-        }
+        assertEquals(2, taskDetailsDataUseCase.getTaskDataCallCount)
     }
 
     @Test
-    fun `setIsDeleteDialogVisible should update state`() = runTest {
+    fun `setIsDeleteDialogVisible should update state`() {
         setupSuccessfulLoad()
         createViewModel()
 
@@ -242,9 +196,7 @@ class TaskDetailsViewModelTest {
     @Test
     fun `onDelete success should emit delete trigger`() = runTest {
         setupSuccessfulLoad()
-        coEvery {
-            taskDetailsDataUseCase.deleteTask(any())
-        } returns Result.success(Unit)
+        taskDetailsDataUseCase.deleteTaskResult = Result.success(Unit)
 
         createViewModel()
 
@@ -254,79 +206,57 @@ class TaskDetailsViewModelTest {
             assertTrue(awaitItem())
         }
 
-        coVerify { taskDetailsDataUseCase.deleteTask(any()) }
+        assertEquals(1, taskDetailsDataUseCase.deleteTaskCallCount)
     }
 
     @Test
-    fun `onDelete failure should update state and not emit trigger`() = runTest {
+    fun `onDelete failure should update state and not emit trigger`() {
         setupSuccessfulLoad()
-        coEvery {
-            taskDetailsDataUseCase.deleteTask(any())
-        } returns Result.failure(testException)
+        taskDetailsDataUseCase.deleteTaskResult = Result.failure(testException)
 
         createViewModel()
 
         sut.state.value.onDelete()
 
         assertFalse(sut.state.value.isLoading)
-        coVerify { taskDetailsDataUseCase.deleteTask(any()) }
+        assertEquals(1, taskDetailsDataUseCase.deleteTaskCallCount)
     }
 
     @Test
-    fun `onGoingToEditTags should set tags in repository`() = runTest {
+    fun `onGoingToEditTags should set tags in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.onGoingToEditTags()
 
-        verify {
-            workItemEditStateRepository.setTags(
-                workItemId = taskId,
-                type = type,
-                tags = any()
-            )
-        }
+        assertTrue(workItemEditStateRepository.getCurrentTags(taskId, type).isNotEmpty())
     }
 
     @Test
-    fun `onGoingToEditWatchers should set current watchers in repository`() = runTest {
+    fun `onGoingToEditWatchers should set current watchers in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.onGoingToEditWatchers()
 
-        verify {
-            workItemEditStateRepository.setCurrentWatchers(
-                ids = any(),
-                workItemId = taskId,
-                type = type
-            )
-        }
+        assertTrue(workItemEditStateRepository.getCurrentWatchers(taskId, type).isNotEmpty())
     }
 
     @Test
-    fun `onGoingToEditAssignee should set current assignee in repository`() = runTest {
+    fun `onGoingToEditAssignee should set current assignee in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.onGoingToEditAssignee()
 
-        verify {
-            workItemEditStateRepository.setCurrentAssignee(
-                workItemId = taskId,
-                type = type,
-                id = any()
-            )
-        }
+        assertNotNull(workItemEditStateRepository.getCurrentAssignee(taskId, type))
     }
 
     @Test
     fun `promoteToUserStory success should emit trigger`() = runTest {
         setupSuccessfulLoad()
-        val workItem: WorkItem = mockk()
-        coEvery {
-            workItemRepository.promoteToUserStory(any(), CommonTaskType.Task)
-        } returns workItem
+        val workItem = getWorkItem()
+        workItemRepository.promoteToUserStoryResult = workItem
 
         createViewModel()
 
@@ -337,15 +267,13 @@ class TaskDetailsViewModelTest {
         }
 
         assertFalse(sut.state.value.isLoading)
-        coVerify { workItemRepository.promoteToUserStory(any(), CommonTaskType.Task) }
+        assertTrue(workItemRepository.promoteToUserStoryCalled)
     }
 
     @Test
     fun `promoteToUserStory failure should show snackbar error`() = runTest {
         setupSuccessfulLoad()
-        coEvery {
-            workItemRepository.promoteToUserStory(any(), CommonTaskType.Task)
-        } throws testException
+        workItemRepository.promoteToUserStoryThrows = testException
 
         createViewModel()
 
@@ -357,6 +285,6 @@ class TaskDetailsViewModelTest {
         }
 
         assertFalse(sut.state.value.isLoading)
-        coVerify { workItemRepository.promoteToUserStory(any(), CommonTaskType.Task) }
+        assertTrue(workItemRepository.promoteToUserStoryCalled)
     }
 }

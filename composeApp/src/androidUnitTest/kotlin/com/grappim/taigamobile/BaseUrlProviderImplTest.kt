@@ -3,10 +3,10 @@ package com.grappim.taigamobile
 import com.grappim.taigamobile.core.api.BaseUrlProvider
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.data.BaseUrlProviderImpl
-import com.grappim.taigamobile.testing.getRandomString
+import com.grappim.taigamobile.testing.utils.getRandomString
 import io.mockk.every
 import io.mockk.mockk
-import org.junit.Before
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 
 class BaseUrlProviderImplTest {
@@ -15,7 +15,7 @@ class BaseUrlProviderImplTest {
 
     private lateinit var sut: BaseUrlProvider
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = BaseUrlProviderImpl(serverStorage = serverStorage)
     }

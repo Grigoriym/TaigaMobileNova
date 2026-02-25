@@ -17,10 +17,14 @@ kotlin {
             implementation(projects.core.asyncKmp)
 
             implementation(projects.feature.history.domain)
+            implementation(projects.feature.projects.domain)
 
             implementation(projects.feature.workitem.domain)
             implementation(projects.feature.workitem.dto)
             implementation(projects.feature.workitem.mapper)
+        }
+        commonTest.dependencies {
+            implementation(projects.feature.users.mapper)
         }
     }
 }

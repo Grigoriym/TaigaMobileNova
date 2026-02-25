@@ -1,33 +1,36 @@
 package com.grappim.taigamobile.feature.history.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.history.domain.HistoryRepository
-import com.grappim.taigamobile.feature.workitem.domain.Comment
+import com.grappim.taigamobile.feature.users.mapper.UserMapper
+import com.grappim.taigamobile.feature.workitem.domain.getSingularPath
 import com.grappim.taigamobile.feature.workitem.mapper.CommentsMapper
-import com.grappim.taigamobile.testing.getCommentDTO
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import com.grappim.taigamobile.testing.api.FakeHistoryApi
+import com.grappim.taigamobile.testing.models.getCommentDTO
+import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDateTime
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import java.time.LocalDateTime
+import kotlinx.datetime.LocalDateTime
+import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class HistoryRepositoryImplTest {
 
-    private val historyApi: HistoryApi = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val commentsMapper: CommentsMapper = mockk()
+    private val historyApi = FakeHistoryApi()
+    private val taigaSessionStorage = FakeTaigaSessionStorage(currentUserId = 1L)
+    private val commentsMapper = CommentsMapper(
+        userMapper = UserMapper(),
+        projectsRepository = FakeProjectsRepository()
+    )
 
-    private lateinit var sut: HistoryRepository
+    private lateinit var sut: HistoryRepositoryImpl
 
-    private val currentUserId = getRandomLong()
-
-    @Before
+    @BeforeTest
     fun setup() {
-        coEvery { taigaSessionStorage.requireUserId() } returns currentUserId
-
+        historyApi.commentsResponse = emptyList()
         sut = HistoryRepositoryImpl(
             historyApi = historyApi,
             taigaSessionStorage = taigaSessionStorage,
@@ -39,54 +42,36 @@ class HistoryRepositoryImplTest {
     fun `getComments should return mapped comments sorted by date`() = runTest {
         val taskId = getRandomLong()
         val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathSingular(taskType)
-
-        val olderComment = getCommentDTO(postDateTime = LocalDateTime.of(2024, 1, 1, 10, 0))
-        val newerComment = getCommentDTO(postDateTime = LocalDateTime.of(2024, 1, 2, 10, 0))
-        val apiResponse = listOf(newerComment, olderComment)
-
-        val mappedOlderComment = mockk<Comment>()
-        val mappedNewerComment = mockk<Comment>()
-
-        coEvery { historyApi.getCommonTaskComments(taskPath, taskId) } returns apiResponse
-        coEvery { commentsMapper.toDomain(olderComment, currentUserId) } returns mappedOlderComment
-        coEvery { commentsMapper.toDomain(newerComment, currentUserId) } returns mappedNewerComment
+        val olderDate = LocalDateTime(2024, 1, 1, 10, 0, 0)
+        val newerDate = LocalDateTime(2024, 1, 2, 10, 0, 0)
+        val olderComment = getCommentDTO(postDateTime = olderDate)
+        val newerComment = getCommentDTO(postDateTime = newerDate)
+        historyApi.commentsResponse = listOf(newerComment, olderComment)
 
         val result = sut.getComments(taskId, taskType)
 
         assertEquals(2, result.size)
-        assertEquals(mappedOlderComment, result[0])
-        assertEquals(mappedNewerComment, result[1])
+        assertEquals(olderDate, result[0].postDateTime)
+        assertEquals(newerDate, result[1].postDateTime)
     }
 
     @Test
     fun `getComments should filter out deleted comments`() = runTest {
         val taskId = getRandomLong()
         val taskType = CommonTaskType.Task
-        val taskPath = WorkItemPathSingular(taskType)
-
         val activeComment = getCommentDTO(deleteDate = null)
-        val deletedComment = getCommentDTO(deleteDate = LocalDateTime.now())
-        val apiResponse = listOf(activeComment, deletedComment)
-
-        val mappedComment = mockk<Comment>()
-
-        coEvery { historyApi.getCommonTaskComments(taskPath, taskId) } returns apiResponse
-        coEvery { commentsMapper.toDomain(activeComment, currentUserId) } returns mappedComment
+        val deletedComment = getCommentDTO(deleteDate = nowLocalDateTime)
+        historyApi.commentsResponse = listOf(activeComment, deletedComment)
 
         val result = sut.getComments(taskId, taskType)
 
         assertEquals(1, result.size)
-        coVerify(exactly = 1) { commentsMapper.toDomain(any(), any()) }
     }
 
     @Test
     fun `getComments should return empty list when no comments`() = runTest {
         val taskId = getRandomLong()
         val taskType = CommonTaskType.Issue
-        val taskPath = WorkItemPathSingular(taskType)
-
-        coEvery { historyApi.getCommonTaskComments(taskPath, taskId) } returns emptyList()
 
         val result = sut.getComments(taskId, taskType)
 
@@ -97,44 +82,36 @@ class HistoryRepositoryImplTest {
     fun `getComments should return empty list when all comments are deleted`() = runTest {
         val taskId = getRandomLong()
         val taskType = CommonTaskType.Epic
-        val taskPath = WorkItemPathSingular(taskType)
-
-        val deletedComment1 = getCommentDTO(deleteDate = LocalDateTime.now())
-        val deletedComment2 = getCommentDTO(deleteDate = LocalDateTime.now())
-        val apiResponse = listOf(deletedComment1, deletedComment2)
-
-        coEvery { historyApi.getCommonTaskComments(taskPath, taskId) } returns apiResponse
+        historyApi.commentsResponse = listOf(
+            getCommentDTO(deleteDate = nowLocalDateTime),
+            getCommentDTO(deleteDate = nowLocalDateTime)
+        )
 
         val result = sut.getComments(taskId, taskType)
 
         assertEquals(0, result.size)
-        coVerify(exactly = 0) { commentsMapper.toDomain(any(), any()) }
     }
 
     @Test
-    fun `getComments should work with UserStory task type`() = runTest {
+    fun `getComments should pass correct path for UserStory task type`() = runTest {
         val taskId = getRandomLong()
         val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathSingular(taskType)
-
-        coEvery { historyApi.getCommonTaskComments(taskPath, taskId) } returns emptyList()
 
         sut.getComments(taskId, taskType)
 
-        coVerify { historyApi.getCommonTaskComments(taskPath, taskId) }
+        assertEquals(taskType.getSingularPath(), historyApi.lastGetPath)
+        assertEquals(taskId, historyApi.lastGetId)
     }
 
     @Test
-    fun `getComments should work with Task task type`() = runTest {
+    fun `getComments should pass correct path for Task task type`() = runTest {
         val taskId = getRandomLong()
         val taskType = CommonTaskType.Task
-        val taskPath = WorkItemPathSingular(taskType)
-
-        coEvery { historyApi.getCommonTaskComments(taskPath, taskId) } returns emptyList()
 
         sut.getComments(taskId, taskType)
 
-        coVerify { historyApi.getCommonTaskComments(taskPath, taskId) }
+        assertEquals(taskType.getSingularPath(), historyApi.lastGetPath)
+        assertEquals(taskId, historyApi.lastGetId)
     }
 
     @Test
@@ -142,13 +119,12 @@ class HistoryRepositoryImplTest {
         val taskId = getRandomLong()
         val taskType = CommonTaskType.UserStory
         val commentId = getRandomString()
-        val taskPath = WorkItemPathSingular(taskType)
-
-        coJustRun { historyApi.deleteCommonTaskComment(taskPath, taskId, commentId) }
 
         sut.deleteComment(taskId, taskType, commentId)
 
-        coVerify { historyApi.deleteCommonTaskComment(taskPath, taskId, commentId) }
+        assertEquals(taskType.getSingularPath(), historyApi.lastDeletePath)
+        assertEquals(taskId, historyApi.lastDeleteId)
+        assertEquals(commentId, historyApi.lastDeleteCommentId)
     }
 
     @Test
@@ -157,12 +133,11 @@ class HistoryRepositoryImplTest {
         val commentId = getRandomString()
 
         CommonTaskType.entries.forEach { taskType ->
-            val taskPath = WorkItemPathSingular(taskType)
-            coJustRun { historyApi.deleteCommonTaskComment(taskPath, taskId, commentId) }
-
             sut.deleteComment(taskId, taskType, commentId)
 
-            coVerify { historyApi.deleteCommonTaskComment(taskPath, taskId, commentId) }
+            assertEquals(taskType.getSingularPath(), historyApi.lastDeletePath)
+            assertEquals(taskId, historyApi.lastDeleteId)
+            assertEquals(commentId, historyApi.lastDeleteCommentId)
         }
     }
 }

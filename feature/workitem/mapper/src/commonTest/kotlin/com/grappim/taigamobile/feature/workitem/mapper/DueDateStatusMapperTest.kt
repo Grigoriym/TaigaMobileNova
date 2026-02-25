@@ -2,8 +2,8 @@ package com.grappim.taigamobile.feature.workitem.mapper
 
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -11,7 +11,7 @@ class DueDateStatusMapperTest {
 
     private lateinit var sut: DueDateStatusMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = DueDateStatusMapper()
     }

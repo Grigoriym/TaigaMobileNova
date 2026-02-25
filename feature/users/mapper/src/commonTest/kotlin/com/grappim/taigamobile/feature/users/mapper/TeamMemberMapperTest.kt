@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.feature.users.mapper
 
 import com.grappim.taigamobile.feature.projects.dto.ProjectMemberDTO
-import com.grappim.taigamobile.testing.getRandomInt
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import org.junit.Before
-import org.junit.Test
+import com.grappim.taigamobile.testing.utils.getRandomInt
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -14,7 +14,7 @@ class TeamMemberMapperTest {
 
     private lateinit var sut: TeamMemberMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = TeamMemberMapper()
     }

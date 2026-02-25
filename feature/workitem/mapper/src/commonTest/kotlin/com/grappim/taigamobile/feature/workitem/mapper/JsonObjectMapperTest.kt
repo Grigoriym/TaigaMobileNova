@@ -5,8 +5,8 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -14,7 +14,7 @@ class JsonObjectMapperTest {
 
     private lateinit var sut: JsonObjectMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = JsonObjectMapper()
     }

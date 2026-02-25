@@ -8,6 +8,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.feature.scrum.ui.widgets.SprintsListContent
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
+import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.open_sprints
 import com.grappim.taigamobile.uikit.generated.resources.ic_add
@@ -66,7 +67,7 @@ fun ScrumOpenSprintsScreen(
         }
     }
 
-    _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog(
+    EditSprintDialog(
         state = sprintDialogState,
         onConfirm = state.onCreateSprintConfirm
     )

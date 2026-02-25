@@ -4,11 +4,20 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 
-class AuthStorage(private val dataStore: DataStore<Preferences>) {
+interface AuthStorage {
+    val isLoggedIn: Flow<Boolean>
+    suspend fun getToken(): String
+    suspend fun getRefreshToken(): String
+    suspend fun setAuthCredentials(token: String, refreshToken: String)
+    suspend fun clear()
+}
+
+class AuthStorageImpl(private val dataStore: DataStore<Preferences>) : AuthStorage {
 
     private val tokenFlow = dataStore.data.map { prefs ->
         prefs[TOKEN_KEY].orEmpty()
@@ -18,21 +27,21 @@ class AuthStorage(private val dataStore: DataStore<Preferences>) {
         prefs[REFRESH_TOKEN_KEY].orEmpty()
     }
 
-    suspend fun getToken(): String = tokenFlow.first()
-    suspend fun getRefreshToken(): String = refreshTokenFlow.first()
+    override suspend fun getToken(): String = tokenFlow.first()
+    override suspend fun getRefreshToken(): String = refreshTokenFlow.first()
 
-    val isLoggedIn = combine(tokenFlow, refreshTokenFlow) { token, refresh ->
+    override val isLoggedIn: Flow<Boolean> = combine(tokenFlow, refreshTokenFlow) { token, refresh ->
         token.isNotEmpty() && refresh.isNotEmpty()
     }
 
-    suspend fun setAuthCredentials(token: String, refreshToken: String) {
+    override suspend fun setAuthCredentials(token: String, refreshToken: String) {
         dataStore.edit { prefs ->
             prefs[TOKEN_KEY] = token
             prefs[REFRESH_TOKEN_KEY] = refreshToken
         }
     }
 
-    suspend fun clear() {
+    override suspend fun clear() {
         dataStore.edit { it.clear() }
     }
 

@@ -2,213 +2,151 @@ package com.grappim.taigamobile.feature.filters.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
-import com.grappim.taigamobile.feature.filters.dto.FiltersDataResponseDTO
 import com.grappim.taigamobile.feature.filters.mapper.FiltersMapper
-import com.grappim.taigamobile.testing.getFiltersData
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getStatusFilters
+import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
+import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
+import com.grappim.taigamobile.testing.api.FakeFiltersApi
+import com.grappim.taigamobile.testing.models.getFiltersDataResponseDTO
+import com.grappim.taigamobile.testing.models.getFiltersResponseFilter
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.getRandomLong
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import okhttp3.internal.tls.OkHostnameVerifier.verify
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class FiltersRepositoryImplTest {
 
-    private val filtersApi: FiltersApi = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val filtersMapper: FiltersMapper = mockk()
+    private val projectId = getRandomLong()
+    private val filtersApi = FakeFiltersApi()
+    private val taigaSessionStorage = FakeTaigaSessionStorage(
+        currentProjectId = projectId
+    )
+    private val filtersMapper: FiltersMapper = FiltersMapper()
+    private val statusesMapper: StatusesMapper = StatusesMapper()
 
     private lateinit var sut: FiltersRepository
 
-    private val projectId = getRandomLong()
-
-    @Before
+    @BeforeTest
     fun setup() {
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-
         sut = FiltersRepositoryImpl(
             filtersApi = filtersApi,
             taigaSessionStorage = taigaSessionStorage,
-            filtersMapper = filtersMapper
+            filtersMapper = filtersMapper,
+            statusesMapper = statusesMapper
         )
     }
 
     @Test
     fun `getFiltersData should return mapped filters data`() = runTest {
+        val dto = getFiltersDataResponseDTO()
+        filtersApi.response = dto
         val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathPlural(taskType)
-        val mockResponse = mockk<FiltersDataResponseDTO>()
-        val expectedFiltersData = getFiltersData()
-
-        coEvery {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = null
-            )
-        } returns mockResponse
-        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
 
         val actual = sut.getFiltersData(taskType)
 
-        assertEquals(expectedFiltersData, actual)
-        coVerify {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = null
-            )
-        }
-        verify { filtersMapper.toDomain(mockResponse) }
+        val call = filtersApi.calls.first()
+
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(projectId, call.project)
+        assertEquals(null, call.milestone)
+        assertEquals(filtersMapper.toDomain(dto), actual)
     }
 
     @Test
     fun `getFiltersData should pass null milestone when not from backlog`() = runTest {
         val taskType = CommonTaskType.Task
-        val taskPath = WorkItemPathPlural(taskType)
-        val mockResponse = mockk<FiltersDataResponseDTO>()
-        val expectedFiltersData = getFiltersData()
+        val dto = getFiltersDataResponseDTO()
+        filtersApi.response = dto
 
-        coEvery {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = null
-            )
-        } returns mockResponse
-        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
+        val actual = sut.getFiltersData(taskType, isCommonTaskFromBacklog = false)
 
-        sut.getFiltersData(taskType, isCommonTaskFromBacklog = false)
+        val call = filtersApi.calls.first()
 
-        coVerify {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = null
-            )
-        }
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(projectId, call.project)
+        assertEquals(null, call.milestone)
+        assertEquals(filtersMapper.toDomain(dto), actual)
     }
 
     @Test
     fun `getFiltersData should pass null string milestone when from backlog`() = runTest {
-        val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathPlural(taskType)
-        val mockResponse = mockk<FiltersDataResponseDTO>()
-        val expectedFiltersData = getFiltersData()
+        val taskType = CommonTaskType.Task
+        val dto = getFiltersDataResponseDTO()
+        filtersApi.response = dto
 
-        coEvery {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = "null"
-            )
-        } returns mockResponse
-        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
+        val actual = sut.getFiltersData(taskType, isCommonTaskFromBacklog = true)
 
-        sut.getFiltersData(taskType, isCommonTaskFromBacklog = true)
+        val call = filtersApi.calls.first()
 
-        coVerify {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = "null"
-            )
-        }
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(projectId, call.project)
+        assertEquals("null", call.milestone)
+        assertEquals(filtersMapper.toDomain(dto), actual)
     }
 
     @Test
     fun `getFiltersData should work with Epic task type`() = runTest {
+        val dto = getFiltersDataResponseDTO()
+        filtersApi.response = dto
         val taskType = CommonTaskType.Epic
-        val taskPath = WorkItemPathPlural(taskType)
-        val mockResponse = mockk<FiltersDataResponseDTO>()
-        val expectedFiltersData = getFiltersData()
-
-        coEvery {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = null
-            )
-        } returns mockResponse
-        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
 
         val actual = sut.getFiltersData(taskType)
 
-        assertEquals(expectedFiltersData, actual)
+        val call = filtersApi.calls.first()
+
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(projectId, call.project)
+        assertEquals(null, call.milestone)
+        assertEquals(filtersMapper.toDomain(dto), actual)
     }
 
     @Test
     fun `getFiltersData should work with Issue task type`() = runTest {
+        val dto = getFiltersDataResponseDTO()
+        filtersApi.response = dto
         val taskType = CommonTaskType.Issue
-        val taskPath = WorkItemPathPlural(taskType)
-        val mockResponse = mockk<FiltersDataResponseDTO>()
-        val expectedFiltersData = getFiltersData()
-
-        coEvery {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = null
-            )
-        } returns mockResponse
-        every { filtersMapper.toDomain(mockResponse) } returns expectedFiltersData
 
         val actual = sut.getFiltersData(taskType)
 
-        assertEquals(expectedFiltersData, actual)
+        val call = filtersApi.calls.first()
+
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(projectId, call.project)
+        assertEquals(null, call.milestone)
+        assertEquals(filtersMapper.toDomain(dto), actual)
     }
 
     @Test
     fun `getStatuses should return mapped statuses from filters data`() = runTest {
         val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathPlural(taskType)
-        val mockResponse = mockk<FiltersDataResponseDTO>()
 
-        val statusFilter1 = getStatusFilters()
-        val statusFilter2 = getStatusFilters()
-        val filtersData = getFiltersData().copy(
-            statuses = persistentListOf(statusFilter1, statusFilter2)
-        )
-
-        coEvery {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = null
-            )
-        } returns mockResponse
-        every { filtersMapper.toDomain(mockResponse) } returns filtersData
+        val filter1 = getFiltersResponseFilter()
+        val filter2 = getFiltersResponseFilter()
+        filtersApi.response = getFiltersDataResponseDTO(statuses = listOf(filter1, filter2))
 
         val actual = sut.getStatuses(taskType)
 
+        val call = filtersApi.calls.first()
+
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(projectId, call.project)
+        assertEquals(null, call.milestone)
+
         assertEquals(2, actual.size)
-        assertEquals(statusFilter1.id, actual[0].id)
-        assertEquals(statusFilter1.name, actual[0].name)
-        assertEquals(statusFilter1.color, actual[0].color)
-        assertEquals(statusFilter2.id, actual[1].id)
-        assertEquals(statusFilter2.name, actual[1].name)
-        assertEquals(statusFilter2.color, actual[1].color)
+        assertEquals(filter1.id, actual[0].id)
+        assertEquals(filter1.name, actual[0].name)
+        assertEquals(filter2.id, actual[1].id)
+        assertEquals(filter2.name, actual[1].name)
     }
 
     @Test
     fun `getStatuses should return empty list when no statuses`() = runTest {
-        val taskType = CommonTaskType.Task
-        val taskPath = WorkItemPathPlural(taskType)
-        val mockResponse = mockk<FiltersDataResponseDTO>()
-        val filtersData = getFiltersData().copy(statuses = persistentListOf())
-
-        coEvery {
-            filtersApi.getCommonTaskFiltersData(
-                taskPath = taskPath,
-                project = projectId,
-                milestone = null
-            )
-        } returns mockResponse
-        every { filtersMapper.toDomain(mockResponse) } returns filtersData
+        val taskType = CommonTaskType.UserStory
+        filtersApi.response = getFiltersDataResponseDTO(statuses = persistentListOf())
 
         val actual = sut.getStatuses(taskType)
 

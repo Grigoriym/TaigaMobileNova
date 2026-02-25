@@ -16,8 +16,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Factory
 
-@Factory
-class TaskDetailsDataUseCase(
+interface TaskDetailsDataUseCase {
+    suspend fun getTaskData(id: Long): Result<TaskDetailsData>
+    suspend fun deleteTask(id: Long): Result<Unit>
+}
+
+@Factory(binds = [TaskDetailsDataUseCase::class])
+class TaskDetailsDataUseCaseImpl(
     private val filtersRepository: FiltersRepository,
     private val tasksRepository: TasksRepository,
     private val historyRepository: HistoryRepository,
@@ -25,9 +30,9 @@ class TaskDetailsDataUseCase(
     private val usersRepository: UsersRepository,
     private val workItemRepository: WorkItemRepository,
     private val projectsRepository: ProjectsRepository
-) {
+) : TaskDetailsDataUseCase {
 
-    suspend fun getTaskData(id: Long) = resultOf {
+    override suspend fun getTaskData(id: Long) = resultOf {
         coroutineScope {
             val taskType = CommonTaskType.Task
             val filtersData = async { filtersRepository.getFiltersData(taskType) }
@@ -92,7 +97,7 @@ class TaskDetailsDataUseCase(
         }
     }
 
-    suspend fun deleteTask(id: Long) = resultOf {
+    override suspend fun deleteTask(id: Long) = resultOf {
         tasksRepository.deleteTask(id)
     }
 }

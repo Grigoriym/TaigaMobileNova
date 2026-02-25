@@ -4,26 +4,25 @@ import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFieldTy
 import com.grappim.taigamobile.feature.workitem.dto.customattribute.CustomAttributeResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.customattribute.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.customfield.CustomFieldTypeDTO
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.collections.immutable.toImmutableList
+import kotlinx.datetime.LocalDate
 import kotlinx.serialization.json.JsonPrimitive
-import org.junit.Before
-import org.junit.Test
-import java.time.LocalDate
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class CustomFieldsMapperTest {
 
-    private val dateTimeUtils: DateTimeUtils = mockk()
+    private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
 
     private lateinit var sut: CustomFieldsMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = CustomFieldsMapper(
             dateTimeUtils = dateTimeUtils
@@ -149,14 +148,12 @@ class CustomFieldsMapperTest {
     @Test
     fun `toDomain should map Date type correctly`() {
         val dateString = "2024-12-31"
-        val expectedDate = LocalDate.of(2024, 12, 31)
+        val expectedDate = LocalDate(2024, 12, 31)
         val attr = createAttribute(id = 1L, type = CustomFieldTypeDTO.Date)
         val values = CustomAttributesValuesResponseDTO(
             attributesValues = mapOf("1" to JsonPrimitive(dateString)),
             version = getRandomLong()
         )
-
-        every { dateTimeUtils.parseToLocalDate(dateString) } returns expectedDate
 
         val result = sut.toDomain(values = values, resp = attr)
 

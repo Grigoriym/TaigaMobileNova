@@ -19,8 +19,18 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Factory
 
-@Factory
-class IssueDetailsDataUseCase(
+interface IssueDetailsDataUseCase {
+    suspend fun getIssueData(issueId: Long): Result<IssueDetailsData>
+    suspend fun updateSprint(
+        sprintId: Long?,
+        version: Long,
+        workItemId: Long,
+        commonTaskType: CommonTaskType,
+    ): Result<UpdateSprintData>
+}
+
+@Factory(binds = [IssueDetailsDataUseCase::class])
+class IssueDetailsDataUseCaseImpl(
     private val issuesRepository: IssuesRepository,
     private val sprintsRepository: SprintsRepository,
     private val historyRepository: HistoryRepository,
@@ -29,7 +39,7 @@ class IssueDetailsDataUseCase(
     private val workItemRepository: WorkItemRepository,
     private val patchDataGenerator: PatchDataGenerator,
     private val projectsRepository: ProjectsRepository
-) {
+) : IssueDetailsDataUseCase {
 
     /**
      * What they do on taiga-front:
@@ -40,7 +50,7 @@ class IssueDetailsDataUseCase(
      * 5. history/issue/8?type=comment
      * 6. history/issue/8?page=1&type=activity <- It is the Activities tab
      */
-    suspend fun getIssueData(issueId: Long): Result<IssueDetailsData> = resultOf {
+    override suspend fun getIssueData(issueId: Long): Result<IssueDetailsData> = resultOf {
         coroutineScope {
             val taskType = CommonTaskType.Issue
             val filtersData = filtersRepository.getFiltersData(taskType)
@@ -105,7 +115,7 @@ class IssueDetailsDataUseCase(
         }
     }
 
-    suspend fun updateSprint(sprintId: Long?, version: Long, workItemId: Long, commonTaskType: CommonTaskType) =
+    override suspend fun updateSprint(sprintId: Long?, version: Long, workItemId: Long, commonTaskType: CommonTaskType) =
         resultOf {
             val patchedData = workItemRepository.patchData(
                 version = version,

@@ -17,8 +17,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Factory
 
-@Factory
-class EpicDetailsDataUseCase constructor(
+interface EpicDetailsDataUseCase {
+    suspend fun getEpicData(epicId: Long): Result<EpicDetailsData>
+    suspend fun changeEpicColor(color: String, version: Long, epicId: Long): Result<EpicColorUpdateData>
+}
+
+@Factory(binds = [EpicDetailsDataUseCase::class])
+class EpicDetailsDataUseCaseImpl(
     private val filtersRepository: FiltersRepository,
     private val epicsRepository: EpicsRepository,
     private val historyRepository: HistoryRepository,
@@ -27,9 +32,9 @@ class EpicDetailsDataUseCase constructor(
     private val userStoriesRepository: UserStoriesRepository,
     private val patchDataGenerator: PatchDataGenerator,
     private val projectsRepository: ProjectsRepository
-) {
+) : EpicDetailsDataUseCase {
 
-    suspend fun getEpicData(epicId: Long): Result<EpicDetailsData> = resultOf {
+    override suspend fun getEpicData(epicId: Long): Result<EpicDetailsData> = resultOf {
         coroutineScope {
             val taskType = CommonTaskType.Epic
             val filtersData = filtersRepository.getFiltersData(taskType)
@@ -99,21 +104,22 @@ class EpicDetailsDataUseCase constructor(
      * When we update the epic color, if there are any user stories, they also change the color
      * that is why there are two requests
      */
-    suspend fun changeEpicColor(color: String, version: Long, epicId: Long): Result<EpicColorUpdateData> = resultOf {
-        val patchData = workItemRepository.patchData(
-            version = version,
-            workItemId = epicId,
-            commonTaskType = CommonTaskType.Epic,
-            payload = patchDataGenerator.getColor(
-                color = color
+    override suspend fun changeEpicColor(color: String, version: Long, epicId: Long): Result<EpicColorUpdateData> =
+        resultOf {
+            val patchData = workItemRepository.patchData(
+                version = version,
+                workItemId = epicId,
+                commonTaskType = CommonTaskType.Epic,
+                payload = patchDataGenerator.getColor(
+                    color = color
+                )
             )
-        )
 
-        val userStories = userStoriesRepository.getEpicUserStoriesSimplified(epicId = epicId)
+            val userStories = userStoriesRepository.getEpicUserStoriesSimplified(epicId = epicId)
 
-        EpicColorUpdateData(
-            patchedData = patchData,
-            userStories = userStories
-        )
-    }
+            EpicColorUpdateData(
+                patchedData = patchData,
+                userStories = userStories
+            )
+        }
 }

@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.users.mapper
 
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getUserDTO
-import org.junit.Before
-import org.junit.Test
+import com.grappim.taigamobile.testing.models.getUserDTO
+import com.grappim.taigamobile.testing.utils.getRandomString
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -11,7 +11,7 @@ class UserMapperTest {
 
     private lateinit var sut: UserMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = UserMapper()
     }

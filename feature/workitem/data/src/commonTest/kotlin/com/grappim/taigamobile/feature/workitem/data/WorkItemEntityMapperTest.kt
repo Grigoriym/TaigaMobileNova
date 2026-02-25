@@ -3,14 +3,14 @@ package com.grappim.taigamobile.feature.workitem.data
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.db.entities.WorkItemEntity
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getWorkItem
-import com.grappim.taigamobile.testing.nowLocalDateTime
+import com.grappim.taigamobile.testing.models.getWorkItem
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDateTime
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.serialization.json.Json
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -19,7 +19,7 @@ class WorkItemEntityMapperTest {
 
     private lateinit var sut: WorkItemEntityMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = WorkItemEntityMapper(json = Json { ignoreUnknownKeys = true })
     }

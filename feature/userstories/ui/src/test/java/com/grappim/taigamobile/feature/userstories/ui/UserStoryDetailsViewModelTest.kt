@@ -23,11 +23,11 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.userstory_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.SavedStateHandleRule
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getStatusUI
-import com.grappim.taigamobile.testing.getUserStory
-import com.grappim.taigamobile.testing.getUserStoryDetailsData
-import com.grappim.taigamobile.testing.testException
+import com.grappim.taigamobile.testing.models.getStatusUI
+import com.grappim.taigamobile.testing.models.getUserStory
+import com.grappim.taigamobile.testing.models.getUserStoryDetailsData
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import io.mockk.coEvery
@@ -40,10 +40,10 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
 import java.time.LocalDate
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -83,7 +83,7 @@ internal class UserStoryDetailsViewModelTest {
 
     private lateinit var sut: UserStoryDetailsViewModel
 
-    @Before
+    @BeforeTest
     fun setup() {
         every {
             workItemEditStateRepository.getTeamMemberUpdateFlow(userStoryId, type)

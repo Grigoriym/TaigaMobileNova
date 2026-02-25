@@ -27,13 +27,13 @@ import com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapper
 import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.FakeNetworkMonitor
-import com.grappim.taigamobile.testing.getAttachment
-import com.grappim.taigamobile.testing.getAttachmentDTO
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getUser
-import com.grappim.taigamobile.testing.getWorkItem
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.models.getAttachment
+import com.grappim.taigamobile.testing.models.getAttachmentDTO
+import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.models.getWorkItem
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import io.mockk.coEvery
 import io.mockk.coJustRun
 import io.mockk.coVerify
@@ -45,9 +45,9 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.JsonObject
 import okhttp3.MultipartBody
-import org.junit.Before
-import org.junit.Test
 import java.time.LocalDateTime
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
@@ -71,7 +71,7 @@ class WorkItemRepositoryImplTest {
 
     private val projectId = getRandomLong()
 
-    @Before
+    @BeforeTest
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
         coJustRun { workItemDao.insertAll(any()) }

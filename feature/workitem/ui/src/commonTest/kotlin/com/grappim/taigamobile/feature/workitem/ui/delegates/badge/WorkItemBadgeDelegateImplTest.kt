@@ -5,22 +5,22 @@ import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeStatus
 import io.mockk.mockk
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class WorkItemBadgeDelegateImplTest {
 
-    private lateinit var sut: com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
+    private lateinit var sut: WorkItemBadgeDelegate
     private val commonTaskType = CommonTaskType.Issue
     private val workItemRepository: WorkItemRepository = mockk()
     private val patchDataGenerator: PatchDataGenerator = mockk()
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut =
-            _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl(
+            WorkItemBadgeDelegateImpl(
                 commonTaskType = commonTaskType,
                 workItemRepository = workItemRepository,
                 patchDataGenerator = patchDataGenerator

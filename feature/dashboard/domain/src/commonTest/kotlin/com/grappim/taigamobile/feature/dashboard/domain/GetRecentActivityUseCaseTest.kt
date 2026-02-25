@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.dashboard.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.testing.FakeDateTimeUtils
-import com.grappim.taigamobile.testing.FakeWorkItemRepository
-import com.grappim.taigamobile.testing.getWorkItem
+import com.grappim.taigamobile.testing.models.getWorkItem
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDate

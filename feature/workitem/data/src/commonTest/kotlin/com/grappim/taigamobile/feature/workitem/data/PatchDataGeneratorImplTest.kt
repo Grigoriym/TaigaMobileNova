@@ -1,17 +1,17 @@
 package com.grappim.taigamobile.feature.workitem.data
 
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class PatchDataGeneratorImplTest {
 
     private lateinit var sut: PatchDataGeneratorImpl
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = PatchDataGeneratorImpl()
     }

@@ -8,15 +8,21 @@ import io.ktor.client.request.post
 import io.ktor.client.statement.discardRemaining
 import org.koin.core.annotation.Single
 
-@Single
-class HistoryApi(private val httpClient: HttpClient) {
+interface HistoryApi {
 
-    suspend fun getCommonTaskComments(singularTaskPath: String, id: Long): List<CommentDTO> =
+    suspend fun getCommonTaskComments(singularTaskPath: String, id: Long): List<CommentDTO>
+
+    suspend fun deleteCommonTaskComment(singularTaskPath: String, id: Long, commentId: String)
+}
+
+@Single(binds = [HistoryApi::class])
+class HistoryApiImpl(private val httpClient: HttpClient) : HistoryApi {
+    override suspend fun getCommonTaskComments(singularTaskPath: String, id: Long): List<CommentDTO> =
         httpClient.get("history/$singularTaskPath/$id") {
             url { parameters.append("type", "comment") }
         }.body()
 
-    suspend fun deleteCommonTaskComment(singularTaskPath: String, id: Long, commentId: String) {
+    override suspend fun deleteCommonTaskComment(singularTaskPath: String, id: Long, commentId: String) {
         httpClient.post("history/$singularTaskPath/$id/delete_comment") {
             url { parameters.append("id", commentId) }
         }.discardRemaining()

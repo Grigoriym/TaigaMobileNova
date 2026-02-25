@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.swimlanes.data
 
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import org.junit.Before
-import org.junit.Test
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -11,7 +11,7 @@ class SwimlanesMapperTest {
 
     private lateinit var sut: SwimlanesMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = SwimlanesMapper()
     }

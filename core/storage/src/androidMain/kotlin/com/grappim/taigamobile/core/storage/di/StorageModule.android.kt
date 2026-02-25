@@ -10,6 +10,7 @@ import com.grappim.taigamobile.core.storage.KmpSession
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
+import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
@@ -28,7 +29,7 @@ actual class PlatformStorageModule
 class AuthDataStoreModule {
 
     @Single
-    fun provideAuthStorage(context: Context): AuthStorage = AuthStorage(createAuthDataStore(context))
+    fun provideAuthStorage(context: Context): AuthStorage = AuthStorageImpl(createAuthDataStore(context))
 
     @Single
     fun provideSessionStorage(context: Context, colorMapper: ColorMapper): TaigaSessionStorage =

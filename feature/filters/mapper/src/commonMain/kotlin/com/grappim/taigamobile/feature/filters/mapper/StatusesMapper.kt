@@ -7,10 +7,20 @@ import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.feature.filters.domain.model.Type
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.utils.ui.fixNullColor
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.toImmutableList
 import org.koin.core.annotation.Factory
 
 @Factory
 class StatusesMapper {
+
+    fun getStatuses(filtersData: FiltersData): ImmutableList<Status> = filtersData.statuses.map { filterStatus ->
+        Status(
+            color = filterStatus.color,
+            id = filterStatus.id,
+            name = filterStatus.name
+        )
+    }.toImmutableList()
 
     fun getStatus(resp: WorkItemResponseDTO): Status = Status(
         id = resp.status,

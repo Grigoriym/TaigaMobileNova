@@ -1,22 +1,17 @@
 package com.grappim.taigamobile.feature.workitem.mapper
 
-import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.dto.CommentDTO
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getUser
-import com.grappim.taigamobile.testing.getUserDTO
-import com.grappim.taigamobile.testing.nowLocalDate
-import com.grappim.taigamobile.testing.nowLocalDateTime
-import io.mockk.coEvery
-import io.mockk.mockk
+import com.grappim.taigamobile.testing.models.getUserDTO
+import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDateTime
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
-import java.time.LocalDateTime
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -25,12 +20,13 @@ import kotlin.test.assertTrue
 class CommentsMapperTest {
 
     private val userMapper: UserMapper = UserMapper()
-    private val projectsRepository: ProjectsRepository = mockk()
+    private val projectsRepository: FakeProjectsRepository = FakeProjectsRepository()
 
     private lateinit var sut: CommentsMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
+        projectsRepository.permissions = persistentListOf(TaigaPermission.MODIFY_PROJECT)
         sut = CommentsMapper(
             userMapper = userMapper,
             projectsRepository = projectsRepository
@@ -40,9 +36,9 @@ class CommentsMapperTest {
     @Test
     fun `toDomain should map basic fields correctly`() = runTest {
         val userDTO = getUserDTO()
-        val user = getUser()
+        val user = userMapper.toUser(userDTO)
         val postDateTime = nowLocalDateTime
-        val deleteDate = nowLocalDateTime.plusDays(1)
+        val deleteDate = nowLocalDateTime
         val commentId = getRandomString()
         val commentText = getRandomString()
         val currentUserId = getRandomLong()
@@ -54,8 +50,6 @@ class CommentsMapperTest {
             postDateTime = postDateTime,
             deleteDate = deleteDate
         )
-
-        coEvery { projectsRepository.getPermissions() } returns persistentListOf()
 
         val result = sut.toDomain(dto, currentUserId)
 
@@ -69,7 +63,6 @@ class CommentsMapperTest {
     @Test
     fun `toDomain should handle null deleteDate`() = runTest {
         val userDTO = getUserDTO()
-        val user = getUser()
         val currentUserId = getRandomLong()
 
         val dto = CommentDTO(
@@ -80,8 +73,6 @@ class CommentsMapperTest {
             deleteDate = null
         )
 
-        coEvery { projectsRepository.getPermissions() } returns persistentListOf()
-
         val result = sut.toDomain(dto, currentUserId)
 
         assertNull(result.deleteDate)
@@ -91,7 +82,6 @@ class CommentsMapperTest {
     fun `toDomain should set canDelete true when user is author and has modify permission`() = runTest {
         val authorId = getRandomLong()
         val userDTO = getUserDTO().copy(id = authorId, pk = null)
-        val user = getUser()
 
         val dto = CommentDTO(
             id = getRandomString(),
@@ -100,9 +90,6 @@ class CommentsMapperTest {
             postDateTime = nowLocalDateTime,
             deleteDate = null
         )
-
-        coEvery { projectsRepository.getPermissions() } returns persistentListOf(TaigaPermission.MODIFY_PROJECT)
-
         val result = sut.toDomain(dto, authorId)
 
         assertTrue(result.canDelete)
@@ -112,7 +99,6 @@ class CommentsMapperTest {
     fun `toDomain should set canDelete false when user is author but lacks modify permission`() = runTest {
         val authorId = getRandomLong()
         val userDTO = getUserDTO().copy(id = authorId, pk = null)
-        val user = getUser()
 
         val dto = CommentDTO(
             id = getRandomString(),
@@ -122,8 +108,7 @@ class CommentsMapperTest {
             deleteDate = null
         )
 
-        coEvery { projectsRepository.getPermissions() } returns persistentListOf()
-
+        projectsRepository.permissions = persistentListOf()
         val result = sut.toDomain(dto, authorId)
 
         assertFalse(result.canDelete)
@@ -134,7 +119,6 @@ class CommentsMapperTest {
         val authorId = getRandomLong()
         val differentUserId = authorId + 1
         val userDTO = getUserDTO().copy(id = authorId, pk = null)
-        val user = getUser()
 
         val dto = CommentDTO(
             id = getRandomString(),
@@ -143,9 +127,6 @@ class CommentsMapperTest {
             postDateTime = nowLocalDateTime,
             deleteDate = null
         )
-
-        coEvery { userMapper.toUser(userDTO) } returns user
-        coEvery { projectsRepository.getPermissions() } returns persistentListOf(TaigaPermission.MODIFY_PROJECT)
 
         val result = sut.toDomain(dto, differentUserId)
 
@@ -157,7 +138,6 @@ class CommentsMapperTest {
         val authorId = getRandomLong()
         val differentUserId = authorId + 1
         val userDTO = getUserDTO().copy(id = authorId, pk = null)
-        val user = getUser()
 
         val dto = CommentDTO(
             id = getRandomString(),
@@ -166,9 +146,6 @@ class CommentsMapperTest {
             postDateTime = nowLocalDateTime,
             deleteDate = null
         )
-
-        coEvery { userMapper.toUser(userDTO) } returns user
-        coEvery { projectsRepository.getPermissions() } returns persistentListOf()
 
         val result = sut.toDomain(dto, differentUserId)
 
@@ -179,7 +156,6 @@ class CommentsMapperTest {
     fun `toDomain should use pk as actualId when id is null`() = runTest {
         val authorPk = getRandomLong()
         val userDTO = getUserDTO().copy(id = null, pk = authorPk)
-        val user = getUser()
 
         val dto = CommentDTO(
             id = getRandomString(),
@@ -188,9 +164,6 @@ class CommentsMapperTest {
             postDateTime = nowLocalDateTime,
             deleteDate = null
         )
-
-        coEvery { userMapper.toUser(userDTO) } returns user
-        coEvery { projectsRepository.getPermissions() } returns persistentListOf(TaigaPermission.MODIFY_PROJECT)
 
         val result = sut.toDomain(dto, authorPk)
 

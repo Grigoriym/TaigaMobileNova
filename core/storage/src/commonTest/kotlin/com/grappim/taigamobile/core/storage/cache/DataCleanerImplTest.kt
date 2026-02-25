@@ -1,21 +1,24 @@
 package com.grappim.taigamobile.core.storage.cache
 
-import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.cleaner.DataCleaner
 import com.grappim.taigamobile.core.storage.cleaner.DataCleanerImpl
+import com.grappim.taigamobile.testing.storage.FakeAuthStorage
+import com.grappim.taigamobile.testing.storage.FakeCacheManager
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
+import kotlin.test.BeforeTest
 import kotlin.test.Test
+import kotlin.test.assertTrue
 
 class DataCleanerImplTest {
 
-    private val authStorage: AuthStorage = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val cacheManager: CacheManager = mockk()
+    private val authStorage = FakeAuthStorage()
+    private val taigaSessionStorage = FakeTaigaSessionStorage()
+    private val cacheManager = FakeCacheManager()
 
     private lateinit var sut: DataCleaner
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = DataCleanerImpl(
             authStorage = authStorage,
@@ -26,14 +29,10 @@ class DataCleanerImplTest {
 
     @Test
     fun `on cleanOnGoingBackAfterLogin should clean needed stuff`() = runTest {
-        every { authStorage.clear() } just Runs
-        coEvery { taigaSessionStorage.clearData() } just Runs
-        coEvery { cacheManager.clearAllCache() } just Runs
-
         sut.cleanOnGoingBackAfterLogin()
 
-        verify { authStorage.clear() }
-        coVerify { taigaSessionStorage.clearData() }
-        coVerify { cacheManager.clearAllCache() }
+        assertTrue(authStorage.clearCalled)
+        assertTrue(taigaSessionStorage.clearDataCalled)
+        assertTrue(cacheManager.clearAllCacheCalled)
     }
 }

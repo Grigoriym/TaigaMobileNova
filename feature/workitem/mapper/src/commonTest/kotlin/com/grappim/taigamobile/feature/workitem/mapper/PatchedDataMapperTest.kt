@@ -4,12 +4,12 @@ import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.dto.customattribute.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
-import com.grappim.taigamobile.testing.nowLocalDateTime
-import org.junit.Before
-import org.junit.Test
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDateTime
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
@@ -19,7 +19,7 @@ class PatchedDataMapperTest {
 
     private lateinit var sut: PatchedDataMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = PatchedDataMapper(
             dueDateStatusMapper = dueDateStatusMapper

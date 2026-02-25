@@ -5,10 +5,10 @@ import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.nowLocalDate
-import com.grappim.taigamobile.testing.testException
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDate
+import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.uikit.dragdrop.theme.taigaGreenPositive
 import com.grappim.taigamobile.uikit.dragdrop.theme.taigaOrange
 import com.grappim.taigamobile.uikit.dragdrop.theme.taigaRed
@@ -21,8 +21,8 @@ import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
@@ -36,7 +36,7 @@ internal class WorkItemDueDateDelegateImplTest {
     private val patchDataGenerator: PatchDataGenerator = mockk()
     private val dateTimeUtils: DateTimeUtils = mockk()
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut =
             WorkItemDueDateDelegateImpl(

@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.issues.mapper
 
-import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.domain.model.StatusFilters
 import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
@@ -9,9 +8,10 @@ import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
-import com.grappim.taigamobile.testing.getFiltersData
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.models.getFiltersData
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.storage.FakeServerStorage
+import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -21,11 +21,6 @@ import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 
 class IssueTaskMapperTest {
-
-    private val serverStorage = object : ServerStorage {
-        override val server: String = "https://taiga.example.com"
-        override fun defineServer(value: String) {}
-    }
 
     private lateinit var sut: IssueMapper
 
@@ -37,7 +32,7 @@ class IssueTaskMapperTest {
             projectMapper = ProjectMapper(),
             tagsMapper = TagsMapper(),
             dueDateStatusMapper = DueDateStatusMapper(),
-            serverStorage = serverStorage
+            serverStorage = FakeServerStorage()
         )
     }
 

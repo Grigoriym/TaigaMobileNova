@@ -8,15 +8,15 @@ import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import okhttp3.internal.tls.OkHostnameVerifier.verify
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -33,7 +33,7 @@ class TasksRepositoryImplTest {
     private val projectId = getRandomLong()
     private val taskPath = WorkItemPathPlural(CommonTaskType.Task)
 
-    @Before
+    @BeforeTest
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
 

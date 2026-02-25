@@ -1,15 +1,15 @@
 package com.grappim.taigamobile.feature.workitem.ui.mappers
 
 import com.grappim.taigamobile.feature.filters.domain.model.Status
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getStatusFilters
+import com.grappim.taigamobile.testing.models.getStatusFilters
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticStringColor
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -20,7 +20,7 @@ class StatusUIMapperTest {
 
     private lateinit var sut: StatusUIMapper
 
-    @Before
+    @BeforeTest
     fun setUp() {
         sut = StatusUIMapper(
             ioDispatcher = testDispatcher

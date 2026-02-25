@@ -1,107 +1,103 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.grappim.taigamobile.feature.epics.ui
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicDetailsDataUseCase
-import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsNavDestination
 import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsViewModel
-import com.grappim.taigamobile.feature.filters.domain.model.Statuses
-import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.WorkItemUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.epic_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
-import com.grappim.taigamobile.testing.getEpic
-import com.grappim.taigamobile.testing.getEpicDetailsData
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getStatusUI
-import com.grappim.taigamobile.testing.testException
+import com.grappim.taigamobile.testing.models.getEpic
+import com.grappim.taigamobile.testing.models.getEpicDetailsData
+import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
+import com.grappim.taigamobile.testing.repo.FakeUsersRepository
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.usecases.FakeEpicDetailsDataUseCase
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
+import com.grappim.taigamobile.testing.utils.FakePatchDataGenerator
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
+import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
-import kotlinx.collections.immutable.ImmutableList
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentSetOf
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
 
-class EpicDetailsViewModelTest {
+internal class EpicDetailsViewModelTest {
     private val epicId = getRandomLong()
     private val ref = getRandomLong()
 
     private val type = TaskIdentifier.WorkItem(CommonTaskType.Epic)
 
-    @get:Rule
-    val savedStateHandleRule = SavedStateHandleRule(
-        EpicDetailsNavDestination(
-            epicId = epicId,
-            ref = ref
-        )
+    private val savedStateHandle = SavedStateHandle(
+        mapOf("epicId" to epicId, "ref" to ref)
     )
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    private val mainDispatcherRule = MainDispatcherRule()
 
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
-    private val historyRepository: HistoryRepository = mockk()
-    private val fileUriManager: FileUriManager = mockk()
-    private val usersRepository: UsersRepository = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val dateTimeUtils: DateTimeUtils = mockk()
-    private val epicDetailsDataUseCase: EpicDetailsDataUseCase = mockk()
-    private val statusUIMapper: StatusUIMapper = mockk()
-    private val workItemsGenerator: WorkItemsGenerator = mockk()
-    private val tagUIMapper: TagUIMapper = mockk()
-    private val customFieldsUIMapper: CustomFieldsUIMapper = mockk()
-    private val workItemUIMapper: WorkItemUIMapper = mockk()
-    private val workItemEditStateRepository: WorkItemEditStateRepository = mockk(relaxed = true)
+    private val statusUIMapper = StatusUIMapper()
+    private val tagUIMapper = TagUIMapper()
+    private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
+    private val epicDetailsDataUseCase = FakeEpicDetailsDataUseCase()
+    private val workItemRepository = FakeWorkItemRepository()
+    private val patchDataGenerator: PatchDataGenerator = FakePatchDataGenerator()
+    private val historyRepository: HistoryRepository = FakeHistoryRepository()
+    private val usersRepository: UsersRepository = FakeUsersRepository()
+    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
+    private val workItemsGenerator = WorkItemsGenerator(
+        dispatcher = UnconfinedTestDispatcher(),
+        statusUIMapper = statusUIMapper
+    )
+    private val customFieldsUIMapper = CustomFieldsUIMapper(dfSimple = createDecimalFormatter())
+    private val workItemUIMapper = WorkItemUIMapper(
+        statusUIMapper = statusUIMapper,
+        tagUIMapper = tagUIMapper,
+        dateTimeUtils = dateTimeUtils
+    )
+    private val workItemEditStateRepository = WorkItemEditStateRepository()
 
     private lateinit var sut: EpicDetailsViewModel
 
-    @Before
+    @BeforeTest
     fun setup() {
-        every {
-            workItemEditStateRepository.getTeamMemberUpdateFlow(epicId, type)
-        } returns flowOf(TeamMemberUpdate.Clear)
+        mainDispatcherRule.setup()
+    }
 
-        every {
-            workItemEditStateRepository.getTagsFlow(epicId, type)
-        } returns emptyFlow()
-
-        every {
-            workItemEditStateRepository.getDescriptionFlow(epicId, type)
-        } returns emptyFlow()
+    @AfterTest
+    fun tearDown() {
+        mainDispatcherRule.tearDown()
     }
 
     private fun createViewModel() {
         sut = EpicDetailsViewModel(
-            savedStateHandle = savedStateHandleRule.savedStateHandleMock,
+            savedStateHandle = savedStateHandle,
             workItemRepository = workItemRepository,
             patchDataGenerator = patchDataGenerator,
             historyRepository = historyRepository,
-            fileUriManager = fileUriManager,
             usersRepository = usersRepository,
             taigaSessionStorage = taigaSessionStorage,
             dateTimeUtils = dateTimeUtils,
@@ -116,82 +112,28 @@ class EpicDetailsViewModelTest {
     }
 
     private fun setupSuccessfulLoad() {
-        val epicDetailsData = getEpicDetailsData(
-            epic = getEpic(id = epicId)
+        epicDetailsDataUseCase.getEpicDataResult = Result.success(
+            getEpicDetailsData(epic = getEpic(id = epicId))
         )
-
-        coEvery {
-            epicDetailsDataUseCase.getEpicData(epicId)
-        } returns Result.success(epicDetailsData)
-
-        coEvery {
-            statusUIMapper.toUI(any<Statuses>())
-        } returns getStatusUI()
-
-        coEvery {
-            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
-        } returns persistentListOf()
-
-        coEvery {
-            workItemsGenerator.getItems(
-                statusUI = any(),
-                filtersData = any()
-            )
-        } returns persistentSetOf()
-
-        coEvery {
-            customFieldsUIMapper.toUI(any<CustomFields>())
-        } returns persistentListOf()
-
-        coEvery {
-            workItemUIMapper.toUI(any<ImmutableList<WorkItem>>())
-        } returns persistentListOf()
     }
 
     @Test
-    fun `initial state should have correct toolbar title`() = runTest {
+    fun `initial state should have correct toolbar title`() {
         setupSuccessfulLoad()
 
         createViewModel()
 
         val state = sut.state.value
-        assertTrue(state.toolbarTitle is NativeText.Arguments)
-        val toolbarTitle = state.toolbarTitle
-        assertEquals(RString.epic_slug, toolbarTitle.id)
+        val toolbarTitle = state.toolbarTitle as NativeText.Arguments
+        assertEquals(RString.epic_slug, toolbarTitle.stringResource)
         assertEquals(listOf(ref), toolbarTitle.args)
     }
 
     @Test
-    fun `loadEpic success should update state correctly`() = runTest {
+    fun `loadEpic success should update state correctly`() {
         val epic = getEpic(id = epicId)
         val epicDetailsData = getEpicDetailsData(epic = epic)
-
-        coEvery {
-            epicDetailsDataUseCase.getEpicData(epicId)
-        } returns Result.success(epicDetailsData)
-
-        coEvery {
-            statusUIMapper.toUI(any<Statuses>())
-        } returns getStatusUI()
-
-        coEvery {
-            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
-        } returns persistentListOf()
-
-        coEvery {
-            workItemsGenerator.getItems(
-                statusUI = any(),
-                filtersData = any()
-            )
-        } returns persistentSetOf()
-
-        coEvery {
-            customFieldsUIMapper.toUI(any<CustomFields>())
-        } returns persistentListOf()
-
-        coEvery {
-            workItemUIMapper.toUI(any<ImmutableList<WorkItem>>())
-        } returns persistentListOf()
+        epicDetailsDataUseCase.getEpicDataResult = Result.success(epicDetailsData)
 
         createViewModel()
 
@@ -208,10 +150,8 @@ class EpicDetailsViewModelTest {
     }
 
     @Test
-    fun `loadEpic failure should update state with error`() = runTest {
-        coEvery {
-            epicDetailsDataUseCase.getEpicData(epicId)
-        } returns Result.failure(testException)
+    fun `loadEpic failure should update state with error`() {
+        epicDetailsDataUseCase.getEpicDataResult = Result.failure(testException)
 
         createViewModel()
 
@@ -221,7 +161,7 @@ class EpicDetailsViewModelTest {
     }
 
     @Test
-    fun `setDropdownMenuExpanded should update state`() = runTest {
+    fun `setDropdownMenuExpanded should update state`() {
         setupSuccessfulLoad()
         createViewModel()
 
@@ -237,19 +177,17 @@ class EpicDetailsViewModelTest {
     }
 
     @Test
-    fun `retryLoadEpic should reload data`() = runTest {
+    fun `retryLoadEpic should reload data`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.retryLoadEpic()
 
-        coVerify(exactly = 2) {
-            epicDetailsDataUseCase.getEpicData(epicId)
-        }
+        assertEquals(2, epicDetailsDataUseCase.getEpicDataCallCount)
     }
 
     @Test
-    fun `setIsDeleteDialogVisible should update state`() = runTest {
+    fun `setIsDeleteDialogVisible should update state`() {
         setupSuccessfulLoad()
         createViewModel()
 
@@ -267,9 +205,6 @@ class EpicDetailsViewModelTest {
     @Test
     fun `onDelete success should emit delete trigger`() = runTest {
         setupSuccessfulLoad()
-        coEvery {
-            workItemRepository.deleteWorkItem(any(), CommonTaskType.Epic)
-        } returns Unit
 
         createViewModel()
 
@@ -279,26 +214,24 @@ class EpicDetailsViewModelTest {
             assertTrue(awaitItem())
         }
 
-        coVerify { workItemRepository.deleteWorkItem(any(), CommonTaskType.Epic) }
+        assertTrue(workItemRepository.deleteWorkItemCalled)
     }
 
     @Test
-    fun `onDelete failure should update state and not emit trigger`() = runTest {
+    fun `onDelete failure should update state and not emit trigger`() {
         setupSuccessfulLoad()
-        coEvery {
-            workItemRepository.deleteWorkItem(any(), CommonTaskType.Epic)
-        } throws testException
+        workItemRepository.deleteWorkItemThrows = testException
 
         createViewModel()
 
         sut.state.value.onDelete()
 
         assertFalse(sut.state.value.isLoading)
-        coVerify { workItemRepository.deleteWorkItem(any(), CommonTaskType.Epic) }
+        assertTrue(workItemRepository.deleteWorkItemCalled)
     }
 
     @Test
-    fun `setAreWorkItemsExpanded should update state`() = runTest {
+    fun `setAreWorkItemsExpanded should update state`() {
         setupSuccessfulLoad()
         createViewModel()
 
@@ -314,50 +247,32 @@ class EpicDetailsViewModelTest {
     }
 
     @Test
-    fun `onGoingToEditTags should set tags in repository`() = runTest {
+    fun `onGoingToEditTags should set tags in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.onGoingToEditTags()
 
-        verify {
-            workItemEditStateRepository.setTags(
-                workItemId = epicId,
-                type = type,
-                tags = any()
-            )
-        }
+        assertTrue(workItemEditStateRepository.getCurrentTags(epicId, type).isNotEmpty())
     }
 
     @Test
-    fun `onGoingToEditWatchers should set current watchers in repository`() = runTest {
+    fun `onGoingToEditWatchers should set current watchers in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.onGoingToEditWatchers()
 
-        verify {
-            workItemEditStateRepository.setCurrentWatchers(
-                ids = any(),
-                workItemId = epicId,
-                type = type
-            )
-        }
+        assertTrue(workItemEditStateRepository.getCurrentWatchers(epicId, type).isNotEmpty())
     }
 
     @Test
-    fun `onGoingToEditAssignee should set current assignee in repository`() = runTest {
+    fun `onGoingToEditAssignee should set current assignee in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.onGoingToEditAssignee()
 
-        verify {
-            workItemEditStateRepository.setCurrentAssignee(
-                workItemId = epicId,
-                type = type,
-                id = any()
-            )
-        }
+        assertNotNull(workItemEditStateRepository.getCurrentAssignee(epicId, type))
     }
 }

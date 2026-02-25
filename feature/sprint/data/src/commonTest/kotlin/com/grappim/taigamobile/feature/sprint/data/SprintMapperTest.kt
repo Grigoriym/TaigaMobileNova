@@ -1,18 +1,18 @@
 package com.grappim.taigamobile.feature.sprint.data
 
-import com.grappim.taigamobile.testing.getRandomBoolean
-import com.grappim.taigamobile.testing.getRandomInt
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.nowLocalDate
+import com.grappim.taigamobile.testing.utils.getRandomBoolean
+import com.grappim.taigamobile.testing.utils.getRandomInt
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDate
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -22,7 +22,7 @@ class SprintMapperTest {
 
     private lateinit var sut: SprintMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = SprintMapper(dispatcher = testDispatcher)
     }

@@ -10,17 +10,17 @@ import com.grappim.taigamobile.feature.projects.dto.tags.DeleteTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.EditTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.MixTagsRequestDTO
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
-import com.grappim.taigamobile.testing.getProject
-import com.grappim.taigamobile.testing.getProjectDTO
-import com.grappim.taigamobile.testing.getProjectEntity
-import com.grappim.taigamobile.testing.getProjectSimple
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getTag
+import com.grappim.taigamobile.testing.models.getProject
+import com.grappim.taigamobile.testing.models.getProjectDTO
+import com.grappim.taigamobile.testing.models.getProjectEntity
+import com.grappim.taigamobile.testing.models.getProjectSimple
+import com.grappim.taigamobile.testing.models.getTag
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.test.runTest
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 

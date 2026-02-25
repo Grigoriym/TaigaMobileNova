@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.feature.workitem.mapper
 
 import com.grappim.taigamobile.feature.workitem.dto.AttachmentDTO
-import com.grappim.taigamobile.testing.getAttachmentDTO
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import org.junit.Before
-import org.junit.Test
+import com.grappim.taigamobile.testing.models.getAttachmentDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -13,7 +13,7 @@ class AttachmentMapperTest {
 
     private lateinit var sut: AttachmentMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = AttachmentMapper()
     }

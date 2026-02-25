@@ -5,8 +5,8 @@ import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import io.mockk.mockk
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -19,7 +19,7 @@ internal class WorkItemCustomFieldsDelegateImplTest {
     private val patchDataGenerator: PatchDataGenerator = mockk()
     private val dateTimeUtils: DateTimeUtils = mockk()
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut =
             WorkItemCustomFieldsDelegateImpl(

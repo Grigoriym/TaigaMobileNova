@@ -9,16 +9,16 @@ import com.grappim.taigamobile.feature.users.dto.StatsDTO
 import com.grappim.taigamobile.feature.users.mapper.TeamMemberMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.users.mapper.UserStatsMapper
-import com.grappim.taigamobile.testing.getProjectResponseDTO
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getUser
-import com.grappim.taigamobile.testing.getUserDTO
+import com.grappim.taigamobile.testing.models.getProjectResponseDTO
+import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.models.getUserDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -40,7 +40,7 @@ class UsersRepositoryImplTest {
     private val projectId = getRandomLong()
     private val currentUserId = getRandomLong()
 
-    @Before
+    @BeforeTest
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
         coEvery { taigaSessionStorage.requireUserId() } returns currentUserId

@@ -2,10 +2,10 @@ package com.grappim.taigamobile
 
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.data.AppInfoProviderImpl
-import org.junit.Before
-import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
@@ -13,7 +13,7 @@ class AppInfoProviderImplTest {
 
     private lateinit var sut: AppInfoProvider
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = AppInfoProviderImpl()
     }

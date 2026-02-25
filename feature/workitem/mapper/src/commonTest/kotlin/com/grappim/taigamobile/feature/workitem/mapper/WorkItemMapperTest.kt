@@ -6,15 +6,15 @@ import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
-import com.grappim.taigamobile.testing.getProjectExtraInfo
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getStatus
-import com.grappim.taigamobile.testing.getUser
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.models.getProjectExtraInfo
+import com.grappim.taigamobile.testing.models.getStatus
+import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
@@ -28,7 +28,7 @@ class WorkItemMapperTest {
 
     private lateinit var sut: WorkItemMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = WorkItemMapper(
             statusesMapper = statusesMapper,

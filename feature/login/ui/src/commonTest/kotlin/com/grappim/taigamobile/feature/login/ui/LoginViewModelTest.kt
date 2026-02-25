@@ -6,11 +6,11 @@ import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.testing.MainDispatcherRule
-import com.grappim.taigamobile.testing.getRandomString
+import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
 import org.junit.Rule
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -28,7 +28,7 @@ internal class LoginViewModelTest {
     private val defaultServer = getRandomString()
     private val correctServer = "https://10.0.2.2:9000"
 
-    @Before
+    @BeforeTest
     fun setup() {
         every { serverStorage.server } returns defaultServer
 

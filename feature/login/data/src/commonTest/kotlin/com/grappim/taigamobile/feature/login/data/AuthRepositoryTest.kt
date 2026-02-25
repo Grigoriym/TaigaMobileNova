@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.login.data
 
-import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
@@ -8,23 +7,24 @@ import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.feature.login.dto.AuthRequest
 import com.grappim.taigamobile.feature.login.dto.AuthResponse
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.testException
+import com.grappim.taigamobile.testing.storage.FakeServerStorage
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import okhttp3.internal.tls.OkHostnameVerifier.verify
-import org.junit.Test
+import kotlin.test.Test
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class AuthRepositoryTest {
 
     private val authApi = mockk<AuthApi>()
-    private val serverStorage = mockk<ServerStorage>()
+    private val serverStorage: ServerStorage = FakeServerStorage()
 
-    private val taigaSessionStorage = mockk<TaigaSessionStorage>()
+    private val taigaSessionStorage = FakeTaigaSessionStorage()
     private val authStorage = mockk<AuthStorage>()
 
     private val sut: AuthRepository =

@@ -1,41 +1,45 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.grappim.taigamobile.feature.issues.ui
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
-import com.grappim.taigamobile.feature.issues.domain.IssueDetailsDataUseCase
-import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsNavDestination
 import com.grappim.taigamobile.feature.issues.ui.details.IssueDetailsViewModel
 import com.grappim.taigamobile.feature.issues.ui.model.IssueUIMapper
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItem
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
-import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
+import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.issue_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
-import com.grappim.taigamobile.testing.getIssueDetailsData
-import com.grappim.taigamobile.testing.getIssueUI
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.testException
-import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
+import com.grappim.taigamobile.testing.models.getIssueDetailsData
+import com.grappim.taigamobile.testing.models.getIssueTask
+import com.grappim.taigamobile.testing.models.getWorkItem
+import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
+import com.grappim.taigamobile.testing.repo.FakeUsersRepository
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.usecases.FakeIssueDetailsDataUseCase
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
+import com.grappim.taigamobile.testing.utils.FakePatchDataGenerator
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.testException
+import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentSetOf
-import kotlinx.coroutines.flow.emptyFlow
-import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.LocalDate
-import org.junit.Before
-import org.junit.Rule
-import org.junit.Test
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
@@ -47,60 +51,52 @@ internal class IssueDetailsViewModelTest {
 
     private val type = TaskIdentifier.WorkItem(CommonTaskType.Issue)
 
-    @get:Rule
-    val savedStateHandleRule = SavedStateHandleRule(
-        IssueDetailsNavDestination(
-            issueId = issueId,
-            ref = ref
-        )
+    private val savedStateHandle = SavedStateHandle(
+        mapOf("issueId" to issueId, "ref" to ref)
     )
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    private val mainDispatcherRule = MainDispatcherRule()
 
-    private val issueDetailsDataUseCase: IssueDetailsDataUseCase = mockk()
-    private val customFieldsUIMapper: CustomFieldsUIMapper = mockk()
-    private val workItemsGenerator: WorkItemsGenerator = mockk()
-    private val workItemEditStateRepository: WorkItemEditStateRepository = mockk(relaxed = true)
-    private val dateTimeUtils: DateTimeUtils = mockk()
-    private val fileUriManager: FileUriManager = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
-    private val historyRepository: HistoryRepository = mockk()
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val taigaSessionStorage: TaigaSessionStorage = mockk()
-    private val usersRepository: UsersRepository = mockk()
-    private val issueUIMapper: IssueUIMapper = mockk()
+    private val statusUIMapper = StatusUIMapper()
+    private val tagUIMapper = TagUIMapper()
+    private val issueUIMapper = IssueUIMapper(
+        statusUIMapper = statusUIMapper,
+        tagUIMapper = tagUIMapper
+    )
+    private val dateTimeUtils = FakeDateTimeUtils()
+    private val issueDetailsDataUseCase = FakeIssueDetailsDataUseCase()
+    private val patchDataGenerator: PatchDataGenerator = FakePatchDataGenerator()
+    private val historyRepository: HistoryRepository = FakeHistoryRepository()
+    private val workItemRepository = FakeWorkItemRepository()
+    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
+    private val usersRepository: UsersRepository = FakeUsersRepository()
+    private val workItemsGenerator = WorkItemsGenerator(
+        dispatcher = UnconfinedTestDispatcher(),
+        statusUIMapper = statusUIMapper
+    )
+    private val customFieldsUIMapper = CustomFieldsUIMapper(dfSimple = createDecimalFormatter())
+    private val workItemEditStateRepository = WorkItemEditStateRepository()
 
     private lateinit var sut: IssueDetailsViewModel
 
-    @Before
+    @BeforeTest
     fun setup() {
-        every {
-            workItemEditStateRepository.getTeamMemberUpdateFlow(issueId, type)
-        } returns flowOf(TeamMemberUpdate.Clear)
+        mainDispatcherRule.setup()
+    }
 
-        every {
-            workItemEditStateRepository.getTagsFlow(issueId, type)
-        } returns emptyFlow()
-
-        every {
-            workItemEditStateRepository.getDescriptionFlow(issueId, type)
-        } returns emptyFlow()
-
-        every {
-            workItemEditStateRepository.getSprintFlow(issueId, type)
-        } returns emptyFlow()
+    @AfterTest
+    fun tearDown() {
+        mainDispatcherRule.tearDown()
     }
 
     private fun createViewModel() {
         sut = IssueDetailsViewModel(
+            savedStateHandle = savedStateHandle,
             issueDetailsDataUseCase = issueDetailsDataUseCase,
-            savedStateHandle = savedStateHandleRule.savedStateHandleMock,
             customFieldsUIMapper = customFieldsUIMapper,
             workItemsGenerator = workItemsGenerator,
             workItemEditStateRepository = workItemEditStateRepository,
             dateTimeUtils = dateTimeUtils,
-            fileUriManager = fileUriManager,
             patchDataGenerator = patchDataGenerator,
             historyRepository = historyRepository,
             workItemRepository = workItemRepository,
@@ -111,75 +107,27 @@ internal class IssueDetailsViewModelTest {
     }
 
     private fun setupSuccessfulLoad() {
-        val issueDetailsData = getIssueDetailsData()
-        val issueUI = getIssueUI()
-
-        coEvery {
-            issueDetailsDataUseCase.getIssueData(issueId)
-        } returns Result.success(issueDetailsData)
-
-        coEvery {
-            issueUIMapper.toUI(any())
-        } returns issueUI
-
-        coEvery {
-            customFieldsUIMapper.toUI(any())
-        } returns persistentListOf()
-
-        coEvery {
-            workItemsGenerator.getItems(
-                statusUI = any(),
-                typeUI = any(),
-                severityUI = any(),
-                priorityUi = any(),
-                filtersData = any()
-            )
-        } returns persistentSetOf()
-
-        every { dateTimeUtils.formatToMediumFormat(any<LocalDate>()) } returns "Jan 1, 2024"
+        issueDetailsDataUseCase.getIssueDataResult = Result.success(
+            getIssueDetailsData(issue = getIssueTask(id = issueId))
+        )
     }
 
     @Test
-    fun `initial state should have correct toolbar title`() = runTest {
+    fun `initial state should have correct toolbar title`() {
         setupSuccessfulLoad()
 
         createViewModel()
 
         val state = sut.state.value
-        assertTrue(state.toolbarTitle is NativeText.Arguments)
-        val toolbarTitle = state.toolbarTitle
-        assertEquals(RString.issue_slug, toolbarTitle.id)
+        val toolbarTitle = state.toolbarTitle as NativeText.Arguments
+        assertEquals(RString.issue_slug, toolbarTitle.stringResource)
         assertEquals(listOf(ref), toolbarTitle.args)
     }
 
     @Test
-    fun `loadIssue success should update state correctly`() = runTest {
-        val issueDetailsData = getIssueDetailsData()
-        val issueUI = getIssueUI()
-
-        coEvery {
-            issueDetailsDataUseCase.getIssueData(issueId)
-        } returns Result.success(issueDetailsData)
-
-        coEvery {
-            issueUIMapper.toUI(any())
-        } returns issueUI
-
-        coEvery {
-            customFieldsUIMapper.toUI(any())
-        } returns persistentListOf()
-
-        coEvery {
-            workItemsGenerator.getItems(
-                statusUI = any(),
-                typeUI = any(),
-                severityUI = any(),
-                priorityUi = any(),
-                filtersData = any()
-            )
-        } returns persistentSetOf()
-
-        every { dateTimeUtils.formatToMediumFormat(any<LocalDate>()) } returns "Jan 1, 2024"
+    fun `loadIssue success should update state correctly`() {
+        val issueDetailsData = getIssueDetailsData(issue = getIssueTask(id = issueId))
+        issueDetailsDataUseCase.getIssueDataResult = Result.success(issueDetailsData)
 
         createViewModel()
 
@@ -197,10 +145,8 @@ internal class IssueDetailsViewModelTest {
     }
 
     @Test
-    fun `loadIssue failure should update state with error`() = runTest {
-        coEvery {
-            issueDetailsDataUseCase.getIssueData(issueId)
-        } returns Result.failure(testException)
+    fun `loadIssue failure should update state with error`() {
+        issueDetailsDataUseCase.getIssueDataResult = Result.failure(testException)
 
         createViewModel()
 
@@ -210,7 +156,7 @@ internal class IssueDetailsViewModelTest {
     }
 
     @Test
-    fun `setDropdownMenuExpanded should update state`() = runTest {
+    fun `setDropdownMenuExpanded should update state`() {
         setupSuccessfulLoad()
         createViewModel()
 
@@ -226,19 +172,17 @@ internal class IssueDetailsViewModelTest {
     }
 
     @Test
-    fun `loadIssue should reload data`() = runTest {
+    fun `loadIssue should reload data`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.loadIssue()
 
-        coVerify(exactly = 2) {
-            issueDetailsDataUseCase.getIssueData(issueId)
-        }
+        assertEquals(2, issueDetailsDataUseCase.getIssueDataCallCount)
     }
 
     @Test
-    fun `setIsDeleteDialogVisible should update state`() = runTest {
+    fun `setIsDeleteDialogVisible should update state`() {
         setupSuccessfulLoad()
         createViewModel()
 
@@ -256,9 +200,6 @@ internal class IssueDetailsViewModelTest {
     @Test
     fun `onDelete success should emit delete trigger`() = runTest {
         setupSuccessfulLoad()
-        coEvery {
-            workItemRepository.deleteWorkItem(any(), CommonTaskType.Issue)
-        } returns Unit
 
         createViewModel()
 
@@ -268,95 +209,67 @@ internal class IssueDetailsViewModelTest {
             assertTrue(awaitItem())
         }
 
-        coVerify { workItemRepository.deleteWorkItem(any(), CommonTaskType.Issue) }
+        assertTrue(workItemRepository.deleteWorkItemCalled)
     }
 
     @Test
-    fun `onDelete failure should update state and not emit trigger`() = runTest {
+    fun `onDelete failure should update state and not emit trigger`() {
         setupSuccessfulLoad()
-        coEvery {
-            workItemRepository.deleteWorkItem(any(), CommonTaskType.Issue)
-        } throws testException
+        workItemRepository.deleteWorkItemThrows = testException
 
         createViewModel()
 
         sut.state.value.onDelete()
 
         assertFalse(sut.state.value.isLoading)
-        coVerify { workItemRepository.deleteWorkItem(any(), CommonTaskType.Issue) }
+        assertTrue(workItemRepository.deleteWorkItemCalled)
     }
 
     @Test
-    fun `onGoingToEditTags should set tags in repository`() = runTest {
+    fun `onGoingToEditTags should set tags in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.onGoingToEditTags()
 
-        verify {
-            workItemEditStateRepository.setTags(
-                workItemId = issueId,
-                type = type,
-                tags = any()
-            )
-        }
+        assertTrue(workItemEditStateRepository.getCurrentTags(issueId, type).isNotEmpty())
     }
 
     @Test
-    fun `onGoingToEditWatchers should set current watchers in repository`() = runTest {
+    fun `onGoingToEditWatchers should set current watchers in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.onGoingToEditWatchers()
 
-        verify {
-            workItemEditStateRepository.setCurrentWatchers(
-                ids = any(),
-                workItemId = issueId,
-                type = type
-            )
-        }
+        assertTrue(workItemEditStateRepository.getCurrentWatchers(issueId, type).isNotEmpty())
     }
 
     @Test
-    fun `onGoingToEditAssignee should set current assignee in repository`() = runTest {
+    fun `onGoingToEditAssignee should set current assignee in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.onGoingToEditAssignee()
 
-        verify {
-            workItemEditStateRepository.setCurrentAssignee(
-                workItemId = issueId,
-                type = type,
-                id = any()
-            )
-        }
+        assertNotNull(workItemEditStateRepository.getCurrentAssignee(issueId, type))
     }
 
     @Test
-    fun `onGoingToEditSprint should set current sprint in repository`() = runTest {
+    fun `onGoingToEditSprint should set current sprint in repository`() {
         setupSuccessfulLoad()
         createViewModel()
 
         sut.state.value.onGoingToEditSprint()
 
-        verify {
-            workItemEditStateRepository.setCurrentSprint(
-                workItemId = issueId,
-                type = type,
-                id = any()
-            )
-        }
+        assertNotNull(workItemEditStateRepository.getCurrentSprint(issueId, type))
     }
 
     @Test
     fun `promoteToUserStory success should emit trigger`() = runTest {
         setupSuccessfulLoad()
-        val workItem: WorkItem = mockk()
-        coEvery {
-            workItemRepository.promoteToUserStory(any(), CommonTaskType.Issue)
-        } returns workItem
+        val workItem = getWorkItem()
+        workItemRepository.promoteToUserStoryResult = workItem
 
         createViewModel()
 
@@ -367,15 +280,13 @@ internal class IssueDetailsViewModelTest {
         }
 
         assertFalse(sut.state.value.isLoading)
-        coVerify { workItemRepository.promoteToUserStory(any(), CommonTaskType.Issue) }
+        assertTrue(workItemRepository.promoteToUserStoryCalled)
     }
 
     @Test
     fun `promoteToUserStory failure should show snackbar error`() = runTest {
         setupSuccessfulLoad()
-        coEvery {
-            workItemRepository.promoteToUserStory(any(), CommonTaskType.Issue)
-        } throws testException
+        workItemRepository.promoteToUserStoryThrows = testException
 
         createViewModel()
 
@@ -387,6 +298,6 @@ internal class IssueDetailsViewModelTest {
         }
 
         assertFalse(sut.state.value.isLoading)
-        coVerify { workItemRepository.promoteToUserStory(any(), CommonTaskType.Issue) }
+        assertTrue(workItemRepository.promoteToUserStoryCalled)
     }
 }

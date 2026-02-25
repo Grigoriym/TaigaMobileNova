@@ -10,20 +10,20 @@ import com.grappim.taigamobile.feature.workitem.domain.UserStoryShortInfo
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.mapper.UserStoryShortInfoMapper
-import com.grappim.taigamobile.testing.getProjectExtraInfo
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.getStatus
-import com.grappim.taigamobile.testing.getTag
-import com.grappim.taigamobile.testing.getUser
-import com.grappim.taigamobile.testing.getUserStoryShortInfoDTO
-import com.grappim.taigamobile.testing.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.models.getProjectExtraInfo
+import com.grappim.taigamobile.testing.models.getStatus
+import com.grappim.taigamobile.testing.models.getTag
+import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.models.getUserStoryShortInfoDTO
+import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -40,7 +40,7 @@ class TaskMapperTest {
 
     private lateinit var sut: TaskMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         coEvery { serverStorage.server } returns "https://taiga.example.com"
 

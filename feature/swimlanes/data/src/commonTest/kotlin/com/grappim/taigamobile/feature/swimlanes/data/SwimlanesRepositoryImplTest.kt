@@ -2,9 +2,9 @@ package com.grappim.taigamobile.feature.swimlanes.data
 
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getSwimlane
-import com.grappim.taigamobile.testing.getSwimlaneDTO
+import com.grappim.taigamobile.testing.models.getSwimlane
+import com.grappim.taigamobile.testing.models.getSwimlaneDTO
+import com.grappim.taigamobile.testing.utils.getRandomLong
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -13,8 +13,8 @@ import io.mockk.verify
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -28,7 +28,7 @@ class SwimlanesRepositoryImplTest {
 
     private val projectId = getRandomLong()
 
-    @Before
+    @BeforeTest
     fun setup() {
         coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
 

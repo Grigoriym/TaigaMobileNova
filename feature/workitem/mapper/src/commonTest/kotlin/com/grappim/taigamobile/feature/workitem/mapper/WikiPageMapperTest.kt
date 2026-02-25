@@ -1,14 +1,14 @@
 package com.grappim.taigamobile.feature.workitem.mapper
 
 import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
-import com.grappim.taigamobile.testing.getRandomBoolean
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
-import com.grappim.taigamobile.testing.nowLocalDateTime
+import com.grappim.taigamobile.testing.utils.getRandomBoolean
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDateTime
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.LocalDateTime
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
@@ -16,7 +16,7 @@ class WikiPageMapperTest {
 
     private lateinit var sut: WikiPageMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = WikiPageMapper()
     }

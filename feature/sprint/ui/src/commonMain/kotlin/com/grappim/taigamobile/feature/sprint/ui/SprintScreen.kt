@@ -22,6 +22,7 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
+import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.delete
 import com.grappim.taigamobile.strings.generated.resources.delete_sprint_text
@@ -130,7 +131,7 @@ fun SprintScreen(
         isVisible = state.isDeleteDialogVisible
     )
 
-    _root_ide_package_.com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog(
+    EditSprintDialog(
         state = sprintDialogState,
         onConfirm = state.onEditSprintConfirm
     )
