@@ -23,22 +23,20 @@ class IssuesRepositoryImpl(
     private val taigaSessionStorage: TaigaSessionStorage,
     private val issueMapper: IssueMapper,
     private val workItemApi: WorkItemApi,
-    private val workItemMapper: WorkItemMapper,
+    private val workItemMapper: WorkItemMapper
 ) : IssuesRepository {
 
-    override fun getIssuesPaging(filtersData: FiltersData, query: String): Flow<PagingData<WorkItem>> {
-        return Pager(
-            PagingConfig(pageSize = 10, enablePlaceholders = false)
-        ) {
-            IssuesPagingSource(
-                filters = filtersData,
-                taigaSessionStorage = taigaSessionStorage,
-                query = query,
-                workItemApi = workItemApi,
-                workItemMapper = workItemMapper
-            )
-        }.flow
-    }
+    override fun getIssuesPaging(filtersData: FiltersData, query: String): Flow<PagingData<WorkItem>> = Pager(
+        PagingConfig(pageSize = 10, enablePlaceholders = false)
+    ) {
+        IssuesPagingSource(
+            filters = filtersData,
+            taigaSessionStorage = taigaSessionStorage,
+            query = query,
+            workItemApi = workItemApi,
+            workItemMapper = workItemMapper
+        )
+    }.flow
 
     override suspend fun getIssue(id: Long, filtersData: FiltersData): Issue {
         val response = workItemApi.getWorkItemById(

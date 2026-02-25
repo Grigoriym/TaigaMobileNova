@@ -1,98 +1,112 @@
 package com.grappim.taigamobile.feature.epics.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.epics.dto.LinkToEpicRequestDTO
 import com.grappim.taigamobile.feature.epics.mapper.EpicMapper
-import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
+import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
+import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
+import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
+import com.grappim.taigamobile.feature.users.mapper.UserMapper
+import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
+import com.grappim.taigamobile.testing.FakeServerStorage
+import com.grappim.taigamobile.testing.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.FakeWorkItemApi
 import com.grappim.taigamobile.testing.getRandomLong
 import com.grappim.taigamobile.testing.getWorkItemResponseDTO
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import okhttp3.internal.tls.OkHostnameVerifier.verify
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
+private class FakeEpicsApi : EpicsApi {
+    data class LinkToEpicCall(val epicId: Long, val request: LinkToEpicRequestDTO)
+    data class UnlinkFromEpicCall(val epicId: Long, val userStoryId: Long)
+
+    val linkCalls = mutableListOf<LinkToEpicCall>()
+    val unlinkCalls = mutableListOf<UnlinkFromEpicCall>()
+
+    override suspend fun getEpics(
+        page: Int?,
+        pageSize: Int,
+        project: Long?,
+        query: String?,
+        assignedId: Long?,
+        isClosed: Boolean?,
+        watcherId: Long?,
+        assignedIds: String?,
+        ownerIds: String?,
+        statuses: String?,
+        tags: String?
+    ) = emptyList<WorkItemResponseDTO>()
+
+    override suspend fun linkToEpic(epicId: Long, linkToEpicRequest: LinkToEpicRequestDTO) {
+        linkCalls += LinkToEpicCall(epicId, linkToEpicRequest)
+    }
+
+    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
+        unlinkCalls += UnlinkFromEpicCall(epicId, userStoryId)
+    }
+}
+
 class EpicsRepositoryImplTest {
 
-    private val epicsApi: EpicsApi = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val workItemApi: WorkItemApi = mockk()
-    private val epicMapper: EpicMapper = mockk()
-    private val workItemMapper: WorkItemMapper = mockk()
+    private val fakeEpicsApi = FakeEpicsApi()
+    private val fakeWorkItemApi = FakeWorkItemApi()
+    private val fakeServerStorage = FakeServerStorage()
+    private val epicMapper = EpicMapper(
+        serverStorage = fakeServerStorage,
+        statusesMapper = StatusesMapper(),
+        userMapper = UserMapper(),
+        projectMapper = ProjectMapper(),
+        tagsMapper = TagsMapper()
+    )
+    private val workItemMapper = WorkItemMapper(
+        statusesMapper = StatusesMapper(),
+        userMapper = UserMapper(),
+        tagsMapper = TagsMapper(),
+        projectMapper = ProjectMapper()
+    )
 
     private lateinit var sut: EpicsRepository
 
-    private val taskPath = WorkItemPathPlural(CommonTaskType.Epic)
+    private val epicTaskPath = CommonTaskType.Epic.getPluralPath()
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = EpicsRepositoryImpl(
-            epicsApi = epicsApi,
-            taigaSessionStorage = taigaSessionStorage,
-            workItemApi = workItemApi,
+            epicsApi = fakeEpicsApi,
+            taigaSessionStorage = FakeTaigaSessionStorage(),
+            workItemApi = fakeWorkItemApi,
             epicMapper = epicMapper,
-            workItemMapper = workItemMapper,
+            workItemMapper = workItemMapper
         )
     }
 
     @Test
     fun `getEpic should return correct Epic`() = runTest {
         val epicId = getRandomLong()
-        val mockResponse = getWorkItemResponseDTO()
-        val expectedEpic = mockk<Epic>()
-
-        coEvery {
-            workItemApi.getWorkItemById(
-                taskPath = taskPath,
-                id = epicId
-            )
-        } returns mockResponse
-        every { epicMapper.toDomain(mockResponse) } returns expectedEpic
+        val dto = getWorkItemResponseDTO()
+        fakeWorkItemApi.workItemByIdResponse = dto
 
         val actual = sut.getEpic(epicId)
 
-        assertEquals(expectedEpic, actual)
-        coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = epicId) }
-        verify { epicMapper.toDomain(mockResponse) }
+        assertEquals(epicMapper.toDomain(dto), actual)
     }
 
     @Test
     fun `getEpics should return list of epics`() = runTest {
         val projectId = getRandomLong()
-        val mockResponses = listOf(getWorkItemResponseDTO(), getWorkItemResponseDTO())
-        val expectedEpics = persistentListOf(mockk<Epic>(), mockk<Epic>())
-
-        coEvery {
-            workItemApi.getWorkItems(
-                taskPath = taskPath,
-                project = projectId,
-                assignedId = null,
-                isClosed = null,
-                watcherId = null
-            )
-        } returns mockResponses
-        every { epicMapper.toDomainList(mockResponses) } returns expectedEpics
+        val dtos = listOf(getWorkItemResponseDTO(), getWorkItemResponseDTO())
+        fakeWorkItemApi.workItemsResponse = dtos
 
         val actual = sut.getEpics(projectId = projectId)
 
-        assertEquals(expectedEpics, actual)
-        coVerify {
-            workItemApi.getWorkItems(
-                taskPath = taskPath,
-                project = projectId,
-                assignedId = null,
-                isClosed = null,
-                watcherId = null
-            )
-        }
-        verify { epicMapper.toDomainList(mockResponses) }
+        assertEquals(epicMapper.toDomainList(dtos), actual)
+        assertEquals(2, actual.size)
     }
 
     @Test
@@ -101,37 +115,37 @@ class EpicsRepositoryImplTest {
         val assignedId = getRandomLong()
         val watcherId = getRandomLong()
         val isClosed = true
-        val mockResponses = listOf(getWorkItemResponseDTO())
-        val expectedEpics = persistentListOf(mockk<Epic>())
+        fakeWorkItemApi.workItemsResponse = listOf(getWorkItemResponseDTO())
 
-        coEvery {
-            workItemApi.getWorkItems(
-                taskPath = taskPath,
-                project = projectId,
-                assignedId = assignedId,
-                isClosed = isClosed,
-                watcherId = watcherId
-            )
-        } returns mockResponses
-        every { epicMapper.toDomainList(mockResponses) } returns expectedEpics
-
-        val actual = sut.getEpics(
+        sut.getEpics(
             projectId = projectId,
             assignedId = assignedId,
             isClosed = isClosed,
             watcherId = watcherId
         )
 
-        assertEquals(expectedEpics, actual)
-        coVerify {
-            workItemApi.getWorkItems(
-                taskPath = taskPath,
-                project = projectId,
-                assignedId = assignedId,
-                isClosed = isClosed,
-                watcherId = watcherId
-            )
-        }
+        assertEquals(1, fakeWorkItemApi.getWorkItemsCalls.size)
+        val call = fakeWorkItemApi.getWorkItemsCalls.first()
+        assertEquals(epicTaskPath, call.taskPath)
+        assertEquals(projectId, call.project)
+        assertEquals(assignedId, call.assignedId)
+        assertEquals(isClosed, call.isClosed)
+        assertEquals(watcherId, call.watcherId)
+    }
+
+    @Test
+    fun `getEpics should use null filters by default`() = runTest {
+        val projectId = getRandomLong()
+        fakeWorkItemApi.workItemsResponse = emptyList()
+
+        sut.getEpics(projectId = projectId)
+
+        assertEquals(1, fakeWorkItemApi.getWorkItemsCalls.size)
+        val call = fakeWorkItemApi.getWorkItemsCalls.first()
+        assertEquals(projectId, call.project)
+        assertEquals(null, call.assignedId)
+        assertEquals(null, call.isClosed)
+        assertEquals(null, call.watcherId)
     }
 
     @Test
@@ -139,21 +153,12 @@ class EpicsRepositoryImplTest {
         val epicId = getRandomLong()
         val userStoryId = getRandomLong()
 
-        coJustRun {
-            epicsApi.linkToEpic(
-                epicId = epicId,
-                linkToEpicRequest = LinkToEpicRequestDTO(epicId.toString(), userStoryId)
-            )
-        }
-
         sut.linkToEpic(epicId, userStoryId)
 
-        coVerify {
-            epicsApi.linkToEpic(
-                epicId = epicId,
-                linkToEpicRequest = LinkToEpicRequestDTO(epicId.toString(), userStoryId)
-            )
-        }
+        assertEquals(1, fakeEpicsApi.linkCalls.size)
+        val call = fakeEpicsApi.linkCalls.first()
+        assertEquals(epicId, call.epicId)
+        assertEquals(LinkToEpicRequestDTO(epicId.toString(), userStoryId), call.request)
     }
 
     @Test
@@ -161,32 +166,21 @@ class EpicsRepositoryImplTest {
         val epicId = getRandomLong()
         val userStoryId = getRandomLong()
 
-        coEvery { epicsApi.unlinkFromEpic(epicId, userStoryId) } returns mockk()
-
         sut.unlinkFromEpic(epicId, userStoryId)
 
-        coVerify { epicsApi.unlinkFromEpic(epicId, userStoryId) }
+        assertEquals(1, fakeEpicsApi.unlinkCalls.size)
+        val call = fakeEpicsApi.unlinkCalls.first()
+        assertEquals(epicId, call.epicId)
+        assertEquals(userStoryId, call.userStoryId)
     }
 
     @Test
     fun `getEpics should return empty list when no epics found`() = runTest {
         val projectId = getRandomLong()
-        val mockResponses = emptyList<WorkItemResponseDTO>()
-        val expectedEpics = persistentListOf<Epic>()
-
-        coEvery {
-            workItemApi.getWorkItems(
-                taskPath = taskPath,
-                project = projectId,
-                assignedId = null,
-                isClosed = null,
-                watcherId = null
-            )
-        } returns mockResponses
-        every { epicMapper.toDomainList(mockResponses) } returns expectedEpics
+        fakeWorkItemApi.workItemsResponse = emptyList()
 
         val actual = sut.getEpics(projectId = projectId)
 
-        assertEquals(0, actual.size)
+        assertTrue(actual.isEmpty())
     }
 }

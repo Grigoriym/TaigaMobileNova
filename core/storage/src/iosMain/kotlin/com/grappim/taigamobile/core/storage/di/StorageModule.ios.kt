@@ -6,6 +6,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import com.grappim.taigamobile.core.storage.KmpSession
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.cinterop.ExperimentalForeignApi
@@ -29,7 +30,7 @@ class AuthDataStoreModule {
 
     @Single
     fun provideSessionStorage(colorMapper: ColorMapper): TaigaSessionStorage =
-        TaigaSessionStorage(createSessionDataStore(), colorMapper)
+        TaigaSessionStorageImpl(createSessionDataStore(), colorMapper)
 
     @Single
     fun provideSession(@StorageJsonQualifier json: Json): KmpSession = KmpSession(createSessionFiltersDataStore(), json)

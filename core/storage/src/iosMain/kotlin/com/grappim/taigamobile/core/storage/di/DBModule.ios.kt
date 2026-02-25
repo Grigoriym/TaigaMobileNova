@@ -29,7 +29,7 @@ actual class PlatformDBModule {
             inDomain = NSUserDomainMask,
             appropriateForURL = null,
             create = false,
-            error = null,
+            error = null
         )
         return requireNotNull(documentDirectory?.path)
     }

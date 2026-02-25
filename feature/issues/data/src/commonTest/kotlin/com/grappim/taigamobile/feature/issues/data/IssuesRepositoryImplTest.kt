@@ -36,7 +36,7 @@ class IssuesRepositoryImplTest {
             taigaSessionStorage = taigaSessionStorage,
             issueMapper = issueMapper,
             workItemApi = workItemApi,
-            workItemMapper = workItemMapper,
+            workItemMapper = workItemMapper
         )
     }
 

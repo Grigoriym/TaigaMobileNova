@@ -7,8 +7,8 @@ android {
     namespace = "com.grappim.taigamobile.core.domain"
 }
 
-kotlin{
-    sourceSets{
+kotlin {
+    sourceSets {
         iosMain.dependencies {
             implementation(libs.kotlinx.io.core)
         }

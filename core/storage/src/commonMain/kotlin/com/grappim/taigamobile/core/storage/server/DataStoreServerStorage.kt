@@ -14,7 +14,7 @@ internal const val SERVER_STORAGE_FILE_NAME = "taiga_server_storage_name$PREFS_E
 
 internal class DataStoreServerStorage(
     private val dataStore: DataStore<Preferences>,
-    private val appInfoProvider: AppInfoProvider,
+    private val appInfoProvider: AppInfoProvider
 ) : ServerStorage {
 
     private val serverKey = stringPreferencesKey("server_key")

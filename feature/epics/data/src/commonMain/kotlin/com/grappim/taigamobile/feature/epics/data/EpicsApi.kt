@@ -11,9 +11,7 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.discardRemaining
 import org.koin.core.annotation.Single
 
-@Single
-class EpicsApi(private val httpClient: HttpClient) {
-
+interface EpicsApi {
     suspend fun getEpics(
         page: Int? = null,
         pageSize: Int = 20,
@@ -26,6 +24,28 @@ class EpicsApi(private val httpClient: HttpClient) {
         ownerIds: String? = null,
         statuses: String? = null,
         tags: String? = null
+    ): List<WorkItemResponseDTO>
+
+    suspend fun linkToEpic(epicId: Long, linkToEpicRequest: LinkToEpicRequestDTO)
+
+    suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long)
+}
+
+@Single(binds = [EpicsApi::class])
+class EpicsApiImpl(private val httpClient: HttpClient) : EpicsApi {
+
+    override suspend fun getEpics(
+        page: Int?,
+        pageSize: Int,
+        project: Long?,
+        query: String?,
+        assignedId: Long?,
+        isClosed: Boolean?,
+        watcherId: Long?,
+        assignedIds: String?,
+        ownerIds: String?,
+        statuses: String?,
+        tags: String?
     ): List<WorkItemResponseDTO> = httpClient.get("epics") {
         url {
             if (page != null) parameters.append("page", page.toString())
@@ -43,13 +63,13 @@ class EpicsApi(private val httpClient: HttpClient) {
         if (page == null) headers.append("x-disable-pagination", "true")
     }.body()
 
-    suspend fun linkToEpic(epicId: Long, linkToEpicRequest: LinkToEpicRequestDTO) {
+    override suspend fun linkToEpic(epicId: Long, linkToEpicRequest: LinkToEpicRequestDTO) {
         httpClient.post("epics/$epicId/related_userstories") {
             setBody(linkToEpicRequest)
         }.discardRemaining()
     }
 
-    suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
+    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
         httpClient.delete("epics/$epicId/related_userstories/$userStoryId").discardRemaining()
     }
 }

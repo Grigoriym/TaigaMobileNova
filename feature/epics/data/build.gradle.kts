@@ -10,6 +10,10 @@ android {
 
 kotlin {
     sourceSets {
+        commonTest.dependencies {
+            implementation(projects.feature.users.mapper)
+            implementation(projects.feature.projects.mapper)
+        }
         commonMain.dependencies {
             implementation(projects.core.api)
             implementation(projects.core.domain)

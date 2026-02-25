@@ -11,9 +11,7 @@ class ColorMapper {
     /**
      * backend does not handle alpha channel and will send an error if it is present
      */
-    fun fromColorToString(color: Color): String {
-        return formatColor(color.toArgb()).replace("#FF", "#")
-    }
+    fun fromColorToString(color: Color): String = formatColor(color.toArgb()).replace("#FF", "#")
 
     fun fromStringToColor(string: String): Color = try {
         Color(fromStringToInt(string))

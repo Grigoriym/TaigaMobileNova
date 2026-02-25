@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.serialization)
+    alias(libs.plugins.taigamobile.kmp.network)
 }
 
 android {
@@ -40,6 +42,7 @@ kotlin {
             implementation(projects.feature.tasks.domain)
             implementation(projects.feature.tasks.data)
             implementation(projects.utils.ui)
+            implementation(projects.utils.formatter.datetime)
         }
     }
 }

@@ -20,7 +20,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController(
         onFocusBehavior = OnFocusBehavior.DoNothing
     }
 ) {
-    startKoin<KoinApp> {  }
+    startKoin<KoinApp> { }
 
     NSLogLogger.install()
     val screenReadySignalController =

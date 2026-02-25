@@ -42,7 +42,7 @@ class UserStoriesRepositoryImplTest {
             userStoryMapper = userStoryMapper,
             workItemApi = workItemApi,
             workItemRepository = workItemRepository,
-            workItemMapper = workItemMapper,
+            workItemMapper = workItemMapper
         )
     }
 

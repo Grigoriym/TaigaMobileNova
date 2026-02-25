@@ -24,23 +24,21 @@ class EpicsRepositoryImpl(
     private val taigaSessionStorage: TaigaSessionStorage,
     private val workItemApi: WorkItemApi,
     private val epicMapper: EpicMapper,
-    private val workItemMapper: WorkItemMapper,
+    private val workItemMapper: WorkItemMapper
 ) : EpicsRepository {
 
-    override fun getEpicsPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
-        return Pager(
-            config = PagingConfig(pageSize = 10, enablePlaceholders = false),
-            pagingSourceFactory = {
-                EpicsPagingSource(
-                    filters = filters,
-                    taigaSessionStorage = taigaSessionStorage,
-                    query = query,
-                    workItemApi = workItemApi,
-                    workItemMapper = workItemMapper
-                )
-            }
-        ).flow
-    }
+    override fun getEpicsPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> = Pager(
+        config = PagingConfig(pageSize = 10, enablePlaceholders = false),
+        pagingSourceFactory = {
+            EpicsPagingSource(
+                filters = filters,
+                taigaSessionStorage = taigaSessionStorage,
+                query = query,
+                workItemApi = workItemApi,
+                workItemMapper = workItemMapper
+            )
+        }
+    ).flow
 
     override suspend fun getEpics(
         projectId: Long,

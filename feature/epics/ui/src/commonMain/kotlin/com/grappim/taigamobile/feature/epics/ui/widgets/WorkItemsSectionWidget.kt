@@ -134,7 +134,9 @@ private fun WorkItemItemWidget(
                             )
                         )
                     }
-                    append(stringResource(RString.title_with_ref_pattern).formatStringKmp(workItemUI.ref, workItemUI.title))
+                    append(
+                        stringResource(RString.title_with_ref_pattern).formatStringKmp(workItemUI.ref, workItemUI.title)
+                    )
                     if (workItemUI.isClosed) pop()
 
                     append(" ")

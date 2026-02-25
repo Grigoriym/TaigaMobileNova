@@ -11,5 +11,5 @@ class ServerStorageImpl(appInfoProvider: AppInfoProvider) :
         dataStore = createDataStore {
             File(System.getProperty("java.io.tmpdir"), SERVER_STORAGE_FILE_NAME).absolutePath
         },
-        appInfoProvider = appInfoProvider,
+        appInfoProvider = appInfoProvider
     )

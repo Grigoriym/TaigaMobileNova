@@ -33,22 +33,20 @@ class UserStoriesRepositoryImpl(
     private val userStoryMapper: UserStoryMapper,
     private val workItemApi: WorkItemApi,
     private val workItemRepository: WorkItemRepository,
-    private val workItemMapper: WorkItemMapper,
+    private val workItemMapper: WorkItemMapper
 ) : UserStoriesRepository {
 
-    override fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
-        return Pager(
-            PagingConfig(pageSize = 10, enablePlaceholders = false)
-        ) {
-            UserStoriesPagingSource(
-                filters = filters,
-                taigaSessionStorage = taigaSessionStorage,
-                query = query,
-                workItemMapper = workItemMapper,
-                workItemApi = workItemApi
-            )
-        }.flow
-    }
+    override fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> = Pager(
+        PagingConfig(pageSize = 10, enablePlaceholders = false)
+    ) {
+        UserStoriesPagingSource(
+            filters = filters,
+            taigaSessionStorage = taigaSessionStorage,
+            query = query,
+            workItemMapper = workItemMapper,
+            workItemApi = workItemApi
+        )
+    }.flow
 
     override suspend fun getUserStory(id: Long): UserStory {
         val response = workItemApi.getWorkItemById(

@@ -22,5 +22,5 @@ class ServerStorageImpl(appInfoProvider: com.grappim.taigamobile.core.appinfoapi
             )
             requireNotNull(documentDirectory).path + "/$SERVER_STORAGE_FILE_NAME"
         },
-        appInfoProvider = appInfoProvider,
+        appInfoProvider = appInfoProvider
     )
