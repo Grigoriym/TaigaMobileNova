@@ -1,4 +1,5 @@
 [versions]
+koverGradlePlugin = "0.9.7"
 version-code = "38"
 version-name = "2.0.7"
 app-pkg = "com.grappim.taigamobile"
@@ -16,7 +17,7 @@ targetSdk = "36"
 
 detekt = "2.0.0-alpha.2"
 ktlint = "14.0.1"
-jacocoAggregation = "2.5.0"
+kover = "0.9.7"
 composeRules = "0.5.6"
 
 agp = "9.0.1"
@@ -124,6 +125,7 @@ kotlinx-date-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version
 kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-core" }
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
 
+kover-gradle-plugin = { module = "org.jetbrains.kotlinx:kover-gradle-plugin", version.ref = "koverGradlePlugin" }
 ktor-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
 ktor-contentNegotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
@@ -242,8 +244,7 @@ kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", versi
 jetbrains-kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 detekt = { id = "dev.detekt", version.ref = "detekt" }
 ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
-jacocoAggregationCoverage = { id = "io.github.gmazzo.test.aggregation.coverage", version.ref = "jacocoAggregation" }
-jacocoAggregationResults = { id = "io.github.gmazzo.test.aggregation.results", version.ref = "jacocoAggregation" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 koin-compiler = { id = "io.insert-koin.compiler.plugin", version.ref = "koin-plugin" }
 androidx-room = { id = "androidx.room", version.ref = "room" }
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }

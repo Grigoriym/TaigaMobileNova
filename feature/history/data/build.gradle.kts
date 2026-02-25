@@ -23,8 +23,5 @@ kotlin {
             implementation(projects.feature.workitem.dto)
             implementation(projects.feature.workitem.mapper)
         }
-        commonTest.dependencies {
-            implementation(projects.feature.users.mapper)
-        }
     }
 }

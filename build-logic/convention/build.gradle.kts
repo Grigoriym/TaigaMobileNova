@@ -32,6 +32,7 @@ dependencies {
     compileOnly(libs.compose.multiplatform.gradlePlugin)
     compileOnly(libs.detekt.gradlePlugin)
     compileOnly(libs.ktlint.gradlePlugin)
+    compileOnly(libs.kover.gradle.plugin)
 }
 
 gradlePlugin {

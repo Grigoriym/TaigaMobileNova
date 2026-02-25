@@ -40,13 +40,13 @@ jobs:
       - name: Run Ktlint
         run: ./gradlew ktlintCheck
 
-      - name: Run tests and generate Aggregated JaCoCo report
-        run: ./gradlew jacocoAggregatedReport
+      - name: Run tests and generate Kover XML report
+        run: ./gradlew koverXmlReport
 
       - name: Debug coverage report
         run: |
             echo "Coverage report exists:"
-            ls -la ./build/reports/jacoco/jacocoAggregatedReport/ || echo "Directory not found"
+            ls -la ./build/reports/kover/ || echo "Directory not found"
             echo "Current branch: ${{ github.head_ref || github.ref_name }}"
             echo "Current commit: ${{ github.event.pull_request.head.sha || github.sha }}"
             echo "Base branch: ${{ github.base_ref || 'N/A' }}"
@@ -56,7 +56,7 @@ jobs:
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
-          files: ./build/reports/jacoco/jacocoAggregatedReport/jacocoTestReport.xml
+          files: ./build/reports/kover/report.xml
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false

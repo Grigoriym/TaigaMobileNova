@@ -14,94 +14,239 @@ plugins {
 
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
-    alias(libs.plugins.jacocoAggregationResults)
-    alias(libs.plugins.jacocoAggregationCoverage)
+    alias(libs.plugins.kover)
 }
 
-private val coverageExclusions = listOf(
-    "**/R.class",
-    "**/R$*.class",
-    "**/BuildConfig.*",
-    "**/Manifest*.*",
-    "**/*Module*.*",
-    "**/*Dagger*.*",
-    "**/*Hilt*.*",
-    "**/widgets/**",
-    "**/navigation/**",
-    "**/interceptors/**"
-) + listOf(
-    "**/*Module",
-    "**/Hilt*",
-    "**/*GeneratedInjector",
-    "**/*HiltComponents*",
-    "**/*_HiltModules*",
-    "**/*_Provide*",
-    "**/*_Factory*",
-    "**/*_ComponentTreeDeps",
-    "**/*_Impl*",
-    "**/*DefaultImpls*",
-    "**/_com_grappim_taigamobile_*",
-
-    "**/MainDispatcherRule*",
-    "**/SavedStateHandleRule*",
-    "**/*Api",
-
-    "**/TaigaApp",
-    "**/DrawerDestination",
-
-    "**/*Activity",
-    "**/*Screen*",
-    "**/*Application",
-    "**/*NavGraph*",
-
-    "**/*NavDestination",
-    "**/*Widget",
-    "**/*Dialog",
-    "**/*BottomSheet",
-    "**/TaskFilters",
-    "**/MainNavHost",
-
-    "**/FileLoggingTree",
-    "**/TryCatchExtensions",
-
-    "**/StorageJsonProver",
-    "**/TaigaPermissionConverter",
-    "**/ColorSerializer",
-    "**/ComposableUtils",
-    "**/ObserveAsEvents*",
-    "**/PreviewUtils*",
-    "**/JsonSerializableNavType",
-    "**/JsonSerializableNullableNavType",
-    "**/IconSource*",
-    "**/ColorSource",
-    "**/ScrumNavDestination",
-    "**/LifecycleEffects",
-    "**/*Preference"
-).flatMap {
-    listOf(
-        "$it.class",
-        "${it}Kt.class",
-        "$it$*.class"
-    )
-}
-
-testAggregation {
-    modules {
-        exclude(rootProject)
-        exclude(projects.testing)
-        exclude(projects.uikit)
-        exclude(projects.tools.seed)
-    }
-    coverage {
-        exclude(coverageExclusions)
-    }
-}
-
-tasks.jacocoAggregatedReport {
+kover {
     reports {
-        html.required = true
-        csv.required = true
+        filters {
+            excludes {
+                classes(
+                    // Standard Android generated
+                    "*.R",
+                    "*.R\$*",
+                    "*.BuildConfig",
+                    "*.Manifest*",
+                    // DI / generated
+                    "**.*Module",
+                    "**.*ModuleKt",
+                    "**.*Module\$*",
+                    "**.*GeneratedInjector",
+                    "**.*GeneratedInjectorKt",
+                    "**.*GeneratedInjector\$*",
+                    "**.*HiltComponents*",
+                    "**.*HiltComponents*Kt",
+                    "**.*HiltComponents*\$*",
+                    "**.*_HiltModules*",
+                    "**.*_HiltModules*Kt",
+                    "**.*_HiltModules*\$*",
+                    "**.*_Provide*",
+                    "**.*_Provide*Kt",
+                    "**.*_Provide*\$*",
+                    "**.*_Factory*",
+                    "**.*_Factory*Kt",
+                    "**.*_Factory*\$*",
+                    "**.*_ComponentTreeDeps",
+                    "**.*_ComponentTreeDepsKt",
+                    "**.*_ComponentTreeDeps\$*",
+                    "**.*_Impl*",
+                    "**.*_Impl*Kt",
+                    "**.*_Impl*\$*",
+                    "**.*DefaultImpls*",
+                    "**.*DefaultImpls*Kt",
+                    "**.*DefaultImpls*\$*",
+                    "**._com_grappim_taigamobile_*",
+                    "**._com_grappim_taigamobile_*Kt",
+                    "**._com_grappim_taigamobile_*\$*",
+                    // Dagger/Hilt
+                    "**.*Dagger*",
+                    "**.*Dagger*Kt",
+                    "**.*Dagger*\$*",
+                    "**.Hilt*",
+                    "**.Hilt*Kt",
+                    "**.Hilt*\$*",
+                    // Test utilities
+                    "**.MainDispatcherRule*",
+                    "**.MainDispatcherRule*Kt",
+                    "**.MainDispatcherRule*\$*",
+                    "**.SavedStateHandleRule*",
+                    "**.SavedStateHandleRule*Kt",
+                    "**.SavedStateHandleRule*\$*",
+                    // API interfaces
+                    "**.*Api",
+                    "**.*ApiKt",
+                    "**.*Api\$*",
+                    // App-level
+                    "**.TaigaApp",
+                    "**.TaigaAppKt",
+                    "**.TaigaApp\$*",
+                    "**.DrawerDestination",
+                    "**.DrawerDestinationKt",
+                    "**.DrawerDestination\$*",
+                    // UI - Activities, Screens, Applications
+                    "**.*Activity",
+                    "**.*ActivityKt",
+                    "**.*Activity\$*",
+                    "**.*Screen*",
+                    "**.*Screen*Kt",
+                    "**.*Screen*\$*",
+                    "**.*Application",
+                    "**.*ApplicationKt",
+                    "**.*Application\$*",
+                    // Navigation
+                    "**.*NavGraph*",
+                    "**.*NavGraph*Kt",
+                    "**.*NavGraph*\$*",
+                    "**.*NavDestination",
+                    "**.*NavDestinationKt",
+                    "**.*NavDestination\$*",
+                    // UI components
+                    "**.*Widget",
+                    "**.*WidgetKt",
+                    "**.*Widget\$*",
+                    "**.*Dialog",
+                    "**.*DialogKt",
+                    "**.*Dialog\$*",
+                    "**.*BottomSheet",
+                    "**.*BottomSheetKt",
+                    "**.*BottomSheet\$*",
+                    "**.TaskFilters",
+                    "**.TaskFiltersKt",
+                    "**.TaskFilters\$*",
+                    "**.MainNavHost",
+                    "**.MainNavHostKt",
+                    "**.MainNavHost\$*",
+                    // Utilities
+                    "**.FileLoggingTree",
+                    "**.FileLoggingTreeKt",
+                    "**.FileLoggingTree\$*",
+                    "**.TryCatchExtensions",
+                    "**.TryCatchExtensionsKt",
+                    "**.TryCatchExtensions\$*",
+                    "**.StorageJsonProver",
+                    "**.StorageJsonProverKt",
+                    "**.StorageJsonProver\$*",
+                    "**.TaigaPermissionConverter",
+                    "**.TaigaPermissionConverterKt",
+                    "**.TaigaPermissionConverter\$*",
+                    "**.ColorSerializer",
+                    "**.ColorSerializerKt",
+                    "**.ColorSerializer\$*",
+                    "**.ComposableUtils",
+                    "**.ComposableUtilsKt",
+                    "**.ComposableUtils\$*",
+                    "**.ObserveAsEvents*",
+                    "**.ObserveAsEvents*Kt",
+                    "**.ObserveAsEvents*\$*",
+                    "**.PreviewUtils*",
+                    "**.PreviewUtils*Kt",
+                    "**.PreviewUtils*\$*",
+                    "**.JsonSerializableNavType",
+                    "**.JsonSerializableNavTypeKt",
+                    "**.JsonSerializableNavType\$*",
+                    "**.JsonSerializableNullableNavType",
+                    "**.JsonSerializableNullableNavTypeKt",
+                    "**.JsonSerializableNullableNavType\$*",
+                    "**.IconSource*",
+                    "**.IconSource*Kt",
+                    "**.IconSource*\$*",
+                    "**.ColorSource",
+                    "**.ColorSourceKt",
+                    "**.ColorSource\$*",
+                    "**.ScrumNavDestination",
+                    "**.ScrumNavDestinationKt",
+                    "**.ScrumNavDestination\$*",
+                    "**.LifecycleEffects",
+                    "**.LifecycleEffectsKt",
+                    "**.LifecycleEffects\$*",
+                    "**.*Preference",
+                    "**.*PreferenceKt",
+                    "**.*Preference\$*",
+                )
+            }
+        }
+        total {
+            xml { /* default path: build/reports/kover/report.xml */ }
+            html { }
+        }
     }
+}
+
+dependencies {
+    kover(projects.feature.login.domain)
+    kover(projects.feature.login.ui)
+    kover(projects.feature.login.data)
+    kover(projects.feature.login.dto)
+    kover(projects.utils.ui)
+    kover(projects.core.api)
+    kover(projects.core.storage)
+    kover(projects.core.domain)
+    kover(projects.core.appinfoApi)
+    kover(projects.core.navigation)
+    kover(projects.core.serialization)
+    kover(projects.core.asyncKmp)
+    kover(projects.core.logger)
+    kover(projects.feature.dashboard.ui)
+    kover(projects.feature.dashboard.domain)
+    kover(projects.feature.projects.data)
+    kover(projects.feature.projects.domain)
+    kover(projects.feature.projects.mapper)
+    kover(projects.feature.projects.dto)
+    kover(projects.feature.wiki.data)
+    kover(projects.feature.wiki.domain)
+    kover(projects.feature.wiki.ui)
+    kover(projects.feature.epics.data)
+    kover(projects.feature.epics.domain)
+    kover(projects.feature.epics.ui)
+    kover(projects.feature.epics.dto)
+    kover(projects.feature.epics.mapper)
+    kover(projects.feature.issues.data)
+    kover(projects.feature.issues.ui)
+    kover(projects.feature.issues.domain)
+    kover(projects.feature.issues.dto)
+    kover(projects.feature.issues.mapper)
+    kover(projects.strings)
+    kover(projects.feature.sprint.data)
+    kover(projects.feature.sprint.ui)
+    kover(projects.feature.sprint.domain)
+    kover(projects.feature.userstories.data)
+    kover(projects.feature.userstories.ui)
+    kover(projects.feature.userstories.domain)
+    kover(projects.feature.userstories.mapper)
+    kover(projects.feature.userstories.dto)
+    kover(projects.feature.settings.ui)
+    kover(projects.feature.users.data)
+    kover(projects.feature.users.domain)
+    kover(projects.feature.users.mapper)
+    kover(projects.feature.users.dto)
+    kover(projects.feature.kanban.ui)
+    kover(projects.feature.kanban.domain)
+    kover(projects.feature.tasks.data)
+    kover(projects.feature.tasks.domain)
+    kover(projects.feature.tasks.ui)
+    kover(projects.feature.tasks.mapper)
+    kover(projects.feature.scrum.ui)
+    kover(projects.feature.profile.ui)
+    kover(projects.feature.profile.domain)
+    kover(projects.feature.projectselector.ui)
+    kover(projects.feature.teams.ui)
+    kover(projects.feature.filters.data)
+    kover(projects.feature.filters.domain)
+    kover(projects.feature.filters.ui)
+    kover(projects.feature.filters.mapper)
+    kover(projects.feature.filters.dto)
+    kover(projects.feature.swimlanes.data)
+    kover(projects.feature.swimlanes.domain)
+    kover(projects.feature.history.data)
+    kover(projects.feature.history.domain)
+    kover(projects.utils.formatter.decimal)
+    kover(projects.utils.formatter.datetime)
+    kover(projects.feature.workitem.ui)
+    kover(projects.feature.workitem.domain)
+    kover(projects.feature.workitem.data)
+    kover(projects.feature.workitem.mapper)
+    kover(projects.feature.workitem.dto)
+    kover(projects.composeApp)
 }
 
 tasks.register<Delete>("clean") {

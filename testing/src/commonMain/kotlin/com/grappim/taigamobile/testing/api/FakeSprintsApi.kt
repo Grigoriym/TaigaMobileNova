@@ -7,37 +7,38 @@ import com.grappim.taigamobile.feature.sprint.data.SprintResponseDTO
 import io.ktor.client.statement.HttpResponse
 
 class FakeSprintsApi : SprintApi {
+
+    var sprintsResult: List<SprintResponseDTO> = emptyList()
+    var sprintResult: SprintResponseDTO? = null
+    var lastCreateRequest: CreateSprintRequest? = null
+    var lastEditId: Long? = null
+    var lastEditRequest: EditSprintRequest? = null
+    var lastDeleteId: Long? = null
+
     override suspend fun getSprintsPaging(
         project: Long,
         page: Int,
         isClosed: Boolean
-    ): HttpResponse {
-        TODO("Not yet implemented")
-    }
+    ): HttpResponse = error("not used in this test")
 
     override suspend fun getSprints(
         project: Long,
         isClosed: Boolean
-    ): List<SprintResponseDTO> {
-        TODO("Not yet implemented")
-    }
+    ): List<SprintResponseDTO> = sprintsResult
 
-    override suspend fun getSprint(sprintId: Long): SprintResponseDTO {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getSprint(sprintId: Long): SprintResponseDTO =
+        sprintResult ?: error("sprintResult not set")
 
     override suspend fun createSprint(request: CreateSprintRequest) {
-        TODO("Not yet implemented")
+        lastCreateRequest = request
     }
 
-    override suspend fun editSprint(
-        id: Long,
-        request: EditSprintRequest
-    ) {
-        TODO("Not yet implemented")
+    override suspend fun editSprint(id: Long, request: EditSprintRequest) {
+        lastEditId = id
+        lastEditRequest = request
     }
 
     override suspend fun deleteSprint(id: Long) {
-        TODO("Not yet implemented")
+        lastDeleteId = id
     }
 }

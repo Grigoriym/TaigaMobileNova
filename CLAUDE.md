@@ -25,6 +25,10 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 # Run JVM tests for a single KMP module
 ./gradlew :module:path:jvmTest
 
+# Generate coverage report (Kover — runs jvmTest on all aggregated modules)
+./gradlew koverXmlReport    # XML → build/reports/kover/report.xml (uploaded to Codecov)
+./gradlew koverHtmlReport   # HTML → build/reports/kover/html/index.html
+
 # Force Koin compiler logs (only printed when compiler actually runs; skipped on UP-TO-DATE)
 ./gradlew :composeApp:compileGplayDebugKotlinAndroid --rerun-tasks
 ```

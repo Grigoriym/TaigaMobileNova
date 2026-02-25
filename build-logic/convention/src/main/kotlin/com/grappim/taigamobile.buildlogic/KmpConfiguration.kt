@@ -6,6 +6,8 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 fun Project.configureKmp() {
+    pluginManager.apply("org.jetbrains.kotlinx.kover")
+
     extensions.configure<KotlinMultiplatformExtension> {
         jvmToolchain(21)
         compilerOptions {

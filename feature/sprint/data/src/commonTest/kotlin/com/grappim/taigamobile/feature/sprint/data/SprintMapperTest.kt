@@ -5,9 +5,6 @@ import com.grappim.taigamobile.testing.utils.getRandomInt
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.LocalDate
 import kotlinx.datetime.plus
@@ -15,20 +12,17 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class SprintMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: SprintMapper
 
     @BeforeTest
     fun setup() {
-        sut = SprintMapper(dispatcher = testDispatcher)
+        sut = SprintMapper()
     }
 
     @Test
-    fun `toDomain should map all fields correctly`() = runTest {
+    fun `toDomain should map all fields correctly`() {
         val dto = getSprintResponseDTO()
 
         val result = sut.toDomain(dto)
@@ -43,7 +37,7 @@ class SprintMapperTest {
     }
 
     @Test
-    fun `toDomain should count user stories correctly`() = runTest {
+    fun `toDomain should count user stories correctly`() {
         val userStories = listOf(
             SprintUserStoryDTO(id = getRandomLong()),
             SprintUserStoryDTO(id = getRandomLong()),
@@ -57,7 +51,7 @@ class SprintMapperTest {
     }
 
     @Test
-    fun `toDomain should handle empty user stories list`() = runTest {
+    fun `toDomain should handle empty user stories list`() {
         val dto = getSprintResponseDTO().copy(userStories = emptyList())
 
         val result = sut.toDomain(dto)
@@ -66,7 +60,7 @@ class SprintMapperTest {
     }
 
     @Test
-    fun `toDomainList should map list of DTOs`() = runTest {
+    fun `toDomainList should map list of DTOs`() {
         val dto1 = getSprintResponseDTO()
         val dto2 = getSprintResponseDTO()
         val dto3 = getSprintResponseDTO()
@@ -80,14 +74,14 @@ class SprintMapperTest {
     }
 
     @Test
-    fun `toDomainList should return empty list for empty input`() = runTest {
+    fun `toDomainList should return empty list for empty input`() {
         val result = sut.toDomainList(emptyList())
 
         assertEquals(0, result.size)
     }
 
     @Test
-    fun `toDomain should map closed sprint correctly`() = runTest {
+    fun `toDomain should map closed sprint correctly`() {
         val dto = getSprintResponseDTO().copy(closed = true)
 
         val result = sut.toDomain(dto)
@@ -96,7 +90,7 @@ class SprintMapperTest {
     }
 
     @Test
-    fun `toDomain should map open sprint correctly`() = runTest {
+    fun `toDomain should map open sprint correctly`() {
         val dto = getSprintResponseDTO().copy(closed = false)
 
         val result = sut.toDomain(dto)
@@ -105,7 +99,7 @@ class SprintMapperTest {
     }
 
     @Test
-    fun `toDomain should map dates correctly`() = runTest {
+    fun `toDomain should map dates correctly`() {
         val startDate = LocalDate.parse("2024-01-01")
         val endDate = LocalDate.parse("2024-01-14")
         val dto = getSprintResponseDTO().copy(

@@ -11,9 +11,6 @@ android {
 
 kotlin {
     sourceSets {
-        commonTest.dependencies {
-            implementation(projects.utils.formatter.decimal)
-        }
         commonMain.dependencies {
             implementation(projects.feature.epics.domain)
             implementation(projects.feature.filters.domain)

@@ -5,16 +5,18 @@ import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 
 class FakeFiltersRepository : FiltersRepository {
+
+    var filtersDataResult: FiltersData? = null
+    var statusesResult: ImmutableList<Statuses> = persistentListOf()
+
     override suspend fun getFiltersData(
         commonTaskType: CommonTaskType,
         isCommonTaskFromBacklog: Boolean
-    ): FiltersData {
-        TODO("Not yet implemented")
-    }
+    ): FiltersData = filtersDataResult ?: error("filtersDataResult not set")
 
-    override suspend fun getStatuses(commonTaskType: CommonTaskType): ImmutableList<Statuses> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getStatuses(commonTaskType: CommonTaskType): ImmutableList<Statuses> =
+        statusesResult
 }

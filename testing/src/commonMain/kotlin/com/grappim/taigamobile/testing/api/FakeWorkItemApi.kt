@@ -24,6 +24,7 @@ class FakeWorkItemApi : WorkItemApi {
     var workItemByIdResponse: WorkItemResponseDTO? = null
     var workItemsResponse: List<WorkItemResponseDTO> = emptyList()
     val getWorkItemsCalls = mutableListOf<GetWorkItemsApiCall>()
+    var getWorkItemsLambda: ((taskPath: String, sprint: Long?, userStory: Any?) -> List<WorkItemResponseDTO>)? = null
 
     override suspend fun getWorkItemById(taskPath: String, id: Long): WorkItemResponseDTO =
         workItemByIdResponse ?: error("workItemByIdResponse not set")
@@ -50,7 +51,7 @@ class FakeWorkItemApi : WorkItemApi {
             isClosed = isClosed,
             watcherId = watcherId,
         )
-        return workItemsResponse
+        return getWorkItemsLambda?.invoke(taskPath, sprint, userStory) ?: workItemsResponse
     }
 
     override suspend fun getWorkItemsPagination(
