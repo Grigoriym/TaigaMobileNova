@@ -1,18 +1,21 @@
 package com.grappim.taigamobile.feature.users.data
 
-import com.grappim.taigamobile.feature.projects.data.ProjectsApi
-import com.grappim.taigamobile.feature.users.domain.TeamMember
-import com.grappim.taigamobile.feature.users.domain.UserStats
+import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.users.dto.MemberStatsResponseDTO
-import com.grappim.taigamobile.feature.users.dto.StatsDTO
 import com.grappim.taigamobile.feature.users.mapper.TeamMemberMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.users.mapper.UserStatsMapper
+import com.grappim.taigamobile.testing.api.FakeProjectsApi
+import com.grappim.taigamobile.testing.api.FakeUsersApi
+import com.grappim.taigamobile.testing.models.getProjectMemberDTO
 import com.grappim.taigamobile.testing.models.getProjectResponseDTO
+import com.grappim.taigamobile.testing.models.getStatsDTO
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getUserDTO
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -21,6 +24,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -28,12 +32,12 @@ class UsersRepositoryImplTest {
 
     private val testDispatcher = UnconfinedTestDispatcher()
 
-    private val usersApi: UsersApi = mockk()
-    private val projectsApi: ProjectsApi = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val userMapper: UserMapper = UserMapper()
-    private val teamMemberMapper: TeamMemberMapper = TeamMemberMapper()
-    private val userStatsMapper: UserStatsMapper = UserStatsMapper()
+    private val usersApi = FakeUsersApi()
+    private val projectsApi = FakeProjectsApi()
+    private val taigaSessionStorage = FakeTaigaSessionStorage()
+    private val userMapper = UserMapper()
+    private val teamMemberMapper = TeamMemberMapper()
+    private val userStatsMapper = UserStatsMapper()
 
     private lateinit var sut: UsersRepository
 
@@ -42,9 +46,6 @@ class UsersRepositoryImplTest {
 
     @BeforeTest
     fun setup() {
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery { taigaSessionStorage.requireUserId() } returns currentUserId
-
         sut = UsersRepositoryImpl(
             usersApi = usersApi,
             projectsApi = projectsApi,
@@ -58,46 +59,36 @@ class UsersRepositoryImplTest {
 
     @Test
     fun `getMe should return mapped user`() = runTest {
-        val userDTO = getUserDTO()
-        val expectedUser = getUser()
-
-        coEvery { usersApi.getMyProfile() } returns userDTO
+        val dto = getUserDTO()
+        usersApi.myProfile = dto
 
         val result = sut.getMe()
 
-        assertEquals(expectedUser, result)
-        coVerify { usersApi.getMyProfile() }
+        assertEquals(userMapper.toUser(dto), result)
     }
 
     @Test
     fun `getUser should return mapped user by id`() = runTest {
-        val userId = getRandomLong()
-        val userDTO = getUserDTO()
-        val expectedUser = getUser()
+        val dto = getUserDTO()
+        usersApi.userById[dto.id!!] = dto
 
-        coEvery { usersApi.getUser(userId) } returns userDTO
+        val result = sut.getUser(dto.id!!)
 
-        val result = sut.getUser(userId)
-
-        assertEquals(expectedUser, result)
-        coVerify { usersApi.getUser(userId) }
+        assertEquals(userMapper.toUser(dto), result)
     }
 
     @Test
     fun `getUsersList should return list of mapped users`() = runTest {
-        val userId1 = getRandomLong()
-        val userId2 = getRandomLong()
-        val userDTO1 = getUserDTO()
-        val userDTO2 = getUserDTO()
-        val user1 = getUser()
-        val user2 = getUser()
+        val dto1 = getUserDTO()
+        val dto2 = getUserDTO()
+        usersApi.userById[dto1.id!!] = dto1
+        usersApi.userById[dto2.id!!] = dto2
 
-        coEvery { usersApi.getUser(userId1) } returns userDTO1
-        coEvery { usersApi.getUser(userId2) } returns userDTO2
-
-        val result = sut.getUsersList(listOf(userId1, userId2))
+        val result = sut.getUsersList(listOf(dto1.id!!, dto2.id!!))
 
         assertEquals(2, result.size)
+        assertEquals(userMapper.toUser(dto1), result.first { it.actualId == dto1.id!! })
+        assertEquals(userMapper.toUser(dto2), result.first { it.actualId == dto2.id!! })
     }
 
     @Test
@@ -109,68 +100,62 @@ class UsersRepositoryImplTest {
 
     @Test
     fun `getUserStats should return mapped user stats`() = runTest {
-        val userId = getRandomLong()
-        val statsDTO = mockk<StatsDTO>()
-        val expectedStats = mockk<UserStats>()
+        val dto = getStatsDTO()
+        usersApi.statsDTO = dto
 
-        coEvery { usersApi.getUserStats(userId) } returns statsDTO
+        val result = sut.getUserStats(getRandomLong())
 
-        val result = sut.getUserStats(userId)
-
-        assertEquals(expectedStats, result)
-        coVerify { usersApi.getUserStats(userId) }
+        assertEquals(userStatsMapper.toDomain(dto), result)
     }
 
     @Test
     fun `getTeamMembers should use current project id`() = runTest {
-        val projectDTO = getProjectResponseDTO()
-        val expectedMembers = persistentListOf<TeamMember>()
-
-        coEvery { projectsApi.getProject(projectId) } returns projectDTO
-        every { teamMemberMapper.toDomain(projectDTO.members, emptyMap()) } returns expectedMembers
+        val dto = getProjectResponseDTO()
+        projectsApi.projectResponseDTO = dto
+        taigaSessionStorage.currentProjectId = projectId
 
         val result = sut.getTeamMembers(generateMemberStats = false)
 
-        assertEquals(expectedMembers, result)
-        coVerify { taigaSessionStorage.getCurrentProjectId() }
-        coVerify { projectsApi.getProject(projectId) }
+        assertEquals(teamMemberMapper.toDomain(dto.members, emptyMap()), result)
     }
 
     @Test
     fun `getTeamMembersByProjectId should return mapped team members without stats`() = runTest {
-        val customProjectId = getRandomLong()
-        val projectDTO = getProjectResponseDTO()
-        val expectedMembers = persistentListOf<TeamMember>()
+        val dto = getProjectResponseDTO()
+        projectsApi.projectResponseDTO = dto
 
-        coEvery { projectsApi.getProject(customProjectId) } returns projectDTO
+        val result = sut.getTeamMembersByProjectId(projectId, generateMemberStats = false)
 
-        val result = sut.getTeamMembersByProjectId(customProjectId, generateMemberStats = false)
-
-        assertEquals(expectedMembers, result)
+        assertEquals(teamMemberMapper.toDomain(dto.members, emptyMap()), result)
     }
 
     @Test
     fun `getTeamMembersByProjectId should generate member stats when requested`() = runTest {
-        val projectDTO = getProjectResponseDTO()
-        val memberStatsResponse = MemberStatsResponseDTO(
-            closedBugs = mapOf("1" to 5, "2" to 3),
-            closedTasks = mapOf("1" to 2),
-            createdBugs = mapOf("2" to 1),
+        val member1 = getProjectMemberDTO()
+        val member2 = getProjectMemberDTO()
+        projectsApi.projectResponseDTO = ProjectResponseDTO(
+            id = projectId,
+            name = getRandomString(),
+            members = listOf(member1, member2)
+        )
+        usersApi.memberStatsResponseDTO = MemberStatsResponseDTO(
+            closedBugs = mapOf(member1.id.toString() to 3),
+            closedTasks = mapOf(member1.id.toString() to 2),
+            createdBugs = emptyMap(),
             iocaineTasks = emptyMap(),
             wikiChanges = emptyMap()
         )
-        val expectedMembers = persistentListOf<TeamMember>()
+        taigaSessionStorage.currentProjectId = projectId
 
-        coEvery { projectsApi.getProject(projectId) } returns projectDTO
-        coEvery { usersApi.getMemberStats(projectId) } returns memberStatsResponse
+        val result = sut.getTeamMembersByProjectId(projectId, generateMemberStats = true)
 
-        sut.getTeamMembersByProjectId(projectId, generateMemberStats = true)
-
-        coVerify { usersApi.getMemberStats(projectId) }
+        assertEquals(5, result.first { it.id == member1.id }.totalPower)
+        assertNull(result.first { it.id == member2.id }.totalPower)
     }
 
     @Test
     fun `isAnyAssignedToMe should return true when current user is in list`() = runTest {
+        taigaSessionStorage.currentUserId = currentUserId
         val currentUser = getUser().copy(id = currentUserId, pk = currentUserId)
         val otherUser = getUser()
 
@@ -181,6 +166,7 @@ class UsersRepositoryImplTest {
 
     @Test
     fun `isAnyAssignedToMe should return false when current user is not in list`() = runTest {
+        taigaSessionStorage.currentUserId = currentUserId
         val otherUser1 = getUser()
         val otherUser2 = getUser()
 
@@ -191,6 +177,8 @@ class UsersRepositoryImplTest {
 
     @Test
     fun `isAnyAssignedToMe should return false for empty list`() = runTest {
+        taigaSessionStorage.currentUserId = currentUserId
+
         val result = sut.isAnyAssignedToMe(persistentListOf())
 
         assertFalse(result)

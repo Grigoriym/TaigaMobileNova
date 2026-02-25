@@ -9,7 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class FiltersMapperTest {
+internal class FiltersMapperTest {
     private lateinit var sut: FiltersMapper
 
     @BeforeTest

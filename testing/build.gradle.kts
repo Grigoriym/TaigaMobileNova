@@ -26,41 +26,55 @@ kotlin {
 
             implementation(libs.androidx.paging.common)
 
-            implementation(projects.core.domain)
-            implementation(projects.core.storage)
+            api(projects.core.domain)
+            api(projects.core.storage)
 
-            implementation(projects.feature.filters.domain)
-            implementation(projects.feature.filters.dto)
-            implementation(projects.feature.filters.data)
-            implementation(projects.feature.issues.domain)
-            implementation(projects.feature.issues.ui)
-            implementation(projects.feature.issues.data)
-            implementation(projects.feature.issues.dto)
-            implementation(projects.feature.projects.domain)
-            implementation(projects.feature.projects.dto)
+            api(projects.feature.filters.domain)
+            api(projects.feature.filters.dto)
+            api(projects.feature.filters.data)
+            api(projects.feature.filters.mapper)
+
+            api(projects.feature.issues.domain)
+            api(projects.feature.issues.ui)
+            api(projects.feature.issues.data)
+            api(projects.feature.issues.dto)
+
+            api(projects.feature.projects.domain)
+            api(projects.feature.projects.dto)
+            api(projects.feature.projects.data)
             api(projects.feature.projects.mapper)
-            implementation(projects.feature.workitem.data)
-            implementation(projects.feature.workitem.domain)
-            implementation(projects.feature.workitem.ui)
-            implementation(projects.feature.workitem.dto)
-            implementation(projects.feature.users.domain)
-            implementation(projects.feature.users.dto)
+
+            api(projects.feature.workitem.data)
+            api(projects.feature.workitem.domain)
+            api(projects.feature.workitem.ui)
+            api(projects.feature.workitem.dto)
+
+            api(projects.feature.users.domain)
+            api(projects.feature.users.dto)
+            api(projects.feature.users.data)
             api(projects.feature.users.mapper)
-            implementation(projects.feature.userstories.dto)
-            implementation(projects.feature.userstories.domain)
-            implementation(projects.feature.epics.dto)
-            implementation(projects.feature.epics.domain)
-            implementation(projects.feature.epics.data)
-            implementation(projects.feature.sprint.domain)
-            implementation(projects.feature.sprint.data)
-            implementation(projects.feature.swimlanes.data)
-            implementation(projects.feature.swimlanes.domain)
-            implementation(projects.feature.history.data)
-            implementation(projects.feature.history.domain)
-            implementation(projects.feature.tasks.domain)
-            implementation(projects.feature.tasks.data)
-            implementation(projects.utils.ui)
-            implementation(projects.utils.formatter.datetime)
+
+            api(projects.feature.userstories.dto)
+            api(projects.feature.userstories.domain)
+
+            api(projects.feature.epics.dto)
+            api(projects.feature.epics.domain)
+            api(projects.feature.epics.data)
+
+            api(projects.feature.sprint.domain)
+            api(projects.feature.sprint.data)
+
+            api(projects.feature.swimlanes.data)
+            api(projects.feature.swimlanes.domain)
+
+            api(projects.feature.history.data)
+            api(projects.feature.history.domain)
+
+            api(projects.feature.tasks.domain)
+            api(projects.feature.tasks.data)
+
+            api(projects.utils.ui)
+            api(projects.utils.formatter.datetime)
         }
     }
 }

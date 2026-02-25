@@ -19,6 +19,12 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 # Run tests (use fdroid or gplay variant for Android)
 ./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
 
+# Run all JVM tests across all modules (excludes Android unit tests which require mocking)
+./gradlew allTests -x testDebugUnitTest
+
+# Run JVM tests for a single KMP module
+./gradlew :module:path:jvmTest
+
 # Force Koin compiler logs (only printed when compiler actually runs; skipped on UP-TO-DATE)
 ./gradlew :composeApp:compileGplayDebugKotlinAndroid --rerun-tasks
 ```

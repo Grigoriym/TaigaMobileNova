@@ -11,10 +11,24 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.discardRemaining
 import org.koin.core.annotation.Single
 
-@Single
-class SprintApi(private val httpClient: HttpClient) {
+interface SprintApi {
 
-    suspend fun getSprintsPaging(project: Long, page: Int, isClosed: Boolean): HttpResponse =
+    suspend fun getSprintsPaging(project: Long, page: Int, isClosed: Boolean): HttpResponse
+
+    suspend fun getSprints(project: Long, isClosed: Boolean): List<SprintResponseDTO>
+
+    suspend fun getSprint(sprintId: Long): SprintResponseDTO
+
+    suspend fun createSprint(request: CreateSprintRequest)
+
+    suspend fun editSprint(id: Long, request: EditSprintRequest)
+
+    suspend fun deleteSprint(id: Long)
+}
+
+@Single(binds = [SprintApi::class])
+class SprintApiImpl(private val httpClient: HttpClient) : SprintApi {
+    override suspend fun getSprintsPaging(project: Long, page: Int, isClosed: Boolean): HttpResponse =
         httpClient.get("milestones") {
             url {
                 parameters.append("project", project.toString())
@@ -23,28 +37,29 @@ class SprintApi(private val httpClient: HttpClient) {
             }
         }
 
-    suspend fun getSprints(project: Long, isClosed: Boolean): List<SprintResponseDTO> = httpClient.get("milestones") {
-        url {
-            parameters.append("project", project.toString())
-            parameters.append("closed", isClosed.toString())
-        }
-    }.body()
+    override suspend fun getSprints(project: Long, isClosed: Boolean): List<SprintResponseDTO> =
+        httpClient.get("milestones") {
+            url {
+                parameters.append("project", project.toString())
+                parameters.append("closed", isClosed.toString())
+            }
+        }.body()
 
-    suspend fun getSprint(sprintId: Long): SprintResponseDTO = httpClient.get("milestones/$sprintId").body()
+    override suspend fun getSprint(sprintId: Long): SprintResponseDTO = httpClient.get("milestones/$sprintId").body()
 
-    suspend fun createSprint(request: CreateSprintRequest) {
+    override suspend fun createSprint(request: CreateSprintRequest) {
         httpClient.post("milestones") {
             setBody(request)
         }.discardRemaining()
     }
 
-    suspend fun editSprint(id: Long, request: EditSprintRequest) {
+    override suspend fun editSprint(id: Long, request: EditSprintRequest) {
         httpClient.patch("milestones/$id") {
             setBody(request)
         }.discardRemaining()
     }
 
-    suspend fun deleteSprint(id: Long) {
+    override suspend fun deleteSprint(id: Long) {
         httpClient.delete("milestones/$id").discardRemaining()
     }
 }

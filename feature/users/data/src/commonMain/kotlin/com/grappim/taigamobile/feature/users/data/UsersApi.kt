@@ -8,15 +8,22 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import org.koin.core.annotation.Single
 
-@Single
-class UsersApi(private val httpClient: HttpClient) {
+interface UsersApi {
+    suspend fun getUser(userId: Long): UserDTO
+    suspend fun getMyProfile(): UserDTO
+    suspend fun getUserStats(userId: Long): StatsDTO
+    suspend fun getMemberStats(projectId: Long): MemberStatsResponseDTO
+}
 
-    suspend fun getUser(userId: Long): UserDTO = httpClient.get("users/$userId").body()
+@Single(binds = [UsersApi::class])
+class UsersApiImpl(private val httpClient: HttpClient) : UsersApi {
 
-    suspend fun getMyProfile(): UserDTO = httpClient.get("users/me").body()
+    override suspend fun getUser(userId: Long): UserDTO = httpClient.get("users/$userId").body()
 
-    suspend fun getUserStats(userId: Long): StatsDTO = httpClient.get("users/$userId/stats").body()
+    override suspend fun getMyProfile(): UserDTO = httpClient.get("users/me").body()
 
-    suspend fun getMemberStats(projectId: Long): MemberStatsResponseDTO =
+    override suspend fun getUserStats(userId: Long): StatsDTO = httpClient.get("users/$userId/stats").body()
+
+    override suspend fun getMemberStats(projectId: Long): MemberStatsResponseDTO =
         httpClient.get("projects/$projectId/member_stats").body()
 }

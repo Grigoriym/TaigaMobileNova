@@ -17,7 +17,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-class HistoryRepositoryImplTest {
+internal class HistoryRepositoryImplTest {
 
     private val historyApi = FakeHistoryApi()
     private val taigaSessionStorage = FakeTaigaSessionStorage(currentUserId = 1L)

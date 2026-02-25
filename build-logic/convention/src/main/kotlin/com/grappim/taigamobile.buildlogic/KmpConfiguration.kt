@@ -43,6 +43,10 @@ fun Project.configureKmp() {
             iosMain.dependencies {
                 implementation(libs.findLibrary("kotlinx.coroutines.core").get())
             }
+            androidUnitTest.dependencies {
+                implementation(kotlin("test"))
+                implementation(project(":testing"))
+            }
         }
     }
 }

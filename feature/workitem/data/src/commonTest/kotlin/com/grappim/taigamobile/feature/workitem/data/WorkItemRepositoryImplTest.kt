@@ -5,7 +5,11 @@ import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.core.storage.network.NetworkMonitor
+import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
+import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
+import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.domain.PatchedCustomAttributes
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.UpdateWorkItem
@@ -23,15 +27,20 @@ import com.grappim.taigamobile.feature.workitem.dto.customfield.CustomFieldTypeD
 import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
 import com.grappim.taigamobile.feature.workitem.mapper.AttachmentMapper
 import com.grappim.taigamobile.feature.workitem.mapper.CustomFieldsMapper
+import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapper
 import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.FakeNetworkMonitor
+import com.grappim.taigamobile.testing.api.FakeWorkItemApi
 import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.models.getAttachmentDTO
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.repo.FakeUsersRepository
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import io.mockk.coEvery
@@ -43,6 +52,7 @@ import io.mockk.slot
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import okhttp3.MultipartBody
 import java.time.LocalDateTime
@@ -55,14 +65,19 @@ import kotlin.test.assertTrue
 
 class WorkItemRepositoryImplTest {
 
-    private val workItemApi: WorkItemApi = mockk()
-    private val patchedDataMapper: PatchedDataMapper = mockk()
+    private val workItemApi: WorkItemApi = FakeWorkItemApi()
+    private val patchedDataMapper: PatchedDataMapper = PatchedDataMapper(DueDateStatusMapper())
     private val attachmentMapper: AttachmentMapper = AttachmentMapper()
-    private val workItemMapper: WorkItemMapper = mockk()
-    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
-    private val usersRepository: UsersRepository = mockk()
-    private val customFieldsMapper: CustomFieldsMapper = mockk()
-    private val taigaSessionStorage: TaigaSessionStorage = mockk()
+    private val workItemMapper: WorkItemMapper = WorkItemMapper(
+        statusesMapper = StatusesMapper(),
+        userMapper = UserMapper(),
+        tagsMapper = TagsMapper(),
+        projectMapper = ProjectMapper()
+    )
+    private val workItemEntityMapper: WorkItemEntityMapper = WorkItemEntityMapper(Json)
+    private val usersRepository: UsersRepository = FakeUsersRepository()
+    private val customFieldsMapper: CustomFieldsMapper = CustomFieldsMapper(FakeDateTimeUtils())
+    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
     private val jsonObjectMapper: JsonObjectMapper = JsonObjectMapper()
     private val workItemDao: WorkItemDao = mockk()
     private val networkMonitor: NetworkMonitor = FakeNetworkMonitor()

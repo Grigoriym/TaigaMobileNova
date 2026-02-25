@@ -25,7 +25,7 @@ interface IssueDetailsDataUseCase {
         sprintId: Long?,
         version: Long,
         workItemId: Long,
-        commonTaskType: CommonTaskType,
+        commonTaskType: CommonTaskType
     ): Result<UpdateSprintData>
 }
 
@@ -115,25 +115,29 @@ class IssueDetailsDataUseCaseImpl(
         }
     }
 
-    override suspend fun updateSprint(sprintId: Long?, version: Long, workItemId: Long, commonTaskType: CommonTaskType) =
-        resultOf {
-            val patchedData = workItemRepository.patchData(
-                version = version,
-                workItemId = workItemId,
-                commonTaskType = commonTaskType,
-                payload = patchDataGenerator.getSprint(
-                    sprintId = sprintId
-                )
+    override suspend fun updateSprint(
+        sprintId: Long?,
+        version: Long,
+        workItemId: Long,
+        commonTaskType: CommonTaskType
+    ) = resultOf {
+        val patchedData = workItemRepository.patchData(
+            version = version,
+            workItemId = workItemId,
+            commonTaskType = commonTaskType,
+            payload = patchDataGenerator.getSprint(
+                sprintId = sprintId
             )
-            var sprint: Sprint? = null
-            if (sprintId != null) {
-                sprint = sprintsRepository.getSprint(sprintId)
-            }
-            UpdateSprintData(
-                patchedData = patchedData,
-                sprint = sprint
-            )
+        )
+        var sprint: Sprint? = null
+        if (sprintId != null) {
+            sprint = sprintsRepository.getSprint(sprintId)
         }
+        UpdateSprintData(
+            patchedData = patchedData,
+            sprint = sprint
+        )
+    }
 }
 
 data class UpdateSprintData(val patchedData: PatchedData, val sprint: Sprint?)

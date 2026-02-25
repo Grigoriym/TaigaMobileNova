@@ -1,21 +1,30 @@
 package com.grappim.taigamobile.feature.sprint.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.SprintDao
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
+import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
+import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
+import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
+import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
 import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.FakeNetworkMonitor
+import com.grappim.taigamobile.testing.api.FakeSprintsApi
+import com.grappim.taigamobile.testing.api.FakeWorkItemApi
 import com.grappim.taigamobile.testing.models.getSprint
 import com.grappim.taigamobile.testing.models.getSprintResponseDTO
 import com.grappim.taigamobile.testing.models.getStatus
 import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.repo.FakeFiltersRepository
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
@@ -27,6 +36,7 @@ import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -35,13 +45,18 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class SprintsRepositoryImplTest {
 
-    private val sprintApi: SprintApi = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val filtersRepository: FiltersRepository = mockk()
-    private val workItemMapper: WorkItemMapper = mockk()
-    private val workItemEntityMapper: WorkItemEntityMapper = mockk()
-    private val workItemApi: WorkItemApi = mockk()
-    private val sprintMapper: SprintMapper = mockk()
+    private val sprintApi: SprintApi = FakeSprintsApi()
+    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
+    private val filtersRepository: FiltersRepository = FakeFiltersRepository()
+    private val workItemMapper: WorkItemMapper = WorkItemMapper(
+        statusesMapper = StatusesMapper(),
+        userMapper = UserMapper(),
+        tagsMapper = TagsMapper(),
+        projectMapper = ProjectMapper()
+    )
+    private val workItemEntityMapper: WorkItemEntityMapper = WorkItemEntityMapper(Json)
+    private val workItemApi: WorkItemApi = FakeWorkItemApi()
+    private val sprintMapper: SprintMapper = SprintMapper()
     private val sprintDao: SprintDao = mockk()
     private val workItemDao: WorkItemDao = mockk()
     private val networkMonitor: NetworkMonitor = FakeNetworkMonitor()

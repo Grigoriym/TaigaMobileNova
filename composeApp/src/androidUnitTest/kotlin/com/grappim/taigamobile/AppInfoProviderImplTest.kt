@@ -9,7 +9,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
-class AppInfoProviderImplTest {
+internal class AppInfoProviderImplTest {
 
     private lateinit var sut: AppInfoProvider
 

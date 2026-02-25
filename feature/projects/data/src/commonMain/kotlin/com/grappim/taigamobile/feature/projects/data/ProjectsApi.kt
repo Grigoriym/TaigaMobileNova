@@ -20,8 +20,7 @@ import org.koin.core.annotation.Single
  * the slight parameter in functions switches between two serializers for list endpoints
  * with true it makes fewer database queries - lighter/faster response
  */
-@Single
-class ProjectsApi(private val httpClient: HttpClient) {
+interface ProjectsApi {
 
     suspend fun getProjectsPaging(
         query: String? = null,
@@ -30,6 +29,36 @@ class ProjectsApi(private val httpClient: HttpClient) {
         pageSize: Int? = null,
         orderBy: String = "user_order",
         slight: Boolean = true
+    ): HttpResponse
+
+    suspend fun getProjects(
+        memberId: Long? = null,
+        orderBy: String = "user_order",
+        slight: Boolean = true
+    ): List<ProjectDTO>
+
+    suspend fun getProject(projectId: Long): ProjectResponseDTO
+
+    suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse
+
+    suspend fun editTag(projectId: Long, request: EditTagRequestDTO)
+
+    suspend fun createTag(projectId: Long, request: CreateTagRequestDTO)
+
+    suspend fun mixTags(projectId: Long, request: MixTagsRequestDTO)
+
+    suspend fun deleteTag(projectId: Long, request: DeleteTagRequestDTO)
+}
+
+@Single(binds = [ProjectsApi::class])
+class ProjectsApiImpl(private val httpClient: HttpClient) : ProjectsApi {
+    override suspend fun getProjectsPaging(
+        query: String?,
+        page: Int?,
+        memberId: Long?,
+        pageSize: Int?,
+        orderBy: String,
+        slight: Boolean
     ): HttpResponse = httpClient.get("projects") {
         url {
             if (query != null) parameters.append("q", query)
@@ -41,42 +70,39 @@ class ProjectsApi(private val httpClient: HttpClient) {
         }
     }
 
-    suspend fun getProjects(
-        memberId: Long? = null,
-        orderBy: String = "user_order",
-        slight: Boolean = true
-    ): List<ProjectDTO> = httpClient.get("projects") {
-        url {
-            if (memberId != null) parameters.append("member", memberId.toString())
-            parameters.append("order_by", orderBy)
-            parameters.append("slight", slight.toString())
-        }
-    }.body()
+    override suspend fun getProjects(memberId: Long?, orderBy: String, slight: Boolean): List<ProjectDTO> =
+        httpClient.get("projects") {
+            url {
+                if (memberId != null) parameters.append("member", memberId.toString())
+                parameters.append("order_by", orderBy)
+                parameters.append("slight", slight.toString())
+            }
+        }.body()
 
-    suspend fun getProject(projectId: Long): ProjectResponseDTO = httpClient.get("projects/$projectId").body()
+    override suspend fun getProject(projectId: Long): ProjectResponseDTO = httpClient.get("projects/$projectId").body()
 
-    suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse =
+    override suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse =
         httpClient.get("projects/$projectId/tags_colors").body()
 
-    suspend fun editTag(projectId: Long, request: EditTagRequestDTO) {
+    override suspend fun editTag(projectId: Long, request: EditTagRequestDTO) {
         httpClient.post("projects/$projectId/edit_tag") {
             setBody(request)
         }.discardRemaining()
     }
 
-    suspend fun createTag(projectId: Long, request: CreateTagRequestDTO) {
+    override suspend fun createTag(projectId: Long, request: CreateTagRequestDTO) {
         httpClient.post("projects/$projectId/create_tag") {
             setBody(request)
         }.discardRemaining()
     }
 
-    suspend fun mixTags(projectId: Long, request: MixTagsRequestDTO) {
+    override suspend fun mixTags(projectId: Long, request: MixTagsRequestDTO) {
         httpClient.post("projects/$projectId/mix_tags") {
             setBody(request)
         }.discardRemaining()
     }
 
-    suspend fun deleteTag(projectId: Long, request: DeleteTagRequestDTO) {
+    override suspend fun deleteTag(projectId: Long, request: DeleteTagRequestDTO) {
         httpClient.post("projects/$projectId/delete_tag") {
             setBody(request)
         }.discardRemaining()

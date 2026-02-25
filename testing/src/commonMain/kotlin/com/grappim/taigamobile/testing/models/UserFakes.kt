@@ -3,6 +3,7 @@ package com.grappim.taigamobile.testing.models
 import com.grappim.taigamobile.feature.projects.dto.ProjectMemberDTO
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.users.domain.User
+import com.grappim.taigamobile.feature.users.dto.StatsDTO
 import com.grappim.taigamobile.feature.users.dto.UserDTO
 import com.grappim.taigamobile.testing.utils.getRandomInt
 import com.grappim.taigamobile.testing.utils.getRandomLong
@@ -39,6 +40,13 @@ fun getTeamMember(
     role = getRandomString(),
     username = getRandomString(),
     totalPower = getRandomInt()
+)
+
+fun getStatsDTO(): StatsDTO = StatsDTO(
+    roles = listOf(getRandomString()),
+    totalNumClosedUserStories = getRandomInt(),
+    totalNumContacts = getRandomInt(),
+    totalNumProjects = getRandomInt()
 )
 
 fun getProjectMemberDTO(): ProjectMemberDTO = ProjectMemberDTO(

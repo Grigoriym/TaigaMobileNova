@@ -6,7 +6,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-class TagsMapperTest {
+internal class TagsMapperTest {
 
     private lateinit var sut: TagsMapper
 
