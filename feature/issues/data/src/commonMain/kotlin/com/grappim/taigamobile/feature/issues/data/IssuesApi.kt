@@ -9,8 +9,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import org.koin.core.annotation.Single
 
-@Single
-class IssuesApi(private val httpClient: HttpClient) {
+interface IssuesApi {
 
     suspend fun getIssues(
         page: Int? = null,
@@ -28,6 +27,29 @@ class IssuesApi(private val httpClient: HttpClient) {
         roles: String? = null,
         statuses: String? = null,
         tags: String? = null
+    ): List<WorkItemResponseDTO>
+
+    suspend fun createIssue(createIssueRequest: CreateIssueRequestDTO): WorkItemResponseDTO
+}
+
+@Single(binds = [IssuesApi::class])
+class IssuesApiImpl(private val httpClient: HttpClient) : IssuesApi {
+    override suspend fun getIssues(
+        page: Int?,
+        project: Long?,
+        query: String?,
+        sprint: Long?,
+        isClosed: Boolean?,
+        watcherId: Long?,
+        pageSize: Int,
+        assignedIds: String?,
+        ownerIds: String?,
+        priorities: String?,
+        severities: String?,
+        types: String?,
+        roles: String?,
+        statuses: String?,
+        tags: String?
     ): List<WorkItemResponseDTO> = httpClient.get("issues") {
         url {
             if (page != null) parameters.append("page", page.toString())
@@ -49,7 +71,7 @@ class IssuesApi(private val httpClient: HttpClient) {
         if (page == null) headers.append("x-disable-pagination", "true")
     }.body()
 
-    suspend fun createIssue(createIssueRequest: CreateIssueRequestDTO): WorkItemResponseDTO =
+    override suspend fun createIssue(createIssueRequest: CreateIssueRequestDTO): WorkItemResponseDTO =
         httpClient.post("issues") {
             setBody(createIssueRequest)
         }.body()
