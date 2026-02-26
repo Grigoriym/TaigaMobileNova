@@ -44,6 +44,12 @@ data class PatchDataCall(
     val commonTaskType: CommonTaskType,
 )
 
+data class PatchWikiPageCall(
+    val pageId: Long,
+    val version: Long,
+    val payload: ImmutableMap<String, Any?>,
+)
+
 class FakeWorkItemRepository : WorkItemRepository {
 
     val itemsByType = mutableMapOf<CommonTaskType, ImmutableList<WorkItem>>()
@@ -67,6 +73,10 @@ class FakeWorkItemRepository : WorkItemRepository {
 
     var deleteAttachmentThrows: Throwable? = null
     val deleteAttachmentCalls: MutableList<DeleteAttachmentCall> = mutableListOf()
+
+    var patchWikiPageResult: PatchedData? = null
+    var patchWikiPageThrows: Throwable? = null
+    val patchWikiPageCalls: MutableList<PatchWikiPageCall> = mutableListOf()
 
     override suspend fun getWorkItems(
         commonTaskType: CommonTaskType,
@@ -177,7 +187,11 @@ class FakeWorkItemRepository : WorkItemRepository {
         pageId: Long,
         version: Long,
         payload: ImmutableMap<String, Any?>,
-    ): PatchedData = error("not used in this test")
+    ): PatchedData {
+        patchWikiPageCalls += PatchWikiPageCall(pageId, version, payload)
+        patchWikiPageThrows?.let { throw it }
+        return patchWikiPageResult ?: error("patchWikiPageResult not configured")
+    }
 
     override suspend fun createWorkItem(
         commonTaskType: CommonTaskType,

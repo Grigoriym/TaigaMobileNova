@@ -44,8 +44,6 @@ class WorkItemSprintDelegateImplTest {
         val sprintName = getRandomString()
         val startDate = nowLocalDate
         val endDate = nowLocalDate.plus(14, DateTimeUnit.DAY)
-        val formattedStart = "Jan 1, 2024"
-        val formattedEnd = "Jan 15, 2024"
 
         sut.setInitialSprint(startDate, endDate, sprintName)
 
@@ -53,18 +51,15 @@ class WorkItemSprintDelegateImplTest {
         assertEquals(sprintName, state.sprintNameValue)
         assertEquals(startDate, state.startDate)
         assertEquals(endDate, state.endDate)
-        assertEquals(formattedStart, state.startDateToDisplay)
-        assertEquals(formattedEnd, state.endDateToDisplay)
+        assertEquals(startDate.toString(), state.startDateToDisplay)
+        assertEquals(endDate.toString(), state.endDateToDisplay)
     }
 
     @Test
     fun `setInitialSprint should use default dates when null`() = runTest {
         val sprintName = getRandomString()
-        val formattedStartDate = "Jan 1, 2024"
-        val formattedEndDate = "Jan 13, 2024"
-
-        val startDate = nowLocalDate
-        val endDate = nowLocalDate.plus(14, DateTimeUnit.DAY)
+        val startDate = LocalDate(2024, 1, 15)
+        val endDate = LocalDate(2024, 1, 15).plus(14, DateTimeUnit.DAY)
 
         sut.setInitialSprint(null, null, sprintName)
 
@@ -72,8 +67,8 @@ class WorkItemSprintDelegateImplTest {
         assertEquals(sprintName, state.sprintNameValue)
         assertEquals(startDate, state.startDate)
         assertEquals(endDate, state.endDate)
-        assertEquals(formattedStartDate, state.startDateToDisplay)
-        assertEquals(formattedEndDate, state.endDateToDisplay)
+        assertEquals(startDate.toString(), state.startDateToDisplay)
+        assertEquals(endDate.toString(), state.endDateToDisplay)
     }
 
     @Test
@@ -87,8 +82,6 @@ class WorkItemSprintDelegateImplTest {
 
     @Test
     fun `createSprint should show error when name is empty`() = runTest {
-        setupValidDates()
-
         sut.createSprint()
 
         val state = sut.sprintDialogState.value
@@ -97,7 +90,6 @@ class WorkItemSprintDelegateImplTest {
 
     @Test
     fun `createSprint should show error when name is blank`() = runTest {
-        setupValidDates()
         sut.sprintDialogState.value.onSetSprintNameValue("   ")
 
         sut.createSprint()
@@ -146,8 +138,6 @@ class WorkItemSprintDelegateImplTest {
 
     @Test
     fun `editSprint should show error when name is empty`() = runTest {
-        setupValidDates()
-
         sut.editSprint(sprintId = getRandomLong())
 
         val state = sut.sprintDialogState.value
@@ -222,8 +212,8 @@ class WorkItemSprintDelegateImplTest {
     @Test
     fun `onStartDateConfirmButtonClick should update start date`() = runTest {
         val millis = 1704067200000L
-        val localDate = nowLocalDate
-        val formattedDate = "Jan 1, 2024"
+        val localDate = LocalDate(2024, 1, 15)
+        val formattedDate = "2024-01-15"
 
         sut.sprintDialogState.value.onStartDateConfirmButtonClick(millis)
 
@@ -250,8 +240,8 @@ class WorkItemSprintDelegateImplTest {
     @Test
     fun `onEndDateConfirmButtonClick should update end date`() = runTest {
         val millis = 1704067200000L
-        val localDate = nowLocalDate
-        val formattedDate = "Jan 15, 2024"
+        val localDate = LocalDate(2024, 1, 15)
+        val formattedDate = "2024-01-15"
 
         sut.sprintDialogState.value.onEndDateConfirmButtonClick(millis)
 
@@ -259,10 +249,6 @@ class WorkItemSprintDelegateImplTest {
         assertFalse(state.isEndDateDialogVisible)
         assertEquals(localDate, state.endDate)
         assertEquals(formattedDate, state.endDateToDisplay)
-    }
-
-    private fun setupValidDates() {
-
     }
 
     private fun setupSprintState(name: String, startDate: LocalDate, endDate: LocalDate) {

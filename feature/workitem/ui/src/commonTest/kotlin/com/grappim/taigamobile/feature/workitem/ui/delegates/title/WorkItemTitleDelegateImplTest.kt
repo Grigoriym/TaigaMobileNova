@@ -17,7 +17,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
-class WorkItemTitleDelegateImplTest {
+internal class WorkItemTitleDelegateImplTest {
 
     private lateinit var sut: WorkItemTitleDelegateImpl
     private val commonTaskType = CommonTaskType.Issue

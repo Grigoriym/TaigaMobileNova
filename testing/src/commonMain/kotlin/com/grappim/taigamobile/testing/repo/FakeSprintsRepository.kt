@@ -43,7 +43,6 @@ class FakeSprintsRepository: SprintsRepository {
         start: LocalDate,
         end: LocalDate
     ) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun editSprint(
@@ -52,7 +51,6 @@ class FakeSprintsRepository: SprintsRepository {
         start: LocalDate,
         end: LocalDate
     ) {
-        TODO("Not yet implemented")
     }
 
     override suspend fun deleteSprint(sprintId: Long) {

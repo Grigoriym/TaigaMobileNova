@@ -1,11 +1,10 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.comments
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
@@ -15,7 +14,6 @@ import com.grappim.taigamobile.testing.utils.nowLocalDateTime
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -27,19 +25,18 @@ internal class WorkItemCommentsDelegateImplTest {
 
     private lateinit var sut: WorkItemCommentsDelegate
     private val commonTaskType = CommonTaskType.Issue
-    private val historyRepository: HistoryRepository = FakeHistoryRepository()
-    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val historyRepository = FakeHistoryRepository()
+    private val workItemRepository = FakeWorkItemRepository()
     private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
 
     @BeforeTest
     fun setup() {
-        sut =
-            WorkItemCommentsDelegateImpl(
-                commonTaskType = commonTaskType,
-                historyRepository = historyRepository,
-                workItemRepository = workItemRepository,
-                patchDataGenerator = patchDataGenerator
-            )
+        sut = WorkItemCommentsDelegateImpl(
+            commonTaskType = commonTaskType,
+            historyRepository = historyRepository,
+            workItemRepository = workItemRepository,
+            patchDataGenerator = patchDataGenerator
+        )
     }
 
     private fun createComment(id: String = getRandomString(), canDelete: Boolean = false): Comment = Comment(
@@ -91,8 +88,6 @@ internal class WorkItemCommentsDelegateImplTest {
     fun `handleCreateComment should call doOnPreExecute`() = runTest {
         var preExecuteCalled = false
         val comment = getRandomString()
-        val payload = persistentMapOf<String, Any?>("comment" to comment)
-        val returnedComments = listOf(createComment())
 
         sut.handleCreateComment(
             version = 1L,
@@ -109,8 +104,9 @@ internal class WorkItemCommentsDelegateImplTest {
     @Test
     fun `handleCreateComment should update comments on success`() = runTest {
         val comment = getRandomString()
-        val returnedComments = listOf(createComment(), createComment())
-        val payload = persistentMapOf<String, Any?>("comment" to comment)
+        val returnedComments = persistentListOf(createComment(), createComment())
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
+        historyRepository.getCommentsResult = returnedComments
 
         sut.handleCreateComment(
             version = 1L,
@@ -130,9 +126,8 @@ internal class WorkItemCommentsDelegateImplTest {
     fun `handleCreateComment should call doOnSuccess with CreatedCommentData`() = runTest {
         val comment = getRandomString()
         val newVersion = getRandomLong()
-        val returnedComments = listOf(createComment())
         var receivedVersion: Long? = null
-        val payload = persistentMapOf<String, Any?>("comment" to comment)
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
 
         sut.handleCreateComment(
             version = 1L,
@@ -149,7 +144,6 @@ internal class WorkItemCommentsDelegateImplTest {
     @Test
     fun `handleCreateComment should clear loading on error`() = runTest {
         val comment = getRandomString()
-        val payload = persistentMapOf<String, Any?>("comment" to comment)
 
         sut.handleCreateComment(
             version = 1L,
@@ -168,8 +162,6 @@ internal class WorkItemCommentsDelegateImplTest {
         val comment = getRandomString()
         val version = getRandomLong()
         val id = getRandomLong()
-        val returnedComments = listOf(createComment())
-        val payload = persistentMapOf<String, Any?>("comment" to comment)
 
         sut.handleCreateComment(
             version = version,
@@ -237,6 +229,8 @@ internal class WorkItemCommentsDelegateImplTest {
 
     @Test
     fun `handleDeleteComment should clear loading on error`() = runTest {
+        historyRepository.deleteCommentThrows = testException
+
         sut.handleDeleteComment(
             id = 123L,
             commentId = getRandomString(),
@@ -251,6 +245,7 @@ internal class WorkItemCommentsDelegateImplTest {
     @Test
     fun `handleDeleteComment should call doOnError on failure`() = runTest {
         var receivedError: Throwable? = null
+        historyRepository.deleteCommentThrows = testException
 
         sut.handleDeleteComment(
             id = 123L,
@@ -282,6 +277,7 @@ internal class WorkItemCommentsDelegateImplTest {
         val comment1 = createComment()
         val comment2 = createComment()
         sut.setInitialComments(listOf(comment1, comment2))
+        historyRepository.deleteCommentThrows = testException
 
         sut.handleDeleteComment(
             id = 123L,

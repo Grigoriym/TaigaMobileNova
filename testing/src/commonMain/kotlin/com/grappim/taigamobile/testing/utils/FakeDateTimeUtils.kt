@@ -10,7 +10,7 @@ class FakeDateTimeUtils : DateTimeUtils {
     override fun getLocalDateNow(): LocalDate = fixedDate
 
     override fun retrieveEpochMillisAtStartOfDay(localDate: LocalDate): Long = error("not used in this test")
-    override fun fromMillisToLocalDate(millis: Long): LocalDate = error("not used in this test")
+    override fun fromMillisToLocalDate(millis: Long): LocalDate = fixedDate
     override fun parseLocalDateToString(localDate: LocalDate): String = localDate.toString()
     override fun formatToMediumFormat(localDate: LocalDate): String = localDate.toString()
     override fun formatToMediumFormat(localDateTime: LocalDateTime): String = localDateTime.date.toString()

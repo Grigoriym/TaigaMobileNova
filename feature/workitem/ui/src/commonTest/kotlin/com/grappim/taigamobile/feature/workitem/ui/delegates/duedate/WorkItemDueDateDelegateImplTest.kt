@@ -5,17 +5,14 @@ import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import com.grappim.taigamobile.testing.utils.getRandomLong
-import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
 import com.grappim.taigamobile.uikit.theme.taigaOrange
 import com.grappim.taigamobile.uikit.theme.taigaRed
-import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
 import kotlinx.collections.immutable.persistentMapOf
@@ -31,19 +28,18 @@ internal class WorkItemDueDateDelegateImplTest {
 
     private lateinit var sut: WorkItemDueDateDelegateImpl
     private val commonTaskType = CommonTaskType.Issue
-    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val workItemRepository = FakeWorkItemRepository()
     private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
-    private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
+    private val dateTimeUtils = FakeDateTimeUtils()
 
     @BeforeTest
     fun setup() {
-        sut =
-            WorkItemDueDateDelegateImpl(
-                commonTaskType = commonTaskType,
-                workItemRepository = workItemRepository,
-                patchDataGenerator = patchDataGenerator,
-                dateTimeUtils = dateTimeUtils
-            )
+        sut = WorkItemDueDateDelegateImpl(
+            commonTaskType = commonTaskType,
+            workItemRepository = workItemRepository,
+            patchDataGenerator = patchDataGenerator,
+            dateTimeUtils = dateTimeUtils
+        )
     }
 
     @Test
@@ -74,14 +70,13 @@ internal class WorkItemDueDateDelegateImplTest {
     fun `setInitialDueDate should update dueDate and dueDateStatus`() {
         val dueDate = nowLocalDate
         val dueDateStatus = DueDateStatus.Set
-        val formattedDate = getRandomString()
 
         sut.setInitialDueDate(dueDate, dueDateStatus)
 
         val state = sut.dueDateState.value
         assertEquals(dueDate, state.dueDate)
         assertEquals(dueDateStatus, state.dueDateStatus)
-        assertEquals(NativeText.Simple(formattedDate), state.dueDateText)
+        assertEquals(NativeText.Simple(dueDate.toString()), state.dueDateText)
     }
 
     @Test
@@ -96,8 +91,7 @@ internal class WorkItemDueDateDelegateImplTest {
 
     @Test
     fun `setInitialDueDate with DueDateStatus Set should set green background`() {
-        val dueDate = nowLocalDate
-        sut.setInitialDueDate(dueDate, DueDateStatus.Set)
+        sut.setInitialDueDate(nowLocalDate, DueDateStatus.Set)
 
         val backgroundColor = sut.dueDateState.value.backgroundColor
         assertTrue(backgroundColor is StaticColor)
@@ -106,9 +100,7 @@ internal class WorkItemDueDateDelegateImplTest {
 
     @Test
     fun `setInitialDueDate with DueDateStatus DueSoon should set orange background`() {
-        val dueDate = nowLocalDate
-
-        sut.setInitialDueDate(dueDate, DueDateStatus.DueSoon)
+        sut.setInitialDueDate(nowLocalDate, DueDateStatus.DueSoon)
 
         val backgroundColor = sut.dueDateState.value.backgroundColor
         assertTrue(backgroundColor is StaticColor)
@@ -117,9 +109,7 @@ internal class WorkItemDueDateDelegateImplTest {
 
     @Test
     fun `setInitialDueDate with DueDateStatus PastDue should set red background`() {
-        val dueDate = nowLocalDate
-
-        sut.setInitialDueDate(dueDate, DueDateStatus.PastDue)
+        sut.setInitialDueDate(nowLocalDate, DueDateStatus.PastDue)
 
         val backgroundColor = sut.dueDateState.value.backgroundColor
         assertTrue(backgroundColor is StaticColor)
@@ -129,14 +119,10 @@ internal class WorkItemDueDateDelegateImplTest {
     @Test
     fun `handleDueDateSave should call doOnPreExecute`() = runTest {
         var preExecuteCalled = false
-        val newDateMillis = 1704067200000L
-        val localDate = nowLocalDate
-        val dateString = "2024-01-01"
-
-        val payload = persistentMapOf<String, Any?>("due_date" to dateString)
+        workItemRepository.patchDataResult = PatchedData(newVersion = 2L, dueDateStatus = null)
 
         sut.handleDueDateSave(
-            newDate = newDateMillis,
+            newDate = 1704067200000L,
             version = 1L,
             workItemId = 123L,
             doOnPreExecute = { preExecuteCalled = true },
@@ -149,15 +135,10 @@ internal class WorkItemDueDateDelegateImplTest {
 
     @Test
     fun `handleDueDateSave should update state on success`() = runTest {
-        val newDateMillis = 1704067200000L
-        val localDate = nowLocalDate
-        val dateString = "2024-01-01"
-        val formattedDate = getRandomString()
-
-        val payload = persistentMapOf<String, Any?>("due_date" to dateString)
+        workItemRepository.patchDataResult = PatchedData(newVersion = 2L, dueDateStatus = DueDateStatus.Set)
 
         sut.handleDueDateSave(
-            newDate = newDateMillis,
+            newDate = 1704067200000L,
             version = 1L,
             workItemId = 123L,
             doOnPreExecute = null,
@@ -167,22 +148,18 @@ internal class WorkItemDueDateDelegateImplTest {
 
         val state = sut.dueDateState.value
         assertFalse(state.isDueDateLoading)
-        assertEquals(localDate, state.dueDate)
+        assertEquals(dateTimeUtils.fixedDate, state.dueDate)
         assertEquals(DueDateStatus.Set, state.dueDateStatus)
     }
 
     @Test
     fun `handleDueDateSave should call doOnSuccess with patchedData`() = runTest {
         var receivedPatchedData: PatchedData? = null
-        val newDateMillis = 1704067200000L
-        val localDate = nowLocalDate
-        val dateString = "2024-01-01"
         val expectedPatchedData = PatchedData(newVersion = 2L, dueDateStatus = DueDateStatus.Set)
-
-        val payload = persistentMapOf<String, Any?>("due_date" to dateString)
+        workItemRepository.patchDataResult = expectedPatchedData
 
         sut.handleDueDateSave(
-            newDate = newDateMillis,
+            newDate = 1704067200000L,
             version = 1L,
             workItemId = 123L,
             doOnPreExecute = null,
@@ -195,7 +172,7 @@ internal class WorkItemDueDateDelegateImplTest {
 
     @Test
     fun `handleDueDateSave should handle null date`() = runTest {
-        val payload = persistentMapOf<String, Any?>("due_date" to null)
+        workItemRepository.patchDataResult = PatchedData(newVersion = 2L, dueDateStatus = null)
 
         sut.handleDueDateSave(
             newDate = null,
@@ -213,14 +190,10 @@ internal class WorkItemDueDateDelegateImplTest {
 
     @Test
     fun `handleDueDateSave should update state on error`() = runTest {
-        val newDateMillis = 1704067200000L
-        val localDate = nowLocalDate
-        val dateString = "2024-01-01"
-
-        val payload = persistentMapOf<String, Any?>("due_date" to dateString)
+        workItemRepository.patchDataThrows = testException
 
         sut.handleDueDateSave(
-            newDate = newDateMillis,
+            newDate = 1704067200000L,
             version = 1L,
             workItemId = 123L,
             doOnPreExecute = null,
@@ -234,12 +207,10 @@ internal class WorkItemDueDateDelegateImplTest {
     @Test
     fun `handleDueDateSave should call doOnError on failure`() = runTest {
         var receivedError: Throwable? = null
-        val newDateMillis = 1704067200000L
-        val localDate = nowLocalDate
-        val dateString = "2024-01-01"
-        val payload = persistentMapOf<String, Any?>("due_date" to dateString)
+        workItemRepository.patchDataThrows = testException
+
         sut.handleDueDateSave(
-            newDate = newDateMillis,
+            newDate = 1704067200000L,
             version = 1L,
             workItemId = 123L,
             doOnPreExecute = null,
@@ -252,21 +223,23 @@ internal class WorkItemDueDateDelegateImplTest {
 
     @Test
     fun `handleDueDateSave should call repository with correct parameters`() = runTest {
-        val newDateMillis = 1704067200000L
-        val localDate = nowLocalDate
-        val dateString = "2024-01-01"
         val version = getRandomLong()
         val workItemId = getRandomLong()
-
-        val payload = persistentMapOf<String, Any?>("due_date" to dateString)
+        workItemRepository.patchDataResult = PatchedData(newVersion = 2L, dueDateStatus = null)
 
         sut.handleDueDateSave(
-            newDate = newDateMillis,
+            newDate = 1704067200000L,
             version = version,
             workItemId = workItemId,
             doOnPreExecute = null,
             doOnSuccess = null,
             doOnError = {}
         )
+
+        val call = workItemRepository.patchDataCalls.single()
+        assertEquals(version, call.version)
+        assertEquals(workItemId, call.workItemId)
+        assertEquals(commonTaskType, call.commonTaskType)
+        assertEquals(persistentMapOf("due_date" to dateTimeUtils.fixedDate.toString()), call.payload)
     }
 }

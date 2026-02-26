@@ -17,8 +17,14 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Factory
 
-@Factory
-class UserStoryDetailsDataUseCase(
+interface UserStoryDetailsDataUseCase {
+    suspend fun getUserStory(id: Long): UserStory
+    suspend fun getUserStoryData(id: Long): Result<UserStoryDetailsData>
+    suspend fun deleteUserStory(id: Long): Result<Unit>
+}
+
+@Factory(binds = [UserStoryDetailsDataUseCase::class])
+class UserStoryDetailsDataUseCaseImpl(
     private val filtersRepository: FiltersRepository,
     private val userStoriesRepository: UserStoriesRepository,
     private val historyRepository: HistoryRepository,
@@ -26,11 +32,11 @@ class UserStoryDetailsDataUseCase(
     private val usersRepository: UsersRepository,
     private val workItemRepository: WorkItemRepository,
     private val projectsRepository: ProjectsRepository
-) {
+) : UserStoryDetailsDataUseCase {
 
-    suspend fun getUserStory(id: Long): UserStory = userStoriesRepository.getUserStory(id = id)
+    override suspend fun getUserStory(id: Long): UserStory = userStoriesRepository.getUserStory(id = id)
 
-    suspend fun getUserStoryData(id: Long) = resultOf {
+    override suspend fun getUserStoryData(id: Long) = resultOf {
         coroutineScope {
             val taskType = CommonTaskType.UserStory
             val filtersData = async { filtersRepository.getFiltersData(taskType) }
@@ -96,7 +102,7 @@ class UserStoryDetailsDataUseCase(
         }
     }
 
-    suspend fun deleteUserStory(id: Long) = resultOf {
+    override suspend fun deleteUserStory(id: Long) = resultOf {
         userStoriesRepository.deleteUserStory(id)
     }
 }

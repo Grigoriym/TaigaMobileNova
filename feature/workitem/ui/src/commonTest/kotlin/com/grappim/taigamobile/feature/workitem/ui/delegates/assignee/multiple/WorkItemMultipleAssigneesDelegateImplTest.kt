@@ -1,11 +1,9 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.storage.TaigaSessionStorage
-import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
@@ -13,7 +11,6 @@ import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,10 +20,10 @@ import kotlin.test.assertTrue
 
 internal class WorkItemMultipleAssigneesDelegateImplTest {
 
-    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
-    private val usersRepository: UsersRepository = FakeUsersRepository()
+    private val workItemRepository = FakeWorkItemRepository()
+    private val usersRepository = FakeUsersRepository()
     private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
-    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
+    private val taigaSessionStorage = FakeTaigaSessionStorage()
 
     private fun createSut(
         commonTaskType: CommonTaskType = CommonTaskType.UserStory
@@ -95,6 +92,11 @@ internal class WorkItemMultipleAssigneesDelegateImplTest {
     @Test
     fun `handleUpdateAssignees should update state on success`() = runTest {
         val sut = createSut()
+        val user1 = getUser()
+        val user2 = getUser()
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(user1, user2)
+        usersRepository.isAnyAssignedToMeResult = true
         val newAssignees = persistentListOf(getRandomLong(), getRandomLong())
 
         sut.handleUpdateAssignees(
@@ -118,6 +120,8 @@ internal class WorkItemMultipleAssigneesDelegateImplTest {
         var receivedVersion: Long? = null
         val newAssignees = persistentListOf(getRandomLong())
         val newVersion = getRandomLong()
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(getUser())
 
         sut.handleUpdateAssignees(
             newAssignees = newAssignees,
@@ -200,6 +204,9 @@ internal class WorkItemMultipleAssigneesDelegateImplTest {
         val existingUser = getUser()
         val version = getRandomLong()
         val workItemId = getRandomLong()
+        taigaSessionStorage.currentUserId = getRandomLong()
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(existingUser, getUser())
 
         sut.setInitialAssignees(listOf(existingUser), false)
 
@@ -220,9 +227,9 @@ internal class WorkItemMultipleAssigneesDelegateImplTest {
         val workItemId = getRandomLong()
         val newVersion = getRandomLong()
         val user = getUser()
-
-        val expectedAssignees = persistentListOf(currentUserId)
-        val payload = persistentMapOf<String, Any?>("assigned_users" to expectedAssignees)
+        taigaSessionStorage.currentUserId = currentUserId
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(user)
 
         sut.handleAssignToMe(
             version = version,
@@ -253,11 +260,11 @@ internal class WorkItemMultipleAssigneesDelegateImplTest {
         val userToKeep = getUser()
         val newVersion = getRandomLong()
 
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(userToKeep)
+
         sut.setInitialAssignees(listOf(userToRemove, userToKeep), false)
         sut.multipleAssigneesState.value.onRemoveAssigneeClick(userToRemove)
-
-        val remainingAssignees = listOf(userToKeep.actualId).toImmutableList()
-        val payload = persistentMapOf<String, Any?>("assigned_users" to remainingAssignees)
 
         sut.handleRemoveAssignee(
             version = 1L,
@@ -306,6 +313,9 @@ internal class WorkItemMultipleAssigneesDelegateImplTest {
         sut.setInitialAssignees(existingUsers, true)
 
         val emptyAssignees = persistentListOf<Long>()
+        workItemRepository.patchDataResult = PatchedData(newVersion = 2L, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf()
+        usersRepository.isAnyAssignedToMeResult = false
 
         sut.handleUpdateAssignees(
             newAssignees = emptyAssignees,

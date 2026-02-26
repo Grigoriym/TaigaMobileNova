@@ -3,12 +3,17 @@ package com.grappim.taigamobile.testing.repo
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.workitem.domain.Comment
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
 class FakeHistoryRepository : HistoryRepository {
-    override suspend fun getComments(commonTaskId: Long, type: CommonTaskType) =
-        persistentListOf<Comment>()
+    var getCommentsResult: ImmutableList<Comment> = persistentListOf()
+    var deleteCommentThrows: Throwable? = null
 
-    override suspend fun deleteComment(commonTaskId: Long, commonTaskType: CommonTaskType, commentId: String): Unit =
-        error("not used in this test")
+    override suspend fun getComments(commonTaskId: Long, type: CommonTaskType): ImmutableList<Comment> =
+        getCommentsResult
+
+    override suspend fun deleteComment(commonTaskId: Long, commonTaskType: CommonTaskType, commentId: String) {
+        deleteCommentThrows?.let { throw it }
+    }
 }

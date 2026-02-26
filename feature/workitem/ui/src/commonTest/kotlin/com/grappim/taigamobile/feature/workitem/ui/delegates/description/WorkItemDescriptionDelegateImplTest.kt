@@ -4,7 +4,7 @@ import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
@@ -17,7 +17,7 @@ import kotlin.test.assertFalse
 
 internal class WorkItemDescriptionDelegateImplTest {
 
-    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val workItemRepository = FakeWorkItemRepository()
     private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
 
     private fun createSut(taskIdentifier: TaskIdentifier): WorkItemDescriptionDelegateImpl =
@@ -61,6 +61,8 @@ internal class WorkItemDescriptionDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
+
+        assertEquals(0, workItemRepository.patchDataCalls.size)
     }
 
     @Test
@@ -69,7 +71,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         var preExecuteCalled = false
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("description" to newDescription)
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -87,7 +89,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         val sut = createSut(TaskIdentifier.WorkItem(CommonTaskType.Issue))
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("description" to newDescription)
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -109,7 +111,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newVersion = getRandomLong()
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("description" to newDescription)
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -127,7 +129,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         val sut = createSut(TaskIdentifier.WorkItem(CommonTaskType.Issue))
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("description" to newDescription)
+        workItemRepository.patchDataThrows = testException
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -146,7 +148,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         var receivedError: Throwable? = null
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("description" to newDescription)
+        workItemRepository.patchDataThrows = testException
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -167,7 +169,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         val workItemId = getRandomLong()
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("description" to newDescription)
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         sut.updateDescription(
             newDescription = newDescription,
             version = version,
@@ -176,6 +178,12 @@ internal class WorkItemDescriptionDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
+
+        val call = workItemRepository.patchDataCalls.single()
+        assertEquals(version, call.version)
+        assertEquals(workItemId, call.workItemId)
+        assertEquals(commonTaskType, call.commonTaskType)
+        assertEquals(persistentMapOf("description" to newDescription), call.payload)
     }
 
     @Test
@@ -192,6 +200,8 @@ internal class WorkItemDescriptionDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
+
+        assertEquals(0, workItemRepository.patchWikiPageCalls.size)
     }
 
     @Test
@@ -200,7 +210,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         var preExecuteCalled = false
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("content" to newDescription)
+        workItemRepository.patchWikiPageResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -218,7 +228,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         val sut = createSut(TaskIdentifier.Wiki)
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("content" to newDescription)
+        workItemRepository.patchWikiPageResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -240,7 +250,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newVersion = getRandomLong()
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("content" to newDescription)
+        workItemRepository.patchWikiPageResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -258,8 +268,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         val sut = createSut(TaskIdentifier.Wiki)
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("content" to newDescription)
-
+        workItemRepository.patchWikiPageThrows = testException
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -278,8 +287,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         var receivedError: Throwable? = null
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("content" to newDescription)
-
+        workItemRepository.patchWikiPageThrows = testException
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -299,7 +307,7 @@ internal class WorkItemDescriptionDelegateImplTest {
         val pageId = getRandomLong()
         val newDescription = getRandomString()
 
-        val payload = persistentMapOf<String, Any?>("content" to newDescription)
+        workItemRepository.patchWikiPageResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         sut.updateDescription(
             newDescription = newDescription,
             version = version,
@@ -308,5 +316,10 @@ internal class WorkItemDescriptionDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
+
+        val call = workItemRepository.patchWikiPageCalls.single()
+        assertEquals(version, call.version)
+        assertEquals(pageId, call.pageId)
+        assertEquals(persistentMapOf("content" to newDescription), call.payload)
     }
 }
