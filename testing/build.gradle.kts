@@ -29,6 +29,10 @@ kotlin {
             api(projects.core.domain)
             api(projects.core.storage)
 
+            api(projects.feature.login.domain)
+            api(projects.feature.login.data)
+            api(projects.feature.login.dto)
+
             api(projects.feature.filters.domain)
             api(projects.feature.filters.dto)
             api(projects.feature.filters.data)

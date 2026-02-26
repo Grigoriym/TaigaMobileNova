@@ -1,17 +1,13 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.users.domain.UsersRepository
-import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.repo.FakeUsersRepository
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
+import com.grappim.taigamobile.testing.utils.FakePatchDataGenerator
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.testException
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
@@ -22,9 +18,9 @@ import kotlin.test.assertTrue
 
 class WorkItemSingleAssigneeDelegateImplTest {
 
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val usersRepository: UsersRepository = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
+    private val workItemRepository = FakeWorkItemRepository()
+    private val usersRepository = FakeUsersRepository()
+    private val patchDataGenerator = FakePatchDataGenerator()
 
     private fun createSut(commonTaskType: CommonTaskType = CommonTaskType.Task): WorkItemSingleAssigneeDelegateImpl =
         WorkItemSingleAssigneeDelegateImpl(
@@ -65,14 +61,9 @@ class WorkItemSingleAssigneeDelegateImplTest {
         val newAssigneeId = getRandomLong()
         val newVersion = getRandomLong()
         val user = getUser()
-        val payload = persistentMapOf<String, Any?>("assigned_to" to newAssigneeId)
 
-        every { patchDataGenerator.getAssignedToPatchPayload(newAssigneeId) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-        coEvery { usersRepository.getUsersList(listOf(newAssigneeId)) } returns persistentListOf(user)
-        coEvery { usersRepository.isAnyAssignedToMe(any()) } returns false
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(user)
 
         sut.handleUpdateAssignee(
             newAssigneeId = newAssigneeId,
@@ -92,14 +83,10 @@ class WorkItemSingleAssigneeDelegateImplTest {
         val newAssigneeId = getRandomLong()
         val newVersion = getRandomLong()
         val user = getUser()
-        val payload = persistentMapOf<String, Any?>("assigned_to" to newAssigneeId)
 
-        every { patchDataGenerator.getAssignedToPatchPayload(newAssigneeId) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-        coEvery { usersRepository.getUsersList(listOf(newAssigneeId)) } returns persistentListOf(user)
-        coEvery { usersRepository.isAnyAssignedToMe(any()) } returns true
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(user)
+        usersRepository.isAnyAssignedToMeResult = true
 
         sut.handleUpdateAssignee(
             newAssigneeId = newAssigneeId,
@@ -121,13 +108,8 @@ class WorkItemSingleAssigneeDelegateImplTest {
     fun `handleUpdateAssignee with null assignee should clear assignees`() = runTest {
         val sut = createSut()
         val newVersion = getRandomLong()
-        val payload = persistentMapOf<String, Any?>("assigned_to" to null)
 
-        every { patchDataGenerator.getAssignedToPatchPayload(null) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-        coEvery { usersRepository.isAnyAssignedToMe(persistentListOf()) } returns false
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
 
         sut.handleUpdateAssignee(
             newAssigneeId = null,
@@ -151,14 +133,9 @@ class WorkItemSingleAssigneeDelegateImplTest {
         val newAssigneeId = getRandomLong()
         val newVersion = getRandomLong()
         val user = getUser()
-        val payload = persistentMapOf<String, Any?>("assigned_to" to newAssigneeId)
 
-        every { patchDataGenerator.getAssignedToPatchPayload(newAssigneeId) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-        coEvery { usersRepository.getUsersList(listOf(newAssigneeId)) } returns persistentListOf(user)
-        coEvery { usersRepository.isAnyAssignedToMe(any()) } returns false
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(user)
 
         sut.handleUpdateAssignee(
             newAssigneeId = newAssigneeId,
@@ -183,12 +160,9 @@ class WorkItemSingleAssigneeDelegateImplTest {
         val user = getUser()
         val payload = persistentMapOf<String, Any?>("assigned_to" to newAssigneeId)
 
-        every { patchDataGenerator.getAssignedToPatchPayload(newAssigneeId) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-        coEvery { usersRepository.getUsersList(listOf(newAssigneeId)) } returns persistentListOf(user)
-        coEvery { usersRepository.isAnyAssignedToMe(any()) } returns false
+        patchDataGenerator.assignedToPatchPayloadResult = payload
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(user)
 
         sut.handleUpdateAssignee(
             newAssigneeId = newAssigneeId,
@@ -199,26 +173,19 @@ class WorkItemSingleAssigneeDelegateImplTest {
             doOnError = {}
         )
 
-        coVerify {
-            workItemRepository.patchData(
-                version = version,
-                workItemId = workItemId,
-                payload = payload,
-                commonTaskType = commonTaskType
-            )
-        }
+        val call = workItemRepository.patchDataCalls.last()
+        assertEquals(version, call.version)
+        assertEquals(workItemId, call.workItemId)
+        assertEquals(payload, call.payload)
+        assertEquals(commonTaskType, call.commonTaskType)
     }
 
     @Test
     fun `handleUpdateAssignee should clear loading on error`() = runTest {
         val sut = createSut()
         val newAssigneeId = getRandomLong()
-        val payload = persistentMapOf<String, Any?>("assigned_to" to newAssigneeId)
 
-        every { patchDataGenerator.getAssignedToPatchPayload(newAssigneeId) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
+        workItemRepository.patchDataThrows = testException
 
         sut.handleUpdateAssignee(
             newAssigneeId = newAssigneeId,
@@ -242,12 +209,10 @@ class WorkItemSingleAssigneeDelegateImplTest {
         val user = getUser()
         val payload = persistentMapOf<String, Any?>("assigned_to" to currentUserId)
 
-        every { patchDataGenerator.getAssignedToPatchPayload(currentUserId) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-        coEvery { usersRepository.getUsersList(listOf(currentUserId)) } returns persistentListOf(user)
-        coEvery { usersRepository.isAnyAssignedToMe(any()) } returns true
+        patchDataGenerator.assignedToPatchPayloadResult = payload
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        usersRepository.getUsersListResult = persistentListOf(user)
+        usersRepository.isAnyAssignedToMeResult = true
 
         sut.handleAssignToMe(
             currentUserId = currentUserId,
@@ -258,14 +223,10 @@ class WorkItemSingleAssigneeDelegateImplTest {
             doOnError = {}
         )
 
-        coVerify {
-            workItemRepository.patchData(
-                version = version,
-                workItemId = workItemId,
-                payload = payload,
-                commonTaskType = any()
-            )
-        }
+        val call = workItemRepository.patchDataCalls.last()
+        assertEquals(version, call.version)
+        assertEquals(workItemId, call.workItemId)
+        assertEquals(payload, call.payload)
     }
 
     @Test
@@ -274,13 +235,8 @@ class WorkItemSingleAssigneeDelegateImplTest {
         val version = getRandomLong()
         val workItemId = getRandomLong()
         val newVersion = getRandomLong()
-        val payload = persistentMapOf<String, Any?>("assigned_to" to null)
 
-        every { patchDataGenerator.getAssignedToPatchPayload(null) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-        coEvery { usersRepository.isAnyAssignedToMe(persistentListOf()) } returns false
+        workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
 
         sut.handleUnassign(
             version = version,
@@ -290,9 +246,7 @@ class WorkItemSingleAssigneeDelegateImplTest {
             doOnError = {}
         )
 
-        coVerify {
-            patchDataGenerator.getAssignedToPatchPayload(null)
-        }
+        assertEquals(null, patchDataGenerator.assignedToPatchPayloadCalls.last())
     }
 
     @Test

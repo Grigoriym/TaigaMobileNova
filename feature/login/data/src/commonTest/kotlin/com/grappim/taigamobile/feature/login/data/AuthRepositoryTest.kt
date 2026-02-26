@@ -1,12 +1,13 @@
 package com.grappim.taigamobile.feature.login.data
 
-import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.feature.login.dto.AuthRequest
 import com.grappim.taigamobile.feature.login.dto.AuthResponse
+import com.grappim.taigamobile.testing.api.FakeAuthApi
+import com.grappim.taigamobile.testing.storage.FakeAuthStorage
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
@@ -21,11 +22,11 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 internal class AuthRepositoryTest {
 
-    private val authApi = mockk<AuthApi>()
+    private val authApi = FakeAuthApi()
     private val serverStorage: ServerStorage = FakeServerStorage()
 
     private val taigaSessionStorage = FakeTaigaSessionStorage()
-    private val authStorage = mockk<AuthStorage>()
+    private val authStorage = FakeAuthStorage()
 
     private val sut: AuthRepository =
         AuthRepositoryImpl(

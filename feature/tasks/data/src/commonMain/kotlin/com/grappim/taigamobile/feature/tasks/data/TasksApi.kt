@@ -8,8 +8,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import org.koin.core.annotation.Single
 
-@Single
-class TasksApi(private val httpClient: HttpClient) {
+interface TasksApi {
     suspend fun getTasks(
         userStory: Any? = null,
         project: Long? = null,
@@ -18,6 +17,21 @@ class TasksApi(private val httpClient: HttpClient) {
         assignedId: Long? = null,
         isClosed: Boolean? = null,
         watcherId: Long? = null
+    ): List<WorkItemResponseDTO>
+
+    suspend fun createTask(createTaskRequestDTO: CreateTaskRequestDTO): WorkItemResponseDTO
+}
+
+@Single(binds = [TasksApi::class])
+class TasksApiImpl(private val httpClient: HttpClient) : TasksApi {
+    override suspend fun getTasks(
+        userStory: Any?,
+        project: Long?,
+        sprint: Long?,
+        page: Int?,
+        assignedId: Long?,
+        isClosed: Boolean?,
+        watcherId: Long?
     ): List<WorkItemResponseDTO> = httpClient.get("tasks") {
         url {
             parameters.append("order_by", "us_order")
@@ -32,7 +46,8 @@ class TasksApi(private val httpClient: HttpClient) {
         if (page == null) headers.append("x-disable-pagination", "true")
     }.body()
 
-    suspend fun createTask(createTaskRequestDTO: CreateTaskRequestDTO): WorkItemResponseDTO = httpClient.post("tasks") {
-        setBody(createTaskRequestDTO)
-    }.body()
+    override suspend fun createTask(createTaskRequestDTO: CreateTaskRequestDTO): WorkItemResponseDTO =
+        httpClient.post("tasks") {
+            setBody(createTaskRequestDTO)
+        }.body()
 }

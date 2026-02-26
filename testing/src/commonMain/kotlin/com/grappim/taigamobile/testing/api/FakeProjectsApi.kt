@@ -13,6 +13,13 @@ import io.ktor.client.statement.HttpResponse
 
 class FakeProjectsApi : ProjectsApi {
     var projectResponseDTO: ProjectResponseDTO = getProjectResponseDTO()
+    var getProjectsResult: List<ProjectDTO> = emptyList()
+    var tagsColorsResult: TagsColorsResponse = emptyMap()
+
+    val deleteTagCalls: MutableList<Pair<Long, DeleteTagRequestDTO>> = mutableListOf()
+    val createTagCalls: MutableList<Pair<Long, CreateTagRequestDTO>> = mutableListOf()
+    val editTagCalls: MutableList<Pair<Long, EditTagRequestDTO>> = mutableListOf()
+    val mixTagsCalls: MutableList<Pair<Long, MixTagsRequestDTO>> = mutableListOf()
 
     override suspend fun getProjectsPaging(
         query: String?,
@@ -29,41 +36,25 @@ class FakeProjectsApi : ProjectsApi {
         memberId: Long?,
         orderBy: String,
         slight: Boolean
-    ): List<ProjectDTO> {
-        TODO("Not yet implemented")
-    }
+    ): List<ProjectDTO> = getProjectsResult
 
     override suspend fun getProject(projectId: Long): ProjectResponseDTO = projectResponseDTO
 
-    override suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse {
-        TODO("Not yet implemented")
+    override suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse = tagsColorsResult
+
+    override suspend fun editTag(projectId: Long, request: EditTagRequestDTO) {
+        editTagCalls += Pair(projectId, request)
     }
 
-    override suspend fun editTag(
-        projectId: Long,
-        request: EditTagRequestDTO
-    ) {
-        TODO("Not yet implemented")
+    override suspend fun createTag(projectId: Long, request: CreateTagRequestDTO) {
+        createTagCalls += Pair(projectId, request)
     }
 
-    override suspend fun createTag(
-        projectId: Long,
-        request: CreateTagRequestDTO
-    ) {
-        TODO("Not yet implemented")
+    override suspend fun mixTags(projectId: Long, request: MixTagsRequestDTO) {
+        mixTagsCalls += Pair(projectId, request)
     }
 
-    override suspend fun mixTags(
-        projectId: Long,
-        request: MixTagsRequestDTO
-    ) {
-        TODO("Not yet implemented")
-    }
-
-    override suspend fun deleteTag(
-        projectId: Long,
-        request: DeleteTagRequestDTO
-    ) {
-        TODO("Not yet implemented")
+    override suspend fun deleteTag(projectId: Long, request: DeleteTagRequestDTO) {
+        deleteTagCalls += Pair(projectId, request)
     }
 }

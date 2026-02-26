@@ -2,8 +2,6 @@ package com.grappim.taigamobile.feature.workitem.ui.mappers
 
 import com.grappim.taigamobile.testing.models.getTeamMember
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -11,18 +9,13 @@ import kotlin.test.assertEquals
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class TeamMemberUIMapperTest {
-
-    private val testDispatcher = UnconfinedTestDispatcher()
 
     private lateinit var sut: TeamMemberUIMapper
 
     @BeforeTest
     fun setUp() {
-        sut = TeamMemberUIMapper(
-            ioDispatcher = testDispatcher
-        )
+        sut = TeamMemberUIMapper()
     }
 
     @Test

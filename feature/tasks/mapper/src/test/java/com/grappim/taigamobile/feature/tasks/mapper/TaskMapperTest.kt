@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.tasks.mapper
 
-import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
@@ -10,17 +9,13 @@ import com.grappim.taigamobile.feature.workitem.domain.UserStoryShortInfo
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.mapper.UserStoryShortInfoMapper
-import com.grappim.taigamobile.testing.models.getProjectExtraInfo
-import com.grappim.taigamobile.testing.models.getStatus
 import com.grappim.taigamobile.testing.models.getTag
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getUserStoryShortInfoDTO
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
-import io.mockk.coEvery
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -30,20 +25,18 @@ import kotlin.test.assertNull
 
 class TaskMapperTest {
 
-    private val userMapper: UserMapper = mockk()
-    private val statusesMapper: StatusesMapper = mockk()
-    private val projectMapper: ProjectMapper = mockk()
-    private val tagsMapper: TagsMapper = mockk()
-    private val dueDateStatusMapper: DueDateStatusMapper = mockk()
-    private val userStoryShortInfoMapper: UserStoryShortInfoMapper = mockk()
-    private val serverStorage: ServerStorage = mockk()
+    private val userMapper: UserMapper = UserMapper()
+    private val statusesMapper: StatusesMapper = StatusesMapper()
+    private val projectMapper: ProjectMapper = ProjectMapper()
+    private val tagsMapper: TagsMapper = TagsMapper()
+    private val dueDateStatusMapper: DueDateStatusMapper = DueDateStatusMapper()
+    private val userStoryShortInfoMapper: UserStoryShortInfoMapper = UserStoryShortInfoMapper()
+    private val serverStorage = FakeServerStorage()
 
     private lateinit var sut: TaskMapper
 
     @BeforeTest
     fun setup() {
-        coEvery { serverStorage.server } returns "https://taiga.example.com"
-
         sut = TaskMapper(
             serverStorage = serverStorage,
             userMapper = userMapper,
@@ -59,13 +52,6 @@ class TaskMapperTest {
     fun `toDomain should map basic fields correctly`() {
         val response = getWorkItemResponseDTO()
         val user = getUser()
-
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-
         val result = sut.toDomain(response)
 
         assertEquals(response.id, result.id)
@@ -96,14 +82,7 @@ class TaskMapperTest {
 
     @Test
     fun `toDomain should map due date status correctly`() {
-        val user = getUser()
         val response = getWorkItemResponseDTO().copy(dueDateStatusDTO = DueDateStatusDTO.DueSoon)
-
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -113,18 +92,11 @@ class TaskMapperTest {
 
     @Test
     fun `toDomain should handle blocked note correctly when blocked`() {
-        val user = getUser()
         val blockedNote = getRandomString()
         val response = getWorkItemResponseDTO().copy(
             isBlocked = true,
             blockedNote = blockedNote
         )
-
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -133,19 +105,11 @@ class TaskMapperTest {
 
     @Test
     fun `toDomain should not include blocked note when not blocked`() {
-        val user = getUser()
         val blockedNote = getRandomString()
         val response = getWorkItemResponseDTO().copy(
             isBlocked = false,
             blockedNote = blockedNote
         )
-
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-
         val result = sut.toDomain(response)
 
         assertNull(result.blockedNote)
@@ -153,14 +117,7 @@ class TaskMapperTest {
 
     @Test
     fun `toDomain should build correct copy link URL`() {
-        val user = getUser()
         val response = getWorkItemResponseDTO()
-
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -171,16 +128,9 @@ class TaskMapperTest {
 
     @Test
     fun `toDomain should map tags correctly`() {
-        val user = getUser()
         val response = getWorkItemResponseDTO()
         val firstTag = getTag()
         val secondTag = getTag()
-
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(firstTag, secondTag)
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -193,11 +143,6 @@ class TaskMapperTest {
     fun `toDomain should handle null assignee`() {
         val response = getWorkItemResponseDTO().copy(assignedToExtraInfo = null)
 
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-
         val result = sut.toDomain(response)
 
         assertNull(result.assignee)
@@ -208,12 +153,6 @@ class TaskMapperTest {
         val user = getUser()
         val assignedUsers = listOf(getRandomLong(), getRandomLong(), getRandomLong())
         val response = getWorkItemResponseDTO().copy(assignedUsers = assignedUsers)
-
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -229,12 +168,6 @@ class TaskMapperTest {
             assignedTo = assignedTo
         )
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-
         val result = sut.toDomain(response)
 
         assertEquals(listOf(assignedTo), result.assignedUserIds)
@@ -245,12 +178,6 @@ class TaskMapperTest {
         val user = getUser()
         val response = getWorkItemResponseDTO().copy(watchers = null)
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-
         val result = sut.toDomain(response)
 
         assertEquals(emptyList(), result.watcherUserIds)
@@ -260,12 +187,6 @@ class TaskMapperTest {
     fun `toDomain should handle null description`() {
         val user = getUser()
         val response = getWorkItemResponseDTO().copy(description = null)
-
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
 
         val result = sut.toDomain(response)
 
@@ -284,13 +205,6 @@ class TaskMapperTest {
         )
         val response = getWorkItemResponseDTO().copy(userStoryExtraInfo = userStoryShortInfoDTO)
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-        every { userStoryShortInfoMapper.toDomain(userStoryShortInfoDTO) } returns userStoryShortInfo
-
         val result = sut.toDomain(response)
 
         assertNotNull(result.userStory)
@@ -304,12 +218,6 @@ class TaskMapperTest {
         val user = getUser()
         val response = getWorkItemResponseDTO().copy(userStoryExtraInfo = null)
 
-        coEvery { userMapper.toUser(response.assignedToExtraInfo!!) } returns user
-        every { dueDateStatusMapper.toDomain(response.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-        coEvery { projectMapper.toProjectExtraInfo(response.projectDTOExtraInfo) } returns getProjectExtraInfo()
-        coEvery { tagsMapper.toTags(response.tags) } returns persistentListOf(getTag())
-        coEvery { statusesMapper.getStatus(response) } returns getStatus()
-
         val result = sut.toDomain(response)
 
         assertNull(result.userStory)
@@ -317,19 +225,9 @@ class TaskMapperTest {
 
     @Test
     fun `toDomainList should map list of DTOs correctly`() {
-        val user = getUser()
         val response1 = getWorkItemResponseDTO()
         val response2 = getWorkItemResponseDTO()
         val dtos = listOf(response1, response2)
-
-        coEvery { userMapper.toUser(any()) } returns user
-
-        dtos.forEach {
-            every { dueDateStatusMapper.toDomain(it.dueDateStatusDTO) } returns DueDateStatus.DueSoon
-            coEvery { projectMapper.toProjectExtraInfo(it.projectDTOExtraInfo) } returns getProjectExtraInfo()
-            coEvery { tagsMapper.toTags(tags = it.tags) } returns persistentListOf(getTag())
-            coEvery { statusesMapper.getStatus(resp = it) } returns getStatus()
-        }
 
         val result = sut.toDomainList(dtos)
 

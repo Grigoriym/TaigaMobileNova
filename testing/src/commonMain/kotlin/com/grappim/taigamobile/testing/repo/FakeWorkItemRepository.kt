@@ -14,6 +14,19 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 
+class AddAttachmentCall(
+    val workItemId: Long,
+    val fileName: String,
+    val fileByteArray: ByteArray,
+    val projectId: Long,
+    val taskIdentifier: TaskIdentifier,
+)
+
+data class DeleteAttachmentCall(
+    val attachment: Attachment,
+    val taskIdentifier: TaskIdentifier,
+)
+
 data class GetWorkItemsCall(
     val commonTaskType: CommonTaskType,
     val projectId: Long,
@@ -24,11 +37,22 @@ data class GetWorkItemsCall(
     val finishDateGte: String?,
 )
 
+data class PatchDataCall(
+    val version: Long,
+    val workItemId: Long,
+    val payload: ImmutableMap<String, Any?>,
+    val commonTaskType: CommonTaskType,
+)
+
 class FakeWorkItemRepository : WorkItemRepository {
 
     val itemsByType = mutableMapOf<CommonTaskType, ImmutableList<WorkItem>>()
     var error: Exception? = null
     val calls = mutableListOf<GetWorkItemsCall>()
+
+    var patchDataResult: PatchedData? = null
+    var patchDataThrows: Throwable? = null
+    val patchDataCalls: MutableList<PatchDataCall> = mutableListOf()
 
     var promoteToUserStoryThrows: Throwable? = null
     var promoteToUserStoryResult: WorkItem? = null
@@ -36,6 +60,13 @@ class FakeWorkItemRepository : WorkItemRepository {
 
     var deleteWorkItemThrows: Throwable? = null
     var deleteWorkItemCalled = false
+
+    var addAttachmentResult: Attachment? = null
+    var addAttachmentThrows: Throwable? = null
+    val addAttachmentCalls: MutableList<AddAttachmentCall> = mutableListOf()
+
+    var deleteAttachmentThrows: Throwable? = null
+    val deleteAttachmentCalls: MutableList<DeleteAttachmentCall> = mutableListOf()
 
     override suspend fun getWorkItems(
         commonTaskType: CommonTaskType,
@@ -69,7 +100,11 @@ class FakeWorkItemRepository : WorkItemRepository {
         workItemId: Long,
         payload: ImmutableMap<String, Any?>,
         commonTaskType: CommonTaskType,
-    ): PatchedData = error("not used in this test")
+    ): PatchedData {
+        patchDataCalls += PatchDataCall(version, workItemId, payload, commonTaskType)
+        patchDataThrows?.let { throw it }
+        return patchDataResult ?: error("patchDataResult not configured")
+    }
 
     override suspend fun patchCustomAttributes(
         customAttributesVersion: Long,
@@ -84,12 +119,19 @@ class FakeWorkItemRepository : WorkItemRepository {
         fileByteArray: ByteArray,
         projectId: Long,
         taskIdentifier: TaskIdentifier,
-    ): Attachment = error("not used in this test")
+    ): Attachment {
+        addAttachmentCalls += AddAttachmentCall(workItemId, fileName, fileByteArray, projectId, taskIdentifier)
+        addAttachmentThrows?.let { throw it }
+        return addAttachmentResult ?: error("addAttachmentResult not configured")
+    }
 
     override suspend fun deleteAttachment(
         attachment: Attachment,
         taskIdentifier: TaskIdentifier,
-    ): Unit = error("not used in this test")
+    ) {
+        deleteAttachmentCalls += DeleteAttachmentCall(attachment, taskIdentifier)
+        deleteAttachmentThrows?.let { throw it }
+    }
 
     override suspend fun getWorkItemAttachments(
         workItemId: Long,

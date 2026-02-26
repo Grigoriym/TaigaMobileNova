@@ -6,9 +6,16 @@ import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentMapOf
 
 class FakePatchDataGenerator : PatchDataGenerator {
+
+    var assignedToPatchPayloadResult: ImmutableMap<String, Any?> = persistentMapOf()
+    val assignedToPatchPayloadCalls: MutableList<Long?> = mutableListOf()
+
     override fun getTitle(title: String): ImmutableMap<String, Any?> = persistentMapOf()
     override fun getWatchersPatchPayload(watchers: List<Long>): ImmutableMap<String, Any?> = persistentMapOf()
-    override fun getAssignedToPatchPayload(assignee: Long?): ImmutableMap<String, Any?> = persistentMapOf()
+    override fun getAssignedToPatchPayload(assignee: Long?): ImmutableMap<String, Any?> {
+        assignedToPatchPayloadCalls += assignee
+        return assignedToPatchPayloadResult
+    }
     override fun getAssignedUsersPatchPayload(assignees: ImmutableList<Long>): ImmutableMap<String, Any?> =
         persistentMapOf()
 

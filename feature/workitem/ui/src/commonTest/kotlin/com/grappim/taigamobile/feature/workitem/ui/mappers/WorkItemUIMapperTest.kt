@@ -3,32 +3,25 @@ package com.grappim.taigamobile.feature.workitem.ui.mappers
 import com.grappim.taigamobile.testing.models.getStatusUI
 import com.grappim.taigamobile.testing.models.getTagUI
 import com.grappim.taigamobile.testing.models.getWorkItem
-import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
-import io.mockk.coEvery
-import io.mockk.mockk
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class WorkItemUIMapperTest {
 
-    private val testDispatcher = UnconfinedTestDispatcher()
-    private val statusUIMapper: StatusUIMapper = mockk()
-    private val tagUIMapper: TagUIMapper = mockk()
-    private val dateTimeUtils: DateTimeUtils = mockk()
+    private val statusUIMapper: StatusUIMapper = StatusUIMapper()
+    private val tagUIMapper: TagUIMapper = TagUIMapper()
+    private val dateTimeUtils = FakeDateTimeUtils()
 
     private lateinit var sut: WorkItemUIMapper
 
     @BeforeTest
     fun setUp() {
         sut = WorkItemUIMapper(
-            dispatcher = testDispatcher,
             statusUIMapper = statusUIMapper,
             tagUIMapper = tagUIMapper,
             dateTimeUtils = dateTimeUtils
@@ -41,10 +34,6 @@ class WorkItemUIMapperTest {
         val statusUI = getStatusUI()
         val tagsUI = persistentListOf(getTagUI(), getTagUI())
         val formattedDate = "Dec 15, 2024"
-
-        coEvery { statusUIMapper.toUI(workItem.status) } returns statusUI
-        coEvery { tagUIMapper.toSelectableUI(workItem.tags) } returns tagsUI
-        coEvery { dateTimeUtils.formatToMediumFormat(workItem.createdDate) } returns formattedDate
 
         val actual = sut.toUI(workItem)
 
@@ -73,13 +62,6 @@ class WorkItemUIMapperTest {
         val tagsUI2 = persistentListOf(getTagUI())
         val formattedDate1 = "Dec 15, 2024"
         val formattedDate2 = "Dec 16, 2024"
-
-        coEvery { statusUIMapper.toUI(workItem1.status) } returns statusUI1
-        coEvery { statusUIMapper.toUI(workItem2.status) } returns statusUI2
-        coEvery { tagUIMapper.toSelectableUI(workItem1.tags) } returns tagsUI1
-        coEvery { tagUIMapper.toSelectableUI(workItem2.tags) } returns tagsUI2
-        coEvery { dateTimeUtils.formatToMediumFormat(workItem1.createdDate) } returns formattedDate1
-        coEvery { dateTimeUtils.formatToMediumFormat(workItem2.createdDate) } returns formattedDate2
 
         val actual = sut.toUI(list)
 

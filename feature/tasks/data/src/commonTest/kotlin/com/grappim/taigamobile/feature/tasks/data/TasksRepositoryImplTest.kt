@@ -1,75 +1,76 @@
 package com.grappim.taigamobile.feature.tasks.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.tasks.domain.Task
+import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
+import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
+import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
 import com.grappim.taigamobile.feature.tasks.mapper.TaskMapper
-import com.grappim.taigamobile.feature.workitem.data.WorkItemApi
-import com.grappim.taigamobile.feature.workitem.domain.WorkItem
-import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
+import com.grappim.taigamobile.feature.users.mapper.UserMapper
+import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
+import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
+import com.grappim.taigamobile.feature.workitem.mapper.UserStoryShortInfoMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
+import com.grappim.taigamobile.testing.api.FakeTasksApi
+import com.grappim.taigamobile.testing.api.FakeWorkItemApi
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
+import com.grappim.taigamobile.testing.storage.FakeServerStorage
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
-import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import okhttp3.internal.tls.OkHostnameVerifier.verify
-import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class TasksRepositoryImplTest {
 
-    private val tasksApi: TasksApi = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val workItemApi: WorkItemApi = mockk()
-    private val taskMapper: TaskMapper = mockk()
-    private val workItemMapper: WorkItemMapper = mockk()
-
-    private lateinit var sut: TasksRepository
-
     private val projectId = getRandomLong()
-    private val taskPath = WorkItemPathPlural(CommonTaskType.Task)
 
-    @BeforeTest
-    fun setup() {
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
+    private val tasksApi = FakeTasksApi()
+    private val taigaSessionStorage = FakeTaigaSessionStorage(currentProjectId = projectId)
+    private val workItemApi = FakeWorkItemApi()
+    private val taskMapper = TaskMapper(
+        serverStorage = FakeServerStorage(),
+        userMapper = UserMapper(),
+        statusesMapper = StatusesMapper(),
+        projectMapper = ProjectMapper(),
+        tagsMapper = TagsMapper(),
+        dueDateStatusMapper = DueDateStatusMapper(),
+        userStoryShortInfoMapper = UserStoryShortInfoMapper()
+    )
+    private val workItemMapper = WorkItemMapper(
+        statusesMapper = StatusesMapper(),
+        userMapper = UserMapper(),
+        tagsMapper = TagsMapper(),
+        projectMapper = ProjectMapper()
+    )
 
-        sut = TasksRepositoryImpl(
-            tasksApi = tasksApi,
-            taigaSessionStorage = taigaSessionStorage,
-            workItemApi = workItemApi,
-            taskMapper = taskMapper,
-            workItemMapper = workItemMapper
-        )
-    }
+    private val sut: TasksRepository = TasksRepositoryImpl(
+        tasksApi = tasksApi,
+        taigaSessionStorage = taigaSessionStorage,
+        workItemApi = workItemApi,
+        taskMapper = taskMapper,
+        workItemMapper = workItemMapper
+    )
 
     @Test
     fun `getUserStoryTasks should return mapped tasks for user story`() = runTest {
         val storyId = getRandomLong()
         val dtos = listOf(getWorkItemResponseDTO(), getWorkItemResponseDTO())
-        val expectedTasks = persistentListOf(mockk<Task>(), mockk<Task>())
-
-        coEvery { tasksApi.getTasks(userStory = storyId, project = projectId) } returns dtos
-        every { taskMapper.toDomainList(dtos) } returns expectedTasks
+        tasksApi.getTasksResult = dtos
 
         val result = sut.getUserStoryTasks(storyId)
 
-        assertEquals(expectedTasks, result)
-        coVerify { tasksApi.getTasks(userStory = storyId, project = projectId) }
-        verify { taskMapper.toDomainList(dtos) }
+        assertEquals(taskMapper.toDomainList(dtos), result)
+        val call = tasksApi.getTasksCalls.single()
+        assertEquals(storyId, call.userStory)
+        assertEquals(projectId, call.project)
     }
 
     @Test
     fun `getUserStoryTasks should return empty list when no tasks`() = runTest {
         val storyId = getRandomLong()
-        val dtos = emptyList<WorkItemResponseDTO>()
-        val expectedTasks = persistentListOf<Task>()
-
-        coEvery { tasksApi.getTasks(userStory = storyId, project = projectId) } returns dtos
-        every { taskMapper.toDomainList(dtos) } returns expectedTasks
+        tasksApi.getTasksResult = emptyList()
 
         val result = sut.getUserStoryTasks(storyId)
 
@@ -83,19 +84,7 @@ class TasksRepositoryImplTest {
         val sprintId = getRandomLong()
         val customProjectId = getRandomLong()
         val dtos = listOf(getWorkItemResponseDTO())
-        val expectedTasks = persistentListOf(mockk<Task>())
-
-        coEvery {
-            tasksApi.getTasks(
-                assignedId = assignedId,
-                isClosed = true,
-                watcherId = watcherId,
-                userStory = null,
-                project = customProjectId,
-                sprint = sprintId
-            )
-        } returns dtos
-        every { taskMapper.toDomainList(dtos) } returns expectedTasks
+        tasksApi.getTasksResult = dtos
 
         val result = sut.getTasks(
             assignedId = assignedId,
@@ -106,56 +95,53 @@ class TasksRepositoryImplTest {
             sprint = sprintId
         )
 
-        assertEquals(expectedTasks, result)
+        assertEquals(taskMapper.toDomainList(dtos), result)
+        val call = tasksApi.getTasksCalls.single()
+        assertEquals(assignedId, call.assignedId)
+        assertEquals(true, call.isClosed)
+        assertEquals(watcherId, call.watcherId)
+        assertEquals(null, call.userStory)
+        assertEquals(customProjectId, call.project)
+        assertEquals(sprintId, call.sprint)
     }
 
     @Test
     fun `getTasks should handle null filters`() = runTest {
         val dtos = listOf(getWorkItemResponseDTO())
-        val expectedTasks = persistentListOf(mockk<Task>())
-
-        coEvery {
-            tasksApi.getTasks(
-                assignedId = null,
-                isClosed = null,
-                watcherId = null,
-                userStory = null,
-                project = null,
-                sprint = null
-            )
-        } returns dtos
-        every { taskMapper.toDomainList(dtos) } returns expectedTasks
+        tasksApi.getTasksResult = dtos
 
         val result = sut.getTasks()
 
-        assertEquals(expectedTasks, result)
+        assertEquals(taskMapper.toDomainList(dtos), result)
+        val call = tasksApi.getTasksCalls.single()
+        assertEquals(null, call.assignedId)
+        assertEquals(null, call.isClosed)
+        assertEquals(null, call.watcherId)
+        assertEquals(null, call.userStory)
+        assertEquals(null, call.project)
+        assertEquals(null, call.sprint)
     }
 
     @Test
     fun `getTask should return mapped task by id`() = runTest {
         val taskId = getRandomLong()
         val dto = getWorkItemResponseDTO()
-        val expectedTask = mockk<Task>()
-
-        coEvery { workItemApi.getWorkItemById(taskPath = taskPath, id = taskId) } returns dto
-        every { taskMapper.toDomain(dto) } returns expectedTask
+        workItemApi.workItemByIdResponse = dto
 
         val result = sut.getTask(taskId)
 
-        assertEquals(expectedTask, result)
-        coVerify { workItemApi.getWorkItemById(taskPath = taskPath, id = taskId) }
-        verify { taskMapper.toDomain(dto) }
+        assertEquals(taskMapper.toDomain(dto), result)
     }
 
     @Test
     fun `deleteTask should call workItemApi with correct parameters`() = runTest {
         val taskId = getRandomLong()
 
-        coJustRun { workItemApi.deleteWorkItem(taskPath = taskPath, workItemId = taskId) }
-
         sut.deleteTask(taskId)
 
-        coVerify { workItemApi.deleteWorkItem(taskPath = taskPath, workItemId = taskId) }
+        val call = workItemApi.deleteWorkItemCalls.single()
+        assertEquals(CommonTaskType.Task.getPluralPath(), call.first)
+        assertEquals(taskId, call.second)
     }
 
     @Test
@@ -165,24 +151,17 @@ class TasksRepositoryImplTest {
         val parentId = getRandomLong()
         val sprintId = getRandomLong()
         val dto = getWorkItemResponseDTO()
-        val expectedWorkItem = mockk<WorkItem>()
-
-        val expectedRequest = CreateTaskRequestDTO(
-            project = projectId,
-            subject = title,
-            description = description,
-            milestone = sprintId,
-            userStory = parentId
-        )
-
-        coEvery { tasksApi.createTask(expectedRequest) } returns dto
-        every { workItemMapper.toDomain(dto, CommonTaskType.Task) } returns expectedWorkItem
+        tasksApi.createTaskResult = dto
 
         val result = sut.createTask(title, description, parentId, sprintId)
 
-        assertEquals(expectedWorkItem, result)
-        coVerify { tasksApi.createTask(expectedRequest) }
-        verify { workItemMapper.toDomain(dto, CommonTaskType.Task) }
+        assertEquals(workItemMapper.toDomain(dto, CommonTaskType.Task), result)
+        val call = tasksApi.createTaskCalls.single()
+        assertEquals(projectId, call.project)
+        assertEquals(title, call.subject)
+        assertEquals(description, call.description)
+        assertEquals(sprintId, call.milestone)
+        assertEquals(parentId, call.userStory)
     }
 
     @Test
@@ -190,22 +169,13 @@ class TasksRepositoryImplTest {
         val title = getRandomString()
         val description = getRandomString()
         val dto = getWorkItemResponseDTO()
-        val expectedWorkItem = mockk<WorkItem>()
-
-        val expectedRequest = CreateTaskRequestDTO(
-            project = projectId,
-            subject = title,
-            description = description,
-            milestone = null,
-            userStory = null
-        )
-
-        coEvery { tasksApi.createTask(expectedRequest) } returns dto
-        every { workItemMapper.toDomain(dto, CommonTaskType.Task) } returns expectedWorkItem
+        tasksApi.createTaskResult = dto
 
         val result = sut.createTask(title, description, null, null)
 
-        assertEquals(expectedWorkItem, result)
-        coVerify { tasksApi.createTask(expectedRequest) }
+        assertEquals(workItemMapper.toDomain(dto, CommonTaskType.Task), result)
+        val call = tasksApi.createTaskCalls.single()
+        assertEquals(null, call.milestone)
+        assertEquals(null, call.userStory)
     }
 }

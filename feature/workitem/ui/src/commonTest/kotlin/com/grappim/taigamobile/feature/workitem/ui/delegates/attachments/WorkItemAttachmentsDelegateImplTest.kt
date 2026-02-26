@@ -1,18 +1,14 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 
-import android.net.Uri
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.testing.models.getAttachment
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.createTestPlatformFile
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
-import com.grappim.taigamobile.utils.ui.AttachmentInfo
-import com.grappim.taigamobile.utils.ui.file.FileUriManager
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -21,17 +17,15 @@ import kotlin.test.assertTrue
 
 internal class WorkItemAttachmentsDelegateImplTest {
 
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val fileUriManager: FileUriManager = mockk()
+    private val workItemRepository = FakeWorkItemRepository()
+    private val taigaSessionStorage = FakeTaigaSessionStorage()
 
     private fun createSut(
         taskIdentifier: TaskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task)
     ): WorkItemAttachmentsDelegateImpl = WorkItemAttachmentsDelegateImpl(
         taskIdentifier = taskIdentifier,
         workItemRepository = workItemRepository,
-        taigaSessionStorage = taigaSessionStorage,
-        fileUriManager = fileUriManager
+        taigaSessionStorage = taigaSessionStorage
     )
 
     @Test
@@ -56,42 +50,34 @@ internal class WorkItemAttachmentsDelegateImplTest {
     }
 
     @Test
-    fun `handleAddAttachment with null uri should clear loading and return early`() = runTest {
+    fun `handleAddAttachment with null file should clear loading and return early`() = runTest {
         val sut = createSut()
 
         sut.handleAddAttachment(
             workItemId = getRandomLong(),
-            uri = null,
+            file = null,
             doOnPreExecute = null,
             doOnSuccess = null,
             doOnError = {}
         )
 
         assertFalse(sut.attachmentsState.value.areAttachmentsLoading)
-        coVerify(exactly = 0) { workItemRepository.addAttachment(any(), any(), any(), any(), any()) }
+        assertTrue(workItemRepository.addAttachmentCalls.isEmpty())
     }
 
     @Test
     fun `handleAddAttachment should call doOnPreExecute`() = runTest {
         val sut = createSut()
         var preExecuteCalled = false
-        val uri: Uri = mockk()
         val projectId = getRandomLong()
         val attachment = getAttachment()
-        val attachmentInfo = AttachmentInfo(
-            name = getRandomString(),
-            fileBytes = listOf(1, 2, 3)
-        )
 
-        coEvery { fileUriManager.retrieveAttachmentInfo(uri) } returns attachmentInfo
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery {
-            workItemRepository.addAttachment(any(), any(), any(), any(), any())
-        } returns attachment
+        taigaSessionStorage.currentProjectId = projectId
+        workItemRepository.addAttachmentResult = attachment
 
         sut.handleAddAttachment(
             workItemId = getRandomLong(),
-            uri = uri,
+            file = createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)),
             doOnPreExecute = { preExecuteCalled = true },
             doOnSuccess = null,
             doOnError = {}
@@ -103,23 +89,15 @@ internal class WorkItemAttachmentsDelegateImplTest {
     @Test
     fun `handleAddAttachment should add attachment on success`() = runTest {
         val sut = createSut()
-        val uri: Uri = mockk()
         val projectId = getRandomLong()
         val attachment = getAttachment()
-        val attachmentInfo = AttachmentInfo(
-            name = getRandomString(),
-            fileBytes = listOf(1, 2, 3)
-        )
 
-        coEvery { fileUriManager.retrieveAttachmentInfo(uri) } returns attachmentInfo
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery {
-            workItemRepository.addAttachment(any(), any(), any(), any(), any())
-        } returns attachment
+        taigaSessionStorage.currentProjectId = projectId
+        workItemRepository.addAttachmentResult = attachment
 
         sut.handleAddAttachment(
             workItemId = getRandomLong(),
-            uri = uri,
+            file = createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)),
             doOnPreExecute = null,
             doOnSuccess = null,
             doOnError = {}
@@ -135,23 +113,15 @@ internal class WorkItemAttachmentsDelegateImplTest {
     fun `handleAddAttachment should call doOnSuccess on success`() = runTest {
         val sut = createSut()
         var successCalled = false
-        val uri: Uri = mockk()
         val projectId = getRandomLong()
         val attachment = getAttachment()
-        val attachmentInfo = AttachmentInfo(
-            name = getRandomString(),
-            fileBytes = listOf(1, 2, 3)
-        )
 
-        coEvery { fileUriManager.retrieveAttachmentInfo(uri) } returns attachmentInfo
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery {
-            workItemRepository.addAttachment(any(), any(), any(), any(), any())
-        } returns attachment
+        taigaSessionStorage.currentProjectId = projectId
+        workItemRepository.addAttachmentResult = attachment
 
         sut.handleAddAttachment(
             workItemId = getRandomLong(),
-            uri = uri,
+            file = createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)),
             doOnPreExecute = null,
             doOnSuccess = { successCalled = true },
             doOnError = {}
@@ -164,60 +134,41 @@ internal class WorkItemAttachmentsDelegateImplTest {
     fun `handleAddAttachment should call repository with correct parameters`() = runTest {
         val taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
         val sut = createSut(taskIdentifier)
-        val uri: Uri = mockk()
         val workItemId = getRandomLong()
         val projectId = getRandomLong()
         val attachment = getAttachment()
         val fileName = getRandomString()
-        val fileBytes = listOf<Byte>(1, 2, 3)
-        val attachmentInfo = AttachmentInfo(
-            name = fileName,
-            fileBytes = fileBytes
-        )
+        val fileBytes = byteArrayOf(1, 2, 3)
 
-        coEvery { fileUriManager.retrieveAttachmentInfo(uri) } returns attachmentInfo
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery {
-            workItemRepository.addAttachment(any(), any(), any(), any(), any())
-        } returns attachment
+        taigaSessionStorage.currentProjectId = projectId
+        workItemRepository.addAttachmentResult = attachment
 
         sut.handleAddAttachment(
             workItemId = workItemId,
-            uri = uri,
+            file = createTestPlatformFile(fileName, fileBytes),
             doOnPreExecute = null,
             doOnSuccess = null,
             doOnError = {}
         )
 
-        coVerify {
-            workItemRepository.addAttachment(
-                workItemId = workItemId,
-                fileName = fileName,
-                fileByteArray = fileBytes.toByteArray(),
-                taskIdentifier = taskIdentifier,
-                projectId = projectId
-            )
-        }
+        val call = workItemRepository.addAttachmentCalls.last()
+        assertEquals(workItemId, call.workItemId)
+        assertEquals(fileName, call.fileName)
+        assertTrue(fileBytes.contentEquals(call.fileByteArray))
+        assertEquals(taskIdentifier, call.taskIdentifier)
+        assertEquals(projectId, call.projectId)
     }
 
     @Test
     fun `handleAddAttachment should clear loading on error`() = runTest {
         val sut = createSut()
-        val uri: Uri = mockk()
-        val attachmentInfo = AttachmentInfo(
-            name = getRandomString(),
-            fileBytes = listOf(1, 2, 3)
-        )
 
-        coEvery { fileUriManager.retrieveAttachmentInfo(uri) } returns attachmentInfo
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns getRandomLong()
-        coEvery {
-            workItemRepository.addAttachment(any(), any(), any(), any(), any())
-        } throws testException
+        taigaSessionStorage.currentProjectId = getRandomLong()
+        workItemRepository.addAttachmentThrows = testException
 
         sut.handleAddAttachment(
             workItemId = getRandomLong(),
-            uri = uri,
+            file = createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)),
             doOnPreExecute = null,
             doOnSuccess = null,
             doOnError = {}
@@ -230,21 +181,13 @@ internal class WorkItemAttachmentsDelegateImplTest {
     fun `handleAddAttachment should call doOnError on failure`() = runTest {
         val sut = createSut()
         var receivedError: Throwable? = null
-        val uri: Uri = mockk()
-        val attachmentInfo = AttachmentInfo(
-            name = getRandomString(),
-            fileBytes = listOf(1, 2, 3)
-        )
 
-        coEvery { fileUriManager.retrieveAttachmentInfo(uri) } returns attachmentInfo
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns getRandomLong()
-        coEvery {
-            workItemRepository.addAttachment(any(), any(), any(), any(), any())
-        } throws testException
+        taigaSessionStorage.currentProjectId = getRandomLong()
+        workItemRepository.addAttachmentThrows = testException
 
         sut.handleAddAttachment(
             workItemId = getRandomLong(),
-            uri = uri,
+            file = createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)),
             doOnPreExecute = null,
             doOnSuccess = null,
             doOnError = { receivedError = it }
@@ -258,10 +201,6 @@ internal class WorkItemAttachmentsDelegateImplTest {
         val sut = createSut()
         var preExecuteCalled = false
         val attachment = getAttachment()
-
-        coEvery {
-            workItemRepository.deleteAttachment(any(), any())
-        } returns Unit
 
         sut.handleRemoveAttachment(
             attachment = attachment,
@@ -278,10 +217,6 @@ internal class WorkItemAttachmentsDelegateImplTest {
         val sut = createSut()
         val attachment = getAttachment()
         sut.setInitialAttachments(listOf(attachment))
-
-        coEvery {
-            workItemRepository.deleteAttachment(any(), any())
-        } returns Unit
 
         sut.handleRemoveAttachment(
             attachment = attachment,
@@ -301,10 +236,6 @@ internal class WorkItemAttachmentsDelegateImplTest {
         var successCalled = false
         val attachment = getAttachment()
 
-        coEvery {
-            workItemRepository.deleteAttachment(any(), any())
-        } returns Unit
-
         sut.handleRemoveAttachment(
             attachment = attachment,
             doOnPreExecute = null,
@@ -321,10 +252,6 @@ internal class WorkItemAttachmentsDelegateImplTest {
         val sut = createSut(taskIdentifier)
         val attachment = getAttachment()
 
-        coEvery {
-            workItemRepository.deleteAttachment(any(), any())
-        } returns Unit
-
         sut.handleRemoveAttachment(
             attachment = attachment,
             doOnPreExecute = null,
@@ -332,12 +259,9 @@ internal class WorkItemAttachmentsDelegateImplTest {
             doOnError = {}
         )
 
-        coVerify {
-            workItemRepository.deleteAttachment(
-                attachment = attachment,
-                taskIdentifier = taskIdentifier
-            )
-        }
+        val call = workItemRepository.deleteAttachmentCalls.last()
+        assertEquals(attachment, call.attachment)
+        assertEquals(taskIdentifier, call.taskIdentifier)
     }
 
     @Test
@@ -345,9 +269,7 @@ internal class WorkItemAttachmentsDelegateImplTest {
         val sut = createSut()
         val attachment = getAttachment()
 
-        coEvery {
-            workItemRepository.deleteAttachment(any(), any())
-        } throws testException
+        workItemRepository.deleteAttachmentThrows = testException
 
         sut.handleRemoveAttachment(
             attachment = attachment,
@@ -365,9 +287,7 @@ internal class WorkItemAttachmentsDelegateImplTest {
         var receivedError: Throwable? = null
         val attachment = getAttachment()
 
-        coEvery {
-            workItemRepository.deleteAttachment(any(), any())
-        } throws testException
+        workItemRepository.deleteAttachmentThrows = testException
 
         sut.handleRemoveAttachment(
             attachment = attachment,

@@ -2,7 +2,6 @@ package com.grappim.taigamobile.feature.projects.data
 
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
-import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.projects.dto.tags.CreateTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.DeleteTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.EditTagRequestDTO
@@ -13,22 +12,18 @@ import com.grappim.taigamobile.testing.dao.FakeProjectDao
 import com.grappim.taigamobile.testing.models.getProject
 import com.grappim.taigamobile.testing.models.getProjectDTO
 import com.grappim.taigamobile.testing.models.getProjectEntity
-import com.grappim.taigamobile.testing.models.getProjectSimple
-import com.grappim.taigamobile.testing.models.getTag
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 
-class ProjectsRepositoryImplTest {
+internal class ProjectsRepositoryImplTest {
     private val projectsApi = FakeProjectsApi()
     private val projectMapper = ProjectMapper()
-
     private val projectDao = FakeProjectDao()
     private val tagsMapper = TagsMapper()
     private val taigaSessionStorage = FakeTaigaSessionStorage()
@@ -44,121 +39,81 @@ class ProjectsRepositoryImplTest {
     @Test
     fun `on getMyProjects return projects from api`() = runTest {
         val userId = getRandomLong()
-        val dtos = listOf(
-            getProjectDTO(),
-            getProjectDTO()
-        )
-        val expected = listOf(
-            getProject(),
-            getProject()
-        )
-        coEvery { taigaSessionStorage.requireUserId() } returns userId
-        coEvery { projectsApi.getProjects(memberId = userId) } returns dtos
-        coEvery { projectMapper.toListDomain(dtos) } returns expected.toImmutableList()
+        val dtos = listOf(getProjectDTO(), getProjectDTO())
+        taigaSessionStorage.currentUserId = userId
+        projectsApi.getProjectsResult = dtos
 
         val actual = sut.getMyProjects()
 
-        assert(actual.isNotEmpty())
-        assertContentEquals(expected, actual)
+        assertContentEquals(projectMapper.toListDomain(dtos), actual)
     }
 
     @Test
     fun `on getUserProjects return projects from api`() = runTest {
         val userId = getRandomLong()
-        val dtos = listOf(
-            getProjectDTO(),
-            getProjectDTO()
-        )
-        val expected = listOf(
-            getProject(),
-            getProject()
-        )
-
-        coEvery { projectsApi.getProjects(memberId = userId) } returns dtos
-        coEvery { projectMapper.toListDomain(dtos) } returns expected.toImmutableList()
+        val dtos = listOf(getProjectDTO(), getProjectDTO())
+        projectsApi.getProjectsResult = dtos
 
         val actual = sut.getUserProjects(userId)
 
-        assert(actual.isNotEmpty())
-        assertContentEquals(expected, actual)
+        assertContentEquals(projectMapper.toListDomain(dtos), actual)
     }
 
     @Test
     fun `on saveProject maps and inserts project to dao`() = runTest {
         val project = getProject()
-        val entity = getProjectEntity()
-
-        coEvery { projectMapper.toEntity(project) } returns entity
-        coJustRun { projectDao.insert(entity) }
+        val expected = projectMapper.toEntity(project)
 
         sut.saveProject(project)
 
-        coVerify { projectMapper.toEntity(project) }
-        coVerify { projectDao.insert(entity) }
+        assertEquals(expected, projectDao.insertCalls.single())
     }
 
     @Test
     fun `on getCurrentProjectSimple returns project from dao`() = runTest {
-        val projectId = getRandomLong()
         val entity = getProjectEntity()
-        val expected = getProjectSimple()
-
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery { projectDao.getProjectById(projectId) } returns entity
-        coEvery { projectMapper.toProjectSimple(entity) } returns expected
+        taigaSessionStorage.currentProjectId = entity.id
+        projectDao.projectsById[entity.id] = entity
 
         val actual = sut.getCurrentProjectSimple()
 
-        assertEquals(expected, actual)
+        assertEquals(projectMapper.toProjectSimple(entity), actual)
     }
 
     @Test
     fun `on getPermissions returns permissions from current project`() = runTest {
-        val projectId = getRandomLong()
         val entity = getProjectEntity()
-        val permissions = persistentListOf(TaigaPermission.VIEW_PROJECT, TaigaPermission.ADD_US)
-        val projectSimple = getProjectSimple().copy(myPermissions = permissions)
-
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery { projectDao.getProjectById(projectId) } returns entity
-        coEvery { projectMapper.toProjectSimple(entity) } returns projectSimple
+        taigaSessionStorage.currentProjectId = entity.id
+        projectDao.projectsById[entity.id] = entity
 
         val actual = sut.getPermissions()
 
-        assertContentEquals(permissions, actual)
+        assertContentEquals(entity.myPermissions.toImmutableList(), actual)
     }
 
     @Test
     fun `on getTagsColors returns tags from api`() = runTest {
         val projectId = getRandomLong()
         val response = mapOf("tag1" to "#FF0000", "tag2" to "#00FF00")
-        val expected = listOf(getTag(), getTag())
-
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery { projectsApi.getProjectTagsColors(projectId) } returns response
-        coEvery { tagsMapper.toTags(response) } returns expected.toImmutableList()
+        taigaSessionStorage.currentProjectId = projectId
+        projectsApi.tagsColorsResult = response
 
         val actual = sut.getTagsColors()
 
-        assertContentEquals(expected, actual)
+        assertContentEquals(tagsMapper.toTags(response), actual)
     }
 
     @Test
     fun `on deleteTag calls api with correct parameters`() = runTest {
         val projectId = getRandomLong()
         val tagName = getRandomString()
-
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coJustRun { projectsApi.deleteTag(projectId, any()) }
+        taigaSessionStorage.currentProjectId = projectId
 
         sut.deleteTag(tagName)
 
-        coVerify {
-            projectsApi.deleteTag(
-                projectId = projectId,
-                request = DeleteTagRequestDTO(tag = tagName)
-            )
-        }
+        val call = projectsApi.deleteTagCalls.single()
+        assertEquals(projectId, call.first)
+        assertEquals(DeleteTagRequestDTO(tag = tagName), call.second)
     }
 
     @Test
@@ -166,18 +121,13 @@ class ProjectsRepositoryImplTest {
         val projectId = getRandomLong()
         val tagName = getRandomString()
         val color = "#FF0000"
-
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coJustRun { projectsApi.createTag(projectId, any()) }
+        taigaSessionStorage.currentProjectId = projectId
 
         sut.createTag(tagName, color)
 
-        coVerify {
-            projectsApi.createTag(
-                projectId = projectId,
-                request = CreateTagRequestDTO(color = color, tag = tagName)
-            )
-        }
+        val call = projectsApi.createTagCalls.single()
+        assertEquals(projectId, call.first)
+        assertEquals(CreateTagRequestDTO(color = color, tag = tagName), call.second)
     }
 
     @Test
@@ -186,18 +136,13 @@ class ProjectsRepositoryImplTest {
         val fromTagName = getRandomString()
         val toTagName = getRandomString()
         val color = "#00FF00"
-
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coJustRun { projectsApi.editTag(projectId, any()) }
+        taigaSessionStorage.currentProjectId = projectId
 
         sut.editTag(fromTagName, toTagName, color)
 
-        coVerify {
-            projectsApi.editTag(
-                projectId = projectId,
-                request = EditTagRequestDTO(fromTag = fromTagName, toTag = toTagName, color = color)
-            )
-        }
+        val call = projectsApi.editTagCalls.single()
+        assertEquals(projectId, call.first)
+        assertEquals(EditTagRequestDTO(fromTag = fromTagName, toTag = toTagName, color = color), call.second)
     }
 
     @Test
@@ -205,18 +150,13 @@ class ProjectsRepositoryImplTest {
         val projectId = getRandomLong()
         val fromTagName = getRandomString()
         val color = "#00FF00"
-
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coJustRun { projectsApi.editTag(projectId, any()) }
+        taigaSessionStorage.currentProjectId = projectId
 
         sut.editTag(fromTagName, null, color)
 
-        coVerify {
-            projectsApi.editTag(
-                projectId = projectId,
-                request = EditTagRequestDTO(fromTag = fromTagName, toTag = null, color = color)
-            )
-        }
+        val call = projectsApi.editTagCalls.single()
+        assertEquals(projectId, call.first)
+        assertEquals(EditTagRequestDTO(fromTag = fromTagName, toTag = null, color = color), call.second)
     }
 
     @Test
@@ -224,18 +164,13 @@ class ProjectsRepositoryImplTest {
         val projectId = getRandomLong()
         val fromTags = listOf(getRandomString(), getRandomString())
         val toTag = getRandomString()
-
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coJustRun { projectsApi.mixTags(projectId, any()) }
+        taigaSessionStorage.currentProjectId = projectId
 
         sut.mixTags(fromTags, toTag)
 
-        coVerify {
-            projectsApi.mixTags(
-                projectId = projectId,
-                request = MixTagsRequestDTO(fromTags = fromTags, toTag = toTag)
-            )
-        }
+        val call = projectsApi.mixTagsCalls.single()
+        assertEquals(projectId, call.first)
+        assertEquals(MixTagsRequestDTO(fromTags = fromTags, toTag = toTag), call.second)
     }
 
     @Test
@@ -243,16 +178,13 @@ class ProjectsRepositoryImplTest {
         val userId = getRandomLong()
         val projectId = getRandomLong()
         val dto = getProjectDTO().copy(id = projectId)
-        val entity = getProjectEntity().copy(id = projectId)
-
-        coEvery { taigaSessionStorage.requireUserId() } returns userId
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coEvery { projectsApi.getProjects(memberId = userId) } returns listOf(dto)
-        coEvery { projectMapper.toEntity(dto) } returns entity
-        coJustRun { projectDao.insert(entity) }
+        val expected = projectMapper.toEntity(dto)
+        taigaSessionStorage.currentUserId = userId
+        taigaSessionStorage.currentProjectId = projectId
+        projectsApi.getProjectsResult = listOf(dto)
 
         sut.fetchAndSaveProjectInfo()
 
-        coVerify { projectDao.insert(entity) }
+        assertEquals(expected, projectDao.insertCalls.single())
     }
 }

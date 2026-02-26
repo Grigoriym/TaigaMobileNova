@@ -16,8 +16,6 @@ import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import java.text.DecimalFormat
 import kotlin.test.BeforeTest
@@ -26,10 +24,8 @@ import kotlin.test.assertEquals
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class CustomFieldsUIMapperTest {
 
-    private val testDispatcher = UnconfinedTestDispatcher()
     private val decimalFormat = DecimalFormat("#.##")
 
     private lateinit var sut: CustomFieldsUIMapper
@@ -37,7 +33,6 @@ class CustomFieldsUIMapperTest {
     @BeforeTest
     fun setUp() {
         sut = CustomFieldsUIMapper(
-            ioDispatcher = testDispatcher,
             dfSimple = decimalFormat
         )
     }

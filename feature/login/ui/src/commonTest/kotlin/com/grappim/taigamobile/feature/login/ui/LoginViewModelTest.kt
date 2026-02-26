@@ -1,14 +1,17 @@
+@file:OptIn(ExperimentalCoroutinesApi::class)
+
 package com.grappim.taigamobile.feature.login.ui
 
 import app.cash.turbine.test
-import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
-import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.repo.FakeAuthRepository
+import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import org.junit.Rule
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -17,22 +20,25 @@ import kotlin.test.assertTrue
 
 internal class LoginViewModelTest {
 
-    @get:Rule
-    val coroutineRule = MainDispatcherRule()
+    private val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var sut: LoginViewModel
 
-    private val authRepository = mockk<AuthRepository>()
-    private val serverStorage = mockk<ServerStorage>()
-
+    private val authRepository = FakeAuthRepository()
     private val defaultServer = getRandomString()
+    private val serverStorage = FakeServerStorage(defaultServer)
+
     private val correctServer = "https://10.0.2.2:9000"
 
     @BeforeTest
     fun setup() {
-        every { serverStorage.server } returns defaultServer
-
+        mainDispatcherRule.setup()
         sut = LoginViewModel(authRepository, serverStorage)
+    }
+
+    @AfterTest
+    fun tearDown() {
+        mainDispatcherRule.tearDown()
     }
 
     @Test
@@ -43,8 +49,6 @@ internal class LoginViewModelTest {
         val username = getRandomString()
 
         val authData = AuthData(server, authType, password, username)
-
-        coEvery { authRepository.auth(authData) } returns Result.success(Unit)
 
         sut.state.value.onServerValueChange(server)
         sut.state.value.onAuthTypeChange(authType)
@@ -60,7 +64,7 @@ internal class LoginViewModelTest {
             assertTrue(awaitItem())
             assertFalse(sut.state.value.isLoading)
 
-            coVerify { authRepository.auth(authData) }
+            assertEquals(authData, authRepository.authCalledWith)
         }
     }
 
@@ -82,7 +86,7 @@ internal class LoginViewModelTest {
         assertFalse(sut.state.value.isLoginInputError)
         assertFalse(sut.state.value.isPasswordInputError)
 
-        coVerify(exactly = 0) { authRepository.auth(any()) }
+        assertEquals(0, authRepository.authCallCount)
     }
 
     @Test
@@ -102,7 +106,7 @@ internal class LoginViewModelTest {
         assertTrue(sut.state.value.isLoginInputError)
         assertFalse(sut.state.value.isPasswordInputError)
 
-        coVerify(exactly = 0) { authRepository.auth(any()) }
+        assertEquals(0, authRepository.authCallCount)
     }
 
     @Test
@@ -122,7 +126,7 @@ internal class LoginViewModelTest {
         assertFalse(sut.state.value.isLoginInputError)
         assertTrue(sut.state.value.isPasswordInputError)
 
-        coVerify(exactly = 0) { authRepository.auth(any()) }
+        assertEquals(0, authRepository.authCallCount)
     }
 
     @Test
@@ -145,7 +149,7 @@ internal class LoginViewModelTest {
 
         assertTrue(sut.state.value.isAlertVisible)
 
-        coVerify(exactly = 0) { authRepository.auth(any()) }
+        assertEquals(0, authRepository.authCallCount)
     }
 
     @Test

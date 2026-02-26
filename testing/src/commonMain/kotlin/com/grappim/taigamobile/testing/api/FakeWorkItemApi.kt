@@ -95,8 +95,11 @@ class FakeWorkItemApi : WorkItemApi {
     override suspend fun watchWorkItem(taskPath: String, workItemId: Long): Unit =
         error("not used in this test")
 
-    override suspend fun deleteWorkItem(taskPath: String, workItemId: Long): Unit =
-        error("not used in this test")
+    val deleteWorkItemCalls = mutableListOf<Pair<String, Long>>()
+
+    override suspend fun deleteWorkItem(taskPath: String, workItemId: Long) {
+        deleteWorkItemCalls += taskPath to workItemId
+    }
 
     override suspend fun promoteToUserStory(
         taskPath: String,
