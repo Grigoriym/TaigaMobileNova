@@ -28,7 +28,7 @@ class WorkItemBlockDelegateImplTest {
     }
 
     @Test
-    fun `on setIsBlockDialogVisible, should update field`() {
+    fun `on setIsBlockDialogVisible should update field`() {
         assertFalse(sut.blockState.value.isBlockDialogVisible)
 
         sut.blockState.value.setIsBlockDialogVisible(true)

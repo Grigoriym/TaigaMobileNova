@@ -6,9 +6,6 @@ import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
-import com.grappim.taigamobile.testing.models.getProjectExtraInfo
-import com.grappim.taigamobile.testing.models.getStatus
-import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
@@ -70,22 +67,19 @@ class WorkItemMapperTest {
     fun `toDomain should map basic fields correctly`() = runTest {
         val dto = getWorkItemResponseDTO()
         val taskType = CommonTaskType.UserStory
-        val status = getStatus()
-        val user = getUser()
-        val projectExtraInfo = getProjectExtraInfo()
 
         val result = sut.toDomain(dto, taskType)
 
         assertEquals(dto.id, result.id)
         assertEquals(taskType, result.taskType)
         assertEquals(dto.createdDate, result.createdDate)
-        assertEquals(status, result.status)
+        assertEquals(statusesMapper.getStatus(dto), result.status)
         assertEquals(dto.ref, result.ref)
         assertEquals(dto.subject, result.title)
         assertEquals(dto.isBlocked, result.isBlocked)
         assertEquals(dto.isClosed, result.isClosed)
-        assertEquals(user, result.assignee)
-        assertEquals(projectExtraInfo, result.project)
+        assertEquals(userMapper.toUser(dto.assignedToExtraInfo!!), result.assignee)
+        assertEquals(projectMapper.toProjectExtraInfo(dto.projectDTOExtraInfo), result.project)
     }
 
     @Test

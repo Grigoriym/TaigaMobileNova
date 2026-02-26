@@ -17,7 +17,44 @@ data class GetWorkItemsApiCall(
     val assignedId: Long?,
     val isClosed: Boolean?,
     val watcherId: Long?,
+    val isDashboard: Boolean? = null,
+    val isBlocked: Boolean? = null,
+    val modifiedDateGte: String? = null,
+    val finishDateGte: String? = null,
+    val sprint: Long? = null,
+    val pageSize: Int? = null,
 )
+
+data class PatchWorkItemApiCall(val taskPath: String, val id: Long, val payload: JsonObject)
+
+data class PatchCustomAttributesValuesApiCall(
+    val taskPath: String,
+    val taskId: Long,
+    val payload: JsonObject,
+)
+
+data class UploadAttachmentApiCall(
+    val taskPath: String,
+    val fileName: String,
+    val fileBytes: ByteArray,
+    val projectId: Long,
+    val objectId: Long,
+)
+
+data class PatchWikiPageApiCall(val pageId: Long, val payload: JsonObject)
+
+data class CreateWorkItemApiCall(
+    val taskPath: String,
+    val createRequest: CreateWorkItemRequestDTO,
+)
+
+data class PromoteToUserStoryApiCall(
+    val taskPath: String,
+    val workItemId: Long,
+    val body: PromoteToUserStoryRequestDTO,
+)
+
+data class GetWorkItemByRefApiCall(val taskPath: String, val project: Long, val ref: Long)
 
 class FakeWorkItemApi : WorkItemApi {
 
@@ -25,6 +62,39 @@ class FakeWorkItemApi : WorkItemApi {
     var workItemsResponse: List<WorkItemResponseDTO> = emptyList()
     val getWorkItemsCalls = mutableListOf<GetWorkItemsApiCall>()
     var getWorkItemsLambda: ((taskPath: String, sprint: Long?, userStory: Any?) -> List<WorkItemResponseDTO>)? = null
+
+    var patchWorkItemResponse: WorkItemResponseDTO? = null
+    val patchWorkItemCalls = mutableListOf<PatchWorkItemApiCall>()
+
+    var patchCustomAttributesValuesResponse: CustomAttributesValuesResponseDTO? = null
+    val patchCustomAttributesValuesCalls = mutableListOf<PatchCustomAttributesValuesApiCall>()
+
+    var uploadAttachmentResponse: AttachmentDTO? = null
+    val uploadAttachmentCalls = mutableListOf<UploadAttachmentApiCall>()
+
+    val deleteAttachmentCalls = mutableListOf<Pair<String, Long>>()
+
+    val watchWorkItemCalls = mutableListOf<Pair<String, Long>>()
+    val unwatchWorkItemCalls = mutableListOf<Pair<String, Long>>()
+
+    var customAttributesResponse: List<CustomAttributeResponseDTO> = emptyList()
+    var customAttributesValuesResponse: CustomAttributesValuesResponseDTO? = null
+
+    var getAttachmentsResponse: List<AttachmentDTO> = emptyList()
+
+    var patchWikiPageResponse: WikiPageDTO? = null
+    val patchWikiPageCalls = mutableListOf<PatchWikiPageApiCall>()
+
+    var createWorkItemResponse: WorkItemResponseDTO? = null
+    val createWorkItemCalls = mutableListOf<CreateWorkItemApiCall>()
+
+    var promoteToUserStoryResponse: List<Long> = emptyList()
+    val promoteToUserStoryCalls = mutableListOf<PromoteToUserStoryApiCall>()
+
+    var workItemByRefResponse: WorkItemResponseDTO? = null
+    val workItemByRefCalls = mutableListOf<GetWorkItemByRefApiCall>()
+
+    val deleteWorkItemCalls = mutableListOf<Pair<String, Long>>()
 
     override suspend fun getWorkItemById(taskPath: String, id: Long): WorkItemResponseDTO =
         workItemByIdResponse ?: error("workItemByIdResponse not set")
@@ -50,6 +120,12 @@ class FakeWorkItemApi : WorkItemApi {
             assignedId = assignedId,
             isClosed = isClosed,
             watcherId = watcherId,
+            isDashboard = isDashboard,
+            isBlocked = isBlocked,
+            modifiedDateGte = modifiedDateGte,
+            finishDateGte = finishDateGte,
+            sprint = sprint,
+            pageSize = pageSize,
         )
         return getWorkItemsLambda?.invoke(taskPath, sprint, userStory) ?: workItemsResponse
     }
@@ -75,27 +151,36 @@ class FakeWorkItemApi : WorkItemApi {
     override suspend fun createWorkItem(
         taskPath: String,
         createRequest: CreateWorkItemRequestDTO
-    ): WorkItemResponseDTO = error("not used in this test")
+    ): WorkItemResponseDTO {
+        createWorkItemCalls += CreateWorkItemApiCall(taskPath, createRequest)
+        return createWorkItemResponse ?: error("createWorkItemResponse not set")
+    }
 
     override suspend fun getWorkItemByRef(
         taskPath: String,
         project: Long,
         ref: Long
-    ): WorkItemResponseDTO = error("not used in this test")
+    ): WorkItemResponseDTO {
+        workItemByRefCalls += GetWorkItemByRefApiCall(taskPath, project, ref)
+        return workItemByRefResponse ?: error("workItemByRefResponse not set")
+    }
 
     override suspend fun patchWorkItem(
         taskPath: String,
         id: Long,
         payload: JsonObject
-    ): WorkItemResponseDTO = error("not used in this test")
+    ): WorkItemResponseDTO {
+        patchWorkItemCalls += PatchWorkItemApiCall(taskPath, id, payload)
+        return patchWorkItemResponse ?: error("patchWorkItemResponse not set")
+    }
 
-    override suspend fun unwatchWorkItem(taskPath: String, workItemId: Long): Unit =
-        error("not used in this test")
+    override suspend fun unwatchWorkItem(taskPath: String, workItemId: Long) {
+        unwatchWorkItemCalls += taskPath to workItemId
+    }
 
-    override suspend fun watchWorkItem(taskPath: String, workItemId: Long): Unit =
-        error("not used in this test")
-
-    val deleteWorkItemCalls = mutableListOf<Pair<String, Long>>()
+    override suspend fun watchWorkItem(taskPath: String, workItemId: Long) {
+        watchWorkItemCalls += taskPath to workItemId
+    }
 
     override suspend fun deleteWorkItem(taskPath: String, workItemId: Long) {
         deleteWorkItemCalls += taskPath to workItemId
@@ -105,16 +190,20 @@ class FakeWorkItemApi : WorkItemApi {
         taskPath: String,
         workItemId: Long,
         body: PromoteToUserStoryRequestDTO
-    ): List<Long> = error("not used in this test")
+    ): List<Long> {
+        promoteToUserStoryCalls += PromoteToUserStoryApiCall(taskPath, workItemId, body)
+        return promoteToUserStoryResponse
+    }
 
     override suspend fun getAttachments(
         taskPath: String,
         objectId: Long,
         projectId: Long
-    ): List<AttachmentDTO> = error("not used in this test")
+    ): List<AttachmentDTO> = getAttachmentsResponse
 
-    override suspend fun deleteAttachment(taskPath: String, attachmentId: Long): Unit =
-        error("not used in this test")
+    override suspend fun deleteAttachment(taskPath: String, attachmentId: Long) {
+        deleteAttachmentCalls += taskPath to attachmentId
+    }
 
     override suspend fun uploadCommonTaskAttachment(
         taskPath: String,
@@ -122,24 +211,33 @@ class FakeWorkItemApi : WorkItemApi {
         fileBytes: ByteArray,
         projectId: Long,
         objectId: Long
-    ): AttachmentDTO = error("not used in this test")
+    ): AttachmentDTO {
+        uploadAttachmentCalls += UploadAttachmentApiCall(taskPath, fileName, fileBytes, projectId, objectId)
+        return uploadAttachmentResponse ?: error("uploadAttachmentResponse not set")
+    }
 
     override suspend fun getCustomAttributes(
         taskPath: String,
         projectId: Long
-    ): List<CustomAttributeResponseDTO> = error("not used in this test")
+    ): List<CustomAttributeResponseDTO> = customAttributesResponse
 
     override suspend fun getCustomAttributesValues(
         taskPath: String,
         id: Long
-    ): CustomAttributesValuesResponseDTO = error("not used in this test")
+    ): CustomAttributesValuesResponseDTO =
+        customAttributesValuesResponse ?: error("customAttributesValuesResponse not set")
 
-    override suspend fun patchWikiPage(pageId: Long, payload: JsonObject): WikiPageDTO =
-        error("not used in this test")
+    override suspend fun patchWikiPage(pageId: Long, payload: JsonObject): WikiPageDTO {
+        patchWikiPageCalls += PatchWikiPageApiCall(pageId, payload)
+        return patchWikiPageResponse ?: error("patchWikiPageResponse not set")
+    }
 
     override suspend fun patchCustomAttributesValues(
         taskPath: String,
         taskId: Long,
         payload: JsonObject
-    ): CustomAttributesValuesResponseDTO = error("not used in this test")
+    ): CustomAttributesValuesResponseDTO {
+        patchCustomAttributesValuesCalls += PatchCustomAttributesValuesApiCall(taskPath, taskId, payload)
+        return patchCustomAttributesValuesResponse ?: error("patchCustomAttributesValuesResponse not set")
+    }
 }

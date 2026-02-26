@@ -11,19 +11,9 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import org.koin.core.annotation.Single
 
-@Single
-class UserStoriesApi(private val httpClient: HttpClient) {
-
-    suspend fun createUserStory(createUserStoryRequest: CreateUserStoryRequest): WorkItemResponseDTO =
-        httpClient.post("userstories") {
-            setBody(createUserStoryRequest)
-        }.body()
-
-    suspend fun bulkUpdateKanbanOrder(request: BulkUpdateKanbanOrderRequest): List<BulkUpdateKanbanOrderResponseItem> =
-        httpClient.post("userstories/bulk_update_kanban_order") {
-            setBody(request)
-        }.body()
-
+interface UserStoriesApi {
+    suspend fun createUserStory(createUserStoryRequest: CreateUserStoryRequest): WorkItemResponseDTO
+    suspend fun bulkUpdateKanbanOrder(request: BulkUpdateKanbanOrderRequest): List<BulkUpdateKanbanOrderResponseItem>
     suspend fun getUserStories(
         project: Long? = null,
         sprint: Any? = null,
@@ -42,6 +32,41 @@ class UserStoriesApi(private val httpClient: HttpClient) {
         roles: String? = null,
         statuses: String? = null,
         tags: String? = null
+    ): List<WorkItemResponseDTO>
+}
+
+@Single(binds = [UserStoriesApi::class])
+class UserStoriesApiImpl(private val httpClient: HttpClient) : UserStoriesApi {
+
+    override suspend fun createUserStory(createUserStoryRequest: CreateUserStoryRequest): WorkItemResponseDTO =
+        httpClient.post("userstories") {
+            setBody(createUserStoryRequest)
+        }.body()
+
+    override suspend fun bulkUpdateKanbanOrder(
+        request: BulkUpdateKanbanOrderRequest
+    ): List<BulkUpdateKanbanOrderResponseItem> = httpClient.post("userstories/bulk_update_kanban_order") {
+        setBody(request)
+    }.body()
+
+    override suspend fun getUserStories(
+        project: Long?,
+        sprint: Any?,
+        status: Long?,
+        epic: Long?,
+        page: Int?,
+        assignedId: Long?,
+        isClosed: Boolean?,
+        watcherId: Long?,
+        isDashboard: Boolean?,
+        query: String?,
+        pageSize: Int,
+        assignedIds: String?,
+        epics: String?,
+        ownerIds: String?,
+        roles: String?,
+        statuses: String?,
+        tags: String?
     ): List<WorkItemResponseDTO> = httpClient.get("userstories") {
         url {
             if (project != null) parameters.append("project", project.toString())

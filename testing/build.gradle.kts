@@ -60,6 +60,8 @@ kotlin {
 
             api(projects.feature.userstories.dto)
             api(projects.feature.userstories.domain)
+            api(projects.feature.userstories.data)
+            api(projects.feature.userstories.mapper)
 
             api(projects.feature.epics.dto)
             api(projects.feature.epics.domain)

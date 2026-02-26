@@ -2,25 +2,12 @@ package com.grappim.taigamobile.feature.workitem.data
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.storage.TaigaSessionStorage
-import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
-import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
-import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
-import com.grappim.taigamobile.feature.workitem.domain.PatchedCustomAttributes
-import com.grappim.taigamobile.feature.workitem.domain.PatchedData
-import com.grappim.taigamobile.feature.workitem.domain.UpdateWorkItem
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathPlural
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemPathSingular
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomField
-import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFieldType
-import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
-import com.grappim.taigamobile.feature.workitem.dto.CreateWorkItemRequestDTO
-import com.grappim.taigamobile.feature.workitem.dto.PromoteToUserStoryRequestDTO
+import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
 import com.grappim.taigamobile.feature.workitem.dto.customattribute.CustomAttributeResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.customattribute.CustomAttributesValuesResponseDTO
 import com.grappim.taigamobile.feature.workitem.dto.customfield.CustomFieldTypeDTO
@@ -37,26 +24,19 @@ import com.grappim.taigamobile.testing.dao.FakeWorkItemDao
 import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.models.getAttachmentDTO
 import com.grappim.taigamobile.testing.models.getUser
-import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
-import io.mockk.coEvery
-import io.mockk.coJustRun
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.slot
+import com.grappim.taigamobile.testing.utils.nowLocalDateTime
+import io.ktor.utils.io.core.toByteArray
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import okhttp3.MultipartBody
-import java.time.LocalDateTime
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -68,109 +48,72 @@ class WorkItemRepositoryImplTest {
 
     private val projectId = getRandomLong()
 
-    private val workItemApi: WorkItemApi = FakeWorkItemApi()
-    private val patchedDataMapper: PatchedDataMapper = PatchedDataMapper(DueDateStatusMapper())
-    private val attachmentMapper: AttachmentMapper = AttachmentMapper()
-    private val workItemMapper: WorkItemMapper = WorkItemMapper(
+    private val fakeWorkItemApi = FakeWorkItemApi()
+    private val patchedDataMapper = PatchedDataMapper(DueDateStatusMapper())
+    private val attachmentMapper = AttachmentMapper()
+    private val workItemMapper = WorkItemMapper(
         statusesMapper = StatusesMapper(),
         userMapper = UserMapper(),
         tagsMapper = TagsMapper(),
         projectMapper = ProjectMapper()
     )
-    private val workItemEntityMapper: WorkItemEntityMapper = WorkItemEntityMapper(Json)
-    private val usersRepository: UsersRepository = FakeUsersRepository()
-    private val customFieldsMapper: CustomFieldsMapper = CustomFieldsMapper(FakeDateTimeUtils())
-    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage(
-        currentProjectId = projectId
-    )
-    private val jsonObjectMapper: JsonObjectMapper = JsonObjectMapper()
-    private val workItemDao: WorkItemDao = FakeWorkItemDao()
-    private val networkMonitor: NetworkMonitor = FakeNetworkMonitor()
+    private val workItemEntityMapper = WorkItemEntityMapper(Json)
+    private val fakeUsersRepository = FakeUsersRepository()
+    private val customFieldsMapper = CustomFieldsMapper(FakeDateTimeUtils())
+    private val fakeTaigaSessionStorage = FakeTaigaSessionStorage(currentProjectId = projectId)
+    private val jsonObjectMapper = JsonObjectMapper()
+    private val fakeWorkItemDao = FakeWorkItemDao()
+    private val fakeNetworkMonitor = FakeNetworkMonitor(initialOnline = true)
 
     private lateinit var sut: WorkItemRepository
-
-
 
     @BeforeTest
     fun setup() {
         sut = WorkItemRepositoryImpl(
-            workItemApi = workItemApi,
+            workItemApi = fakeWorkItemApi,
             patchedDataMapper = patchedDataMapper,
             attachmentMapper = attachmentMapper,
             workItemMapper = workItemMapper,
             workItemEntityMapper = workItemEntityMapper,
-            usersRepository = usersRepository,
+            usersRepository = fakeUsersRepository,
             customFieldsMapper = customFieldsMapper,
-            taigaSessionStorage = taigaSessionStorage,
+            taigaSessionStorage = fakeTaigaSessionStorage,
             jsonObjectMapper = jsonObjectMapper,
-            workItemDao = workItemDao,
-            networkMonitor = networkMonitor
+            workItemDao = fakeWorkItemDao,
+            networkMonitor = fakeNetworkMonitor
         )
     }
 
     @Test
     fun `getWorkItems should return mapped work items for user stories`() = runTest {
         val taskType = CommonTaskType.UserStory
-        val dtos = listOf(getWorkItemResponseDTO(), getWorkItemResponseDTO())
-        val expectedItems = persistentListOf(
-            getWorkItem(taskType = taskType),
-            getWorkItem(taskType = taskType)
-        )
-
-        coEvery {
-            workItemApi.getWorkItems(
-                taskPath = taskPath,
-                project = projectId,
-                assignedId = null,
-                isClosed = null,
-                watcherId = null,
-                isDashboard = null,
-                isBlocked = null,
-                modifiedDateGte = null,
-                finishDateGte = null,
-                sprint = null,
-                pageSize = null
-            )
-        } returns dtos
-        coEvery { workItemMapper.toDomainList(dtos, taskType) } returns expectedItems
+        val dto1 = getWorkItemResponseDTO()
+        val dto2 = getWorkItemResponseDTO()
+        fakeWorkItemApi.workItemsResponse = listOf(dto1, dto2)
 
         val result = sut.getWorkItems(commonTaskType = taskType, projectId = projectId)
 
-        assertEquals(expectedItems, result)
-        coVerify { workItemApi.getWorkItems(taskPath = taskPath, project = projectId) }
+        assertEquals(2, result.size)
+        assertEquals(dto1.id, result[0].id)
+        assertEquals(dto2.id, result[1].id)
+        assertEquals(1, fakeWorkItemApi.getWorkItemsCalls.size)
+        val call = fakeWorkItemApi.getWorkItemsCalls.last()
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(projectId, call.project)
     }
 
     @Test
     fun `getWorkItems should pass all filter parameters`() = runTest {
         val taskType = CommonTaskType.Issue
-        val taskPath = WorkItemPathPlural(taskType)
         val assignedId = getRandomLong()
         val watcherId = getRandomLong()
         val milestoneId = getRandomLong()
         val pageSize = 50
         val modifiedDateGte = "2024-01-01"
         val finishDateGte = "2024-12-31"
-        val dtos = listOf(getWorkItemResponseDTO())
-        val expectedItems = persistentListOf(getWorkItem(taskType = taskType))
+        fakeWorkItemApi.workItemsResponse = listOf(getWorkItemResponseDTO())
 
-        coEvery {
-            workItemApi.getWorkItems(
-                taskPath = taskPath,
-                project = projectId,
-                assignedId = assignedId,
-                isClosed = true,
-                watcherId = watcherId,
-                isDashboard = true,
-                isBlocked = false,
-                modifiedDateGte = modifiedDateGte,
-                finishDateGte = finishDateGte,
-                sprint = milestoneId,
-                pageSize = pageSize
-            )
-        } returns dtos
-        coEvery { workItemMapper.toDomainList(dtos, taskType) } returns expectedItems
-
-        val result = sut.getWorkItems(
+        sut.getWorkItems(
             commonTaskType = taskType,
             projectId = projectId,
             assignedId = assignedId,
@@ -184,7 +127,17 @@ class WorkItemRepositoryImplTest {
             pageSize = pageSize
         )
 
-        assertEquals(expectedItems, result)
+        val call = fakeWorkItemApi.getWorkItemsCalls.last()
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(assignedId, call.assignedId)
+        assertEquals(true, call.isClosed)
+        assertEquals(watcherId, call.watcherId)
+        assertEquals(true, call.isDashboard)
+        assertEquals(false, call.isBlocked)
+        assertEquals(modifiedDateGte, call.modifiedDateGte)
+        assertEquals(finishDateGte, call.finishDateGte)
+        assertEquals(milestoneId, call.sprint)
+        assertEquals(pageSize, call.pageSize)
     }
 
     @Test
@@ -192,20 +145,9 @@ class WorkItemRepositoryImplTest {
         val version = getRandomLong()
         val workItemId = getRandomLong()
         val taskType = CommonTaskType.Task
-        val taskPath = WorkItemPathPlural(taskType)
         val payload = persistentMapOf<String, Any?>("subject" to "New Title")
         val responseDto = getWorkItemResponseDTO()
-        val expectedPatchedData = PatchedData(newVersion = version + 1, dueDateStatus = null)
-
-        val jsonSlot = slot<JsonObject>()
-        coEvery {
-            workItemApi.patchWorkItem(
-                taskPath = taskPath,
-                id = workItemId,
-                payload = capture(jsonSlot)
-            )
-        } returns responseDto
-        every { patchedDataMapper.toDomain(responseDto) } returns expectedPatchedData
+        fakeWorkItemApi.patchWorkItemResponse = responseDto
 
         val result = sut.patchData(
             version = version,
@@ -214,9 +156,12 @@ class WorkItemRepositoryImplTest {
             commonTaskType = taskType
         )
 
-        assertEquals(expectedPatchedData, result)
-        assertTrue(jsonSlot.captured.containsKey("version"))
-        assertTrue(jsonSlot.captured.containsKey("subject"))
+        assertEquals(responseDto.version, result.newVersion)
+        val call = fakeWorkItemApi.patchWorkItemCalls.last()
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(workItemId, call.id)
+        assertTrue(call.payload.containsKey("version"))
+        assertTrue(call.payload.containsKey("subject"))
     }
 
     @Test
@@ -224,23 +169,12 @@ class WorkItemRepositoryImplTest {
         val version = getRandomLong()
         val workItemId = getRandomLong()
         val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathPlural(taskType)
-        val payload = persistentMapOf<String, Any?>("attributes_values" to mapOf("1" to "value"))
         val responseDto = CustomAttributesValuesResponseDTO(
             attributesValues = emptyMap(),
             version = version + 1
         )
-        val expectedResult = PatchedCustomAttributes(version = version + 1)
-
-        val jsonSlot = slot<JsonObject>()
-        coEvery {
-            workItemApi.patchCustomAttributesValues(
-                taskPath = taskPath,
-                taskId = workItemId,
-                payload = capture(jsonSlot)
-            )
-        } returns responseDto
-        every { patchedDataMapper.toDomainCustomAttrs(responseDto) } returns expectedResult
+        fakeWorkItemApi.patchCustomAttributesValuesResponse = responseDto
+        val payload = persistentMapOf<String, Any?>("attributes_values" to mapOf("1" to "value"))
 
         val result = sut.patchCustomAttributes(
             customAttributesVersion = version,
@@ -249,8 +183,11 @@ class WorkItemRepositoryImplTest {
             commonTaskType = taskType
         )
 
-        assertEquals(expectedResult, result)
-        assertTrue(jsonSlot.captured.containsKey("version"))
+        assertEquals(version + 1, result.version)
+        val call = fakeWorkItemApi.patchCustomAttributesValuesCalls.last()
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(workItemId, call.taskId)
+        assertTrue(call.payload.containsKey("version"))
     }
 
     @Test
@@ -260,17 +197,7 @@ class WorkItemRepositoryImplTest {
         val fileBytes = "test content".toByteArray()
         val taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
         val attachmentDto = getAttachmentDTO()
-        val expectedAttachment = getAttachment()
-
-        coEvery {
-            workItemApi.uploadCommonTaskAttachment(
-                taskPath = "issues",
-                file = any(),
-                project = any(),
-                objectId = any()
-            )
-        } returns attachmentDto
-        every { attachmentMapper.toDomain(attachmentDto) } returns expectedAttachment
+        fakeWorkItemApi.uploadAttachmentResponse = attachmentDto
 
         val result = sut.addAttachment(
             workItemId = workItemId,
@@ -280,15 +207,13 @@ class WorkItemRepositoryImplTest {
             taskIdentifier = taskIdentifier
         )
 
-        assertEquals(expectedAttachment, result)
-        coVerify {
-            workItemApi.uploadCommonTaskAttachment(
-                taskPath = "issues",
-                file = any<MultipartBody.Part>(),
-                project = any<MultipartBody.Part>(),
-                objectId = any<MultipartBody.Part>()
-            )
-        }
+        assertEquals(attachmentDto.id, result.id)
+        assertEquals(attachmentDto.name, result.name)
+        val call = fakeWorkItemApi.uploadAttachmentCalls.last()
+        assertEquals("issues", call.taskPath)
+        assertEquals(fileName, call.fileName)
+        assertEquals(projectId, call.projectId)
+        assertEquals(workItemId, call.objectId)
     }
 
     @Test
@@ -296,65 +221,50 @@ class WorkItemRepositoryImplTest {
         val attachment = getAttachment()
         val taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Task)
 
-        coJustRun {
-            workItemApi.deleteAttachment(
-                taskPath = "tasks",
-                attachmentId = attachment.id
-            )
-        }
-
         sut.deleteAttachment(attachment, taskIdentifier)
 
-        coVerify {
-            workItemApi.deleteAttachment(
-                taskPath = "tasks",
-                attachmentId = attachment.id
-            )
-        }
+        assertEquals(1, fakeWorkItemApi.deleteAttachmentCalls.size)
+        val call = fakeWorkItemApi.deleteAttachmentCalls.last()
+        assertEquals("tasks", call.first)
+        assertEquals(attachment.id, call.second)
     }
 
     @Test
     fun `watchWorkItem should call api watch endpoint`() = runTest {
         val workItemId = getRandomLong()
         val taskType = CommonTaskType.Epic
-        val taskPath = WorkItemPathPlural(taskType)
-
-        coJustRun { workItemApi.watchWorkItem(taskPath = taskPath, workItemId = workItemId) }
 
         sut.watchWorkItem(workItemId, taskType)
 
-        coVerify { workItemApi.watchWorkItem(taskPath = taskPath, workItemId = workItemId) }
+        assertEquals(1, fakeWorkItemApi.watchWorkItemCalls.size)
+        val call = fakeWorkItemApi.watchWorkItemCalls.last()
+        assertEquals(taskType.getPluralPath(), call.first)
+        assertEquals(workItemId, call.second)
     }
 
     @Test
     fun `unwatchWorkItem should call api unwatch endpoint`() = runTest {
         val workItemId = getRandomLong()
         val taskType = CommonTaskType.Issue
-        val taskPath = WorkItemPathPlural(taskType)
-
-        coJustRun { workItemApi.unwatchWorkItem(taskPath = taskPath, workItemId = workItemId) }
 
         sut.unwatchWorkItem(workItemId, taskType)
 
-        coVerify { workItemApi.unwatchWorkItem(taskPath = taskPath, workItemId = workItemId) }
+        assertEquals(1, fakeWorkItemApi.unwatchWorkItemCalls.size)
+        val call = fakeWorkItemApi.unwatchWorkItemCalls.last()
+        assertEquals(taskType.getPluralPath(), call.first)
+        assertEquals(workItemId, call.second)
     }
 
     @Test
     fun `getUpdateWorkItem should return mapped update work item`() = runTest {
         val workItemId = getRandomLong()
         val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathPlural(taskType)
         val dto = getWorkItemResponseDTO()
-        val expectedUpdateWorkItem = UpdateWorkItem(
-            watcherUserIds = persistentListOf(1L, 2L, 3L)
-        )
-
-        coEvery { workItemApi.getWorkItemById(taskPath = taskPath, id = workItemId) } returns dto
-        coEvery { workItemMapper.toUpdateDomain(dto) } returns expectedUpdateWorkItem
+        fakeWorkItemApi.workItemByIdResponse = dto
 
         val result = sut.getUpdateWorkItem(workItemId, taskType)
 
-        assertEquals(expectedUpdateWorkItem, result)
+        assertEquals(dto.watchers?.toPersistentList() ?: persistentListOf(), result.watcherUserIds)
     }
 
     @Test
@@ -365,18 +275,9 @@ class WorkItemRepositoryImplTest {
         val newWatcherIds = persistentListOf(1L, 2L)
         val users = persistentListOf(getUser(), getUser())
         val patchedDto = getWorkItemResponseDTO()
-        val patchedData = PatchedData(newVersion = version + 1, dueDateStatus = null)
-
-        coEvery {
-            workItemApi.patchWorkItem(
-                taskPath = WorkItemPathPlural(taskType),
-                id = workItemId,
-                payload = any()
-            )
-        } returns patchedDto
-        every { patchedDataMapper.toDomain(patchedDto) } returns patchedData
-        coEvery { usersRepository.getUsersList(newWatcherIds.toList()) } returns users
-        coEvery { usersRepository.isAnyAssignedToMe(users) } returns true
+        fakeWorkItemApi.patchWorkItemResponse = patchedDto
+        fakeUsersRepository.getUsersListResult = users
+        fakeUsersRepository.isAnyAssignedToMeResult = true
 
         val result = sut.updateWatchersData(
             version = version,
@@ -385,7 +286,7 @@ class WorkItemRepositoryImplTest {
             commonTaskType = taskType
         )
 
-        assertEquals(patchedData.newVersion, result.version)
+        assertEquals(patchedDto.version, result.version)
         assertTrue(result.isWatchedByMe)
         assertEquals(users, result.watchers)
     }
@@ -397,16 +298,7 @@ class WorkItemRepositoryImplTest {
         val taskType = CommonTaskType.Issue
         val newWatcherIds = persistentListOf<Long>()
         val patchedDto = getWorkItemResponseDTO()
-        val patchedData = PatchedData(newVersion = version + 1, dueDateStatus = null)
-
-        coEvery {
-            workItemApi.patchWorkItem(
-                taskPath = WorkItemPathPlural(taskType),
-                id = workItemId,
-                payload = any()
-            )
-        } returns patchedDto
-        every { patchedDataMapper.toDomain(patchedDto) } returns patchedData
+        fakeWorkItemApi.patchWorkItemResponse = patchedDto
 
         val result = sut.updateWatchersData(
             version = version,
@@ -415,7 +307,7 @@ class WorkItemRepositoryImplTest {
             commonTaskType = taskType
         )
 
-        assertEquals(patchedData.newVersion, result.version)
+        assertEquals(patchedDto.version, result.version)
         assertFalse(result.isWatchedByMe)
         assertTrue(result.watchers.isEmpty())
     }
@@ -438,39 +330,14 @@ class WorkItemRepositoryImplTest {
             attributesValues = emptyMap(),
             version = 1L
         )
-        val expectedCustomFields = CustomFields(
-            fields = persistentListOf(
-                CustomField(
-                    id = 1L,
-                    type = CustomFieldType.Text,
-                    name = "Field1",
-                    description = "Description",
-                    value = null,
-                    options = null
-                )
-            ),
-            version = 1L
-        )
-
-        coEvery {
-            workItemApi.getCustomAttributes(
-                taskPath = WorkItemPathSingular(taskType),
-                projectId = projectId
-            )
-        } returns attributes
-        coEvery {
-            workItemApi.getCustomAttributesValues(
-                id = workItemId,
-                taskPath = WorkItemPathPlural(taskType)
-            )
-        } returns values
-        every { customFieldsMapper.toDomain(attributes, values) } returns expectedCustomFields
+        fakeWorkItemApi.customAttributesResponse = attributes
+        fakeWorkItemApi.customAttributesValuesResponse = values
 
         val result = sut.getCustomFields(workItemId, taskType)
 
-        assertEquals(expectedCustomFields, result)
-        coVerify { workItemApi.getCustomAttributes(WorkItemPathSingular(taskType), projectId) }
-        coVerify { workItemApi.getCustomAttributesValues(WorkItemPathPlural(taskType), workItemId) }
+        assertEquals(1, result.fields.size)
+        assertEquals("Field1", result.fields.first().name)
+        assertEquals(1L, result.version)
     }
 
     @Test
@@ -478,54 +345,39 @@ class WorkItemRepositoryImplTest {
         val workItemId = getRandomLong()
         val taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Epic)
         val attachmentDtos = listOf(getAttachmentDTO(), getAttachmentDTO())
-        val expectedAttachments = persistentListOf(getAttachment(), getAttachment())
-
-        coEvery {
-            workItemApi.getAttachments(
-                taskPath = "epics",
-                objectId = workItemId,
-                projectId = projectId
-            )
-        } returns attachmentDtos
-        every { attachmentMapper.toDomain(attachmentDtos) } returns expectedAttachments
+        fakeWorkItemApi.getAttachmentsResponse = attachmentDtos
 
         val result = sut.getWorkItemAttachments(workItemId, taskIdentifier)
 
-        assertEquals(expectedAttachments, result)
+        assertEquals(2, result.size)
+        assertEquals(attachmentDtos[0].id, result[0].id)
+        assertEquals(attachmentDtos[1].id, result[1].id)
     }
 
     @Test
     fun `getWorkItemAttachments for wiki should use wiki path`() = runTest {
         val workItemId = getRandomLong()
         val taskIdentifier = TaskIdentifier.Wiki
-        val attachmentDtos = listOf(getAttachmentDTO())
-        val expectedAttachments = persistentListOf(getAttachment())
-
-        coEvery {
-            workItemApi.getAttachments(
-                taskPath = "wiki",
-                objectId = workItemId,
-                projectId = projectId
-            )
-        } returns attachmentDtos
-        every { attachmentMapper.toDomain(attachmentDtos) } returns expectedAttachments
+        val attachmentDto = getAttachmentDTO()
+        fakeWorkItemApi.getAttachmentsResponse = listOf(attachmentDto)
 
         val result = sut.getWorkItemAttachments(workItemId, taskIdentifier)
 
-        assertEquals(expectedAttachments, result)
+        assertEquals(1, result.size)
+        assertEquals(attachmentDto.id, result.first().id)
     }
 
     @Test
     fun `deleteWorkItem should call api delete endpoint`() = runTest {
         val workItemId = getRandomLong()
         val taskType = CommonTaskType.Task
-        val taskPath = WorkItemPathPlural(taskType)
-
-        coJustRun { workItemApi.deleteWorkItem(workItemId = workItemId, taskPath = taskPath) }
 
         sut.deleteWorkItem(workItemId, taskType)
 
-        coVerify { workItemApi.deleteWorkItem(workItemId = workItemId, taskPath = taskPath) }
+        assertEquals(1, fakeWorkItemApi.deleteWorkItemCalls.size)
+        val call = fakeWorkItemApi.deleteWorkItemCalls.last()
+        assertEquals(taskType.getPluralPath(), call.first)
+        assertEquals(workItemId, call.second)
     }
 
     @Test
@@ -540,48 +392,31 @@ class WorkItemRepositoryImplTest {
             content = "New wiki content",
             ownerId = 1L,
             lastModifierId = 1L,
-            createdDate = LocalDateTime.now(),
-            modifiedDate = LocalDateTime.now(),
+            createdDate = nowLocalDateTime,
+            modifiedDate = nowLocalDateTime,
             html = "<p>New wiki content</p>",
             editions = 2L,
             version = version + 1
         )
-        val expectedPatchedData = PatchedData(newVersion = version + 1, dueDateStatus = null)
-
-        val jsonSlot = slot<JsonObject>()
-        coEvery {
-            workItemApi.patchWikiPage(
-                pageId = pageId,
-                payload = capture(jsonSlot)
-            )
-        } returns wikiPageDto
-        every { patchedDataMapper.fromWiki(wikiPageDto) } returns expectedPatchedData
+        fakeWorkItemApi.patchWikiPageResponse = wikiPageDto
 
         val result = sut.patchWikiPage(pageId, version, payload)
 
-        assertEquals(expectedPatchedData, result)
-        assertTrue(jsonSlot.captured.containsKey("version"))
-        assertTrue(jsonSlot.captured.containsKey("content"))
+        assertEquals(version + 1, result.newVersion)
+        val call = fakeWorkItemApi.patchWikiPageCalls.last()
+        assertEquals(pageId, call.pageId)
+        assertTrue(call.payload.containsKey("version"))
+        assertTrue(call.payload.containsKey("content"))
     }
 
     @Test
     fun `createWorkItem should create work item and return mapped result`() = runTest {
         val taskType = CommonTaskType.Issue
-        val taskPath = WorkItemPathPlural(taskType)
         val subject = getRandomString()
         val description = getRandomString()
         val status = getRandomLong()
         val responseDto = getWorkItemResponseDTO()
-        val expectedWorkItem = getWorkItem(taskType = taskType)
-
-        val requestSlot = slot<CreateWorkItemRequestDTO>()
-        coEvery {
-            workItemApi.createWorkItem(
-                taskPath = taskPath,
-                createRequest = capture(requestSlot)
-            )
-        } returns responseDto
-        coEvery { workItemMapper.toDomain(responseDto, taskType) } returns expectedWorkItem
+        fakeWorkItemApi.createWorkItemResponse = responseDto
 
         val result = sut.createWorkItem(
             commonTaskType = taskType,
@@ -590,29 +425,23 @@ class WorkItemRepositoryImplTest {
             status = status
         )
 
-        assertEquals(expectedWorkItem, result)
-        assertEquals(projectId, requestSlot.captured.project)
-        assertEquals(subject, requestSlot.captured.subject)
-        assertEquals(description, requestSlot.captured.description)
-        assertEquals(status, requestSlot.captured.status)
+        assertEquals(responseDto.id, result.id)
+        assertEquals(taskType, result.taskType)
+        val call = fakeWorkItemApi.createWorkItemCalls.last()
+        assertEquals(taskType.getPluralPath(), call.taskPath)
+        assertEquals(projectId, call.createRequest.project)
+        assertEquals(subject, call.createRequest.subject)
+        assertEquals(description, call.createRequest.description)
+        assertEquals(status, call.createRequest.status)
     }
 
     @Test
     fun `createWorkItem should work without status`() = runTest {
         val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathPlural(taskType)
         val subject = getRandomString()
         val description = getRandomString()
         val responseDto = getWorkItemResponseDTO()
-        val expectedWorkItem = getWorkItem(taskType = taskType)
-
-        coEvery {
-            workItemApi.createWorkItem(
-                taskPath = taskPath,
-                createRequest = any()
-            )
-        } returns responseDto
-        coEvery { workItemMapper.toDomain(responseDto, taskType) } returns expectedWorkItem
+        fakeWorkItemApi.createWorkItemResponse = responseDto
 
         val result = sut.createWorkItem(
             commonTaskType = taskType,
@@ -621,7 +450,9 @@ class WorkItemRepositoryImplTest {
             status = null
         )
 
-        assertEquals(expectedWorkItem, result)
+        assertEquals(responseDto.id, result.id)
+        val call = fakeWorkItemApi.createWorkItemCalls.last()
+        assertEquals(null, call.createRequest.status)
     }
 
     @Test
@@ -630,27 +461,20 @@ class WorkItemRepositoryImplTest {
         val taskType = CommonTaskType.Issue
         val newUserStoryRef = getRandomLong()
         val userStoryDto = getWorkItemResponseDTO()
-        val expectedUserStory = getWorkItem(taskType = CommonTaskType.UserStory)
-
-        coEvery {
-            workItemApi.promoteToUserStory(
-                taskPath = WorkItemPathPlural(taskType),
-                workItemId = workItemId,
-                body = PromoteToUserStoryRequestDTO(projectId = projectId)
-            )
-        } returns listOf(newUserStoryRef)
-        coEvery {
-            workItemApi.getWorkItemByRef(
-                taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
-                project = projectId,
-                ref = newUserStoryRef
-            )
-        } returns userStoryDto
-        coEvery { workItemMapper.toDomain(userStoryDto, CommonTaskType.UserStory) } returns expectedUserStory
+        fakeWorkItemApi.promoteToUserStoryResponse = listOf(newUserStoryRef)
+        fakeWorkItemApi.workItemByRefResponse = userStoryDto
 
         val result = sut.promoteToUserStory(workItemId, taskType)
 
-        assertEquals(expectedUserStory, result)
+        assertEquals(userStoryDto.id, result.id)
+        assertEquals(CommonTaskType.UserStory, result.taskType)
+        val promoteCall = fakeWorkItemApi.promoteToUserStoryCalls.last()
+        assertEquals(taskType.getPluralPath(), promoteCall.taskPath)
+        assertEquals(workItemId, promoteCall.workItemId)
+        assertEquals(projectId, promoteCall.body.projectId)
+        val refCall = fakeWorkItemApi.workItemByRefCalls.last()
+        assertEquals(CommonTaskType.UserStory.getPluralPath(), refCall.taskPath)
+        assertEquals(newUserStoryRef, refCall.ref)
     }
 
     @Test
@@ -659,27 +483,13 @@ class WorkItemRepositoryImplTest {
         val taskType = CommonTaskType.Task
         val newUserStoryRef = getRandomLong()
         val userStoryDto = getWorkItemResponseDTO()
-        val expectedUserStory = getWorkItem(taskType = CommonTaskType.UserStory)
-
-        coEvery {
-            workItemApi.promoteToUserStory(
-                taskPath = WorkItemPathPlural(taskType),
-                workItemId = workItemId,
-                body = PromoteToUserStoryRequestDTO(projectId = projectId)
-            )
-        } returns listOf(newUserStoryRef)
-        coEvery {
-            workItemApi.getWorkItemByRef(
-                taskPath = WorkItemPathPlural(CommonTaskType.UserStory),
-                project = projectId,
-                ref = newUserStoryRef
-            )
-        } returns userStoryDto
-        coEvery { workItemMapper.toDomain(userStoryDto, CommonTaskType.UserStory) } returns expectedUserStory
+        fakeWorkItemApi.promoteToUserStoryResponse = listOf(newUserStoryRef)
+        fakeWorkItemApi.workItemByRefResponse = userStoryDto
 
         val result = sut.promoteToUserStory(workItemId, taskType)
 
-        assertEquals(expectedUserStory, result)
+        assertEquals(userStoryDto.id, result.id)
+        assertEquals(CommonTaskType.UserStory, result.taskType)
     }
 
     @Test
@@ -699,14 +509,7 @@ class WorkItemRepositoryImplTest {
     fun `promoteToUserStory should throw error when no user story ref returned`() = runTest {
         val workItemId = getRandomLong()
         val taskType = CommonTaskType.Issue
-
-        coEvery {
-            workItemApi.promoteToUserStory(
-                taskPath = WorkItemPathPlural(taskType),
-                workItemId = workItemId,
-                body = PromoteToUserStoryRequestDTO(projectId = projectId)
-            )
-        } returns emptyList()
+        fakeWorkItemApi.promoteToUserStoryResponse = emptyList()
 
         assertFailsWith<IllegalStateException> {
             sut.promoteToUserStory(workItemId, taskType)
@@ -716,30 +519,15 @@ class WorkItemRepositoryImplTest {
     @Test
     fun `getWorkItems should work for all task types`() = runTest {
         CommonTaskType.entries.forEach { taskType ->
-            val taskPath = WorkItemPathPlural(taskType)
-            val dtos = listOf(getWorkItemResponseDTO())
-            val expectedItems = persistentListOf(getWorkItem(taskType = taskType))
-
-            coEvery {
-                workItemApi.getWorkItems(
-                    taskPath = taskPath,
-                    project = projectId,
-                    assignedId = null,
-                    isClosed = null,
-                    watcherId = null,
-                    isDashboard = null,
-                    isBlocked = null,
-                    modifiedDateGte = null,
-                    finishDateGte = null,
-                    sprint = null,
-                    pageSize = null
-                )
-            } returns dtos
-            coEvery { workItemMapper.toDomainList(dtos, taskType) } returns expectedItems
+            val dto = getWorkItemResponseDTO()
+            fakeWorkItemApi.workItemsResponse = listOf(dto)
+            fakeWorkItemApi.getWorkItemsCalls.clear()
 
             val result = sut.getWorkItems(commonTaskType = taskType, projectId = projectId)
 
-            assertEquals(expectedItems, result)
+            assertEquals(1, result.size)
+            assertEquals(dto.id, result.first().id)
+            assertEquals(taskType.getPluralPath(), fakeWorkItemApi.getWorkItemsCalls.last().taskPath)
         }
     }
 
@@ -750,17 +538,7 @@ class WorkItemRepositoryImplTest {
         val fileBytes = "pdf content".toByteArray()
         val taskIdentifier = TaskIdentifier.Wiki
         val attachmentDto = getAttachmentDTO()
-        val expectedAttachment = getAttachment()
-
-        coEvery {
-            workItemApi.uploadCommonTaskAttachment(
-                taskPath = "wiki",
-                file = any(),
-                project = any(),
-                objectId = any()
-            )
-        } returns attachmentDto
-        every { attachmentMapper.toDomain(attachmentDto) } returns expectedAttachment
+        fakeWorkItemApi.uploadAttachmentResponse = attachmentDto
 
         val result = sut.addAttachment(
             workItemId = workItemId,
@@ -770,15 +548,9 @@ class WorkItemRepositoryImplTest {
             taskIdentifier = taskIdentifier
         )
 
-        assertEquals(expectedAttachment, result)
-        coVerify {
-            workItemApi.uploadCommonTaskAttachment(
-                taskPath = "wiki",
-                file = any<MultipartBody.Part>(),
-                project = any<MultipartBody.Part>(),
-                objectId = any<MultipartBody.Part>()
-            )
-        }
+        assertEquals(attachmentDto.id, result.id)
+        val call = fakeWorkItemApi.uploadAttachmentCalls.last()
+        assertEquals("wiki", call.taskPath)
     }
 
     @Test
@@ -786,20 +558,10 @@ class WorkItemRepositoryImplTest {
         val attachment = getAttachment()
         val taskIdentifier = TaskIdentifier.Wiki
 
-        coJustRun {
-            workItemApi.deleteAttachment(
-                taskPath = "wiki",
-                attachmentId = attachment.id
-            )
-        }
-
         sut.deleteAttachment(attachment, taskIdentifier)
 
-        coVerify {
-            workItemApi.deleteAttachment(
-                taskPath = "wiki",
-                attachmentId = attachment.id
-            )
-        }
+        val call = fakeWorkItemApi.deleteAttachmentCalls.last()
+        assertEquals("wiki", call.first)
+        assertEquals(attachment.id, call.second)
     }
 }

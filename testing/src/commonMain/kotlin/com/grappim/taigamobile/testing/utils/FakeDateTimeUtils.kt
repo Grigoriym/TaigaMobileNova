@@ -14,5 +14,5 @@ class FakeDateTimeUtils : DateTimeUtils {
     override fun parseLocalDateToString(localDate: LocalDate): String = localDate.toString()
     override fun formatToMediumFormat(localDate: LocalDate): String = localDate.toString()
     override fun formatToMediumFormat(localDateTime: LocalDateTime): String = localDateTime.date.toString()
-    override fun parseToLocalDate(text: String): LocalDate = error("not used in this test")
+    override fun parseToLocalDate(text: String): LocalDate = LocalDate.parse(text)
 }

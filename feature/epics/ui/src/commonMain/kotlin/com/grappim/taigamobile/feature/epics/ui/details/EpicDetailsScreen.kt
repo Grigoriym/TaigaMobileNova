@@ -26,6 +26,15 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.epics.ui.widgets.EpicColorWidget
 import com.grappim.taigamobile.feature.epics.ui.widgets.WorkItemsSectionWidget
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.AttachmentsSectionWidget
 import com.grappim.taigamobile.feature.workitem.ui.widgets.BlockDialog
 import com.grappim.taigamobile.feature.workitem.ui.widgets.CommentsSectionWidget
@@ -260,15 +269,15 @@ fun EpicDetailsScreen(
 @Composable
 private fun EpicDetailsScreenContent(
     state: EpicDetailsState,
-    titleState: com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleState,
-    badgeState: com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState,
-    tagsState: com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsState,
-    commentsState: com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState,
-    attachmentsState: com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState,
-    watchersState: com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersState,
-    customFieldsState: com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState,
-    assigneesState: com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState,
-    descriptionState: com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState,
+    titleState: WorkItemTitleState,
+    badgeState: WorkItemBadgeState,
+    tagsState: WorkItemTagsState,
+    commentsState: WorkItemCommentsState,
+    attachmentsState: WorkItemAttachmentsState,
+    watchersState: WorkItemWatchersState,
+    customFieldsState: WorkItemCustomFieldsState,
+    assigneesState: WorkItemSingleAssigneeState,
+    descriptionState: WorkItemDescriptionState,
     isOffline: Boolean,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String, Long) -> Unit,

@@ -130,7 +130,7 @@ internal class LoginViewModelTest {
     }
 
     @Test
-    fun `on validateAuthData with valid data, but without https in server should not login`() {
+    fun `on validateAuthData with valid data but without https in server should not login`() {
         val authType = AuthType.LDAP
         val password = getRandomString()
         val username = getRandomString()

@@ -29,7 +29,7 @@ class WorkItemBadgeDelegateImplTest {
     }
 
     @Test
-    fun `on onWorkItemBadgeClick, should set active badge`() {
+    fun `on onWorkItemBadgeClick should set active badge`() {
         val badge = getSelectableWorkItemBadgeState()
         assertNull(sut.badgeState.value.activeBadge)
 
@@ -39,7 +39,7 @@ class WorkItemBadgeDelegateImplTest {
     }
 
     @Test
-    fun `on onBadgeSheetDismiss, should clear active badge`() {
+    fun `on onBadgeSheetDismiss should clear active badge`() {
         val badge = getSelectableWorkItemBadgeState()
         sut.badgeState.value.onBadgeClick(badge)
         assertEquals(badge, sut.badgeState.value.activeBadge)

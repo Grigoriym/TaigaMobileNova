@@ -3,13 +3,12 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.title
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.ui.NativeText
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -21,11 +20,12 @@ internal class WorkItemTitleDelegateImplTest {
 
     private lateinit var sut: WorkItemTitleDelegateImpl
     private val commonTaskType = CommonTaskType.Issue
-    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private lateinit var workItemRepository: FakeWorkItemRepository
     private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
 
     @BeforeTest
     fun setup() {
+        workItemRepository = FakeWorkItemRepository()
         sut = WorkItemTitleDelegateImpl(
             commonTaskType = commonTaskType,
             workItemRepository = workItemRepository,
@@ -115,10 +115,10 @@ internal class WorkItemTitleDelegateImplTest {
         val originalTitle = getRandomString()
         val newTitle = getRandomString()
         var preExecuteCalled = false
+        workItemRepository.patchDataResult = PatchedData(getRandomLong(), null)
         sut.setInitialTitle(originalTitle)
         sut.titleState.value.onTitleChange(newTitle)
 
-        val payload = persistentMapOf<String, Any?>("subject" to newTitle)
         sut.handleTitleSave(
             version = 1L,
             workItemId = 123L,
@@ -135,10 +135,9 @@ internal class WorkItemTitleDelegateImplTest {
         val originalTitle = getRandomString()
         val newTitle = getRandomString()
         val newVersion = getRandomLong()
+        workItemRepository.patchDataResult = PatchedData(newVersion, null)
         sut.setInitialTitle(originalTitle)
         sut.titleState.value.onTitleChange(newTitle)
-
-        val payload = persistentMapOf<String, Any?>("subject" to newTitle)
 
         sut.handleTitleSave(
             version = 1L,
@@ -162,10 +161,9 @@ internal class WorkItemTitleDelegateImplTest {
         val newTitle = getRandomString()
         val newVersion = getRandomLong()
         var receivedVersion: Long? = null
+        workItemRepository.patchDataResult = PatchedData(newVersion, null)
         sut.setInitialTitle(originalTitle)
         sut.titleState.value.onTitleChange(newTitle)
-
-        val payload = persistentMapOf<String, Any?>("subject" to newTitle)
 
         sut.handleTitleSave(
             version = 1L,
@@ -182,10 +180,9 @@ internal class WorkItemTitleDelegateImplTest {
     fun `handleTitleSave should update state on error`() = runTest {
         val originalTitle = getRandomString()
         val newTitle = getRandomString()
+        workItemRepository.patchDataThrows = testException
         sut.setInitialTitle(originalTitle)
         sut.titleState.value.onTitleChange(newTitle)
-
-        val payload = persistentMapOf<String, Any?>("subject" to newTitle)
 
         sut.handleTitleSave(
             version = 1L,
@@ -205,10 +202,9 @@ internal class WorkItemTitleDelegateImplTest {
         val originalTitle = getRandomString()
         val newTitle = getRandomString()
         var receivedError: Throwable? = null
+        workItemRepository.patchDataThrows = testException
         sut.setInitialTitle(originalTitle)
         sut.titleState.value.onTitleChange(newTitle)
-
-        val payload = persistentMapOf<String, Any?>("subject" to newTitle)
 
         sut.handleTitleSave(
             version = 1L,
@@ -227,10 +223,9 @@ internal class WorkItemTitleDelegateImplTest {
         val newTitle = getRandomString()
         val version = getRandomLong()
         val workItemId = getRandomLong()
+        workItemRepository.patchDataResult = PatchedData(getRandomLong(), null)
         sut.setInitialTitle(originalTitle)
         sut.titleState.value.onTitleChange(newTitle)
-
-        val payload = persistentMapOf<String, Any?>("subject" to newTitle)
 
         sut.handleTitleSave(
             version = version,
@@ -239,5 +234,11 @@ internal class WorkItemTitleDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
+
+        assertEquals(1, workItemRepository.patchDataCalls.size)
+        val call = workItemRepository.patchDataCalls.first()
+        assertEquals(version, call.version)
+        assertEquals(workItemId, call.workItemId)
+        assertEquals(commonTaskType, call.commonTaskType)
     }
 }

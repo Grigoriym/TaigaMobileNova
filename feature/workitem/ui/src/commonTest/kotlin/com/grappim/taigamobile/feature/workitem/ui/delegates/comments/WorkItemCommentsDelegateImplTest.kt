@@ -58,7 +58,7 @@ internal class WorkItemCommentsDelegateImplTest {
     }
 
     @Test
-    fun `on setIsCommentsWidgetExpanded, should update field`() {
+    fun `on setIsCommentsWidgetExpanded should update field`() {
         assertFalse(sut.commentsState.value.isCommentsWidgetExpanded)
 
         sut.commentsState.value.setIsCommentsWidgetExpanded(true)

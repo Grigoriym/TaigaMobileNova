@@ -4,14 +4,13 @@ import androidx.compose.ui.graphics.Color
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -23,17 +22,16 @@ class WorkItemTagsDelegateImplTest {
 
     private lateinit var sut: WorkItemTagsDelegateImpl
     private val commonTaskType = CommonTaskType.Issue
-    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val workItemRepository = FakeWorkItemRepository()
     private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
 
     @BeforeTest
     fun setup() {
-        sut =
-            WorkItemTagsDelegateImpl(
-                commonTaskType = commonTaskType,
-                workItemRepository = workItemRepository,
-                patchDataGenerator = patchDataGenerator
-            )
+        sut = WorkItemTagsDelegateImpl(
+            commonTaskType = commonTaskType,
+            workItemRepository = workItemRepository,
+            patchDataGenerator = patchDataGenerator
+        )
     }
 
     @Test
@@ -58,12 +56,12 @@ class WorkItemTagsDelegateImplTest {
 
     @Test
     fun `handleTagRemove should remove specified tag`() = runTest {
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         val tag1 = createTagUI("tag1")
         val tag2 = createTagUI("tag2")
         val tag3 = createTagUI("tag3")
         sut.setInitialTags(persistentListOf(tag1, tag2, tag3))
 
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
         sut.handleTagRemove(
             tag = tag2,
             version = 1L,
@@ -83,9 +81,9 @@ class WorkItemTagsDelegateImplTest {
     @Test
     fun `handleTagsUpdate should call doOnPreExecute`() = runTest {
         var preExecuteCalled = false
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         val newTags = persistentListOf(createTagUI("tag1"))
 
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
         sut.handleTagsUpdate(
             newTags = newTags,
             version = 1L,
@@ -100,12 +98,12 @@ class WorkItemTagsDelegateImplTest {
 
     @Test
     fun `handleTagsUpdate should update tags on success`() = runTest {
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         val newTags = persistentListOf(
             createTagUI("newTag1"),
             createTagUI("newTag2")
         )
 
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
         sut.handleTagsUpdate(
             newTags = newTags,
             version = 1L,
@@ -123,10 +121,9 @@ class WorkItemTagsDelegateImplTest {
     @Test
     fun `handleTagsUpdate should call doOnSuccess with new version`() = runTest {
         var receivedVersion: Long? = null
-        val newVersion = getRandomLong()
+        val expectedVersion = getRandomLong()
+        workItemRepository.patchDataResult = PatchedData(newVersion = expectedVersion, dueDateStatus = null)
         val newTags = persistentListOf(createTagUI("tag1"))
-
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
 
         sut.handleTagsUpdate(
             newTags = newTags,
@@ -137,14 +134,13 @@ class WorkItemTagsDelegateImplTest {
             doOnError = {}
         )
 
-        assertEquals(newVersion, receivedVersion)
+        assertEquals(expectedVersion, receivedVersion)
     }
 
     @Test
     fun `handleTagsUpdate should clear loading on error`() = runTest {
+        workItemRepository.patchDataThrows = testException
         val newTags = persistentListOf(createTagUI("tag1"))
-
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
 
         sut.handleTagsUpdate(
             newTags = newTags,
@@ -161,9 +157,8 @@ class WorkItemTagsDelegateImplTest {
     @Test
     fun `handleTagsUpdate should call doOnError on failure`() = runTest {
         var receivedError: Throwable? = null
+        workItemRepository.patchDataThrows = testException
         val newTags = persistentListOf(createTagUI("tag1"))
-
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
 
         sut.handleTagsUpdate(
             newTags = newTags,
@@ -179,11 +174,11 @@ class WorkItemTagsDelegateImplTest {
 
     @Test
     fun `handleTagsUpdate should not update tags on error`() = runTest {
+        workItemRepository.patchDataThrows = testException
         val initialTags = persistentListOf(createTagUI("initialTag"))
         val newTags = persistentListOf(createTagUI("newTag"))
         sut.setInitialTags(initialTags)
 
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
         sut.handleTagsUpdate(
             newTags = newTags,
             version = 1L,
@@ -198,13 +193,12 @@ class WorkItemTagsDelegateImplTest {
 
     @Test
     fun `handleTagsUpdate should call repository with correct parameters`() = runTest {
+        workItemRepository.patchDataResult = PatchedData(newVersion = 1L, dueDateStatus = null)
         val version = getRandomLong()
         val workItemId = getRandomLong()
         val tag1 = SelectableTagUI(name = "tag1", color = Color.Red)
         val tag2 = SelectableTagUI(name = "tag2", color = Color.Blue)
         val newTags = persistentListOf(tag1, tag2)
-
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
 
         sut.handleTagsUpdate(
             newTags = newTags,
@@ -214,17 +208,21 @@ class WorkItemTagsDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
+
+        val call = workItemRepository.patchDataCalls.single()
+        assertEquals(version, call.version)
+        assertEquals(workItemId, call.workItemId)
+        assertEquals(commonTaskType, call.commonTaskType)
     }
 
     @Test
     fun `handleTagRemove should call doOnSuccess with new version`() = runTest {
         var receivedVersion: Long? = null
-        val newVersion = getRandomLong()
+        val expectedVersion = getRandomLong()
+        workItemRepository.patchDataResult = PatchedData(newVersion = expectedVersion, dueDateStatus = null)
         val tag1 = createTagUI("tag1")
         val tag2 = createTagUI("tag2")
         sut.setInitialTags(persistentListOf(tag1, tag2))
-
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
 
         sut.handleTagRemove(
             tag = tag1,
@@ -235,16 +233,15 @@ class WorkItemTagsDelegateImplTest {
             doOnError = {}
         )
 
-        assertEquals(newVersion, receivedVersion)
+        assertEquals(expectedVersion, receivedVersion)
     }
 
     @Test
     fun `handleTagRemove should call doOnError on failure`() = runTest {
         var receivedError: Throwable? = null
+        workItemRepository.patchDataThrows = testException
         val tag1 = createTagUI("tag1")
         sut.setInitialTags(persistentListOf(tag1))
-
-        val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
 
         sut.handleTagRemove(
             tag = tag1,

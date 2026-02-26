@@ -33,7 +33,7 @@ internal class WorkItemCustomFieldsDelegateImplTest {
     }
 
     @Test
-    fun `on setIsCustomFieldsWidgetExpanded, should update field`() {
+    fun `on setIsCustomFieldsWidgetExpanded should update field`() {
         assertFalse(sut.customFieldsState.value.isCustomFieldsWidgetExpanded)
 
         sut.customFieldsState.value.setIsCustomFieldsWidgetExpanded(true)
