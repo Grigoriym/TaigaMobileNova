@@ -9,7 +9,7 @@ detekt = "2.0.0-alpha.2"
 ktlint = "14.0.1"
 moduleGraphAssertion = "2.9.0"
 gradleDoctor = "0.12.1"
-dependencyAnalysis = "3.5.1"
+dependencyAnalysis = "3.6.1"
 jacocoAggregation = "2.5.0"
 composeRules = "0.5.6"
 
