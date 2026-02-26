@@ -6,12 +6,20 @@ import com.grappim.taigamobile.feature.login.dto.AuthResponse
 import com.grappim.taigamobile.feature.login.dto.RefreshTokenRequest
 import com.grappim.taigamobile.feature.login.dto.RefreshTokenResponse
 
-class FakeAuthApi: AuthApi {
+class FakeAuthApi : AuthApi {
+    var authResult: AuthResponse? = null
+    var authCalls = mutableListOf<AuthRequest>()
+
+    var refreshResult: RefreshTokenResponse? = null
+    var refreshCalls = mutableListOf<RefreshTokenRequest>()
+
     override suspend fun auth(authRequest: AuthRequest): AuthResponse {
-        TODO("Not yet implemented")
+        authCalls += authRequest
+        return authResult ?: error("authResult not set")
     }
 
     override suspend fun refresh(request: RefreshTokenRequest): RefreshTokenResponse {
-        TODO("Not yet implemented")
+        refreshCalls += request
+        return refreshResult ?: error("refreshResult not set")
     }
 }

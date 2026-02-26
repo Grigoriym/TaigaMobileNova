@@ -1,9 +1,10 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.block
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
-import io.mockk.mockk
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertFalse
@@ -13,8 +14,8 @@ class WorkItemBlockDelegateImplTest {
 
     private lateinit var sut: WorkItemBlockDelegate
     private val commonTaskType = CommonTaskType.Issue
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
+    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
 
     @BeforeTest
     fun setup() {

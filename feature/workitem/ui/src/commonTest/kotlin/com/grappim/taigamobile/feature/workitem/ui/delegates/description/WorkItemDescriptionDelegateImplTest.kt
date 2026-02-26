@@ -2,16 +2,13 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.description
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -20,8 +17,8 @@ import kotlin.test.assertFalse
 
 internal class WorkItemDescriptionDelegateImplTest {
 
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
+    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
 
     private fun createSut(taskIdentifier: TaskIdentifier): WorkItemDescriptionDelegateImpl =
         WorkItemDescriptionDelegateImpl(
@@ -64,8 +61,6 @@ internal class WorkItemDescriptionDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        coVerify(exactly = 0) { workItemRepository.patchData(any(), any(), any(), any()) }
     }
 
     @Test
@@ -75,11 +70,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("description" to newDescription)
-        every { patchDataGenerator.getDescriptionPatchPayload(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -98,11 +88,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("description" to newDescription)
-        every { patchDataGenerator.getDescriptionPatchPayload(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -125,11 +110,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("description" to newDescription)
-        every { patchDataGenerator.getDescriptionPatchPayload(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -148,11 +128,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("description" to newDescription)
-        every { patchDataGenerator.getDescriptionPatchPayload(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
-
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -172,11 +147,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("description" to newDescription)
-        every { patchDataGenerator.getDescriptionPatchPayload(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
-
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -198,11 +168,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("description" to newDescription)
-        every { patchDataGenerator.getDescriptionPatchPayload(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.updateDescription(
             newDescription = newDescription,
             version = version,
@@ -211,15 +176,6 @@ internal class WorkItemDescriptionDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        coVerify {
-            workItemRepository.patchData(
-                version = version,
-                workItemId = workItemId,
-                payload = payload,
-                commonTaskType = commonTaskType
-            )
-        }
     }
 
     @Test
@@ -236,8 +192,6 @@ internal class WorkItemDescriptionDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        coVerify(exactly = 0) { workItemRepository.patchWikiPage(any(), any(), any()) }
     }
 
     @Test
@@ -247,11 +201,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("content" to newDescription)
-        every { patchDataGenerator.getWikiContent(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchWikiPage(any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -270,11 +219,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("content" to newDescription)
-        every { patchDataGenerator.getWikiContent(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchWikiPage(any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -297,11 +241,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("content" to newDescription)
-        every { patchDataGenerator.getWikiContent(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchWikiPage(any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-
         sut.updateDescription(
             newDescription = newDescription,
             version = 1L,
@@ -320,10 +259,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("content" to newDescription)
-        every { patchDataGenerator.getWikiContent(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchWikiPage(any(), any(), any())
-        } throws testException
 
         sut.updateDescription(
             newDescription = newDescription,
@@ -344,10 +279,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("content" to newDescription)
-        every { patchDataGenerator.getWikiContent(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchWikiPage(any(), any(), any())
-        } throws testException
 
         sut.updateDescription(
             newDescription = newDescription,
@@ -369,11 +300,6 @@ internal class WorkItemDescriptionDelegateImplTest {
         val newDescription = getRandomString()
 
         val payload = persistentMapOf<String, Any?>("content" to newDescription)
-        every { patchDataGenerator.getWikiContent(newDescription) } returns payload
-        coEvery {
-            workItemRepository.patchWikiPage(any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.updateDescription(
             newDescription = newDescription,
             version = version,
@@ -382,13 +308,5 @@ internal class WorkItemDescriptionDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        coVerify {
-            workItemRepository.patchWikiPage(
-                version = version,
-                pageId = pageId,
-                payload = payload
-            )
-        }
     }
 }

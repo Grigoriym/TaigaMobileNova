@@ -10,6 +10,7 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.tasks.domain.TaskDetailsData
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
@@ -28,7 +29,6 @@ import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.usecases.FakeTaskDetailsDataUseCase
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
-import com.grappim.taigamobile.testing.utils.FakePatchDataGenerator
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
@@ -64,7 +64,7 @@ internal class TaskDetailsViewModelTest {
     )
     private val dateTimeUtils = FakeDateTimeUtils()
     private val taskDetailsDataUseCase = FakeTaskDetailsDataUseCase()
-    private val patchDataGenerator: PatchDataGenerator = FakePatchDataGenerator()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
     private val historyRepository: HistoryRepository = FakeHistoryRepository()
     private val workItemRepository = FakeWorkItemRepository()
     private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()

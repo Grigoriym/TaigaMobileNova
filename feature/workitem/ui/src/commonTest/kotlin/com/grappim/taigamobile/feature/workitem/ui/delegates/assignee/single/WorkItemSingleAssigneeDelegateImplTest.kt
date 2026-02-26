@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
-import com.grappim.taigamobile.testing.utils.FakePatchDataGenerator
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.collections.immutable.persistentListOf
@@ -20,7 +20,7 @@ class WorkItemSingleAssigneeDelegateImplTest {
 
     private val workItemRepository = FakeWorkItemRepository()
     private val usersRepository = FakeUsersRepository()
-    private val patchDataGenerator = FakePatchDataGenerator()
+    private val patchDataGenerator = PatchDataGeneratorImpl()
 
     private fun createSut(commonTaskType: CommonTaskType = CommonTaskType.Task): WorkItemSingleAssigneeDelegateImpl =
         WorkItemSingleAssigneeDelegateImpl(
@@ -160,7 +160,6 @@ class WorkItemSingleAssigneeDelegateImplTest {
         val user = getUser()
         val payload = persistentMapOf<String, Any?>("assigned_to" to newAssigneeId)
 
-        patchDataGenerator.assignedToPatchPayloadResult = payload
         workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
         usersRepository.getUsersListResult = persistentListOf(user)
 
@@ -174,6 +173,7 @@ class WorkItemSingleAssigneeDelegateImplTest {
         )
 
         val call = workItemRepository.patchDataCalls.last()
+
         assertEquals(version, call.version)
         assertEquals(workItemId, call.workItemId)
         assertEquals(payload, call.payload)
@@ -209,7 +209,6 @@ class WorkItemSingleAssigneeDelegateImplTest {
         val user = getUser()
         val payload = persistentMapOf<String, Any?>("assigned_to" to currentUserId)
 
-        patchDataGenerator.assignedToPatchPayloadResult = payload
         workItemRepository.patchDataResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
         usersRepository.getUsersListResult = persistentListOf(user)
         usersRepository.isAnyAssignedToMeResult = true
@@ -245,8 +244,6 @@ class WorkItemSingleAssigneeDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        assertEquals(null, patchDataGenerator.assignedToPatchPayloadCalls.last())
     }
 
     @Test

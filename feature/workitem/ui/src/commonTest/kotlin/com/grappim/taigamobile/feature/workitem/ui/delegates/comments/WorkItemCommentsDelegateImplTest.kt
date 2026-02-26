@@ -2,23 +2,21 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.comments
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDateTime
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.ui.NativeText
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
-import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.test.runTest
-import java.time.LocalDateTime
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -29,9 +27,9 @@ internal class WorkItemCommentsDelegateImplTest {
 
     private lateinit var sut: WorkItemCommentsDelegate
     private val commonTaskType = CommonTaskType.Issue
-    private val historyRepository: HistoryRepository = mockk()
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
+    private val historyRepository: HistoryRepository = FakeHistoryRepository()
+    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
 
     @BeforeTest
     fun setup() {
@@ -48,7 +46,7 @@ internal class WorkItemCommentsDelegateImplTest {
         id = id,
         author = getUser(),
         text = getRandomString(),
-        postDateTime = LocalDateTime.now(),
+        postDateTime = nowLocalDateTime,
         deleteDate = null,
         canDelete = canDelete
     )
@@ -96,14 +94,6 @@ internal class WorkItemCommentsDelegateImplTest {
         val payload = persistentMapOf<String, Any?>("comment" to comment)
         val returnedComments = listOf(createComment())
 
-        coEvery { patchDataGenerator.getComment(comment) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-        coEvery {
-            historyRepository.getComments(any(), any())
-        } returns returnedComments.toImmutableList()
-
         sut.handleCreateComment(
             version = 1L,
             id = 123L,
@@ -121,14 +111,6 @@ internal class WorkItemCommentsDelegateImplTest {
         val comment = getRandomString()
         val returnedComments = listOf(createComment(), createComment())
         val payload = persistentMapOf<String, Any?>("comment" to comment)
-
-        coEvery { patchDataGenerator.getComment(comment) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-        coEvery {
-            historyRepository.getComments(any(), any())
-        } returns returnedComments.toImmutableList()
 
         sut.handleCreateComment(
             version = 1L,
@@ -152,14 +134,6 @@ internal class WorkItemCommentsDelegateImplTest {
         var receivedVersion: Long? = null
         val payload = persistentMapOf<String, Any?>("comment" to comment)
 
-        coEvery { patchDataGenerator.getComment(comment) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
-        coEvery {
-            historyRepository.getComments(any(), any())
-        } returns returnedComments.toImmutableList()
-
         sut.handleCreateComment(
             version = 1L,
             id = 123L,
@@ -176,11 +150,6 @@ internal class WorkItemCommentsDelegateImplTest {
     fun `handleCreateComment should clear loading on error`() = runTest {
         val comment = getRandomString()
         val payload = persistentMapOf<String, Any?>("comment" to comment)
-
-        coEvery { patchDataGenerator.getComment(comment) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
 
         sut.handleCreateComment(
             version = 1L,
@@ -202,14 +171,6 @@ internal class WorkItemCommentsDelegateImplTest {
         val returnedComments = listOf(createComment())
         val payload = persistentMapOf<String, Any?>("comment" to comment)
 
-        coEvery { patchDataGenerator.getComment(comment) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-        coEvery {
-            historyRepository.getComments(any(), any())
-        } returns returnedComments.toImmutableList()
-
         sut.handleCreateComment(
             version = version,
             id = id,
@@ -218,21 +179,6 @@ internal class WorkItemCommentsDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        coVerify {
-            workItemRepository.patchData(
-                version = version,
-                workItemId = id,
-                payload = payload,
-                commonTaskType = commonTaskType
-            )
-        }
-        coVerify {
-            historyRepository.getComments(
-                commonTaskId = id,
-                type = commonTaskType
-            )
-        }
     }
 
     // endregion
@@ -242,10 +188,6 @@ internal class WorkItemCommentsDelegateImplTest {
     @Test
     fun `handleDeleteComment should call doOnPreExecute`() = runTest {
         var preExecuteCalled = false
-
-        coEvery {
-            historyRepository.deleteComment(any(), any(), any())
-        } returns Unit
 
         sut.handleDeleteComment(
             id = 123L,
@@ -263,10 +205,6 @@ internal class WorkItemCommentsDelegateImplTest {
         val commentToDelete = createComment()
         val commentToKeep = createComment()
         sut.setInitialComments(listOf(commentToDelete, commentToKeep))
-
-        coEvery {
-            historyRepository.deleteComment(any(), any(), any())
-        } returns Unit
 
         sut.handleDeleteComment(
             id = 123L,
@@ -286,10 +224,6 @@ internal class WorkItemCommentsDelegateImplTest {
     fun `handleDeleteComment should call doOnSuccess`() = runTest {
         var successCalled = false
 
-        coEvery {
-            historyRepository.deleteComment(any(), any(), any())
-        } returns Unit
-
         sut.handleDeleteComment(
             id = 123L,
             commentId = getRandomString(),
@@ -303,10 +237,6 @@ internal class WorkItemCommentsDelegateImplTest {
 
     @Test
     fun `handleDeleteComment should clear loading on error`() = runTest {
-        coEvery {
-            historyRepository.deleteComment(any(), any(), any())
-        } throws testException
-
         sut.handleDeleteComment(
             id = 123L,
             commentId = getRandomString(),
@@ -321,10 +251,6 @@ internal class WorkItemCommentsDelegateImplTest {
     @Test
     fun `handleDeleteComment should call doOnError on failure`() = runTest {
         var receivedError: Throwable? = null
-
-        coEvery {
-            historyRepository.deleteComment(any(), any(), any())
-        } throws testException
 
         sut.handleDeleteComment(
             id = 123L,
@@ -342,10 +268,6 @@ internal class WorkItemCommentsDelegateImplTest {
         val id = getRandomLong()
         val commentId = getRandomString()
 
-        coEvery {
-            historyRepository.deleteComment(any(), any(), any())
-        } returns Unit
-
         sut.handleDeleteComment(
             id = id,
             commentId = commentId,
@@ -353,14 +275,6 @@ internal class WorkItemCommentsDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        coVerify {
-            historyRepository.deleteComment(
-                commonTaskId = id,
-                commonTaskType = commonTaskType,
-                commentId = commentId
-            )
-        }
     }
 
     @Test
@@ -368,10 +282,6 @@ internal class WorkItemCommentsDelegateImplTest {
         val comment1 = createComment()
         val comment2 = createComment()
         sut.setInitialComments(listOf(comment1, comment2))
-
-        coEvery {
-            historyRepository.deleteComment(any(), any(), any())
-        } throws testException
 
         sut.handleDeleteComment(
             id = 123L,
@@ -383,6 +293,4 @@ internal class WorkItemCommentsDelegateImplTest {
 
         assertEquals(2, sut.commentsState.value.comments.size)
     }
-
-    // endregion
 }

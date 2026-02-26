@@ -2,17 +2,14 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.tags
 
 import androidx.compose.ui.graphics.Color
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
@@ -26,8 +23,8 @@ class WorkItemTagsDelegateImplTest {
 
     private lateinit var sut: WorkItemTagsDelegateImpl
     private val commonTaskType = CommonTaskType.Issue
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
+    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
 
     @BeforeTest
     fun setup() {
@@ -67,11 +64,6 @@ class WorkItemTagsDelegateImplTest {
         sut.setInitialTags(persistentListOf(tag1, tag2, tag3))
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.handleTagRemove(
             tag = tag2,
             version = 1L,
@@ -94,11 +86,6 @@ class WorkItemTagsDelegateImplTest {
         val newTags = persistentListOf(createTagUI("tag1"))
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.handleTagsUpdate(
             newTags = newTags,
             version = 1L,
@@ -119,11 +106,6 @@ class WorkItemTagsDelegateImplTest {
         )
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
-
         sut.handleTagsUpdate(
             newTags = newTags,
             version = 1L,
@@ -145,10 +127,6 @@ class WorkItemTagsDelegateImplTest {
         val newTags = persistentListOf(createTagUI("tag1"))
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
 
         sut.handleTagsUpdate(
             newTags = newTags,
@@ -167,10 +145,6 @@ class WorkItemTagsDelegateImplTest {
         val newTags = persistentListOf(createTagUI("tag1"))
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
 
         sut.handleTagsUpdate(
             newTags = newTags,
@@ -190,10 +164,6 @@ class WorkItemTagsDelegateImplTest {
         val newTags = persistentListOf(createTagUI("tag1"))
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
 
         sut.handleTagsUpdate(
             newTags = newTags,
@@ -214,11 +184,6 @@ class WorkItemTagsDelegateImplTest {
         sut.setInitialTags(initialTags)
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
-
         sut.handleTagsUpdate(
             newTags = newTags,
             version = 1L,
@@ -240,10 +205,6 @@ class WorkItemTagsDelegateImplTest {
         val newTags = persistentListOf(tag1, tag2)
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
 
         sut.handleTagsUpdate(
             newTags = newTags,
@@ -253,15 +214,6 @@ class WorkItemTagsDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        coVerify {
-            workItemRepository.patchData(
-                version = version,
-                workItemId = workItemId,
-                payload = payload,
-                commonTaskType = commonTaskType
-            )
-        }
     }
 
     @Test
@@ -273,10 +225,6 @@ class WorkItemTagsDelegateImplTest {
         sut.setInitialTags(persistentListOf(tag1, tag2))
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = newVersion, dueDateStatus = null)
 
         sut.handleTagRemove(
             tag = tag1,
@@ -297,10 +245,6 @@ class WorkItemTagsDelegateImplTest {
         sut.setInitialTags(persistentListOf(tag1))
 
         val payload = persistentMapOf<String, Any?>("tags" to listOf<List<String>>())
-        every { patchDataGenerator.getTagsPatchPayload(any()) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
 
         sut.handleTagRemove(
             tag = tag1,

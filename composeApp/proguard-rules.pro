@@ -46,3 +46,9 @@
 -keep class * implements com.sun.jna.** { *; }
 
 -keep class * extends androidx.room.RoomDatabase { <init>(); }
+
+# Keep annotation definitions
+-keep class org.koin.core.annotation.** { *; }
+
+# Keep classes annotated with Koin annotations
+-keep @org.koin.core.annotation.* class * { *; }

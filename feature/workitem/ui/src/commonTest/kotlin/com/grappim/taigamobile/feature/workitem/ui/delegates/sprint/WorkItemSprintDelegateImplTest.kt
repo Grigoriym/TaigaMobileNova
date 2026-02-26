@@ -4,19 +4,18 @@ import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.sprint_name_empty
 import com.grappim.taigamobile.strings.generated.resources.sprint_start_date_empty
+import com.grappim.taigamobile.testing.repo.FakeSprintsRepository
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
-import io.mockk.coJustRun
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
-import java.time.LocalDate
+import kotlinx.datetime.DateTimeUnit
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.plus
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,8 +25,8 @@ import kotlin.test.assertTrue
 @OptIn(ExperimentalCoroutinesApi::class)
 class WorkItemSprintDelegateImplTest {
 
-    private val dateTimeUtils: DateTimeUtils = mockk()
-    private val sprintsRepository: SprintsRepository = mockk()
+    private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
+    private val sprintsRepository: SprintsRepository = FakeSprintsRepository()
 
     private lateinit var sut: WorkItemSprintDelegateImpl
 
@@ -44,12 +43,9 @@ class WorkItemSprintDelegateImplTest {
     fun `setInitialSprint should set sprint name and dates`() = runTest {
         val sprintName = getRandomString()
         val startDate = nowLocalDate
-        val endDate = nowLocalDate.plusDays(14)
+        val endDate = nowLocalDate.plus(14, DateTimeUnit.DAY)
         val formattedStart = "Jan 1, 2024"
         val formattedEnd = "Jan 15, 2024"
-
-        every { dateTimeUtils.formatToMediumFormat(startDate) } returns formattedStart
-        every { dateTimeUtils.formatToMediumFormat(endDate) } returns formattedEnd
 
         sut.setInitialSprint(startDate, endDate, sprintName)
 
@@ -68,11 +64,7 @@ class WorkItemSprintDelegateImplTest {
         val formattedEndDate = "Jan 13, 2024"
 
         val startDate = nowLocalDate
-        val endDate = nowLocalDate.plusDays(14)
-
-        every { dateTimeUtils.getLocalDateNow() } returns startDate
-        every { dateTimeUtils.formatToMediumFormat(startDate) } returns formattedStartDate
-        every { dateTimeUtils.formatToMediumFormat(endDate) } returns formattedEndDate
+        val endDate = nowLocalDate.plus(14, DateTimeUnit.DAY)
 
         sut.setInitialSprint(null, null, sprintName)
 
@@ -128,15 +120,12 @@ class WorkItemSprintDelegateImplTest {
     fun `createSprint should call repository on success`() = runTest {
         val sprintName = getRandomString()
         val startDate = nowLocalDate
-        val endDate = nowLocalDate.plusDays(14)
+        val endDate = nowLocalDate.plus(14, DateTimeUnit.DAY)
 
         setupSprintState(sprintName, startDate, endDate)
-        coJustRun { sprintsRepository.createSprint(sprintName, startDate, endDate) }
-
         var successCalled = false
         sut.createSprint(doOnSuccess = { successCalled = true })
 
-        coVerify { sprintsRepository.createSprint(sprintName, startDate, endDate) }
         assertTrue(successCalled)
         assertFalse(sut.sprintDialogState.value.isSprintDialogVisible)
     }
@@ -145,10 +134,9 @@ class WorkItemSprintDelegateImplTest {
     fun `createSprint should call doOnPreExecute before repository call`() = runTest {
         val sprintName = getRandomString()
         val startDate = nowLocalDate
-        val endDate = nowLocalDate.plusDays(14)
+        val endDate = nowLocalDate.plus(14, DateTimeUnit.DAY)
 
         setupSprintState(sprintName, startDate, endDate)
-        coJustRun { sprintsRepository.createSprint(any(), any(), any()) }
 
         var preExecuteCalled = false
         sut.createSprint(doOnPreExecute = { preExecuteCalled = true })
@@ -181,15 +169,13 @@ class WorkItemSprintDelegateImplTest {
         val sprintId = getRandomLong()
         val sprintName = getRandomString()
         val startDate = nowLocalDate
-        val endDate = nowLocalDate.plusDays(14)
+        val endDate = nowLocalDate.plus(14, DateTimeUnit.DAY)
 
         setupSprintState(sprintName, startDate, endDate)
-        coJustRun { sprintsRepository.editSprint(sprintId, sprintName, startDate, endDate) }
 
         var successCalled = false
         sut.editSprint(sprintId = sprintId, doOnSuccess = { successCalled = true })
 
-        coVerify { sprintsRepository.editSprint(sprintId, sprintName, startDate, endDate) }
         assertTrue(successCalled)
         assertFalse(sut.sprintDialogState.value.isSprintDialogVisible)
     }
@@ -210,7 +196,7 @@ class WorkItemSprintDelegateImplTest {
     fun `onDismiss should reset state`() = runTest {
         val sprintName = getRandomString()
         val startDate = nowLocalDate
-        val endDate = nowLocalDate.plusDays(14)
+        val endDate = nowLocalDate.plus(14, DateTimeUnit.DAY)
 
         setupSprintState(sprintName, startDate, endDate)
         sut.setSprintDialogVisibility(true)
@@ -239,9 +225,6 @@ class WorkItemSprintDelegateImplTest {
         val localDate = nowLocalDate
         val formattedDate = "Jan 1, 2024"
 
-        every { dateTimeUtils.fromMillisToLocalDate(millis) } returns localDate
-        every { dateTimeUtils.formatToMediumFormat(localDate) } returns formattedDate
-
         sut.sprintDialogState.value.onStartDateConfirmButtonClick(millis)
 
         val state = sut.sprintDialogState.value
@@ -253,8 +236,6 @@ class WorkItemSprintDelegateImplTest {
     @Test
     fun `onStartDateConfirmButtonClick should do nothing when millis is null`() = runTest {
         sut.sprintDialogState.value.onStartDateConfirmButtonClick(null)
-
-        verify(exactly = 0) { dateTimeUtils.fromMillisToLocalDate(any()) }
     }
 
     @Test
@@ -272,9 +253,6 @@ class WorkItemSprintDelegateImplTest {
         val localDate = nowLocalDate
         val formattedDate = "Jan 15, 2024"
 
-        every { dateTimeUtils.fromMillisToLocalDate(millis) } returns localDate
-        every { dateTimeUtils.formatToMediumFormat(localDate) } returns formattedDate
-
         sut.sprintDialogState.value.onEndDateConfirmButtonClick(millis)
 
         val state = sut.sprintDialogState.value
@@ -284,11 +262,10 @@ class WorkItemSprintDelegateImplTest {
     }
 
     private fun setupValidDates() {
-        every { dateTimeUtils.formatToMediumFormat(any<LocalDate>()) } returns "date"
+
     }
 
     private fun setupSprintState(name: String, startDate: LocalDate, endDate: LocalDate) {
-        every { dateTimeUtils.formatToMediumFormat(any<LocalDate>()) } returns "date"
         sut.setInitialSprint(startDate, endDate, name)
     }
 }

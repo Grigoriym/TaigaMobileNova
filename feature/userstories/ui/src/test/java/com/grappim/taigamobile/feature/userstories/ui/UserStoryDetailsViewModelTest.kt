@@ -1,14 +1,17 @@
 package com.grappim.taigamobile.feature.userstories.ui
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryDetailsDataUseCase
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
@@ -22,13 +25,19 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFi
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.userstory_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
-import com.grappim.taigamobile.testing.SavedStateHandleRule
 import com.grappim.taigamobile.testing.models.getStatusUI
 import com.grappim.taigamobile.testing.models.getUserStory
 import com.grappim.taigamobile.testing.models.getUserStoryDetailsData
+import com.grappim.taigamobile.testing.repo.FakeEpicsRepository
+import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
+import com.grappim.taigamobile.testing.repo.FakeUsersRepository
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
+import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
+import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import com.grappim.taigamobile.utils.ui.NativeText
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -39,9 +48,10 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
-import org.junit.Rule
 import java.time.LocalDate
+import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -55,56 +65,46 @@ internal class UserStoryDetailsViewModelTest {
 
     private val type = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
 
-    @get:Rule
-    val savedStateHandleRule = SavedStateHandleRule(
-        UserStoryDetailsNavDestination(
-            userStoryId = userStoryId,
-            ref = ref
-        )
+    private val savedStateHandle = SavedStateHandle(
+        mapOf("userStoryId" to userStoryId, "ref" to ref)
     )
 
-    @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    private val mainDispatcherRule = MainDispatcherRule()
 
-    private val userStoryDetailsDataUseCase: UserStoryDetailsDataUseCase = mockk()
-    private val workItemsGenerator: WorkItemsGenerator = mockk()
-    private val workItemEditStateRepository: WorkItemEditStateRepository = mockk(relaxed = true)
-    private val patchDataGenerator: PatchDataGenerator = mockk()
-    private val statusUIMapper: StatusUIMapper = mockk()
-    private val tagUIMapper: TagUIMapper = mockk()
-    private val dateTimeUtils: DateTimeUtils = mockk()
-    private val fileUriManager: FileUriManager = mockk()
-    private val customFieldsUIMapper: CustomFieldsUIMapper = mockk()
-    private val historyRepository: HistoryRepository = mockk()
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val taigaSessionStorage: KmpTaigaSessionStorage = mockk()
-    private val usersRepository: UsersRepository = mockk()
-    private val epicsRepository: EpicsRepository = mockk()
+    private val statusUIMapper: StatusUIMapper = StatusUIMapper()
+
+    private val workItemsGenerator: WorkItemsGenerator = WorkItemsGenerator(
+        dispatcher = UnconfinedTestDispatcher(),
+        statusUIMapper = statusUIMapper
+    )
+    private val workItemEditStateRepository: WorkItemEditStateRepository = WorkItemEditStateRepository()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
+
+    private val tagUIMapper: TagUIMapper = TagUIMapper()
+    private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
+    private val customFieldsUIMapper: CustomFieldsUIMapper = CustomFieldsUIMapper(createDecimalFormatter())
+    private val historyRepository: HistoryRepository = FakeHistoryRepository()
+    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
+    private val usersRepository: UsersRepository = FakeUsersRepository()
+    private val epicsRepository: EpicsRepository = FakeEpicsRepository()
+    private val userStoryDetailsDataUseCase: UserStoryDetailsDataUseCase = UserStoryDetailsDataUseCase()
 
     private lateinit var sut: UserStoryDetailsViewModel
 
     @BeforeTest
     fun setup() {
-        every {
-            workItemEditStateRepository.getTeamMemberUpdateFlow(userStoryId, type)
-        } returns emptyFlow()
+        mainDispatcherRule.setup()
+    }
 
-        every {
-            workItemEditStateRepository.getTagsFlow(userStoryId, type)
-        } returns emptyFlow()
-
-        every {
-            workItemEditStateRepository.getDescriptionFlow(userStoryId, type)
-        } returns emptyFlow()
-
-        every {
-            workItemEditStateRepository.getEpicsFlow(userStoryId, type)
-        } returns emptyFlow()
+    @AfterTest
+    fun tearDown() {
+        mainDispatcherRule.tearDown()
     }
 
     private fun createViewModel() {
         sut = UserStoryDetailsViewModel(
-            savedStateHandle = savedStateHandleRule.savedStateHandleMock,
+            savedStateHandle = savedStateHandle,
             userStoryDetailsDataUseCase = userStoryDetailsDataUseCase,
             workItemsGenerator = workItemsGenerator,
             workItemEditStateRepository = workItemEditStateRepository,
@@ -112,7 +112,6 @@ internal class UserStoryDetailsViewModelTest {
             statusUIMapper = statusUIMapper,
             tagUIMapper = tagUIMapper,
             dateTimeUtils = dateTimeUtils,
-            fileUriManager = fileUriManager,
             customFieldsUIMapper = customFieldsUIMapper,
             historyRepository = historyRepository,
             workItemRepository = workItemRepository,
@@ -126,30 +125,6 @@ internal class UserStoryDetailsViewModelTest {
         val userStoryDetailsData = getUserStoryDetailsData(
             userStory = getUserStory(id = userStoryId)
         )
-        coEvery {
-            userStoryDetailsDataUseCase.getUserStoryData(userStoryId)
-        } returns Result.success(userStoryDetailsData)
-
-        coEvery {
-            statusUIMapper.toUI(any<Statuses>())
-        } returns getStatusUI()
-
-        coEvery {
-            tagUIMapper.toSelectableUI(any<ImmutableList<Tag>>())
-        } returns persistentListOf<SelectableTagUI>()
-
-        coEvery {
-            workItemsGenerator.getItems(
-                statusUI = any(),
-                filtersData = any()
-            )
-        } returns persistentSetOf()
-
-        coEvery {
-            customFieldsUIMapper.toUI(any<CustomFields>())
-        } returns persistentListOf<CustomFieldItemState>()
-
-        every { dateTimeUtils.formatToMediumFormat(any<LocalDate>()) } returns "Jan 1, 2024"
     }
 
     @Test

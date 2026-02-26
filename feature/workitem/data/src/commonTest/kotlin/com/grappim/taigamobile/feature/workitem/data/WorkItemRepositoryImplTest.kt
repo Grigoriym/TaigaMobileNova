@@ -33,6 +33,7 @@ import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
 import com.grappim.taigamobile.testing.FakeNetworkMonitor
 import com.grappim.taigamobile.testing.api.FakeWorkItemApi
+import com.grappim.taigamobile.testing.dao.FakeWorkItemDao
 import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.models.getAttachmentDTO
 import com.grappim.taigamobile.testing.models.getUser
@@ -65,6 +66,8 @@ import kotlin.test.assertTrue
 
 class WorkItemRepositoryImplTest {
 
+    private val projectId = getRandomLong()
+
     private val workItemApi: WorkItemApi = FakeWorkItemApi()
     private val patchedDataMapper: PatchedDataMapper = PatchedDataMapper(DueDateStatusMapper())
     private val attachmentMapper: AttachmentMapper = AttachmentMapper()
@@ -77,25 +80,19 @@ class WorkItemRepositoryImplTest {
     private val workItemEntityMapper: WorkItemEntityMapper = WorkItemEntityMapper(Json)
     private val usersRepository: UsersRepository = FakeUsersRepository()
     private val customFieldsMapper: CustomFieldsMapper = CustomFieldsMapper(FakeDateTimeUtils())
-    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
+    private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage(
+        currentProjectId = projectId
+    )
     private val jsonObjectMapper: JsonObjectMapper = JsonObjectMapper()
-    private val workItemDao: WorkItemDao = mockk()
+    private val workItemDao: WorkItemDao = FakeWorkItemDao()
     private val networkMonitor: NetworkMonitor = FakeNetworkMonitor()
 
     private lateinit var sut: WorkItemRepository
 
-    private val projectId = getRandomLong()
+
 
     @BeforeTest
     fun setup() {
-        coEvery { taigaSessionStorage.getCurrentProjectId() } returns projectId
-        coJustRun { workItemDao.insertAll(any()) }
-        every { workItemEntityMapper.toEntityList(any(), any()) } returns emptyList()
-        every { jsonObjectMapper.fromMapToJsonObject(any()) } answers {
-            val map = firstArg<Map<String, Any?>>()
-            JsonObjectMapper().fromMapToJsonObject(map)
-        }
-
         sut = WorkItemRepositoryImpl(
             workItemApi = workItemApi,
             patchedDataMapper = patchedDataMapper,
@@ -114,7 +111,6 @@ class WorkItemRepositoryImplTest {
     @Test
     fun `getWorkItems should return mapped work items for user stories`() = runTest {
         val taskType = CommonTaskType.UserStory
-        val taskPath = WorkItemPathPlural(taskType)
         val dtos = listOf(getWorkItemResponseDTO(), getWorkItemResponseDTO())
         val expectedItems = persistentListOf(
             getWorkItem(taskType = taskType),

@@ -15,9 +15,9 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.UrlItemS
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
+import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.test.runTest
-import java.text.DecimalFormat
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -26,14 +26,13 @@ import kotlin.test.assertTrue
 
 class CustomFieldsUIMapperTest {
 
-    private val decimalFormat = DecimalFormat("#.##")
-
     private lateinit var sut: CustomFieldsUIMapper
+    private val decimalFormatter = createDecimalFormatter()
 
     @BeforeTest
     fun setUp() {
         sut = CustomFieldsUIMapper(
-            dfSimple = decimalFormat
+            dfSimple = decimalFormatter
         )
     }
 
@@ -193,8 +192,8 @@ class CustomFieldsUIMapperTest {
         assertEquals(id, item.id)
         assertEquals(name, item.label)
         assertEquals(description, item.description)
-        assertEquals(decimalFormat.format(value), item.originalValue)
-        assertEquals(decimalFormat.format(value), item.currentValue)
+        assertEquals(decimalFormatter.format(value), item.originalValue)
+        assertEquals(decimalFormatter.format(value), item.currentValue)
     }
 
     @Test
@@ -217,8 +216,8 @@ class CustomFieldsUIMapperTest {
         val actual = sut.toUI(customFields)
 
         val item = assertIs<NumberItemState>(actual[0])
-        assertEquals(decimalFormat.format(0.0), item.originalValue)
-        assertEquals(decimalFormat.format(0.0), item.currentValue)
+        assertEquals(decimalFormatter.format(0.0), item.originalValue)
+        assertEquals(decimalFormatter.format(0.0), item.currentValue)
     }
 
     @Test

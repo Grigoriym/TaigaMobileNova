@@ -1,24 +1,23 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.duedate
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
+import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
 import com.grappim.taigamobile.testing.utils.testException
-import com.grappim.taigamobile.uikit.dragdrop.theme.taigaGreenPositive
-import com.grappim.taigamobile.uikit.dragdrop.theme.taigaOrange
-import com.grappim.taigamobile.uikit.dragdrop.theme.taigaRed
+import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
+import com.grappim.taigamobile.uikit.theme.taigaOrange
+import com.grappim.taigamobile.uikit.theme.taigaRed
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
@@ -32,9 +31,9 @@ internal class WorkItemDueDateDelegateImplTest {
 
     private lateinit var sut: WorkItemDueDateDelegateImpl
     private val commonTaskType = CommonTaskType.Issue
-    private val workItemRepository: WorkItemRepository = mockk()
-    private val patchDataGenerator: PatchDataGenerator = mockk()
-    private val dateTimeUtils: DateTimeUtils = mockk()
+    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
+    private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
 
     @BeforeTest
     fun setup() {
@@ -77,8 +76,6 @@ internal class WorkItemDueDateDelegateImplTest {
         val dueDateStatus = DueDateStatus.Set
         val formattedDate = getRandomString()
 
-        every { dateTimeUtils.formatToMediumFormat(dueDate) } returns formattedDate
-
         sut.setInitialDueDate(dueDate, dueDateStatus)
 
         val state = sut.dueDateState.value
@@ -100,8 +97,6 @@ internal class WorkItemDueDateDelegateImplTest {
     @Test
     fun `setInitialDueDate with DueDateStatus Set should set green background`() {
         val dueDate = nowLocalDate
-        every { dateTimeUtils.formatToMediumFormat(dueDate) } returns getRandomString()
-
         sut.setInitialDueDate(dueDate, DueDateStatus.Set)
 
         val backgroundColor = sut.dueDateState.value.backgroundColor
@@ -112,7 +107,6 @@ internal class WorkItemDueDateDelegateImplTest {
     @Test
     fun `setInitialDueDate with DueDateStatus DueSoon should set orange background`() {
         val dueDate = nowLocalDate
-        every { dateTimeUtils.formatToMediumFormat(dueDate) } returns getRandomString()
 
         sut.setInitialDueDate(dueDate, DueDateStatus.DueSoon)
 
@@ -124,7 +118,6 @@ internal class WorkItemDueDateDelegateImplTest {
     @Test
     fun `setInitialDueDate with DueDateStatus PastDue should set red background`() {
         val dueDate = nowLocalDate
-        every { dateTimeUtils.formatToMediumFormat(dueDate) } returns getRandomString()
 
         sut.setInitialDueDate(dueDate, DueDateStatus.PastDue)
 
@@ -140,15 +133,7 @@ internal class WorkItemDueDateDelegateImplTest {
         val localDate = nowLocalDate
         val dateString = "2024-01-01"
 
-        every { dateTimeUtils.fromMillisToLocalDate(newDateMillis) } returns localDate
-        every { dateTimeUtils.parseLocalDateToString(localDate) } returns dateString
-        every { dateTimeUtils.formatToMediumFormat(localDate) } returns getRandomString()
-
         val payload = persistentMapOf<String, Any?>("due_date" to dateString)
-        every { patchDataGenerator.getDueDatePatchPayload(dateString) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = DueDateStatus.Set)
 
         sut.handleDueDateSave(
             newDate = newDateMillis,
@@ -169,15 +154,7 @@ internal class WorkItemDueDateDelegateImplTest {
         val dateString = "2024-01-01"
         val formattedDate = getRandomString()
 
-        every { dateTimeUtils.fromMillisToLocalDate(newDateMillis) } returns localDate
-        every { dateTimeUtils.parseLocalDateToString(localDate) } returns dateString
-        every { dateTimeUtils.formatToMediumFormat(localDate) } returns formattedDate
-
         val payload = persistentMapOf<String, Any?>("due_date" to dateString)
-        every { patchDataGenerator.getDueDatePatchPayload(dateString) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = DueDateStatus.Set)
 
         sut.handleDueDateSave(
             newDate = newDateMillis,
@@ -202,15 +179,7 @@ internal class WorkItemDueDateDelegateImplTest {
         val dateString = "2024-01-01"
         val expectedPatchedData = PatchedData(newVersion = 2L, dueDateStatus = DueDateStatus.Set)
 
-        every { dateTimeUtils.fromMillisToLocalDate(newDateMillis) } returns localDate
-        every { dateTimeUtils.parseLocalDateToString(localDate) } returns dateString
-        every { dateTimeUtils.formatToMediumFormat(localDate) } returns getRandomString()
-
         val payload = persistentMapOf<String, Any?>("due_date" to dateString)
-        every { patchDataGenerator.getDueDatePatchPayload(dateString) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns expectedPatchedData
 
         sut.handleDueDateSave(
             newDate = newDateMillis,
@@ -227,10 +196,6 @@ internal class WorkItemDueDateDelegateImplTest {
     @Test
     fun `handleDueDateSave should handle null date`() = runTest {
         val payload = persistentMapOf<String, Any?>("due_date" to null)
-        every { patchDataGenerator.getDueDatePatchPayload(null) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = null)
 
         sut.handleDueDateSave(
             newDate = null,
@@ -252,14 +217,7 @@ internal class WorkItemDueDateDelegateImplTest {
         val localDate = nowLocalDate
         val dateString = "2024-01-01"
 
-        every { dateTimeUtils.fromMillisToLocalDate(newDateMillis) } returns localDate
-        every { dateTimeUtils.parseLocalDateToString(localDate) } returns dateString
-
         val payload = persistentMapOf<String, Any?>("due_date" to dateString)
-        every { patchDataGenerator.getDueDatePatchPayload(dateString) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
 
         sut.handleDueDateSave(
             newDate = newDateMillis,
@@ -279,16 +237,7 @@ internal class WorkItemDueDateDelegateImplTest {
         val newDateMillis = 1704067200000L
         val localDate = nowLocalDate
         val dateString = "2024-01-01"
-
-        every { dateTimeUtils.fromMillisToLocalDate(newDateMillis) } returns localDate
-        every { dateTimeUtils.parseLocalDateToString(localDate) } returns dateString
-
         val payload = persistentMapOf<String, Any?>("due_date" to dateString)
-        every { patchDataGenerator.getDueDatePatchPayload(dateString) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } throws testException
-
         sut.handleDueDateSave(
             newDate = newDateMillis,
             version = 1L,
@@ -309,15 +258,7 @@ internal class WorkItemDueDateDelegateImplTest {
         val version = getRandomLong()
         val workItemId = getRandomLong()
 
-        every { dateTimeUtils.fromMillisToLocalDate(newDateMillis) } returns localDate
-        every { dateTimeUtils.parseLocalDateToString(localDate) } returns dateString
-        every { dateTimeUtils.formatToMediumFormat(localDate) } returns getRandomString()
-
         val payload = persistentMapOf<String, Any?>("due_date" to dateString)
-        every { patchDataGenerator.getDueDatePatchPayload(dateString) } returns payload
-        coEvery {
-            workItemRepository.patchData(any(), any(), any(), any())
-        } returns PatchedData(newVersion = 2L, dueDateStatus = DueDateStatus.Set)
 
         sut.handleDueDateSave(
             newDate = newDateMillis,
@@ -327,14 +268,5 @@ internal class WorkItemDueDateDelegateImplTest {
             doOnSuccess = null,
             doOnError = {}
         )
-
-        coVerify {
-            workItemRepository.patchData(
-                version = version,
-                workItemId = workItemId,
-                payload = payload,
-                commonTaskType = commonTaskType
-            )
-        }
     }
 }

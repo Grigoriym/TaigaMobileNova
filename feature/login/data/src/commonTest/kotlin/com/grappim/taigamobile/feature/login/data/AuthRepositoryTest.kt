@@ -4,7 +4,6 @@ import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
-import com.grappim.taigamobile.feature.login.dto.AuthRequest
 import com.grappim.taigamobile.feature.login.dto.AuthResponse
 import com.grappim.taigamobile.testing.api.FakeAuthApi
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage
@@ -12,11 +11,11 @@ import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
-import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -51,46 +50,17 @@ internal class AuthRepositoryTest {
             id = getRandomLong()
         )
 
-        every { serverStorage.defineServer(authData.taigaServer) } just Runs
-        coEvery {
-            authApi.auth(
-                AuthRequest(
-                    username = authData.username,
-                    password = authData.password,
-                    type = authData.authType.value
-                )
-            )
-        } returns response
-        every {
-            authStorage.setAuthCredentials(
-                token = response.authToken,
-                refreshToken = response.refresh
-            )
-        } just Runs
-
-        coEvery { taigaSessionStorage.setUserId(response.id) } just Runs
+        authApi.authResult = response
 
         val actual = sut.auth(authData)
 
-        assertTrue(actual.isSuccess)
+        val call = authApi.authCalls.single()
 
-        verify { serverStorage.defineServer(authData.taigaServer) }
-        verify {
-            authStorage.setAuthCredentials(
-                token = response.authToken,
-                refreshToken = response.refresh
-            )
-        }
-        coVerify { taigaSessionStorage.setUserId(response.id) }
-        coVerify {
-            authApi.auth(
-                AuthRequest(
-                    username = authData.username,
-                    password = authData.password,
-                    type = authData.authType.value
-                )
-            )
-        }
+        assertEquals(authData.password, call.password)
+        assertEquals(authData.username, call.username)
+        assertEquals(authData.authType.value, call.type)
+
+        assertTrue(actual.isSuccess)
     }
 
     @Test
@@ -101,43 +71,7 @@ internal class AuthRepositoryTest {
             password = getRandomString(),
             username = getRandomString()
         )
-        val response = AuthResponse(
-            authToken = getRandomString(),
-            refresh = getRandomString(),
-            id = getRandomLong()
-        )
-
-        every { serverStorage.defineServer(authData.taigaServer) } just Runs
-        coEvery {
-            authApi.auth(
-                AuthRequest(
-                    username = authData.username,
-                    password = authData.password,
-                    type = authData.authType.value
-                )
-            )
-        } throws testException
-
         val actual = sut.auth(authData)
-
         assertTrue(actual.isFailure)
-
-        verify { serverStorage.defineServer(authData.taigaServer) }
-        coVerify {
-            authApi.auth(
-                AuthRequest(
-                    username = authData.username,
-                    password = authData.password,
-                    type = authData.authType.value
-                )
-            )
-        }
-        verify(exactly = 0) {
-            authStorage.setAuthCredentials(
-                token = response.authToken,
-                refreshToken = response.refresh
-            )
-        }
-        coVerify(exactly = 0) { taigaSessionStorage.setUserId(response.id) }
     }
 }

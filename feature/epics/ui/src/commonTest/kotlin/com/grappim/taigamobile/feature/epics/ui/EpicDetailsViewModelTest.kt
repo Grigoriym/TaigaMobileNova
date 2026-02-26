@@ -7,12 +7,11 @@ import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
-import com.grappim.taigamobile.feature.epics.domain.EpicDetailsDataUseCase
 import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsViewModel
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
@@ -30,7 +29,6 @@ import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.usecases.FakeEpicDetailsDataUseCase
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
-import com.grappim.taigamobile.testing.utils.FakePatchDataGenerator
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
@@ -64,7 +62,7 @@ internal class EpicDetailsViewModelTest {
     private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
     private val epicDetailsDataUseCase = FakeEpicDetailsDataUseCase()
     private val workItemRepository = FakeWorkItemRepository()
-    private val patchDataGenerator: PatchDataGenerator = FakePatchDataGenerator()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
     private val historyRepository: HistoryRepository = FakeHistoryRepository()
     private val usersRepository: UsersRepository = FakeUsersRepository()
     private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()

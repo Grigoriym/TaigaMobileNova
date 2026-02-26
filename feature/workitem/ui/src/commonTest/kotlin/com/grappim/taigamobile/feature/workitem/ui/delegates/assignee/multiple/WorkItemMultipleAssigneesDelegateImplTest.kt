@@ -3,13 +3,13 @@ package com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.multiple
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
-import com.grappim.taigamobile.testing.utils.FakePatchDataGenerator
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
@@ -25,7 +25,7 @@ internal class WorkItemMultipleAssigneesDelegateImplTest {
 
     private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
     private val usersRepository: UsersRepository = FakeUsersRepository()
-    private val patchDataGenerator: PatchDataGenerator = FakePatchDataGenerator()
+    private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
     private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
 
     private fun createSut(
