@@ -21,86 +21,45 @@ kover {
     reports {
         filters {
             excludes {
+                // Generates all 4 JVM variants for each suffix:
+                // **.*Foo, **.*FooKt, **.*Foo$*, **.*FooKt$*
+                fun variants(vararg names: String): Array<String> = names.flatMap { name ->
+                    listOf(
+                        "**.*$name",
+                        "**.*${name}Kt",
+                        "**.*$name\$*",
+                        "**.*${name}Kt\$*"
+                    )
+                }.toTypedArray()
+
                 classes(
-                    "**.*Api",
-                    "**.*ApiKt",
-                    "**.*Api\$*",
-                    "**.*ApiImpl",
-                    "**.*ApiImplKt",
-                    "**.*ApiImpl\$*",
-                    "**.*DTO",
-                    "**.*DTOKt",
-                    "**.*DTO\$*",
-                    "**.*Repository",
-                    "**.*Repository\$*",
-                    "**.*RepositoryKt",
-                    "**.*Delegate",
-                    "**.*Delegate\$*",
-                    "**.*DelegateKt",
-                    "**.*TimberLogger",
-                    "**.*TimberLogger\$*",
-                    "**.*PagingSource\$*",
-                    "**.*PagingSource",
+                    *variants(
+                        // Data layer
+                        "Api", "ApiImpl", "DTO", "Repository",
+                        // Architecture boilerplate
+                        "Delegate", "Plugin", "Module",
+                        "TimberLogger", "PagingSource", "Exception",
+                        // App entry points & platform glue
+                        "App", "Desktop", "Activity",
+                        // UI — composables & navigation
+                        "DrawerDestination", "IconSource",
+                        "UI", "Widget", "Screen", "Dialog", "BottomSheet",
+                        "Destination", "NavigationExtensions", "Graph", "NavHost",
+                        // Compose compiler synthetic lambdas (always appear as ComposableSingletons$FileKt)
+                        "ComposableSingletons",
+                        // Misc
+                        "ImmutableListSerializer"
+                    )
+                )
+
+                classes(
+                    // Top-level extension files (no base class, only a Kt facade)
                     "**.*ResultExtensionKt",
-                    "**.*Exception\$*",
-                    "**.*Exception",
                     "**.*TryCatchExtensionsKt",
+                    // Constants objects
                     "**.*ApiConstants",
-                    "**.*Plugin",
-                    "**.*PluginKt",
-                    "**.*Plugin\$*",
-
-                    "**.*Module",
-                    "**.*Module\$*",
-                    "**.*ModuleKt",
-
-                    "**.*App",
-                    "**.*App\$*",
-                    "**.*AppKt",
-                    "**.*DesktopKt",
-                    "**.*Desktop",
-                    "**.*DrawerDestination",
-                    "**.*DrawerDestinationKt",
-                    "**.*Activity",
-                    "**.*Activity\$*",
-                    "**.*IconSource",
-                    "**.*IconSource\$*",
-                    "**.*ComposableSingletons\$*",
-
-                    "**.*UI",
-                    "**.*UIKt",
-                    "**.*UI\$*",
-                    "**.*Widget",
-                    "**.*WidgetKt",
-                    "**.*Widget\$*",
-                    "**.*Screen",
-                    "**.*ScreenKt",
-                    "**.*Screen\$*",
-                    "**.*Dialog",
-                    "**.*DialogKt",
-                    "**.*Dialog\$*",
-                    "**.*BottomSheet",
-                    "**.*BottomSheetKt",
-                    "**.*BottomSheet\$*",
-                    "**.*Destination",
-                    "**.*Destination\$*",
-                    "**.*DestinationKt",
-                    "**.*NavigationExtensionsKt",
-                    "**.*NavigationExtensions",
-                    "**.*NavigationExtensionsKt\$*",
-                    "**.*Graph\$*",
-                    "**.*GraphKt",
-                    "**.*Graph",
-                    "**.*NavHostKt",
-                    "**.*NavHost",
-
-                    "**.*ImmutableListSerializer",
-                    "**.*ImmutableListSerializerKt",
-                    "**.*ImmutableListSerializer\$*",
-                    "**.*Preferences\$*",
+                    // Preferences — broad glob covers all generated variants
                     "**.*Preferences*",
-                    "**.*PreferencesKt",
-
                     "**.*BuildConfig"
                 )
             }

@@ -54,10 +54,12 @@ class FakeWikiRepository : WikiRepository {
 
     var deleteWikiLinkCalled = false
     var deleteWikiLinkId: Long? = null
+    var deleteWikiLinkThrows: Throwable? = null
 
     override suspend fun deleteWikiLink(linkId: Long) {
         deleteWikiLinkCalled = true
         deleteWikiLinkId = linkId
+        deleteWikiLinkThrows?.let { throw it }
     }
 
     override suspend fun createWikiPage(slug: String, content: String): WikiPage {

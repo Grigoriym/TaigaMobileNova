@@ -10,7 +10,6 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
 import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.context.startKoin
 import org.koin.plugin.module.dsl.startKoin
 import platform.UIKit.UIViewController
 

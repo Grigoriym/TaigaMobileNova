@@ -9,7 +9,6 @@ import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
-import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 
 class FakeGetKanbanDataUseCase : GetKanbanDataUseCase {

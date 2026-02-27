@@ -22,8 +22,12 @@ class FakeProjectsRepository : ProjectsRepository {
         TODO("Not yet implemented")
     }
 
+    var getUserProjectsResult: ImmutableList<Project> = persistentListOf()
+    var getUserProjectsThrows: Throwable? = null
+
     override suspend fun getUserProjects(userId: Long): ImmutableList<Project> {
-        TODO("Not yet implemented")
+        getUserProjectsThrows?.let { throw it }
+        return getUserProjectsResult
     }
 
     override suspend fun saveProject(project: Project) {

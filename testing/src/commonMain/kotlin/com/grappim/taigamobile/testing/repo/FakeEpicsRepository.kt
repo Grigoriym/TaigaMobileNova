@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 
 class FakeEpicsRepository : EpicsRepository {
@@ -20,13 +21,17 @@ class FakeEpicsRepository : EpicsRepository {
         TODO("Not yet implemented")
     }
 
+    var getEpicsResult: ImmutableList<Epic> = persistentListOf()
+    var getEpicsThrows: Throwable? = null
+
     override suspend fun getEpics(
         projectId: Long,
         assignedId: Long?,
         isClosed: Boolean?,
         watcherId: Long?
     ): ImmutableList<Epic> {
-        TODO("Not yet implemented")
+        getEpicsThrows?.let { throw it }
+        return getEpicsResult
     }
 
     override suspend fun linkToEpic(epicId: Long, userStoryId: Long) {
