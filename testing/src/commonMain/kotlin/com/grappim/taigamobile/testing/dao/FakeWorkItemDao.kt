@@ -21,10 +21,12 @@ class FakeWorkItemDao : WorkItemDao {
         taskType: CommonTaskType
     ): Flow<List<WorkItemEntity>> = error("not used in this test")
 
+    var workItemsByProjectIdAndSprint: List<WorkItemEntity> = emptyList()
+
     override fun getByProjectIdAndSprint(
         projectId: Long,
         sprintId: Long
-    ): Flow<List<WorkItemEntity>> = flowOf(emptyList())
+    ): Flow<List<WorkItemEntity>> = flowOf(workItemsByProjectIdAndSprint)
 
     override fun getBacklogItems(
         projectId: Long,

@@ -9,6 +9,7 @@ import io.ktor.client.statement.HttpResponse
 class FakeSprintsApi : SprintApi {
 
     var sprintsResult: List<SprintResponseDTO> = emptyList()
+    var shouldThrowOnGetSprints: Boolean = false
     var sprintResult: SprintResponseDTO? = null
     var lastCreateRequest: CreateSprintRequest? = null
     var lastEditId: Long? = null
@@ -24,7 +25,10 @@ class FakeSprintsApi : SprintApi {
     override suspend fun getSprints(
         project: Long,
         isClosed: Boolean
-    ): List<SprintResponseDTO> = sprintsResult
+    ): List<SprintResponseDTO> {
+        if (shouldThrowOnGetSprints) throw RuntimeException("Network error")
+        return sprintsResult
+    }
 
     override suspend fun getSprint(sprintId: Long): SprintResponseDTO =
         sprintResult ?: error("sprintResult not set")

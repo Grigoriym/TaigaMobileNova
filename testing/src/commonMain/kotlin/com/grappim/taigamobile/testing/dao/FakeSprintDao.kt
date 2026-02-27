@@ -12,7 +12,9 @@ class FakeSprintDao : SprintDao {
 
     override suspend fun insert(sprint: SprintEntity) = error("not used in this test")
 
-    override fun getByProjectId(projectId: Long): Flow<List<SprintEntity>> = flowOf(emptyList())
+    var sprintsByProjectId: List<SprintEntity> = emptyList()
+
+    override fun getByProjectId(projectId: Long): Flow<List<SprintEntity>> = flowOf(sprintsByProjectId)
 
     override suspend fun getById(id: Long): SprintEntity? = error("not used in this test")
 

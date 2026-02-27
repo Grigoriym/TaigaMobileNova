@@ -290,6 +290,12 @@ kotlin {
             }
         }
 
+        jvmTest {
+            dependencies {
+                implementation(kotlin("test-junit"))
+            }
+        }
+
         androidMain {
             dependencies {
                 implementation(project.dependencies.platform(libs.androidx.compose.bom))

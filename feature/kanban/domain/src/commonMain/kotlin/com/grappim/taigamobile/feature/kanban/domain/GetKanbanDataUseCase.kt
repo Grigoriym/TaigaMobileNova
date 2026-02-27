@@ -22,15 +22,25 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Factory
 
-@Factory
-class GetKanbanDataUseCase(
+interface GetKanbanDataUseCase {
+    suspend fun getData(storageSwimlane: Long?): Result<KanbanData>
+    suspend fun computeStoriesByStatus(
+        stories: ImmutableList<UserStory>,
+        statuses: ImmutableList<Statuses>,
+        teamMembers: ImmutableList<TeamMember>,
+        swimlane: Swimlane?
+    ): ImmutableMap<Statuses, ImmutableList<KanbanUserStory>>
+}
+
+@Factory(binds = [GetKanbanDataUseCase::class])
+class GetKanbanDataUseCaseImpl(
     private val usersRepository: UsersRepository,
     private val filtersRepository: FiltersRepository,
     private val swimlanesRepository: SwimlanesRepository,
     private val userStoriesRepository: UserStoriesRepository,
     private val projectsRepository: ProjectsRepository
-) {
-    suspend fun getData(storageSwimlane: Long?): Result<KanbanData> = resultOf {
+) : GetKanbanDataUseCase {
+    override suspend fun getData(storageSwimlane: Long?): Result<KanbanData> = resultOf {
         coroutineScope {
             val project = async { projectsRepository.getCurrentProjectSimple() }
             val userStories = async { userStoriesRepository.getUserStories() }
@@ -90,7 +100,7 @@ class GetKanbanDataUseCase(
         return (listOf(Swimlane.unclassified()) + rawSwimlanes).toImmutableList()
     }
 
-    suspend fun computeStoriesByStatus(
+    override suspend fun computeStoriesByStatus(
         stories: ImmutableList<UserStory>,
         statuses: ImmutableList<Statuses>,
         teamMembers: ImmutableList<TeamMember>,

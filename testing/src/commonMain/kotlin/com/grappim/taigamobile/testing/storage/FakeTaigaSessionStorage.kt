@@ -19,7 +19,10 @@ class FakeTaigaSessionStorage(
     override val userId: Flow<Long?> = flowOf(currentUserId)
     override val currentProjectIdFlow: Flow<Long> = flowOf(currentProjectId)
 
-    override suspend fun setKanbanDefaultSwimline(value: Long): Unit = error("not used in this test")
+    var setKanbanDefaultSwimlineCalls: MutableList<Long> = mutableListOf()
+    override suspend fun setKanbanDefaultSwimline(value: Long) {
+        setKanbanDefaultSwimlineCalls.add(value)
+    }
     override suspend fun getTagPresetColors(): ImmutableList<String> = persistentListOf()
     override suspend fun getTagPresetColorsAsColor(): ImmutableList<Color> = persistentListOf()
     override suspend fun setTagPresetColors(colors: List<String>): Unit = error("not used in this test")

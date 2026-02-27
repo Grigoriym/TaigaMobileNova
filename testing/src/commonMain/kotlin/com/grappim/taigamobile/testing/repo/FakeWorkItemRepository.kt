@@ -143,10 +143,12 @@ class FakeWorkItemRepository : WorkItemRepository {
         deleteAttachmentThrows?.let { throw it }
     }
 
+    var getWorkItemAttachmentsResult: ImmutableList<Attachment> = persistentListOf()
+
     override suspend fun getWorkItemAttachments(
         workItemId: Long,
         taskIdentifier: TaskIdentifier,
-    ): ImmutableList<Attachment> = error("not used in this test")
+    ): ImmutableList<Attachment> = getWorkItemAttachmentsResult
 
     var watchWorkItemThrows: Throwable? = null
     var watchWorkItemCalled = false
@@ -194,10 +196,12 @@ class FakeWorkItemRepository : WorkItemRepository {
         return updateWatchersDataResult ?: error("updateWatchersDataResult not configured")
     }
 
+    var getCustomFieldsResult: CustomFields? = null
+
     override suspend fun getCustomFields(
         workItemId: Long,
         commonTaskType: CommonTaskType,
-    ): CustomFields = error("not used in this test")
+    ): CustomFields = getCustomFieldsResult ?: error("getCustomFieldsResult not set")
 
     override suspend fun deleteWorkItem(
         workItemId: Long,

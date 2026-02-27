@@ -9,9 +9,13 @@ import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 
 class FakeUserStoriesRepository : UserStoriesRepository {
+
+    var getEpicUserStoriesSimplifiedResult: ImmutableList<WorkItem> = persistentListOf()
+
     override fun getUserStoriesPaging(
         filters: FiltersData,
         query: String
@@ -19,9 +23,8 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem> =
+        getEpicUserStoriesSimplifiedResult
 
     override suspend fun createUserStory(
         subject: String,
@@ -60,6 +63,9 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         TODO("Not yet implemented")
     }
 
+    var bulkUpdateKanbanOrderThrows: Throwable? = null
+    var bulkUpdateKanbanOrderCalled = false
+
     override suspend fun bulkUpdateKanbanOrder(
         statusId: Long,
         storyIds: List<Long>,
@@ -67,6 +73,8 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         afterStoryId: Long?,
         beforeStoryId: Long?
     ): ImmutableList<UpdatedKanbanStory> {
-        TODO("Not yet implemented")
+        bulkUpdateKanbanOrderCalled = true
+        bulkUpdateKanbanOrderThrows?.let { throw it }
+        return persistentListOf()
     }
 }

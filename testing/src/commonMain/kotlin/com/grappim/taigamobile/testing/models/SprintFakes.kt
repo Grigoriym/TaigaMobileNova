@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.testing.models
 
+import com.grappim.taigamobile.core.storage.db.entities.SprintEntity
 import com.grappim.taigamobile.feature.sprint.data.SprintResponseDTO
 import com.grappim.taigamobile.feature.sprint.data.SprintUserStoryDTO
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
@@ -29,4 +30,18 @@ fun getSprintResponseDTO(): SprintResponseDTO = SprintResponseDTO(
     closed = false,
     order = 1,
     userStories = listOf(SprintUserStoryDTO(id = getRandomLong()))
+)
+
+fun getSprintEntity(
+    isClosed: Boolean = getRandomBoolean(),
+    projectId: Long = getRandomLong()
+): SprintEntity = SprintEntity(
+    id = getRandomLong(),
+    projectId = projectId,
+    name = getRandomString(),
+    order = getRandomInt(),
+    start = nowLocalDate,
+    end = nowLocalDate.plus(14, DateTimeUnit.DAY),
+    storiesCount = getRandomInt(),
+    isClosed = isClosed
 )

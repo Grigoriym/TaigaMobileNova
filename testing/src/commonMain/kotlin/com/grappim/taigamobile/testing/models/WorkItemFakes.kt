@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.testing.models
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.storage.db.entities.WorkItemEntity
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.dto.StatusExtraInfoDTO
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
@@ -53,6 +54,32 @@ fun getWorkItemResponseDTO(): WorkItemResponseDTO =
         fromTaskRef = null,
         kanbanOrder = getRandomLong()
     )
+
+fun getWorkItemEntity(
+    taskType: CommonTaskType = CommonTaskType.Task,
+    projectId: Long = getRandomLong(),
+    sprintId: Long? = null
+): WorkItemEntity = WorkItemEntity(
+    id = getRandomLong(),
+    taskType = taskType,
+    projectId = projectId,
+    projectName = getRandomString(),
+    ref = getRandomLong(),
+    title = getRandomString(),
+    createdDate = nowLocalDateTime,
+    isClosed = getRandomBoolean(),
+    isBlocked = false,
+    blockedNote = null,
+    statusId = getRandomLong(),
+    statusName = getRandomString(),
+    statusColor = "#FF0000",
+    assigneeId = null,
+    assigneeName = null,
+    assigneePhoto = null,
+    tagsJson = "[]",
+    colorsJson = "[]",
+    sprintId = sprintId
+)
 
 fun getWorkItem(
     id: Long = getRandomLong(),

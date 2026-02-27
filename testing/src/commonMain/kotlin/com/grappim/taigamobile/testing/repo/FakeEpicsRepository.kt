@@ -9,6 +9,10 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
 
 class FakeEpicsRepository : EpicsRepository {
+
+    var getEpicResult: Epic? = null
+    var getEpicThrows: Throwable? = null
+
     override fun getEpicsPaging(
         filters: FiltersData,
         query: String
@@ -34,6 +38,7 @@ class FakeEpicsRepository : EpicsRepository {
     }
 
     override suspend fun getEpic(id: Long): Epic {
-        TODO("Not yet implemented")
+        getEpicThrows?.let { throw it }
+        return getEpicResult ?: error("getEpicResult not set")
     }
 }

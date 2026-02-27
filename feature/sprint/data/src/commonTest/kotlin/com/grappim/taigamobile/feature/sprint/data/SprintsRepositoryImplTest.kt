@@ -14,8 +14,10 @@ import com.grappim.taigamobile.testing.api.FakeSprintsApi
 import com.grappim.taigamobile.testing.api.FakeWorkItemApi
 import com.grappim.taigamobile.testing.dao.FakeSprintDao
 import com.grappim.taigamobile.testing.dao.FakeWorkItemDao
+import com.grappim.taigamobile.testing.models.getSprintEntity
 import com.grappim.taigamobile.testing.models.getSprintResponseDTO
 import com.grappim.taigamobile.testing.models.getStatus
+import com.grappim.taigamobile.testing.models.getWorkItemEntity
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
 import com.grappim.taigamobile.testing.repo.FakeFiltersRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
@@ -175,6 +177,125 @@ class SprintsRepositoryImplTest {
         sut.deleteSprint(sprintId)
 
         assertEquals(sprintId, fakeSprintsApi.lastDeleteId)
+    }
+
+    @Test
+    fun `getSprints offline should return cached sprints`() = runTest {
+        val entities = listOf(
+            getSprintEntity(isClosed = false, projectId = projectId),
+            getSprintEntity(isClosed = false, projectId = projectId),
+            getSprintEntity(isClosed = true, projectId = projectId)
+        )
+        fakeSprintDao.sprintsByProjectId = entities
+        networkMonitor.setOnline(false)
+
+        val result = sut.getSprints(isClosed = false)
+
+        val expected = entities.filter { !it.isClosed }.map { it.toDomain() }
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `getSprints when api throws should return cached sprints`() = runTest {
+        fakeSprintsApi.shouldThrowOnGetSprints = true
+        val entities = listOf(
+            getSprintEntity(isClosed = false, projectId = projectId)
+        )
+        fakeSprintDao.sprintsByProjectId = entities
+
+        val result = sut.getSprints(isClosed = false)
+
+        assertEquals(entities.map { it.toDomain() }, result)
+    }
+
+    @Test
+    fun `getSprintUserStories offline should return cached user stories`() = runTest {
+        val sprintId = getRandomLong()
+        val entities = listOf(
+            getWorkItemEntity(taskType = CommonTaskType.UserStory, projectId = projectId),
+            getWorkItemEntity(taskType = CommonTaskType.Task, projectId = projectId)
+        )
+        fakeWorkItemDao.workItemsByProjectIdAndSprint = entities
+        networkMonitor.setOnline(false)
+
+        val result = sut.getSprintUserStories(sprintId)
+
+        val expected = workItemEntityMapper.toDomainList(entities.filter { it.taskType == CommonTaskType.UserStory })
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `getSprintUserStories when api throws should return cached user stories`() = runTest {
+        val sprintId = getRandomLong()
+        val entities = listOf(
+            getWorkItemEntity(taskType = CommonTaskType.UserStory, projectId = projectId)
+        )
+        fakeWorkItemDao.workItemsByProjectIdAndSprint = entities
+        fakeWorkItemApi.getWorkItemsLambda = { _, _, _ -> throw RuntimeException("Network error") }
+
+        val result = sut.getSprintUserStories(sprintId)
+
+        assertEquals(workItemEntityMapper.toDomainList(entities), result)
+    }
+
+    @Test
+    fun `getSprintTasks offline should return cached tasks`() = runTest {
+        val sprintId = getRandomLong()
+        val entities = listOf(
+            getWorkItemEntity(taskType = CommonTaskType.Task, projectId = projectId),
+            getWorkItemEntity(taskType = CommonTaskType.UserStory, projectId = projectId)
+        )
+        fakeWorkItemDao.workItemsByProjectIdAndSprint = entities
+        networkMonitor.setOnline(false)
+
+        val result = sut.getSprintTasks(sprintId)
+
+        val expected = workItemEntityMapper.toDomainList(entities.filter { it.taskType == CommonTaskType.Task })
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `getSprintTasks when api throws should return cached tasks`() = runTest {
+        val sprintId = getRandomLong()
+        val entities = listOf(
+            getWorkItemEntity(taskType = CommonTaskType.Task, projectId = projectId)
+        )
+        fakeWorkItemDao.workItemsByProjectIdAndSprint = entities
+        fakeWorkItemApi.getWorkItemsLambda = { _, _, _ -> throw RuntimeException("Network error") }
+
+        val result = sut.getSprintTasks(sprintId)
+
+        assertEquals(workItemEntityMapper.toDomainList(entities), result)
+    }
+
+    @Test
+    fun `getSprintIssues offline should return cached issues`() = runTest {
+        val sprintId = getRandomLong()
+        val entities = listOf(
+            getWorkItemEntity(taskType = CommonTaskType.Issue, projectId = projectId),
+            getWorkItemEntity(taskType = CommonTaskType.Task, projectId = projectId)
+        )
+        fakeWorkItemDao.workItemsByProjectIdAndSprint = entities
+        networkMonitor.setOnline(false)
+
+        val result = sut.getSprintIssues(sprintId)
+
+        val expected = workItemEntityMapper.toDomainList(entities.filter { it.taskType == CommonTaskType.Issue })
+        assertEquals(expected, result)
+    }
+
+    @Test
+    fun `getSprintIssues when api throws should return cached issues`() = runTest {
+        val sprintId = getRandomLong()
+        val entities = listOf(
+            getWorkItemEntity(taskType = CommonTaskType.Issue, projectId = projectId)
+        )
+        fakeWorkItemDao.workItemsByProjectIdAndSprint = entities
+        fakeWorkItemApi.getWorkItemsLambda = { _, _, _ -> throw RuntimeException("Network error") }
+
+        val result = sut.getSprintIssues(sprintId)
+
+        assertEquals(workItemEntityMapper.toDomainList(entities), result)
     }
 
     @Test
