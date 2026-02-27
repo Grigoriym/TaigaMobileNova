@@ -6,7 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.feature.scrum.ui.widgets.SprintsListContent
+import com.grappim.taigamobile.feature.scrum.ui.widgets.SprintsListContentWidget
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.EditSprintDialog
 import com.grappim.taigamobile.strings.RString
@@ -72,7 +72,7 @@ fun ScrumOpenSprintsScreen(
         onConfirm = state.onCreateSprintConfirm
     )
 
-    SprintsListContent(
+    SprintsListContentWidget(
         sprints = openSprints,
         goToSprint = goToSprint,
         modifier = modifier

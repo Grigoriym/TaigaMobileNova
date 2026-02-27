@@ -4,7 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.paging.compose.collectAsLazyPagingItems
-import com.grappim.taigamobile.feature.scrum.ui.widgets.SprintsListContent
+import com.grappim.taigamobile.feature.scrum.ui.widgets.SprintsListContentWidget
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.closed_sprints
@@ -39,7 +39,7 @@ fun ScrumClosedSprintsScreen(
         }
     }
 
-    SprintsListContent(
+    SprintsListContentWidget(
         sprints = closedSprints,
         goToSprint = goToSprint,
         modifier = modifier

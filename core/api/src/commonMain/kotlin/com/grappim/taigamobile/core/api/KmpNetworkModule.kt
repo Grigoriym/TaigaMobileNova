@@ -1,5 +1,8 @@
 package com.grappim.taigamobile.core.api
 
+import com.grappim.taigamobile.core.api.errors.ErrorMappingPlugin
+import com.grappim.taigamobile.core.api.errors.ErrorResponseParser
+import com.grappim.taigamobile.core.api.errors.NetworkErrorMapper
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
@@ -23,11 +26,15 @@ import org.koin.core.annotation.Single
 @Qualifier
 annotation class AuthHttpClient
 
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class HttpJson
+
 @Module
 @Configuration
 @ComponentScan
 class KmpNetworkModule {
-    @Single
+    @[Single HttpJson]
     fun provideJson(): Json = Json {
         isLenient = true
         prettyPrint = false
@@ -37,9 +44,11 @@ class KmpNetworkModule {
 
     @[Single AuthHttpClient]
     fun provideAuthHttpClient(
-        httpJson: Json,
+        @HttpJson httpJson: Json,
         baseUrlProvider: BaseUrlProvider,
-        appInfoProvider: AppInfoProvider
+        appInfoProvider: AppInfoProvider,
+        networkErrorMapper: NetworkErrorMapper,
+        errorResponseParser: ErrorResponseParser
     ): HttpClient = HttpClient {
         expectSuccess = false
         defaultRequest {
@@ -58,7 +67,9 @@ class KmpNetworkModule {
             level = LogLevel.ALL
         }
         install(ErrorMappingPlugin) {
-            json = httpJson
+            this.json = httpJson
+            this.errorMapper = networkErrorMapper
+            this.errorResponseParser = errorResponseParser
         }
         install(HostSelectionPlugin) {
             this.baseUrlProvider = baseUrlProvider
@@ -70,11 +81,13 @@ class KmpNetworkModule {
 
     @[Single]
     fun provideCommonHttpClient(
-        httpJson: Json,
+        @HttpJson httpJson: Json,
         baseUrlProvider: BaseUrlProvider,
         authStorage: AuthStorage,
         appInfoProvider: AppInfoProvider,
-        tokenRefresher: TokenRefresher
+        tokenRefresher: TokenRefresher,
+        networkErrorMapper: NetworkErrorMapper,
+        errorResponseParser: ErrorResponseParser
     ): HttpClient = HttpClient {
         expectSuccess = false
         defaultRequest {
@@ -93,7 +106,9 @@ class KmpNetworkModule {
             level = LogLevel.ALL
         }
         install(ErrorMappingPlugin) {
-            json = httpJson
+            this.json = httpJson
+            this.errorMapper = networkErrorMapper
+            this.errorResponseParser = errorResponseParser
         }
         install(HostSelectionPlugin) {
             this.baseUrlProvider = baseUrlProvider

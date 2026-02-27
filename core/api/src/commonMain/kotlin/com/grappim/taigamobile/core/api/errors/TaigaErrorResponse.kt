@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.core.api
+package com.grappim.taigamobile.core.api.errors
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

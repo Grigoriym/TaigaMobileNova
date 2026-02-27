@@ -19,7 +19,7 @@ import kotlinx.datetime.plus
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal fun SprintItem(sprint: Sprint, goToSprint: (Sprint) -> Unit = {}) {
+internal fun SprintItemWidget(sprint: Sprint, goToSprint: (Sprint) -> Unit = {}) {
     ListItem(
         modifier = Modifier.clickable {
             goToSprint(sprint)
@@ -43,8 +43,8 @@ internal fun SprintItem(sprint: Sprint, goToSprint: (Sprint) -> Unit = {}) {
 
 @PreviewTaigaDarkLight
 @Composable
-private fun SprintPreview() = TaigaMobilePreviewTheme {
-    SprintItem(
+private fun SprintPreviewWidget() = TaigaMobilePreviewTheme {
+    SprintItemWidget(
         Sprint(
             id = 0L,
             name = "1 sprint",

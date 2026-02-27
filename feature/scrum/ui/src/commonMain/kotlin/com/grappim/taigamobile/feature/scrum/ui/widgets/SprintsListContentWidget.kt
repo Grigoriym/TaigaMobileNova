@@ -23,7 +23,11 @@ import com.grappim.taigamobile.utils.ui.isEmpty
 import com.grappim.taigamobile.utils.ui.isLoading
 
 @Composable
-fun SprintsListContent(sprints: LazyPagingItems<Sprint>, goToSprint: (Sprint) -> Unit, modifier: Modifier = Modifier) {
+fun SprintsListContentWidget(
+    sprints: LazyPagingItems<Sprint>,
+    goToSprint: (Sprint) -> Unit,
+    modifier: Modifier = Modifier
+) {
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
         onRefresh = { sprints.refresh() },
@@ -49,7 +53,7 @@ fun SprintsListContent(sprints: LazyPagingItems<Sprint>, goToSprint: (Sprint) ->
                     ) { index ->
                         val item = sprints[index]
                         if (item != null) {
-                            SprintItem(
+                            SprintItemWidget(
                                 sprint = item,
                                 goToSprint = goToSprint
                             )
