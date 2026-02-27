@@ -12,7 +12,7 @@ import kotlin.test.assertTrue
 class GetWatchingItemsUseCaseTest {
 
     private val fakeRepo = FakeWorkItemRepository()
-    private val useCase = GetWatchingItemsUseCase(fakeRepo)
+    private val useCase = GetWatchingItemsUseCaseImpl(fakeRepo)
 
     @Test
     fun `getData returns combined items from all four types`() = runTest {

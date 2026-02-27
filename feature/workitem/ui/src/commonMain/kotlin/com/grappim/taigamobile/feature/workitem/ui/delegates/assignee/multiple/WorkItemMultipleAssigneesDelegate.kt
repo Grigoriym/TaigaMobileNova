@@ -35,10 +35,6 @@ interface WorkItemMultipleAssigneesDelegate {
         doOnSuccess: ((Long) -> Unit)? = null,
         doOnError: (Throwable) -> Unit
     )
-
-//    fun onGoingToEditAssignees()
-
-//    fun onRemoveAssigneeClick(user: User)
 }
 
 data class WorkItemMultipleAssigneesState(

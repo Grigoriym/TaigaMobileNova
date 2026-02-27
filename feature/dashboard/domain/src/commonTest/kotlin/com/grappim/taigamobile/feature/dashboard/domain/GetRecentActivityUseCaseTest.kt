@@ -16,7 +16,7 @@ class GetRecentActivityUseCaseTest {
 
     private val fakeRepo = FakeWorkItemRepository()
     private val fakeDateTimeUtils = FakeDateTimeUtils()
-    private val useCase = GetRecentActivityUseCase(fakeRepo, fakeDateTimeUtils)
+    private val useCase = GetRecentActivityUseCaseImpl(fakeRepo, fakeDateTimeUtils)
 
     @Test
     fun `getData returns combined stories and tasks`() = runTest {

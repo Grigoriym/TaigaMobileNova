@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.buildlogic
 
+import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
@@ -7,6 +8,22 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 fun Project.configureKmp() {
     pluginManager.apply("org.jetbrains.kotlinx.kover")
+
+    extensions.configure<KoverProjectExtension> {
+        currentProject {
+            instrumentation {
+                // Only use jvmTest for coverage — exclude Android unit test task variants
+                disabledForTestTasks.addAll(
+                    "testDebugUnitTest",
+                    "testReleaseUnitTest",
+                    "testGplayDebugUnitTest",
+                    "testFdroidDebugUnitTest",
+                    "testGplayReleaseUnitTest",
+                    "testFdroidReleaseUnitTest",
+                )
+            }
+        }
+    }
 
     extensions.configure<KotlinMultiplatformExtension> {
         jvmToolchain(21)

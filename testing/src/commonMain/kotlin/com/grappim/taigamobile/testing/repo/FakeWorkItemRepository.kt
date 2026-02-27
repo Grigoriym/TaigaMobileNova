@@ -148,27 +148,51 @@ class FakeWorkItemRepository : WorkItemRepository {
         taskIdentifier: TaskIdentifier,
     ): ImmutableList<Attachment> = error("not used in this test")
 
+    var watchWorkItemThrows: Throwable? = null
+    var watchWorkItemCalled = false
+
+    var unwatchWorkItemThrows: Throwable? = null
+    var unwatchWorkItemCalled = false
+
+    var getUpdateWorkItemResult: UpdateWorkItem? = null
+    var getUpdateWorkItemThrows: Throwable? = null
+
+    var updateWatchersDataResult: WatchersListUpdateData? = null
+    var updateWatchersDataThrows: Throwable? = null
+
     override suspend fun watchWorkItem(
         workItemId: Long,
         commonTaskType: CommonTaskType,
-    ): Unit = error("not used in this test")
+    ) {
+        watchWorkItemCalled = true
+        watchWorkItemThrows?.let { throw it }
+    }
 
     override suspend fun unwatchWorkItem(
         workItemId: Long,
         commonTaskType: CommonTaskType,
-    ): Unit = error("not used in this test")
+    ) {
+        unwatchWorkItemCalled = true
+        unwatchWorkItemThrows?.let { throw it }
+    }
 
     override suspend fun getUpdateWorkItem(
         workItemId: Long,
         commonTaskType: CommonTaskType,
-    ): UpdateWorkItem = error("not used in this test")
+    ): UpdateWorkItem {
+        getUpdateWorkItemThrows?.let { throw it }
+        return getUpdateWorkItemResult ?: error("getUpdateWorkItemResult not configured")
+    }
 
     override suspend fun updateWatchersData(
         version: Long,
         workItemId: Long,
         newWatchers: ImmutableList<Long>,
         commonTaskType: CommonTaskType,
-    ): WatchersListUpdateData = error("not used in this test")
+    ): WatchersListUpdateData {
+        updateWatchersDataThrows?.let { throw it }
+        return updateWatchersDataResult ?: error("updateWatchersDataResult not configured")
+    }
 
     override suspend fun getCustomFields(
         workItemId: Long,
