@@ -12,12 +12,16 @@ import kotlinx.datetime.DateTimeUnit
 import kotlinx.datetime.minus
 import org.koin.core.annotation.Factory
 
-@Factory
-class GetRecentActivityUseCase(
+interface GetRecentActivityUseCase {
+    suspend fun getData(projectId: Long): Result<List<WorkItem>>
+}
+
+@Factory(binds = [GetRecentActivityUseCase::class])
+class GetRecentActivityUseCaseImpl(
     private val workItemRepository: WorkItemRepository,
     private val dateTimeUtils: DateTimeUtils
-) {
-    suspend fun getData(projectId: Long): Result<List<WorkItem>> = resultOf {
+) : GetRecentActivityUseCase {
+    override suspend fun getData(projectId: Long): Result<List<WorkItem>> = resultOf {
         val threeDaysAgo = dateTimeUtils.getLocalDateNow().minus(3, DateTimeUnit.DAY).toString()
 
         coroutineScope {

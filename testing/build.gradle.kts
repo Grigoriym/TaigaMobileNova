@@ -79,6 +79,8 @@ kotlin {
             api(projects.feature.tasks.domain)
             api(projects.feature.tasks.data)
 
+            api(projects.feature.dashboard.domain)
+
             api(projects.utils.ui)
             api(projects.utils.formatter.datetime)
             api(projects.utils.formatter.decimal)

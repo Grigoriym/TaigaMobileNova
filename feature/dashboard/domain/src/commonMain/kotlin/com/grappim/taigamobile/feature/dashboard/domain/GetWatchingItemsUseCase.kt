@@ -9,9 +9,13 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import org.koin.core.annotation.Factory
 
-@Factory
-class GetWatchingItemsUseCase(private val workItemRepository: WorkItemRepository) {
-    suspend fun getData(userId: Long, projectId: Long): Result<List<WorkItem>> = resultOf {
+interface GetWatchingItemsUseCase {
+    suspend fun getData(userId: Long, projectId: Long): Result<List<WorkItem>>
+}
+
+@Factory(binds = [GetWatchingItemsUseCase::class])
+class GetWatchingItemsUseCaseImpl(private val workItemRepository: WorkItemRepository) : GetWatchingItemsUseCase {
+    override suspend fun getData(userId: Long, projectId: Long): Result<List<WorkItem>> = resultOf {
         coroutineScope {
             val epics = async {
                 workItemRepository.getWorkItems(

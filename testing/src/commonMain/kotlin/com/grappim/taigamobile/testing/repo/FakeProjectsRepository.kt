@@ -40,8 +40,12 @@ class FakeProjectsRepository : ProjectsRepository {
 
     override suspend fun getPermissions(): ImmutableList<TaigaPermission> = permissions
 
+    var fetchAndSaveProjectInfoCalled = false
+    var fetchAndSaveProjectInfoThrows: Throwable? = null
+
     override suspend fun fetchAndSaveProjectInfo() {
-        TODO("Not yet implemented")
+        fetchAndSaveProjectInfoCalled = true
+        fetchAndSaveProjectInfoThrows?.let { throw it }
     }
 
     override suspend fun getTagsColors(): ImmutableList<Tag> {
