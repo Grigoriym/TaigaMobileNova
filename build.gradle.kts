@@ -87,7 +87,7 @@ kover {
                     "**.*DestinationKt",
                     "**.*NavigationExtensionsKt",
                     "**.*NavigationExtensions",
-                    "**.*NavigationExtensions\$*",
+                    "**.*NavigationExtensionsKt\$*",
                     "**.*Graph\$*",
                     "**.*GraphKt",
                     "**.*Graph",
@@ -95,7 +95,11 @@ kover {
                     "**.*NavHost",
 
                     "**.*ImmutableListSerializer",
+                    "**.*ImmutableListSerializerKt",
                     "**.*ImmutableListSerializer\$*",
+                    "**.*Preferences\$*",
+                    "**.*Preferences*",
+                    "**.*PreferencesKt",
 
                     "**.*BuildConfig"
                 )

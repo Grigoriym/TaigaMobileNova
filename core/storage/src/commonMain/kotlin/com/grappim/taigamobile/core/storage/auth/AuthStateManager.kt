@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.core.storage.auth
 
 import com.grappim.taigamobile.core.asynckmp.ApplicationScope
-import com.grappim.taigamobile.core.storage.KmpSession
+import com.grappim.taigamobile.core.storage.SessionResetter
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.wrapper.DatabaseWrapper
 import kotlinx.coroutines.CoroutineScope
@@ -13,7 +13,7 @@ import org.koin.core.annotation.Single
 
 @Single
 class AuthStateManager(
-    private val session: KmpSession,
+    private val sessionResetter: SessionResetter,
     private val taigaSessionStorage: TaigaSessionStorage,
     private val authStorage: AuthStorage,
     private val databaseWrapper: DatabaseWrapper,
@@ -24,7 +24,7 @@ class AuthStateManager(
     val logoutEvents: SharedFlow<LogoutEvent> = _logoutEvents.asSharedFlow()
 
     suspend fun logoutSuspend() {
-        session.reset()
+        sessionResetter.reset()
         taigaSessionStorage.clearData()
         authStorage.clear()
         databaseWrapper.clearAllTables()

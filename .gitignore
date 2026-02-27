@@ -15,3 +15,7 @@ taigamobilenova_keystore_release.jks
 /app/fdroid/release/
 
 .kotlin
+
+# Claude Code local settings (contains secrets)
+.claude/settings.local.json
+.mcp.json

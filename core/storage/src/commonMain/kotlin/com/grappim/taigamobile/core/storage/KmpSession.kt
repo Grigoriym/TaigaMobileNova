@@ -16,7 +16,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
-class KmpSession(private val dataStore: DataStore<Preferences>, @param:StorageJsonQualifier private val json: Json) {
+class KmpSession(private val dataStore: DataStore<Preferences>, @param:StorageJsonQualifier private val json: Json) :
+    SessionResetter {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     companion object {
@@ -76,7 +77,7 @@ class KmpSession(private val dataStore: DataStore<Preferences>, @param:StorageJs
         changeKanbanFilters(FiltersData())
     }
 
-    fun reset() {
+    override fun reset() {
         scope.launch { dataStore.edit { it.clear() } }
     }
 }

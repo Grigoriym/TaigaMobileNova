@@ -16,5 +16,9 @@
       "mcp__ide__getDiagnostics",
       "Bash(mkdir:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "codacy"
+  ],
+  "enableAllProjectMcpServers": true
 }

@@ -3,6 +3,8 @@ package com.grappim.taigamobile.core.storage.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import com.grappim.taigamobile.core.storage.KmpSession
+import com.grappim.taigamobile.core.storage.SessionResetter
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import org.koin.core.annotation.ComponentScan
@@ -28,6 +30,9 @@ class StorageModule {
     fun provideStorageJson(): Json = Json {
         ignoreUnknownKeys = true
     }
+
+    @Single
+    fun provideSessionResetter(session: KmpSession): SessionResetter = session
 }
 
 fun createDataStore(producePath: () -> String): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
