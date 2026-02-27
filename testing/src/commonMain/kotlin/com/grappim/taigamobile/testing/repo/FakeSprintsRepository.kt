@@ -22,9 +22,10 @@ class FakeSprintsRepository: SprintsRepository {
         TODO("Not yet implemented")
     }
 
-    override suspend fun getSprint(sprintId: Long): Sprint {
-        TODO("Not yet implemented")
-    }
+    var getSprintResult: Sprint? = null
+
+    override suspend fun getSprint(sprintId: Long): Sprint =
+        getSprintResult ?: error("getSprintResult not set")
 
     override suspend fun getSprintIssues(sprintId: Long): ImmutableList<WorkItem> {
         TODO("Not yet implemented")

@@ -56,12 +56,22 @@ class FakeProjectsRepository : ProjectsRepository {
         TODO("Not yet implemented")
     }
 
+    var createTagCalled = false
+    var createTagThrows: Throwable? = null
+
     override suspend fun createTag(tagName: String, color: String) {
-        TODO("Not yet implemented")
+        createTagCalled = true
+        createTagThrows?.let { throw it }
     }
 
+    var editTagFromTagName: String? = null
+    var editTagToTagName: String? = "sentinel"
+    var editTagThrows: Throwable? = null
+
     override suspend fun editTag(fromTagName: String, toTagName: String?, color: String?) {
-        TODO("Not yet implemented")
+        editTagFromTagName = fromTagName
+        editTagToTagName = toTagName
+        editTagThrows?.let { throw it }
     }
 
     override suspend fun mixTags(fromTags: List<String>, toTag: String) {

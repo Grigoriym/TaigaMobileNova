@@ -177,10 +177,10 @@ Read offline state with `val isOffline = LocalOfflineState.current`, then pass i
 
 ## Testing
 
-For migrating JVM/MockK tests to KMP-compatible fakes, writing new KMP tests, or creating new fakes, use the **test-migrator** subagent (`.claude/agents/test-migrator.md`). It knows the full fake inventory, model factories, migration checklist, and placement rules.
+For writing new KMP tests, creating fakes, or understanding test patterns, use the **testing** subagent (`.claude/agents/testing.md`). It knows the full fake inventory, model factories, test utilities, and patterns.
 
 - `:testing` module has utilities: `getRandomString()`, `MainDispatcherRule`, fake generators
-- JUnit 4 + kotlin.test assertions + MockK
+- `kotlin.test` assertions + hand-written fakes — no MockK in `commonTest`
 - Test dependencies added automatically via convention plugins
 
 ## Coding Guidelines
