@@ -1,5 +1,5 @@
 [versions]
-compose-bom = "2026.02.00"
+compose-bom = "2026.02.01"
 
 compileSdk = "36"
 minSdk = "24"
