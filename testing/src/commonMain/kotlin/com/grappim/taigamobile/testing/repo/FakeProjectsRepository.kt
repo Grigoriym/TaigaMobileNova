@@ -28,7 +28,13 @@ class FakeProjectsRepository : ProjectsRepository {
         return getUserProjectsResult
     }
 
-    override suspend fun saveProject(project: Project) = error("not used in this test")
+    var saveProjectCalled = false
+    var saveProjectCalledWith: Project? = null
+
+    override suspend fun saveProject(project: Project) {
+        saveProjectCalled = true
+        saveProjectCalledWith = project
+    }
 
     override suspend fun getCurrentProjectSimple(): ProjectSimple = error("not used in this test")
 

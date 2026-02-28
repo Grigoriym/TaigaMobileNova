@@ -4,22 +4,17 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class TeamViewModel(private val usersRepository: UsersRepository, taigaSessionStorage: TaigaSessionStorage) :
-    ViewModel() {
+class TeamViewModel(private val usersRepository: UsersRepository) : ViewModel() {
 
     private val _state = MutableStateFlow(
         TeamState(
@@ -29,11 +24,9 @@ class TeamViewModel(private val usersRepository: UsersRepository, taigaSessionSt
     val state = _state.asStateFlow()
 
     init {
-        taigaSessionStorage
-            .currentProjectIdFlow
-            .distinctUntilChanged()
-            .onEach { fetchTeam() }
-            .launchIn(viewModelScope)
+        viewModelScope.launch {
+            fetchTeam()
+        }
     }
 
     private suspend fun fetchTeam() {

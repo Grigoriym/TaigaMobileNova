@@ -30,7 +30,7 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 ./gradlew koverHtmlReport   # HTML → build/reports/kover/html/index.html
 
 # Force Koin compiler logs (only printed when compiler actually runs; skipped on UP-TO-DATE)
-./gradlew :composeApp:compileGplayDebugKotlinAndroid --rerun-tasks
+./gradlew :composeApp:compileFdroidDebugKotlinAndroid --rerun-tasks
 ```
 
 ## Architecture
