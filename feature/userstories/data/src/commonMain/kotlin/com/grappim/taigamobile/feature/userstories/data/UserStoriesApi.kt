@@ -9,6 +9,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
+import io.ktor.http.URLBuilder
 import org.koin.core.annotation.Single
 
 interface UserStoriesApi {
@@ -33,27 +34,33 @@ class UserStoriesApiImpl(private val httpClient: HttpClient) : UserStoriesApi {
 
     override suspend fun getUserStories(params: GetUserStoriesParams): List<WorkItemResponseDTO> =
         httpClient.get("userstories") {
-            url {
-                if (params.project != null) parameters.append("project", params.project.toString())
-                if (params.sprint != null) parameters.append("milestone", params.sprint.toString())
-                if (params.status != null) parameters.append("status", params.status.toString())
-                if (params.epic != null) parameters.append("epic", params.epic.toString())
-                if (params.page != null) parameters.append("page", params.page.toString())
-                if (params.assignedId != null) parameters.append("assigned_users", params.assignedId.toString())
-                if (params.isClosed != null) parameters.append("status__is_closed", params.isClosed.toString())
-                if (params.watcherId != null) parameters.append("watchers", params.watcherId.toString())
-                if (params.isDashboard != null) parameters.append("dashboard", params.isDashboard.toString())
-                if (params.query != null) parameters.append("q", params.query)
-                parameters.append("page_size", params.pageSize.toString())
-                if (params.assignedIds != null) parameters.append("assigned_to", params.assignedIds)
-                if (params.epics != null) parameters.append("epic", params.epics)
-                if (params.ownerIds != null) parameters.append("owner", params.ownerIds)
-                if (params.roles != null) parameters.append("role", params.roles)
-                if (params.statuses != null) parameters.append("status", params.statuses)
-                if (params.tags != null) parameters.append("tags", params.tags)
-            }
+            url { applyUserStoryParams(params) }
             // here and below instead of setting header to "false" remove it,
             // because api always returns unpaginated result if header persists, regardless of its value
             if (params.page == null) headers.append("x-disable-pagination", "true")
         }.body()
+
+    private fun URLBuilder.applyUserStoryParams(params: GetUserStoriesParams) {
+        listOf(
+            "project" to params.project,
+            "milestone" to params.sprint,
+            "status" to params.status,
+            "epic" to params.epic,
+            "page" to params.page,
+            "assigned_users" to params.assignedId,
+            "status__is_closed" to params.isClosed,
+            "watchers" to params.watcherId,
+            "dashboard" to params.isDashboard,
+            "q" to params.query,
+            "assigned_to" to params.assignedIds,
+            "epic" to params.epics,
+            "owner" to params.ownerIds,
+            "role" to params.roles,
+            "status" to params.statuses,
+            "tags" to params.tags,
+        ).forEach { (key, value) ->
+            if (value != null) parameters.append(key, value.toString())
+        }
+        parameters.append("page_size", params.pageSize.toString())
+    }
 }
