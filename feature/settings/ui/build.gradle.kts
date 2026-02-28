@@ -28,7 +28,7 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.coil.ktor)
 
-            implementation(libs.compose.icons.extended)
+            implementation(libs.jetbrains.compose.icons.extended)
         }
     }
 }

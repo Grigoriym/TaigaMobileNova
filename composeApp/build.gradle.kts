@@ -1,7 +1,6 @@
 
 import com.grappim.taigamobile.buildlogic.AppBuildTypes
 import com.grappim.taigamobile.buildlogic.configureFlavors
-import com.grappim.taigamobile.buildlogic.configureKmp
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
@@ -159,8 +158,6 @@ compose.desktop {
 }
 
 kotlin {
-    configureKmp()
-
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -178,7 +175,7 @@ kotlin {
                 implementation(libs.filekit.dialogs)
                 implementation(libs.filekit.dialogs.compose)
 
-                implementation(libs.compose.icons.extended)
+                implementation(libs.jetbrains.compose.icons.extended)
 
                 implementation(projects.utils.ui)
                 implementation(projects.utils.formatter.decimal)

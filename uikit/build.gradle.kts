@@ -16,7 +16,7 @@ compose.resources {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(libs.compose.components.resources)
+            api(libs.jetbrains.compose.components.resources)
 
             implementation(projects.utils.ui)
             implementation(projects.strings)

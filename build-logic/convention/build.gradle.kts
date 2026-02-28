@@ -26,7 +26,6 @@ tasks {
 
 dependencies {
     compileOnly(libs.android.gradlePlugin)
-    compileOnly(libs.android.tools.common)
     compileOnly(libs.kotlin.gradlePlugin)
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.compose.multiplatform.gradlePlugin)

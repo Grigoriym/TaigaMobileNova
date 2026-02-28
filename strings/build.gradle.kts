@@ -10,7 +10,7 @@ android {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            api(libs.compose.components.resources)
+            api(libs.jetbrains.compose.components.resources)
         }
     }
 }

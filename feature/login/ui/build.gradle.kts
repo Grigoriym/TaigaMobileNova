@@ -21,7 +21,7 @@ kotlin {
 
             implementation(projects.feature.login.domain)
 
-            implementation(libs.compose.icons.extended)
+            implementation(libs.jetbrains.compose.icons.extended)
         }
     }
 }

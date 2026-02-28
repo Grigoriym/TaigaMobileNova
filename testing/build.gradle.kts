@@ -16,10 +16,9 @@ kotlin {
             api(libs.koin.test.junit4)
             api(libs.robolectric)
             api(libs.junit4)
-            api(libs.androidx.test.core)
         }
         commonMain.dependencies {
-            implementation(libs.compose.ui)
+            implementation(libs.jetbrains.compose.ui)
 
             api(libs.turbine)
             api(libs.kotlinx.coroutines.test)

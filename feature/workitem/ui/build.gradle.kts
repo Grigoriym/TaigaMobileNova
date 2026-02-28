@@ -40,7 +40,7 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.compose.colorpicker)
 
-            implementation(libs.compose.icons.extended)
+            implementation(libs.jetbrains.compose.icons.extended)
         }
     }
 }
