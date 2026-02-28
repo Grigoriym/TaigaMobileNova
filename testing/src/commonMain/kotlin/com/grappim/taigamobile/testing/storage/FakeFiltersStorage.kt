@@ -1,14 +1,14 @@
 package com.grappim.taigamobile.testing.storage
 
-import com.grappim.taigamobile.core.storage.KmpSession
+import com.grappim.taigamobile.core.storage.FiltersStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-class FakeKmpSession : KmpSession {
+class FakeFiltersStorage : FiltersStorage {
 
-    var resetCalled = false
+    var resetFiltersCalled = false
 
     private val _scrumFilters = MutableStateFlow(FiltersData())
     override val scrumFilters: StateFlow<FiltersData> = _scrumFilters.asStateFlow()
@@ -26,14 +26,11 @@ class FakeKmpSession : KmpSession {
     override val kanbanFilters: StateFlow<FiltersData> = _kanbanFilters.asStateFlow()
     override fun changeKanbanFilters(filters: FiltersData) { _kanbanFilters.value = filters }
 
-    override fun resetFilters() {
+    override suspend fun resetFilters() {
+        resetFiltersCalled = true
         _scrumFilters.value = FiltersData()
         _epicsFilters.value = FiltersData()
         _issuesFilters.value = FiltersData()
         _kanbanFilters.value = FiltersData()
-    }
-
-    override fun reset() {
-        resetCalled = true
     }
 }

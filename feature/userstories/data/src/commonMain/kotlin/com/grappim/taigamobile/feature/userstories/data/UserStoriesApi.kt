@@ -57,7 +57,7 @@ class UserStoriesApiImpl(private val httpClient: HttpClient) : UserStoriesApi {
             "owner" to params.ownerIds,
             "role" to params.roles,
             "status" to params.statuses,
-            "tags" to params.tags,
+            "tags" to params.tags
         ).forEach { (key, value) ->
             if (value != null) parameters.append(key, value.toString())
         }

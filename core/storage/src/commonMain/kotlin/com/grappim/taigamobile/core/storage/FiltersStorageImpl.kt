@@ -16,10 +16,10 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
-class KmpSessionImpl(
+class FiltersStorageImpl(
     private val dataStore: DataStore<Preferences>,
     @param:StorageJsonQualifier private val json: Json
-) : KmpSession {
+) : FiltersStorage {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     companion object {
@@ -72,14 +72,7 @@ class KmpSessionImpl(
         }
     }
 
-    override fun resetFilters() {
-        changeScrumFilters(FiltersData())
-        changeEpicsFilters(FiltersData())
-        changeIssuesFilters(FiltersData())
-        changeKanbanFilters(FiltersData())
-    }
-
-    override fun reset() {
-        scope.launch { dataStore.edit { it.clear() } }
+    override suspend fun resetFilters() {
+        dataStore.edit { it.clear() }
     }
 }

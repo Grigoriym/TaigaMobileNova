@@ -3,7 +3,7 @@ package com.grappim.taigamobile.core.storage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import kotlinx.coroutines.flow.StateFlow
 
-interface KmpSession {
+interface FiltersStorage {
     val scrumFilters: StateFlow<FiltersData>
     fun changeScrumFilters(filters: FiltersData)
 
@@ -16,7 +16,5 @@ interface KmpSession {
     val kanbanFilters: StateFlow<FiltersData>
     fun changeKanbanFilters(filters: FiltersData)
 
-    fun resetFilters()
-
-    fun reset()
+    suspend fun resetFilters()
 }

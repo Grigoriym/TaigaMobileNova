@@ -8,7 +8,7 @@ import com.grappim.taigamobile.testing.models.getStatusFilters
 import com.grappim.taigamobile.testing.repo.FakeEpicsRepository
 import com.grappim.taigamobile.testing.repo.FakeFiltersRepository
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
-import com.grappim.taigamobile.testing.storage.FakeKmpSession
+import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.persistentListOf
@@ -22,7 +22,7 @@ import kotlin.test.assertTrue
 
 internal class EpicsViewModelTest {
 
-    private val session = FakeKmpSession()
+    private val session = FakeFiltersStorage()
     private val epicsRepository = FakeEpicsRepository()
     private val filtersRepository = FakeFiltersRepository()
     private val projectsRepository = FakeProjectsRepository()

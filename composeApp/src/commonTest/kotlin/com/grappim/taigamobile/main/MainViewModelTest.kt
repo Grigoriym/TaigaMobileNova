@@ -11,7 +11,7 @@ import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage
 import com.grappim.taigamobile.testing.storage.FakeDatabaseWrapper
-import com.grappim.taigamobile.testing.storage.FakeKmpSession
+import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -28,7 +28,7 @@ internal class MainViewModelTest {
 
     private val authStorage = FakeAuthStorage()
     private val taigaSessionStorage = FakeTaigaSessionStorage()
-    private val kmpSession = FakeKmpSession()
+    private val filtersStorage = FakeFiltersStorage()
     private val databaseWrapper = FakeDatabaseWrapper()
     private val projectsRepository = FakeProjectsRepository()
     private val networkMonitor = FakeNetworkMonitor()
@@ -48,7 +48,7 @@ internal class MainViewModelTest {
 
     private fun createViewModel() {
         val authStateManager = AuthStateManager(
-            kmpSession = kmpSession,
+            filtersStorage = filtersStorage,
             taigaSessionStorage = taigaSessionStorage,
             authStorage = authStorage,
             databaseWrapper = databaseWrapper,
@@ -110,7 +110,7 @@ internal class MainViewModelTest {
         sut.state.value.onLogout()
 
         assertFalse(sut.state.value.isLogoutConfirmationVisible)
-        assertTrue(kmpSession.resetCalled)
+        assertTrue(filtersStorage.resetFiltersCalled)
     }
 
     // --- isOffline ---

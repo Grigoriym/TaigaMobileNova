@@ -3,7 +3,7 @@ package com.grappim.taigamobile.core.storage.auth
 import app.cash.turbine.test
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage
 import com.grappim.taigamobile.testing.storage.FakeDatabaseWrapper
-import com.grappim.taigamobile.testing.storage.FakeKmpSession
+import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
@@ -13,21 +13,21 @@ import kotlin.test.assertTrue
 
 class AuthStateManagerTest {
 
-    private lateinit var kmpSession: FakeKmpSession
+    private lateinit var filtersStorage: FakeFiltersStorage
     private lateinit var fakeTaigaSessionStorage: FakeTaigaSessionStorage
     private lateinit var fakeAuthStorage: FakeAuthStorage
     private lateinit var fakeDatabaseWrapper: FakeDatabaseWrapper
 
     @BeforeTest
     fun setup() {
-        kmpSession = FakeKmpSession()
+        filtersStorage = FakeFiltersStorage()
         fakeTaigaSessionStorage = FakeTaigaSessionStorage()
         fakeAuthStorage = FakeAuthStorage()
         fakeDatabaseWrapper = FakeDatabaseWrapper()
     }
 
     private fun createSut(scope: kotlinx.coroutines.CoroutineScope) = AuthStateManager(
-        kmpSession = kmpSession,
+        filtersStorage = filtersStorage,
         taigaSessionStorage = fakeTaigaSessionStorage,
         authStorage = fakeAuthStorage,
         databaseWrapper = fakeDatabaseWrapper,
@@ -41,7 +41,7 @@ class AuthStateManagerTest {
         sut.logoutEvents.test {
             sut.logoutSuspend()
 
-            assertTrue(kmpSession.resetCalled)
+            assertTrue(filtersStorage.resetFiltersCalled)
             assertTrue(fakeTaigaSessionStorage.clearDataCalled)
             assertTrue(fakeAuthStorage.clearCalled)
             assertTrue(fakeDatabaseWrapper.clearAllTablesCalled)
@@ -58,7 +58,7 @@ class AuthStateManagerTest {
             sut.logout()
 
             assertEquals(LogoutEvent.UserInitiated, awaitItem())
-            assertTrue(kmpSession.resetCalled)
+            assertTrue(filtersStorage.resetFiltersCalled)
             assertTrue(fakeTaigaSessionStorage.clearDataCalled)
             assertTrue(fakeAuthStorage.clearCalled)
             assertTrue(fakeDatabaseWrapper.clearAllTablesCalled)

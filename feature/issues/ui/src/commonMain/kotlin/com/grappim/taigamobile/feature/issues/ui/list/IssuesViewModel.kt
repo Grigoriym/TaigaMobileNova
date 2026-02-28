@@ -8,7 +8,7 @@ import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.KmpSession
+import com.grappim.taigamobile.core.storage.FiltersStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
@@ -31,7 +31,7 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class IssuesViewModel(
-    private val session: KmpSession,
+    private val session: FiltersStorage,
     private val issuesRepository: IssuesRepository,
     private val filtersRepository: FiltersRepository,
     private val projectsRepository: ProjectsRepository
