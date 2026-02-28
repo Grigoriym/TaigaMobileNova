@@ -7,6 +7,7 @@ import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
 import com.grappim.taigamobile.core.storage.KmpSession
+import com.grappim.taigamobile.core.storage.KmpSessionImpl
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
@@ -37,7 +38,7 @@ class AuthDataStoreModule {
 
     @Single
     fun provideSession(context: Context, @StorageJsonQualifier json: Json): KmpSession =
-        KmpSession(createSessionFiltersDataStore(context), json)
+        KmpSessionImpl(createSessionFiltersDataStore(context), json)
 }
 
 fun createSessionDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(

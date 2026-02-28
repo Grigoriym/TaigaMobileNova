@@ -52,7 +52,7 @@ class GetRecentlyCompletedItemsUseCaseTest {
 
         useCase.getData(projectId = 1L)
 
-        assertTrue(fakeRepo.calls.all { it.finishDateGte == "2024-03-02" })
+        assertTrue(fakeRepo.calls.all { it.params.finishDateGte == "2024-03-02" })
     }
 
     @Test

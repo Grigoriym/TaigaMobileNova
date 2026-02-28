@@ -49,7 +49,7 @@ class GetRecentActivityUseCaseTest {
 
         useCase.getData(projectId = 1L)
 
-        assertTrue(fakeRepo.calls.all { it.modifiedDateGte == "2024-06-12" })
+        assertTrue(fakeRepo.calls.all { it.params.modifiedDateGte == "2024-06-12" })
     }
 
     @Test

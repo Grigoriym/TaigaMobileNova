@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.dashboard.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.workitem.domain.GetWorkItemsParams
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.collections.immutable.toImmutableList
@@ -21,9 +22,7 @@ class GetWatchingItemsUseCaseImpl(private val workItemRepository: WorkItemReposi
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Epic,
                     projectId = projectId,
-                    watcherId = userId,
-                    isClosed = false,
-                    pageSize = 10
+                    params = GetWorkItemsParams(watcherId = userId, isClosed = false, pageSize = 10)
                 )
             }
 
@@ -31,9 +30,7 @@ class GetWatchingItemsUseCaseImpl(private val workItemRepository: WorkItemReposi
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.UserStory,
                     projectId = projectId,
-                    watcherId = userId,
-                    isClosed = false,
-                    pageSize = 10
+                    params = GetWorkItemsParams(watcherId = userId, isClosed = false, pageSize = 10)
                 )
             }
 
@@ -41,9 +38,7 @@ class GetWatchingItemsUseCaseImpl(private val workItemRepository: WorkItemReposi
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Task,
                     projectId = projectId,
-                    watcherId = userId,
-                    isClosed = false,
-                    pageSize = 10
+                    params = GetWorkItemsParams(watcherId = userId, isClosed = false, pageSize = 10)
                 )
             }
 
@@ -51,9 +46,7 @@ class GetWatchingItemsUseCaseImpl(private val workItemRepository: WorkItemReposi
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Issue,
                     projectId = projectId,
-                    watcherId = userId,
-                    isClosed = false,
-                    pageSize = 10
+                    params = GetWorkItemsParams(watcherId = userId, isClosed = false, pageSize = 10)
                 )
             }
 

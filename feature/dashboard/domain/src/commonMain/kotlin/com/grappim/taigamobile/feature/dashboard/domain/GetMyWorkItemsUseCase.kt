@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.dashboard.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.workitem.domain.GetWorkItemsParams
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import kotlinx.collections.immutable.toImmutableList
@@ -21,10 +22,7 @@ class GetMyWorkItemsUseCaseImpl(private val workItemRepository: WorkItemReposito
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Epic,
                     projectId = projectId,
-                    assignedId = userId,
-                    isClosed = false,
-                    isBlocked = false,
-                    pageSize = 5
+                    params = GetWorkItemsParams(assignedId = userId, isClosed = false, isBlocked = false, pageSize = 5)
                 )
             }
 
@@ -32,11 +30,13 @@ class GetMyWorkItemsUseCaseImpl(private val workItemRepository: WorkItemReposito
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.UserStory,
                     projectId = projectId,
-                    assignedId = userId,
-                    isClosed = false,
-                    isDashboard = true,
-                    isBlocked = false,
-                    pageSize = 10
+                    params = GetWorkItemsParams(
+                        assignedId = userId,
+                        isClosed = false,
+                        isDashboard = true,
+                        isBlocked = false,
+                        pageSize = 10
+                    )
                 )
             }
 
@@ -44,10 +44,7 @@ class GetMyWorkItemsUseCaseImpl(private val workItemRepository: WorkItemReposito
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Task,
                     projectId = projectId,
-                    assignedId = userId,
-                    isClosed = false,
-                    isBlocked = false,
-                    pageSize = 10
+                    params = GetWorkItemsParams(assignedId = userId, isClosed = false, isBlocked = false, pageSize = 10)
                 )
             }
 
@@ -55,10 +52,12 @@ class GetMyWorkItemsUseCaseImpl(private val workItemRepository: WorkItemReposito
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Issue,
                     projectId = projectId,
-                    assignedIds = userId.toString(),
-                    isClosed = false,
-                    isBlocked = false,
-                    pageSize = 10
+                    params = GetWorkItemsParams(
+                        assignedIds = userId.toString(),
+                        isClosed = false,
+                        isBlocked = false,
+                        pageSize = 10
+                    )
                 )
             }
 

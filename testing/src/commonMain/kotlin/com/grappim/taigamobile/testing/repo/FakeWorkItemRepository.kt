@@ -8,6 +8,7 @@ import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.UpdateWorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.feature.workitem.domain.GetWorkItemsParams
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.domain.customfield.CustomFields
 import kotlinx.collections.immutable.ImmutableList
@@ -30,11 +31,7 @@ data class DeleteAttachmentCall(
 data class GetWorkItemsCall(
     val commonTaskType: CommonTaskType,
     val projectId: Long,
-    val assignedId: Long?,
-    val isClosed: Boolean?,
-    val watcherId: Long?,
-    val modifiedDateGte: String?,
-    val finishDateGte: String?,
+    val params: GetWorkItemsParams,
 )
 
 data class PatchDataCall(
@@ -81,26 +78,13 @@ class FakeWorkItemRepository : WorkItemRepository {
     override suspend fun getWorkItems(
         commonTaskType: CommonTaskType,
         projectId: Long,
-        assignedId: Long?,
-        isClosed: Boolean?,
-        watcherId: Long?,
-        isDashboard: Boolean?,
-        assignedIds: String?,
-        isBlocked: Boolean?,
-        modifiedDateGte: String?,
-        finishDateGte: String?,
-        milestoneId: Long?,
-        pageSize: Int?,
+        params: GetWorkItemsParams,
     ): ImmutableList<WorkItem> {
         error?.let { throw it }
         calls += GetWorkItemsCall(
             commonTaskType = commonTaskType,
             projectId = projectId,
-            assignedId = assignedId,
-            isClosed = isClosed,
-            watcherId = watcherId,
-            modifiedDateGte = modifiedDateGte,
-            finishDateGte = finishDateGte,
+            params = params,
         )
         return itemsByType[commonTaskType] ?: persistentListOf()
     }

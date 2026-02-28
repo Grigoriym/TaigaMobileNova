@@ -66,21 +66,21 @@ class UserStoriesRepositoryImpl(
         sprint: Any?
     ): ImmutableList<UserStory> {
         val stories = userStoriesApi.getUserStories(
-            assignedId = assignedId,
-            isClosed = isClosed,
-            isDashboard = isDashboard,
-            watcherId = watcherId,
-            epic = epicId,
-            project = project,
-            sprint = sprint
+            GetUserStoriesParams(
+                assignedId = assignedId,
+                isClosed = isClosed,
+                isDashboard = isDashboard,
+                watcherId = watcherId,
+                epic = epicId,
+                project = project,
+                sprint = sprint
+            )
         )
         return userStoryMapper.toListDomain(stories)
     }
 
     override suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem> =
-        userStoriesApi.getUserStories(
-            epic = epicId
-        ).map {
+        userStoriesApi.getUserStories(GetUserStoriesParams(epic = epicId)).map {
             workItemMapper.toDomain(it, CommonTaskType.UserStory)
         }.toImmutableList()
 

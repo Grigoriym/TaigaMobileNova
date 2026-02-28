@@ -11,10 +11,11 @@ import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage
 import com.grappim.taigamobile.testing.storage.FakeDatabaseWrapper
-import com.grappim.taigamobile.testing.storage.FakeSessionResetter
+import com.grappim.taigamobile.testing.storage.FakeKmpSession
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -27,7 +28,7 @@ internal class MainViewModelTest {
 
     private val authStorage = FakeAuthStorage()
     private val taigaSessionStorage = FakeTaigaSessionStorage()
-    private val sessionResetter = FakeSessionResetter()
+    private val kmpSession = FakeKmpSession()
     private val databaseWrapper = FakeDatabaseWrapper()
     private val projectsRepository = FakeProjectsRepository()
     private val networkMonitor = FakeNetworkMonitor()
@@ -47,7 +48,7 @@ internal class MainViewModelTest {
 
     private fun createViewModel() {
         val authStateManager = AuthStateManager(
-            sessionResetter = sessionResetter,
+            kmpSession = kmpSession,
             taigaSessionStorage = taigaSessionStorage,
             authStorage = authStorage,
             databaseWrapper = databaseWrapper,
@@ -69,14 +70,10 @@ internal class MainViewModelTest {
     fun `initialNavState - not logged in - startDestination is Login`() = runTest {
         createViewModel()
 
-        sut.initialNavState.test {
-            skipItems(1) // initial isReady=false
-            val state = awaitItem()
-            assertTrue(state.isReady)
-            assertFalse(state.isProjectSelected)
-            assertEquals(LoginNavDestination, state.startDestination)
-            cancel()
-        }
+        val state = sut.initialNavState.first { it.isReady }
+        assertTrue(state.isReady)
+        assertFalse(state.isProjectSelected)
+        assertEquals(LoginNavDestination, state.startDestination)
     }
 
     @Test
@@ -84,14 +81,10 @@ internal class MainViewModelTest {
         authStorage.setLoggedIn(true)
         createViewModel()
 
-        sut.initialNavState.test {
-            skipItems(1)
-            val state = awaitItem()
-            assertTrue(state.isReady)
-            assertFalse(state.isProjectSelected)
-            assertTrue(state.startDestination is ProjectSelectorNavDestination)
-            cancel()
-        }
+        val state = sut.initialNavState.first { it.isReady }
+        assertTrue(state.isReady)
+        assertFalse(state.isProjectSelected)
+        assertTrue(state.startDestination is ProjectSelectorNavDestination)
     }
 
     @Test
@@ -100,14 +93,10 @@ internal class MainViewModelTest {
         taigaSessionStorage.setCurrentProjectId(42L)
         createViewModel()
 
-        sut.initialNavState.test {
-            skipItems(1)
-            val state = awaitItem()
-            assertTrue(state.isReady)
-            assertTrue(state.isProjectSelected)
-            assertEquals(DashboardNavDestination, state.startDestination)
-            cancel()
-        }
+        val state = sut.initialNavState.first { it.isReady }
+        assertTrue(state.isReady)
+        assertTrue(state.isProjectSelected)
+        assertEquals(DashboardNavDestination, state.startDestination)
     }
 
     // --- logout ---
@@ -121,7 +110,7 @@ internal class MainViewModelTest {
         sut.state.value.onLogout()
 
         assertFalse(sut.state.value.isLogoutConfirmationVisible)
-        assertTrue(sessionResetter.resetCalled)
+        assertTrue(kmpSession.resetCalled)
     }
 
     // --- isOffline ---

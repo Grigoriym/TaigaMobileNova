@@ -14,25 +14,7 @@ import org.koin.core.annotation.Single
 interface UserStoriesApi {
     suspend fun createUserStory(createUserStoryRequest: CreateUserStoryRequest): WorkItemResponseDTO
     suspend fun bulkUpdateKanbanOrder(request: BulkUpdateKanbanOrderRequest): List<BulkUpdateKanbanOrderResponseItem>
-    suspend fun getUserStories(
-        project: Long? = null,
-        sprint: Any? = null,
-        status: Long? = null,
-        epic: Long? = null,
-        page: Int? = null,
-        assignedId: Long? = null,
-        isClosed: Boolean? = null,
-        watcherId: Long? = null,
-        isDashboard: Boolean? = null,
-        query: String? = null,
-        pageSize: Int = 20,
-        assignedIds: String? = null,
-        epics: String? = null,
-        ownerIds: String? = null,
-        roles: String? = null,
-        statuses: String? = null,
-        tags: String? = null
-    ): List<WorkItemResponseDTO>
+    suspend fun getUserStories(params: GetUserStoriesParams = GetUserStoriesParams()): List<WorkItemResponseDTO>
 }
 
 @Single(binds = [UserStoriesApi::class])
@@ -49,46 +31,29 @@ class UserStoriesApiImpl(private val httpClient: HttpClient) : UserStoriesApi {
         setBody(request)
     }.body()
 
-    override suspend fun getUserStories(
-        project: Long?,
-        sprint: Any?,
-        status: Long?,
-        epic: Long?,
-        page: Int?,
-        assignedId: Long?,
-        isClosed: Boolean?,
-        watcherId: Long?,
-        isDashboard: Boolean?,
-        query: String?,
-        pageSize: Int,
-        assignedIds: String?,
-        epics: String?,
-        ownerIds: String?,
-        roles: String?,
-        statuses: String?,
-        tags: String?
-    ): List<WorkItemResponseDTO> = httpClient.get("userstories") {
-        url {
-            if (project != null) parameters.append("project", project.toString())
-            if (sprint != null) parameters.append("milestone", sprint.toString())
-            if (status != null) parameters.append("status", status.toString())
-            if (epic != null) parameters.append("epic", epic.toString())
-            if (page != null) parameters.append("page", page.toString())
-            if (assignedId != null) parameters.append("assigned_users", assignedId.toString())
-            if (isClosed != null) parameters.append("status__is_closed", isClosed.toString())
-            if (watcherId != null) parameters.append("watchers", watcherId.toString())
-            if (isDashboard != null) parameters.append("dashboard", isDashboard.toString())
-            if (query != null) parameters.append("q", query)
-            parameters.append("page_size", pageSize.toString())
-            if (assignedIds != null) parameters.append("assigned_to", assignedIds)
-            if (epics != null) parameters.append("epic", epics)
-            if (ownerIds != null) parameters.append("owner", ownerIds)
-            if (roles != null) parameters.append("role", roles)
-            if (statuses != null) parameters.append("status", statuses)
-            if (tags != null) parameters.append("tags", tags)
-        }
-        // here and below instead of setting header to "false" remove it,
-        // because api always returns unpaginated result if header persists, regardless of its value
-        if (page == null) headers.append("x-disable-pagination", "true")
-    }.body()
+    override suspend fun getUserStories(params: GetUserStoriesParams): List<WorkItemResponseDTO> =
+        httpClient.get("userstories") {
+            url {
+                if (params.project != null) parameters.append("project", params.project.toString())
+                if (params.sprint != null) parameters.append("milestone", params.sprint.toString())
+                if (params.status != null) parameters.append("status", params.status.toString())
+                if (params.epic != null) parameters.append("epic", params.epic.toString())
+                if (params.page != null) parameters.append("page", params.page.toString())
+                if (params.assignedId != null) parameters.append("assigned_users", params.assignedId.toString())
+                if (params.isClosed != null) parameters.append("status__is_closed", params.isClosed.toString())
+                if (params.watcherId != null) parameters.append("watchers", params.watcherId.toString())
+                if (params.isDashboard != null) parameters.append("dashboard", params.isDashboard.toString())
+                if (params.query != null) parameters.append("q", params.query)
+                parameters.append("page_size", params.pageSize.toString())
+                if (params.assignedIds != null) parameters.append("assigned_to", params.assignedIds)
+                if (params.epics != null) parameters.append("epic", params.epics)
+                if (params.ownerIds != null) parameters.append("owner", params.ownerIds)
+                if (params.roles != null) parameters.append("role", params.roles)
+                if (params.statuses != null) parameters.append("status", params.statuses)
+                if (params.tags != null) parameters.append("tags", params.tags)
+            }
+            // here and below instead of setting header to "false" remove it,
+            // because api always returns unpaginated result if header persists, regardless of its value
+            if (params.page == null) headers.append("x-disable-pagination", "true")
+        }.body()
 }

@@ -60,6 +60,6 @@ class GetWatchingItemsUseCaseTest {
 
         useCase.getData(userId = userId, projectId = 1L)
 
-        assertTrue(fakeRepo.calls.all { it.watcherId == userId })
+        assertTrue(fakeRepo.calls.all { it.params.watcherId == userId })
     }
 }

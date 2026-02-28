@@ -63,8 +63,8 @@ class GetMyWorkItemsUseCaseTest {
         val epicCall = fakeRepo.calls.first { it.commonTaskType == CommonTaskType.Epic }
         val storyCall = fakeRepo.calls.first { it.commonTaskType == CommonTaskType.UserStory }
         val taskCall = fakeRepo.calls.first { it.commonTaskType == CommonTaskType.Task }
-        assertEquals(userId, epicCall.assignedId)
-        assertEquals(userId, storyCall.assignedId)
-        assertEquals(userId, taskCall.assignedId)
+        assertEquals(userId, epicCall.params.assignedId)
+        assertEquals(userId, storyCall.params.assignedId)
+        assertEquals(userId, taskCall.params.assignedId)
     }
 }

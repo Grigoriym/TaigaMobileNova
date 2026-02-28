@@ -9,7 +9,7 @@ import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.FiltersSession
+import com.grappim.taigamobile.core.storage.KmpSession
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
@@ -32,7 +32,7 @@ import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class ScrumBacklogViewModel(
-    private val session: FiltersSession,
+    private val session: KmpSession,
     private val userStoriesRepository: UserStoriesRepository,
     private val filtersRepository: FiltersRepository,
     private val projectsRepository: ProjectsRepository

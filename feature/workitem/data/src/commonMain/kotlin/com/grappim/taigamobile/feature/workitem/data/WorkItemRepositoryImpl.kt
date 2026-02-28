@@ -9,6 +9,7 @@ import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.domain.GetWorkItemsParams
 import com.grappim.taigamobile.feature.workitem.domain.PatchedCustomAttributes
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.UpdateWorkItem
@@ -54,16 +55,7 @@ class WorkItemRepositoryImpl(
     override suspend fun getWorkItems(
         commonTaskType: CommonTaskType,
         projectId: Long,
-        assignedId: Long?,
-        isClosed: Boolean?,
-        watcherId: Long?,
-        isDashboard: Boolean?,
-        assignedIds: String?,
-        isBlocked: Boolean?,
-        modifiedDateGte: String?,
-        finishDateGte: String?,
-        milestoneId: Long?,
-        pageSize: Int?
+        params: GetWorkItemsParams
     ): ImmutableList<WorkItem> {
         // Try network first if online
         if (networkMonitor.isOnline.value) {
@@ -71,22 +63,23 @@ class WorkItemRepositoryImpl(
                 val response = workItemApi.getWorkItems(
                     taskPath = commonTaskType.getPluralPath(),
                     project = projectId,
-                    assignedId = assignedId,
-                    isClosed = isClosed,
-                    watcherId = watcherId,
-                    isDashboard = isDashboard,
-                    isBlocked = isBlocked,
-                    modifiedDateGte = modifiedDateGte,
-                    finishDateGte = finishDateGte,
-                    sprint = milestoneId,
-                    pageSize = pageSize
+                    assignedId = params.assignedId,
+                    isClosed = params.isClosed,
+                    watcherId = params.watcherId,
+                    isDashboard = params.isDashboard,
+                    assignedIds = params.assignedIds,
+                    isBlocked = params.isBlocked,
+                    modifiedDateGte = params.modifiedDateGte,
+                    finishDateGte = params.finishDateGte,
+                    sprint = params.milestoneId,
+                    pageSize = params.pageSize
                 )
                 val items = workItemMapper.toDomainList(response, commonTaskType)
                 // Cache results (only for simple queries without filters that are hard to replicate)
-                if (assignedId == null && watcherId == null && isBlocked == null &&
-                    modifiedDateGte == null && finishDateGte == null
+                if (params.assignedId == null && params.watcherId == null && params.isBlocked == null &&
+                    params.modifiedDateGte == null && params.finishDateGte == null
                 ) {
-                    workItemDao.insertAll(workItemEntityMapper.toEntityList(items, milestoneId))
+                    workItemDao.insertAll(workItemEntityMapper.toEntityList(items, params.milestoneId))
                 }
                 return items
             } catch (e: Exception) {
@@ -97,6 +90,7 @@ class WorkItemRepositoryImpl(
         }
 
         // Return cached data
+        val milestoneId = params.milestoneId
         val cached = if (milestoneId != null) {
             workItemDao.getByProjectIdAndSprint(projectId, milestoneId).first()
         } else {
@@ -105,8 +99,8 @@ class WorkItemRepositoryImpl(
 
         return cached
             .filter { entity ->
-                (isClosed == null || entity.isClosed == isClosed) &&
-                    (assignedId == null || entity.assigneeId == assignedId)
+                (params.isClosed == null || entity.isClosed == params.isClosed) &&
+                    (params.assignedId == null || entity.assigneeId == params.assignedId)
             }
             .let { workItemEntityMapper.toDomainList(it) }
             .toImmutableList()

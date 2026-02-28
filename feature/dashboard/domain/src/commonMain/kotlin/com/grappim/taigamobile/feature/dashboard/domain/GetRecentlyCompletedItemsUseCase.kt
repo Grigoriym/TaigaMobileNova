@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.dashboard.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.workitem.domain.GetWorkItemsParams
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
@@ -29,9 +30,7 @@ class GetRecentlyCompletedItemsUseCaseImpl(
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.UserStory,
                     projectId = projectId,
-                    isClosed = true,
-                    finishDateGte = threeDaysAgo,
-                    pageSize = 5
+                    params = GetWorkItemsParams(isClosed = true, finishDateGte = threeDaysAgo, pageSize = 5)
                 )
             }
 
@@ -39,9 +38,7 @@ class GetRecentlyCompletedItemsUseCaseImpl(
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Task,
                     projectId = projectId,
-                    isClosed = true,
-                    finishDateGte = threeDaysAgo,
-                    pageSize = 5
+                    params = GetWorkItemsParams(isClosed = true, finishDateGte = threeDaysAgo, pageSize = 5)
                 )
             }
 
@@ -49,9 +46,7 @@ class GetRecentlyCompletedItemsUseCaseImpl(
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Issue,
                     projectId = projectId,
-                    isClosed = true,
-                    finishDateGte = threeDaysAgo,
-                    pageSize = 5
+                    params = GetWorkItemsParams(isClosed = true, finishDateGte = threeDaysAgo, pageSize = 5)
                 )
             }
 

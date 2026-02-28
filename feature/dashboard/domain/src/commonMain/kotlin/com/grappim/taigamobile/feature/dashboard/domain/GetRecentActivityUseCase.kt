@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.dashboard.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.workitem.domain.GetWorkItemsParams
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
@@ -29,9 +30,7 @@ class GetRecentActivityUseCaseImpl(
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.UserStory,
                     projectId = projectId,
-                    isClosed = false,
-                    modifiedDateGte = threeDaysAgo,
-                    pageSize = 10
+                    params = GetWorkItemsParams(isClosed = false, modifiedDateGte = threeDaysAgo, pageSize = 10)
                 )
             }
 
@@ -39,9 +38,7 @@ class GetRecentActivityUseCaseImpl(
                 workItemRepository.getWorkItems(
                     commonTaskType = CommonTaskType.Task,
                     projectId = projectId,
-                    isClosed = false,
-                    modifiedDateGte = threeDaysAgo,
-                    pageSize = 10
+                    params = GetWorkItemsParams(isClosed = false, modifiedDateGte = threeDaysAgo, pageSize = 10)
                 )
             }
 

@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
+import com.grappim.taigamobile.feature.workitem.domain.GetWorkItemsParams
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
 import com.grappim.taigamobile.feature.workitem.dto.customattribute.CustomAttributeResponseDTO
@@ -116,15 +117,17 @@ class WorkItemRepositoryImplTest {
         sut.getWorkItems(
             commonTaskType = taskType,
             projectId = projectId,
-            assignedId = assignedId,
-            isClosed = true,
-            watcherId = watcherId,
-            isDashboard = true,
-            isBlocked = false,
-            modifiedDateGte = modifiedDateGte,
-            finishDateGte = finishDateGte,
-            milestoneId = milestoneId,
-            pageSize = pageSize
+            params = GetWorkItemsParams(
+                assignedId = assignedId,
+                isClosed = true,
+                watcherId = watcherId,
+                isDashboard = true,
+                isBlocked = false,
+                modifiedDateGte = modifiedDateGte,
+                finishDateGte = finishDateGte,
+                milestoneId = milestoneId,
+                pageSize = pageSize
+            )
         )
 
         val call = fakeWorkItemApi.getWorkItemsCalls.last()
