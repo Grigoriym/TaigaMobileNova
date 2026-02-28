@@ -7,37 +7,35 @@ import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.LocalDate
 
 class FakeSprintsRepository: SprintsRepository {
-    override suspend fun getSprintData(sprintId: Long): Result<SprintData> {
-        TODO("Not yet implemented")
-    }
+    var getSprintDataResult: Result<SprintData> = Result.failure(Exception("getSprintDataResult not set"))
+    var deleteSprintThrows: Exception? = null
+    var deleteSprintCalled = false
 
-    override fun getSprintsPaging(isClosed: Boolean): Flow<PagingData<Sprint>> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getSprintData(sprintId: Long): Result<SprintData> = getSprintDataResult
 
-    override suspend fun getSprints(isClosed: Boolean): ImmutableList<Sprint> {
-        TODO("Not yet implemented")
-    }
+    override fun getSprintsPaging(isClosed: Boolean): Flow<PagingData<Sprint>> =
+        flowOf(PagingData.empty())
+
+    override suspend fun getSprints(isClosed: Boolean): ImmutableList<Sprint> =
+        error("not used in this test")
 
     var getSprintResult: Sprint? = null
 
     override suspend fun getSprint(sprintId: Long): Sprint =
         getSprintResult ?: error("getSprintResult not set")
 
-    override suspend fun getSprintIssues(sprintId: Long): ImmutableList<WorkItem> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getSprintIssues(sprintId: Long): ImmutableList<WorkItem> =
+        error("not used in this test")
 
-    override suspend fun getSprintUserStories(sprintId: Long): ImmutableList<WorkItem> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getSprintUserStories(sprintId: Long): ImmutableList<WorkItem> =
+        error("not used in this test")
 
-    override suspend fun getSprintTasks(sprintId: Long): ImmutableList<WorkItem> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getSprintTasks(sprintId: Long): ImmutableList<WorkItem> =
+        error("not used in this test")
 
     override suspend fun createSprint(
         name: String,
@@ -55,6 +53,7 @@ class FakeSprintsRepository: SprintsRepository {
     }
 
     override suspend fun deleteSprint(sprintId: Long) {
-        TODO("Not yet implemented")
+        deleteSprintCalled = true
+        deleteSprintThrows?.let { throw it }
     }
 }

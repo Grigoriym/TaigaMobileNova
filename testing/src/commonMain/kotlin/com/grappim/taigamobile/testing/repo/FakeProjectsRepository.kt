@@ -9,18 +9,16 @@ import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 class FakeProjectsRepository : ProjectsRepository {
 
     var permissions: ImmutableList<TaigaPermission> = persistentListOf(TaigaPermission.MODIFY_PROJECT)
 
-    override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> =
+        flowOf(PagingData.empty())
 
-    override suspend fun getMyProjects(): ImmutableList<Project> {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getMyProjects(): ImmutableList<Project> = error("not used in this test")
 
     var getUserProjectsResult: ImmutableList<Project> = persistentListOf()
     var getUserProjectsThrows: Throwable? = null
@@ -30,17 +28,12 @@ class FakeProjectsRepository : ProjectsRepository {
         return getUserProjectsResult
     }
 
-    override suspend fun saveProject(project: Project) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun saveProject(project: Project) = error("not used in this test")
 
-    override suspend fun getCurrentProjectSimple(): ProjectSimple {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getCurrentProjectSimple(): ProjectSimple = error("not used in this test")
 
-    override fun getCurrentProjectFlow(): Flow<ProjectSimple> {
-        TODO("Not yet implemented")
-    }
+    var projectFlow: Flow<ProjectSimple> = flowOf()
+    override fun getCurrentProjectFlow(): Flow<ProjectSimple> = projectFlow
 
     override suspend fun getPermissions(): ImmutableList<TaigaPermission> = permissions
 
@@ -52,12 +45,22 @@ class FakeProjectsRepository : ProjectsRepository {
         fetchAndSaveProjectInfoThrows?.let { throw it }
     }
 
+    var getTagsColorsResult: ImmutableList<Tag>? = null
+    var getTagsColorsThrows: Throwable? = null
+
     override suspend fun getTagsColors(): ImmutableList<Tag> {
-        TODO("Not yet implemented")
+        getTagsColorsThrows?.let { throw it }
+        return getTagsColorsResult ?: error("getTagsColorsResult not set")
     }
 
+    var deleteTagCalled = false
+    var deleteTagTagName: String? = null
+    var deleteTagThrows: Throwable? = null
+
     override suspend fun deleteTag(tagName: String) {
-        TODO("Not yet implemented")
+        deleteTagCalled = true
+        deleteTagTagName = tagName
+        deleteTagThrows?.let { throw it }
     }
 
     var createTagCalled = false
@@ -78,7 +81,15 @@ class FakeProjectsRepository : ProjectsRepository {
         editTagThrows?.let { throw it }
     }
 
+    var mixTagsCalled = false
+    var mixTagsFromTags: List<String>? = null
+    var mixTagsToTag: String? = null
+    var mixTagsThrows: Throwable? = null
+
     override suspend fun mixTags(fromTags: List<String>, toTag: String) {
-        TODO("Not yet implemented")
+        mixTagsCalled = true
+        mixTagsFromTags = fromTags
+        mixTagsToTag = toTag
+        mixTagsThrows?.let { throw it }
     }
 }

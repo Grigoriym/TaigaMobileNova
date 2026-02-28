@@ -289,6 +289,65 @@ class MyRepositoryImplTest {
 
 ---
 
+## Paging Fakes (`Flow<PagingData<T>>`)
+
+Some ViewModels call paging methods **at construction time** (property initializers, not inside `init {}`). If the fake throws `TODO()` or `error()` for these, the ViewModel will crash before the test even starts.
+
+Fakes that return `flowOf(PagingData.empty())` for paging (safe to construct):
+
+| Fake | Method |
+|------|--------|
+| `FakeSprintsRepository` | `getSprintsPaging(isClosed)` |
+| `FakeEpicsRepository` | `getEpicsPaging(filters, query)` |
+| `FakeUserStoriesRepository` | `getUserStoriesPaging(filters, query)` |
+| `FakeProjectsRepository` | `fetchProjects(query)` |
+
+If you add a ViewModel that calls another paging method at construction, implement it in the corresponding fake with `flowOf(PagingData.empty())`.
+
+---
+
+## `WorkItemSprintDelegate` Pattern
+
+Some ViewModels use sprint creation/editing via delegation:
+
+```kotlin
+class MyViewModel(...) : ViewModel(),
+    WorkItemSprintDelegate by WorkItemSprintDelegateImpl(dateTimeUtils, sprintsRepository)
+```
+
+This exposes `sprintDialogState: StateFlow<SprintDialogState>` directly on the ViewModel. The delegate needs `FakeSprintsRepository` and `FakeDateTimeUtils`.
+
+**`SprintDialogState` key fields:**
+- `isSprintDialogVisible: Boolean` — true after `setSprintDialogVisibility(true)`
+- `sprintNameValue: String` — set via `onSetSprintNameValue(name)`
+- `startDate: LocalDate?` / `endDate: LocalDate?` — set by `setInitialSprint()`
+- `sprintNameError: NativeText` — non-Empty when name is blank on confirm
+- `dialogError: NativeText` — non-Empty on repo failure
+
+**Validation in `createSprint` / `editSprint`:** If `sprintNameValue.trim().isEmpty()`, the delegate returns early — `doOnPreExecute`, `doOnSuccess`, and `doOnError` are never called.
+
+**Test setup for a sprint-create flow:**
+```kotlin
+// 1. Trigger dialog open (sets initial dates from FakeDateTimeUtils.fixedDate)
+sut.state.value.onCreateSprintClick()
+
+// 2. Set a non-empty name to pass validation
+sut.sprintDialogState.value.onSetSprintNameValue("Sprint 1")
+
+// 3. Confirm and assert with Turbine
+sut.reloadOpenSprints.test {
+    sut.state.value.onCreateSprintConfirm()
+    awaitItem()
+}
+assertFalse(sut.state.value.isLoading)
+```
+
+`FakeSprintsRepository.createSprint()` and `editSprint()` are no-ops (succeed silently).
+
+`FakeDateTimeUtils.fixedDate` defaults to `LocalDate(2024, 1, 15)`. `setInitialSprint()` uses it for both start and end (end = start + 14 days), so dates are always non-null after `onCreateSprintClick()`.
+
+---
+
 ## `WorkItemEditStateRepository` in ViewModel Tests
 
 Use the **real** `WorkItemEditStateRepository` (pure in-memory, no I/O). Assert state via its getter methods.

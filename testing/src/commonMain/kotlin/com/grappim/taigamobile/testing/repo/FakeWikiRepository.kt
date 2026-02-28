@@ -62,7 +62,6 @@ class FakeWikiRepository : WikiRepository {
         deleteWikiLinkThrows?.let { throw it }
     }
 
-    override suspend fun createWikiPage(slug: String, content: String): WikiPage {
-        TODO("Not yet implemented")
-    }
+    override suspend fun createWikiPage(slug: String, content: String): WikiPage =
+        error("not used in this test")
 }

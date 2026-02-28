@@ -17,7 +17,8 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
 class KmpSession(private val dataStore: DataStore<Preferences>, @param:StorageJsonQualifier private val json: Json) :
-    SessionResetter {
+    SessionResetter,
+    FiltersSession {
     private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
 
     companion object {
@@ -30,47 +31,47 @@ class KmpSession(private val dataStore: DataStore<Preferences>, @param:StorageJs
     private fun decodeFilters(value: String?): FiltersData =
         value?.takeIf { it.isNotBlank() }?.let { json.decodeFromString(it) } ?: FiltersData()
 
-    val scrumFilters: StateFlow<FiltersData> = dataStore.data
+    override val scrumFilters: StateFlow<FiltersData> = dataStore.data
         .map { prefs -> decodeFilters(prefs[FILTERS_SCRUM_KEY]) }
         .stateIn(scope, SharingStarted.Eagerly, FiltersData())
 
-    fun changeScrumFilters(filters: FiltersData) {
+    override fun changeScrumFilters(filters: FiltersData) {
         scope.launch {
             dataStore.edit { prefs -> prefs[FILTERS_SCRUM_KEY] = json.encodeToString(filters) }
         }
     }
 
-    val epicsFilters: StateFlow<FiltersData> = dataStore.data
+    override val epicsFilters: StateFlow<FiltersData> = dataStore.data
         .map { prefs -> decodeFilters(prefs[FILTERS_EPICS_KEY]) }
         .stateIn(scope, SharingStarted.Eagerly, FiltersData())
 
-    fun changeEpicsFilters(filters: FiltersData) {
+    override fun changeEpicsFilters(filters: FiltersData) {
         scope.launch {
             dataStore.edit { prefs -> prefs[FILTERS_EPICS_KEY] = json.encodeToString(filters) }
         }
     }
 
-    val issuesFilters: StateFlow<FiltersData> = dataStore.data
+    override val issuesFilters: StateFlow<FiltersData> = dataStore.data
         .map { prefs -> decodeFilters(prefs[FILTERS_ISSUES_KEY]) }
         .stateIn(scope, SharingStarted.Eagerly, FiltersData())
 
-    fun changeIssuesFilters(filters: FiltersData) {
+    override fun changeIssuesFilters(filters: FiltersData) {
         scope.launch {
             dataStore.edit { prefs -> prefs[FILTERS_ISSUES_KEY] = json.encodeToString(filters) }
         }
     }
 
-    val kanbanFilters: StateFlow<FiltersData> = dataStore.data
+    override val kanbanFilters: StateFlow<FiltersData> = dataStore.data
         .map { prefs -> decodeFilters(prefs[FILTERS_KANBAN_KEY]) }
         .stateIn(scope, SharingStarted.Eagerly, FiltersData())
 
-    fun changeKanbanFilters(filters: FiltersData) {
+    override fun changeKanbanFilters(filters: FiltersData) {
         scope.launch {
             dataStore.edit { prefs -> prefs[FILTERS_KANBAN_KEY] = json.encodeToString(filters) }
         }
     }
 
-    fun resetFilters() {
+    override fun resetFilters() {
         changeScrumFilters(FiltersData())
         changeEpicsFilters(FiltersData())
         changeIssuesFilters(FiltersData())

@@ -11,6 +11,7 @@ import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 class FakeUserStoriesRepository : UserStoriesRepository {
 
@@ -19,9 +20,7 @@ class FakeUserStoriesRepository : UserStoriesRepository {
     override fun getUserStoriesPaging(
         filters: FiltersData,
         query: String
-    ): Flow<PagingData<WorkItem>> {
-        TODO("Not yet implemented")
-    }
+    ): Flow<PagingData<WorkItem>> = flowOf(PagingData.empty())
 
     override suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem> =
         getEpicUserStoriesSimplifiedResult
@@ -31,13 +30,9 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         description: String,
         status: Long?,
         swimlane: Long?
-    ): WorkItem {
-        TODO("Not yet implemented")
-    }
+    ): WorkItem = error("not used in this test")
 
-    override suspend fun getUserStory(id: Long): UserStory {
-        TODO("Not yet implemented")
-    }
+    override suspend fun getUserStory(id: Long): UserStory = error("not used in this test")
 
     override suspend fun getUserStories(
         assignedId: Long?,
@@ -47,21 +42,15 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         epicId: Long?,
         project: Long?,
         sprint: Any?
-    ): ImmutableList<UserStory> {
-        TODO("Not yet implemented")
-    }
+    ): ImmutableList<UserStory> = error("not used in this test")
 
     override suspend fun patchData(
         version: Long,
         userStoryId: Long,
         payload: ImmutableMap<String, Any?>
-    ): PatchedData {
-        TODO("Not yet implemented")
-    }
+    ): PatchedData = error("not used in this test")
 
-    override suspend fun deleteUserStory(id: Long) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun deleteUserStory(id: Long) = error("not used in this test")
 
     var bulkUpdateKanbanOrderThrows: Throwable? = null
     var bulkUpdateKanbanOrderCalled = false

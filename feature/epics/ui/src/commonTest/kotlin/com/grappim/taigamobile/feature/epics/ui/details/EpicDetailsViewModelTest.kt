@@ -1,13 +1,10 @@
-@file:OptIn(ExperimentalCoroutinesApi::class)
-
-package com.grappim.taigamobile.feature.epics.ui
+package com.grappim.taigamobile.feature.epics.ui.details
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
-import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsViewModel
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
@@ -34,7 +31,6 @@ import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import com.grappim.taigamobile.utils.ui.NativeText
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest

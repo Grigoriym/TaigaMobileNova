@@ -16,7 +16,6 @@ class FakeProjectDao : ProjectDao {
     override suspend fun getProjectById(id: Long): ProjectEntity =
         projectsById[id] ?: error("No project found for id=$id")
 
-    override fun getProjectByIdFlow(id: Long): Flow<ProjectEntity?> {
-        TODO("Not yet implemented")
-    }
+    override fun getProjectByIdFlow(id: Long): Flow<ProjectEntity?> =
+        error("not used in this test")
 }

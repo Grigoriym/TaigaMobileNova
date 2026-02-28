@@ -8,6 +8,7 @@ import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 
 class FakeEpicsRepository : EpicsRepository {
 
@@ -17,9 +18,7 @@ class FakeEpicsRepository : EpicsRepository {
     override fun getEpicsPaging(
         filters: FiltersData,
         query: String
-    ): Flow<PagingData<WorkItem>> {
-        TODO("Not yet implemented")
-    }
+    ): Flow<PagingData<WorkItem>> = flowOf(PagingData.empty())
 
     var getEpicsResult: ImmutableList<Epic> = persistentListOf()
     var getEpicsThrows: Throwable? = null
@@ -34,13 +33,11 @@ class FakeEpicsRepository : EpicsRepository {
         return getEpicsResult
     }
 
-    override suspend fun linkToEpic(epicId: Long, userStoryId: Long) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun linkToEpic(epicId: Long, userStoryId: Long) =
+        error("not used in this test")
 
-    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
-        TODO("Not yet implemented")
-    }
+    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) =
+        error("not used in this test")
 
     override suspend fun getEpic(id: Long): Epic {
         getEpicThrows?.let { throw it }

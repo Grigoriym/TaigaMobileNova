@@ -28,9 +28,7 @@ class FakeProjectsApi : ProjectsApi {
         pageSize: Int?,
         orderBy: String,
         slight: Boolean
-    ): HttpResponse {
-        TODO("Not yet implemented")
-    }
+    ): HttpResponse = error("not used in this test")
 
     override suspend fun getProjects(
         memberId: Long?,
