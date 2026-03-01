@@ -1,4 +1,5 @@
 
+import com.codingfeline.buildkonfig.compiler.FieldSpec
 import com.grappim.taigamobile.buildlogic.AppBuildTypes
 import com.grappim.taigamobile.buildlogic.configureFlavors
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
@@ -8,6 +9,31 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.di)
     alias(libs.plugins.taigamobile.kmp.library.compose)
     alias(libs.plugins.taigamobile.kmp.serialization)
+    alias(libs.plugins.build.konfig)
+}
+
+buildkonfig {
+    packageName = libs.versions.app.pkg.get()
+
+    defaultConfigs {
+        buildConfigField(FieldSpec.Type.STRING, "VERSION_NAME", libs.versions.version.name.get())
+        buildConfigField(FieldSpec.Type.STRING, "VERSION_CODE", libs.versions.version.code.get())
+        buildConfigField(FieldSpec.Type.BOOLEAN, "IS_DEBUG", "false")
+        buildConfigField(FieldSpec.Type.BOOLEAN, "IS_FDROID", "false")
+        buildConfigField(FieldSpec.Type.STRING, "DEBUG_LOCAL_HOST", "")
+        buildConfigField(FieldSpec.Type.STRING, "BUILD_TYPE", "release")
+    }
+
+    defaultConfigs("debug") {
+        buildConfigField(FieldSpec.Type.BOOLEAN, "IS_DEBUG", "true")
+        buildConfigField(FieldSpec.Type.STRING, "BUILD_TYPE", "debug")
+        val host = findProperty("debug.local.host") as String? ?: ""
+        buildConfigField(FieldSpec.Type.STRING, "DEBUG_LOCAL_HOST", host)
+    }
+
+    defaultConfigs("fdroid") {
+        buildConfigField(FieldSpec.Type.BOOLEAN, "IS_FDROID", "true")
+    }
 }
 
 koinCompiler {

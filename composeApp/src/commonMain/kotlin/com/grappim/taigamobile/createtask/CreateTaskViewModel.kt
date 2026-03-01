@@ -6,6 +6,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.utils.ui.typeMapOf
+import kotlin.reflect.typeOf
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.create_epic
 import com.grappim.taigamobile.strings.generated.resources.create_issue
@@ -28,7 +30,9 @@ class CreateTaskViewModel(
     private val createWorkItemUseCase: CreateWorkItemUseCase
 ) : ViewModel() {
 
-    val route = savedStateHandle.toRoute<CreateTaskNavDestination>()
+    val route = savedStateHandle.toRoute<CreateTaskNavDestination>(
+        typeMap = typeMapOf(listOf(typeOf<CommonTaskType>()))
+    )
 
     private val _state = MutableStateFlow(
         CreateTaskState(

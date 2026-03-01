@@ -26,6 +26,9 @@ agp = "9.0.1"
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 androidDesugarJdkLibs = "2.1.5"
 
+# https://github.com/yshrsmz/BuildKonfig/releases
+buildKonfig = "0.17.1"
+
 kotlin = "2.3.20-RC"
 coroutines = "1.10.2"
 ksp = "2.3.5"
@@ -74,7 +77,7 @@ androidx-lifecycle = "2.9.6"
 
 skydovesColorpicker = "1.1.3"
 markdownRenderer = "0.39.2"
-filekit = "0.12.0"
+filekit = "0.13.0"
 
 core-ktx = "1.17.0"
 appcompat = "1.7.1"
@@ -122,7 +125,6 @@ kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutine
 kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-swing", version.ref = "coroutines" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "coroutines" }
 kotlinx-collections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections" }
-kotlin-metadata = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin" }
 kotlinx-date-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-date-time" }
 kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io-core" }
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
@@ -196,6 +198,7 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 
 composeRules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version.ref = "composeRules" }
 composeRules-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "composeRules" }
+build-konfig = { module = "com.codingfeline.buildkonfig:buildkonfig-gradle-plugin", version.ref = "buildKonfig" }
 
 chucker = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
 chucker-noop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
@@ -229,6 +232,7 @@ composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "jetbrainsC
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 android-lint = { id = "com.android.lint", version.ref = "agp" }
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+build-konfig = { id = "com.codingfeline.buildkonfig", version.ref = "buildKonfig" }
 
 # Plugins definded in the included build-logic
 taigamobile-kmp-serialization = { id = "taigamobile.kmp.serialization" }

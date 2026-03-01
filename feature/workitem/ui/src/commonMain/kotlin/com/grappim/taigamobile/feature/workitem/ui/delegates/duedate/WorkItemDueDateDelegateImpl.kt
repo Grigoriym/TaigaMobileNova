@@ -117,7 +117,7 @@ class WorkItemDueDateDelegateImpl(
             DueDateStatus.NotSet, DueDateStatus.NoLongerApplicable, null ->
                 if (dueDate != null) {
                     DynamicColor {
-                        MaterialTheme.colorScheme.surface
+                        MaterialTheme.colorScheme.onSurface
                     }
                 } else {
                     DynamicColor {

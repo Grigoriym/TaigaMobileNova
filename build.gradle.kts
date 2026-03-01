@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.koin.compiler) apply false
     alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.composeMultiplatform) apply false
+    alias(libs.plugins.build.konfig) apply false
 
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
@@ -48,7 +49,7 @@ kover {
                         // Compose compiler synthetic lambdas (always appear as ComposableSingletons$FileKt)
                         "ComposableSingletons",
                         // Misc
-                        "ImmutableListSerializer"
+                        "ImmutableListSerializer", "BuildKonfig"
                     )
                 )
 
