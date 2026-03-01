@@ -87,7 +87,7 @@ internal class ProjectSelectorViewModelTest {
     }
 
     @Test
-    fun `setProject saves project, updates session and resets filters`() = runTest {
+    fun `setProject saves project updates session and resets filters`() = runTest {
         val project = getProject()
 
         sut.state.value.setProject(project)

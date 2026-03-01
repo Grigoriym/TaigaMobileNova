@@ -6,8 +6,6 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.utils.ui.typeMapOf
-import kotlin.reflect.typeOf
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.create_epic
 import com.grappim.taigamobile.strings.generated.resources.create_issue
@@ -16,6 +14,7 @@ import com.grappim.taigamobile.strings.generated.resources.create_userstory
 import com.grappim.taigamobile.strings.generated.resources.title_is_empty
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import com.grappim.taigamobile.utils.ui.typeMapOf
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,6 +22,7 @@ import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
+import kotlin.reflect.typeOf
 
 @KoinViewModel
 class CreateTaskViewModel(

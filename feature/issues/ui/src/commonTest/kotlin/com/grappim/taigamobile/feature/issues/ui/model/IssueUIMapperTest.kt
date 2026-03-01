@@ -48,7 +48,7 @@ class IssueUIMapperTest {
     }
 
     @Test
-    fun `toUI with null status, type, priority, severity maps to null`() {
+    fun `toUI with null status type priority severity maps to null`() {
         val issue = getIssueTask().copy(
             status = null,
             type = null,

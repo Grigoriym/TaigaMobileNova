@@ -35,7 +35,7 @@ class AuthStateManagerTest {
     )
 
     @Test
-    fun `logoutSuspend resets session, clears all storages and emits UserInitiated event`() = runTest {
+    fun `logoutSuspend resets session clears all storages and emits UserInitiated event`() = runTest {
         val sut = createSut(this)
 
         sut.logoutEvents.test {

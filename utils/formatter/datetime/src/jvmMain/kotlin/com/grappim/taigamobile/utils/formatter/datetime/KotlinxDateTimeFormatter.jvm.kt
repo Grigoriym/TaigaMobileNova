@@ -10,8 +10,7 @@ import java.time.format.FormatStyle
 private val mediumFormatter: DateTimeFormatter =
     DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)
 
-actual fun platformFormatMediumDate(date: LocalDate): String =
-    mediumFormatter.format(date.toJavaLocalDate())
+actual fun platformFormatMediumDate(date: LocalDate): String = mediumFormatter.format(date.toJavaLocalDate())
 
 actual fun platformFormatMediumDateTime(dateTime: LocalDateTime): String =
     mediumFormatter.format(dateTime.toJavaLocalDateTime())
