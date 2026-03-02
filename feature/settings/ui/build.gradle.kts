@@ -5,10 +5,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.settings.ui"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

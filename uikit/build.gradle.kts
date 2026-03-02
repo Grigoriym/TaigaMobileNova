@@ -3,10 +3,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.library.compose)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.uikit"
-}
-
 compose.resources {
     packageOfResClass = "com.grappim.taigamobile.uikit.generated.resources"
     generateResClass = always

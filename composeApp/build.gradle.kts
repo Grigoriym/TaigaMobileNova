@@ -1,11 +1,9 @@
 
 import com.codingfeline.buildkonfig.compiler.FieldSpec
-import com.grappim.taigamobile.buildlogic.AppBuildTypes
-import com.grappim.taigamobile.buildlogic.configureFlavors
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.taigamobile.kmp.di)
     alias(libs.plugins.taigamobile.kmp.library.compose)
     alias(libs.plugins.taigamobile.kmp.serialization)
@@ -31,117 +29,11 @@ buildkonfig {
         buildConfigField(FieldSpec.Type.STRING, "DEBUG_LOCAL_HOST", host)
     }
 
-    defaultConfigs("fdroid") {
-        buildConfigField(FieldSpec.Type.BOOLEAN, "IS_FDROID", "true")
-    }
 }
 
 koinCompiler {
     userLogs = true
     debugLogs = true
-}
-
-android {
-    val isGooglePlayBuild = project.gradle.startParameter.taskRequests.toString().contains("Gplay")
-    if (!isGooglePlayBuild) {
-        dependenciesInfo {
-            includeInApk = false
-            includeInBundle = false
-        }
-    }
-
-    namespace = libs.versions.app.pkg.get().toString()
-    compileSdk = libs.versions.compileSdk.get().toString().toInt()
-
-    defaultConfig {
-        applicationId = libs.versions.app.pkg.get().toString()
-        testApplicationId = "${libs.versions.app.pkg.get()}.test"
-
-        minSdk = libs.versions.minSdk.get().toString().toInt()
-        targetSdk = libs.versions.targetSdk.get().toString().toInt()
-
-        versionCode = libs.versions.version.code.get().toString().toInt()
-        versionName = libs.versions.version.name.get().toString()
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-        isCoreLibraryDesugaringEnabled = true
-    }
-    buildFeatures {
-        buildConfig = true
-    }
-
-    signingConfigs {
-        create("release") {
-            storeFile = file("../taigamobilenova_keystore_release.jks")
-            keyAlias = System.getenv("TAIGA_ALIAS_R")
-            keyPassword = System.getenv("TAIGA_KEY_PASS_R")
-            storePassword = System.getenv("TAIGA_STORE_PASS_R")
-            enableV2Signing = true
-            enableV3Signing = true
-        }
-    }
-
-    configureFlavors(this)
-
-    buildTypes {
-        debug {
-            applicationIdSuffix = AppBuildTypes.DEBUG.applicationIdSuffix
-
-            isDebuggable = true
-            isMinifyEnabled = false
-            isShrinkResources = false
-
-            val debugLocalHost = findProperty("debug.local.host") as String? ?: ""
-            buildConfigField("String", "DEBUG_LOCAL_HOST", "\"$debugLocalHost\"")
-        }
-        release {
-            applicationIdSuffix = AppBuildTypes.RELEASE.applicationIdSuffix
-
-            isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = true
-
-            signingConfig = signingConfigs.getByName("release")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-
-            buildConfigField("String", "DEBUG_LOCAL_HOST", "\"\"")
-        }
-    }
-
-    sourceSets {
-        getByName("debug") {
-            manifest.srcFile("src/androidDebug/AndroidManifest.xml")
-        }
-    }
-
-    testOptions.apply {
-        unitTests {
-            isReturnDefaultValues = true
-            isIncludeAndroidResources = true
-        }
-    }
-
-    bundle {
-        language {
-            enableSplit = false
-        }
-    }
-
-    packaging.resources.excludes.apply {
-        add("META-INF/ASL2.0")
-        add("META-INF/notice.txt")
-        add("META-INF/NOTICE.txt")
-        add("META-INF/NOTICE")
-        add("META-INF/license.txt")
-        add("DEPENDENCIES")
-    }
 }
 
 compose.desktop {
@@ -184,6 +76,12 @@ compose.desktop {
 }
 
 kotlin {
+    androidLibrary {
+        namespace = "${libs.versions.app.pkg.get()}.shared"
+        compileSdk = libs.versions.compileSdk.get().toString().toInt()
+        minSdk = libs.versions.minSdk.get().toString().toInt()
+    }
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -342,8 +240,4 @@ kotlin {
             }
         }
     }
-}
-
-dependencies {
-    coreLibraryDesugaring(libs.android.desugarJdkLibs)
 }

@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.buildlogic
 
-import dev.detekt.gradle.extensions.DetektExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
 import org.gradle.api.tasks.testing.logging.TestExceptionFormat
@@ -33,16 +32,16 @@ fun Project.configureTests() {
 fun Project.configureLinting() {
     if (path in lintingExclusions) return
 
-    pluginManager.apply("dev.detekt")
+//    pluginManager.apply("dev.detekt")
     pluginManager.apply("org.jlleitschuh.gradle.ktlint")
 
     // https://detekt.dev/docs/introduction/configurations/
-    configure<DetektExtension> {
-        buildUponDefaultConfig.set(true)
-        parallel.set(true)
-        config.setFrom(rootProject.files("config/detekt/detekt.yml"))
-        allRules.set(false)
-    }
+//    configure<DetektExtension> {
+//        buildUponDefaultConfig.set(true)
+//        parallel.set(true)
+//        config.setFrom(rootProject.files("config/detekt/detekt.yml"))
+//        allRules.set(false)
+//    }
 
     // ./gradlew --continue ktlintCheck
     // ./gradlew ktlintFormat
@@ -64,6 +63,6 @@ fun Project.configureLinting() {
 
     dependencies {
         "ktlintRuleset"(libs.findLibrary("composeRules-ktlint").get())
-        "detektPlugins"(libs.findLibrary("composeRules-detekt").get())
+//        "detektPlugins"(libs.findLibrary("composeRules-detekt").get())
     }
 }

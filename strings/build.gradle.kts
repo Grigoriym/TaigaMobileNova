@@ -3,10 +3,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.library.compose)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.strings"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

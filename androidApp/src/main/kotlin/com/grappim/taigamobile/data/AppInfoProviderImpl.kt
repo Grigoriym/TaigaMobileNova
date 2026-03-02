@@ -8,10 +8,10 @@ import org.koin.core.annotation.Single
 class AppInfoProviderImpl : AppInfoProvider {
     override fun getAppInfo(): String = "${BuildConfig.VERSION_NAME} - " +
         "${BuildConfig.VERSION_CODE} - " +
-        BuildConfig.BUILD_TYPE + " - " + BuildConfig.FLAVOR
+        BuildConfig.BUILD_TYPE + " - " + if (BuildConfig.IS_FDROID) "fdroid" else "gplay"
 
     override fun isDebug(): Boolean = BuildConfig.DEBUG
-    override fun isFdroidBuild(): Boolean = BuildConfig.FLAVOR == "fdroid"
+    override fun isFdroidBuild(): Boolean = BuildConfig.IS_FDROID
 
     override fun getVersionName(): String = BuildConfig.VERSION_NAME
 

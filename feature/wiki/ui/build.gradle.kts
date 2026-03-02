@@ -4,9 +4,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.library.compose)
     alias(libs.plugins.taigamobile.kmp.serialization)
 }
-android {
-    namespace = "com.grappim.taigamobile.feature.wiki.ui"
-}
 
 kotlin {
     sourceSets {

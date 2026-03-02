@@ -34,6 +34,10 @@ check(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
     """.trimIndent()
 }
 
+include(":tools:seed")
+
+include(":androidApp")
+include(":composeApp")
 include(":feature:login:domain")
 include(":uikit")
 include(":utils:ui")
@@ -106,8 +110,6 @@ include(":feature:issues:dto")
 include(":feature:issues:mapper")
 include(":feature:tasks:mapper")
 include(":core:serialization")
-include(":tools:seed")
 include(":core:async-kmp")
-include(":composeApp")
 include(":feature:login:dto")
 include(":core:logger")

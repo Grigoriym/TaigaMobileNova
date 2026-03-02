@@ -2,10 +2,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.library)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.history.domain"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

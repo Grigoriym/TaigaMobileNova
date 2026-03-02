@@ -3,10 +3,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.filters.domain"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

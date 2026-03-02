@@ -36,10 +36,6 @@ room {
     schemaDirectory("$projectDir/schemas")
 }
 
-android {
-    namespace = "com.grappim.taigamobile.core.storage"
-}
-
 dependencies {
     add("kspAndroid", libs.androidx.room.compiler)
     add("kspJvm", libs.androidx.room.compiler)

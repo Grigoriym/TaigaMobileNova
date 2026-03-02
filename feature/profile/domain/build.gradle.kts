@@ -3,10 +3,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.di)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.profile.domain"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

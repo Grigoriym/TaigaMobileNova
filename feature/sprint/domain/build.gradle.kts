@@ -2,10 +2,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.library)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.sprint.domain"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

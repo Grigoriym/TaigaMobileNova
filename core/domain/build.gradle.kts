@@ -3,10 +3,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.core.domain"
-}
-
 kotlin {
     sourceSets {
         iosMain.dependencies {

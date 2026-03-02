@@ -24,7 +24,3 @@ kotlin {
         }
     }
 }
-
-android {
-    namespace = "com.grappim.taigamobile.utils.ui"
-}

@@ -4,10 +4,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.library.compose)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.filters.ui"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

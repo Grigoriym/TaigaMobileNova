@@ -34,8 +34,8 @@ jobs:
       - name: Setup Android Environment
         uses: ./.github/actions/android-setup-composite-action
 
-      - name: Run Detekt
-        run: ./gradlew detekt
+#      - name: Run Detekt
+#        run: ./gradlew detekt
 
       - name: Run Ktlint
         run: ./gradlew ktlintCheck

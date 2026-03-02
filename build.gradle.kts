@@ -2,18 +2,17 @@ plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.ksp) apply false
-    alias(libs.plugins.compose.compiler) apply false
+    alias(libs.plugins.jetbrains.compose.compiler) apply false
     alias(libs.plugins.kotlin.serialization) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
-    alias(libs.plugins.kotlin.multiplatform) apply false
+    alias(libs.plugins.jetbrains.kotlin.multiplatform) apply false
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
     alias(libs.plugins.android.lint) apply false
     alias(libs.plugins.koin.compiler) apply false
-    alias(libs.plugins.kotlin.android) apply false
     alias(libs.plugins.composeMultiplatform) apply false
     alias(libs.plugins.build.konfig) apply false
 
-    alias(libs.plugins.detekt)
+//    alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
 }
@@ -147,6 +146,7 @@ dependencies {
     kover(projects.feature.workitem.mapper)
     kover(projects.feature.workitem.dto)
     kover(projects.composeApp)
+    kover(projects.androidApp)
 }
 
 tasks.register<Delete>("clean") {

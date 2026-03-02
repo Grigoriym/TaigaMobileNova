@@ -5,10 +5,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.network)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.swimlanes.data"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

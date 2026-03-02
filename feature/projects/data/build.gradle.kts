@@ -4,10 +4,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.network)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.projects.data"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {

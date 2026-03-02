@@ -3,7 +3,6 @@ package com.grappim.taigamobile.buildlogic
 import kotlinx.kover.gradle.plugin.dsl.KoverProjectExtension
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 fun Project.configureKmp() {
@@ -31,12 +30,6 @@ fun Project.configureKmp() {
             freeCompilerArgs.add("-Xexpect-actual-classes")
         }
 
-        androidTarget {
-            compilerOptions {
-                jvmTarget.set(JvmTarget.JVM_21)
-            }
-        }
-
         jvm()
 
         iosArm64()
@@ -61,10 +54,6 @@ fun Project.configureKmp() {
             }
             iosMain.dependencies {
                 implementation(libs.findLibrary("kotlinx.coroutines.core").get())
-            }
-            androidUnitTest.dependencies {
-                implementation(kotlin("test"))
-                implementation(project(":testing"))
             }
         }
     }

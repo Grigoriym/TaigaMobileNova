@@ -5,10 +5,6 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.library.compose)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.login.ui"
-}
-
 kotlin {
     sourceSets {
         commonMain.dependencies {
