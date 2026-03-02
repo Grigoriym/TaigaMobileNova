@@ -2,8 +2,9 @@
 
 ## Status
 
-**RESOLVED** with a workaround. The workaround is intentionally custom and acknowledged as
-technical debt. See "Why This Is Unsatisfying" and "Future Investigation" at the bottom.
+**RESOLVED** properly. The initial workaround (`CollectComposeAssetsTask`) has been removed
+and replaced with the correct fix: `androidResources.enable = true` in
+`KmpLibraryComposeConventionPlugin`. See "Root Cause" and "Proper Fix" below.
 
 ---
 
@@ -27,8 +28,12 @@ unzip -l androidApp/build/outputs/apk/fdroid/debug/androidApp-fdroid-debug.apk |
 
 ## Root Cause
 
-**CMP 1.10.1 bug: `variant.sources.assets` is null for `KotlinMultiplatformAndroidVariant`
-(AGP 9.0.1's new KMP library plugin).**
+**`androidResources` was not enabled in `KotlinMultiplatformAndroidLibraryExtension`.**
+
+The official Kotlin docs state that `androidResources.enable = true` is required for CMP
+resources to work in an `androidLibrary` target (AGP 8.8.0+). Without it, AGP's KMP library
+plugin does not initialize the assets source infrastructure for the variant, so
+`componentSources.assets` is null for `KotlinMultiplatformAndroidVariant`.
 
 All KMP library modules in this project use `com.android.kotlin.multiplatform.library`
 (the new AGP 9 KMP library plugin, applied via `taigamobile.kmp.library.compose` convention).
@@ -95,7 +100,32 @@ directory never gets created.
 
 ---
 
-## Approaches That Were Considered
+## Proper Fix
+
+Added `androidResources.enable = true` inside `KmpLibraryComposeConventionPlugin.kt`:
+
+```kotlin
+pluginManager.withPlugin("com.android.kotlin.multiplatform.library") {
+    val kotlinExt = extensions.getByType<KotlinMultiplatformExtension>()
+    (kotlinExt as ExtensionAware).extensions.configure<KotlinMultiplatformAndroidLibraryExtension> {
+        androidResources.enable = true
+    }
+}
+```
+
+With this flag set, `componentSources.assets` is non-null, CMP's
+`copyAndroidMainComposeResourcesToAndroidAssets` task gets its `outputDirectory` wired, and
+compose resources flow into the AAR/APK through the standard CMP pipeline.
+
+The `CollectComposeAssetsTask` workaround and `composeAndroidResources` custom Gradle
+configuration have been removed entirely.
+
+Reference: [Kotlin multiplatform resources setup docs](https://kotlinlang.org/docs/multiplatform/compose-multiplatform-resources-setup.html),
+YouTrack [CMP-9547](https://youtrack.jetbrains.com/issue/CMP-9547).
+
+---
+
+## Approaches That Were Considered (historical)
 
 ### Approach A — Fix CMP's task directly (`CopyResourcesToAndroidAssetsTask`)
 

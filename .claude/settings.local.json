@@ -14,11 +14,13 @@
       "WebFetch(domain:insert-koin.io)",
       "Bash(jar tf:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "WebFetch(domain:www.reddit.com)",
+      "WebFetch(domain:youtrack.jetbrains.com)"
     ]
   },
+  "enableAllProjectMcpServers": true,
   "enabledMcpjsonServers": [
     "codacy"
-  ],
-  "enableAllProjectMcpServers": true
+  ]
 }

@@ -1,21 +1,8 @@
 
-import org.gradle.api.attributes.Usage
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.compose.compiler)
     alias(libs.plugins.koin.compiler)
-}
-
-// Collect CMP compose resources from KMP library modules that have them.
-// Needed because CMP 1.10.1 does not wire resources into AARs when using
-// the AGP 9 KMP library plugin (componentSources.assets returns null).
-val composeAndroidResources by configurations.creating {
-    isCanBeConsumed = false
-    isCanBeResolved = true
-    attributes {
-        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, "compose-android-resources"))
-    }
 }
 
 koinCompiler {
@@ -131,8 +118,6 @@ dependencies {
     implementation(projects.uikit)
     implementation(projects.core.storage)
 
-    composeAndroidResources(projects.strings)
-    composeAndroidResources(projects.uikit)
     implementation(projects.core.logger)
     implementation(projects.core.appinfoApi)
     implementation(projects.core.asyncKmp)
@@ -157,40 +142,4 @@ dependencies {
     implementation(libs.filekit.dialogs)
 
     coreLibraryDesugaring(libs.android.desugarJdkLibs)
-}
-
-// Custom task to merge CMP resources from multiple KMP library modules into one directory.
-// Uses Gradle's managed properties so AGP can call addGeneratedSourceDirectory with it.
-abstract class CollectComposeAssetsTask : DefaultTask() {
-    @get:InputFiles
-    abstract val sourceDirectories: ConfigurableFileCollection
-
-    @get:OutputDirectory
-    abstract val outputDirectory: DirectoryProperty
-
-    @TaskAction
-    fun collect() {
-        val dest = outputDirectory.get().asFile
-        dest.deleteRecursively()
-        dest.mkdirs()
-        sourceDirectories.forEach { srcDir ->
-            if (srcDir.isDirectory) srcDir.copyRecursively(dest, overwrite = true)
-        }
-    }
-}
-
-// Wire CMP compose resources (strings, uikit) into each Android variant's assets.
-// See docs/cmp-resources-android-fix.md for root cause analysis.
-androidComponents {
-    onVariants { variant ->
-        val assets = variant.sources.assets ?: return@onVariants
-        val variantName = variant.name.replaceFirstChar { it.uppercase() }
-        val collectTask = tasks.register(
-            "collect${variantName}ComposeAssets",
-            CollectComposeAssetsTask::class.java,
-        ) {
-            sourceDirectories.from(composeAndroidResources.incoming.files)
-        }
-        assets.addGeneratedSourceDirectory(collectTask, CollectComposeAssetsTask::outputDirectory)
-    }
 }

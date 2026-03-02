@@ -135,6 +135,30 @@ dependencies { "androidRuntimeClasspath"(libs.compose.ui.tooling) }
 
 ---
 
+## Compose Multiplatform Resources in KMP Library Modules
+
+`androidResources` is **disabled by default** in `com.android.kotlin.multiplatform.library`. Without
+it, `componentSources.assets` is null for `KotlinMultiplatformAndroidVariant` and CMP's
+`copyAndroidMainComposeResourcesToAndroidAssets` task silently no-ops — compose resources never
+enter the AAR or APK, causing `MissingResourceException` at runtime.
+
+**Required for any KMP library module that uses CMP resources:**
+```kotlin
+kotlin {
+    androidLibrary {
+        androidResources.enable = true
+    }
+}
+```
+
+In this project this is applied automatically in `KmpLibraryComposeConventionPlugin` via
+`pluginManager.withPlugin("com.android.kotlin.multiplatform.library") { ... }`.
+
+Reference: [Kotlin docs](https://kotlinlang.org/docs/multiplatform/compose-multiplatform-resources-setup.html),
+YouTrack [CMP-9547](https://youtrack.jetbrains.com/issue/CMP-9547).
+
+---
+
 ## Unsupported Features in com.android.kotlin.multiplatform.library
 
 | Feature | Workaround |
