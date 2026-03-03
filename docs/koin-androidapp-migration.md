@@ -83,7 +83,6 @@ startKoin injecting:
 **Not discovered (all are transitive deps of `androidApp`, not direct):**
 - `AppModule` — no hint generated (see above)
 - `KmpNetworkModule` — `core/api` is transitive (through `composeApp`)
-- `UtilsUiModule` — `utils/ui` is transitive
 - `DateTimeModule` — `utils/formatter/datetime` is transitive
 - `DecimalFormatterModule` — `utils/formatter/decimal` is transitive
 
@@ -115,9 +114,9 @@ hints, not raw IR). Beans with no orphan hints are invisible. Hence 116 vs 641.
 | Missing Bean(s) | From Module | Why Missing |
 |-----------------|-------------|-------------|
 | `HttpClient` (auth + common), `@HttpJson Json` | `KmpNetworkModule` factory methods | Module not loaded |
-| `ColorMapper` | `UtilsUiModule` factory method | Module not loaded (`UtilsUiModule` is transitive) |
-| `DateTimeUtils` | `DateTimeModule` factory method | Module not loaded |
-| `@DecimalFormatSimple DecimalFormatter` | `DecimalFormatterModule` factory method | Module not loaded |
+| `ColorMapper` | `AppModule` `@ComponentScan` (`@Factory` in `commonMain`) | `AppModule` not loaded |
+| `DateTimeUtils` | `DateTimeModule` factory methods | Module not loaded |
+| `@DecimalFormatSimple DecimalFormatter` | `DecimalFormatterModule` factory methods | Module not loaded |
 | `TokenRefresherImpl`, `BaseUrlProviderImpl`, `NetworkErrorMapper`, `ErrorResponseParser` | `core/api` classes covered by `KmpNetworkModule`'s `@ComponentScan` | No orphan hints → not in `AndroidModule`'s 116 |
 | ~525 additional beans | `AppModule.module()` full classpath scan result | `AppModule` not loaded |
 
@@ -126,17 +125,6 @@ The app crashes on **`ColorMapper`** first because:
 is evaluated at startup before any network call.
 
 But `HttpClient` / `Json` would be the next crash — the network layer is also completely broken.
-
-### Why `UtilsUiModule` didn't fix ColorMapper
-
-`UtilsUiModule` is in `utils/ui/androidMain` → has `@Configuration` → hint IS generated in
-`utils/ui.aar`. But `androidApp` does **not** have `utils/ui` as a direct dependency — it only
-has it transitively through `composeApp`. The Koin FIR plugin for `androidApp` does not discover
-transitive dependency hints for `@Configuration` modules (only direct deps). So `UtilsUiModule`'s
-hint is never seen by `androidApp`'s FIR.
-
-**Status of `UtilsUiModule`:** Correct implementation, wrong placement. The hint exists but is
-not reachable from `androidApp`.
 
 ---
 
@@ -150,7 +138,6 @@ Path: `composeApp/src/androidMain/kotlin/com/grappim/taigamobile/di/AndroidAppMo
 @Module(includes = [
     AppModule::class,
     KmpNetworkModule::class,
-    UtilsUiModule::class,
     DateTimeModule::class,
     DecimalFormatterModule::class,
 ])
@@ -162,20 +149,19 @@ class AndroidAppModule
 - `AndroidAppModule` is in `androidMain` → FIR sees `@Configuration` → hint generated in `composeApp.aar`
 - `androidApp` has `composeApp` as a **direct** dep → hint is discovered by `androidApp`'s FIR
 - IR plugin processes `@Module(includes = [...])` → calls each module's pre-compiled `module()` function
-- `AppModule.module()` (641 beans, already in `composeApp.aar`) is called → all beans loaded
+- `AppModule.module()` (641 beans, already in `composeApp.aar`) is called → all beans loaded, including `ColorMapper` (annotated `@Factory` in `commonMain`, picked up by `AppModule`'s `@ComponentScan`)
 - `KmpNetworkModule.module()` → `HttpClient`, `Json` (factory method beans) loaded
-- `UtilsUiModule.module()` → `ColorMapper` loaded
 - `DateTimeModule.module()`, `DecimalFormatterModule.module()` → their beans loaded
 
 **Why no duplicates:**
 `AppModule.module()` (641 beans) was computed at `composeApp` compile time. The Koin IR plugin
 deduplicated against the OTHER discovered `@Configuration` modules (`KmpNetworkModule`,
-`UtilsUiModule`, `DateTimeModule`, `DecimalFormatterModule`, `PlatformStorageModule`, etc.).
+`DateTimeModule`, `DecimalFormatterModule`, `PlatformStorageModule`, etc.).
 Beans "claimed" by those modules were removed from `AppModule.module()`. So the `includes`
 list is complementary — no bean appears in two modules.
 
 All imports are available in `composeApp/androidMain` because `composeApp` already depends on
-`core:api`, `utils:ui`, `utils:formatter:datetime`, `utils:formatter:decimal`.
+`core:api`, `utils:formatter:datetime`, `utils:formatter:decimal`.
 
 ### File 2 — Narrow `AndroidModule`'s `@ComponentScan`
 
@@ -206,10 +192,9 @@ The 4 local androidApp classes are NOT in `AppModule`'s 641 because they are com
 | Module | Beans | Source |
 |--------|-------|--------|
 | `AndroidModule` | 4 | androidApp-local: AppInfoProviderImpl, ConnectivityManagerNetworkMonitor, DebugLocalHostImageManager, ImageLoaderProvider |
-| `AndroidAppModule` | wrapper | includes 5 sub-modules |
-| ↳ `AppModule` | 641 | all feature beans, composeApp beans, core beans (deduped) |
+| `AndroidAppModule` | wrapper | includes 4 sub-modules |
+| ↳ `AppModule` | 641 | all feature beans, composeApp beans, core beans (deduped); includes `ColorMapper` via `@ComponentScan` |
 | ↳ `KmpNetworkModule` | HttpClient×2, Json | factory method beans |
-| ↳ `UtilsUiModule` | ColorMapper | factory method |
 | ↳ `DateTimeModule` | DateTimeUtils | factory method |
 | ↳ `DecimalFormatterModule` | @DecimalFormatSimple DecimalFormatter | factory method |
 | `PlatformComponentModule` | 0 | marker |
@@ -226,15 +211,14 @@ The 4 local androidApp classes are NOT in `AppModule`'s 641 because they are com
 |------|---------|
 | `androidApp/src/main/kotlin/.../di/AndroidModule.kt` | 4 androidApp-local beans (narrow scan) |
 | `androidApp/src/main/kotlin/.../TaigaApp.kt` | `startKoin<KoinApp>` call |
-| `composeApp/src/androidMain/.../di/AndroidAppModule.kt` | **NEW** wrapper that loads all missing modules |
+| `composeApp/src/androidMain/.../di/AndroidAppModule.kt` | wrapper that loads all missing modules |
 | `composeApp/src/commonMain/.../di/Koin.kt` | `KoinApp` @KoinApplication + `AppModule` |
 | `composeApp/src/androidMain/.../di/Koin.android.kt` | `PlatformComponentModule` (actual, empty) |
 | `core/storage/src/androidMain/.../di/StorageModule.android.kt` | `PlatformStorageModule` |
-| `utils/ui/src/androidMain/.../di/UtilsUiModule.kt` | `ColorMapper` factory (loaded via AndroidAppModule) |
 
 ---
 
-## Lessons Learned
+## Lessons Learned (Android)
 
 1. **`commonMain` classes with `@Configuration` never get FIR hints.** FIR sees them as
    `KtLightSourceElement` and skips annotation reading. Only `androidMain` (or other platform source
@@ -252,3 +236,174 @@ The 4 local androidApp classes are NOT in `AppModule`'s 641 because they are com
 4. **The fix pattern:** Create an `androidMain` `@Configuration` class (gets a hint) in a
    **direct** dependency of `androidApp`, using `@Module(includes = [...])` to explicitly chain
    all needed modules. No `@ComponentScan` on this wrapper — just pure `includes`.
+
+---
+
+## iOS Native: Systemic DI Problem
+
+### How iOS Differs from Android/JVM
+
+On **Android/JVM**, `@ComponentScan` does a **full raw Kotlin IR scan** across the entire
+classpath. It reads compiled class annotations directly from all klibs/AARs. This is how
+`AppModule` finds 641 beans across every module at compile time.
+
+On **iOS Native**, the Koin plugin explicitly skips orphan hint generation and uses hints
+for cross-module `@ComponentScan` discovery instead:
+
+```
+# From docs/ios-graph.txt (compileKotlinIosSimulatorArm64 --rerun-tasks)
+[Koin-Debug-FIR] generateFunctions: Skipping definition hints on Native target
+
+[Koin-Debug]   Scanning packages: com.grappim.taigamobile (recursive)
+[Koin-Debug]   Querying hints: definition_single -> 0 functions
+[Koin-Debug]   Querying hints: definition_factory -> 0 functions
+[Koin-Debug]   Querying hints: definition_viewmodel -> 0 functions
+[Koin-Debug]   Found 5 local definitions, 0 cross-module definitions
+
+[Koin-Debug]   Filling body for AppModule.module(): 5 definitions, 0 includes
+```
+
+Result: **`AppModule.module()` has only 5 beans on iOS** (vs 641 on Android). All feature
+module beans, all repository/api/mapper orphans — invisible. The `@ComponentScan` in
+`AppModule` only finds the 5 beans compiled locally inside `composeApp` itself.
+
+### Why `IosAppModule` Doesn't Fix This
+
+`IosAppModule` IS discovered and loaded correctly on iOS (confirmed in `docs/ios-graph.txt`):
+```
+[Koin] IosAppModule.module() content:
+[Koin]   includes: AppModule, KmpNetworkModule, DateTimeModule, DecimalFormatterModule
+[Koin-Debug]   Filling body for IosAppModule.module(): 0 definitions, 4 includes
+```
+
+The includes are loaded. But `AppModule.module()` baked into the iOS klib only has 5 beans —
+the full IR scan that produces 641 on Android simply does not happen on iOS Native. Fixing
+`IosAppModule`'s `includes` list cannot overcome this.
+
+### What IS Working on iOS
+
+Modules that use **explicit `@Module @Configuration @ComponentScan`** in `commonMain` work
+correctly on iOS because their `@ComponentScan` runs locally within that module's own
+compilation — where it finds its beans as local definitions:
+
+| Module | Mechanism | Works on iOS? |
+|--------|-----------|---------------|
+| `KmpNetworkModule` | `@ComponentScan` in `core/api/commonMain` | ✓ (local scan in `core/api`) |
+| `DateTimeModule` | `@ComponentScan` in `utils/formatter/datetime/commonMain` | ✓ |
+| `DecimalFormatterModule` | `@ComponentScan` in `utils/formatter/decimal/commonMain` | ✓ |
+| `KmpCoroutinesModule` | `@ComponentScan` in `core/async-kmp/commonMain` | ✓ |
+| `PlatformStorageModule` | explicit `@Single fun` providers in `iosMain` | ✓ |
+| `PlatformDBModule` | `includes = [DBModule::class]` in `iosMain` | ✓ |
+| `AppModule` | `@ComponentScan("com.grappim.taigamobile")` in `commonMain` | ✗ cross-module = 0 |
+| All feature modules | orphan `@ViewModel`/`@Single`/`@Factory` | ✗ no hints on Native |
+
+The key insight: **`@ComponentScan` works on iOS if and only if the module class lives in the
+same compilation unit as the beans it scans.** `KmpNetworkModule` works because it and all its
+beans compile together inside `core/api`. `AppModule` fails because its beans span many separate
+module compilations.
+
+### Also note: `@Configuration` IS readable from `commonMain` on iOS
+
+Unlike Android (where `commonMain` classes appear as `KtLightSourceElement` and `@Configuration`
+is unreadable), iOS Native CAN read `@Configuration` from pre-compiled klibs. This is why
+`KmpNetworkModule`, `DateTimeModule`, etc. in `commonMain` appear in the iOS registry:
+
+```
+[Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.core.api.KmpNetworkModule
+[Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.utils.formatter.datetime.DateTimeModule
+```
+
+This matters for the fix: new `@Module @Configuration @ComponentScan` classes added to
+`commonMain` **will be auto-discovered on iOS** without any explicit `includes` wiring.
+
+---
+
+## iOS Fix: Per-Module `@Module @Configuration @ComponentScan`
+
+### The Pattern
+
+Each module that has orphan beans needs its own `@Module @Configuration @ComponentScan` class
+in `commonMain`:
+
+```kotlin
+// e.g. feature/login/src/commonMain/kotlin/com/grappim/taigamobile/feature/login/di/LoginModule.kt
+@Module
+@Configuration
+@ComponentScan("com.grappim.taigamobile.feature.login")
+class LoginModule
+```
+
+**Why this works on iOS:** During `feature/login`'s iOS klib compilation, `LoginModule`'s
+`@ComponentScan` runs locally and finds `AuthApiImpl`, `AuthRepositoryImpl`, `LoginViewModel` as
+local definitions. `LoginModule.module()` is compiled into the klib with those 3 beans.
+`LoginModule` has `@Configuration` → iOS reads it → it's in the registry →
+`startKoin<KoinApp>` auto-discovers and loads it. No changes to `IosAppModule` needed.
+
+**Why this is safe on Android:** Feature module `commonMain` classes appear as
+`KtLightSourceElement` during `composeApp:compileAndroidMain`. The Android FIR plugin cannot
+read `@Configuration` from them → they're NOT auto-discovered by `androidApp`. `AppModule`'s
+full IR scan still covers them as before (641 beans, deduplication handles overlap).
+
+### Scope of Change
+
+Every **Gradle submodule** that contains beans (`@Single`, `@Factory`, `@KoinViewModel`, `@Scoped`)
+needs its own `@Module @Configuration @ComponentScan` class in `commonMain`.
+
+**Granularity is per Gradle submodule, not per feature.** Each feature is split into
+`data`, `domain`, `dto`, `ui`, (and sometimes `mapper`) Gradle submodules. The Koin compiler
+plugin scans only the klib being compiled at that moment — it cannot reach beans in a sibling
+submodule. So one `@ComponentScan` per submodule that has beans.
+
+Submodules that typically do **not** need a module class: `domain` (interfaces only),
+`dto` (data classes only).
+
+Using `feature/login` as the concrete example:
+
+| Gradle submodule | Beans | Needs module class? |
+|------------------|-------|---------------------|
+| `feature/login/data` | `AuthApi`, `AuthRepositoryImpl` (`@Single`) | Yes — `LoginDataModule` |
+| `feature/login/ui` | `LoginViewModel` (`@KoinViewModel`) | Yes — `LoginUiModule` |
+| `feature/login/domain` | interfaces only | No |
+| `feature/login/dto` | data classes only | No |
+
+The same pattern applies to every other feature: create one module class per submodule that
+has annotated beans. `utils/ui` is a single-submodule case so it only needs one class.
+
+### Example: `utils/ui` (single submodule, fixes the immediate startup crash)
+
+```kotlin
+// utils/ui/src/commonMain/kotlin/com/grappim/taigamobile/utils/ui/di/UtilsUiModule.kt
+@Module
+@Configuration
+@ComponentScan("com.grappim.taigamobile.utils.ui")
+class UtilsUiModule
+```
+
+### Example: `feature/login` (two submodules with beans)
+
+```kotlin
+// feature/login/data/src/commonMain/kotlin/com/grappim/taigamobile/feature/login/data/di/LoginDataModule.kt
+@Module
+@Configuration
+@ComponentScan("com.grappim.taigamobile.feature.login.data")
+class LoginDataModule
+
+// feature/login/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/login/ui/di/LoginUiModule.kt
+@Module
+@Configuration
+@ComponentScan("com.grappim.taigamobile.feature.login.ui")
+class LoginUiModule
+```
+
+No changes needed to `IosAppModule` — iOS auto-discovers all `@Configuration` classes via the registry.
+Android is unaffected — `AppModule`'s full IR scan still covers all beans.
+
+### Command to verify
+
+After adding all module classes, regenerate and inspect the iOS graph:
+```bash
+./gradlew :composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks
+```
+
+Look for each new module class in the registry output and verify its bean count in
+`Filling body for XxxModule.module(): N definitions`.
