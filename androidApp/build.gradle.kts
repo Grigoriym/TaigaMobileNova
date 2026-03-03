@@ -1,8 +1,5 @@
-
 plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.jetbrains.compose.compiler)
-    alias(libs.plugins.koin.compiler)
+    alias(libs.plugins.taigamobile.android.application)
 }
 
 koinCompiler {
@@ -20,101 +17,18 @@ android {
     }
 
     namespace = libs.versions.app.pkg.get().toString()
-    compileSdk = libs.versions.compileSdk.get().toString().toInt()
 
     defaultConfig {
         applicationId = libs.versions.app.pkg.get().toString()
         testApplicationId = "${libs.versions.app.pkg.get()}.test"
 
-        minSdk = libs.versions.minSdk.get().toString().toInt()
-        targetSdk = libs.versions.targetSdk.get().toString().toInt()
-
         versionCode = libs.versions.version.code.get().toString().toInt()
         versionName = libs.versions.version.name.get().toString()
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-        isCoreLibraryDesugaringEnabled = true
-    }
-
-    buildFeatures {
-        buildConfig = true
-    }
-
-    signingConfigs {
-        create("release") {
-            storeFile = file("../taigamobilenova_keystore_release.jks")
-            keyAlias = System.getenv("TAIGA_ALIAS_R")
-            keyPassword = System.getenv("TAIGA_KEY_PASS_R")
-            storePassword = System.getenv("TAIGA_STORE_PASS_R")
-            enableV2Signing = true
-            enableV3Signing = true
-        }
-    }
-
-    flavorDimensions += "STORE"
-    productFlavors {
-        create("gplay") {
-            dimension = "STORE"
-            buildConfigField("Boolean", "IS_FDROID", "false")
-        }
-        create("fdroid") {
-            dimension = "STORE"
-            applicationIdSuffix = ".fdroid"
-            buildConfigField("Boolean", "IS_FDROID", "true")
-        }
-    }
-
-    buildTypes {
-        debug {
-            applicationIdSuffix = ".debug"
-
-            isDebuggable = true
-            isMinifyEnabled = false
-            isShrinkResources = false
-
-            val debugLocalHost = findProperty("debug.local.host") as String? ?: ""
-            buildConfigField("String", "DEBUG_LOCAL_HOST", "\"$debugLocalHost\"")
-        }
-        release {
-//            applicationIdSuffix = AppBuildTypes.RELEASE.applicationIdSuffix
-
-            isDebuggable = false
-            isMinifyEnabled = true
-            isShrinkResources = true
-
-            signingConfig = signingConfigs.getByName("release")
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-
-            buildConfigField("String", "DEBUG_LOCAL_HOST", "\"\"")
-        }
-    }
-
-    bundle {
-        language {
-            enableSplit = false
-        }
-    }
-
-    packaging.resources.excludes.apply {
-        add("META-INF/ASL2.0")
-        add("META-INF/notice.txt")
-        add("META-INF/NOTICE.txt")
-        add("META-INF/NOTICE")
-        add("META-INF/license.txt")
-        add("DEPENDENCIES")
     }
 }
 
 dependencies {
-    implementation(project(":composeApp"))
+    implementation(projects.composeApp)
     implementation(projects.uikit)
     implementation(projects.core.storage)
 
@@ -140,6 +54,4 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.timber)
     implementation(libs.filekit.dialogs)
-
-    coreLibraryDesugaring(libs.android.desugarJdkLibs)
 }

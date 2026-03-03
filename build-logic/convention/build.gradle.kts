@@ -36,6 +36,10 @@ dependencies {
 
 gradlePlugin {
     plugins {
+        register("androidApplication") {
+            id = libs.plugins.taigamobile.android.application.get().pluginId
+            implementationClass = "AndroidApplicationConventionPlugin"
+        }
         register("kmpLibrary") {
             id = libs.plugins.taigamobile.kmp.library.asProvider().get().pluginId
             implementationClass = "KmpLibraryConventionPlugin"

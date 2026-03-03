@@ -11,6 +11,7 @@
 **/build
 
 taigamobilenova_keystore_release.jks
+taigamobilenova_debug.jks
 /app/gplay/release/
 /app/fdroid/release/
 
