@@ -121,7 +121,7 @@ import org.koin.core.annotation.Module
         // feature/workitem
         WorkItemDataModule::class,
         WorkItemMapperModule::class,
-        WorkItemUiModule::class,
+        WorkItemUiModule::class
     ]
 )
 @Configuration
