@@ -1,0 +1,165 @@
+> Task :composeApp:compileKotlinIosSimulatorArm64
+w: [Koin-Debug-FIR] registerPredicates: Registering predicates for @Module and definition annotations
+w: [Koin-Debug-FIR]   Skipping expect class: com/grappim/taigamobile/di/PlatformComponentModule
+w: [Koin-Debug-FIR] Platform check: isNative=true
+w: [Koin-Debug-FIR]     RealSourceElement (KtLightSourceElement): using synthetic file name=comGrappimTaigamobileDiAppModuleModule.kt, isNative=true
+w: [Koin-Debug-FIR]   Found @Module class: com/grappim/taigamobile/di/AppModule (sourceFile=comGrappimTaigamobileDiAppModuleModule.kt, sourceType=KtLightSourceElement)
+w: [Koin-Debug-FIR] Looking for @Configuration modules among 1 @Module classes
+w: [Koin-Debug-FIR]   -> com/grappim/taigamobile/di/AppModule: no @Configuration
+w: [Koin-Debug-FIR] Found 0 @Configuration modules
+w: [Koin-Debug-FIR] Collecting orphan definition classes for cross-module discovery...
+w: [Koin-Debug-FIR] Local scan packages: []
+w: [Koin-Debug-FIR]   Found @factory class: com/grappim/taigamobile/DrawerItemsBuilder (orphan, needs hint)
+w: [Koin-FIR] Exporting @factory DrawerItemsBuilder for cross-module discovery
+w: [Koin-Debug-FIR]   Found @factory class: com/grappim/taigamobile/createtask/CreateWorkItemUseCase (orphan, needs hint)
+w: [Koin-FIR] Exporting @factory CreateWorkItemUseCase for cross-module discovery
+w: [Koin-Debug-FIR]   Found @viewmodel class: com/grappim/taigamobile/createtask/CreateTaskViewModel (orphan, needs hint)
+w: [Koin-FIR] Exporting @viewmodel CreateTaskViewModel for cross-module discovery
+w: [Koin-Debug-FIR]   Found @viewmodel class: com/grappim/taigamobile/main/MainViewModel (orphan, needs hint)
+w: [Koin-FIR] Exporting @viewmodel MainViewModel for cross-module discovery
+w: [Koin-Debug-FIR]   Scanned 0 files, found 0 @Inject constructor classes
+w: [Koin-Debug-FIR] Found 4 orphan definition classes (need hints for cross-module discovery)
+w: [Koin-Debug-FIR] getTopLevelCallableIds() returning 7 callables (1 modules, labels=[], definitions=4)
+w: [Koin-Debug-FIR] Looking for @Configuration modules among 0 @Module classes
+w: [Koin-Debug-FIR]   No known classes found, trying to find @Inject constructor classes via lookup...
+w: [Koin-Debug-FIR] Found 0 orphan definition classes (need hints for cross-module discovery)
+w: [Koin-Debug-FIR] getTopLevelCallableIds() returning 6 callables (0 modules, labels=[], definitions=0)
+w: [Koin-Debug-FIR]     RealSourceElement (KtLightSourceElement): using synthetic file name=comGrappimTaigamobileDiIosAppModuleModule.kt, isNative=true
+w: [Koin-Debug-FIR]   Found @Module class: com/grappim/taigamobile/di/IosAppModule (sourceFile=comGrappimTaigamobileDiIosAppModuleModule.kt, sourceType=KtLightSourceElement)
+w: [Koin-Debug-FIR]     RealSourceElement (KtLightSourceElement): using synthetic file name=comGrappimTaigamobileDiPlatformComponentModuleModule.kt, isNative=true
+w: [Koin-Debug-FIR]   Found @Module class: com/grappim/taigamobile/di/PlatformComponentModule (sourceFile=comGrappimTaigamobileDiPlatformComponentModuleModule.kt, sourceType=KtLightSourceElement)
+w: [Koin-Debug-FIR] Looking for @Configuration modules among 2 @Module classes
+w: [Koin-Debug-FIR]   -> com/grappim/taigamobile/di/IosAppModule: @Configuration labels=[default], file=comGrappimTaigamobileDiIosAppModuleModule.kt
+w: [Koin-Debug-FIR]   -> com/grappim/taigamobile/di/PlatformComponentModule: @Configuration labels=[default], file=comGrappimTaigamobileDiPlatformComponentModuleModule.kt
+w: [Koin-Debug-FIR] Found 2 @Configuration modules
+w: [Koin-Debug-FIR]   Registering local @Configuration: com.grappim.taigamobile.di.IosAppModule with labels=[default]
+w: [Koin-Debug-FIR]   Registering local @Configuration: com.grappim.taigamobile.di.PlatformComponentModule with labels=[default]
+w: [Koin-Debug-FIR]   Found @single class: com/grappim/taigamobile/data/AppInfoProviderImpl (orphan, needs hint)
+w: [Koin-FIR] Exporting @single AppInfoProviderImpl for cross-module discovery
+w: [Koin-Debug-FIR] Found 1 orphan definition classes (need hints for cross-module discovery)
+w: [Koin-Debug-FIR] getTopLevelCallableIds() returning 7 callables (2 modules, labels=[default], definitions=1)
+w: [Koin-Debug-FIR] Discovering hints: checking for @Configuration modules in dependencies...
+w: [Koin-Debug-FIR]   -> Querying labels: [default]
+w: [Koin-Debug-FIR] generateFunctions: Generating hint functions for label 'default', 0 modules
+w: [Koin-Debug-FIR]   -> Found 0 hint functions for label 'default' (function: configuration_default)
+w: [Koin-Debug-FIR] generateFunctions: Generating 1 module functions in com.grappim.taigamobile.di
+w: [Koin-Debug-FIR]   -> Source for com/grappim/taigamobile/di/AppModule: containingFile=comGrappimTaigamobileDiAppModuleModule.kt, isActual=false
+w: [Koin-Debug-FIR]   -> Generating module() for com/grappim/taigamobile/di/AppModule in file comGrappimTaigamobileDiAppModuleModule.kt
+w: [Koin-Debug-FIR] generateFunctions: Generating definition hints for type 'factory', 2 classes
+w: [Koin-Debug-FIR] generateFunctions: Skipping definition hints on Native target
+w: [Koin-Debug-FIR] generateFunctions: Generating definition hints for type 'viewmodel', 2 classes
+w: [Koin-Debug-FIR] generateFunctions: Generating definition hints for type 'single', 0 classes
+w: [Koin-Debug-FIR] generateFunctions: Generating definition hints for type 'scoped', 0 classes
+w: [Koin-Debug-FIR] generateFunctions: Generating definition hints for type 'worker', 0 classes
+w: [Koin-Debug-FIR] generateFunctions: Generating definition hints for type 'factory', 0 classes
+w: [Koin-Debug-FIR] generateFunctions: Generating definition hints for type 'viewmodel', 0 classes
+w: [Koin-Debug-FIR] generateFunctions: Generating hint functions for label 'default', 2 modules
+w: [Koin-Debug-FIR]   -> Skipping hint for com/grappim/taigamobile/di/IosAppModule on Native target (registry handles discovery)
+w: [Koin-Debug-FIR]   -> Skipping hint for com/grappim/taigamobile/di/PlatformComponentModule on Native target (registry handles discovery)
+w: [Koin-Debug-FIR] generateFunctions: Generating 2 module functions in com.grappim.taigamobile.di
+w: [Koin-Debug-FIR]   -> Source for com/grappim/taigamobile/di/IosAppModule: containingFile=comGrappimTaigamobileDiIosAppModuleModule.kt, isActual=false
+w: [Koin-Debug-FIR]   -> Generating module() for com/grappim/taigamobile/di/IosAppModule in file comGrappimTaigamobileDiIosAppModuleModule.kt
+w: [Koin-Debug-FIR]   -> Source for com/grappim/taigamobile/di/PlatformComponentModule: containingFile=comGrappimTaigamobileDiPlatformComponentModuleModule.kt, isActual=true
+w: [Koin-Debug-FIR]   -> Generating module() for com/grappim/taigamobile/di/PlatformComponentModule in file comGrappimTaigamobileDiPlatformComponentModuleModule.kt
+w: [Koin-Debug-FIR] generateFunctions: Generating definition hints for type 'single', 1 classes
+w: [Koin-Debug] IR Phase starting for module: <TaigaMobileNova:composeApp>
+w: [Koin-Debug] Phase 0: Generating hint function bodies
+w: [Koin-Debug] Phase 1: Processing annotations
+w: [Koin] @Single on class AppInfoProviderImpl
+w: [Koin]   Binds: AppInfoProvider
+w: [Koin] @Module on class IosAppModule
+w: [Koin]   Includes: AppModule, KmpNetworkModule, DateTimeModule, DecimalFormatterModule
+w: [Koin] @Module on class PlatformComponentModule
+w: [Koin] @Factory on class DrawerItemsBuilder
+w: [Koin] @KoinViewModel on class CreateTaskViewModel
+w: [Koin]   Binds: ViewModel
+w: [Koin] @Factory on class CreateWorkItemUseCase
+w: [Koin] @Module/@ComponentScan("com.grappim.taigamobile") on class AppModule
+w: [Koin] @KoinViewModel on class MainViewModel
+w: [Koin-Debug] generateModuleExtensions: 3 module classes
+w: [Koin] IosAppModule.module() content:
+w: [Koin]   includes: AppModule, KmpNetworkModule, DateTimeModule, DecimalFormatterModule
+w: [Koin-Debug]   Found FIR-generated function for IosAppModule in file: comGrappimTaigamobileDiIosAppModuleModule.kt (containingFile=IosAppModule.kt)
+w: [Koin-Debug]     -> Checking parentFileName='comGrappimTaigamobileDiIosAppModuleModule.kt', condition=false
+w: [Koin-Debug]     -> NOT moving: parentFileName='comGrappimTaigamobileDiIosAppModuleModule.kt', parentFile isNull=false
+w: [Koin-Debug]     -> Using FIR-generated function for IosAppModule.module()
+w: [Koin-Debug]   Found FIR-generated function for PlatformComponentModule in file: comGrappimTaigamobileDiPlatformComponentModuleModule.kt (containingFile=Koin.ios.kt)
+w: [Koin-Debug]     -> Checking parentFileName='comGrappimTaigamobileDiPlatformComponentModuleModule.kt', condition=false
+w: [Koin-Debug]     -> NOT moving: parentFileName='comGrappimTaigamobileDiPlatformComponentModuleModule.kt', parentFile isNull=false
+w: [Koin-Debug]     -> Using FIR-generated function for PlatformComponentModule.module()
+w: [Koin-Debug]   Scanning packages: com.grappim.taigamobile (recursive)
+w: [Koin-Debug]   Querying hints: definition_single -> 0 functions
+w: [Koin-Debug]   Querying hints: definition_factory -> 0 functions
+w: [Koin-Debug]   Querying hints: definition_scoped -> 0 functions
+w: [Koin-Debug]   Querying hints: definition_viewmodel -> 0 functions
+w: [Koin-Debug]   Querying hints: definition_worker -> 0 functions
+w: [Koin-Debug]   Found 5 local definitions, 0 cross-module definitions
+w: [Koin] AppModule.module() content:
+w: [Koin]   single: AppInfoProviderImpl (binds: AppInfoProvider)
+w: [Koin]   factory: DrawerItemsBuilder
+w: [Koin]   view_model: CreateTaskViewModel (binds: ViewModel)
+w: [Koin]   factory: CreateWorkItemUseCase
+w: [Koin]   view_model: MainViewModel (binds: ViewModel)
+w: [Koin-Debug]   Found FIR-generated function for AppModule in file: comGrappimTaigamobileDiAppModuleModule.kt (containingFile=Koin.kt)
+w: [Koin-Debug]     -> Checking parentFileName='comGrappimTaigamobileDiAppModuleModule.kt', condition=false
+w: [Koin-Debug]     -> NOT moving: parentFileName='comGrappimTaigamobileDiAppModuleModule.kt', parentFile isNull=false
+w: [Koin-Debug]     -> Using FIR-generated function for AppModule.module()
+w: [Koin-Debug]   Filling body for IosAppModule.module(): 0 definitions, 4 includes
+w: [Koin-Debug]     -> Generating module body with 0 definitions
+w: [Koin-Debug]   Filling body for PlatformComponentModule.module(): 0 definitions, 0 includes
+w: [Koin-Debug]   Filling body for AppModule.module(): 5 definitions, 0 includes
+w: [Koin-Debug]     -> Generating module body with 5 definitions
+w: [Koin-Debug] Phase 2: Transforming DSL calls
+w: [Koin-Debug] Phase 3: Transforming startKoin calls
+w: [Koin-Debug]   -> Configuration labels from @KoinApplication: [default]
+w: [Koin-Debug]   -> Found 3 local @Configuration modules matching labels [default]
+w: [Koin-Debug]   -> Registry has 8 modules for labels [default]
+w: [Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.core.asynckmp.KmpCoroutinesModule
+w: [Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.utils.formatter.datetime.DateTimeModule
+w: [Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.utils.formatter.decimal.DecimalFormatterModule
+w: [Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.core.storage.di.PlatformDBModule
+w: [Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.core.storage.di.PlatformStorageModule
+w: [Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.core.api.KmpNetworkModule
+w: [Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.di.IosAppModule
+w: [Koin-Debug]   -> Found hint module from registry: com.grappim.taigamobile.di.PlatformComponentModule
+w: [Koin] Intercepting startKoin<com.grappim.taigamobile.di.KoinApp>()
+w: [Koin]   -> Injecting modules: com.grappim.taigamobile.di.IosAppModule, com.grappim.taigamobile.di.PlatformComponentModule, com.grappim.taigamobile.di.AppModule, com.grappim.taigamobile.core.asynckmp.KmpCoroutinesModule, com.grappim.taigamobile.utils.formatter.datetime.DateTimeModule, com.grappim.taigamobile.utils.formatter.decimal.DecimalFormatterModule, com.grappim.taigamobile.core.storage.di.PlatformDBModule, com.grappim.taigamobile.core.storage.di.PlatformStorageModule, com.grappim.taigamobile.core.api.KmpNetworkModule
+w: [Koin-Debug]   -> Found module() function in module fragment for com.grappim.taigamobile.di.IosAppModule
+w: [Koin-Debug]   -> Found module() function for IosAppModule
+w: [Koin-Debug]   -> Found module() function in module fragment for com.grappim.taigamobile.di.PlatformComponentModule
+w: [Koin-Debug]   -> Found module() function for PlatformComponentModule
+w: [Koin-Debug]   -> Found module() function in module fragment for com.grappim.taigamobile.di.AppModule
+w: [Koin-Debug]   -> Found module() function for AppModule
+w: [Koin-Debug]   -> Searching for module function in com.grappim.taigamobile.core.asynckmp, found 1 candidates
+w: [Koin-Debug]     -> Candidate 0: receiver=com.grappim.taigamobile.core.asynckmp.KmpCoroutinesModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=31544024
+w: [Koin-Debug]     -> Found 1 matching candidates for KmpCoroutinesModule
+w: [Koin-Debug]   -> Selected function for KmpCoroutinesModule in file: unknown
+w: [Koin-Debug]   -> Using module() function from context for KmpCoroutinesModule
+w: [Koin-Debug]   -> Searching for module function in com.grappim.taigamobile.utils.formatter.datetime, found 1 candidates
+w: [Koin-Debug]     -> Candidate 0: receiver=com.grappim.taigamobile.utils.formatter.datetime.DateTimeModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=1611135570
+w: [Koin-Debug]     -> Found 1 matching candidates for DateTimeModule
+w: [Koin-Debug]   -> Selected function for DateTimeModule in file: unknown
+w: [Koin-Debug]   -> Using module() function from context for DateTimeModule
+w: [Koin-Debug]   -> Searching for module function in com.grappim.taigamobile.utils.formatter.decimal, found 1 candidates
+w: [Koin-Debug]     -> Candidate 0: receiver=com.grappim.taigamobile.utils.formatter.decimal.DecimalFormatterModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=304086615
+w: [Koin-Debug]     -> Found 1 matching candidates for DecimalFormatterModule
+w: [Koin-Debug]   -> Selected function for DecimalFormatterModule in file: unknown
+w: [Koin-Debug]   -> Using module() function from context for DecimalFormatterModule
+w: [Koin-Debug]   -> Searching for module function in com.grappim.taigamobile.core.storage.di, found 5 candidates
+w: [Koin-Debug]     -> Candidate 0: receiver=com.grappim.taigamobile.core.storage.di.AuthDataStoreModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=852548493
+w: [Koin-Debug]     -> Candidate 1: receiver=com.grappim.taigamobile.core.storage.di.DBModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=1231440056
+w: [Koin-Debug]     -> Candidate 2: receiver=com.grappim.taigamobile.core.storage.di.PlatformDBModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=947581666
+w: [Koin-Debug]     -> Candidate 3: receiver=com.grappim.taigamobile.core.storage.di.PlatformStorageModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=12010390
+w: [Koin-Debug]     -> Candidate 4: receiver=com.grappim.taigamobile.core.storage.di.StorageModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=873462974
+w: [Koin-Debug]     -> Found 1 matching candidates for PlatformDBModule
+w: [Koin-Debug]   -> Selected function for PlatformDBModule in file: unknown
+w: [Koin-Debug]   -> Using module() function from context for PlatformDBModule
+w: [Koin-Debug]     -> Found 1 matching candidates for PlatformStorageModule
+w: [Koin-Debug]   -> Selected function for PlatformStorageModule in file: unknown
+w: [Koin-Debug]   -> Using module() function from context for PlatformStorageModule
+w: [Koin-Debug]   -> Searching for module function in com.grappim.taigamobile.core.api, found 1 candidates
+w: [Koin-Debug]     -> Candidate 0: receiver=com.grappim.taigamobile.core.api.KmpNetworkModule, parent=IrExternalPackageFragmentImpl, origin=IR_EXTERNAL_DECLARATION_STUB, symbolId=449055626
+w: [Koin-Debug]     -> Found 1 matching candidates for KmpNetworkModule
+w: [Koin-Debug]   -> Selected function for KmpNetworkModule in file: unknown
+w: [Koin-Debug]   -> Using module() function from context for KmpNetworkModule
+w: [Koin-Debug] IR Phase completed
