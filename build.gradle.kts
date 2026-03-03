@@ -146,7 +146,6 @@ dependencies {
     kover(projects.feature.workitem.mapper)
     kover(projects.feature.workitem.dto)
     kover(projects.composeApp)
-    kover(projects.androidApp)
 }
 
 tasks.register<Delete>("clean") {

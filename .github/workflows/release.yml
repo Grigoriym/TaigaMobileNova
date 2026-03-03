@@ -33,6 +33,9 @@ jobs:
             - name: Restore taigamobilenova_keystore_release.jks
               run: echo $ENCODED_STRING_R | base64 -d > ./taigamobilenova_keystore_release.jks
 
+            - name: Restore taigamobilenova_debug.jks
+              run: echo $ENCODED_STRING_D | base64 -d > ./taigamobilenova_debug.jks
+
             - name: Build Release Fdroid APK
               run: |
                   ./gradlew :androidApp:assembleFdroidRelease :androidApp:assembleFdroidDebug

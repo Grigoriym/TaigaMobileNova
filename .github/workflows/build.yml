@@ -34,6 +34,9 @@ jobs:
       - name: Setup Android Environment
         uses: ./.github/actions/android-setup-composite-action
 
+      - name: Restore taigamobilenova_debug.jks
+        run: echo $ENCODED_STRING_D | base64 -d > ./taigamobilenova_debug.jks
+
       - name: Assemble gradle fdroid project
         run: ./gradlew :androidApp:assembleFdroidDebug
 
