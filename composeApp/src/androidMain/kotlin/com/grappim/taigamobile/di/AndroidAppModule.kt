@@ -11,7 +11,7 @@ import org.koin.core.annotation.Module
         AppModule::class,
         KmpNetworkModule::class,
         DateTimeModule::class,
-        DecimalFormatterModule::class,
+        DecimalFormatterModule::class
     ]
 )
 @Configuration

@@ -28,7 +28,6 @@ buildkonfig {
         val host = findProperty("debug.local.host") as String? ?: ""
         buildConfigField(FieldSpec.Type.STRING, "DEBUG_LOCAL_HOST", host)
     }
-
 }
 
 koinCompiler {
