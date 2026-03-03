@@ -407,3 +407,87 @@ After adding all module classes, regenerate and inspect the iOS graph:
 
 Look for each new module class in the registry output and verify its bean count in
 `Filling body for XxxModule.module(): N definitions`.
+
+---
+
+## Android Deduplication: Library Modules vs Feature Modules
+
+### The rule
+
+Adding `@Configuration @ComponentScan` to a `commonMain` class has different effects on Android
+depending on where that module sits in the dependency graph:
+
+| Module type | How it appears to `composeApp:compileAndroidMain` | FIR reads `@Configuration`? | Deduplication from `AppModule`? |
+|---|---|---|---|
+| **Feature module** (`feature/login/data`, etc.) | `KtLightSourceElement` (KMP source-sharing) | No | No — `AppModule` still covers those beans |
+| **Library module** (`utils/ui`, `core/api`, etc.) | Compiled class stub (proper AAR artifact) | Yes | Yes — beans are removed from `AppModule.module()` |
+
+**All modules (feature and library) cause deduplication.** The Koin IR phase during
+`composeApp:compileAndroidMain` reads `@Configuration @ComponentScan` from ALL compiled
+dependencies (both feature modules and library modules) and removes their beans from
+`AppModule.module()`. Feature modules then cannot be auto-discovered by `androidApp`'s FIR
+(they appear as `KtLightSourceElement`) — so they must be explicitly included in
+`AndroidAppModule.includes` just like library modules.
+
+**There is no distinction between feature modules and library modules for Android wiring.**
+Every `@Configuration @ComponentScan` class — regardless of which module type it is in —
+must be added to `AndroidAppModule.includes`.
+
+**Library modules cause deduplication.** When the Koin FIR processes `AppModule`'s
+`@ComponentScan("com.grappim.taigamobile")` and sees a compiled dependency with its own
+`@ComponentScan` covering some sub-package, it removes those beans from `AppModule.module()`.
+At runtime, if that library module's `@Configuration` class is not in the Android module chain,
+those beans are missing → crash.
+
+### The fix for library modules on Android
+
+Explicitly include the library module in `AndroidAppModule`:
+
+```kotlin
+// composeApp/src/androidMain/kotlin/com/grappim/taigamobile/di/AndroidAppModule.kt
+@Module(
+    includes = [
+        AppModule::class,
+        KmpNetworkModule::class,
+        DateTimeModule::class,
+        DecimalFormatterModule::class,
+        UtilsUiModule::class   // ← added because utils/ui is a library module
+    ]
+)
+@Configuration
+class AndroidAppModule
+```
+
+### Why Desktop (JVM) is unaffected
+
+On JVM, Koin's hint-based auto-discovery scans the classpath at runtime for classes in
+`org.koin.plugin.hints`. Library module `@Configuration` classes (like `UtilsUiModule`) are
+found automatically without explicit inclusion. No changes to a JVM entry module are needed.
+
+On Android, R8/ProGuard may strip these hint classes or the discovery order is unreliable,
+so explicit inclusion in `AndroidAppModule` is required.
+
+### core:storage — `@ComponentScan` scope fix
+
+`StorageModule` originally had `@ComponentScan` with no argument, which defaults to its own
+package (`com.grappim.taigamobile.core.storage.di`). Beans in sibling packages (`auth/`,
+`cache/`, `cleaner/`, `db/wrapper/`) were never scanned → missing on iOS at runtime.
+
+Fixed by widening the scan:
+```kotlin
+// core/storage/src/commonMain/kotlin/com/grappim/taigamobile/core/storage/di/StorageModule.kt
+@Module
+@ComponentScan("com.grappim.taigamobile.core.storage")   // was: @ComponentScan (no arg)
+class StorageModule { ... }
+```
+
+`StorageModule` does NOT have `@Configuration`, so it does not cause Android deduplication.
+Its broader scan is compiled into the iOS klib via `PlatformStorageModule`
+(`@Module(includes = [StorageModule::class]) @Configuration actual class PlatformStorageModule`)
+which IS auto-discovered on iOS.
+
+### Going forward
+
+When adding a new `@Configuration @ComponentScan` class to **any module** (library or feature),
+also add it to `AndroidAppModule.includes`. This applies to everything in `core/`, `utils/`,
+and `feature/*/`.

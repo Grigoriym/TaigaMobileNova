@@ -1,4 +1,4 @@
-package com.grappim.taigamobile.feature.issues.domain
+package com.grappim.taigamobile.feature.profile.domain
 
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.users.domain.User

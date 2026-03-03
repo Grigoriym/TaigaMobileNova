@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
-import com.grappim.taigamobile.feature.issues.domain.GetProfileDataUseCase
+import com.grappim.taigamobile.feature.profile.domain.GetProfileDataUseCase
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.flow.MutableStateFlow

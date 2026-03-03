@@ -25,7 +25,7 @@ annotation class ApplicationScope
 
 @Module
 @Configuration
-@ComponentScan
+@ComponentScan("com.grappim.taigamobile.core.asynckmp")
 class KmpCoroutinesModule {
 
     @[Single DefaultDispatcher]

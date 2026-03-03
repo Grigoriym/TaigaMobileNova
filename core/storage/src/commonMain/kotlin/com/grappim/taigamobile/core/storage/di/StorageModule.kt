@@ -21,7 +21,7 @@ annotation class StorageJsonQualifier
 expect class PlatformStorageModule
 
 @Module
-@ComponentScan
+@ComponentScan("com.grappim.taigamobile.core.storage")
 class StorageModule {
 
     @[Single StorageJsonQualifier]

@@ -32,7 +32,7 @@ annotation class HttpJson
 
 @Module
 @Configuration
-@ComponentScan
+@ComponentScan("com.grappim.taigamobile.core.api")
 class KmpNetworkModule {
     @[Single HttpJson]
     fun provideJson(): Json = Json {
