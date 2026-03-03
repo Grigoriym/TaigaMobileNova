@@ -26,6 +26,11 @@ jobs:
         TAIGA_STORE_PASS_R: ${{ secrets.TAIGA_STORE_PASS_R }}
         TAIGA_ALIAS_R: ${{ secrets.TAIGA_ALIAS_R }}
         ENCODED_STRING_R: ${{ secrets.TAIGA_KEYSTORE_R }}
+        TAIGA_PATH_D: ${{ secrets.TAIGA_PATH_D }}
+        TAIGA_KEY_PASS_D: ${{ secrets.TAIGA_KEY_PASS_D }}
+        TAIGA_STORE_PASS_D: ${{ secrets.TAIGA_STORE_PASS_D }}
+        TAIGA_ALIAS_D: ${{ secrets.TAIGA_ALIAS_D }}
+        ENCODED_STRING_D: ${{ secrets.TAIGA_KEYSTORE_D }}
 
     steps:
       - name: Check out the repo

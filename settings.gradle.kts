@@ -35,6 +35,7 @@ check(JavaVersion.current().isCompatibleWith(JavaVersion.VERSION_21)) {
 }
 
 include(":tools:seed")
+include(":tools:utils")
 
 include(":androidApp")
 include(":composeApp")
