@@ -30,19 +30,19 @@ jobs:
 
             - name: Build Release Fdroid APK
               run: |
-                  ./gradlew :composeApp:assembleFdroidRelease :composeApp:assembleFdroidDebug
+                  ./gradlew :androidApp:assembleFdroidRelease :androidApp:assembleFdroidDebug
 
             - name: Build Release Gplay APK and AAB
               run: |
-                  ./gradlew :composeApp:assembleGplayRelease :composeApp:bundleGplayRelease
+                  ./gradlew :androidApp:assembleGplayRelease :androidApp:bundleGplayRelease
 
             - name: Upload Release Build To Artifacts
               uses: actions/upload-artifact@v7
               with:
                   name: release-artifacts
                   path: |
-                      composeApp/build/outputs/apk/*
-                      composeApp/build/outputs/bundle/*
+                      androidApp/build/outputs/apk/*
+                      androidApp/build/outputs/bundle/*
 
             - name: Create GitHub release
               uses: softprops/action-gh-release@v2
@@ -52,7 +52,7 @@ jobs:
                   make_latest: true
                   preserve_order: true
                   files: |
-                      composeApp/build/outputs/apk/fdroid/release/composeApp-fdroid-release.apk
-                      composeApp/build/outputs/apk/fdroid/debug/composeApp-fdroid-debug.apk
-                      composeApp/build/outputs/apk/gplay/release/composeApp-gplay-release.apk
-                      composeApp/build/outputs/bundle/gplayRelease/composeApp-gplay-release.aab
+                      androidApp/build/outputs/apk/fdroid/release/app-fdroid-release.apk
+                      androidApp/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
+                      androidApp/build/outputs/apk/gplay/release/app-gplay-release.apk
+                      androidApp/build/outputs/bundle/gplayRelease/app-gplay-release.aab

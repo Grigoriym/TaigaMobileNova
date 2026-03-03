@@ -81,7 +81,7 @@ When adding a new multiplatform module that has platform-specific beans:
 | Module | Source Set | Key Beans |
 |--------|-----------|-----------|
 | `AppModule` | composeApp/commonMain | Global `@ComponentScan("com.grappim.taigamobile")` — 641 beans |
-| `AndroidAppModule` | composeApp/androidMain | **Android bridge**: includes AppModule + KmpNetworkModule + UtilsUiModule + DateTimeModule + DecimalFormatterModule |
+| `AndroidAppModule` | composeApp/androidMain | **Android bridge**: includes AppModule + KmpNetworkModule + DateTimeModule + DecimalFormatterModule |
 | `AndroidModule` | androidApp/main | 4 androidApp-local classes (`@ComponentScan("com.grappim.taigamobile.data")`) |
 | `PlatformComponentModule` (actual) | composeApp/[platform]Main | Platform entry point (currently empty on Android) |
 | `KmpNetworkModule` | core/api/commonMain | `Json`, `HttpClient` (auth + common) |
@@ -219,8 +219,8 @@ startKoin<KoinApp> {
 ## Gradle Commands
 
 ```bash
-# Force Koin compiler to re-run and print logs
-./gradlew :composeApp:compileGplayDebugKotlinAndroid --rerun-tasks 2>&1 | grep -i koin
+# Force Koin compiler to re-run and print logs (androidApp is the application module)
+./gradlew :androidApp:compileGplayDebugKotlinAndroid --rerun-tasks 2>&1 | grep -i koin
 
 # Run graph assertion test
 ./gradlew :composeApp:testGplayDebugUnitTest --tests "com.grappim.taigamobile.KoinGraphTest"

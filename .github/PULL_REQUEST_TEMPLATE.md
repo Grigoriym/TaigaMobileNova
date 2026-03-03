@@ -1,7 +1,7 @@
 ### Be sure to run locally
 1. `./gradlew ktlintFormat`
-2. `./gradlew detekt`
-3. `./gradlew allTests -x testDebugUnitTest`
+2. `./gradlew allTests -x testDebugUnitTest`
+3. `./gradlew :androidApp:assembleFdroidDebug`
 
 ### Describe your changes
 

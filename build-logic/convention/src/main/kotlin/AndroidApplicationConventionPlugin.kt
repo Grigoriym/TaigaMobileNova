@@ -1,6 +1,7 @@
 
 import com.android.build.api.dsl.ApplicationExtension
 import com.grappim.taigamobile.buildlogic.AppBuildTypes
+import com.grappim.taigamobile.buildlogic.configureAndroidOutputNaming
 import com.grappim.taigamobile.buildlogic.configureFlavors
 import com.grappim.taigamobile.buildlogic.configureKotlinAndroid
 import com.grappim.taigamobile.buildlogic.libs
@@ -91,6 +92,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                 configureFlavors(this)
                 configureKotlinAndroid(this)
             }
+            configureAndroidOutputNaming()
         }
     }
 }

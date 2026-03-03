@@ -6,8 +6,8 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 
 ```bash
 # Android - build debug APK
-./gradlew :composeApp:assembleGplayDebug
-./gradlew :composeApp:assembleFdroidDebug
+./gradlew :androidApp:assembleGplayDebug
+./gradlew :androidApp:assembleFdroidDebug
 
 # Desktop - run or package
 ./gradlew :composeApp:run
@@ -30,12 +30,12 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 ./gradlew koverHtmlReport   # HTML → build/reports/kover/html/index.html
 
 # Force Koin compiler logs (only printed when compiler actually runs; skipped on UP-TO-DATE)
-./gradlew :composeApp:compileFdroidDebugKotlinAndroid --rerun-tasks
+./gradlew :androidApp:compileFdroidDebugKotlinAndroid --rerun-tasks
 ```
 
 ## Architecture
 
-**Module structure:** `app/` → `feature/` → `core/` → `utils/`
+**Module structure:** `androidApp/` (Android entry point) + `composeApp/` (KMP library) → `feature/` → `core/` → `utils/`
 - Features have data/domain/ui layers (sometimes dto/mapper)
 - Use `NativeText` (in `utils:ui`) for localized strings in ViewModels
 - Dependencies via Gradle Version Catalogs (`gradle/libs.versions.toml`)
@@ -61,8 +61,9 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 
 **Convention Plugins** (in `build-logic/`):
 
+- `taigamobile.android.application` - Android application module (`androidApp`) — applies AGP, Compose, Koin compiler plugin
 - `taigamobile.kmp.library` - KMP base (Android + iOS + JVM targets, coroutines, collections)
-- `taigamobile.kmp.library.compose` - Adds Compose Multiplatform across all targets
+- `taigamobile.kmp.library.compose` - Adds Compose Multiplatform across all targets; enables `androidResources` for CMP asset pipeline
 - `taigamobile.kmp.di` - Applies `io.insert-koin.compiler.plugin` + Koin dependencies
 - `taigamobile.kmp.serialization` - Kotlin Serialization setup
 - `taigamobile.kmp.network` - Ktor with platform-specific engines (OkHttp / Darwin)
