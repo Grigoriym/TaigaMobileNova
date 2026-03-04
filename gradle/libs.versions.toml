@@ -1,15 +1,26 @@
 [versions]
+#noinspection UnusedVersionCatalogEntry
 version-code = "38"
+#noinspection UnusedVersionCatalogEntry
 version-name = "2.0.7"
+#noinspection UnusedVersionCatalogEntry
 app-pkg = "com.grappim.taigamobile"
+#noinspection UnusedVersionCatalogEntry
 app-name = "TaigaMobile"
+#noinspection UnusedVersionCatalogEntry
 app-vendor = "grappim"
+#noinspection UnusedVersionCatalogEntry
 app-description = "Unofficial Taiga.io project management client"
+#noinspection UnusedVersionCatalogEntry
 app-menugroup = "Office"
+#noinspection UnusedVersionCatalogEntry
 app-category = "utils"
 
+#noinspection UnusedVersionCatalogEntry
 compileSdk = "36"
+#noinspection UnusedVersionCatalogEntry
 minSdk = "24"
+#noinspection UnusedVersionCatalogEntry
 targetSdk = "36"
 
 # https://github.com/detekt/detekt/releases
@@ -22,16 +33,16 @@ kover = "0.9.7"
 composeRules = "0.5.6"
 
 # https://developer.android.com/reference/tools/gradle-api
-agp = "9.0.1"
+agp = "9.1.0"
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 androidDesugarJdkLibs = "2.1.5"
 
 # https://github.com/yshrsmz/BuildKonfig/releases
 buildKonfig = "0.17.1"
 
-kotlin = "2.3.20-RC"
+kotlin = "2.3.20-RC2"
 coroutines = "1.10.2"
-ksp = "2.3.5"
+ksp = "2.3.6"
 kotlin-serialization-plugin = "2.3.10"
 kotlin-serialization-json = "1.10.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
@@ -42,7 +53,7 @@ kotlinx-io-core = "0.9.0"
 kotlinTest = "2.3.10"
 atomicfu = "0.31.0"
 turbine = "1.2.1"
-ktor = "3.4.0"
+ktor = "3.4.1"
 slf4j = "2.0.17"
 
 koin-bom = "4.2.0-RC1"

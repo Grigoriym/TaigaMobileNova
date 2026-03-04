@@ -151,3 +151,24 @@ dependencies {
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
+
+val syncIosVersion by tasks.registering {
+    val versionCode = libs.versions.version.code.get()
+    val versionName = libs.versions.version.name.get()
+    val xcconfig = rootProject.file("iosApp/Configuration/Config.xcconfig")
+
+    inputs.property("versionCode", versionCode)
+    inputs.property("versionName", versionName)
+    outputs.file(xcconfig)
+
+    doLast {
+        val updated = xcconfig.readText()
+            .replace(Regex("CURRENT_PROJECT_VERSION=.*"), "CURRENT_PROJECT_VERSION=$versionCode")
+            .replace(Regex("MARKETING_VERSION=.*"), "MARKETING_VERSION=$versionName")
+        xcconfig.writeText(updated)
+    }
+}
+
+project(":composeApp").tasks.matching { it.name.startsWith("assembleTaigaMobileNova") }.configureEach {
+    dependsOn(syncIosVersion)
+}
