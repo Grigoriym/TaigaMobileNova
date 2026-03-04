@@ -9,7 +9,6 @@ import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.toPersistentList
-import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -47,25 +46,21 @@ class WorkItemCommentsDelegateImpl(
             coroutineScope {
                 val payload = patchDataGenerator.getComment(comment)
 
-                val patchedData = async {
-                    workItemRepository.patchData(
-                        version = version,
-                        workItemId = id,
-                        payload = payload,
-                        commonTaskType = commonTaskType
-                    )
-                }
+                val patchedData = workItemRepository.patchData(
+                    version = version,
+                    workItemId = id,
+                    payload = payload,
+                    commonTaskType = commonTaskType
+                )
 
-                val newComments = async {
-                    historyRepository.getComments(
-                        commonTaskId = id,
-                        type = commonTaskType
-                    )
-                }
+                val newComments = historyRepository.getComments(
+                    commonTaskId = id,
+                    type = commonTaskType
+                )
 
                 CreatedCommentData(
-                    newVersion = patchedData.await().newVersion,
-                    comments = newComments.await()
+                    newVersion = patchedData.newVersion,
+                    comments = newComments
                 )
             }
         }.onSuccess { result ->
