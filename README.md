@@ -12,8 +12,9 @@ Install
 [<img src="docs/google-badge.png"
 alt="Get it on Google Play"
 height="80">](https://play.google.com/store/apps/details?id=com.grappim.taigamobile)
-
-**Coming soon:** F-Droid (still waiting, here are my MRs [1](https://gitlab.com/fdroid/rfp/-/issues/3511) and [2](https://gitlab.com/fdroid/fdroiddata/-/merge_requests/32013))
+[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
+alt="Get it on F-Droid"
+height="80">](https://f-droid.org/en/packages/com.grappim.taigamobile.fdroid/)
 
 **Future plans:** I plan to migrate this project to Kotlin Multiplatform (KMP), enabling iOS support
 
