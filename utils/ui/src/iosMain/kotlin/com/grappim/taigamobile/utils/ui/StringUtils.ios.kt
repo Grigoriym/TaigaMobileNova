@@ -1,10 +1,12 @@
 package com.grappim.taigamobile.utils.ui
 
-import platform.Foundation.NSNumber
 import platform.Foundation.NSString
 import platform.Foundation.stringWithFormat
 
-actual fun formatColor(color: Int): String = NSString.stringWithFormat("#%08X", color as NSNumber)
+actual fun formatColor(color: Int): String {
+    val hex = color.toUInt().toString(16).padStart(8, '0').uppercase()
+    return "#$hex"
+}
 
 actual fun String.formatStringKmp(vararg args: Any?): String = when (args.size) {
     0 -> this
