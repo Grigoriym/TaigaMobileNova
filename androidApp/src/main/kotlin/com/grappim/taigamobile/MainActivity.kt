@@ -4,20 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import com.grappim.taigamobile.core.storage.ThemeSettings
-import com.grappim.taigamobile.main.MainContent
-import com.grappim.taigamobile.main.MainViewModel
-import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
-import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
+import com.grappim.taigamobile.main.TaigaAppContent
 import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
-import org.koin.compose.viewmodel.koinActivityViewModel
 
 class MainActivity : ComponentActivity() {
 
@@ -35,22 +26,7 @@ class MainActivity : ComponentActivity() {
         FileKit.init(this)
 
         setContent {
-            val viewModel = koinActivityViewModel<MainViewModel>()
-            val theme by viewModel.theme.collectAsState()
-
-            val darkTheme = when (theme) {
-                ThemeSettings.Light -> false
-                ThemeSettings.Dark -> true
-                ThemeSettings.System -> isSystemInDarkTheme()
-            }
-
-            TaigaMobileTheme(darkTheme) {
-                CompositionLocalProvider(
-                    LocalScreenReadySignal provides screenReadySignalController
-                ) {
-                    MainContent(viewModel)
-                }
-            }
+            TaigaAppContent(screenReadySignalController)
         }
     }
 }

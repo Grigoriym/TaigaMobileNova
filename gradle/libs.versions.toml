@@ -91,7 +91,6 @@ filekit-dialogs-compose = { module = "io.github.vinceglb:filekit-dialogs-compose
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekit" }
 markdownRenderer-core = { module = "com.mikepenz:multiplatform-markdown-renderer", version.ref = "markdownRenderer" }
 markdownRenderer-m3 = { module = "com.mikepenz:multiplatform-markdown-renderer-m3", version.ref = "markdownRenderer" }
-markdownRenderer-android = { module = "com.mikepenz:multiplatform-markdown-renderer-android", version.ref = "markdownRenderer" }
 markdownRenderer-coil = { module = "com.mikepenz:multiplatform-markdown-renderer-coil3", version.ref = "markdownRenderer" }
 compose-colorpicker = { module = "com.github.skydoves:colorpicker-compose", version.ref = "skydovesColorpicker" }
 
