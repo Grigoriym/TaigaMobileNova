@@ -15,5 +15,7 @@ class TaigaPermissionConverter(@param:DbJsonQualifier private val json: Json) {
 
     @TypeConverter
     fun toPermissionList(value: String): List<TaigaPermission> =
-        json.decodeFromString<List<String>>(value).map { TaigaPermission.valueOf(it) }
+        json.decodeFromString<List<String>>(value).mapNotNull { name ->
+            TaigaPermission.entries.find { it.name == name }
+        }
 }
