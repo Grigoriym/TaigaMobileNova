@@ -8,7 +8,11 @@ class NSLogLogger : TaigaLogger {
         val prefix = tag?.let { "[$it] " } ?: ""
         val priorityLabel = priority.name.first()
         val throwableText = throwable?.let { "\n${it.stackTraceToString()}" } ?: ""
-        NSLog("$priorityLabel/$prefix${message()}$throwableText")
+        val fullMessage = "$priorityLabel/$prefix${message()}$throwableText"
+        // NSLog truncates at ~4096 bytes — split into safe chunks to avoid losing response bodies
+        fullMessage.chunked(3000).forEach { chunk ->
+            NSLog("%s", chunk)
+        }
     }
 
     companion object {

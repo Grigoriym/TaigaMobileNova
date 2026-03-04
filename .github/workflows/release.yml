@@ -42,7 +42,7 @@ jobs:
 
             - name: Build Release Gplay APK and AAB
               run: |
-                  ./gradlew :androidApp:assembleGplayRelease :androidApp:bundleGplayRelease
+                  ./gradlew :androidApp:assembleGplayRelease :androidApp:bundleGplayRelease -PgplayBuild
 
             - name: Upload Release Build To Artifacts
               uses: actions/upload-artifact@v7

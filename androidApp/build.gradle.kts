@@ -8,8 +8,7 @@ koinCompiler {
 }
 
 android {
-    val isGooglePlayBuild = project.gradle.startParameter.taskRequests.toString().contains("Gplay")
-    if (!isGooglePlayBuild) {
+    if (!project.hasProperty("gplayBuild")) {
         dependenciesInfo {
             includeInApk = false
             includeInBundle = false

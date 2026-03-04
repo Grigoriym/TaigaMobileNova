@@ -14,13 +14,13 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 ./gradlew :composeApp:packageDistributionForCurrentOS   # Deb / Dmg / Msi
 
 # iOS - build the framework (then open iosApp/iosApp.xcodeproj in Xcode)
-./gradlew :composeApp:assembleReleaseXCFramework
+./gradlew :composeApp:assembleTaigaMobileNovaIosReleaseXCFramework
 
 # Run tests (use fdroid or gplay variant for Android)
 ./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
 
-# Run all JVM tests across all modules (excludes Android unit tests which require mocking)
-./gradlew allTests -x testDebugUnitTest
+# Run all JVM tests across all modules (skips Android unit tests which require mocking)
+./gradlew jvmTest
 
 # Run JVM tests for a single KMP module
 ./gradlew :module:path:jvmTest
@@ -29,7 +29,11 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 ./gradlew koverXmlReport    # XML → build/reports/kover/report.xml (uploaded to Codecov)
 ./gradlew koverHtmlReport   # HTML → build/reports/kover/html/index.html
 
-# Force Koin compiler logs (only printed when compiler actually runs; skipped on UP-TO-DATE)
+# Force Koin compiler to re-run (skipped on UP-TO-DATE, which causes "no definition found" crashes)
+# Run this before launching from Xcode whenever DI definitions may have changed
+./gradlew :composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks   # iOS simulator
+./gradlew :composeApp:compileKotlinIosArm64 --rerun-tasks            # iOS device
+# Android equivalent (also forces Koin compiler logs):
 ./gradlew :androidApp:compileFdroidDebugKotlinAndroid --rerun-tasks
 ```
 

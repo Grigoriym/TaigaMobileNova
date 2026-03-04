@@ -41,4 +41,4 @@ jobs:
         run: ./gradlew :androidApp:assembleFdroidDebug
 
       - name: Assemble gradle gplay project
-        run: ./gradlew :androidApp:assembleGplayDebug
+        run: ./gradlew :androidApp:assembleGplayDebug -PgplayBuild

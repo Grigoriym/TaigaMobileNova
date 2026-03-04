@@ -12,13 +12,11 @@ fun Project.configureKmp() {
         currentProject {
             instrumentation {
                 // Only use jvmTest for coverage — exclude Android unit test task variants
+                // KMP library modules have no product flavors, so only the base
+                // debug/release Android unit test tasks exist here.
                 disabledForTestTasks.addAll(
                     "testDebugUnitTest",
                     "testReleaseUnitTest",
-                    "testGplayDebugUnitTest",
-                    "testFdroidDebugUnitTest",
-                    "testGplayReleaseUnitTest",
-                    "testFdroidReleaseUnitTest",
                 )
             }
         }
