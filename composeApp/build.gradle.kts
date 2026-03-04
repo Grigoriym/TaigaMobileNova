@@ -1,4 +1,3 @@
-
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
@@ -46,8 +45,16 @@ compose.desktop {
             "-XX:MaxMetaspaceSize=128m"
         )
 
+//        https://github.com/Guardsquare/proguard/releases
+        buildTypes.release.proguard {
+            version.set("7.8.2")
+            isEnabled = true
+            configurationFiles.from("proguard-desktop.pro")
+        }
+
         nativeDistributions {
             modules("jdk.unsupported")
+
             targetFormats(TargetFormat.Deb, TargetFormat.Dmg, TargetFormat.Msi)
             packageName = libs.versions.app.name.get()
             packageVersion = libs.versions.version.name.get()
@@ -78,7 +85,7 @@ compose.desktop {
 }
 
 kotlin {
-    androidLibrary {
+    android {
         namespace = "${libs.versions.app.pkg.get()}.shared"
         compileSdk = libs.versions.compileSdk.get().toString().toInt()
         minSdk = libs.versions.minSdk.get().toString().toInt()

@@ -49,6 +49,7 @@ fun Project.configureKmp() {
             }
             jvmMain.dependencies {
                 implementation(libs.findLibrary("kotlinx.coroutines.swing").get())
+                implementation(libs.findLibrary("kotlin.metadata").get())
             }
             iosMain.dependencies {
                 implementation(libs.findLibrary("kotlinx.coroutines.core").get())

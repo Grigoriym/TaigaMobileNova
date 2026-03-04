@@ -51,11 +51,14 @@ kotlinx-collections = "0.4.0"
 kotlin-date-time = "0.7.1"
 kotlinx-io-core = "0.9.0"
 kotlinTest = "2.3.10"
+# https://github.com/Kotlin/kotlinx-atomicfu/releases
 atomicfu = "0.31.0"
+# https://github.com/cashapp/turbine/releases
 turbine = "1.2.1"
 ktor = "3.4.1"
 slf4j = "2.0.17"
 
+# https://github.com/InsertKoinIO/koin/releases
 koin-bom = "4.2.0-RC1"
 koin-annotations = "2.3.1"
 koin-plugin = "0.3.0"
@@ -138,6 +141,7 @@ kotlinx-collections = { module = "org.jetbrains.kotlinx:kotlinx-collections-immu
 kotlinx-date-time = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlin-date-time" }
 kotlinx-io-core = { module = "org.jetbrains.kotlinx:kotlinx-io-core", version.ref = "kotlinx-io-core" }
 kotlinx-atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "atomicfu" }
+kotlin-metadata = { module = "org.jetbrains.kotlin:kotlin-metadata-jvm", version.ref = "kotlin" }
 
 ktor-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-android = { module = "io.ktor:ktor-client-android", version.ref = "ktor" }
