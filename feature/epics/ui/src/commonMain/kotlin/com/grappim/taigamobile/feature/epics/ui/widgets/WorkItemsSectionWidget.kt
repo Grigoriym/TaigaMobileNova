@@ -33,7 +33,6 @@ import com.grappim.taigamobile.uikit.widgets.ChipWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
 import com.grappim.taigamobile.utils.ui.asColor
 import com.grappim.taigamobile.utils.ui.asString
-import com.grappim.taigamobile.utils.ui.formatStringKmp
 import com.grappim.taigamobile.utils.ui.textColor
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.collections.immutable.ImmutableList
@@ -135,7 +134,11 @@ private fun WorkItemItemWidget(
                         )
                     }
                     append(
-                        stringResource(RString.title_with_ref_pattern).formatStringKmp(workItemUI.ref, workItemUI.title)
+                        stringResource(
+                            RString.title_with_ref_pattern,
+                            workItemUI.ref,
+                            workItemUI.title
+                        )
                     )
                     if (workItemUI.isClosed) pop()
 
@@ -174,8 +177,7 @@ private fun WorkItemItemWidget(
 
             Text(
                 text = workItemUI.assignee?.fullName?.let {
-                    stringResource(RString.assignee_pattern)
-                        .formatStringKmp(it)
+                    stringResource(RString.assignee_pattern, it)
                 } ?: stringResource(RString.unassigned),
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.bodyMedium

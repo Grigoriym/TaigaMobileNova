@@ -42,7 +42,6 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
-import com.grappim.taigamobile.utils.ui.formatStringKmp
 import io.github.vinceglb.filekit.PlatformFile
 import io.github.vinceglb.filekit.dialogs.FileKitMode
 import io.github.vinceglb.filekit.dialogs.FileKitType
@@ -69,7 +68,10 @@ fun AttachmentsSectionWidget(
 
     Column(modifier = modifier) {
         SectionTitleExpandable(
-            text = stringResource(RString.attachments_template).formatStringKmp(attachmentsState.attachments.size),
+            text = stringResource(
+                RString.attachments_template,
+                attachmentsState.attachments.size
+            ),
             isExpanded = attachmentsState.areAttachmentsExpanded,
             onExpandClick = {
                 attachmentsState.setAreAttachmentsExpanded(!attachmentsState.areAttachmentsExpanded)

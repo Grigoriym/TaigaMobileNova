@@ -58,7 +58,6 @@ import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
 import com.grappim.taigamobile.utils.formatter.datetime.platformFormatMediumDate
-import com.grappim.taigamobile.utils.ui.formatStringKmp
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
@@ -77,9 +76,7 @@ fun CustomFieldsSectionWidget(
     if (customFieldsState.customFieldStateItems.isNotEmpty()) {
         Column(modifier = modifier) {
             SectionTitleExpandable(
-                text = stringResource(RString.custom_fields_with_number).formatStringKmp(
-                    customFieldsState.customFieldStateItems.size
-                ),
+                text = stringResource(RString.custom_fields_with_number, customFieldsState.customFieldStateItems.size),
                 isExpanded = customFieldsState.isCustomFieldsWidgetExpanded,
                 onExpandClick = {
                     customFieldsState.setIsCustomFieldsWidgetExpanded(

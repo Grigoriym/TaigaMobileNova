@@ -21,7 +21,6 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.theme.taigaRed
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.ChipWidget
-import com.grappim.taigamobile.utils.ui.formatStringKmp
 import com.grappim.taigamobile.utils.ui.textColor
 import com.grappim.taigamobile.utils.ui.toColor
 import org.jetbrains.compose.resources.stringResource
@@ -53,7 +52,7 @@ fun CommonTaskTitle(
                         )
                     )
                 }
-                append(stringResource(RString.title_with_ref_pattern).formatStringKmp(ref, title))
+                append(stringResource(RString.title_with_ref_pattern, ref, title))
                 if (isInactive) pop()
 
                 append(" ")

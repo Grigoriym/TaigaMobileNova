@@ -36,7 +36,6 @@ import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.button.AddButtonWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
-import com.grappim.taigamobile.utils.ui.formatStringKmp
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.collections.immutable.ImmutableList
 import org.jetbrains.compose.resources.painterResource
@@ -138,7 +137,8 @@ private fun EpicInfoWidget(
                     .weight(1f),
                 text = buildAnnotatedString {
                     append(
-                        stringResource(RString.title_with_ref_pattern).formatStringKmp(
+                        stringResource(
+                            RString.title_with_ref_pattern,
                             userStoryEpic.ref,
                             userStoryEpic.title
                         )

@@ -72,7 +72,6 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.DropdownSelector
 import com.grappim.taigamobile.uikit.widgets.button.PlusButtonWidget
 import com.grappim.taigamobile.uikit.widgets.text.CommonTaskTitle
-import com.grappim.taigamobile.utils.ui.formatStringKmp
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
@@ -391,7 +390,8 @@ private fun Header(
             )
 
             Text(
-                text = stringResource(RString.status_with_number_template).formatStringKmp(
+                text = stringResource(
+                    RString.status_with_number_template,
                     text.uppercase(),
                     storiesCount
                 ),
