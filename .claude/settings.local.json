@@ -4,7 +4,23 @@
       "Bash(find:*)",
       "Bash(./gradlew :core:storage:compileFdroidDebugKotlin:*)",
       "Bash(./gradlew:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "WebSearch",
+      "WebFetch(domain:www.jetbrains.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(xargs:*)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(javap:*)",
+      "WebFetch(domain:insert-koin.io)",
+      "Bash(jar tf:*)",
+      "mcp__ide__getDiagnostics",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:www.reddit.com)",
+      "WebFetch(domain:youtrack.jetbrains.com)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "codacy"
+  ]
 }

@@ -1,48 +1,77 @@
 # CLAUDE.md
 
-TaigaMobileNova is an unofficial Android client for Taiga.io. Built with Kotlin, Jetpack Compose, and follows a modular MVVM + Clean Architecture.
+TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io targeting Android, iOS, and Desktop. Built with Kotlin, Compose Multiplatform, and follows a modular MVVM + Clean Architecture.
 
 ## Build Commands
 
 ```bash
-# Build debug APK
-./gradlew :app:assembleDebug
+# Android - build debug APK
+./gradlew :androidApp:assembleGplayDebug
+./gradlew :androidApp:assembleFdroidDebug
 
-# Build specific flavor
-./gradlew :app:assembleGplayDebug
-./gradlew :app:assembleFdroidDebug
+# Desktop - run or package
+./gradlew :composeApp:run
+./gradlew :composeApp:packageDistributionForCurrentOS   # Deb / Dmg / Msi
 
-# Run tests (use fdroid or gplay variant)
+# iOS - build the framework (then open iosApp/iosApp.xcodeproj in Xcode)
+./gradlew :composeApp:assembleTaigaMobileNovaIosReleaseXCFramework
+
+# Run tests (use fdroid or gplay variant for Android)
 ./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
+
+# Run all JVM tests across all modules (skips Android unit tests which require mocking)
+./gradlew jvmTest
+
+# Run JVM tests for a single KMP module
+./gradlew :module:path:jvmTest
+
+# Generate coverage report (Kover — runs jvmTest on all aggregated modules)
+./gradlew koverXmlReport    # XML → build/reports/kover/report.xml (uploaded to Codecov)
+./gradlew koverHtmlReport   # HTML → build/reports/kover/html/index.html
+
+# Force Koin compiler to re-run (skipped on UP-TO-DATE, which causes "no definition found" crashes)
+# Run this before launching from Xcode whenever DI definitions may have changed
+./gradlew :composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks   # iOS simulator
+./gradlew :composeApp:compileKotlinIosArm64 --rerun-tasks            # iOS device
+# Android equivalent (also forces Koin compiler logs):
+./gradlew :androidApp:compileFdroidDebugKotlinAndroid --rerun-tasks
 ```
 
 ## Architecture
 
-**Module structure:** `app/` → `feature/` → `core/` → `utils/`
+**Module structure:** `androidApp/` (Android entry point) + `composeApp/` (KMP library) → `feature/` → `core/` → `utils/`
 - Features have data/domain/ui layers (sometimes dto/mapper)
 - Use `NativeText` (in `utils:ui`) for localized strings in ViewModels
 - Dependencies via Gradle Version Catalogs (`gradle/libs.versions.toml`)
 - Build plugins in `build-logic/`
 
+**Platforms:**
+
+- **Android** — `androidTarget()`, Min SDK 24, Target SDK 36, flavors: Gplay / Fdroid
+- **iOS** — `iosArm64()` + `iosSimulatorArm64()`, static framework `TaigaMobileNovaIos`; entry point in `main.ios.kt`
+- **Desktop/JVM** — `jvm()`, entry point `TaigaMobileDesktop.kt`; packages Deb/Dmg/Msi
+
 **Tech Stack:**
 
-- Kotlin 2.3.0, JDK 21, Target SDK 36, Min SDK 24
-- Jetpack Compose with Material Design 3
-- Hilt 2.59 for DI (with KSP)
-- Retrofit 3.0.0 + OkHttp for networking
-- Navigation Compose 2.9.7 with type-safe routes
+- Kotlin 2.3.x, JDK 21
+- Compose Multiplatform with Material Design 3
+- Koin (with `io.insert-koin.compiler.plugin` IR/FIR plugin) for DI
+- Ktor for networking (OkHttp on Android/JVM, Darwin on iOS)
+- Navigation Compose (KMP) with type-safe routes
 - Kotlin Serialization for JSON
-- Coroutines, Coil 3.x for images
+- Coroutines, Coil 3.x for images (KMP-ready)
+- Room 2.8.4 + BundledSQLiteDriver (KMP-ready)
+- Timber for logging (Android-specific)
 
 **Convention Plugins** (in `build-logic/`):
 
-- `taigamobile.android.application` - Main app module
-- `taigamobile.android.library` - Android library with KSP
-- `taigamobile.android.library.compose` - Android library + Compose
-- `taigamobile.android.hilt` - Hilt DI for Android modules
-- `taigamobile.kotlin.hilt` - Hilt DI for Kotlin modules
-- `taigamobile.kotlin.serialization` - Kotlin Serialization setup
-- `taigamobile.kotlin.library` - Pure Kotlin library (no Android)
+- `taigamobile.android.application` - Android application module (`androidApp`) — applies AGP, Compose, Koin compiler plugin
+- `taigamobile.kmp.library` - KMP base (Android + iOS + JVM targets, coroutines, collections)
+- `taigamobile.kmp.library.compose` - Adds Compose Multiplatform across all targets; enables `androidResources` for CMP asset pipeline
+- `taigamobile.kmp.di` - Applies `io.insert-koin.compiler.plugin` + Koin dependencies
+- `taigamobile.kmp.serialization` - Kotlin Serialization setup
+- `taigamobile.kmp.network` - Ktor with platform-specific engines (OkHttp / Darwin)
+- `taigamobile.kotlin.library` - Pure Kotlin library (no Android/KMP)
 
 ## Navigation Pattern
 
@@ -114,10 +143,18 @@ Use cases only when multiple repository calls are needed. For single repo calls,
 
 ```
 feature/{name}/
-├── data/     → API, DTOs, RepositoryImpl, Hilt module
+├── data/     → API, DTOs, RepositoryImpl, Koin module
 ├── domain/   → Models, Repository interface
 └── ui/       → NavDestination, Screen, State, ViewModel
 ```
+
+## Koin DI
+
+For DI patterns, the `expect/actual @Configuration` rule, module registry, qualifier map, and troubleshooting, see the **koin-expert** subagent (`.claude/agents/koin-expert.md`). Never use KSP — this project uses `io.insert-koin.compiler.plugin` exclusively.
+
+## uikit Components
+
+For available Composable components, theme tokens, TopBarController usage, drag-and-drop, and offline/permission UI patterns, see the **uikit-guide** subagent (`.claude/agents/uikit-guide.md`). Consult it before creating any new widget.
 
 ## Permissions Pattern
 
@@ -130,30 +167,7 @@ permissions.canModifyTask()   // checks MODIFY_TASK
 permissions.hasPermission(TaigaPermission.COMMENT_US)
 ```
 
-**Usage in ViewModels:** Map permission checks to state booleans:
-```kotlin
-data class FeatureState(
-    val canAddItem: Boolean = false,
-    val canModify: Boolean = false
-)
-
-// In ViewModel init or when project changes:
-_state.update {
-    it.copy(
-        canAddItem = permissions.canAddItem(),
-        canModify = permissions.canModifyItem()
-    )
-}
-```
-
-**UI behavior:** When permission is false, **hide** the action (don't show disabled buttons):
-```kotlin
-actions = buildList {
-    if (state.canAddItem) {
-        add(TopBarActionIconButton(...))
-    }
-}
-```
+**UI behavior:** When permission is false, **hide** the action (don't show disabled buttons). Map permission checks to boolean fields in state, set from the permissions list in ViewModel init.
 
 ## Offline State Pattern
 
@@ -164,47 +178,14 @@ Use `LocalOfflineState` (from `uikit`) to disable write actions when offline.
 - No permission → **hide** action (user can never do this)
 - Offline → **disable** action (user can do this, just not right now)
 
-**Reading offline state:**
-```kotlin
-val isOffline = LocalOfflineState.current
-```
-
-**List screens - disable top bar add button:**
-```kotlin
-LaunchedEffect(state.canAddItem, isOffline) {
-    topBarController.update(
-        TopBarConfig(
-            actions = buildList {
-                if (state.canAddItem) {
-                    add(TopBarActionIconButton(
-                        enabled = !isOffline,
-                        onClick = { ... }
-                    ))
-                }
-            }.toImmutableList()
-        )
-    )
-}
-```
-
-**Details screens - pass to widgets:**
-```kotlin
-WorkItemDropdownMenuWidget(
-    canDelete = state.canDelete,
-    canModify = state.canModify,
-    isOffline = isOffline  // disables delete, block, promote actions
-)
-
-CreateCommentBar(
-    canComment = state.canComment,
-    isOffline = isOffline  // disables text field and send button
-)
-```
+Read offline state with `val isOffline = LocalOfflineState.current`, then pass it to uikit widgets (`AddButtonWidget`, `CreateCommentBar`, `DropdownSelector`, `TopBarActionIconButton`, etc.) which disable themselves when `isOffline = true`.
 
 ## Testing
 
+For writing new KMP tests, creating fakes, or understanding test patterns, use the **testing** subagent (`.claude/agents/testing.md`). It knows the full fake inventory, model factories, test utilities, and patterns.
+
 - `:testing` module has utilities: `getRandomString()`, `MainDispatcherRule`, fake generators
-- JUnit 4 + kotlin.test assertions + MockK
+- `kotlin.test` assertions + hand-written fakes — no MockK in `commonTest`
 - Test dependencies added automatically via convention plugins
 
 ## Coding Guidelines
@@ -249,42 +230,22 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
-### Goal-Driven Execution
-
-**Define success criteria. Loop until verified.**
-
-Transform tasks into verifiable goals:
-- "Add validation" → "Write tests for invalid inputs, then make them pass"
-- "Fix the bug" → "Write a test that reproduces it, then make it pass"
-- "Refactor X" → "Ensure tests pass before and after"
-
-For multi-step tasks, state a brief plan:
-```
-1. [Step] → verify: [check]
-2. [Step] → verify: [check]
-3. [Step] → verify: [check]
-```
-
----
-
-**These guidelines are working if:** fewer unnecessary changes in diffs, fewer rewrites due to overcomplication, and clarifying questions come before implementation rather than after mistakes.
-
 ## Error Handling
 
 - Never swallow exceptions silently. Every `catch` block must at least log the exception with `Timber.e(e)`.
 
-## Android/Compose Rules
+## Compose / Platform Rules
 
 - Do not use early returns in Composable functions — use conditional wrapping
 - Lambda parameters: present tense (`onClick` not `onClicked`)
 - Prefer `kotlinx-collections-immutable` (`ImmutableList`, `persistentListOf()`) over `List`/`MutableList` in state classes and Composable parameters for stable recomposition
-- For Composable Previews, use `@PreviewTaigaDarkLight` annotation and wrap content with `TaigaMobileThemePreview` (both from `uikit`):
+- For Composable Previews, use `@PreviewTaigaDarkLight` annotation and wrap content with `TaigaMobilePreviewTheme` (both from `uikit`):
 
 ```kotlin
 @PreviewTaigaDarkLight
 @Composable
 private fun MyWidgetPreview() {
-    TaigaMobileThemePreview {
+    TaigaMobilePreviewTheme {
         MyWidget(...)
     }
 }

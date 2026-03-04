@@ -1,7 +1,11 @@
 plugins {
-    alias(libs.plugins.taigamobile.kotlin.library)
+    alias(libs.plugins.taigamobile.kmp.library)
 }
 
-dependencies {
-    implementation(projects.core.domain)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.core.domain)
+        }
+    }
 }

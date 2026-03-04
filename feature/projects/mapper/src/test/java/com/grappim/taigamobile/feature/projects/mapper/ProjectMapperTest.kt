@@ -3,22 +3,22 @@ package com.grappim.taigamobile.feature.projects.mapper
 import com.grappim.taigamobile.core.storage.db.entities.ProjectEntity
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.projects.dto.TaigaPermissionDTO
-import com.grappim.taigamobile.testing.getProject
-import com.grappim.taigamobile.testing.getProjectDTO
-import com.grappim.taigamobile.testing.getProjectExtraInfoDTO
-import com.grappim.taigamobile.testing.getRandomBoolean
-import com.grappim.taigamobile.testing.getRandomLong
-import com.grappim.taigamobile.testing.getRandomString
+import com.grappim.taigamobile.testing.models.getProject
+import com.grappim.taigamobile.testing.models.getProjectDTO
+import com.grappim.taigamobile.testing.models.getProjectExtraInfoDTO
+import com.grappim.taigamobile.testing.utils.getRandomBoolean
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
-import org.junit.Before
-import org.junit.Test
+import kotlin.test.BeforeTest
+import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class ProjectMapperTest {
 
     private lateinit var sut: ProjectMapper
 
-    @Before
+    @BeforeTest
     fun setup() {
         sut = ProjectMapper()
     }

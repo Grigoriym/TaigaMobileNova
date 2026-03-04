@@ -1,0 +1,144 @@
+package com.grappim.taigamobile.uikit.widgets.topbar
+
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DrawerState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.style.TextOverflow
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.asString
+import kotlinx.coroutines.launch
+import org.jetbrains.compose.resources.painterResource
+
+/**
+ * Global top bar for the app.
+ */
+// todo currently material dep does not provide subtitle, only in alpha, so in the future
+// todo I need to revisit it
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TaigaTopAppBar(
+    isVisible: Boolean,
+    drawerState: DrawerState,
+    topBarConfig: TopBarConfig,
+    defaultGoBack: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    if (isVisible) {
+        CenterAlignedTopAppBar(
+            modifier = modifier,
+            title = {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = topBarConfig.title.asString(),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (topBarConfig.subtitle !is NativeText.Empty) {
+                        Text(
+                            text = topBarConfig.subtitle.asString(),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                }
+            },
+            navigationIcon = {
+                NavigationIcon(
+                    navigationIconConfig = topBarConfig.navigationIcon,
+                    drawerState = drawerState,
+                    defaultGoBack = defaultGoBack
+                )
+            },
+            actions = {
+                topBarConfig.actions.forEach { action ->
+                    when (action) {
+                        is TopBarActionIconButton -> {
+                            IconButton(
+                                onClick = action.onClick,
+                                enabled = action.enabled
+                            ) {
+                                Icon(
+                                    painter = painterResource(action.drawable),
+                                    contentDescription = action.contentDescription
+                                )
+                            }
+                        }
+
+                        is TopBarActionTextButton -> {
+                            TextButton(
+                                onClick = action.onClick,
+                                enabled = action.enabled
+                            ) {
+                                Text(text = action.text.asString())
+                            }
+                        }
+                    }
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun NavigationIcon(
+    navigationIconConfig: NavigationIconConfig,
+    drawerState: DrawerState,
+    defaultGoBack: () -> Unit
+) {
+    val scope = rememberCoroutineScope()
+    val keyboardController = LocalSoftwareKeyboardController.current
+
+    when (navigationIconConfig) {
+        is NavigationIconConfig.None -> {
+        }
+
+        is NavigationIconConfig.Back -> {
+            IconButton(
+                onClick = navigationIconConfig.onBackClick ?: defaultGoBack
+            ) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        }
+
+        is NavigationIconConfig.Menu -> {
+            IconButton(onClick = {
+                keyboardController?.hide()
+                scope.launch {
+                    if (drawerState.isClosed) {
+                        drawerState.open()
+                    } else {
+                        drawerState.close()
+                    }
+                }
+            }) {
+                Icon(Icons.Default.Menu, contentDescription = "Menu")
+            }
+        }
+
+        is NavigationIconConfig.Custom -> {
+            IconButton(onClick = navigationIconConfig.onClick) {
+                Icon(
+                    painter = painterResource(navigationIconConfig.icon),
+                    contentDescription = navigationIconConfig.contentDescription
+                )
+            }
+        }
+    }
+}

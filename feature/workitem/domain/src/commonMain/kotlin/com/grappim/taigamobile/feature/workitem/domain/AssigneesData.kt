@@ -1,0 +1,6 @@
+package com.grappim.taigamobile.feature.workitem.domain
+
+import com.grappim.taigamobile.feature.users.domain.User
+import kotlinx.collections.immutable.PersistentList
+
+data class AssigneesData(val assignees: PersistentList<User>, val isAssignedToMe: Boolean, val newVersion: Long)

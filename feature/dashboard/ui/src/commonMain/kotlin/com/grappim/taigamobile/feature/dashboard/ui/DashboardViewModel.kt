@@ -1,0 +1,285 @@
+package com.grappim.taigamobile.feature.dashboard.ui
+
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.feature.dashboard.domain.GetMyWorkItemsUseCase
+import com.grappim.taigamobile.feature.dashboard.domain.GetRecentActivityUseCase
+import com.grappim.taigamobile.feature.dashboard.domain.GetRecentlyCompletedItemsUseCase
+import com.grappim.taigamobile.feature.dashboard.domain.GetWatchingItemsUseCase
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.getErrorMessage
+import kotlinx.collections.immutable.toImmutableList
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
+
+@KoinViewModel
+class DashboardViewModel(
+    private val taigaSessionStorage: TaigaSessionStorage,
+    private val getWatchingItemsUseCase: GetWatchingItemsUseCase,
+    private val getMyWorkItemsUseCase: GetMyWorkItemsUseCase,
+    private val getRecentActivityUseCase: GetRecentActivityUseCase,
+    private val getRecentlyCompletedItemsUseCase: GetRecentlyCompletedItemsUseCase,
+    private val projectsRepository: ProjectsRepository
+) : ViewModel() {
+
+    private val _state = MutableStateFlow(
+        DashboardState(
+            onToggleWatching = ::toggleWatching,
+            onToggleMyWork = ::toggleMyWork,
+            onToggleRecentActivity = ::toggleRecentActivity,
+            onToggleRecentlyCompleted = ::toggleRecentlyCompleted,
+            onRetryWatching = ::loadWatching,
+            onRetryMyWork = ::loadMyWork,
+            onRetryRecentActivity = ::loadRecentActivity,
+            onRetryRecentlyCompleted = ::loadRecentlyCompleted,
+            retry = ::loadAll
+        )
+    )
+    val state = _state.asStateFlow()
+
+    init {
+        loadAll()
+    }
+
+    fun updateInternalProjectData() {
+        viewModelScope.launch {
+            resultOf {
+                projectsRepository.fetchAndSaveProjectInfo()
+            }.onFailure { error ->
+                logcat(throwable = error) {
+                    "Error fetching project info"
+                }
+            }
+        }
+    }
+
+    private fun loadAll() {
+        loadWatching()
+        loadMyWork()
+        loadRecentActivity()
+        loadRecentlyCompleted()
+    }
+
+    private fun toggleWatching() {
+        _state.update {
+            it.copy(watchingSection = it.watchingSection.copy(isExpanded = !it.watchingSection.isExpanded))
+        }
+    }
+
+    private fun toggleMyWork() {
+        _state.update {
+            it.copy(myWorkSection = it.myWorkSection.copy(isExpanded = !it.myWorkSection.isExpanded))
+        }
+    }
+
+    private fun toggleRecentActivity() {
+        _state.update {
+            it.copy(
+                recentActivitySection = it.recentActivitySection.copy(isExpanded = !it.recentActivitySection.isExpanded)
+            )
+        }
+    }
+
+    private fun toggleRecentlyCompleted() {
+        _state.update {
+            it.copy(
+                recentlyCompletedSection = it.recentlyCompletedSection.copy(
+                    isExpanded = !it.recentlyCompletedSection.isExpanded
+                )
+            )
+        }
+    }
+
+    private fun loadWatching() {
+        viewModelScope.launch {
+            val isRetry = _state.value.watchingSection.error.isNotEmpty()
+            _state.update {
+                it.copy(
+                    watchingSection = it.watchingSection.copy(
+                        isLoading = !isRetry,
+                        isRetrying = isRetry,
+                        error = if (isRetry) it.watchingSection.error else NativeText.Empty
+                    )
+                )
+            }
+
+            val userId = taigaSessionStorage.requireUserId()
+            val projectId = taigaSessionStorage.getCurrentProjectId()
+
+            getWatchingItemsUseCase.getData(userId, projectId)
+                .onSuccess { items ->
+                    _state.update {
+                        it.copy(
+                            currentProjectId = projectId,
+                            watchingSection = it.watchingSection.copy(
+                                items = items.toImmutableList(),
+                                isLoading = false,
+                                isRetrying = false,
+                                error = NativeText.Empty
+                            )
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    logcat(throwable = error) {
+                        "Error fetching watching items"
+                    }
+                    _state.update {
+                        it.copy(
+                            watchingSection = it.watchingSection.copy(
+                                isLoading = false,
+                                isRetrying = false,
+                                error = getErrorMessage(error)
+                            )
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun loadMyWork() {
+        viewModelScope.launch {
+            val isRetry = _state.value.myWorkSection.error.isNotEmpty()
+            _state.update {
+                it.copy(
+                    myWorkSection = it.myWorkSection.copy(
+                        isLoading = !isRetry,
+                        isRetrying = isRetry,
+                        error = if (isRetry) it.myWorkSection.error else NativeText.Empty
+                    )
+                )
+            }
+
+            val userId = taigaSessionStorage.requireUserId()
+            val projectId = taigaSessionStorage.getCurrentProjectId()
+
+            getMyWorkItemsUseCase.getData(userId, projectId)
+                .onSuccess { items ->
+                    _state.update {
+                        it.copy(
+                            currentProjectId = projectId,
+                            myWorkSection = it.myWorkSection.copy(
+                                items = items.toImmutableList(),
+                                isLoading = false,
+                                isRetrying = false,
+                                error = NativeText.Empty
+                            )
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    logcat(throwable = error) {
+                        "Error fetching my work items"
+                    }
+                    _state.update {
+                        it.copy(
+                            myWorkSection = it.myWorkSection.copy(
+                                isLoading = false,
+                                isRetrying = false,
+                                error = getErrorMessage(error)
+                            )
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun loadRecentActivity() {
+        viewModelScope.launch {
+            val isRetry = _state.value.recentActivitySection.error.isNotEmpty()
+            _state.update {
+                it.copy(
+                    recentActivitySection = it.recentActivitySection.copy(
+                        isLoading = !isRetry,
+                        isRetrying = isRetry,
+                        error = if (isRetry) it.recentActivitySection.error else NativeText.Empty
+                    )
+                )
+            }
+
+            val projectId = taigaSessionStorage.getCurrentProjectId()
+
+            getRecentActivityUseCase.getData(projectId)
+                .onSuccess { items ->
+                    _state.update {
+                        it.copy(
+                            currentProjectId = projectId,
+                            recentActivitySection = it.recentActivitySection.copy(
+                                items = items.toImmutableList(),
+                                isLoading = false,
+                                isRetrying = false,
+                                error = NativeText.Empty
+                            )
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    logcat(throwable = error) {
+                        "Error fetching recent activity items"
+                    }
+                    _state.update {
+                        it.copy(
+                            recentActivitySection = it.recentActivitySection.copy(
+                                isLoading = false,
+                                isRetrying = false,
+                                error = getErrorMessage(error)
+                            )
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun loadRecentlyCompleted() {
+        viewModelScope.launch {
+            val isRetry = _state.value.recentlyCompletedSection.error.isNotEmpty()
+            _state.update {
+                it.copy(
+                    recentlyCompletedSection = it.recentlyCompletedSection.copy(
+                        isLoading = !isRetry,
+                        isRetrying = isRetry,
+                        error = if (isRetry) it.recentlyCompletedSection.error else NativeText.Empty
+                    )
+                )
+            }
+
+            val projectId = taigaSessionStorage.getCurrentProjectId()
+
+            getRecentlyCompletedItemsUseCase.getData(projectId)
+                .onSuccess { items ->
+                    _state.update {
+                        it.copy(
+                            currentProjectId = projectId,
+                            recentlyCompletedSection = it.recentlyCompletedSection.copy(
+                                items = items.toImmutableList(),
+                                isLoading = false,
+                                isRetrying = false,
+                                error = NativeText.Empty
+                            )
+                        )
+                    }
+                }
+                .onFailure { error ->
+                    logcat(throwable = error) {
+                        "Error fetching recently completed items"
+                    }
+                    _state.update {
+                        it.copy(
+                            recentlyCompletedSection = it.recentlyCompletedSection.copy(
+                                isLoading = false,
+                                isRetrying = false,
+                                error = getErrorMessage(error)
+                            )
+                        )
+                    }
+                }
+        }
+    }
+}

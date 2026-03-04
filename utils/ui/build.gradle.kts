@@ -1,22 +1,26 @@
 plugins {
-    alias(libs.plugins.taigamobile.android.library)
-    alias(libs.plugins.taigamobile.android.library.compose)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
-    alias(libs.plugins.taigamobile.android.hilt)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.library.compose)
+    alias(libs.plugins.taigamobile.kmp.di)
+    alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.utils.ui"
-}
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.strings)
+            implementation(projects.core.domain)
+            implementation(projects.core.asyncKmp)
 
-dependencies {
-    implementation(projects.strings)
-    implementation(projects.core.domain)
+            implementation(libs.androidx.paging.compose)
+        }
 
-    implementation(projects.core.async)
+        jvmMain.dependencies {
+            implementation(libs.ktor.core)
+        }
 
-    implementation(libs.androidx.paging.compose)
-    implementation(libs.androidx.navigation.compose)
-
-    testImplementation(libs.robolectric)
+        iosMain.dependencies {
+            implementation(libs.ktor.core)
+        }
+    }
 }

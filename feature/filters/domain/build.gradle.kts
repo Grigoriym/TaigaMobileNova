@@ -1,10 +1,13 @@
 plugins {
-    alias(libs.plugins.taigamobile.kotlin.library)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-dependencies {
-    implementation(libs.kotlinx.serialization.json)
-    implementation(projects.core.domain)
-    implementation(projects.core.serialization)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.core.domain)
+            implementation(projects.core.serialization)
+        }
+    }
 }

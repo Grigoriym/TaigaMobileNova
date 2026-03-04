@@ -19,7 +19,7 @@ enum class AppFlavors(
     FDROID("fdroid", FlavorDimensions.STORE, ".fdroid")
 }
 
-internal fun configureFlavors(
+fun configureFlavors(
     commonExtension: CommonExtension,
     flavorConfigurationBlock: ProductFlavor.(flavor: AppFlavors) -> Unit = {}
 ) {

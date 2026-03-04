@@ -1,20 +1,20 @@
 plugins {
-    alias(libs.plugins.taigamobile.android.library)
-    alias(libs.plugins.taigamobile.android.hilt)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.di)
+    alias(libs.plugins.taigamobile.kmp.network)
+    alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.login.data"
-}
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.core.api)
+            implementation(projects.core.domain)
+            implementation(projects.core.storage)
+            implementation(projects.core.asyncKmp)
 
-dependencies {
-    implementation(projects.core.api)
-    implementation(projects.core.domain)
-    implementation(projects.core.storage)
-    implementation(projects.core.async)
-
-    implementation(projects.feature.login.domain)
-
-    implementation(libs.retrofit)
+            implementation(projects.feature.login.domain)
+            implementation(projects.feature.login.dto)
+        }
+    }
 }

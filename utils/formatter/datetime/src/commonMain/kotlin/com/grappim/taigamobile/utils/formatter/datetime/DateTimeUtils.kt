@@ -1,0 +1,17 @@
+package com.grappim.taigamobile.utils.formatter.datetime
+
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+
+interface DateTimeUtils {
+    fun retrieveEpochMillisAtStartOfDay(localDate: LocalDate): Long
+    fun fromMillisToLocalDate(millis: Long): LocalDate
+    fun parseLocalDateToString(localDate: LocalDate): String
+    fun formatToMediumFormat(localDate: LocalDate): String
+
+    fun formatToMediumFormat(localDateTime: LocalDateTime): String
+
+    fun parseToLocalDate(text: String): LocalDate
+
+    fun getLocalDateNow(): LocalDate
+}

@@ -1,51 +1,88 @@
 plugins {
-    alias(libs.plugins.taigamobile.android.library)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.serialization)
+    alias(libs.plugins.taigamobile.kmp.network)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.testing"
-}
+kotlin {
+    sourceSets {
+        androidMain.dependencies {
+            api(project.dependencies.platform(libs.koin.bom))
+            api(libs.koin.test)
+            api(libs.koin.test.junit4)
+            api(libs.robolectric)
+            api(libs.junit4)
+        }
+        commonMain.dependencies {
+            implementation(libs.jetbrains.compose.ui)
 
-dependencies {
-    implementation(platform(libs.androidx.compose.bom))
+            api(libs.turbine)
+            api(libs.kotlinx.coroutines.test)
 
-    implementation(projects.core.domain)
-    implementation(projects.core.storage)
+            implementation(libs.androidx.paging.common)
 
-    implementation(projects.feature.filters.domain)
-    implementation(projects.feature.filters.dto)
-    implementation(projects.feature.issues.domain)
-    implementation(projects.feature.issues.ui)
-    implementation(projects.feature.projects.domain)
-    implementation(projects.feature.projects.dto)
-    implementation(projects.feature.workitem.data)
-    implementation(projects.feature.workitem.domain)
-    implementation(projects.feature.workitem.ui)
-    implementation(projects.feature.workitem.dto)
-    implementation(projects.feature.users.domain)
-    implementation(projects.feature.users.dto)
-    implementation(projects.feature.userstories.dto)
-    implementation(projects.feature.userstories.domain)
-    implementation(projects.feature.epics.dto)
-    implementation(projects.feature.epics.domain)
-    implementation(projects.feature.sprint.domain)
-    implementation(projects.feature.sprint.data)
-    implementation(projects.feature.swimlanes.data)
-    implementation(projects.feature.swimlanes.domain)
-    implementation(projects.feature.tasks.domain)
-    implementation(projects.feature.tasks.data)
-    implementation(projects.utils.ui)
+            api(projects.core.domain)
+            api(projects.core.storage)
 
-    api(libs.junit4)
-    api(libs.kotlinx.coroutines.test)
-    api(libs.turbine)
-    api(libs.mockk)
-    api(libs.mockk.android)
-    api(libs.androidx.test.runner)
-    api(libs.androidx.test.rules)
-    api(libs.androidx.test.core)
-    implementation(libs.androidx.navigation.compose)
+            api(projects.feature.login.domain)
+            api(projects.feature.login.data)
+            api(projects.feature.login.dto)
 
-    implementation(libs.androidx.appcompat)
-    implementation(libs.robolectric)
+            api(projects.feature.filters.domain)
+            api(projects.feature.filters.dto)
+            api(projects.feature.filters.data)
+            api(projects.feature.filters.mapper)
+
+            api(projects.feature.issues.domain)
+            api(projects.feature.issues.ui)
+            api(projects.feature.issues.data)
+            api(projects.feature.issues.dto)
+
+            api(projects.feature.projects.domain)
+            api(projects.feature.projects.dto)
+            api(projects.feature.projects.data)
+            api(projects.feature.projects.mapper)
+
+            api(projects.feature.workitem.data)
+            api(projects.feature.workitem.domain)
+            api(projects.feature.workitem.ui)
+            api(projects.feature.workitem.dto)
+
+            api(projects.feature.users.domain)
+            api(projects.feature.users.dto)
+            api(projects.feature.users.data)
+            api(projects.feature.users.mapper)
+
+            api(projects.feature.userstories.dto)
+            api(projects.feature.userstories.domain)
+            api(projects.feature.userstories.data)
+            api(projects.feature.userstories.mapper)
+
+            api(projects.feature.epics.dto)
+            api(projects.feature.epics.domain)
+            api(projects.feature.epics.data)
+
+            api(projects.feature.sprint.domain)
+            api(projects.feature.sprint.data)
+
+            api(projects.feature.swimlanes.data)
+            api(projects.feature.swimlanes.domain)
+
+            api(projects.feature.history.data)
+            api(projects.feature.history.domain)
+
+            api(projects.feature.tasks.domain)
+            api(projects.feature.tasks.data)
+
+            api(projects.feature.kanban.domain)
+
+            api(projects.feature.wiki.domain)
+
+            api(projects.feature.dashboard.domain)
+
+            api(projects.utils.ui)
+            api(projects.utils.formatter.datetime)
+            api(projects.utils.formatter.decimal)
+        }
+    }
 }
