@@ -28,12 +28,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
-import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.error_loading_projects
+import com.grappim.taigamobile.strings.generated.resources.no_projects
 import com.grappim.taigamobile.strings.generated.resources.project_admin
 import com.grappim.taigamobile.strings.generated.resources.project_member
 import com.grappim.taigamobile.strings.generated.resources.project_name_template
@@ -44,12 +44,16 @@ import com.grappim.taigamobile.uikit.generated.resources.ic_check
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
+import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
+import com.grappim.taigamobile.utils.ui.hasError
+import com.grappim.taigamobile.utils.ui.isEmpty
+import com.grappim.taigamobile.utils.ui.isLoading
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -134,20 +138,23 @@ fun ProjectSelectorScreenContent(
             onRefresh = {
                 projects.refresh()
             },
-            isRefreshing = projects.loadState.refresh is LoadState.Loading
+            isRefreshing = projects.isLoading()
         ) {
-            if (projects.loadState.hasError && projects.itemCount == 0) {
-                ErrorStateWidget(
-                    modifier = Modifier.fillMaxSize(),
-                    message = projects.loadState.getErrorMessage(
-                        fallback = NativeText.Resource(RString.error_loading_projects)
-                    ),
-                    onRetry = {
-                        projects.refresh()
-                    }
-                )
-            } else {
-                LazyColumn(
+            when {
+                projects.hasError() && projects.isEmpty() ->
+                    ErrorStateWidget(
+                        modifier = Modifier.fillMaxSize(),
+                        message = projects.loadState.getErrorMessage(
+                            fallback = NativeText.Resource(RString.error_loading_projects)
+                        ),
+                        onRetry = {
+                            projects.refresh()
+                        }
+                    )
+
+                projects.isEmpty() -> EmptyStateWidget(message = NativeText.Resource(RString.no_projects))
+
+                else -> LazyColumn(
                     modifier = Modifier.fillMaxSize()
                 ) {
                     items(projects.itemCount) { index ->

@@ -62,6 +62,17 @@ class FakeWikiRepository : WikiRepository {
         deleteWikiLinkThrows?.let { throw it }
     }
 
-    override suspend fun createWikiPage(slug: String, content: String): WikiPage =
-        error("not used in this test")
+    var createWikiPageResult: WikiPage? = null
+    var createWikiPageThrows: Throwable? = null
+    var createWikiPageCalled = false
+    var createWikiPageSlug: String? = null
+    var createWikiPageContent: String? = null
+
+    override suspend fun createWikiPage(slug: String, content: String): WikiPage {
+        createWikiPageCalled = true
+        createWikiPageSlug = slug
+        createWikiPageContent = content
+        createWikiPageThrows?.let { throw it }
+        return createWikiPageResult ?: error("createWikiPageResult not set")
+    }
 }

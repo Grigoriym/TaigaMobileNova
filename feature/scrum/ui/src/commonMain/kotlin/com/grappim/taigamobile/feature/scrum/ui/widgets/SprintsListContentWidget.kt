@@ -9,14 +9,16 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.no_sprints
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
+import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateAction
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
-import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
+import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.hasError
 import com.grappim.taigamobile.utils.ui.isEmpty
@@ -31,45 +33,37 @@ fun SprintsListContentWidget(
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
         onRefresh = { sprints.refresh() },
-        isRefreshing = sprints.loadState.refresh is LoadState.Loading
+        isRefreshing = sprints.isLoading()
     ) {
         when {
-            sprints.hasError() && sprints.isEmpty() -> {
+            sprints.hasError() && sprints.isEmpty() ->
                 ErrorStateWidget(
                     message = sprints.loadState.getErrorMessage(),
                     onRetry = { sprints.refresh() }
                 )
-            }
 
-            else -> {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(
-                        count = sprints.itemCount,
-                        key = sprints.itemKey { it.id },
-                        contentType = sprints.itemContentType()
-                    ) { index ->
-                        val item = sprints[index]
-                        if (item != null) {
-                            SprintItemWidget(
-                                sprint = item,
-                                goToSprint = goToSprint
-                            )
-                        }
-                    }
+            sprints.isEmpty() -> EmptyStateWidget(
+                message = NativeText.Resource(RString.no_sprints),
+                action = EmptyStateAction(
+                    onClick = { sprints.refresh() }
+                )
+            )
 
-                    item {
-                        if (sprints.isLoading()) {
-                            DotsLoaderWidget()
-                        }
-                    }
-
-                    item {
-                        if (sprints.isEmpty() && sprints.isLoading().not()) {
-                            EmptyStateWidget()
-                        }
+            else -> LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                items(
+                    count = sprints.itemCount,
+                    key = sprints.itemKey { it.id },
+                    contentType = sprints.itemContentType()
+                ) { index ->
+                    val item = sprints[index]
+                    if (item != null) {
+                        SprintItemWidget(
+                            sprint = item,
+                            goToSprint = goToSprint
+                        )
                     }
                 }
             }

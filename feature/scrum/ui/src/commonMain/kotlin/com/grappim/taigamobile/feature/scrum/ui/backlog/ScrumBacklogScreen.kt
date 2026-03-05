@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.grappim.taigamobile.core.domain.CommonTaskType
@@ -23,12 +22,15 @@ import com.grappim.taigamobile.feature.filters.ui.TaskFiltersWidget
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.backlog
+import com.grappim.taigamobile.strings.generated.resources.backlog_empty
 import com.grappim.taigamobile.uikit.generated.resources.ic_add
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.theme.commonVerticalPadding
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
+import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateAction
+import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
@@ -36,6 +38,9 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import com.grappim.taigamobile.utils.ui.hasError
+import com.grappim.taigamobile.utils.ui.isEmpty
+import com.grappim.taigamobile.utils.ui.isLoading
 import kotlinx.collections.immutable.toImmutableList
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -120,17 +125,30 @@ private fun BacklogContent(
                 stories.refresh()
                 state.retryLoadFilters()
             },
-            isRefreshing = stories.loadState.refresh is LoadState.Loading || state.isFiltersLoading
+            isRefreshing = stories.isLoading() || state.isFiltersLoading
         ) {
             when {
-                stories.loadState.hasError && stories.itemCount == 0 -> {
+                stories.hasError() && stories.isEmpty() ->
                     ErrorStateWidget(
                         message = stories.loadState.getErrorMessage(),
-                        onRetry = { stories.refresh() }
+                        onRetry = {
+                            stories.refresh()
+                            state.retryLoadFilters()
+                        }
                     )
-                }
 
-                else -> {
+                stories.isEmpty() ->
+                    EmptyStateWidget(
+                        message = NativeText.Resource(RString.backlog_empty),
+                        action = EmptyStateAction(
+                            onClick = {
+                                stories.refresh()
+                                state.retryLoadFilters()
+                            }
+                        )
+                    )
+
+                else ->
                     LazyColumn {
                         simpleTasksListWithTitle(
                             commonTasksLazy = stories,
@@ -140,7 +158,6 @@ private fun BacklogContent(
                             bottomPadding = commonVerticalPadding
                         )
                     }
-                }
             }
         }
     }
