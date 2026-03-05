@@ -28,8 +28,10 @@ import com.grappim.taigamobile.strings.generated.resources.are_you_sure_discardi
 import com.grappim.taigamobile.strings.generated.resources.discard
 import com.grappim.taigamobile.strings.generated.resources.edit_epic
 import com.grappim.taigamobile.strings.generated.resources.keep_editing
+import com.grappim.taigamobile.strings.generated.resources.no_epics_found
 import com.grappim.taigamobile.strings.generated.resources.save
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
@@ -97,21 +99,28 @@ fun WorkItemEditEpicScreen(goBack: () -> Unit, viewModel: EditEpicViewModel = ko
 @Composable
 private fun EditEpicContent(state: EditEpicState) {
     Box(modifier = Modifier.fillMaxSize()) {
-        LazyColumn {
-            itemsIndexed(
-                items = state.itemsToShow,
-                key = { _, epic -> epic.id }
-            ) { index, epic ->
-                EpicItem(
-                    epic = epic,
-                    isSelected = state.isItemSelected(epic.id),
-                    onItemClick = {
-                        state.onEpicClick(epic.id)
-                    }
+        when {
+            state.itemsToShow.isEmpty() ->
+                EmptyStateWidget(
+                    message = NativeText.Resource(RString.no_epics_found)
                 )
 
-                if (index < state.itemsToShow.lastIndex) {
-                    HorizontalDivider()
+            else -> LazyColumn {
+                itemsIndexed(
+                    items = state.itemsToShow,
+                    key = { _, epic -> epic.id }
+                ) { index, epic ->
+                    EpicItem(
+                        epic = epic,
+                        isSelected = state.isItemSelected(epic.id),
+                        onItemClick = {
+                            state.onEpicClick(epic.id)
+                        }
+                    )
+
+                    if (index < state.itemsToShow.lastIndex) {
+                        HorizontalDivider()
+                    }
                 }
             }
         }

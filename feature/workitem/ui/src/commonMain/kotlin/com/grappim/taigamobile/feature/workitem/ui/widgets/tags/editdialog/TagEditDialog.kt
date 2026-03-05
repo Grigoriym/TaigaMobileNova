@@ -47,6 +47,7 @@ import com.github.skydoves.colorpicker.compose.rememberColorPickerController
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.cancel
+import com.grappim.taigamobile.strings.generated.resources.custom_color
 import com.grappim.taigamobile.strings.generated.resources.presets
 import com.grappim.taigamobile.strings.generated.resources.save
 import com.grappim.taigamobile.strings.generated.resources.selected_color
@@ -207,7 +208,7 @@ private fun TagEditDialogContent(state: TagEditDialogState, onSaveClick: (name: 
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Custom color",
+                    text = stringResource(RString.custom_color),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )

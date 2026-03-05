@@ -28,6 +28,7 @@ import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
+import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateAction
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -132,7 +133,7 @@ fun IssuesScreenContent(
             isRefreshing = issues.isLoading() || state.isFiltersLoading
         ) {
             when {
-                issues.hasError() && issues.isEmpty() -> {
+                issues.hasError() && issues.isEmpty() ->
                     ErrorStateWidget(
                         message = issues.loadState.getErrorMessage(
                             fallback = NativeText.Resource(RString.error_loading_issues)
@@ -142,15 +143,19 @@ fun IssuesScreenContent(
                             state.retryLoadFilters()
                         }
                     )
-                }
 
-                issues.isEmpty() -> {
+                issues.isEmpty() ->
                     EmptyStateWidget(
-                        message = NativeText.Resource(RString.no_issues_found)
+                        message = NativeText.Resource(RString.no_issues_found),
+                        action = EmptyStateAction(
+                            onClick = {
+                                issues.refresh()
+                                state.retryLoadFilters()
+                            }
+                        )
                     )
-                }
 
-                else -> {
+                else ->
                     LazyColumn {
                         simpleTasksListWithTitle(
                             commonTasksLazy = issues,
@@ -162,7 +167,6 @@ fun IssuesScreenContent(
                             bottomPadding = commonVerticalPadding
                         )
                     }
-                }
             }
         }
     }

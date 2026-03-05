@@ -27,6 +27,7 @@ import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
+import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateAction
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -132,7 +133,7 @@ fun EpicsScreenContent(
             isRefreshing = epics.isLoading() || state.isFiltersLoading
         ) {
             when {
-                epics.hasError() && epics.isEmpty() -> {
+                epics.hasError() && epics.isEmpty() ->
                     ErrorStateWidget(
                         message = epics.loadState.getErrorMessage(
                             fallback = NativeText.Resource(RString.error_loading_issues)
@@ -142,15 +143,19 @@ fun EpicsScreenContent(
                             state.retryLoadFilters()
                         }
                     )
-                }
 
-                epics.isEmpty() -> {
+                epics.isEmpty() ->
                     EmptyStateWidget(
-                        message = NativeText.Resource(RString.no_epics_found)
+                        message = NativeText.Resource(RString.no_epics_found),
+                        action = EmptyStateAction(
+                            onClick = {
+                                epics.refresh()
+                                state.retryLoadFilters()
+                            }
+                        )
                     )
-                }
 
-                else -> {
+                else ->
                     LazyColumn {
                         simpleTasksListWithTitle(
                             commonTasksLazy = epics,
@@ -160,7 +165,6 @@ fun EpicsScreenContent(
                             bottomPadding = commonVerticalPadding
                         )
                     }
-                }
             }
         }
     }
