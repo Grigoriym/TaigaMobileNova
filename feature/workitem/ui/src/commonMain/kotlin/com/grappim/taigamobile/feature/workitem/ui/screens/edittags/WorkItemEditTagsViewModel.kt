@@ -58,10 +58,9 @@ class WorkItemEditTagsViewModel(
             setIsDialogVisible = ::setIsDialogVisible,
             onTagClick = ::onTagClick,
             shouldGoBackWithCurrentValue = ::onGoingBack,
-            onSaveTagDropdownClick = ::onSaveTagDropdownClick,
-            onAddTagDropdownClick = ::onAddTagClick,
+            onSaveTags = ::onSaveTagsClick,
+            onAddTagClick = ::onAddTagClick,
             onBackClick = ::onBackClick,
-            setDropdownMenuExpanded = ::setDropdownMenuExpanded,
             onSaveClick = ::onSaveTag
         )
     )
@@ -94,26 +93,15 @@ class WorkItemEditTagsViewModel(
     }
 
     private fun onBackClick() {
-        if (state.value.isDropdownMenuExpanded) {
-            setDropdownMenuExpanded(false)
-        } else {
-            setIsDialogVisible(!state.value.isDialogVisible)
-        }
+        setIsDialogVisible(!state.value.isDialogVisible)
     }
 
-    private fun onSaveTagDropdownClick() {
+    private fun onSaveTagsClick() {
         onGoingBack(true)
     }
 
     private fun onAddTagClick() {
-        setDropdownMenuExpanded(false)
         showAddDialog()
-    }
-
-    private fun setDropdownMenuExpanded(isExpanded: Boolean) {
-        _state.update {
-            it.copy(isDropdownMenuExpanded = isExpanded)
-        }
     }
 
     private fun getOriginalTags(): ImmutableList<SelectableTagUI> = workItemEditStateRepository.getOriginalTags(

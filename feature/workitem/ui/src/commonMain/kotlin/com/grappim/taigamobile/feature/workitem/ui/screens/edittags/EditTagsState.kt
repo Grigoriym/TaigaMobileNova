@@ -15,10 +15,8 @@ data class EditTagsState(
     val onTagClick: (SelectableTagUI) -> Unit = {},
     val shouldGoBackWithCurrentValue: (shouldReturnCurrentValue: Boolean) -> Unit = {},
 
-    val isDropdownMenuExpanded: Boolean = false,
-    val setDropdownMenuExpanded: (Boolean) -> Unit = {},
-    val onAddTagDropdownClick: () -> Unit = {},
-    val onSaveTagDropdownClick: () -> Unit = {},
+    val onSaveTags: () -> Unit = {},
+    val onAddTagClick: () -> Unit = {},
     val onBackClick: () -> Unit = {},
 
     val onSaveClick: (name: String, color: Color) -> Unit = { _, _ -> }
