@@ -95,7 +95,7 @@ fun TeamScreenContent(
                 })
             }
 
-            state.teamMembers.isEmpty() -> {
+            state.teamMembers.isEmpty() && !state.isLoading -> {
                 EmptyStateWidget(
                     modifier = Modifier.fillMaxSize(),
                     message = NativeText.Resource(RString.no_team_members_found)

@@ -33,10 +33,10 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         enableV3Signing = true
                     }
                     getByName("debug") {
-                        storeFile = file("../taigamobilenova_debug.jks")
-                        keyAlias = System.getenv("TAIGA_ALIAS_D")
-                        keyPassword = System.getenv("TAIGA_KEY_PASS_D")
-                        storePassword = System.getenv("TAIGA_STORE_PASS_D")
+//                        storeFile = file("../taigamobilenova_debug.jks")
+//                        keyAlias = System.getenv("TAIGA_ALIAS_D")
+//                        keyPassword = System.getenv("TAIGA_KEY_PASS_D")
+//                        storePassword = System.getenv("TAIGA_STORE_PASS_D")
                     }
                 }
 
