@@ -23,6 +23,7 @@ kotlin {
 
             implementation(libs.coil.compose)
             implementation(libs.coil.ktor)
+            implementation(libs.compose.colorpicker)
 
             implementation(libs.jetbrains.compose.icons.extended)
         }

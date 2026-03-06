@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Sell
+import androidx.compose.material.icons.filled.SettingsInputComponent
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Surface
@@ -18,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.settings_attributes
+import com.grappim.taigamobile.strings.generated.resources.settings_project_values
 import com.grappim.taigamobile.strings.generated.resources.tags_title
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
@@ -29,7 +31,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun AttributesScreen(goToTagsScreen: () -> Unit) {
+fun AttributesScreen(goToTagsScreen: () -> Unit, goToProjectValuesMenuScreen: () -> Unit) {
     val topBarController = LocalTopBarConfig.current
 
     LaunchedEffect(Unit) {
@@ -41,11 +43,17 @@ fun AttributesScreen(goToTagsScreen: () -> Unit) {
         )
     }
 
-    AttributesScreenContent(goToTagsScreen = goToTagsScreen)
+    AttributesScreenContent(
+        goToTagsScreen = goToTagsScreen,
+        goToProjectValuesMenuScreen = goToProjectValuesMenuScreen
+    )
 }
 
 @Composable
-fun AttributesScreenContent(goToTagsScreen: () -> Unit = {}) {
+fun AttributesScreenContent(
+    goToTagsScreen: () -> Unit = {},
+    goToProjectValuesMenuScreen: () -> Unit = {}
+) {
     Surface {
         Column(
             modifier = Modifier
@@ -55,17 +63,23 @@ fun AttributesScreenContent(goToTagsScreen: () -> Unit = {}) {
             TaigaHeightSpacer(8.dp)
 
             ListItem(
-                modifier = Modifier
-                    .clickable {
-                        goToTagsScreen()
-                    },
-                headlineContent = {
-                    Text(text = stringResource(RString.tags_title))
-                },
+                modifier = Modifier.clickable { goToTagsScreen() },
+                headlineContent = { Text(text = stringResource(RString.tags_title)) },
                 leadingContent = {
                     Icon(
                         imageVector = Icons.Default.Sell,
                         contentDescription = "Tags Screen"
+                    )
+                }
+            )
+
+            ListItem(
+                modifier = Modifier.clickable { goToProjectValuesMenuScreen() },
+                headlineContent = { Text(text = stringResource(RString.settings_project_values)) },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Default.SettingsInputComponent,
+                        contentDescription = "Project Values Screen"
                     )
                 }
             )

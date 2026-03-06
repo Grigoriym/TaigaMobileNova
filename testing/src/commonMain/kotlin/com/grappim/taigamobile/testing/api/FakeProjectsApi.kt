@@ -2,17 +2,22 @@ package com.grappim.taigamobile.testing.api
 
 import com.grappim.taigamobile.feature.projects.data.ProjectsApi
 import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectDetailDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
+import com.grappim.taigamobile.feature.projects.dto.UpdateModulesRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.UpdateProjectRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.CreateTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.DeleteTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.EditTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.MixTagsRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.TagsColorsResponse
+import com.grappim.taigamobile.testing.models.getProjectDetailDTO
 import com.grappim.taigamobile.testing.models.getProjectResponseDTO
 import io.ktor.client.statement.HttpResponse
 
 class FakeProjectsApi : ProjectsApi {
     var projectResponseDTO: ProjectResponseDTO = getProjectResponseDTO()
+    var projectDetailDTO: ProjectDetailDTO = getProjectDetailDTO()
     var getProjectsResult: List<ProjectDTO> = emptyList()
     var tagsColorsResult: TagsColorsResponse = emptyMap()
 
@@ -37,6 +42,12 @@ class FakeProjectsApi : ProjectsApi {
     ): List<ProjectDTO> = getProjectsResult
 
     override suspend fun getProject(projectId: Long): ProjectResponseDTO = projectResponseDTO
+
+    override suspend fun getProjectDetail(projectId: Long): ProjectDetailDTO = projectDetailDTO
+
+    override suspend fun updateProject(projectId: Long, request: UpdateProjectRequestDTO): ProjectDetailDTO = projectDetailDTO
+
+    override suspend fun updateModules(projectId: Long, request: UpdateModulesRequestDTO): ProjectDetailDTO = projectDetailDTO
 
     override suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse = tagsColorsResult
 

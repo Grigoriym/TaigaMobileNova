@@ -5,8 +5,6 @@ package com.grappim.taigamobile.feature.workitem.ui.widgets
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -21,9 +19,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
+import com.grappim.taigamobile.uikit.generated.resources.ic_check
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.StaticColor
 import com.grappim.taigamobile.utils.ui.asColor
 import com.grappim.taigamobile.utils.ui.asString
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun WorkItemBadgesBottomSheet(
@@ -100,7 +106,7 @@ private fun <T> OptionsList(
                 },
                 trailingContent = {
                     if (isOptionSelect(option)) {
-                        Icon(imageVector = Icons.Default.Check, contentDescription = "")
+                        Icon(painter = painterResource(RDrawable.ic_check), contentDescription = "")
                     }
                 }
             )
@@ -109,5 +115,26 @@ private fun <T> OptionsList(
                 HorizontalDivider()
             }
         }
+    }
+}
+
+private val previewStatuses = persistentListOf(
+    StatusUI(id = 1L, title = NativeText.Simple("New"), color = StaticColor(Color(0xFF70728F))),
+    StatusUI(id = 2L, title = NativeText.Simple("In Progress"), color = StaticColor(Color(0xFFE47C40))),
+    StatusUI(id = 3L, title = NativeText.Simple("Ready for Test"), color = StaticColor(Color(0xFFE8B800))),
+    StatusUI(id = 4L, title = NativeText.Simple("Done"), color = StaticColor(Color(0xFF2ECC71))),
+)
+
+@PreviewTaigaDarkLight
+@Composable
+private fun OptionsListPreview() {
+    TaigaMobilePreviewTheme {
+        OptionsList(
+            options = previewStatuses,
+            onOptionSelect = {},
+            displayTransform = { it.title.asString() },
+            colorProvider = { it.color.asColor() },
+            isOptionSelect = { it.id == 2L }
+        )
     }
 }

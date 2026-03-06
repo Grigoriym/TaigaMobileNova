@@ -11,12 +11,24 @@ import com.grappim.taigamobile.feature.settings.ui.about.goToSettingsAboutScreen
 import com.grappim.taigamobile.feature.settings.ui.attributes.AttributesScreen
 import com.grappim.taigamobile.feature.settings.ui.attributes.AttributesScreenNavDestination
 import com.grappim.taigamobile.feature.settings.ui.attributes.goToAttributesScreen
+import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.ProjectValuesMenuNavDestination
+import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.ProjectValuesMenuScreen
+import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.ProjectValuesNavDestination
+import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.ProjectValuesScreen
+import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.navigateToProjectValues
+import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.navigateToProjectValuesMenu
 import com.grappim.taigamobile.feature.settings.ui.attributes.tags.TagsScreen
 import com.grappim.taigamobile.feature.settings.ui.attributes.tags.TagsScreenRouteNavDestination
 import com.grappim.taigamobile.feature.settings.ui.attributes.tags.goToTagsScreen
 import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreen
 import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreenNavDestination
 import com.grappim.taigamobile.feature.settings.ui.interfacescreen.goToSettingsInterfaceScreen
+import com.grappim.taigamobile.feature.settings.ui.modules.ModulesNavDestination
+import com.grappim.taigamobile.feature.settings.ui.modules.ModulesScreen
+import com.grappim.taigamobile.feature.settings.ui.modules.navigateToModules
+import com.grappim.taigamobile.feature.settings.ui.projectdetails.ProjectDetailsNavDestination
+import com.grappim.taigamobile.feature.settings.ui.projectdetails.ProjectDetailsScreen
+import com.grappim.taigamobile.feature.settings.ui.projectdetails.navigateToProjectDetails
 import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreen
 import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreenNavDestination
 import com.grappim.taigamobile.feature.settings.ui.user.goToSettingsUserScreen
@@ -36,7 +48,27 @@ fun NavGraphBuilder.settingsNavGraph(navController: NavHostController, showSnack
             },
             goToAttributesScreen = {
                 navController.goToAttributesScreen()
+            },
+            goToProjectDetailsScreen = {
+                navController.navigateToProjectDetails()
+            },
+            goToModulesScreen = {
+                navController.navigateToModules()
             }
+        )
+    }
+
+    composable<ProjectDetailsNavDestination> {
+        ProjectDetailsScreen(
+            onNavigateBack = { navController.popBackStack() },
+            showSnackbar = showSnackbar
+        )
+    }
+
+    composable<ModulesNavDestination> {
+        ModulesScreen(
+            onNavigateBack = { navController.popBackStack() },
+            showSnackbar = showSnackbar
         )
     }
 
@@ -56,11 +88,26 @@ fun NavGraphBuilder.settingsNavGraph(navController: NavHostController, showSnack
         AttributesScreen(
             goToTagsScreen = {
                 navController.goToTagsScreen()
+            },
+            goToProjectValuesMenuScreen = {
+                navController.navigateToProjectValuesMenu()
             }
         )
     }
 
     composable<TagsScreenRouteNavDestination> {
         TagsScreen(showSnackbar = showSnackbar)
+    }
+
+    composable<ProjectValuesMenuNavDestination> {
+        ProjectValuesMenuScreen(
+            goToProjectValues = { type ->
+                navController.navigateToProjectValues(type)
+            }
+        )
+    }
+
+    composable<ProjectValuesNavDestination> {
+        ProjectValuesScreen(showSnackbar = showSnackbar)
     }
 }

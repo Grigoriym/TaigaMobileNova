@@ -11,6 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.TouchApp
@@ -29,14 +30,19 @@ import com.grappim.taigamobile.strings.generated.resources.settings
 import com.grappim.taigamobile.strings.generated.resources.settings_about
 import com.grappim.taigamobile.strings.generated.resources.settings_attributes
 import com.grappim.taigamobile.strings.generated.resources.settings_interface
+import com.grappim.taigamobile.strings.generated.resources.settings_modules
+import com.grappim.taigamobile.strings.generated.resources.settings_project_details
 import com.grappim.taigamobile.strings.generated.resources.settings_user
+import com.grappim.taigamobile.uikit.generated.resources.ic_brick
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -46,6 +52,8 @@ fun SettingsScreen(
     goToInterfaceScreen: () -> Unit,
     goToUserScreen: () -> Unit,
     goToAttributesScreen: () -> Unit,
+    goToProjectDetailsScreen: () -> Unit,
+    goToModulesScreen: () -> Unit,
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -65,7 +73,9 @@ fun SettingsScreen(
         goToAboutScreen = goToAboutScreen,
         goToInterfaceScreen = goToInterfaceScreen,
         goToUserScreen = goToUserScreen,
-        goToAttributesScreen = goToAttributesScreen
+        goToAttributesScreen = goToAttributesScreen,
+        goToProjectDetailsScreen = goToProjectDetailsScreen,
+        goToModulesScreen = goToModulesScreen
     )
 }
 
@@ -75,7 +85,9 @@ fun SettingsScreenContent(
     goToAboutScreen: () -> Unit = {},
     goToInterfaceScreen: () -> Unit = {},
     goToUserScreen: () -> Unit = {},
-    goToAttributesScreen: () -> Unit = {}
+    goToAttributesScreen: () -> Unit = {},
+    goToProjectDetailsScreen: () -> Unit = {},
+    goToModulesScreen: () -> Unit = {}
 ) {
     Surface {
         Column(
@@ -102,6 +114,38 @@ fun SettingsScreenContent(
             )
 
             if (state.canSeeAttributes) {
+                ListItem(
+                    modifier = Modifier
+                        .clickable {
+                            goToProjectDetailsScreen()
+                        },
+                    headlineContent = {
+                        Text(text = stringResource(RString.settings_project_details))
+                    },
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = "Project Details Screen"
+                        )
+                    }
+                )
+
+                ListItem(
+                    modifier = Modifier
+                        .clickable {
+                            goToModulesScreen()
+                        },
+                    headlineContent = {
+                        Text(text = stringResource(RString.settings_modules))
+                    },
+                    leadingContent = {
+                        Icon(
+                            painter = painterResource(RDrawable.ic_brick),
+                            contentDescription = "Modules Screen"
+                        )
+                    }
+                )
+
                 ListItem(
                     modifier = Modifier
                         .clickable {
@@ -156,5 +200,5 @@ fun SettingsScreenContent(
 @PreviewTaigaDarkLight
 @Composable
 private fun SettingsScreenPreviewOld() = TaigaMobileTheme {
-    SettingsScreenContent(state = SettingsState())
+    SettingsScreenContent(state = SettingsState(canSeeAttributes = true))
 }

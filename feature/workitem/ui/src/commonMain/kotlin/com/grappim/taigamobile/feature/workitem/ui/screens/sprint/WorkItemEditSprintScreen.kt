@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -29,6 +27,11 @@ import com.grappim.taigamobile.strings.generated.resources.discard
 import com.grappim.taigamobile.strings.generated.resources.edit_sprint
 import com.grappim.taigamobile.strings.generated.resources.keep_editing
 import com.grappim.taigamobile.strings.generated.resources.save
+import com.grappim.taigamobile.uikit.generated.resources.ic_check
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.utils.PreviewUtils
+import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
@@ -36,7 +39,9 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -154,8 +159,47 @@ private fun SprintItem(sprint: Sprint, isSelected: Boolean, canModify: Boolean, 
         },
         trailingContent = {
             if (isSelected) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = "")
+                Icon(painter = painterResource(RDrawable.ic_check), contentDescription = "")
             }
         }
     )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun EditSprintContentPreview() {
+    TaigaMobilePreviewTheme {
+        EditSprintContent(
+            state = EditSprintState(
+                itemsToShow = persistentListOf(
+                    Sprint(
+                        id = 1L,
+                        name = "Sprint 1",
+                        order = 1,
+                        start = PreviewUtils.getNowDate(),
+                        end = PreviewUtils.getNowDate(),
+                        storiesCount = 5,
+                        isClosed = false
+                    ),
+                    Sprint(
+                        id = 2L,
+                        name = "Sprint 2",
+                        order = 2,
+                        start = PreviewUtils.getNowDate(),
+                        end = PreviewUtils.getNowDate(),
+                        storiesCount = 3,
+                        isClosed = true
+                    )
+                ),
+                isItemSelected = { id -> id == 1L },
+                selectedItem = 1L,
+                originalSelectedItem = 1L,
+                canModify = true,
+                onSprintClick = {},
+                isDialogVisible = false,
+                setIsDialogVisible = {},
+                shouldGoBackWithCurrentValue = {}
+            )
+        )
+    }
 }

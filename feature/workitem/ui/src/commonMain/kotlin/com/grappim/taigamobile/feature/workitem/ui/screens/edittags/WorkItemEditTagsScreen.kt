@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -21,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigationevent.NavigationEventInfo
@@ -34,7 +33,10 @@ import com.grappim.taigamobile.strings.generated.resources.discard
 import com.grappim.taigamobile.strings.generated.resources.edit_tags
 import com.grappim.taigamobile.strings.generated.resources.keep_editing
 import com.grappim.taigamobile.uikit.generated.resources.ic_add
+import com.grappim.taigamobile.uikit.generated.resources.ic_check
 import com.grappim.taigamobile.uikit.generated.resources.ic_save
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
@@ -45,6 +47,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -158,7 +161,7 @@ private fun TagItem(tag: SelectableTagUI, onItemClick: (SelectableTagUI) -> Unit
         headlineContent = {
             Row {
                 if (tag.isSelected) {
-                    Icon(imageVector = Icons.Default.Check, contentDescription = "")
+                    Icon(painter = painterResource(RDrawable.ic_check), contentDescription = "")
                 } else {
                     Spacer(modifier = Modifier.size(24.dp))
                 }
@@ -179,4 +182,43 @@ private fun TagItem(tag: SelectableTagUI, onItemClick: (SelectableTagUI) -> Unit
             )
         }
     )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun EditTagsContentPreview() {
+    TaigaMobilePreviewTheme {
+        EditTagsContent(
+            state = EditTagsState(
+                tags = persistentListOf(
+                    SelectableTagUI(name = "backend", color = Color(0xFF3B99FC), isSelected = true),
+                    SelectableTagUI(name = "design", color = Color(0xFFE44D26), isSelected = false),
+                    SelectableTagUI(name = "urgent", color = Color(0xFFE8B800), isSelected = true),
+                    SelectableTagUI(name = "feature", color = Color(0xFF2ECC71), isSelected = false),
+                )
+            )
+        )
+    }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun TagItemSelectedPreview() {
+    TaigaMobilePreviewTheme {
+        TagItem(
+            tag = SelectableTagUI(name = "backend", color = Color(0xFF3B99FC), isSelected = true),
+            onItemClick = {}
+        )
+    }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun TagItemNotSelectedPreview() {
+    TaigaMobilePreviewTheme {
+        TagItem(
+            tag = SelectableTagUI(name = "design", color = Color(0xFFE44D26), isSelected = false),
+            onItemClick = {}
+        )
+    }
 }

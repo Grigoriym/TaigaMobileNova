@@ -19,6 +19,28 @@ interface ProjectsRepository {
     suspend fun getPermissions(): ImmutableList<TaigaPermission>
 
     suspend fun fetchAndSaveProjectInfo()
+    suspend fun getProjectDetails(): ProjectDetails
+
+    suspend fun updateProject(
+        name: String,
+        description: String,
+        isPrivate: Boolean,
+        isLookingForPeople: Boolean,
+        lookingForPeopleNote: String,
+        isContactActivated: Boolean
+    )
+
+    suspend fun getProjectModules(): ProjectModules
+    suspend fun updateModules(
+        isEpicsActivated: Boolean,
+        isBacklogActivated: Boolean,
+        isKanbanActivated: Boolean,
+        isIssuesActivated: Boolean,
+        isWikiActivated: Boolean,
+        totalMilestones: Int?,
+        totalStoryPoints: Double?
+    )
+
     suspend fun getTagsColors(): ImmutableList<Tag>
     suspend fun deleteTag(tagName: String)
     suspend fun createTag(tagName: String, color: String)

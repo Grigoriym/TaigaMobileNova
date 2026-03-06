@@ -26,9 +26,9 @@ class FakeTaigaSessionStorage(
     override suspend fun setKanbanDefaultSwimline(value: Long) {
         setKanbanDefaultSwimlineCalls.add(value)
     }
-    override suspend fun getTagPresetColors(): ImmutableList<String> = persistentListOf()
+    override suspend fun getPresetColors(): ImmutableList<String> = persistentListOf()
     var tagPresetColorsResult: ImmutableList<Color> = persistentListOf()
-    override suspend fun getTagPresetColorsAsColor(): ImmutableList<Color> = tagPresetColorsResult
+    override suspend fun getPresetColorsAsColor(): ImmutableList<Color> = tagPresetColorsResult
     override suspend fun setTagPresetColors(colors: List<String>): Unit = error("not used in this test")
     override suspend fun addTagPresetColor(hexColor: String): Unit = error("not used in this test")
     override suspend fun addTagPresetColor(color: Color): Unit = error("not used in this test")
