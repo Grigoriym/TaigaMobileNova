@@ -38,6 +38,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
+import com.grappim.taigamobile.utils.ui.hasCompletedLoad
 import com.grappim.taigamobile.utils.ui.hasError
 import com.grappim.taigamobile.utils.ui.isEmpty
 import com.grappim.taigamobile.utils.ui.isLoading
@@ -145,7 +146,7 @@ fun EpicsScreenContent(
                         }
                     )
 
-                epics.isEmpty() && epics.isNotLoading() ->
+                epics.isEmpty() && epics.isNotLoading() && epics.hasCompletedLoad() ->
                     EmptyStateWidget(
                         message = NativeText.Resource(RString.no_epics_found),
                         action = EmptyStateAction(

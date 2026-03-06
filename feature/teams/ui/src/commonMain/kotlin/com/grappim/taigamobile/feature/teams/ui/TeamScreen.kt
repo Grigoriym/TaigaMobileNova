@@ -64,7 +64,7 @@ fun TeamScreen(
         )
     }
     LaunchedEffect(state.error) {
-        if (state.error.isNotEmpty() && state.teamMembers.isNotEmpty()) {
+        if (state.error.isNotEmpty() && state.teamMembers?.isNotEmpty() == true) {
             showSnackbar(state.error)
         }
     }
@@ -89,13 +89,15 @@ fun TeamScreenContent(
         onRefresh = state.onRefresh
     ) {
         when {
+            state.teamMembers == null -> {}
+
             state.teamMembers.isEmpty() && state.error.isNotEmpty() -> {
                 ErrorStateWidget(onRetry = {
                     state.onRefresh()
                 })
             }
 
-            state.teamMembers.isEmpty() && !state.isLoading -> {
+            state.teamMembers.isEmpty() -> {
                 EmptyStateWidget(
                     modifier = Modifier.fillMaxSize(),
                     message = NativeText.Resource(RString.no_team_members_found)

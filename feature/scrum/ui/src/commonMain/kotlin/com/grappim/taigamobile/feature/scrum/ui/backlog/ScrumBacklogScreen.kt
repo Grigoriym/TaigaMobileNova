@@ -38,6 +38,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import com.grappim.taigamobile.utils.ui.hasCompletedLoad
 import com.grappim.taigamobile.utils.ui.hasError
 import com.grappim.taigamobile.utils.ui.isEmpty
 import com.grappim.taigamobile.utils.ui.isLoading
@@ -138,7 +139,7 @@ private fun BacklogContent(
                         }
                     )
 
-                stories.isEmpty() && stories.isNotLoading() ->
+                stories.isEmpty() && stories.isNotLoading() && stories.hasCompletedLoad() ->
                     EmptyStateWidget(
                         message = NativeText.Resource(RString.backlog_empty),
                         action = EmptyStateAction(
