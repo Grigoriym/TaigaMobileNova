@@ -80,7 +80,8 @@ internal class KanbanViewModelTest {
             teamMembers = persistentListOf(teamMember),
             canAddUserStory = true,
             defaultSwimlane = swimlane,
-            storiesByStatus = storiesByStatus
+            storiesByStatus = storiesByStatus,
+            canModifyUserStory = false
         )
         getKanbanDataUseCase.getDataResult = Result.success(kanbanData)
         getKanbanDataUseCase.computeStoriesByStatusResult = storiesByStatus
@@ -149,7 +150,8 @@ internal class KanbanViewModelTest {
                 teamMembers = persistentListOf(),
                 canAddUserStory = false,
                 defaultSwimlane = null,
-                storiesByStatus = persistentMapOf()
+                storiesByStatus = persistentMapOf(),
+                canModifyUserStory = false
             )
         )
         filtersRepository.filtersDataResult = FiltersData()
@@ -172,7 +174,8 @@ internal class KanbanViewModelTest {
                 teamMembers = persistentListOf(),
                 canAddUserStory = false,
                 defaultSwimlane = null,
-                storiesByStatus = persistentMapOf()
+                storiesByStatus = persistentMapOf(),
+                canModifyUserStory = false
             )
         )
         filtersRepository.filtersDataResult = FiltersData()
@@ -195,7 +198,8 @@ internal class KanbanViewModelTest {
                 teamMembers = persistentListOf(),
                 canAddUserStory = false,
                 defaultSwimlane = null,
-                storiesByStatus = persistentMapOf()
+                storiesByStatus = persistentMapOf(),
+                canModifyUserStory = false
             )
         )
         filtersRepository.filtersDataResult = FiltersData()
@@ -226,7 +230,8 @@ internal class KanbanViewModelTest {
                 teamMembers = persistentListOf(),
                 canAddUserStory = false,
                 defaultSwimlane = null,
-                storiesByStatus = storiesByStatus
+                storiesByStatus = storiesByStatus,
+                canModifyUserStory = false
             )
         )
         getKanbanDataUseCase.computeStoriesByStatusResult = storiesByStatus
@@ -259,7 +264,8 @@ internal class KanbanViewModelTest {
                 teamMembers = persistentListOf(),
                 canAddUserStory = false,
                 defaultSwimlane = null,
-                storiesByStatus = initialStoriesByStatus
+                storiesByStatus = initialStoriesByStatus,
+                canModifyUserStory = false
             )
         )
         getKanbanDataUseCase.computeStoriesByStatusResult = initialStoriesByStatus
@@ -293,7 +299,8 @@ internal class KanbanViewModelTest {
                 teamMembers = persistentListOf(),
                 canAddUserStory = false,
                 defaultSwimlane = null,
-                storiesByStatus = initialStoriesByStatus
+                storiesByStatus = initialStoriesByStatus,
+                canModifyUserStory = false
             )
         )
         getKanbanDataUseCase.computeStoriesByStatusResult = initialStoriesByStatus

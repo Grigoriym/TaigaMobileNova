@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canAddUserStory
+import com.grappim.taigamobile.feature.projects.domain.canModifyUserStory
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import com.grappim.taigamobile.feature.swimlanes.domain.SwimlanesRepository
 import com.grappim.taigamobile.feature.users.domain.TeamMember
@@ -78,6 +79,7 @@ class GetKanbanDataUseCaseImpl(
                 statuses = statuses,
                 teamMembers = members,
                 canAddUserStory = projectsRepository.getPermissions().canAddUserStory(),
+                canModifyUserStory = projectsRepository.getPermissions().canModifyUserStory(),
                 defaultSwimlane = defaultSwimlane,
                 storiesByStatus = storiesByStatus
             )

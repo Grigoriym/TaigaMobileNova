@@ -38,10 +38,12 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
+import com.grappim.taigamobile.utils.ui.hasCompletedLoad
 import com.grappim.taigamobile.utils.ui.hasError
 import com.grappim.taigamobile.utils.ui.isEmpty
 import com.grappim.taigamobile.utils.ui.isLoading
 import com.grappim.taigamobile.utils.ui.isNotEmpty
+import com.grappim.taigamobile.utils.ui.isNotLoading
 import kotlinx.collections.immutable.toImmutableList
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -144,7 +146,7 @@ fun EpicsScreenContent(
                         }
                     )
 
-                epics.isEmpty() ->
+                epics.isEmpty() && epics.isNotLoading() && epics.hasCompletedLoad() ->
                     EmptyStateWidget(
                         message = NativeText.Resource(RString.no_epics_found),
                         action = EmptyStateAction(

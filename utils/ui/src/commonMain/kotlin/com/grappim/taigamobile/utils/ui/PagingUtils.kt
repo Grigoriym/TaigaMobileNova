@@ -18,3 +18,5 @@ fun LazyPagingItems<*>.isNotEmpty(): Boolean = isEmpty().not()
 
 fun LazyPagingItems<*>.hasError(): Boolean = loadState.hasError
 fun LazyPagingItems<*>.isLoading(): Boolean = loadState.refresh is LoadState.Loading
+fun LazyPagingItems<*>.isNotLoading(): Boolean = !isLoading()
+fun LazyPagingItems<*>.hasCompletedLoad(): Boolean = loadState.append.endOfPaginationReached || itemCount > 0

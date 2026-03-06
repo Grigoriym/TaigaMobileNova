@@ -51,9 +51,11 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
+import com.grappim.taigamobile.utils.ui.hasCompletedLoad
 import com.grappim.taigamobile.utils.ui.hasError
 import com.grappim.taigamobile.utils.ui.isEmpty
 import com.grappim.taigamobile.utils.ui.isLoading
+import com.grappim.taigamobile.utils.ui.isNotLoading
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -152,7 +154,8 @@ fun ProjectSelectorScreenContent(
                         }
                     )
 
-                projects.isEmpty() -> EmptyStateWidget(message = NativeText.Resource(RString.no_projects))
+                projects.isEmpty() && projects.isNotLoading() && projects.hasCompletedLoad() ->
+                    EmptyStateWidget(message = NativeText.Resource(RString.no_projects))
 
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxSize()

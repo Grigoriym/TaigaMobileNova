@@ -20,9 +20,11 @@ import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateAction
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import com.grappim.taigamobile.utils.ui.hasCompletedLoad
 import com.grappim.taigamobile.utils.ui.hasError
 import com.grappim.taigamobile.utils.ui.isEmpty
 import com.grappim.taigamobile.utils.ui.isLoading
+import com.grappim.taigamobile.utils.ui.isNotLoading
 
 @Composable
 fun SprintsListContentWidget(
@@ -42,7 +44,7 @@ fun SprintsListContentWidget(
                     onRetry = { sprints.refresh() }
                 )
 
-            sprints.isEmpty() -> EmptyStateWidget(
+            sprints.isEmpty() && sprints.isNotLoading() && sprints.hasCompletedLoad() -> EmptyStateWidget(
                 message = NativeText.Resource(RString.no_sprints),
                 action = EmptyStateAction(
                     onClick = { sprints.refresh() }

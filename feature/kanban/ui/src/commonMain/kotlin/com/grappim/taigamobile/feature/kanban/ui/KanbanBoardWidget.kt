@@ -159,6 +159,7 @@ fun KanbanBoardWidget(
                         cellPadding = cellPadding,
                         backgroundCellColor = backgroundCellColor,
                         canAddUserStory = state.canAddUserStory,
+                        canModifyUserStory = state.canModifyUserStory,
                         onAddClick = { navigateToCreateTask(status.id, state.selectedSwimlane?.id) },
                         onStoryClick = { story -> navigateToStory(story.userStory.id, story.userStory.ref) }
                     )
@@ -232,6 +233,7 @@ private fun KanbanColumn(
     cellPadding: Dp,
     backgroundCellColor: Color,
     canAddUserStory: Boolean,
+    canModifyUserStory: Boolean,
     onAddClick: () -> Unit,
     onStoryClick: (KanbanUserStory) -> Unit
 ) {
@@ -284,7 +286,7 @@ private fun KanbanColumn(
                         itemKey = kanbanStory.userStory.id,
                         columnId = status.id,
                         index = index,
-                        enabled = !isOffline
+                        enabled = !isOffline && canModifyUserStory
                     ) { isDragging ->
                         StoryItemContent(
                             kanbanUserStory = kanbanStory,

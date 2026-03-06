@@ -81,6 +81,7 @@ class KanbanViewModel(
                         stories = result.stories,
                         teamMembers = result.teamMembers,
                         canAddUserStory = result.canAddUserStory,
+                        canModifyUserStory = result.canModifyUserStory,
                         selectedSwimlane = result.defaultSwimlane,
                         unfilteredStoriesByStatus = unfiltered,
                         storiesByStatus = filterStories(unfiltered, activeFilters),

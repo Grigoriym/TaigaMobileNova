@@ -64,7 +64,7 @@ fun TeamScreen(
         )
     }
     LaunchedEffect(state.error) {
-        if (state.error.isNotEmpty() && state.teamMembers.isNotEmpty()) {
+        if (state.error.isNotEmpty() && state.teamMembers?.isNotEmpty() == true) {
             showSnackbar(state.error)
         }
     }
@@ -89,6 +89,8 @@ fun TeamScreenContent(
         onRefresh = state.onRefresh
     ) {
         when {
+            state.teamMembers == null -> {}
+
             state.teamMembers.isEmpty() && state.error.isNotEmpty() -> {
                 ErrorStateWidget(onRetry = {
                     state.onRefresh()

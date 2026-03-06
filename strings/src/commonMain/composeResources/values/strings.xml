@@ -76,7 +76,7 @@
     <string name="dashboard">Dashboard</string>
     <string name="dashboard_short">Board</string>
     <string name="dashboard_watching_title">👀 WATCHING</string>
-    <string name="dashboard_watching_subtitle">Items I\'m monitoring</string>
+    <string name="dashboard_watching_subtitle">Items I'm monitoring</string>
     <string name="dashboard_my_work_title">📋 MY WORK</string>
     <string name="dashboard_my_work_subtitle">Items assigned to me</string>
     <string name="dashboard_recent_activity_title">🆕 RECENT ACTIVITY</string>

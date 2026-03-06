@@ -10,10 +10,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 
-/**
- * Centered circular loader for some screens
- */
 @Composable
 fun CircularLoaderWidget(modifier: Modifier = Modifier) {
     Box(
@@ -26,5 +25,13 @@ fun CircularLoaderWidget(modifier: Modifier = Modifier) {
             modifier = Modifier.size(40.dp),
             color = MaterialTheme.colorScheme.primary
         )
+    }
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun CircularLoaderWidgetPreview() {
+    TaigaMobilePreviewTheme {
+        CircularLoaderWidget()
     }
 }

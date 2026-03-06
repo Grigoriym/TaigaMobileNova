@@ -37,6 +37,7 @@ data class KanbanState(
     val onRetryFilters: () -> Unit = {},
 
     val canAddUserStory: Boolean = false,
+    val canModifyUserStory: Boolean = false,
 
     val onMoveStory:
     (storyId: Long, newStatusId: Long, swimlaneId: Long?, beforeStoryId: Long?, afterStoryId: Long?) -> Unit = {
