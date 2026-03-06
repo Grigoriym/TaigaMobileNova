@@ -2,6 +2,7 @@ package com.grappim.taigamobile.buildlogic
 
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.dependencies
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
 fun Project.configureKmpCompose() {
@@ -34,5 +35,9 @@ fun Project.configureKmpCompose() {
                 implementation(libs.findLibrary("compose.navigation.desktop").get())
             }
         }
+    }
+
+    dependencies{
+        "androidRuntimeClasspath"(libs.findLibrary("jetbrains.compose.ui.tooling").get())
     }
 }
