@@ -4,9 +4,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.toRoute
+import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.feature.projects.domain.canModifyIssue
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.utils.ui.typeMapOf
@@ -24,6 +27,7 @@ import kotlin.reflect.typeOf
 class EditSprintViewModel(
     private val sprintsRepository: SprintsRepository,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
+    private val projectsRepository: ProjectsRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -50,6 +54,30 @@ class EditSprintViewModel(
 
     init {
         getSprints()
+        getPermissions()
+    }
+
+    private fun getPermissions() {
+        viewModelScope.launch {
+            val canModify = when (route.taskIdentifier) {
+                is TaskIdentifier.WorkItem -> {
+                    val taskType = route.taskIdentifier.commonTaskType
+                    when (taskType) {
+                        CommonTaskType.Issue -> {
+                            projectsRepository.getPermissions().canModifyIssue()
+                        }
+
+                        else -> true
+                    }
+                }
+
+                else -> true
+            }
+
+            _state.update {
+                it.copy(canModify = canModify)
+            }
+        }
     }
 
     private fun onGoingBack(shouldReturnCurrentValue: Boolean) {

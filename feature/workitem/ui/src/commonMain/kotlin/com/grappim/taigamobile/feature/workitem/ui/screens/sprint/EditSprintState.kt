@@ -10,6 +10,7 @@ data class EditSprintState(
     val selectedItem: Long? = null,
     val originalSelectedItem: Long? = null,
 
+    val canModify: Boolean = true,
     val onSprintClick: (id: Long) -> Unit,
     val isDialogVisible: Boolean = false,
     val setIsDialogVisible: (Boolean) -> Unit,

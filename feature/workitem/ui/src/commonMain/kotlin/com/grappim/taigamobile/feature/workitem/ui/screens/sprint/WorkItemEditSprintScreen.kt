@@ -36,7 +36,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
-import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -45,21 +45,31 @@ fun WorkItemEditSprintScreen(goBack: () -> Unit, viewModel: EditSprintViewModel 
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(state.canModify) {
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.edit_sprint),
                 navigationIcon = NavigationIconConfig.Back(
-                    onBackClick = { state.setIsDialogVisible(!state.isDialogVisible) }
-                ),
-                actions = persistentListOf(
-                    TopBarActionTextButton(
-                        text = NativeText.Resource(RString.save),
-                        onClick = {
-                            state.shouldGoBackWithCurrentValue(true)
+                    onBackClick = {
+                        if (state.canModify) {
+                            state.setIsDialogVisible(!state.isDialogVisible)
+                        } else {
+                            state.shouldGoBackWithCurrentValue(false)
                         }
-                    )
-                )
+                    }
+                ),
+                actions = buildList {
+                    if (state.canModify) {
+                        add(
+                            TopBarActionTextButton(
+                                text = NativeText.Resource(RString.save),
+                                onClick = {
+                                    state.shouldGoBackWithCurrentValue(true)
+                                }
+                            )
+                        )
+                    }
+                }.toImmutableList()
             )
         )
     }
@@ -102,6 +112,7 @@ private fun EditSprintContent(state: EditSprintState) {
             ) { index, sprint ->
                 SprintItem(
                     sprint = sprint,
+                    canModify = state.canModify,
                     isSelected = state.isItemSelected(sprint.id),
                     onItemClick = {
                         state.onSprintClick(sprint.id)
@@ -117,11 +128,17 @@ private fun EditSprintContent(state: EditSprintState) {
 }
 
 @Composable
-private fun SprintItem(sprint: Sprint, isSelected: Boolean, onItemClick: (Sprint) -> Unit) {
+private fun SprintItem(sprint: Sprint, isSelected: Boolean, canModify: Boolean, onItemClick: (Sprint) -> Unit) {
     ListItem(
-        modifier = Modifier.clickable {
-            onItemClick(sprint)
-        },
+        modifier = Modifier.then(
+            if (canModify) {
+                Modifier.clickable {
+                    onItemClick(sprint)
+                }
+            } else {
+                Modifier
+            }
+        ),
         colors = ListItemDefaults.colors(
             containerColor = MaterialTheme.colorScheme.background
         ),

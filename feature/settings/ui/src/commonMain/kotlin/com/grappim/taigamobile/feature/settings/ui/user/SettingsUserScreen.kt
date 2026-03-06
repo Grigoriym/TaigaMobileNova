@@ -26,6 +26,7 @@ import com.grappim.taigamobile.uikit.generated.resources.default_avatar
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
+import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
@@ -54,7 +55,10 @@ fun SettingsUserScreen(viewModel: SettingsUserScreenViewModel = koinViewModel())
 
 @Composable
 private fun SettingsUserScreenContent(state: SettingsUserScreenState) {
-    Surface {
+    Surface(modifier = Modifier.fillMaxSize()) {
+        if (state.isLoading) {
+            CircularLoaderWidget(modifier = Modifier.size(40.dp))
+        }
         if (state.user != null) {
             Column(
                 modifier = Modifier.fillMaxSize(),
