@@ -33,7 +33,8 @@ import com.grappim.taigamobile.strings.generated.resources.are_you_sure_discardi
 import com.grappim.taigamobile.strings.generated.resources.discard
 import com.grappim.taigamobile.strings.generated.resources.edit_tags
 import com.grappim.taigamobile.strings.generated.resources.keep_editing
-import com.grappim.taigamobile.uikit.generated.resources.ic_options
+import com.grappim.taigamobile.uikit.generated.resources.ic_add
+import com.grappim.taigamobile.uikit.generated.resources.ic_save
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
@@ -66,11 +67,14 @@ fun WorkItemEditTagsScreen(
                 ),
                 actions = persistentListOf(
                     TopBarActionIconButton(
-                        drawable = RDrawable.ic_options,
-                        contentDescription = "Issue options",
-                        onClick = {
-                            state.setDropdownMenuExpanded(true)
-                        }
+                        drawable = RDrawable.ic_save,
+                        contentDescription = "Save tags",
+                        onClick = state.onSaveTags
+                    ),
+                    TopBarActionIconButton(
+                        drawable = RDrawable.ic_add,
+                        contentDescription = "Add tag",
+                        onClick = state.onAddTagClick
                     )
                 )
             )
@@ -107,8 +111,6 @@ fun WorkItemEditTagsScreen(
     ObserveAsEvents(viewModel.onBackAction, isImmediate = false) {
         goBack()
     }
-
-    EditTagsDropdownMenu(state)
 
     TagEditDialog(
         state = tagEditDialogState,
