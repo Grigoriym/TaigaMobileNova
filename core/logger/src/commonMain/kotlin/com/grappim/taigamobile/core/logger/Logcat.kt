@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.core.logger
 
-inline fun Any.logcat(
+fun Any.logcat(
     priority: LogPriority = LogPriority.DEBUG,
     tag: String? = null,
     throwable: Throwable? = null,
-    noinline message: () -> String
+    message: () -> String
 ) {
     TaigaLogger.logger.log(
         priority = priority,
@@ -14,11 +14,11 @@ inline fun Any.logcat(
     )
 }
 
-inline fun logcat(
+fun logcat(
     priority: LogPriority = LogPriority.DEBUG,
     tag: String? = null,
     throwable: Throwable? = null,
-    noinline message: () -> String
+    message: () -> String
 ) {
     TaigaLogger.logger.log(
         priority = priority,

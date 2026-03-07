@@ -87,8 +87,8 @@ compose.desktop {
 kotlin {
     android {
         namespace = "${libs.versions.app.pkg.get()}.shared"
-        compileSdk = libs.versions.compileSdk.get().toString().toInt()
-        minSdk = libs.versions.minSdk.get().toString().toInt()
+        compileSdk = libs.versions.compileSdk.get().toInt()
+        minSdk = libs.versions.minSdk.get().toInt()
     }
 
     listOf(

@@ -185,43 +185,7 @@ private fun ProjectValueItemRow(item: ProjectValueItem, type: ProjectValueType, 
             null
         },
         headlineContent = { Text(item.name) },
-        supportingContent = {
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                if (item.byDefault) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(stringResource(RString.project_values_by_default)) },
-                        colors = AssistChipDefaults.assistChipColors(
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer
-                        )
-                    )
-                }
-                if (type.hasClosed && item.isClosed) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(stringResource(RString.project_values_is_closed)) }
-                    )
-                }
-                if (type.hasArchived && item.isArchived) {
-                    AssistChip(
-                        onClick = {},
-                        label = { Text(stringResource(RString.project_values_is_archived)) }
-                    )
-                }
-                if (type.hasValue && item.value != null) {
-                    Text(
-                        text = item.value.toString(),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-                if (type.hasDaysToDue && item.daysToDue != null) {
-                    Text(
-                        text = item.daysToDue.toString(),
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
-            }
-        },
+        supportingContent = { ProjectValueItemSupportingContent(item = item, type = type) },
         trailingContent = {
             Row {
                 IconButton(onClick = { state.onEditClick(item) }) {
@@ -246,18 +210,79 @@ private fun ProjectValueItemRow(item: ProjectValueItem, type: ProjectValueType, 
 }
 
 @Composable
+private fun ProjectValueItemSupportingContent(item: ProjectValueItem, type: ProjectValueType) {
+    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+        ProjectValueItemStatusChips(item = item, type = type)
+        ProjectValueItemExtraValues(item = item, type = type)
+    }
+}
+
+@Composable
+private fun ProjectValueItemStatusChips(item: ProjectValueItem, type: ProjectValueType) {
+    if (item.byDefault) {
+        AssistChip(
+            onClick = {},
+            label = { Text(stringResource(RString.project_values_by_default)) },
+            colors = AssistChipDefaults.assistChipColors(
+                containerColor = MaterialTheme.colorScheme.secondaryContainer
+            )
+        )
+    }
+    if (type.hasClosed && item.isClosed) {
+        AssistChip(
+            onClick = {},
+            label = { Text(stringResource(RString.project_values_is_closed)) }
+        )
+    }
+    if (type.hasArchived && item.isArchived) {
+        AssistChip(
+            onClick = {},
+            label = { Text(stringResource(RString.project_values_is_archived)) }
+        )
+    }
+}
+
+@Composable
+private fun ProjectValueItemExtraValues(item: ProjectValueItem, type: ProjectValueType) {
+    if (type.hasValue && item.value != null) {
+        Text(
+            text = item.value.toString(),
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+    if (type.hasDaysToDue && item.daysToDue != null) {
+        Text(
+            text = item.daysToDue.toString(),
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
+}
+
+private data class EditFormState(
+    val name: String,
+    val color: Color,
+    val isClosed: Boolean,
+    val isArchived: Boolean,
+    val value: String,
+    val daysToDue: String
+)
+
+private fun initialEditState(item: ProjectValueItem?, defaultColor: String): EditFormState = EditFormState(
+    name = item?.name ?: "",
+    color = (item?.color ?: defaultColor).toColor(),
+    isClosed = item?.isClosed ?: false,
+    isArchived = item?.isArchived ?: false,
+    value = item?.value?.toString() ?: "",
+    daysToDue = item?.daysToDue?.toString() ?: ""
+)
+
+@Composable
 private fun EditProjectValueDialog(state: ProjectValuesState) {
     val type = state.type
     val item = state.editingItem
-
-    var name by remember(item) { mutableStateOf(item?.name ?: "") }
-    var color by remember(item) {
-        mutableStateOf((item?.color ?: state.presetColors.firstOrNull() ?: "#A9AABC").toColor())
+    var form by remember(item) {
+        mutableStateOf(initialEditState(item, state.presetColors.firstOrNull() ?: "#A9AABC"))
     }
-    var isClosed by remember(item) { mutableStateOf(item?.isClosed ?: false) }
-    var isArchived by remember(item) { mutableStateOf(item?.isArchived ?: false) }
-    var value by remember(item) { mutableStateOf(item?.value?.toString() ?: "") }
-    var daysToDue by remember(item) { mutableStateOf(item?.daysToDue?.toString() ?: "") }
 
     Dialog(onDismissRequest = state.onDismissEditDialog) {
         Card(
@@ -279,8 +304,8 @@ private fun EditProjectValueDialog(state: ProjectValuesState) {
                 TaigaHeightSpacer(16.dp)
 
                 OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
+                    value = form.name,
+                    onValueChange = { form = form.copy(name = it) },
                     label = { Text(stringResource(RString.project_values_name_hint)) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true
@@ -289,9 +314,9 @@ private fun EditProjectValueDialog(state: ProjectValuesState) {
                 if (type.hasColor) {
                     TaigaHeightSpacer(12.dp)
                     ColorPickerSection(
-                        selectedColor = color,
+                        selectedColor = form.color,
                         presetColors = state.presetColors,
-                        onColorSelect = { color = it }
+                        onColorSelect = { form = form.copy(color = it) }
                     )
                 }
 
@@ -305,7 +330,7 @@ private fun EditProjectValueDialog(state: ProjectValuesState) {
                             text = stringResource(RString.project_values_is_closed),
                             modifier = Modifier.weight(1f)
                         )
-                        Switch(checked = isClosed, onCheckedChange = { isClosed = it })
+                        Switch(checked = form.isClosed, onCheckedChange = { form = form.copy(isClosed = it) })
                     }
                 }
 
@@ -319,15 +344,15 @@ private fun EditProjectValueDialog(state: ProjectValuesState) {
                             text = stringResource(RString.project_values_is_archived),
                             modifier = Modifier.weight(1f)
                         )
-                        Switch(checked = isArchived, onCheckedChange = { isArchived = it })
+                        Switch(checked = form.isArchived, onCheckedChange = { form = form.copy(isArchived = it) })
                     }
                 }
 
                 if (type.hasValue) {
                     TaigaHeightSpacer(12.dp)
                     OutlinedTextField(
-                        value = value,
-                        onValueChange = { value = it },
+                        value = form.value,
+                        onValueChange = { form = form.copy(value = it) },
                         label = { Text(stringResource(RString.project_values_value_hint)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -338,8 +363,8 @@ private fun EditProjectValueDialog(state: ProjectValuesState) {
                 if (type.hasDaysToDue) {
                     TaigaHeightSpacer(12.dp)
                     OutlinedTextField(
-                        value = daysToDue,
-                        onValueChange = { daysToDue = it },
+                        value = form.daysToDue,
+                        onValueChange = { form = form.copy(daysToDue = it) },
                         label = { Text(stringResource(RString.project_values_days_to_due_hint)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -359,9 +384,16 @@ private fun EditProjectValueDialog(state: ProjectValuesState) {
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         onClick = {
-                            state.onSaveItem(name, color.toHex(), isClosed, isArchived, value, daysToDue)
+                            state.onSaveItem(
+                                form.name,
+                                form.color.toHex(),
+                                form.isClosed,
+                                form.isArchived,
+                                form.value,
+                                form.daysToDue
+                            )
                         },
-                        enabled = name.isNotBlank()
+                        enabled = form.name.isNotBlank()
                     ) {
                         Text(stringResource(RString.save))
                     }

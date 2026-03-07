@@ -21,7 +21,7 @@ android {
         applicationId = libs.versions.app.pkg.get()
         testApplicationId = "${libs.versions.app.pkg.get()}.test"
 
-        versionCode = libs.versions.version.code.get().toString().toInt()
+        versionCode = libs.versions.version.code.get().toInt()
         versionName = libs.versions.version.name.get()
     }
 }
