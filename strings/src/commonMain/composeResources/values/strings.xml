@@ -1,0 +1,397 @@
+<resources>
+    <!-- ==================== App ==================== -->
+    <string name="app_name" translatable="false">Taiga Mobile</string>
+    <string name="app_name_debug" translatable="false">Dbg Taiga Mobile</string>
+    <string name="global_taiga_host" translatable="false">https://api.taiga.io</string>
+
+    <!-- ==================== General / Common ==================== -->
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="close">Close</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="loading">Loading…</string>
+    <string name="retry">Retry</string>
+    <string name="more">More</string>
+    <string name="empty">Empty</string>
+    <string name="show_more">Show more</string>
+    <string name="show_less">Show less</string>
+    <string name="copy_link">Copy link</string>
+    <string name="copy_link_successfully">The link has been copied!</string>
+    <string name="power">power</string>
+    <string name="refresh">Refresh</string>
+
+    <string name="discard">Discard</string>
+    <string name="keep_editing">Keep Editing</string>
+    <string name="are_you_sure_discarding_changes">Are you sure you want to discard changes?</string>
+    <string name="are_you_sure_discarding_tags_changes">Are you sure you want to discard changes? If you discard, then the work item tags will stay the same. </string>
+
+    <string name="title_is_empty">Title is empty</string>
+    <string name="nothing_to_see">Nothing to see here</string>
+    <string name="no_items_yet">No items yet</string>
+    <string name="no_name">No name</string>
+
+    <!-- ==================== Offline ==================== -->
+    <string name="offline_banner_message">You are offline. Showing cached data.</string>
+
+    <!-- ==================== Errors ==================== -->
+    <string name="common_error_message">An error has occurred. Check your connection</string>
+    <string name="permission_error">Error, you may not have sufficient permissions</string>
+    <string name="filters_loading_error">Something went wrong loading filters</string>
+    <string name="error_something_has_gone_wrong">Something went wrong</string>
+    <string name="error_no_internet_connection">No Internet connection</string>
+    <string name="error_host_not_found">Host not found</string>
+    <string name="request_failed">Request ended with error</string>
+    <string name="connection_failed">Connection error</string>
+    <string name="timeout_exceeded">Waiting limit exceeded</string>
+    <string name="auth_error_refresh_token_not_passed">For security reasons, your session was closed</string>
+    <string name="error_permission_denied">You do not have permission to perform this action</string>
+    <string name="error_not_found">The requested item was not found</string>
+    <string name="error_blocked">This item is blocked and cannot be modified</string>
+    <string name="error_http">Server returned an error</string>
+    <string name="error_validation">Validation error</string>
+    <string name="error_method_not_allowed">Method not allowed</string>
+    <string name="error_not_acceptable">Request not acceptable</string>
+    <string name="error_unsupported_media_type">Unsupported media type</string>
+    <string name="error_throttled">Too many requests. Please wait and try again.</string>
+    <string name="error_internal_server">Internal server error. Please try again later.</string>
+    <string name="error_loading_data">Failed to load data</string>
+    <string name="error_opening_link">No applications available to open the link</string>
+    <string name="error_retrieving_due_date">Cannot get the Due Date</string>
+
+    <!-- ==================== Login ==================== -->
+    <string name="login_taiga_server">Taiga server url</string>
+    <string name="login_username">Login</string>
+    <string name="login_password">Password</string>
+    <string name="login_continue">Continue</string>
+    <string name="login_ldap">Continue with LDAP</string>
+    <string name="login_error_message">Error during login. Check credentials or connection</string>
+    <string name="login_alert_title">Unencrypted connection</string>
+    <string name="login_alert_text">You are going to use an unencrypted connection. Are you sure?</string>
+
+    <!-- ==================== Dashboard ==================== -->
+    <string name="dashboard">Dashboard</string>
+    <string name="dashboard_short">Board</string>
+    <string name="dashboard_watching_title">👀 WATCHING</string>
+    <string name="dashboard_watching_subtitle">Items I'm monitoring</string>
+    <string name="dashboard_my_work_title">📋 MY WORK</string>
+    <string name="dashboard_my_work_subtitle">Items assigned to me</string>
+    <string name="dashboard_recent_activity_title">🆕 RECENT ACTIVITY</string>
+    <string name="dashboard_recent_activity_subtitle">Modified in the last 3 days</string>
+    <string name="dashboard_completed_title">✅ COMPLETED</string>
+    <string name="dashboard_completed_subtitle">Finished in the last 3 days</string>
+    <string name="dashboard_info_banner_title">Limited Dashboard View</string>
+    <string name="dashboard_info_banner_message">This dashboard shows only a limited number of items per section for optimal performance.</string>
+    <string name="dashboard_loading">Loading…</string>
+    <string name="dashboard_error_loading">Error loading data</string>
+    <string name="dashboard_updated_today">📝 Updated today</string>
+
+    <!-- ==================== Projects ==================== -->
+    <string name="project_selector">Select Project</string>
+    <string name="choose_project_title">Choose project</string>
+    <string name="search_projects_hint">Search projects</string>
+    <string name="project_name_template" translatable="false">%1$s (%2$s)</string>
+    <string name="project_member">Member</string>
+    <string name="project_admin">Admin</string>
+    <string name="project_owner">Owner</string>
+    <string name="projects">Projects</string>
+    <string name="working_on">Working on</string>
+    <string name="watching">Watching</string>
+    <string name="my_projects">My projects</string>
+    <string name="error_loading_projects">Failed to load projects</string>
+    <string name="no_projects">No projects found</string>
+
+    <!-- ==================== Scrum / Sprint / Backlog ==================== -->
+    <string name="scrum">Scrum</string>
+    <string name="backlog">Backlog</string>
+    <string name="backlog_empty">Backlog is empty</string>
+    <string name="taskboard">Board</string>
+    <string name="sprints_title">Sprints</string>
+    <string name="open_sprints">Open Sprints</string>
+    <string name="closed_sprints">Closed Sprints</string>
+    <string name="sprint_dates_template" translatable="false">%1$s - %2$s</string>
+    <string name="stories_count_template">Stories: %1$d</string>
+    <string name="closed">Closed</string>
+    <string name="closed_sprint_name_template">%1$s (Closed)</string>
+    <string name="sprint_name_hint">Sprint name</string>
+    <string name="show_closed_sprints">Show closed sprints</string>
+    <string name="hide_closed_sprints">Hide closed sprints</string>
+    <string name="closed_user_story">Closed US</string>
+    <string name="tasks_without_story">Storyless tasks</string>
+    <string name="sprint_issues">Sprint issues</string>
+    <string name="sprint">Sprint</string>
+    <string name="no_sprint">No sprint</string>
+    <string name="choose_sprint">Choose sprint</string>
+    <string name="move_to_backlog">Move to backlog</string>
+    <string name="no_sprints">No sprints found</string>
+    <string name="sprint_name_empty">Sprint name shouldn\'t be empty</string>
+    <string name="sprint_start_date_empty">Sprint start date is not set</string>
+    <string name="sprint_end_date_empty">Sprint end date is not set</string>
+    <string name="error_loading_user_stories">Failed to load user stories</string>
+    <string name="error_loading_closed_stories">Failed to load closed user stories</string>
+    <string name="error_loading_open_user_stories">Failed to load open user stories</string>
+    <string name="delete_sprint_title">Delete sprint</string>
+    <string name="delete_sprint_text">Are you sure you want to delete this sprint?</string>
+
+    <!-- ==================== Epics ==================== -->
+    <string name="epics">Epics</string>
+    <string name="epics_number">%1$d Epics</string>
+    <string name="epic">Epic</string>
+    <string name="epic_slug">Epic #%1$d</string>
+    <string name="edit_epic">Edit Epic</string>
+    <string name="create_epic">New epic</string>
+    <string name="link_to_epic">Link to epic</string>
+    <string name="search_epics">Search epics</string>
+    <string name="no_epics_found">No epics found</string>
+    <string name="epic_title">Epic</string>
+    <string name="not_in_an_epic">Not in an epic</string>
+    <string name="epic_color">Epic Color:</string>
+    <string name="unlink_epic_title">Unlink epic</string>
+    <string name="unlink_epic_text">Are you sure you want to unlink this epic?</string>
+
+    <!-- ==================== Issues ==================== -->
+    <string name="issues">Issues</string>
+    <string name="issues_number">%1$d Issues</string>
+    <string name="issue">Issue</string>
+    <string name="issue_slug">Issue #%1$d</string>
+    <string name="create_issue">New issue</string>
+    <string name="issue_was_promoted_to">This issue has been promoted to</string>
+    <string name="error_loading_issues">Failed to load issues</string>
+    <string name="no_issues_found">No issues found</string>
+
+    <!-- ==================== User Stories ==================== -->
+    <string name="userstory">User story</string>
+    <string name="userstory_slug">User story #%1$d</string>
+    <string name="userstories">User stories</string>
+    <string name="userstories_number">%1$d User stories</string>
+    <string name="create_userstory">New user story</string>
+    <string name="user_story_belongs_to">This user story belongs to</string>
+    <string name="user_story_was_task">This user story was originally a task.</string>
+
+    <!-- ==================== Tasks ==================== -->
+    <string name="task">Task</string>
+    <string name="task_slug">Task #%1$d</string>
+    <string name="tasks">Tasks</string>
+    <string name="tasks_number">%1$d Tasks</string>
+    <string name="create_task">New task</string>
+    <string name="tasks_search_hint">Search by ref or subject</string>
+    <string name="promote_to_user_story">Promote</string>
+    <string name="delete_task_title">Delete task</string>
+    <string name="delete_task_text">Are you sure you want to delete this task?</string>
+    <string name="promote_title">Promote</string>
+    <string name="promote_text">Are you sure you want to promote this task to a user story?</string>
+
+    <!-- ==================== Work Item Details (common) ==================== -->
+    <string name="title_with_ref_pattern" translatable="false">#%1$d %2$s</string>
+    <string name="status_with_number_template" translatable="false">%1$s - %2$d</string>
+    <string name="unassigned">Unassigned</string>
+    <string name="assignee_pattern">Assignee: %1$s</string>
+    <string name="created_by">Created by</string>
+    <string name="last_modification">Last modification</string>
+    <string name="assigned_to">Assigned to</string>
+    <string name="watchers">Watchers</string>
+
+    <!-- Comments -->
+    <string name="comments_template">%1$d Comments</string>
+    <string name="comment_hint">Comment</string>
+    <string name="delete_comment_title">Delete comment</string>
+    <string name="delete_comment_text">Are you sure you want to delete this comment?</string>
+
+    <!-- Assignees / Watchers -->
+    <string name="add_user">Add user</string>
+    <string name="add_assignee">Add assignee</string>
+    <string name="add_assignees">Add assignees</string>
+    <string name="assign_to_me">Assign to me</string>
+    <string name="unassign">Unassign</string>
+    <string name="add_watcher">Add watcher</string>
+    <string name="watch">Watch</string>
+    <string name="unwatch">Unwatch</string>
+    <string name="remove_user_title">Remove user</string>
+    <string name="remove_user_text">Are you sure you want to remove this user?</string>
+
+    <!-- Blocking -->
+    <string name="block">Block</string>
+    <string name="unblock">Unblock</string>
+    <string name="blocked">Blocked</string>
+    <string name="block_reason">Block reason</string>
+
+    <!-- Attachments -->
+    <string name="attachments_template">%1$d Attachments</string>
+    <string name="add_attachment">Add attachment</string>
+    <string name="remove_attachment_title">Remove attachment</string>
+    <string name="remove_attachment_text">Are you sure you want to remove this attachment?</string>
+
+    <!-- Custom fields -->
+    <string name="custom_fields">Custom fields</string>
+    <string name="custom_fields_with_number">%1$d Custom fields</string>
+    <string name="custom_field_text">Text</string>
+    <string name="custom_field_multiline">Multiline text</string>
+    <string name="custom_field_rich_text">Rich text</string>
+    <string name="custom_field_number">Number</string>
+    <string name="custom_field_url">Url</string>
+
+    <!-- Editing fields -->
+    <string name="edit_description">Edit Description</string>
+    <string name="edit_tags">Edit Tags</string>
+    <string name="edit_team_members">Edit Team Members</string>
+    <string name="edit_sprint">Edit Sprint</string>
+    <string name="title_hint">Title</string>
+    <string name="description_hint">Description</string>
+    <string name="content_hint">Content</string>
+    <string name="add_description">Add a description</string>
+    <string name="no_description_yet">No description yet</string>
+
+    <!-- Dates -->
+    <string name="date_hint">Date</string>
+    <string name="no_due_date">No due date</string>
+    <string name="due_date">Due Date</string>
+    <string name="select_date">Select date</string>
+
+    <!-- Colors / Tags / Swimlanes -->
+    <string name="select_color">Select color</string>
+    <string name="tag">Tag</string>
+    <string name="swimlane_title">Swimlane:</string>
+    <string name="unclassifed">Unclassified</string>
+    <string name="choose_swimlane">Choose swimlane</string>
+
+    <!-- Selectors -->
+    <string name="choose_status">Choose status</string>
+
+    <!-- ==================== Filters ==================== -->
+    <string name="filters">Filters</string>
+    <string name="show_filters">Show filters</string>
+    <string name="type_title">Type</string>
+    <string name="severity_title">Severity</string>
+    <string name="priority_title">Priority</string>
+    <string name="status_title">Status</string>
+    <string name="tags_title">Tags</string>
+    <string name="assignees_title">Assignees</string>
+    <string name="role_title">Role</string>
+    <string name="created_by_title">Created by</string>
+    <string name="choose_type">Choose type</string>
+    <string name="choose_severity">Choose severity</string>
+    <string name="choose_priority">Choose priority</string>
+    <string name="search_members">Search members</string>
+
+    <!-- ==================== Kanban ==================== -->
+    <string name="kanban">Kanban</string>
+
+    <!-- ==================== Wiki ==================== -->
+    <string name="wiki">Wiki</string>
+    <string name="wiki_pages">All Pages</string>
+    <string name="wiki_bookmarks">Bookmarks</string>
+    <string name="bookmarks">Bookmarks</string>
+    <string name="all_wiki_pages">All wiki pages</string>
+    <string name="empty_wiki_dialog_title">There are no wiki pages…</string>
+    <string name="empty_wiki_dialog_subtitle">Let\'s add a new one?</string>
+    <string name="create_new_page">Create new page</string>
+    <string name="create_new_bookmark">Create new bookmark</string>
+    <string name="new_link_name">Link name</string>
+    <string name="list_of_bookmarks">List of bookmarks</string>
+    <string name="pages">Pages</string>
+    <string name="pages_without_link">Pages without link</string>
+    <string name="slug_hint">Slug</string>
+    <string name="slug_helper_text">URL-friendly name (e.g., getting-started-guide)</string>
+    <string name="delete_wiki_title">Delete page</string>
+    <string name="delete_wiki_text">Are you sure you want to delete this page?</string>
+    <string name="delete_bookmark_title">Delete Bookmark</string>
+    <string name="delete_bookmark_text">Are you sure you want to delete this bookmark?</string>
+
+    <!-- ==================== Tags ==================== -->
+    <string name="tag_name">Tag Name</string>
+    <string name="add_tag">Add tag</string>
+    <string name="edit_tag">Edit tag</string>
+    <string name="custom_color">Custom color</string>
+    <string name="tag_color_in_use">(in use)</string>
+    <string name="presets">Presets</string>
+    <string name="selected_color">Selected color:</string>
+    <string name="merge_tags_title">Merge Tags</string>
+    <string name="merge_tags_instruction">Select main tag (radio), then tags to merge (checkbox)</string>
+    <string name="merge_tags_button">Merge %1$d tags</string>
+    <string name="merge_main_tag_label">MAIN</string>
+
+    <!-- ==================== Team / Profile ==================== -->
+    <string name="profile">Profile</string>
+    <string name="contacts">Contacts</string>
+    <string name="team">Team</string>
+    <string name="no_team_members_found">No team members found</string>
+
+    <!-- ==================== Settings ==================== -->
+    <string name="settings">Settings</string>
+    <string name="settings_project_details">Project Details</string>
+    <string name="project_name">Project Name</string>
+    <string name="project_description">Description</string>
+    <string name="project_is_private">Private Project</string>
+    <string name="project_looking_for_people">Looking for People</string>
+    <string name="project_looking_for_people_note">Recruitment Note</string>
+    <string name="project_contact_activated">Contact Enabled</string>
+    <string name="receive_feedback_from_users">Receive feedback from Taiga users?</string>
+    <string name="settings_about">About</string>
+    <string name="settings_interface">Interface</string>
+    <string name="settings_user">User</string>
+    <string name="settings_attributes">Attributes</string>
+    <string name="settings_modules">Modules</string>
+    <string name="module_epics_activated">Epics</string>
+    <string name="module_epics_details">Group related user stories under high-level goals</string>
+    <string name="module_backlog_activated">Backlog/Scrum</string>
+    <string name="module_backlog_details">Plan and prioritize user stories across sprints.</string>
+    <string name="module_kanban_activated">Kanban</string>
+    <string name="module_kanban_details">Manage work items on a continuous flow board.</string>
+    <string name="module_issues_activated">Issues</string>
+    <string name="module_issues_details">Track bugs, questions, and enhancements for your project.</string>
+    <string name="module_wiki_activated">Wiki</string>
+    <string name="module_wiki_details">Collaborative documentation for your project.</string>
+    <string name="module_total_milestones">Total Milestones</string>
+    <string name="module_total_story_points">Total Story Points</string>
+    <string name="module_videoconference">Video Conferencing</string>
+    <string name="module_videoconference_extra_data">Meeting Room / URL</string>
+    <string name="videoconference_none">None</string>
+    <string name="videoconference_whereby">Whereby</string>
+    <string name="videoconference_jitsi">Jitsi</string>
+    <string name="videoconference_talky">Talky</string>
+    <string name="videoconference_custom">Custom</string>
+    <string name="username_template" translatable="false">@%1$s</string>
+    <string name="logout_title">Log out</string>
+    <string name="logout_text">Are you sure you want to log out?</string>
+    <string name="appearance">Appearance</string>
+    <string name="is_new_ui_used">Is New UI used?</string>
+    <string name="theme_title">Theme</string>
+    <string name="theme_system">System</string>
+    <string name="theme_light">Light</string>
+    <string name="theme_dark">Dark</string>
+    <string name="help">Help</string>
+    <string name="submit_report">Submit report</string>
+    <string name="github_repo_link">Github Link</string>
+    <string name="privacy_policy_title">Privacy Policy</string>
+    <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
+    <string name="source_code">Source code</string>
+    <string name="privacy_policy_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY.md</string>
+
+    <!-- ==================== Settings - Project Values ==================== -->
+    <string name="settings_project_values">Project Values</string>
+    <string name="project_values_epic_statuses">Epic Statuses</string>
+    <string name="project_values_us_statuses">User Story Statuses</string>
+    <string name="project_values_task_statuses">Task Statuses</string>
+    <string name="project_values_issue_statuses">Issue Statuses</string>
+    <string name="project_values_issue_types">Issue Types</string>
+    <string name="project_values_priorities">Priorities</string>
+    <string name="project_values_severities">Severities</string>
+    <string name="project_values_points">Points</string>
+    <string name="project_values_us_due_dates">User Story Due Dates</string>
+    <string name="project_values_task_due_dates">Task Due Dates</string>
+    <string name="project_values_issue_due_dates">Issue Due Dates</string>
+    <string name="project_values_name_hint">Name</string>
+    <string name="project_values_value_hint">Value</string>
+    <string name="project_values_days_to_due_hint">Days to due (negative = past due)</string>
+    <string name="project_values_is_closed">Is Closed</string>
+    <string name="project_values_is_archived">Is Archived</string>
+    <string name="project_values_delete_text">Select a replacement value for existing items before deleting.</string>
+    <string name="project_values_move_to">Move items to</string>
+    <string name="project_values_add_title">Add Value</string>
+    <string name="project_values_edit_title">Edit Value</string>
+    <string name="project_values_color">Color</string>
+    <string name="project_values_by_default">Default</string>
+</resources>

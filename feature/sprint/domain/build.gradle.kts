@@ -1,12 +1,16 @@
 plugins {
-    alias(libs.plugins.taigamobile.kotlin.library)
+    alias(libs.plugins.taigamobile.kmp.library)
 }
 
-dependencies {
-    implementation(projects.core.domain)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.core.domain)
 
-    implementation(projects.feature.workitem.domain)
-    implementation(projects.feature.filters.domain)
+            implementation(projects.feature.workitem.domain)
+            implementation(projects.feature.filters.domain)
 
-    implementation(libs.androidx.paging.common)
+            implementation(libs.androidx.paging.common)
+        }
+    }
 }

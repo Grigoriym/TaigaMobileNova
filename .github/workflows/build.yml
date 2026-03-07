@@ -21,6 +21,11 @@ jobs:
         TAIGA_STORE_PASS_R: ${{ secrets.TAIGA_STORE_PASS_R }}
         TAIGA_ALIAS_R: ${{ secrets.TAIGA_ALIAS_R }}
         ENCODED_STRING_R: ${{ secrets.TAIGA_KEYSTORE_R }}
+        TAIGA_PATH_D: ${{ secrets.TAIGA_PATH_D }}
+        TAIGA_KEY_PASS_D: ${{ secrets.TAIGA_KEY_PASS_D }}
+        TAIGA_STORE_PASS_D: ${{ secrets.TAIGA_STORE_PASS_D }}
+        TAIGA_ALIAS_D: ${{ secrets.TAIGA_ALIAS_D }}
+        ENCODED_STRING_D: ${{ secrets.TAIGA_KEYSTORE_D }}
 
     steps:
       - name: Check out the repo
@@ -29,8 +34,11 @@ jobs:
       - name: Setup Android Environment
         uses: ./.github/actions/android-setup-composite-action
 
+      - name: Restore taigamobilenova_debug.jks
+        run: echo $ENCODED_STRING_D | base64 -d > ./taigamobilenova_debug.jks
+
       - name: Assemble gradle fdroid project
-        run: ./gradlew assembleFdroidDebug
+        run: ./gradlew :androidApp:assembleFdroidDebug
 
       - name: Assemble gradle gplay project
-        run: ./gradlew assembleGplayDebug
+        run: ./gradlew :androidApp:assembleGplayDebug -PgplayBuild

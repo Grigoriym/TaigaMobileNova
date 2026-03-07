@@ -81,7 +81,5 @@ internal fun Project.configureKotlinAndroid(
 
         add("testImplementation", kotlin("test"))
         add("testImplementation", project(":testing"))
-        add("androidTestImplementation", kotlin("test"))
-        add("androidTestImplementation", project(":testing"))
     }
 }

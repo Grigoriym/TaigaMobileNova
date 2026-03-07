@@ -1,11 +1,16 @@
 plugins {
-    alias(libs.plugins.taigamobile.kotlin.library)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
-    application
+    alias(libs.plugins.kotlin.serialization)
+    kotlin("jvm")
 }
 
-application {
-    mainClass.set("com.grappim.taigamobile.tools.seed.MainKt")
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+}
+kotlin {
+    compilerOptions {
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
+    }
 }
 
 dependencies {
@@ -15,5 +20,8 @@ dependencies {
     implementation(libs.ktor.serialization.json)
     implementation(libs.ktor.logging)
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.collections)
+    implementation(libs.kotlinx.date.time)
     implementation(libs.slf4j.simple)
 }

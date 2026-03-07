@@ -1,12 +1,12 @@
 plugins {
-    alias(libs.plugins.taigamobile.android.library)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.feature.userstories.dto"
-}
-
-dependencies {
-    implementation(projects.feature.epics.dto)
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(projects.feature.epics.dto)
+        }
+    }
 }

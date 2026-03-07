@@ -1,6 +1,7 @@
+
 import com.android.build.api.dsl.ApplicationExtension
 import com.grappim.taigamobile.buildlogic.AppBuildTypes
-import com.grappim.taigamobile.buildlogic.configureAndroidCompose
+import com.grappim.taigamobile.buildlogic.configureAndroidOutputNaming
 import com.grappim.taigamobile.buildlogic.configureFlavors
 import com.grappim.taigamobile.buildlogic.configureKotlinAndroid
 import com.grappim.taigamobile.buildlogic.libs
@@ -8,21 +9,19 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.apply
 import org.gradle.kotlin.dsl.configure
-import org.gradle.kotlin.dsl.dependencies
-import org.gradle.kotlin.dsl.kotlin
-import org.gradle.kotlin.dsl.project
 
 class AndroidApplicationConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {
         with(target) {
             apply(plugin = "com.android.application")
             apply(plugin = "org.jetbrains.kotlin.plugin.compose")
-            apply(plugin = "com.google.devtools.ksp")
-
-            apply(plugin = "org.jetbrains.kotlin.android")
+            apply(plugin = "io.insert-koin.compiler.plugin")
 
             extensions.configure<ApplicationExtension> {
-                defaultConfig.targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
+                defaultConfig.apply {
+                    targetSdk = libs.findVersion("targetSdk").get().toString().toInt()
+                    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+                }
 
                 signingConfigs {
                     create("release") {
@@ -33,6 +32,12 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         enableV2Signing = true
                         enableV3Signing = true
                     }
+                    getByName("debug") {
+                        storeFile = file("../taigamobilenova_debug.jks")
+                        keyAlias = System.getenv("TAIGA_ALIAS_D")
+                        keyPassword = System.getenv("TAIGA_KEY_PASS_D")
+                        storePassword = System.getenv("TAIGA_STORE_PASS_D")
+                    }
                 }
 
                 buildTypes {
@@ -42,6 +47,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                         isDebuggable = true
                         isMinifyEnabled = false
                         isShrinkResources = false
+
+                        signingConfig = signingConfigs.getByName("debug")
 
                         val debugLocalHost = findProperty("debug.local.host") as String? ?: ""
                         buildConfigField("String", "DEBUG_LOCAL_HOST", "\"$debugLocalHost\"")
@@ -78,18 +85,14 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
                     add("DEPENDENCIES")
                 }
 
+                buildFeatures.apply {
+                    compose = true
+                }
+
                 configureFlavors(this)
                 configureKotlinAndroid(this)
-                configureAndroidCompose(this)
             }
-            dependencies {
-                "implementation"(libs.findLibrary("androidx.core.ktx").get())
-
-                add("testImplementation", kotlin("test"))
-                add("testImplementation", project(":testing"))
-                add("androidTestImplementation", kotlin("test"))
-                add("androidTestImplementation", project(":testing"))
-            }
+            configureAndroidOutputNaming()
         }
     }
 }

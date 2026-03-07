@@ -1,0 +1,87 @@
+package com.grappim.taigamobile.feature.filters.mapper
+
+import com.grappim.taigamobile.feature.filters.domain.model.EpicsFilters
+import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
+import com.grappim.taigamobile.feature.filters.domain.model.RoleFilters
+import com.grappim.taigamobile.feature.filters.domain.model.StatusFilters
+import com.grappim.taigamobile.feature.filters.domain.model.TagFilters
+import com.grappim.taigamobile.feature.filters.domain.model.UsersFilters
+import com.grappim.taigamobile.feature.filters.dto.FiltersDataResponseDTO
+import com.grappim.taigamobile.utils.ui.fixNullColor
+import kotlinx.collections.immutable.toImmutableList
+import org.koin.core.annotation.Factory
+
+@Factory
+class FiltersMapper {
+
+    fun toDomain(response: FiltersDataResponseDTO): FiltersData = FiltersData(
+        assignees = response.assignedTo.filter { it.id != null }.map { dto ->
+            UsersFilters(
+                id = dto.id,
+                name = dto.fullName,
+                count = dto.count
+            )
+        }.toImmutableList(),
+        createdBy = response.owners.filter { it.id != null }.map { dto ->
+            UsersFilters(
+                id = dto.id,
+                name = dto.fullName,
+                count = dto.count
+            )
+        }.toImmutableList(),
+        priorities = response.priorities.orEmpty().map { dto ->
+            StatusFilters(
+                id = dto.id,
+                name = dto.name,
+                color = dto.color.fixNullColor(),
+                count = dto.count
+            )
+        }.toImmutableList(),
+        roles = response.roles.orEmpty().map { dto ->
+            RoleFilters(
+                id = dto.id,
+                name = dto.name,
+                count = dto.count,
+                color = dto.color.fixNullColor()
+            )
+        }.toImmutableList(),
+        severities = response.severities.orEmpty().map { dto ->
+            StatusFilters(
+                id = dto.id,
+                name = dto.name,
+                color = dto.color.fixNullColor(),
+                count = dto.count
+            )
+        }.toImmutableList(),
+        statuses = response.statuses.map { dto ->
+            StatusFilters(
+                id = dto.id,
+                name = dto.name,
+                color = dto.color.fixNullColor(),
+                count = dto.count
+            )
+        }.toImmutableList(),
+        tags = response.tags.orEmpty().map { dto ->
+            TagFilters(
+                name = dto.name,
+                color = dto.color.fixNullColor(),
+                count = dto.count
+            )
+        }.toImmutableList(),
+        types = response.types.orEmpty().map { dto ->
+            StatusFilters(
+                id = dto.id,
+                name = dto.name,
+                color = dto.color.fixNullColor(),
+                count = dto.count
+            )
+        }.toImmutableList(),
+        epics = response.epics.orEmpty().map { dto ->
+            EpicsFilters(
+                id = dto.id,
+                name = dto.subject?.let { s -> "#${dto.ref} $s" }.orEmpty(),
+                count = dto.count
+            )
+        }.toImmutableList()
+    )
+}

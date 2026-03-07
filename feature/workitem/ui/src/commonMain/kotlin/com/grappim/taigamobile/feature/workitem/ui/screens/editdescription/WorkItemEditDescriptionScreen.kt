@@ -1,0 +1,107 @@
+package com.grappim.taigamobile.feature.workitem.ui.screens.editdescription
+
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigationevent.NavigationEventInfo
+import androidx.navigationevent.compose.NavigationBackHandler
+import androidx.navigationevent.compose.rememberNavigationEventState
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.are_you_sure_discarding_changes
+import com.grappim.taigamobile.strings.generated.resources.discard
+import com.grappim.taigamobile.strings.generated.resources.edit_description
+import com.grappim.taigamobile.strings.generated.resources.keep_editing
+import com.grappim.taigamobile.strings.generated.resources.save
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionTextButton
+import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.persistentListOf
+import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.viewmodel.koinViewModel
+
+@Composable
+fun WorkItemEditDescriptionScreen(goBack: () -> Unit, viewModel: EditDescriptionViewModel = koinViewModel()) {
+    val topBarController = LocalTopBarConfig.current
+    val state by viewModel.state.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        topBarController.update(
+            TopBarConfig(
+                title = NativeText.Resource(RString.edit_description),
+                navigationIcon = NavigationIconConfig.Back(
+                    onBackClick = { state.setIsDialogVisible(!state.isDialogVisible) }
+                ),
+                actions = persistentListOf(
+                    TopBarActionTextButton(
+                        text = NativeText.Resource(RString.save),
+                        onClick = {
+                            state.shouldGoBackWithCurrentValue(true)
+                        }
+                    )
+                )
+            )
+        )
+    }
+
+    NavigationBackHandler(
+        state = rememberNavigationEventState(NavigationEventInfo.None),
+        isBackEnabled = true,
+        onBackCompleted = {
+            state.setIsDialogVisible(!state.isDialogVisible)
+        }
+    )
+
+    ObserveAsEvents(viewModel.onBackAction, isImmediate = false) {
+        goBack()
+    }
+
+    ConfirmActionDialog(
+        isVisible = state.isDialogVisible,
+        description = stringResource(RString.are_you_sure_discarding_changes),
+        onConfirm = {
+            state.shouldGoBackWithCurrentValue(false)
+        },
+        onDismiss = {
+            state.setIsDialogVisible(false)
+        },
+        confirmButtonText = NativeText.Resource(RString.discard),
+        dismissButtonText = NativeText.Resource(RString.keep_editing)
+    )
+
+    EditDescriptionContent(state = state)
+}
+
+@Composable
+private fun EditDescriptionContent(state: EditDescriptionState) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(
+                horizontal = 16.dp,
+                vertical = 8.dp
+            )
+    ) {
+        BasicTextField(
+            modifier = Modifier.fillMaxSize(),
+            value = state.currentDescription,
+            onValueChange = state.onDescriptionChange,
+            textStyle = MaterialTheme.typography.bodyLarge.copy(
+                color = MaterialTheme.colorScheme.onSurface
+            ),
+            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface)
+        )
+    }
+}

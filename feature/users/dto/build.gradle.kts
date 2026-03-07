@@ -1,11 +1,4 @@
 plugins {
-    alias(libs.plugins.taigamobile.android.library)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
-}
-
-android {
-    namespace = "com.grappim.taigamobile.feature.users.dto"
-}
-
-dependencies {
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.serialization)
 }

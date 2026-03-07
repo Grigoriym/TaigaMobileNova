@@ -1,0 +1,4 @@
+- Migrated to Kotlin Multiplatform (KMP)
+- Settings: added project details, modules, and attributes configuration
+- Tags edit screen: improved save button
+- Unified empty, error, and loading states across screens

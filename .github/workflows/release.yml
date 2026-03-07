@@ -16,6 +16,11 @@ jobs:
             TAIGA_STORE_PASS_R: ${{ secrets.TAIGA_STORE_PASS_R }}
             TAIGA_ALIAS_R: ${{ secrets.TAIGA_ALIAS_R }}
             ENCODED_STRING_R: ${{ secrets.TAIGA_KEYSTORE_R }}
+            TAIGA_PATH_D: ${{ secrets.TAIGA_PATH_D }}
+            TAIGA_KEY_PASS_D: ${{ secrets.TAIGA_KEY_PASS_D }}
+            TAIGA_STORE_PASS_D: ${{ secrets.TAIGA_STORE_PASS_D }}
+            TAIGA_ALIAS_D: ${{ secrets.TAIGA_ALIAS_D }}
+            ENCODED_STRING_D: ${{ secrets.TAIGA_KEYSTORE_D }}
 
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         steps:
@@ -28,21 +33,24 @@ jobs:
             - name: Restore taigamobilenova_keystore_release.jks
               run: echo $ENCODED_STRING_R | base64 -d > ./taigamobilenova_keystore_release.jks
 
+            - name: Restore taigamobilenova_debug.jks
+              run: echo $ENCODED_STRING_D | base64 -d > ./taigamobilenova_debug.jks
+
             - name: Build Release Fdroid APK
               run: |
-                  ./gradlew assembleFdroidRelease assembleFdroidDebug
+                  ./gradlew :androidApp:assembleFdroidRelease :androidApp:assembleFdroidDebug
 
             - name: Build Release Gplay APK and AAB
               run: |
-                  ./gradlew assembleGplayRelease bundleGplayRelease
+                  ./gradlew :androidApp:assembleGplayRelease :androidApp:bundleGplayRelease -PgplayBuild
 
             - name: Upload Release Build To Artifacts
-              uses: actions/upload-artifact@v6
+              uses: actions/upload-artifact@v7
               with:
                   name: release-artifacts
                   path: |
-                      app/build/outputs/apk/*
-                      app/build/outputs/bundle/*
+                      androidApp/build/outputs/apk/*
+                      androidApp/build/outputs/bundle/*
 
             - name: Create GitHub release
               uses: softprops/action-gh-release@v2
@@ -52,7 +60,7 @@ jobs:
                   make_latest: true
                   preserve_order: true
                   files: |
-                      app/build/outputs/apk/fdroid/release/app-fdroid-release.apk
-                      app/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
-                      app/build/outputs/apk/gplay/release/app-gplay-release.apk
-                      app/build/outputs/bundle/gplayRelease/app-gplay-release.aab
+                      androidApp/build/outputs/apk/fdroid/release/app-fdroid-release.apk
+                      androidApp/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
+                      androidApp/build/outputs/apk/gplay/release/app-gplay-release.apk
+                      androidApp/build/outputs/bundle/gplayRelease/app-gplay-release.aab

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/data_extraction_rules_debug"
+        android:fullBackupContent="false"
+        android:label="@string/app_name_debug"
+        tools:ignore="MissingApplicationIcon"
+        tools:replace="label,allowBackup,dataExtractionRules,fullBackupContent" />
+
+</manifest>

@@ -1,0 +1,42 @@
+package com.grappim.taigamobile.uikit.widgets.topbar
+
+import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
+import org.jetbrains.compose.resources.DrawableResource
+
+/**
+ * A config file to control the global state of the top bar.
+ * Each screen has to have its own config.
+ */
+data class TopBarConfig(
+    val title: NativeText = NativeText.Empty,
+    val subtitle: NativeText = NativeText.Empty,
+    val navigationIcon: NavigationIconConfig = NavigationIconConfig.None,
+    val actions: ImmutableList<TopBarAction> = persistentListOf()
+)
+
+sealed interface TopBarAction {
+    val onClick: () -> Unit
+}
+
+data class TopBarActionIconButton(
+    val drawable: DrawableResource,
+    val contentDescription: String = "",
+    val enabled: Boolean = true,
+    override val onClick: () -> Unit
+) : TopBarAction
+
+data class TopBarActionTextButton(val text: NativeText, val enabled: Boolean = true, override val onClick: () -> Unit) :
+    TopBarAction
+
+sealed interface NavigationIconConfig {
+    object None : NavigationIconConfig
+
+    data class Back(val onBackClick: (() -> Unit)? = null) : NavigationIconConfig
+
+    object Menu : NavigationIconConfig
+
+    data class Custom(val icon: DrawableResource, val contentDescription: String, val onClick: () -> Unit) :
+        NavigationIconConfig
+}
