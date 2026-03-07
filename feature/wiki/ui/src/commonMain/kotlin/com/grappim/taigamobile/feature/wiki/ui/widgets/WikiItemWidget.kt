@@ -1,16 +1,17 @@
 package com.grappim.taigamobile.feature.wiki.ui.widgets
 
 import androidx.compose.foundation.clickable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.grappim.taigamobile.uikit.generated.resources.ic_delete
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.utils.RDrawable
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 fun WikiItemWidget(
@@ -36,7 +37,10 @@ fun WikiItemWidget(
                     enabled = !isOffline,
                     onClick = onDeleteItemClick
                 ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete item")
+                    Icon(
+                        painter = painterResource(RDrawable.ic_delete),
+                        contentDescription = "Delete item"
+                    )
                 }
             }
         }

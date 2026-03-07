@@ -17,15 +17,15 @@ class KmpDiConventionPlugin : Plugin<Project> {
                     commonMain.dependencies {
                         val koinBom = libs.findLibrary("koin.bom").get()
                         implementation(project.dependencies.platform(koinBom))
+
+                        api(libs.findLibrary("koin.annotations").get())
                         implementation(libs.findLibrary("koin.core").get())
                         implementation(libs.findLibrary("koin.core.viewmodel").get())
-                        api(libs.findLibrary("koin.annotations").get())
                         implementation(libs.findLibrary("koin.compose").get())
                         implementation(libs.findLibrary("koin.compose.viewmodel").get())
                     }
 
                     androidMain.dependencies {
-                        implementation(libs.findLibrary("koin.navigation2").get())
                         implementation(libs.findLibrary("koin.android").get())
                     }
                 }

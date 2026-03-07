@@ -6,8 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -23,6 +21,7 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import com.grappim.taigamobile.feature.epics.domain.Epic
+import com.grappim.taigamobile.feature.projects.domain.ProjectExtraInfo
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.are_you_sure_discarding_changes
 import com.grappim.taigamobile.strings.generated.resources.discard
@@ -30,6 +29,11 @@ import com.grappim.taigamobile.strings.generated.resources.edit_epic
 import com.grappim.taigamobile.strings.generated.resources.keep_editing
 import com.grappim.taigamobile.strings.generated.resources.no_epics_found
 import com.grappim.taigamobile.strings.generated.resources.save
+import com.grappim.taigamobile.uikit.generated.resources.ic_check
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.utils.PreviewUtils
+import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
@@ -39,6 +43,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -148,8 +153,81 @@ private fun EpicItem(epic: Epic, isSelected: Boolean, onItemClick: (Epic) -> Uni
         },
         trailingContent = {
             if (isSelected) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = "")
+                Icon(
+                    painter = painterResource(RDrawable.ic_check),
+                    contentDescription = "Check item"
+                )
             }
         }
     )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun EditEpicContentPreview() {
+    TaigaMobilePreviewTheme {
+        EditEpicContent(
+            state = EditEpicState(
+                itemsToShow = persistentListOf(
+                    Epic(
+                        id = 7888,
+                        version = 1789,
+                        createdDateTime = PreviewUtils.getNowDateTime(),
+                        title = "odio",
+                        ref = 3848,
+                        status = null,
+                        assignee = null,
+                        project = ProjectExtraInfo(
+                            id = 6041,
+                            name = "Margo Phillips",
+                            slug = "ornare",
+                            logoSmallUrl = "https://duckduckgo.com/?q=perpetua"
+                        ),
+                        isClosed = false,
+                        blockedNote = "ullamcorper",
+                        description = "scripta",
+                        epicColor = "deseruisse",
+                        milestone = 9673,
+                        creatorId = 6936,
+                        assignedUserIds = listOf(),
+                        watcherUserIds = listOf(),
+                        tags = persistentListOf(),
+                        copyLinkUrl = "https://search.yahoo.com/search?p=quem"
+                    ),
+                    Epic(
+                        id = 1826,
+                        version = 9563,
+                        createdDateTime = PreviewUtils.getNowDateTime(),
+                        title = "elitr",
+                        ref = 8800,
+                        status = null,
+                        assignee = null,
+                        project = ProjectExtraInfo(
+                            id = 2974,
+                            name = "Nadia Hammond",
+                            slug = "torquent",
+                            logoSmallUrl = "https://www.google.com/#q=id"
+                        ),
+                        isClosed = false,
+                        blockedNote = "liber",
+                        description = "expetendis",
+                        epicColor = "auctor",
+                        milestone = 3484,
+                        creatorId = 8496,
+                        assignedUserIds = listOf(),
+                        watcherUserIds = listOf(),
+                        tags = persistentListOf(),
+                        copyLinkUrl = "https://www.google.com/#q=inciderint"
+                    )
+                ),
+                isDialogVisible = true,
+                isItemSelected = { true },
+                selectedItems = persistentListOf(),
+                originalSelectedItems = persistentListOf(),
+                onEpicClick = {},
+                setIsDialogVisible = {},
+                shouldGoBackWithCurrentValue = {}
+            )
+        )
+    }
 }

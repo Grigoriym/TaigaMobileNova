@@ -37,7 +37,7 @@ class TagEditDialogDelegateImpl(
     override val tagEditDialogState: StateFlow<TagEditDialogState> = _tagEditDialogState.asStateFlow()
 
     override suspend fun initDialogTags() {
-        val colors = taigaSessionStorage.getTagPresetColorsAsColor()
+        val colors = taigaSessionStorage.getPresetColorsAsColor()
         _tagEditDialogState.update {
             it.copy(
                 presetColors = colors,

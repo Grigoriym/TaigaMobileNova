@@ -9,8 +9,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -38,6 +36,9 @@ import com.grappim.taigamobile.strings.generated.resources.edit_team_members
 import com.grappim.taigamobile.strings.generated.resources.keep_editing
 import com.grappim.taigamobile.strings.generated.resources.save
 import com.grappim.taigamobile.uikit.generated.resources.default_avatar
+import com.grappim.taigamobile.uikit.generated.resources.ic_check
+import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
@@ -142,7 +143,7 @@ private fun TeamMemberItem(teamMemberUI: TeamMemberUI, isSelected: Boolean, onIt
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 if (isSelected) {
-                    Icon(imageVector = Icons.Default.Check, contentDescription = "")
+                    Icon(painter = painterResource(RDrawable.ic_check), contentDescription = "")
                 } else {
                     Spacer(modifier = Modifier.size(24.dp))
                 }
@@ -166,4 +167,27 @@ private fun TeamMemberItem(teamMemberUI: TeamMemberUI, isSelected: Boolean, onIt
             }
         }
     )
+}
+
+@PreviewTaigaDarkLight
+@Composable
+private fun EditAssigneeContentPreview() {
+    TaigaMobilePreviewTheme {
+        EditAssigneeContent(
+            state = EditTeamMemberState(
+                itemsToShow = persistentListOf(
+                    TeamMemberUI(id = 1L, name = "Alice Johnson", avatarUrl = null),
+                    TeamMemberUI(id = 2L, name = "Bob Smith", avatarUrl = null),
+                    TeamMemberUI(id = 3L, name = "Charlie Brown", avatarUrl = null)
+                ),
+                isItemSelected = { id -> id == 1L },
+                selectedItems = persistentListOf(1L),
+                originalSelectedItems = persistentListOf(1L),
+                onTeamMemberClick = {},
+                isDialogVisible = false,
+                setIsDialogVisible = {},
+                shouldGoBackWithCurrentValue = {}
+            )
+        )
+    }
 }

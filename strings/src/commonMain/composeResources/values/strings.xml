@@ -321,10 +321,38 @@
 
     <!-- ==================== Settings ==================== -->
     <string name="settings">Settings</string>
+    <string name="settings_project_details">Project Details</string>
+    <string name="project_name">Project Name</string>
+    <string name="project_description">Description</string>
+    <string name="project_is_private">Private Project</string>
+    <string name="project_looking_for_people">Looking for People</string>
+    <string name="project_looking_for_people_note">Recruitment Note</string>
+    <string name="project_contact_activated">Contact Enabled</string>
+    <string name="receive_feedback_from_users">Receive feedback from Taiga users?</string>
     <string name="settings_about">About</string>
     <string name="settings_interface">Interface</string>
     <string name="settings_user">User</string>
     <string name="settings_attributes">Attributes</string>
+    <string name="settings_modules">Modules</string>
+    <string name="module_epics_activated">Epics</string>
+    <string name="module_epics_details">Group related user stories under high-level goals</string>
+    <string name="module_backlog_activated">Backlog/Scrum</string>
+    <string name="module_backlog_details">Plan and prioritize user stories across sprints.</string>
+    <string name="module_kanban_activated">Kanban</string>
+    <string name="module_kanban_details">Manage work items on a continuous flow board.</string>
+    <string name="module_issues_activated">Issues</string>
+    <string name="module_issues_details">Track bugs, questions, and enhancements for your project.</string>
+    <string name="module_wiki_activated">Wiki</string>
+    <string name="module_wiki_details">Collaborative documentation for your project.</string>
+    <string name="module_total_milestones">Total Milestones</string>
+    <string name="module_total_story_points">Total Story Points</string>
+    <string name="module_videoconference">Video Conferencing</string>
+    <string name="module_videoconference_extra_data">Meeting Room / URL</string>
+    <string name="videoconference_none">None</string>
+    <string name="videoconference_whereby">Whereby</string>
+    <string name="videoconference_jitsi">Jitsi</string>
+    <string name="videoconference_talky">Talky</string>
+    <string name="videoconference_custom">Custom</string>
     <string name="username_template" translatable="false">@%1$s</string>
     <string name="logout_title">Log out</string>
     <string name="logout_text">Are you sure you want to log out?</string>
@@ -341,4 +369,29 @@
     <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
     <string name="source_code">Source code</string>
     <string name="privacy_policy_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY.md</string>
+
+    <!-- ==================== Settings - Project Values ==================== -->
+    <string name="settings_project_values">Project Values</string>
+    <string name="project_values_epic_statuses">Epic Statuses</string>
+    <string name="project_values_us_statuses">User Story Statuses</string>
+    <string name="project_values_task_statuses">Task Statuses</string>
+    <string name="project_values_issue_statuses">Issue Statuses</string>
+    <string name="project_values_issue_types">Issue Types</string>
+    <string name="project_values_priorities">Priorities</string>
+    <string name="project_values_severities">Severities</string>
+    <string name="project_values_points">Points</string>
+    <string name="project_values_us_due_dates">User Story Due Dates</string>
+    <string name="project_values_task_due_dates">Task Due Dates</string>
+    <string name="project_values_issue_due_dates">Issue Due Dates</string>
+    <string name="project_values_name_hint">Name</string>
+    <string name="project_values_value_hint">Value</string>
+    <string name="project_values_days_to_due_hint">Days to due (negative = past due)</string>
+    <string name="project_values_is_closed">Is Closed</string>
+    <string name="project_values_is_archived">Is Archived</string>
+    <string name="project_values_delete_text">Select a replacement value for existing items before deleting.</string>
+    <string name="project_values_move_to">Move items to</string>
+    <string name="project_values_add_title">Add Value</string>
+    <string name="project_values_edit_title">Edit Value</string>
+    <string name="project_values_color">Color</string>
+    <string name="project_values_by_default">Default</string>
 </resources>

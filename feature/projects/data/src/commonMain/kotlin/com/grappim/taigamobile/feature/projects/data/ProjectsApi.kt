@@ -1,7 +1,10 @@
 package com.grappim.taigamobile.feature.projects.data
 
 import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectDetailDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
+import com.grappim.taigamobile.feature.projects.dto.UpdateModulesRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.UpdateProjectRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.CreateTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.DeleteTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.EditTagRequestDTO
@@ -10,6 +13,7 @@ import com.grappim.taigamobile.feature.projects.dto.tags.TagsColorsResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.client.statement.HttpResponse
@@ -38,6 +42,12 @@ interface ProjectsApi {
     ): List<ProjectDTO>
 
     suspend fun getProject(projectId: Long): ProjectResponseDTO
+
+    suspend fun getProjectDetail(projectId: Long): ProjectDetailDTO
+
+    suspend fun updateProject(projectId: Long, request: UpdateProjectRequestDTO): ProjectDetailDTO
+
+    suspend fun updateModules(projectId: Long, request: UpdateModulesRequestDTO): ProjectDetailDTO
 
     suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse
 
@@ -80,6 +90,19 @@ class ProjectsApiImpl(private val httpClient: HttpClient) : ProjectsApi {
         }.body()
 
     override suspend fun getProject(projectId: Long): ProjectResponseDTO = httpClient.get("projects/$projectId").body()
+
+    override suspend fun getProjectDetail(projectId: Long): ProjectDetailDTO =
+        httpClient.get("projects/$projectId").body()
+
+    override suspend fun updateProject(projectId: Long, request: UpdateProjectRequestDTO): ProjectDetailDTO =
+        httpClient.patch("projects/$projectId") {
+            setBody(request)
+        }.body()
+
+    override suspend fun updateModules(projectId: Long, request: UpdateModulesRequestDTO): ProjectDetailDTO =
+        httpClient.patch("projects/$projectId") {
+            setBody(request)
+        }.body()
 
     override suspend fun getProjectTagsColors(projectId: Long): TagsColorsResponse =
         httpClient.get("projects/$projectId/tags_colors").body()

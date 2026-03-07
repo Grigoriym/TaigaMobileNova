@@ -8,9 +8,13 @@ import com.grappim.taigamobile.core.storage.db.dao.ProjectDao
 import com.grappim.taigamobile.feature.filters.domain.model.Tag
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.domain.Project
+import com.grappim.taigamobile.feature.projects.domain.ProjectDetails
+import com.grappim.taigamobile.feature.projects.domain.ProjectModules
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
+import com.grappim.taigamobile.feature.projects.dto.UpdateModulesRequestDTO
+import com.grappim.taigamobile.feature.projects.dto.UpdateProjectRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.CreateTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.DeleteTagRequestDTO
 import com.grappim.taigamobile.feature.projects.dto.tags.EditTagRequestDTO
@@ -86,6 +90,62 @@ class ProjectsRepositoryImpl(
         }
 
     override suspend fun getPermissions(): ImmutableList<TaigaPermission> = getCurrentProjectSimple().myPermissions
+
+    override suspend fun getProjectDetails(): ProjectDetails {
+        val response = projectsApi.getProjectDetail(taigaSessionStorage.getCurrentProjectId())
+        return projectMapper.toProjectDetails(response)
+    }
+
+    override suspend fun getProjectModules(): ProjectModules {
+        val response = projectsApi.getProjectDetail(taigaSessionStorage.getCurrentProjectId())
+        return projectMapper.toProjectModules(response)
+    }
+
+    override suspend fun updateModules(
+        isEpicsActivated: Boolean,
+        isBacklogActivated: Boolean,
+        isKanbanActivated: Boolean,
+        isIssuesActivated: Boolean,
+        isWikiActivated: Boolean,
+        totalMilestones: Int?,
+        totalStoryPoints: Double?
+    ) {
+        val response = projectsApi.updateModules(
+            projectId = taigaSessionStorage.getCurrentProjectId(),
+            request = UpdateModulesRequestDTO(
+                isEpicsActivated = isEpicsActivated,
+                isBacklogActivated = isBacklogActivated,
+                isKanbanActivated = isKanbanActivated,
+                isIssuesActivated = isIssuesActivated,
+                isWikiActivated = isWikiActivated,
+                totalMilestones = totalMilestones,
+                totalStoryPoints = totalStoryPoints
+            )
+        )
+        projectDao.insert(projectMapper.toEntity(response))
+    }
+
+    override suspend fun updateProject(
+        name: String,
+        description: String,
+        isPrivate: Boolean,
+        isLookingForPeople: Boolean,
+        lookingForPeopleNote: String,
+        isContactActivated: Boolean
+    ) {
+        val response = projectsApi.updateProject(
+            projectId = taigaSessionStorage.getCurrentProjectId(),
+            request = UpdateProjectRequestDTO(
+                name = name,
+                description = description,
+                isPrivate = isPrivate,
+                isLookingForPeople = isLookingForPeople,
+                lookingForPeopleNote = lookingForPeopleNote,
+                isContactActivated = isContactActivated
+            )
+        )
+        projectDao.insert(projectMapper.toEntity(response))
+    }
 
     override suspend fun getTagsColors(): ImmutableList<Tag> {
         val response = projectsApi.getProjectTagsColors(taigaSessionStorage.getCurrentProjectId())

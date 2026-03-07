@@ -22,6 +22,7 @@ kotlin {
             implementation(projects.feature.filters.dto)
 
             implementation(libs.androidx.paging.compose)
+            implementation(libs.jetbrains.compose.icons)
         }
     }
 }

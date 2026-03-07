@@ -20,6 +20,7 @@ kotlin {
             implementation(projects.feature.workitem.domain)
 
             implementation(libs.androidx.paging.compose)
+            implementation(libs.jetbrains.compose.icons)
 
             implementation(projects.feature.filters.domain)
         }

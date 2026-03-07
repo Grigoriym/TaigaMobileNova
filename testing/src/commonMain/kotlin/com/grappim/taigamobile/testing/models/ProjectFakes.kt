@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.projects.domain.ProjectExtraInfo
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectDetailDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectExtraInfoDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
 import com.grappim.taigamobile.testing.utils.getRandomBoolean
@@ -13,6 +14,13 @@ import com.grappim.taigamobile.testing.utils.getRandomInt
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
+
+fun getProjectDetailDTO(): ProjectDetailDTO = ProjectDetailDTO(
+    id = getRandomLong(),
+    name = getRandomString(),
+    slug = getRandomString(),
+    description = getRandomString(),
+)
 
 fun getProjectResponseDTO(): ProjectResponseDTO = ProjectResponseDTO(
     id = getRandomLong(),

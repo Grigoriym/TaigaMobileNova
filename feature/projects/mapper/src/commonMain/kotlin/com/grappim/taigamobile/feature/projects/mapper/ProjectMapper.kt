@@ -2,10 +2,13 @@ package com.grappim.taigamobile.feature.projects.mapper
 
 import com.grappim.taigamobile.core.storage.db.entities.ProjectEntity
 import com.grappim.taigamobile.feature.projects.domain.Project
+import com.grappim.taigamobile.feature.projects.domain.ProjectDetails
 import com.grappim.taigamobile.feature.projects.domain.ProjectExtraInfo
+import com.grappim.taigamobile.feature.projects.domain.ProjectModules
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectDetailDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectExtraInfoDTO
 import com.grappim.taigamobile.feature.projects.dto.TaigaPermissionDTO
 import kotlinx.collections.immutable.ImmutableList
@@ -55,6 +58,46 @@ class ProjectMapper {
         isWikiActivated = entity.isWikiActivated,
         defaultSwimlane = entity.defaultSwimlane,
         isAdmin = entity.isAdmin
+    )
+
+    fun toProjectModules(dto: ProjectDetailDTO): ProjectModules = ProjectModules(
+        isEpicsActivated = dto.isEpicsActivated,
+        isBacklogActivated = dto.isBacklogActivated,
+        isKanbanActivated = dto.isKanbanActivated,
+        isIssuesActivated = dto.isIssuesActivated,
+        isWikiActivated = dto.isWikiActivated,
+        isContactActivated = dto.isContactActivated,
+        totalMilestones = dto.totalMilestones,
+        totalStoryPoints = dto.totalStoryPoints,
+        videoconferencesExtraData = dto.videoconferencesExtraData
+    )
+
+    fun toProjectDetails(dto: ProjectDetailDTO): ProjectDetails = ProjectDetails(
+        id = dto.id,
+        name = dto.name,
+        description = dto.description,
+        isPrivate = dto.isPrivate,
+        isLookingForPeople = dto.isLookingForPeople,
+        lookingForPeopleNote = dto.lookingForPeopleNote,
+        isContactActivated = dto.isContactActivated
+    )
+
+    fun toEntity(dto: ProjectDetailDTO): ProjectEntity = ProjectEntity(
+        id = dto.id,
+        name = dto.name,
+        slug = dto.slug,
+        myPermissions = dto.myPermissions.map { it.toDomain() },
+        isEpicsActivated = dto.isEpicsActivated,
+        isBacklogActivated = dto.isBacklogActivated,
+        isKanbanActivated = dto.isKanbanActivated,
+        isIssuesActivated = dto.isIssuesActivated,
+        isWikiActivated = dto.isWikiActivated,
+        defaultSwimlane = dto.defaultSwimlane,
+        isAdmin = dto.isAdmin,
+        isMember = dto.isMember,
+        isOwner = dto.isOwner,
+        description = dto.description,
+        avatarUrl = dto.avatarUrl
     )
 
     fun toListDomain(dto: List<ProjectDTO>): ImmutableList<Project> = dto.map { toProject(it) }.toImmutableList()

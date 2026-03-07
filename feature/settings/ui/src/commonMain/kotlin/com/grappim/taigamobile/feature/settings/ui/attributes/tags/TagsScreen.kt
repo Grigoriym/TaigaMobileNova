@@ -16,8 +16,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.MergeType
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Merge
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -56,6 +54,8 @@ import com.grappim.taigamobile.strings.generated.resources.merge_tags_title
 import com.grappim.taigamobile.strings.generated.resources.remove_user_text
 import com.grappim.taigamobile.strings.generated.resources.remove_user_title
 import com.grappim.taigamobile.strings.generated.resources.tags_title
+import com.grappim.taigamobile.uikit.generated.resources.ic_delete
+import com.grappim.taigamobile.uikit.generated.resources.ic_edit
 import com.grappim.taigamobile.uikit.generated.resources.ic_options
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
@@ -77,6 +77,7 @@ import com.grappim.taigamobile.utils.ui.StaticStringColor
 import com.grappim.taigamobile.utils.ui.asColor
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
+import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -312,7 +313,7 @@ private fun TagItemWidget(state: TagsScreenState, tag: TagUI) {
                     state.onTagEditClick(tag)
                 }) {
                     Icon(
-                        imageVector = Icons.Default.Edit,
+                        painter = painterResource(RDrawable.ic_edit),
                         contentDescription = "Edit",
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -321,7 +322,7 @@ private fun TagItemWidget(state: TagsScreenState, tag: TagUI) {
                     state.onTagDeleteClick(tag)
                 }) {
                     Icon(
-                        imageVector = Icons.Default.Delete,
+                        painter = painterResource(RDrawable.ic_delete),
                         contentDescription = "Delete",
                         tint = MaterialTheme.colorScheme.error
                     )

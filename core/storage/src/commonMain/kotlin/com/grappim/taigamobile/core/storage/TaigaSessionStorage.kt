@@ -22,8 +22,8 @@ interface TaigaSessionStorage {
     val currentProjectIdFlow: Flow<Long>
 
     suspend fun setKanbanDefaultSwimline(value: Long)
-    suspend fun getTagPresetColors(): ImmutableList<String>
-    suspend fun getTagPresetColorsAsColor(): ImmutableList<Color>
+    suspend fun getPresetColors(): ImmutableList<String>
+    suspend fun getPresetColorsAsColor(): ImmutableList<Color>
     suspend fun setTagPresetColors(colors: List<String>)
     suspend fun addTagPresetColor(hexColor: String)
     suspend fun addTagPresetColor(color: Color)
@@ -47,7 +47,7 @@ class TaigaSessionStorageImpl(private val dataStore: DataStore<Preferences>, pri
         private val TAG_PRESET_COLORS_KEY = stringPreferencesKey("tag_preset_colors")
     }
 
-    private val defaultPresetColors = persistentListOf(
+    private val defaultPresetColors: List<String> = persistentListOf(
         Color(0xFFE57373),
         Color(0xFF81C784),
         Color(0xFF64B5F6),
@@ -77,10 +77,10 @@ class TaigaSessionStorageImpl(private val dataStore: DataStore<Preferences>, pri
             }
         }
 
-    override suspend fun getTagPresetColors(): ImmutableList<String> = tagPresetColors.first().toImmutableList()
+    override suspend fun getPresetColors(): ImmutableList<String> = tagPresetColors.first().toImmutableList()
 
-    override suspend fun getTagPresetColorsAsColor(): ImmutableList<Color> =
-        getTagPresetColors().map { colorMapper.fromStringToColor(it) }.toImmutableList()
+    override suspend fun getPresetColorsAsColor(): ImmutableList<Color> =
+        getPresetColors().map { colorMapper.fromStringToColor(it) }.toImmutableList()
 
     override suspend fun setTagPresetColors(colors: List<String>) {
         dataStore.edit { prefs ->
@@ -89,7 +89,7 @@ class TaigaSessionStorageImpl(private val dataStore: DataStore<Preferences>, pri
     }
 
     override suspend fun addTagPresetColor(hexColor: String) {
-        val current = getTagPresetColors().toMutableList()
+        val current = getPresetColors().toMutableList()
         if (hexColor !in current) {
             current.add(hexColor)
             setTagPresetColors(current)
@@ -101,7 +101,7 @@ class TaigaSessionStorageImpl(private val dataStore: DataStore<Preferences>, pri
     }
 
     override suspend fun removeTagPresetColor(hexColor: String) {
-        val current = getTagPresetColors().toMutableList()
+        val current = getPresetColors().toMutableList()
         current.remove(hexColor)
         setTagPresetColors(current)
     }
