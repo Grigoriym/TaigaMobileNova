@@ -1,22 +1,21 @@
 plugins {
-    alias(libs.plugins.taigamobile.android.library)
-    alias(libs.plugins.taigamobile.android.library.compose)
-    alias(libs.plugins.taigamobile.android.hilt)
-    alias(libs.plugins.taigamobile.kotlin.serialization)
+    alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.di)
+    alias(libs.plugins.taigamobile.kmp.network)
+    alias(libs.plugins.taigamobile.kmp.serialization)
 }
 
-android {
-    namespace = "com.grappim.taigamobile.core.api"
-}
+kotlin {
+    sourceSets {
+        commonMain.dependencies {
+            implementation(libs.ktor.contentNegotiation)
+            implementation(libs.ktor.logging)
+            implementation(libs.ktor.serialization.json)
 
-dependencies {
-    implementation(libs.okhttp)
-    implementation(projects.utils.ui)
-    implementation(projects.core.domain)
-    implementation(projects.core.storage)
-    implementation(projects.core.async)
-    implementation(libs.retrofit)
-    implementation(projects.core.appinfoApi)
-
-    implementation(libs.timber)
+            implementation(projects.core.appinfoApi)
+            implementation(projects.core.domain)
+            implementation(projects.core.storage)
+            implementation(projects.feature.login.dto)
+        }
+    }
 }

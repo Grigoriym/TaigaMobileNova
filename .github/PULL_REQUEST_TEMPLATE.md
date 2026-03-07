@@ -1,6 +1,7 @@
-### Be sure
-1. to run `./gradlew ktlintFormat`
-2. then `./gradlew check`
+### Be sure to run locally
+1. `./gradlew ktlintFormat`
+2. `./gradlew jvmTest`
+3. `./gradlew :androidApp:assembleFdroidDebug`
 
 ### Describe your changes
 

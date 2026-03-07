@@ -34,8 +34,37 @@ generated_code = true
 ij_formatter_enabled = false
 ktlint = disabled
 
+[**/buildkonfig/**]
+generated_code = true
+ktlint = disabled
+
 [**/testing/**]
 ktlint = disabled
 
 [**/MainScreen.kt]
 ktlint_compose_vm-forwarding-check=disabled
+
+[**/DBModule.android.kt]
+ktlint_standard_filename=disabled
+
+[**/Koin.android.kt]
+ktlint_standard_filename=disabled
+
+[**/Koin.jvm.kt]
+ktlint_standard_filename=disabled
+
+[**/Koin.ios.kt]
+ktlint_standard_filename=disabled
+
+[**/main.ios.kt]
+ktlint_standard_filename=disabled
+ktlint_standard_function-naming=disabled
+
+[**/DBModule.jvm.kt]
+ktlint_standard_filename=disabled
+
+[**/DBModule.android.kt]
+ktlint_standard_filename=disabled
+
+[**/DBModule.ios.kt]
+ktlint_standard_filename=disabled

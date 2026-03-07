@@ -1,0 +1,855 @@
+package com.grappim.taigamobile.feature.tasks.ui
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import androidx.navigation.toRoute
+import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.feature.history.domain.HistoryRepository
+import com.grappim.taigamobile.feature.tasks.domain.Task
+import com.grappim.taigamobile.feature.tasks.domain.TaskDetailsDataUseCase
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.workitem.domain.Attachment
+import com.grappim.taigamobile.feature.workitem.domain.Comment
+import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.block.WorkItemBlockDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.watchers.WorkItemWatchersDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
+import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
+import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
+import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
+import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
+import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
+import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.common_error_message
+import com.grappim.taigamobile.strings.generated.resources.task_slug
+import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
+import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.SnackbarDelegate
+import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.getErrorMessage
+import io.github.vinceglb.filekit.PlatformFile
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.toPersistentList
+import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+import org.koin.core.annotation.KoinViewModel
+
+private val type = CommonTaskType.Task
+private val taskIdentifier = TaskIdentifier.WorkItem(type)
+
+@KoinViewModel
+class TaskDetailsViewModel(
+    savedStateHandle: SavedStateHandle,
+    private val taskDetailsDataUseCase: TaskDetailsDataUseCase,
+    private val workItemsGenerator: WorkItemsGenerator,
+    private val patchDataGenerator: PatchDataGenerator,
+    private val statusUIMapper: StatusUIMapper,
+    private val tagUIMapper: TagUIMapper,
+    private val dateTimeUtils: DateTimeUtils,
+    private val customFieldsUIMapper: CustomFieldsUIMapper,
+    private val historyRepository: HistoryRepository,
+    private val workItemRepository: WorkItemRepository,
+    private val taigaSessionStorage: TaigaSessionStorage,
+    private val usersRepository: UsersRepository,
+    private val workItemEditStateRepository: WorkItemEditStateRepository
+) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl(),
+    WorkItemTitleDelegate by WorkItemTitleDelegateImpl(
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemBadgeDelegate by WorkItemBadgeDelegateImpl(
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemTagsDelegate by WorkItemTagsDelegateImpl(
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemCommentsDelegate by WorkItemCommentsDelegateImpl(
+        historyRepository = historyRepository,
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
+        taskIdentifier = taskIdentifier,
+        workItemRepository = workItemRepository,
+        taigaSessionStorage = taigaSessionStorage
+    ),
+    WorkItemWatchersDelegate by WorkItemWatchersDelegateImpl(
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        usersRepository = usersRepository,
+        patchDataGenerator = patchDataGenerator,
+        taigaSessionStorage = taigaSessionStorage
+    ),
+    WorkItemCustomFieldsDelegate by WorkItemCustomFieldsDelegateImpl(
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemDueDateDelegate by WorkItemDueDateDelegateImpl(
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemBlockDelegate by WorkItemBlockDelegateImpl(
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemSingleAssigneeDelegate by WorkItemSingleAssigneeDelegateImpl(
+        commonTaskType = type,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator,
+        usersRepository = usersRepository
+    ),
+    WorkItemDescriptionDelegate by WorkItemDescriptionDelegateImpl(
+        taskIdentifier = taskIdentifier,
+        workItemRepository = workItemRepository,
+        patchDataGenerator = patchDataGenerator
+    ) {
+
+    private val route = savedStateHandle.toRoute<TaskDetailsNavDestination>()
+    private val ref = route.ref
+    private val taskId: Long = route.taskId
+
+    private val _state = MutableStateFlow(
+        TaskDetailsState(
+            toolbarTitle = NativeText.Arguments(
+                stringResource = RString.task_slug,
+                args = listOf(ref)
+            ),
+            setDropdownMenuExpanded = ::setDropdownMenuExpanded,
+            retryLoadTask = ::retryLoadTask,
+            setDueDate = ::setDueDate,
+            onTagRemove = ::onTagRemove,
+            onAssignToMe = ::onAssignToMe,
+            onUnassign = ::onUnassign,
+            onRemoveMeFromWatchersClick = ::onRemoveMeFromWatchersClick,
+            onAddMeToWatchersClick = ::onAddMeToWatchersClick,
+            removeWatcher = ::removeWatcher,
+            removeAssignee = ::removeAssignee,
+            onCustomFieldSave = ::onCustomFieldSave,
+            onBlockToggle = ::onBlockToggle,
+            setIsDeleteDialogVisible = ::setIsDeleteDialogVisible,
+            onDelete = ::doOnDelete,
+            onAttachmentRemove = ::onAttachmentRemove,
+            onAttachmentAdd = ::onAttachmentAdd,
+            onCommentRemove = ::deleteComment,
+            onCreateCommentClick = ::createComment,
+            onTitleSave = ::onTitleSave,
+            onBadgeSave = ::onBadgeSave,
+            onPromoteClick = ::promoteToUserStory,
+            onGoingToEditTags = ::onGoingToEditTags,
+            onGoingToEditWatchers = ::onGoingToEditWatchers,
+            onGoingToEditAssignee = ::onGoingToEditAssignee
+        )
+    )
+    val state = _state.asStateFlow()
+
+    private val currentTask: Task
+        get() = requireNotNull(_state.value.currentTask)
+
+    private val _deleteTrigger = MutableSharedFlow<Boolean>()
+    val deleteTrigger = _deleteTrigger.asSharedFlow()
+
+    private val _promotedToUserStoryTrigger = Channel<WorkItem>()
+    val promotedToUserStoryTrigger = _promotedToUserStoryTrigger.receiveAsFlow()
+
+    init {
+        loadTask()
+
+        workItemEditStateRepository
+            .getTeamMemberUpdateFlow(taskId, taskIdentifier)
+            .onEach(::handleTeamMemberUpdate)
+            .launchIn(viewModelScope)
+
+        workItemEditStateRepository
+            .getTagsFlow(taskId, taskIdentifier)
+            .onEach(::onNewTagsUpdate)
+            .launchIn(viewModelScope)
+
+        workItemEditStateRepository
+            .getDescriptionFlow(taskId, taskIdentifier)
+            .onEach(::onNewDescriptionUpdate)
+            .launchIn(viewModelScope)
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        workItemEditStateRepository.clearSession(taskId, taskIdentifier)
+        logcat { "TaskDetailsViewModel cleared - session cleaned up for taskId: $taskId" }
+    }
+
+    private fun onGoingToEditTags() {
+        workItemEditStateRepository.setTags(
+            workItemId = taskId,
+            type = taskIdentifier,
+            tags = tagsState.value.tags
+        )
+    }
+
+    private fun onGoingToEditWatchers() {
+        val watchersIds = watchersState.value.watchers.mapNotNull { it.id }
+            .toPersistentList()
+        workItemEditStateRepository.setCurrentWatchers(
+            ids = watchersIds,
+            workItemId = taskId,
+            type = taskIdentifier
+        )
+    }
+
+    fun onGoingToEditAssignee() {
+        val assigneeId = singleAssigneeState.value.assignees.firstOrNull()?.id
+        workItemEditStateRepository.setCurrentAssignee(
+            workItemId = taskId,
+            type = taskIdentifier,
+            id = assigneeId
+        )
+    }
+
+    private fun loadTask() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    initialLoadError = NativeText.Empty
+                )
+            }
+
+            taskDetailsDataUseCase.getTaskData(id = taskId)
+                .onSuccess { result ->
+                    val statusUi = result.task.status?.let {
+                        statusUIMapper.toUI(statuses = it)
+                    }
+                    val workItemBadges = async {
+                        workItemsGenerator.getItems(
+                            statusUI = statusUi,
+                            filtersData = result.filtersData
+                        )
+                    }
+                    val tags = async {
+                        tagUIMapper.toSelectableUI(result.task.tags).toPersistentList()
+                    }
+                    val customFieldsStateItems = async {
+                        customFieldsUIMapper.toUI(result.customFields)
+                    }
+
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            currentTask = result.task,
+                            originalTask = result.task,
+                            sprint = result.sprint,
+                            creator = result.creator,
+                            filtersData = result.filtersData,
+                            initialLoadError = NativeText.Empty,
+                            customFieldsVersion = result.customFields.version,
+                            canModifyTask = result.canModifyTask,
+                            canComment = result.canComment,
+                            canDeleteTask = result.canDeleteTask
+                        )
+                    }
+                    setInitialTitle(result.task.title)
+                    setWorkItemBadges(workItemBadges.await())
+                    setInitialTags(tags.await())
+                    setInitialComments(result.comments)
+                    setInitialAttachments(result.attachments.toPersistentList())
+                    setInitialWatchers(
+                        watchers = result.watchers.toPersistentList(),
+                        isWatchedByMe = result.isWatchedByMe
+                    )
+                    setInitialCustomFields(
+                        version = result.customFields.version,
+                        customFieldStateItems = customFieldsStateItems.await()
+                    )
+                    setInitialDueDate(
+                        dueDate = result.task.dueDate,
+                        dueDateStatus = result.task.dueDateStatus
+                    )
+                    setInitialAssignees(
+                        assignees = result.assignees.toPersistentList(),
+                        isAssignedToMe = result.isAssignedToMe
+                    )
+                    setInitialDescription(result.task.description)
+                }.onFailure { error ->
+                    logcat(throwable = error) {
+                        "Error loading task"
+                    }
+
+                    val errorToShow = getErrorMessage(error)
+                    _state.update {
+                        it.copy(
+                            isLoading = false,
+                            initialLoadError = errorToShow
+                        )
+                    }
+                }
+        }
+    }
+
+    private fun clearError() {
+        _state.update {
+            it.copy(
+                error = NativeText.Empty
+            )
+        }
+    }
+
+    private fun emitError(error: Throwable) {
+        logcat(throwable = error) {
+            "Error"
+        }
+        viewModelScope.launch {
+            showSnackbarSuspend(getErrorMessage(error))
+        }
+    }
+
+    private fun updateVersion(newVersion: Long) {
+        val updatedTask = currentTask.copy(
+            version = newVersion
+        )
+        _state.update {
+            it.copy(
+                currentTask = updatedTask,
+                originalTask = updatedTask
+            )
+        }
+    }
+
+    private fun onTitleSave() {
+        viewModelScope.launch {
+            handleTitleSave(
+                version = currentTask.version,
+                workItemId = currentTask.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    logcat(throwable = error) {
+                        "Error saving title"
+                    }
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
+    }
+
+    private fun createComment(newComment: String) {
+        viewModelScope.launch {
+            handleCreateComment(
+                version = currentTask.version,
+                id = currentTask.id,
+                comment = newComment,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnSuccess = { result ->
+                    updateVersion(result.newVersion)
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun deleteComment(comment: Comment) {
+        viewModelScope.launch {
+            handleDeleteComment(
+                id = currentTask.id,
+                commentId = comment.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun onAttachmentAdd(file: PlatformFile?) {
+        if (file == null) {
+            _state.update {
+                it.copy(
+                    error = NativeText.Resource(RString.common_error_message)
+                )
+            }
+            return
+        }
+
+        viewModelScope.launch {
+            handleAddAttachment(
+                workItemId = currentTask.id,
+                file = file,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun onAttachmentRemove(attachment: Attachment) {
+        viewModelScope.launch {
+            handleRemoveAttachment(
+                attachment = attachment,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun setIsDeleteDialogVisible(isVisible: Boolean) {
+        _state.update {
+            it.copy(isDeleteDialogVisible = isVisible)
+        }
+    }
+
+    private fun doOnDelete() {
+        viewModelScope.launch {
+            val id = _state.value.currentTask?.id
+            if (id == null) {
+                _state.update {
+                    it.copy(
+                        isLoading = false,
+                        error = NativeText.Resource(RString.common_error_message)
+                    )
+                }
+                return@launch
+            }
+
+            _state.update {
+                it.copy(isLoading = true)
+            }
+
+            taskDetailsDataUseCase.deleteTask(
+                id = id
+            ).onSuccess {
+                _deleteTrigger.emit(true)
+            }.onFailure { error ->
+                logcat(throwable = error) {
+                    "Error deleting task"
+                }
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+            }
+        }
+    }
+
+    private fun onBlockToggle(isBlocked: Boolean, blockNote: String?) {
+        viewModelScope.launch {
+            handleBlockToggle(
+                isBlocked = isBlocked,
+                blockNote = blockNote,
+                workItemId = currentTask.id,
+                version = currentTask.version,
+                doOnPreExecute = {
+                    clearError()
+                    _state.update {
+                        it.copy(
+                            isLoading = true
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    emitError(error)
+                    _state.update {
+                        it.copy(
+                            isLoading = false
+                        )
+                    }
+                },
+                doOnSuccess = { result ->
+                    val updatedTask = currentTask.copy(
+                        blockedNote = result.blockNote,
+                        version = result.patchedData.newVersion
+                    )
+                    _state.update {
+                        it.copy(
+                            currentTask = updatedTask,
+                            originalTask = updatedTask,
+                            isLoading = false
+                        )
+                    }
+                }
+            )
+        }
+    }
+
+    private fun onCustomFieldSave(item: CustomFieldItemState) {
+        viewModelScope.launch {
+            handleCustomFieldSave(
+                item = item,
+                customAttributesVersion = _state.value.customFieldsVersion,
+                workItemId = currentTask.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun removeAssignee() {
+        viewModelScope.launch {
+            handleUnassign(
+                workItemId = currentTask.id,
+                version = currentTask.version,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
+    }
+
+    private fun onUnassign() {
+        viewModelScope.launch {
+            handleUnassign(
+                workItemId = currentTask.id,
+                version = currentTask.version,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
+    }
+
+    private fun onAssignToMe() {
+        viewModelScope.launch {
+            handleAssignToMe(
+                workItemId = currentTask.id,
+                version = currentTask.version,
+                currentUserId = taigaSessionStorage.requireUserId(),
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
+    }
+
+    private fun onAssigneeUpdated(newAssigneeId: Long?) {
+        viewModelScope.launch {
+            handleUpdateAssignee(
+                newAssigneeId = newAssigneeId,
+                workItemId = currentTask.id,
+                version = currentTask.version,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
+    }
+
+    private fun removeWatcher() {
+        viewModelScope.launch {
+            handleRemoveWatcher(
+                version = currentTask.version,
+                workItemId = currentTask.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun onRemoveMeFromWatchersClick() {
+        viewModelScope.launch {
+            handleRemoveMeFromWatchers(
+                workItemId = currentTask.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun onAddMeToWatchersClick() {
+        viewModelScope.launch {
+            handleAddMeToWatchers(
+                workItemId = currentTask.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun onWatchersUpdated(newWatchers: ImmutableList<Long>) {
+        viewModelScope.launch {
+            handleUpdateWatchers(
+                version = currentTask.version,
+                workItemId = currentTask.id,
+                newWatchers = newWatchers,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private fun onBadgeSave(type: SelectableWorkItemBadgeState, item: StatusUI) {
+        viewModelScope.launch {
+            handleBadgeSave(
+                type = type,
+                item = item,
+                version = currentTask.version,
+                workItemId = currentTask.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
+    }
+
+    private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
+        when (updateState) {
+            TeamMemberUpdate.Clear -> {}
+
+            is TeamMemberUpdate.Assignees -> {}
+
+            is TeamMemberUpdate.Assignee -> {
+                onAssigneeUpdated(updateState.id)
+            }
+
+            is TeamMemberUpdate.Watchers -> {
+                onWatchersUpdated(updateState.ids)
+            }
+        }
+    }
+
+    private suspend fun onNewDescriptionUpdate(newDescription: String) {
+        updateDescription(
+            version = currentTask.version,
+            workItemId = currentTask.id,
+            newDescription = newDescription,
+            doOnPreExecute = {
+                clearError()
+            },
+            doOnError = { error ->
+                emitError(error)
+            },
+            doOnSuccess = { version ->
+                updateVersion(version)
+
+                val updatedTask = currentTask.copy(description = newDescription)
+
+                _state.update { currentState ->
+                    currentState.copy(
+                        currentTask = updatedTask,
+                        originalTask = updatedTask
+                    )
+                }
+            }
+        )
+    }
+
+    private fun retryLoadTask() {
+        loadTask()
+    }
+
+    private fun setDropdownMenuExpanded(isExpanded: Boolean) {
+        _state.update {
+            it.copy(isDropdownMenuExpanded = isExpanded)
+        }
+    }
+
+    private fun setDueDate(newDate: Long?) {
+        viewModelScope.launch {
+            handleDueDateSave(
+                newDate = newDate,
+                workItemId = currentTask.id,
+                version = currentTask.version,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnSuccess = { patchedData ->
+                    val updatedTask = currentTask.copy(
+                        version = patchedData.newVersion
+                    )
+
+                    _state.update {
+                        it.copy(
+                            currentTask = updatedTask,
+                            originalTask = updatedTask
+                        )
+                    }
+                },
+                doOnError = { error ->
+                    emitError(error)
+                }
+            )
+        }
+    }
+
+    private suspend fun onNewTagsUpdate(newTagsToUse: PersistentList<SelectableTagUI>) {
+        handleTagsUpdate(
+            newTags = newTagsToUse,
+            version = currentTask.version,
+            workItemId = currentTask.id,
+            doOnPreExecute = {
+                clearError()
+            },
+            doOnError = { error ->
+                emitError(error)
+            },
+            doOnSuccess = { version ->
+                updateVersion(version)
+            }
+        )
+    }
+
+    private fun onTagRemove(tag: SelectableTagUI) {
+        viewModelScope.launch {
+            handleTagRemove(
+                tag = tag,
+                version = currentTask.version,
+                workItemId = currentTask.id,
+                doOnPreExecute = {
+                    clearError()
+                },
+                doOnError = { error ->
+                    emitError(error)
+                },
+                doOnSuccess = { version ->
+                    updateVersion(version)
+                }
+            )
+        }
+    }
+
+    private fun promoteToUserStory() {
+        viewModelScope.launch {
+            _state.update {
+                it.copy(
+                    isLoading = true,
+                    error = NativeText.Empty
+                )
+            }
+            resultOf {
+                workItemRepository.promoteToUserStory(
+                    workItemId = currentTask.id,
+                    commonTaskType = type
+                )
+            }.onSuccess { result ->
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+                _promotedToUserStoryTrigger.send(result)
+            }.onFailure { error ->
+                emitError(error)
+                _state.update {
+                    it.copy(isLoading = false)
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,64 @@
+package com.grappim.taigamobile.testing.models
+
+import com.grappim.taigamobile.feature.epics.domain.Epic
+import com.grappim.taigamobile.feature.epics.domain.EpicDetailsData
+import com.grappim.taigamobile.testing.utils.getRandomBoolean
+import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.nowLocalDateTime
+import kotlinx.collections.immutable.persistentListOf
+
+fun getEpic(
+    id: Long = getRandomLong(),
+    version: Long = getRandomLong()
+): Epic = Epic(
+    id = id,
+    version = version,
+    ref = getRandomLong(),
+    creatorId = getRandomLong(),
+    title = getRandomString(),
+    description = getRandomString(),
+    createdDateTime = nowLocalDateTime,
+    project = getProjectExtraInfo(),
+    isClosed = getRandomBoolean(),
+    tags = persistentListOf(getTag()),
+    blockedNote = getRandomString(),
+    assignee = getUser(),
+    assignedUserIds = listOf(getRandomLong()),
+    watcherUserIds = listOf(getRandomLong()),
+    milestone = getRandomLong(),
+    copyLinkUrl = getRandomString(),
+    status = getStatus(),
+    epicColor = getRandomString()
+)
+
+fun getEpicDetailsData(
+    epic: Epic = getEpic()
+): EpicDetailsData = EpicDetailsData(
+    epic = epic,
+    attachments = persistentListOf(
+        getAttachment(),
+        getAttachment()
+    ),
+    customFields = getCustomFields(),
+    comments = persistentListOf(
+        getComment(),
+        getComment()
+    ),
+    creator = getUser(),
+    assignees = persistentListOf(
+        getUser(),
+        getUser()
+    ),
+    watchers = persistentListOf(
+        getUser(),
+        getUser()
+    ),
+    isAssignedToMe = getRandomBoolean(),
+    isWatchedByMe = getRandomBoolean(),
+    filtersData = getFiltersData(),
+    userStories = persistentListOf(),
+    canDeleteEpic = true,
+    canModifyEpic = true,
+    canComment = true
+)
