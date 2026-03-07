@@ -20,13 +20,11 @@ import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.register
 
 /**
- * Renames Android APK and AAB outputs from the default module-name prefix to "app-":
+ * Renames Android APK outputs from the default module-name prefix to "app-":
  *   androidApp-fdroid-debug.apk  → app-fdroid-debug.apk
- *   androidApp-gplay-release.aab → app-gplay-release.aab
  *
- * APKs use the AGP Variant API (toTransformMany + ArtifactTransformationRequest) so
+ * Uses the AGP Variant API (toTransformMany + ArtifactTransformationRequest) so
  * output-metadata.json is kept consistent with the renamed files.
- * AABs have no metadata file, so they are renamed via a lazy doLast on bundle*.
  */
 internal fun Project.configureAndroidOutputNaming() {
     extensions.configure<ApplicationAndroidComponentsExtension> {
@@ -47,22 +45,6 @@ internal fun Project.configureAndroidOutputNaming() {
                 .toTransformMany(SingleArtifact.APK)
             apkTaskProvider.configure {
                 transformationRequest.set(request)
-            }
-
-            // AABs: SingleArtifact.BUNDLE has no metadata file, so a lazy doLast rename is safe.
-            // tasks.configureEach is used (not tasks.named) because bundle tasks only exist for
-            // release variants — tasks.named would throw at configuration time for others.
-            val bundleDir = layout.buildDirectory.dir("outputs/bundle/${variant.name}")
-            tasks.configureEach {
-                if (name == "bundle$variantCap") {
-                    doLast {
-                        bundleDir.get().asFile.listFiles()?.forEach { file ->
-                            if (file.extension == "aab" && !file.name.startsWith("app-")) {
-                                file.renameTo(File(file.parent, "$baseName.aab"))
-                            }
-                        }
-                    }
-                }
             }
         }
     }
