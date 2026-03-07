@@ -104,3 +104,8 @@ The workflow will fail. Resolve by merging `dev` into `master` locally, resolvin
 
 **Need to cancel a release in progress**
 Delete the `release/v{version}` branch. The `release-finalize` workflow only triggers on PR merge, so nothing automatic will happen until you merge.
+
+**Release build failed after the tag was pushed**
+If `release.yml` fails after the tag already exists (e.g. a build error), fix the code on `dev`, open a PR to `master`, merge it, then manually re-trigger the build:
+Go to **Actions → Release → Run workflow** (select `master` as the branch).
+The `workflow_dispatch` trigger builds and uploads artifacts exactly like a tag push would, and re-uses the existing tag for the GitHub Release name.

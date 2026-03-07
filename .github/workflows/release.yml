@@ -4,12 +4,13 @@ on:
     push:
         tags:
             - v*
+    workflow_dispatch:
 
 jobs:
     release:
         permissions: write-all
         runs-on: ubuntu-latest
-        if: startsWith(github.ref, 'refs/tags/')
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         env:
             TAIGA_PATH_R: ${{ secrets.TAIGA_PATH_R }}
             TAIGA_KEY_PASS_R: ${{ secrets.TAIGA_KEY_PASS_R }}
@@ -63,4 +64,4 @@ jobs:
                       androidApp/build/outputs/apk/fdroid/release/app-fdroid-release.apk
                       androidApp/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
                       androidApp/build/outputs/apk/gplay/release/app-gplay-release.apk
-                      androidApp/build/outputs/bundle/gplayRelease/app-gplay-release.aab
+                      androidApp/build/outputs/bundle/gplayRelease/androidApp-gplay-release.aab
