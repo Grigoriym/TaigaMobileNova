@@ -30,7 +30,7 @@ fun Project.configureKmpCompose() {
         }
     }
 
-    dependencies{
+    dependencies {
         "androidRuntimeClasspath"(libs.findLibrary("jetbrains.compose.ui.tooling").get())
     }
 }
