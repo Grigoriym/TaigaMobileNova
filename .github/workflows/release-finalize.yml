@@ -1,0 +1,49 @@
+name: Release Finalize
+
+on:
+    pull_request:
+        types: [closed]
+        branches:
+            - master
+
+jobs:
+    finalize:
+        if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head.ref, 'release/v')
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+        steps:
+            - name: Extract version
+              id: version
+              run: |
+                  BRANCH="${{ github.event.pull_request.head.ref }}"
+                  VERSION="${BRANCH#release/v}"
+                  echo "version=$VERSION" >> $GITHUB_OUTPUT
+                  echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+
+            - name: Check out master
+              uses: actions/checkout@v6
+              with:
+                  ref: master
+                  fetch-depth: 0
+                  # RELEASE_PAT (admin PAT) is required to push directly to dev,
+                  # which has branch protection requiring PRs (GITHUB_TOKEN is not an admin).
+                  # Create a PAT with repo scope and add it as a repository secret.
+                  token: ${{ secrets.RELEASE_PAT }}
+
+            - name: Set up git
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            - name: Create and push tag
+              run: |
+                  git tag -a "${{ steps.version.outputs.tag }}" -m "Release ${{ steps.version.outputs.tag }}"
+                  git push origin "${{ steps.version.outputs.tag }}"
+
+            - name: Back-merge master into dev
+              run: |
+                  git fetch origin dev
+                  git checkout dev
+                  git merge origin/master --no-ff -m "Merge master into dev after release ${{ steps.version.outputs.tag }}"
+                  git push origin dev

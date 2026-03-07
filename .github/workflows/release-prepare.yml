@@ -1,0 +1,74 @@
+name: Release Prepare
+
+on:
+    workflow_dispatch:
+        inputs:
+            version:
+                description: 'Version name (e.g. 2.0.8)'
+                required: true
+            version_code:
+                description: 'Version code (e.g. 39)'
+                required: true
+
+jobs:
+    prepare:
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+        steps:
+            - name: Check out master
+              uses: actions/checkout@v6
+              with:
+                  ref: master
+                  fetch-depth: 0
+                  token: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Set up git
+              run: |
+                  git config user.name "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+            - name: Merge dev into master locally
+              run: |
+                  git fetch origin dev
+                  git merge origin/dev --no-ff -m "Merge dev into master for release v${{ inputs.version }}"
+
+            - name: Create release branch
+              run: git checkout -b release/v${{ inputs.version }}
+
+            - name: Bump version in libs.versions.toml
+              run: |
+                  sed -i 's/^version-code = ".*"/version-code = "${{ inputs.version_code }}"/' gradle/libs.versions.toml
+                  sed -i 's/^version-name = ".*"/version-name = "${{ inputs.version }}"/' gradle/libs.versions.toml
+
+            - name: Create F-Droid changelog stub
+              run: |
+                  echo "What's new in v${{ inputs.version }}" > fastlane/metadata/android/en-US/changelogs/${{ inputs.version_code }}.txt
+
+            - name: Commit and push
+              run: |
+                  git add gradle/libs.versions.toml fastlane/metadata/android/en-US/changelogs/
+                  git commit -m "Release v${{ inputs.version }}"
+                  git push origin release/v${{ inputs.version }}
+
+            - name: Create PR
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  gh pr create \
+                    --base master \
+                    --head release/v${{ inputs.version }} \
+                    --title "Release v${{ inputs.version }}" \
+                    --body "## Release v${{ inputs.version }}
+
+                  **Version code:** ${{ inputs.version_code }}
+
+                  ### Before merging
+                  - [ ] Edit F-Droid changelog: \`fastlane/metadata/android/en-US/changelogs/${{ inputs.version_code }}.txt\`
+                  - [ ] Review version bump in \`gradle/libs.versions.toml\`
+
+                  ### After merging (automatic)
+                  - Tag \`v${{ inputs.version }}\` will be created and pushed
+                  - Existing \`release.yml\` will build APKs/AAB and create the GitHub Release
+                  - \`master\` will be back-merged into \`dev\`"
