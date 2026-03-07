@@ -2,12 +2,19 @@
 
 # Taiga Mobile Nova
 
-This is the **unofficial** Android app for the agile project management system [taiga.io](https://www.taiga.io/).
+This is the **unofficial** Kotlin Multiplatform client for the agile project management system [taiga.io](https://www.taiga.io/), targeting **Android**, **iOS**, and **Desktop** (Linux/macOS/Windows).
 
-The previous author archived the original project. This version has been almost completely rewritten with modern Android development practices.
+The previous author archived the original project. This version has been completely rewritten using Kotlin Multiplatform and Compose Multiplatform.
 
-Install
----------
+## Platforms
+
+| Platform | Status | Distribution |
+|----------|--------|--------------|
+| Android  | Released | Google Play & F-Droid |
+| iOS      | Builds & runs | Distribution TBD |
+| Desktop (Linux / macOS / Windows) | Builds & runs | Distribution TBD |
+
+### Android
 
 [<img src="docs/google-badge.png"
 alt="Get it on Google Play"
@@ -16,7 +23,9 @@ height="80">](https://play.google.com/store/apps/details?id=com.grappim.taigamob
 alt="Get it on F-Droid"
 height="80">](https://f-droid.org/en/packages/com.grappim.taigamobile.fdroid/)
 
-**Future plans:** I plan to migrate this project to Kotlin Multiplatform (KMP), enabling iOS support
+### iOS & Desktop
+
+iOS and Desktop builds are functional but distribution channels are not yet set up. If you want to try them, clone the repo and build locally — see [Build Commands](#build-commands) below.
 
 [Project board](https://tasks.gregstuff.click/project/taigamobilenova/kanban)
 
@@ -59,5 +68,21 @@ height="80">](https://f-droid.org/en/packages/com.grappim.taigamobile.fdroid/)
 * Filters for user stories, epics, and issues
 * Permissions validation
 
+## Build Commands
+
+```bash
+# Android
+./gradlew :androidApp:assembleGplayDebug
+./gradlew :androidApp:assembleFdroidDebug
+
+# Desktop — run or package
+./gradlew :composeApp:run
+./gradlew :composeApp:packageDistributionForCurrentOS   # .deb / .dmg / .msi
+
+# iOS framework (called automatically by Xcode)
+./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64
+./gradlew :composeApp:linkReleaseFrameworkIosArm64
+```
+
 ## About
-This project is a complete rewrite of the [original TaigaMobile app](https://github.com/EugeneTheDev/TaigaMobile) (now archived) using modern Android development practices and Jetpack Compose.
+This project is a complete rewrite of the [original TaigaMobile app](https://github.com/EugeneTheDev/TaigaMobile) (now archived), rebuilt from scratch with Kotlin Multiplatform, Compose Multiplatform, and modern architecture.
