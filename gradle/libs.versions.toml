@@ -60,7 +60,9 @@ slf4j = "2.0.17"
 
 # https://github.com/InsertKoinIO/koin/releases
 koin-bom = "4.2.0-RC1"
+# https://github.com/InsertKoinIO/koin-annotations/releases
 koin-annotations = "2.3.1"
+# https://github.com/InsertKoinIO/koin-compiler-plugin
 koin-plugin = "0.3.0"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
@@ -70,9 +72,9 @@ jetbrainsComposeMaterial = "1.9.0"
 jetbrainsSavedState = "1.4.0"
 jetbrainsComposeIcons = "1.7.3"
 jetbrainsAndroidxLifecycle = "2.9.6"
+jetbrainsNavigationCompose = "2.9.2"
 
 compose-bom = "2026.02.01"
-navigation-compose-kmp = "2.9.2"
 
 material = "1.13.0"
 navigation = "2.9.7"
@@ -116,8 +118,6 @@ jetbrains-compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", 
 jetbrains-compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "jetbrainsComposeMultiplatform" }
 jetbrains-compose-material = { module = "org.jetbrains.compose.material:material", version.ref = "jetbrainsComposeMultiplatform" }
 jetbrains-compose-ui = { module = "org.jetbrains.compose.ui:ui", version.ref = "jetbrainsComposeMultiplatform" }
-jetbrains-compose-ui-graphics = { module = "org.jetbrains.compose.ui:ui-graphics", version.ref = "jetbrainsComposeMultiplatform" }
-jetbrains-compose-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "jetbrainsComposeMultiplatform" }
 jetbrains-compose-desktop = { module = "org.jetbrains.compose.desktop:desktop", version.ref = "jetbrainsComposeMultiplatform" }
 jetbrains-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "jetbrainsComposeMaterial" }
 jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrainsAndroidxLifecycle" }
@@ -125,10 +125,7 @@ jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifec
 jetbrains-androidx-savedstate = { module = "org.jetbrains.androidx.savedstate:savedstate", version.ref = "jetbrainsSavedState" }
 jetbrains-compose-icons = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "jetbrainsComposeIcons" }
 jetbrains-compose-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "jetbrainsComposeIcons" }
-
-jetbrains-compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose-kmp" }
-compose-navigation-desktop = { module = "org.jetbrains.androidx.navigation:navigation-compose-desktop", version.ref = "navigation-compose-kmp" }
-compose-navigation-ios = { module = "org.jetbrains.androidx.navigation:navigation-common-iosarm64", version.ref = "navigation-compose-kmp" }
+jetbrains-compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "jetbrainsNavigationCompose" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -158,16 +155,13 @@ koin-android = { module = "io.insert-koin:koin-android" }
 koin-compose = { module = "io.insert-koin:koin-compose" }
 koin-compose-viewmodel = { module = "io.insert-koin:koin-compose-viewmodel" }
 koin-annotations = { module = "io.insert-koin:koin-annotations", version.ref = "koin-annotations" }
-koin-navigation2 = { module = "io.insert-koin:koin-androidx-compose-navigation" }
 koin-test = { module = "io.insert-koin:koin-test" }
 koin-test-junit4 = { module = "io.insert-koin:koin-test-junit4" }
 
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "activity-compose" }
 androidx-viewmodel-compose = { module = "androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "lifecycle" }
-androidx-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
 androidx-core-splashScreen = { module = "androidx.core:core-splashscreen", version.ref = "splashScreen" }
 
 androidx-datastore-android = { module = "androidx.datastore:datastore-preferences", version.ref = "dataStore" }
@@ -187,9 +181,6 @@ android-desugarJdkLibs = { group = "com.android.tools", name = "desugar_jdk_libs
 
 androidx-compose-bom = { module = "androidx.compose:compose-bom", version.ref = "compose-bom" }
 androidx-compose-ui = { module = "androidx.compose.ui:ui" }
-androidx-compose-foundation-layout = { module = "androidx.compose.foundation:foundation-layout" }
-androidx-compose-ui-tooling = { module = "androidx.compose.ui:ui-tooling" }
-androidx-compose-ui-tooling-preview = { module = "androidx.compose.ui:ui-tooling-preview" }
 androidx-compose-material3 = { module = "androidx.compose.material3:material3" }
 androidx-compose-material = { module = "androidx.compose.material:material" }
 

@@ -15,14 +15,14 @@ android {
         }
     }
 
-    namespace = libs.versions.app.pkg.get().toString()
+    namespace = libs.versions.app.pkg.get()
 
     defaultConfig {
-        applicationId = libs.versions.app.pkg.get().toString()
+        applicationId = libs.versions.app.pkg.get()
         testApplicationId = "${libs.versions.app.pkg.get()}.test"
 
         versionCode = libs.versions.version.code.get().toString().toInt()
-        versionName = libs.versions.version.name.get().toString()
+        versionName = libs.versions.version.name.get()
     }
 }
 

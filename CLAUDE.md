@@ -13,11 +13,13 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 ./gradlew :composeApp:run
 ./gradlew :composeApp:packageDistributionForCurrentOS   # Deb / Dmg / Msi
 
-# iOS - build the framework (then open iosApp/iosApp.xcodeproj in Xcode)
-./gradlew :composeApp:assembleTaigaMobileNovaIosReleaseXCFramework
+# iOS - link the framework (Xcode calls embedAndSignAppleFrameworkForXcode automatically)
+./gradlew :composeApp:linkReleaseFrameworkIosArm64          # device
+./gradlew :composeApp:linkReleaseFrameworkIosSimulatorArm64 # simulator
 
-# Run tests (use fdroid or gplay variant for Android)
-./gradlew :module:path:testFdroidDebugUnitTest --tests "com.package.TestClass"
+# Run tests — KMP modules use jvmTest; androidApp has Android-specific variants
+./gradlew :module:path:jvmTest --tests "com.package.TestClass"
+./gradlew :androidApp:testFdroidDebugUnitTest --tests "com.package.TestClass"
 
 # Run all JVM tests across all modules (skips Android unit tests which require mocking)
 ./gradlew jvmTest
@@ -34,7 +36,7 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 ./gradlew :composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks   # iOS simulator
 ./gradlew :composeApp:compileKotlinIosArm64 --rerun-tasks            # iOS device
 # Android equivalent (also forces Koin compiler logs):
-./gradlew :androidApp:compileFdroidDebugKotlinAndroid --rerun-tasks
+./gradlew :androidApp:compileFdroidDebugKotlin --rerun-tasks
 ```
 
 ## Architecture
