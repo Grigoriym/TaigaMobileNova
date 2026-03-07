@@ -20,5 +20,5 @@ enum class ProjectValueType(
     POINTS("points", "bulk_points", hasColor = false, hasValue = true),
     US_DUE_DATES("userstory-due-dates", null, hasDaysToDue = true, deleteRequiresMoveTo = false),
     TASK_DUE_DATES("task-due-dates", null, hasDaysToDue = true, deleteRequiresMoveTo = false),
-    ISSUE_DUE_DATES("issue-due-dates", null, hasDaysToDue = true, deleteRequiresMoveTo = false),
+    ISSUE_DUE_DATES("issue-due-dates", null, hasDaysToDue = true, deleteRequiresMoveTo = false)
 }

@@ -108,10 +108,7 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 @Composable
-fun ProjectValuesScreen(
-    showSnackbar: (NativeText) -> Unit,
-    viewModel: ProjectValuesViewModel = koinViewModel()
-) {
+fun ProjectValuesScreen(showSnackbar: (NativeText) -> Unit, viewModel: ProjectValuesViewModel = koinViewModel()) {
     val topBarController: TopBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 
@@ -173,11 +170,7 @@ private fun ProjectValuesContent(state: ProjectValuesState) {
 }
 
 @Composable
-private fun ProjectValueItemRow(
-    item: ProjectValueItem,
-    type: ProjectValueType,
-    state: ProjectValuesState
-) {
+private fun ProjectValueItemRow(item: ProjectValueItem, type: ProjectValueType, state: ProjectValuesState) {
     ListItem(
         leadingContent = if (type.hasColor) {
             {
@@ -188,7 +181,9 @@ private fun ProjectValueItemRow(
                         .background(StaticStringColor(item.color).asColor())
                 )
             }
-        } else null,
+        } else {
+            null
+        },
         headlineContent = { Text(item.name) },
         supportingContent = {
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -256,7 +251,9 @@ private fun EditProjectValueDialog(state: ProjectValuesState) {
     val item = state.editingItem
 
     var name by remember(item) { mutableStateOf(item?.name ?: "") }
-    var color by remember(item) { mutableStateOf((item?.color ?: state.presetColors.firstOrNull() ?: "#A9AABC").toColor()) }
+    var color by remember(item) {
+        mutableStateOf((item?.color ?: state.presetColors.firstOrNull() ?: "#A9AABC").toColor())
+    }
     var isClosed by remember(item) { mutableStateOf(item?.isClosed ?: false) }
     var isArchived by remember(item) { mutableStateOf(item?.isArchived ?: false) }
     var value by remember(item) { mutableStateOf(item?.value?.toString() ?: "") }
@@ -587,8 +584,22 @@ private fun ProjectValuesScreenPreview() {
                     type = ProjectValueType.EPIC_STATUSES,
                     items = persistentListOf(
                         ProjectValueItem(id = 1, name = "New", color = "#70BD0C", order = 1, project = 1),
-                        ProjectValueItem(id = 2, name = "In progress", color = "#E44057", order = 2, project = 1, isClosed = false),
-                        ProjectValueItem(id = 3, name = "Done", color = "#A9AABC", order = 3, project = 1, isClosed = true)
+                        ProjectValueItem(
+                            id = 2,
+                            name = "In progress",
+                            color = "#E44057",
+                            order = 2,
+                            project = 1,
+                            isClosed = false
+                        ),
+                        ProjectValueItem(
+                            id = 3,
+                            name = "Done",
+                            color = "#A9AABC",
+                            order = 3,
+                            project = 1,
+                            isClosed = true
+                        )
                     )
                 )
             )

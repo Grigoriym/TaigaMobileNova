@@ -178,7 +178,7 @@ private fun EditAssigneeContentPreview() {
                 itemsToShow = persistentListOf(
                     TeamMemberUI(id = 1L, name = "Alice Johnson", avatarUrl = null),
                     TeamMemberUI(id = 2L, name = "Bob Smith", avatarUrl = null),
-                    TeamMemberUI(id = 3L, name = "Charlie Brown", avatarUrl = null),
+                    TeamMemberUI(id = 3L, name = "Charlie Brown", avatarUrl = null)
                 ),
                 isItemSelected = { id -> id == 1L },
                 selectedItems = persistentListOf(1L),

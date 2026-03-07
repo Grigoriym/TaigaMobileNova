@@ -16,11 +16,10 @@ class ProjectValuesRepositoryImpl(
     private val taigaSessionStorage: TaigaSessionStorage
 ) : ProjectValuesRepository {
 
-    override suspend fun getProjectValues(type: ProjectValueType): ImmutableList<ProjectValueItem> =
-        projectValuesApi
-            .getProjectValues(type.endpoint, taigaSessionStorage.getCurrentProjectId())
-            .map { it.toDomain() }
-            .toImmutableList()
+    override suspend fun getProjectValues(type: ProjectValueType): ImmutableList<ProjectValueItem> = projectValuesApi
+        .getProjectValues(type.endpoint, taigaSessionStorage.getCurrentProjectId())
+        .map { it.toDomain() }
+        .toImmutableList()
 
     override suspend fun createProjectValue(
         type: ProjectValueType,

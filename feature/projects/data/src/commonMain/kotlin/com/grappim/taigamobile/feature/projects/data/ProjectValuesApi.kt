@@ -30,8 +30,11 @@ class ProjectValuesApiImpl(private val httpClient: HttpClient) : ProjectValuesAp
     override suspend fun createProjectValue(endpoint: String, request: ProjectValueRequestDTO): ProjectValueItemDTO =
         httpClient.post(endpoint) { setBody(request) }.body()
 
-    override suspend fun updateProjectValue(endpoint: String, id: Long, request: ProjectValueRequestDTO): ProjectValueItemDTO =
-        httpClient.patch("$endpoint/$id") { setBody(request) }.body()
+    override suspend fun updateProjectValue(
+        endpoint: String,
+        id: Long,
+        request: ProjectValueRequestDTO
+    ): ProjectValueItemDTO = httpClient.patch("$endpoint/$id") { setBody(request) }.body()
 
     override suspend fun deleteProjectValue(endpoint: String, id: Long, moveTo: Long?) {
         httpClient.delete("$endpoint/$id") {

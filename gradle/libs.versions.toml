@@ -68,10 +68,11 @@ jetbrainsComposeMultiplatform = "1.10.1"
 jetbrainsNavigationEvent = "1.0.1"
 jetbrainsComposeMaterial = "1.9.0"
 jetbrainsSavedState = "1.4.0"
+jetbrainsComposeIcons = "1.7.3"
+jetbrainsAndroidxLifecycle = "2.9.6"
 
 compose-bom = "2026.02.01"
 navigation-compose-kmp = "2.9.2"
-composeIcons = "1.7.3"
 
 material = "1.13.0"
 navigation = "2.9.7"
@@ -87,7 +88,6 @@ junit4 = "4.13.2"
 
 chucker = "4.3.1"
 dataStore = "1.2.0"
-androidx-lifecycle = "2.9.6"
 
 skydovesColorpicker = "1.1.3"
 markdownRenderer = "0.39.2"
@@ -120,17 +120,15 @@ jetbrains-compose-ui-graphics = { module = "org.jetbrains.compose.ui:ui-graphics
 jetbrains-compose-animation = { module = "org.jetbrains.compose.animation:animation", version.ref = "jetbrainsComposeMultiplatform" }
 jetbrains-compose-desktop = { module = "org.jetbrains.compose.desktop:desktop", version.ref = "jetbrainsComposeMultiplatform" }
 jetbrains-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "jetbrainsComposeMaterial" }
-jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
-jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "androidx-lifecycle" }
-
-jetbrains-compose-icons = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "composeIcons" }
-jetbrains-compose-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "composeIcons" }
+jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrainsAndroidxLifecycle" }
+jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrainsAndroidxLifecycle" }
+jetbrains-androidx-savedstate = { module = "org.jetbrains.androidx.savedstate:savedstate", version.ref = "jetbrainsSavedState" }
+jetbrains-compose-icons = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "jetbrainsComposeIcons" }
+jetbrains-compose-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "jetbrainsComposeIcons" }
 
 jetbrains-compose-navigation = { module = "org.jetbrains.androidx.navigation:navigation-compose", version.ref = "navigation-compose-kmp" }
 compose-navigation-desktop = { module = "org.jetbrains.androidx.navigation:navigation-compose-desktop", version.ref = "navigation-compose-kmp" }
 compose-navigation-ios = { module = "org.jetbrains.androidx.navigation:navigation-common-iosarm64", version.ref = "navigation-compose-kmp" }
-
-jetbrains-androidx-savedstate = { module = "org.jetbrains.androidx.savedstate:savedstate", version.ref = "jetbrainsSavedState" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }

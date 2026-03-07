@@ -194,7 +194,7 @@ private fun EditTagsContentPreview() {
                     SelectableTagUI(name = "backend", color = Color(0xFF3B99FC), isSelected = true),
                     SelectableTagUI(name = "design", color = Color(0xFFE44D26), isSelected = false),
                     SelectableTagUI(name = "urgent", color = Color(0xFFE8B800), isSelected = true),
-                    SelectableTagUI(name = "feature", color = Color(0xFF2ECC71), isSelected = false),
+                    SelectableTagUI(name = "feature", color = Color(0xFF2ECC71), isSelected = false)
                 )
             )
         )

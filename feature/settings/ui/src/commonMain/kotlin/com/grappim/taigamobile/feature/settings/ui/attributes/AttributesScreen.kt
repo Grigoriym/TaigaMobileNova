@@ -50,10 +50,7 @@ fun AttributesScreen(goToTagsScreen: () -> Unit, goToProjectValuesMenuScreen: ()
 }
 
 @Composable
-fun AttributesScreenContent(
-    goToTagsScreen: () -> Unit = {},
-    goToProjectValuesMenuScreen: () -> Unit = {}
-) {
+fun AttributesScreenContent(goToTagsScreen: () -> Unit = {}, goToProjectValuesMenuScreen: () -> Unit = {}) {
     Surface {
         Column(
             modifier = Modifier

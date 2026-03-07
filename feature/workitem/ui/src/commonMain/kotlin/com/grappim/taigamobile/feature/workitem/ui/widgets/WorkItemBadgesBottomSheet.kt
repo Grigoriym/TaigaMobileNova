@@ -122,7 +122,7 @@ private val previewStatuses = persistentListOf(
     StatusUI(id = 1L, title = NativeText.Simple("New"), color = StaticColor(Color(0xFF70728F))),
     StatusUI(id = 2L, title = NativeText.Simple("In Progress"), color = StaticColor(Color(0xFFE47C40))),
     StatusUI(id = 3L, title = NativeText.Simple("Ready for Test"), color = StaticColor(Color(0xFFE8B800))),
-    StatusUI(id = 4L, title = NativeText.Simple("Done"), color = StaticColor(Color(0xFF2ECC71))),
+    StatusUI(id = 4L, title = NativeText.Simple("Done"), color = StaticColor(Color(0xFF2ECC71)))
 )
 
 @PreviewTaigaDarkLight

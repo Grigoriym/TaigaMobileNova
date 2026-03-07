@@ -26,7 +26,8 @@ class ProjectValuesViewModel(
     savedStateHandle: SavedStateHandle,
     private val repository: ProjectValuesRepository,
     private val sessionStorage: TaigaSessionStorage
-) : ViewModel(), SnackbarDelegate by SnackbarDelegateImpl() {
+) : ViewModel(),
+    SnackbarDelegate by SnackbarDelegateImpl() {
 
     private val route = savedStateHandle.toRoute<ProjectValuesNavDestination>()
     private val type = ProjectValueType.valueOf(route.typeName)

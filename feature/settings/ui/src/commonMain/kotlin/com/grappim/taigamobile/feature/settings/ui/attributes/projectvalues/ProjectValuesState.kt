@@ -20,7 +20,14 @@ data class ProjectValuesState(
     val editingItem: ProjectValueItem? = null,
     val onAddClick: () -> Unit = {},
     val onEditClick: (ProjectValueItem) -> Unit = {},
-    val onSaveItem: (name: String, color: String, isClosed: Boolean, isArchived: Boolean, value: String, daysToDue: String) -> Unit = { _, _, _, _, _, _ -> },
+    val onSaveItem: (
+        name: String,
+        color: String,
+        isClosed: Boolean,
+        isArchived: Boolean,
+        value: String,
+        daysToDue: String
+    ) -> Unit = { _, _, _, _, _, _ -> },
     val onDismissEditDialog: () -> Unit = {},
 
     // Delete dialog
