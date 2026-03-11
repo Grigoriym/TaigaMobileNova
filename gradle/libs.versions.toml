@@ -80,7 +80,7 @@ compose-bom = "2026.02.01"
 
 material = "1.13.0"
 navigation = "2.9.7"
-activity-compose = "1.12.4"
+activity-compose = "1.13.0"
 lifecycle = "2.10.0"
 paging = "3.4.1"
 room = "2.8.4"
