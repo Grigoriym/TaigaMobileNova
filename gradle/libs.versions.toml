@@ -91,7 +91,7 @@ okhttp = "5.3.2"
 junit4 = "4.13.2"
 
 chucker = "4.3.1"
-dataStore = "1.2.0"
+dataStore = "1.2.1"
 
 # https://github.com/skydoves/colorpicker-compose/releases
 skydovesColorpicker = "1.1.3"
