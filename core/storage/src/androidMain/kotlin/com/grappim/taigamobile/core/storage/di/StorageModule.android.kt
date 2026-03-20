@@ -15,18 +15,15 @@ import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
-import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Single
 
 @Module(includes = [AuthDataStoreModule::class, StorageModule::class])
 @Configuration
-@ComponentScan
 actual class PlatformStorageModule
 
 @Module
-@ComponentScan
 class AuthDataStoreModule {
 
     @Single
