@@ -53,7 +53,6 @@ import org.koin.core.annotation.Module
 
 @Module(
     includes = [
-        AppModule::class,
         KmpNetworkModule::class,
         DateTimeModule::class,
         DecimalFormatterModule::class,
