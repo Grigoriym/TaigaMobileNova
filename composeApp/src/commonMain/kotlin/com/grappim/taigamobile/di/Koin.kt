@@ -124,7 +124,7 @@ expect class PlatformComponentModule
         // feature/workitem
         WorkItemDataModule::class,
         WorkItemMapperModule::class,
-        WorkItemUiModule::class,
+        WorkItemUiModule::class
     ]
 )
 @Configuration
