@@ -1,6 +1,7 @@
 import com.grappim.taigamobile.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.provider.Property
 import org.gradle.kotlin.dsl.configure
 import org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension
 
@@ -10,6 +11,11 @@ class KmpDiConventionPlugin : Plugin<Project> {
             with(pluginManager) {
                 apply("org.jetbrains.kotlin.multiplatform")
                 apply("io.insert-koin.compiler.plugin")
+            }
+
+            extensions.findByName("koinCompiler")?.let { ext ->
+                @Suppress("UNCHECKED_CAST")
+                (ext.javaClass.getMethod("getCompileSafety").invoke(ext) as Property<Boolean>).set(false)
             }
 
             extensions.configure<KotlinMultiplatformExtension> {

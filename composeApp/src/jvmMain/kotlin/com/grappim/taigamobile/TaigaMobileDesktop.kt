@@ -33,7 +33,7 @@ fun main() {
             icon = appIcon,
             onCloseRequest = ::exitApplication,
             title = stringResource(RString.app_name),
-            alwaysOnTop = true,
+            alwaysOnTop = false,
             state = rememberWindowState(width = 600.dp, height = 800.dp)
         ) {
             TaigaAppContent(screenReadySignalController)
