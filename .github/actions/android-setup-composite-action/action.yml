@@ -13,7 +13,7 @@ runs:
         cache: 'gradle'
 
     - name: Validate Gradle Wrapper
-      uses: gradle/actions/wrapper-validation@v5
+      uses: gradle/actions/wrapper-validation@v6
 
       ## https://github.com/actions/cache/blob/main/examples.md#java---gradle
     - name: Setup Gradle Cache
