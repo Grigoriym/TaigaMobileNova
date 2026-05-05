@@ -38,7 +38,7 @@ agp = "9.1.0"
 androidDesugarJdkLibs = "2.1.5"
 
 # https://github.com/yshrsmz/BuildKonfig/releases
-buildKonfig = "0.17.1"
+buildKonfig = "0.20.0"
 
 # https://github.com/JetBrains/kotlin/releases
 kotlin = "2.3.20"
