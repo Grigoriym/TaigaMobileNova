@@ -61,7 +61,7 @@ ktor = "3.4.2"
 slf4j = "2.0.17"
 
 # https://github.com/InsertKoinIO/koin/releases
-koin-bom = "4.2.0"
+koin-bom = "4.2.1"
 # https://github.com/InsertKoinIO/koin-annotations/releases
 koin-annotations = "4.2.0"
 # https://github.com/InsertKoinIO/koin-compiler-plugin
