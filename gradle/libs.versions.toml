@@ -33,7 +33,7 @@ kover = "0.9.8"
 composeRules = "0.5.8"
 
 # https://developer.android.com/reference/tools/gradle-api
-agp = "9.1.0"
+agp = "9.2.1"
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 androidDesugarJdkLibs = "2.1.5"
 
