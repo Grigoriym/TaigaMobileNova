@@ -39,7 +39,7 @@ abstract class TaigaDB : RoomDatabase() {
 }
 
 // The Room compiler generates the `actual` implementations.
-@Suppress("KotlinNoActualForExpect")
+@Suppress("NO_ACTUAL_FOR_EXPECT", "KotlinNoActualForExpect")
 expect object TaigaDBConstructor : RoomDatabaseConstructor<TaigaDB> {
     override fun initialize(): TaigaDB
 }
