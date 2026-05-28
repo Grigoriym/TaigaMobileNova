@@ -57,7 +57,7 @@ kotlinTest = "2.3.21"
 atomicfu = "0.32.1"
 # https://github.com/cashapp/turbine/releases
 turbine = "1.2.1"
-ktor = "3.4.2"
+ktor = "3.5.0"
 slf4j = "2.0.18"
 
 # https://github.com/InsertKoinIO/koin/releases
