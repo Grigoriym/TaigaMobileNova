@@ -1,1 +1,2 @@
-What's new in v2.1.1
+- Dependency updates (Kotlin, Koin, AGP, Compose BOM, and more)
+- Internal code cleanup and improvements
