@@ -70,6 +70,7 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
                 setIsAlertVisible(false)
                 startGithubOAuth()
             }
+
             else -> login()
         }
     }
