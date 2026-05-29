@@ -203,6 +203,7 @@ git submodule update --init
 |-------|-------------|
 | `navigation-3` | Google's official Navigation 3 recipes |
 | `edge-to-edge` | System bars, insets, IME handling for SDK 35+ |
+| `adaptive` | Adaptive layouts for tablets/foldables — window size classes, list-detail, FlexboxLayout |
 
 ## Coding Guidelines
 
