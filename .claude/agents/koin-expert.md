@@ -80,22 +80,20 @@ When adding a new multiplatform module that has platform-specific beans:
 
 | Module | Source Set | Key Beans |
 |--------|-----------|-----------|
-| `AppModule` | composeApp/commonMain | Global `@ComponentScan("com.grappim.taigamobile")` — 641 beans |
-| `AndroidAppModule` | composeApp/androidMain | **Android bridge**: includes AppModule + KmpNetworkModule + DateTimeModule + DecimalFormatterModule |
+| `AppModule` | composeApp/commonMain | 48 explicit includes + `@ComponentScan("com.grappim.taigamobile")` for composeApp-local beans |
 | `AndroidModule` | androidApp/main | 4 androidApp-local classes (`@ComponentScan("com.grappim.taigamobile.data")`) |
-| `PlatformComponentModule` (actual) | composeApp/[platform]Main | Platform entry point (currently empty on Android) |
+| `PlatformComponentModule` (actual) | composeApp/[platform]Main | Empty marker — no beans on any platform |
 | `KmpNetworkModule` | core/api/commonMain | `Json`, `HttpClient` (auth + common) |
-| `KmpCoroutinesModule` | core/async-kmp/commonMain | `@DefaultDispatcher`, `@IoDispatcher`, `@ApplicationScope` |
-| `KmpAndroidCoroutinesModule` | core/async-kmp/androidMain | `@MainDispatcher`, `@MainImmediateDispatcher` |
+| `KmpCoroutinesModule` | core/async-kmp/commonMain | All dispatchers: `@DefaultDispatcher`, `@IoDispatcher`, `@MainDispatcher`, `@MainImmediateDispatcher`, `@ApplicationScope` |
 | `PlatformStorageModule` (actual) | core/storage/[platform]Main | Includes `AuthDataStoreModule` + `StorageModule` |
-| `StorageModule` | core/storage/commonMain | `@StorageJsonQualifier Json` |
-| `AuthDataStoreModule` | core/storage/[platform]Main | `AuthStorage`, `TaigaSessionStorage`, `KmpSession` |
+| `StorageModule` | core/storage/commonMain | `@StorageJsonQualifier Json`; `@ComponentScan("com.grappim.taigamobile.core.storage")` — discovers `NetworkMonitorImpl`/`ServerStorageImpl` on iOS |
+| `AuthDataStoreModule` | core/storage/[platform]Main | `AuthStorage`, `TaigaSessionStorage`, `FiltersStorage` |
 | `PlatformDBModule` (actual) | core/storage/[platform]Main | Includes `DBModule`, `RoomDatabase.Builder<TaigaDB>` |
 | `DBModule` | core/storage/commonMain | `TaigaDB`, DAOs, `@DbJsonQualifier Json` |
 | `DateTimeModule` | utils/formatter/datetime/commonMain | `DateTimeUtils` (`@Factory`) |
 | `DecimalFormatterModule` | utils/formatter/decimal/commonMain | `@DecimalFormatSimple DecimalFormatter` |
 
-Feature modules have **no explicit `@Module` classes** — they rely entirely on `@ComponentScan` auto-discovery via `AppModule`. Every `@Single`, `@Factory`, `@ViewModel` annotated class under `com.grappim.taigamobile` is auto-discovered.
+All 48 feature/utils submodules have their own `@Module @Configuration @ComponentScan` class in `commonMain` and are listed in `AppModule.includes`. Each scans its own package to find its beans locally — this is what makes them work on iOS (where AppModule's cross-module `@ComponentScan` finds 0 definitions).
 
 ---
 
@@ -134,8 +132,8 @@ Feature modules have **no explicit `@Module` classes** — they rely entirely on
 | `@DefaultDispatcher` | Coroutines | `KmpCoroutinesModule` |
 | `@IoDispatcher` | Coroutines | `KmpCoroutinesModule` |
 | `@ApplicationScope` | Coroutines | `KmpCoroutinesModule` |
-| `@MainDispatcher` | Coroutines (Android only) | `KmpAndroidCoroutinesModule` |
-| `@MainImmediateDispatcher` | Coroutines (Android only) | `KmpAndroidCoroutinesModule` |
+| `@MainDispatcher` | Coroutines | `KmpCoroutinesModule` |
+| `@MainImmediateDispatcher` | Coroutines | `KmpCoroutinesModule` |
 | `@DecimalFormatSimple` | Formatting | `DecimalFormatterModule` |
 
 When a `NoBeanDefinitionException` mentions a qualified type, search for the matching qualifier annotation and trace which module provides it.
@@ -204,15 +202,18 @@ startKoin<KoinApp> {
 
 ## Adding a New Module
 
-**Checklist for adding a Koin module to a new feature:**
+**Checklist for adding a Koin module to a new Gradle subproject:**
 
-1. If beans are in `commonMain` under `com.grappim.taigamobile`, they are auto-discovered. No explicit `@Module` needed unless you have factory methods.
-2. If you have platform-specific factory methods:
-   - Create `@Module expect class PlatformMyModule` in `commonMain`
-   - Create `@Module(includes = [MyCommonModule::class]) @Configuration actual class PlatformMyModule` in each platform source set
-3. If the module is in a new Gradle subproject, add the subproject dependency to `composeApp/build.gradle.kts` under `commonMain.dependencies`.
-4. Verify the package is within the `@ComponentScan("com.grappim.taigamobile")` scope.
-5. Run `KoinGraphTest` to confirm the graph is still complete.
+1. Annotate bean classes with `@Single`, `@Factory`, or `@KoinViewModel`.
+2. Create a `@Module @Configuration @ComponentScan("com.grappim.taigamobile.your.package")` class in `commonMain`.
+3. Add it to `AppModule.includes` in `composeApp/src/commonMain/kotlin/com/grappim/taigamobile/di/Koin.kt`.
+4. Add the subproject dependency to `composeApp/build.gradle.kts` under `commonMain.dependencies`.
+5. Run `KoinGraphTest` to confirm the graph is complete.
+
+**If the subproject also has platform-specific factory methods** (e.g., needs `Context` or platform SDK):
+- Declare a bare `expect class PlatformMyModule` in `commonMain` (no annotations)
+- Create `@Module(includes = [MyCommonModule::class]) @Configuration actual class PlatformMyModule` in each platform source set
+- Do NOT add `@Module` to the `expect class`
 
 ---
 
@@ -220,7 +221,7 @@ startKoin<KoinApp> {
 
 ```bash
 # Force Koin compiler to re-run and print logs (androidApp is the application module)
-./gradlew :androidApp:compileGplayDebugKotlinAndroid --rerun-tasks 2>&1 | grep -i koin
+./gradlew :androidApp:compileFdroidDebugKotlin --rerun-tasks 2>&1 | grep -i koin
 
 # Run graph assertion test
 ./gradlew :composeApp:testGplayDebugUnitTest --tests "com.grappim.taigamobile.KoinGraphTest"
@@ -239,5 +240,7 @@ find composeApp/build -name "*.kt" | xargs grep -l "KoinApp\|AppModule" 2>/dev/n
 - Always read the relevant source files before giving advice.
 - Before declaring a module "missing", verify it's not discovered via `@ComponentScan`.
 - When adding `actual class` in a new platform source set, check all three: `androidMain`, `iosMain`, `jvmMain`.
-- Never remove `@ComponentScan` from `AppModule` — it's what discovers all feature classes.
+- Never remove `@ComponentScan` from `AppModule` — it's what discovers composeApp-local beans.
+- Never remove `@ComponentScan("com.grappim.taigamobile.core.storage")` from `StorageModule` — it's what discovers `NetworkMonitorImpl` and `ServerStorageImpl` on iOS (AppModule's cross-module scan returns 0 on iOS Native).
 - After any DI change, run `KoinGraphTest` to confirm the graph.
+- The `[Koin-Debug] Could not read qualifier value argument for @IoDispatcher` warning in the log is **benign** — it occurs because `@IoDispatcher` is a no-arg annotation and the IR plugin tries to read a value argument first, then correctly falls back to type-based qualifier resolution.

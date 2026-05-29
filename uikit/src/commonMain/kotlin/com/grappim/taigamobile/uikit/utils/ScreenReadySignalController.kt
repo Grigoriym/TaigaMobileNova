@@ -15,7 +15,7 @@ class ScreenReadySignalController(defaultValue: Boolean = false) {
 }
 
 /**
- * It is used to signal that the screen is ready to be rendered so that we can hide stop the splash screen
+ * It is used to signal that the screen is ready to be rendered so that we can hide the splash screen
  * and don't show any initial screen when we want to bump on a screen with a backstack, e.g.
  * If we logged in, but didn't select a project yet, then in the next start of the app
  * we want to show the project selector screen while preserving the Login screen in the backstack so that

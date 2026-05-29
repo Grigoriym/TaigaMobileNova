@@ -6,6 +6,7 @@ import androidx.datastore.preferences.core.Preferences
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import org.koin.core.annotation.ComponentScan
+import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
 import org.koin.core.annotation.Qualifier
 import org.koin.core.annotation.Single
@@ -21,6 +22,7 @@ annotation class StorageJsonQualifier
 expect class PlatformStorageModule
 
 @Module
+@Configuration
 @ComponentScan("com.grappim.taigamobile.core.storage")
 class StorageModule {
 
