@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -50,6 +51,7 @@ import com.grappim.taigamobile.strings.generated.resources.app_name
 import com.grappim.taigamobile.strings.generated.resources.login_alert_text
 import com.grappim.taigamobile.strings.generated.resources.login_alert_title
 import com.grappim.taigamobile.strings.generated.resources.login_continue
+import com.grappim.taigamobile.strings.generated.resources.login_github
 import com.grappim.taigamobile.strings.generated.resources.login_ldap
 import com.grappim.taigamobile.strings.generated.resources.login_password
 import com.grappim.taigamobile.strings.generated.resources.login_taiga_server
@@ -61,6 +63,7 @@ import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -74,6 +77,7 @@ fun LoginScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isLoginSuccessful by viewModel.loginSuccessful.collectAsStateWithLifecycle(false)
+    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(state.error) {
         if (state.error.isNotEmpty()) {
@@ -84,6 +88,9 @@ fun LoginScreen(
         if (isLoginSuccessful) {
             onLoginSuccess()
         }
+    }
+    ObserveAsEvents(viewModel.openGithubOAuth) { url ->
+        uriHandler.openUri(url)
     }
 
     ConfirmActionDialog(
@@ -201,6 +208,14 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
             ) {
                 Text(stringResource(RString.login_ldap))
             }
+
+            Spacer(Modifier.height(8.dp))
+
+            OutlinedButton(
+                onClick = { state.onGithubLoginClick() }
+            ) {
+                Text(stringResource(RString.login_github))
+            }
         }
     }
 }
@@ -301,7 +316,8 @@ private fun LoginScreenPreview() {
                 validateAuthData = {},
                 authType = AuthType.NORMAL,
                 onAuthTypeChange = {},
-                setIsPasswordVisible = {}
+                setIsPasswordVisible = {},
+                onGithubLoginClick = {}
             )
         )
     }
@@ -327,7 +343,8 @@ private fun LoginScreenErrorsPreview() {
                 validateAuthData = {},
                 authType = AuthType.NORMAL,
                 onAuthTypeChange = {},
-                setIsPasswordVisible = {}
+                setIsPasswordVisible = {},
+                onGithubLoginClick = {}
             )
         )
     }
@@ -353,7 +370,8 @@ private fun LoginScreenAlertPreview() {
                 validateAuthData = {},
                 authType = AuthType.NORMAL,
                 onAuthTypeChange = {},
-                setIsPasswordVisible = {}
+                setIsPasswordVisible = {},
+                onGithubLoginClick = {}
             )
         )
     }

@@ -7,13 +7,17 @@ import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.feature.login.domain.model.GithubAuthCallbackHandler
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
@@ -23,10 +27,15 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
 
     companion object {
         private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""
+        private const val GITHUB_OAUTH_URL =
+            "https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=taigamobile://oauth/callback&state=github&scope=user:email"
     }
 
     private val _loginSuccessful = MutableSharedFlow<Boolean>()
     val loginSuccessful = _loginSuccessful.asSharedFlow()
+
+    private val _openGithubOAuth = Channel<String>(Channel.BUFFERED)
+    val openGithubOAuth = _openGithubOAuth.receiveAsFlow()
 
     private val _state = MutableStateFlow(
         LoginState(
@@ -35,13 +44,35 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
             onLoginValueChange = ::setLogin,
             onPasswordValueChange = ::setPassword,
             setIsAlertVisible = ::setIsAlertVisible,
-            onActionDialogConfirm = ::login,
+            onActionDialogConfirm = ::onActionDialogConfirm,
             validateAuthData = ::validateAuthData,
             onAuthTypeChange = ::onAuthTypeChange,
-            setIsPasswordVisible = ::changePasswordVisibility
+            setIsPasswordVisible = ::changePasswordVisibility,
+            onGithubLoginClick = ::validateGithubAuth
         )
     )
     val state = _state.asStateFlow()
+
+    init {
+        viewModelScope.launch {
+            GithubAuthCallbackHandler.code
+                .filterNotNull()
+                .collect { code ->
+                    GithubAuthCallbackHandler.clear()
+                    authWithGithub(code)
+                }
+        }
+    }
+
+    private fun onActionDialogConfirm() {
+        when (_state.value.authType) {
+            AuthType.GITHUB -> {
+                setIsAlertVisible(false)
+                startGithubOAuth()
+            }
+            else -> login()
+        }
+    }
 
     private fun login(authData: AuthData) {
         viewModelScope.launch {
@@ -95,6 +126,53 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
             } else {
                 login()
             }
+        }
+    }
+
+    private fun validateGithubAuth() {
+        onAuthTypeChange(AuthType.GITHUB)
+        val isServerInputError = !_state.value.server.matches(Regex(SERVER_REGEX))
+        _state.update { it.copy(isServerInputError = isServerInputError) }
+        if (!isServerInputError) {
+            if (_state.value.server.startsWith(ApiConstants.HTTP_SCHEME)) {
+                setIsAlertVisible(true)
+            } else {
+                startGithubOAuth()
+            }
+        }
+    }
+
+    private fun startGithubOAuth() {
+        viewModelScope.launch {
+            isLoading(true)
+            _state.update { it.copy(error = NativeText.Empty) }
+            authRepository.getGithubClientId(_state.value.server.trim())
+                .onSuccess { clientId ->
+                    isLoading(false)
+                    _openGithubOAuth.send(GITHUB_OAUTH_URL.format(clientId))
+                }
+                .onFailure { error ->
+                    logcat(throwable = error) { "GitHub OAuth error" }
+                    isLoading(false)
+                    _state.update { it.copy(error = getErrorMessage(error)) }
+                }
+        }
+    }
+
+    private fun authWithGithub(code: String) {
+        viewModelScope.launch {
+            isLoading(true)
+            _state.update { it.copy(error = NativeText.Empty) }
+            authRepository.authWithGithub(code)
+                .onSuccess {
+                    isLoading(false)
+                    _loginSuccessful.emit(true)
+                }
+                .onFailure { error ->
+                    logcat(throwable = error) { "GitHub auth error" }
+                    isLoading(false)
+                    _state.update { it.copy(error = getErrorMessage(error)) }
+                }
         }
     }
 

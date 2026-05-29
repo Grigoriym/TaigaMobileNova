@@ -30,5 +30,7 @@ data class LoginState(
     val isLoading: Boolean = false,
 
     val isPasswordVisible: Boolean = false,
-    val setIsPasswordVisible: (Boolean) -> Unit
+    val setIsPasswordVisible: (Boolean) -> Unit,
+
+    val onGithubLoginClick: () -> Unit
 )
