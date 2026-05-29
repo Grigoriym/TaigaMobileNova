@@ -1,3 +1,3 @@
 package com.grappim.taigamobile.core.domain
 
-actual open class PlatformIOException : Exception()
+actual typealias PlatformIOException = java.io.IOException

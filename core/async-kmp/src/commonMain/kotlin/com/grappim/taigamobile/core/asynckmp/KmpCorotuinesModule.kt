@@ -23,6 +23,14 @@ annotation class IoDispatcher
 @Qualifier(name = "ApplicationScope")
 annotation class ApplicationScope
 
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class MainDispatcher
+
+@Retention(AnnotationRetention.BINARY)
+@Qualifier
+annotation class MainImmediateDispatcher
+
 @Module
 @Configuration
 @ComponentScan("com.grappim.taigamobile.core.asynckmp")
@@ -37,4 +45,10 @@ class KmpCoroutinesModule {
     @[Single ApplicationScope]
     fun provideApplicationScope(@DefaultDispatcher defaultDispatcher: CoroutineDispatcher): CoroutineScope =
         CoroutineScope(SupervisorJob() + defaultDispatcher)
+
+    @[Single MainDispatcher]
+    fun providesMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
+
+    @[Single MainImmediateDispatcher]
+    fun providesMainImmediateDispatcher(): CoroutineDispatcher = Dispatchers.Main.immediate
 }

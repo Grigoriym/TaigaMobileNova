@@ -1,0 +1,2 @@
+- Dependency updates (Kotlin, Koin, AGP, Compose BOM, and more)
+- Internal code cleanup and improvements

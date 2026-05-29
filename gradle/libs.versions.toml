@@ -1,8 +1,8 @@
 [versions]
 #noinspection UnusedVersionCatalogEntry
-version-code = "39"
+version-code = "40"
 #noinspection UnusedVersionCatalogEntry
-version-name = "2.1.0"
+version-name = "2.1.1"
 #noinspection UnusedVersionCatalogEntry
 app-pkg = "com.grappim.taigamobile"
 #noinspection UnusedVersionCatalogEntry
@@ -24,65 +24,64 @@ minSdk = "24"
 targetSdk = "36"
 
 # https://github.com/detekt/detekt/releases
-detekt = "2.0.0-alpha.2"
+detekt = "2.0.0-alpha.3"
 # https://github.com/JLLeitschuh/ktlint-gradle/releases
-ktlint = "14.0.1"
+ktlint = "14.2.0"
 # https://github.com/Kotlin/kotlinx-kover/releases
-kover = "0.9.7"
+kover = "0.9.8"
 # https://github.com/mrmans0n/compose-rules/releases
-composeRules = "0.5.6"
+composeRules = "0.5.9"
 
 # https://developer.android.com/reference/tools/gradle-api
-agp = "9.1.0"
+agp = "9.2.1"
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 androidDesugarJdkLibs = "2.1.5"
 
 # https://github.com/yshrsmz/BuildKonfig/releases
-buildKonfig = "0.17.1"
+buildKonfig = "0.21.2"
 
 # https://github.com/JetBrains/kotlin/releases
-kotlin = "2.3.20-RC2"
+kotlin = "2.3.21"
 # https://github.com/Kotlin/kotlinx.coroutines/releases
 coroutines = "1.10.2"
-ksp = "2.3.6"
-kotlin-serialization-plugin = "2.3.10"
-kotlin-serialization-json = "1.10.0"
+ksp = "2.3.9"
+kotlin-serialization-plugin = "2.3.20"
+kotlin-serialization-json = "1.11.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
 kotlinx-collections = "0.4.0"
 # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlin-date-time = "0.7.1"
 kotlinx-io-core = "0.9.0"
-kotlinTest = "2.3.10"
+kotlinTest = "2.3.21"
 # https://github.com/Kotlin/kotlinx-atomicfu/releases
-atomicfu = "0.31.0"
+atomicfu = "0.32.1"
 # https://github.com/cashapp/turbine/releases
 turbine = "1.2.1"
-ktor = "3.4.1"
-slf4j = "2.0.17"
+ktor = "3.4.2"
+slf4j = "2.0.18"
 
 # https://github.com/InsertKoinIO/koin/releases
-koin-bom = "4.2.0-RC1"
+koin-bom = "4.2.1"
 # https://github.com/InsertKoinIO/koin-annotations/releases
-koin-annotations = "2.3.1"
+koin-annotations = "4.2.1"
 # https://github.com/InsertKoinIO/koin-compiler-plugin
-koin-plugin = "0.3.0"
+koin-plugin = "0.6.2"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
-jetbrainsComposeMultiplatform = "1.10.2"
+jetbrainsComposeMultiplatform = "1.10.3"
 jetbrainsNavigationEvent = "1.0.1"
 jetbrainsComposeMaterial3 = "1.10.0-alpha05"
 jetbrainsSavedState = "1.4.0"
 jetbrainsComposeIcons = "1.7.3"
-jetbrainsAndroidxLifecycle = "2.10.0-beta01"
+jetbrainsAndroidxLifecycle = "2.10.0"
 jetbrainsNavigationCompose = "2.9.2"
 
-compose-bom = "2026.02.01"
+compose-bom = "2026.05.01"
 
-material = "1.13.0"
-navigation = "2.9.7"
-activity-compose = "1.12.4"
+material = "1.14.0"
+activity-compose = "1.13.0"
 lifecycle = "2.10.0"
-paging = "3.4.1"
+paging = "3.4.2"
 room = "2.8.4"
 sqlite = "2.6.2"
 
@@ -90,18 +89,16 @@ coil = "3.4.0"
 okhttp = "5.3.2"
 junit4 = "4.13.2"
 
-chucker = "4.3.1"
-dataStore = "1.2.0"
+dataStore = "1.2.1"
 
 # https://github.com/skydoves/colorpicker-compose/releases
-skydovesColorpicker = "1.1.3"
-markdownRenderer = "0.39.2"
+skydovesColorpicker = "1.1.4"
+markdownRenderer = "0.40.2"
 filekit = "0.13.0"
 
-core-ktx = "1.17.0"
+core-ktx = "1.18.0"
 appcompat = "1.7.1"
 splashScreen = "1.2.0"
-robolectric = "4.16.1"
 timber = "5.0.1"
 
 [libraries]
@@ -194,7 +191,6 @@ coil-ktor = { module = "io.coil-kt.coil3:coil-network-ktor3", version.ref = "coi
 
 material = { module = "com.google.android.material:material", version.ref = "material" }
 
-robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
@@ -205,9 +201,6 @@ turbine = { group = "app.cash.turbine", name = "turbine", version.ref = "turbine
 composeRules-ktlint = { module = "io.nlopez.compose.rules:ktlint", version.ref = "composeRules" }
 composeRules-detekt = { module = "io.nlopez.compose.rules:detekt", version.ref = "composeRules" }
 build-konfig = { module = "com.codingfeline.buildkonfig:buildkonfig-gradle-plugin", version.ref = "buildKonfig" }
-
-chucker = { module = "com.github.chuckerteam.chucker:library", version.ref = "chucker" }
-chucker-noop = { module = "com.github.chuckerteam.chucker:library-no-op", version.ref = "chucker" }
 
 # Dependencies of the included build-logic
 android-gradlePlugin = { group = "com.android.tools.build", name = "gradle", version.ref = "agp" }

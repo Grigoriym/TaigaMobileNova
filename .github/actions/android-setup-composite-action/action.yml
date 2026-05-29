@@ -13,7 +13,7 @@ runs:
         cache: 'gradle'
 
     - name: Validate Gradle Wrapper
-      uses: gradle/actions/wrapper-validation@v5
+      uses: gradle/actions/wrapper-validation@v6
 
       ## https://github.com/actions/cache/blob/main/examples.md#java---gradle
     - name: Setup Gradle Cache
@@ -27,7 +27,7 @@ runs:
           ${{ runner.os }}-gradle-
 
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v3
+      uses: android-actions/setup-android@v4
 
     - name: Grant execute permission for gradlew
       shell: bash
