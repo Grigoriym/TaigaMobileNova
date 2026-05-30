@@ -30,6 +30,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
@@ -77,6 +80,20 @@ fun LoginScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isLoginSuccessful by viewModel.loginSuccessful.collectAsStateWithLifecycle(false)
+    var githubWebViewUrl by remember { mutableStateOf<String?>(null) }
+
+    ObserveAsEvents(viewModel.openGithubWebView) { url -> githubWebViewUrl = url }
+
+    githubWebViewUrl?.let { url ->
+        GithubOAuthWebViewDialog(
+            url = url,
+            onCodeReceived = { code ->
+                githubWebViewUrl = null
+                viewModel.onGithubCodeReceived(code)
+            },
+            onDismiss = { githubWebViewUrl = null }
+        )
+    }
 
     LaunchedEffect(state.error) {
         if (state.error.isNotEmpty()) {

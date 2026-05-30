@@ -5,16 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.server.ServerStorage
-import com.grappim.taigamobile.feature.login.domain.launcher.GithubOAuthLauncher
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
@@ -22,8 +23,7 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 class LoginViewModel(
     private val authRepository: AuthRepository,
-    serverStorage: ServerStorage,
-    private val githubOAuthLauncher: GithubOAuthLauncher
+    serverStorage: ServerStorage
 ) : ViewModel() {
 
     companion object {
@@ -34,6 +34,9 @@ class LoginViewModel(
 
     private val _loginSuccessful = MutableSharedFlow<Boolean>()
     val loginSuccessful = _loginSuccessful.asSharedFlow()
+
+    private val _openGithubWebView = Channel<String>(Channel.BUFFERED)
+    val openGithubWebView = _openGithubWebView.receiveAsFlow()
 
     private val _state = MutableStateFlow(
         LoginState(
@@ -51,13 +54,16 @@ class LoginViewModel(
     )
     val state = _state.asStateFlow()
 
+    fun onGithubCodeReceived(code: String) {
+        authWithGithub(code)
+    }
+
     private fun onActionDialogConfirm() {
         when (_state.value.authType) {
             AuthType.GITHUB -> {
                 setIsAlertVisible(false)
                 startGithubOAuth()
             }
-
             else -> login()
         }
     }
@@ -65,33 +71,29 @@ class LoginViewModel(
     private fun login(authData: AuthData) {
         viewModelScope.launch {
             isLoading(true)
-            _state.update {
-                it.copy(error = NativeText.Empty)
-            }
+            _state.update { it.copy(error = NativeText.Empty) }
             authRepository.auth(authData)
                 .onSuccess {
                     isLoading(false)
                     _loginSuccessful.emit(true)
                 }.onFailure { error ->
-                    logcat(throwable = error) {
-                        "Login error"
-                    }
+                    logcat(throwable = error) { "Login error" }
                     isLoading(false)
-                    _state.update {
-                        it.copy(error = getErrorMessage(error))
-                    }
+                    _state.update { it.copy(error = getErrorMessage(error)) }
                 }
         }
     }
 
     private fun login() {
         setIsAlertVisible(false)
-        val taigaServer = _state.value.server.trim()
-        val authType = _state.value.authType
-        val password = _state.value.password.trim()
-        val username = _state.value.login.trim()
-
-        login(AuthData(taigaServer, authType, password, username))
+        login(
+            AuthData(
+                taigaServer = _state.value.server.trim(),
+                authType = _state.value.authType,
+                password = _state.value.password.trim(),
+                username = _state.value.login.trim()
+            )
+        )
     }
 
     private fun validateAuthData(authType: AuthType) {
@@ -137,13 +139,7 @@ class LoginViewModel(
             authRepository.getGithubClientId(_state.value.server.trim())
                 .onSuccess { clientId ->
                     isLoading(false)
-                    val url = GITHUB_OAUTH_URL.replace("%CLIENT_ID%", clientId)
-                    runCatching { githubOAuthLauncher.launch(url) }
-                        .onSuccess { code -> authWithGithub(code) }
-                        .onFailure { error ->
-                            logcat(throwable = error) { "GitHub OAuth launcher error" }
-                            _state.update { it.copy(error = getErrorMessage(error)) }
-                        }
+                    _openGithubWebView.send(GITHUB_OAUTH_URL.replace("%CLIENT_ID%", clientId))
                 }
                 .onFailure { error ->
                     logcat(throwable = error) { "GitHub OAuth error" }
@@ -171,61 +167,30 @@ class LoginViewModel(
     }
 
     private fun isLoading(isLoading: Boolean) {
-        _state.update {
-            it.copy(
-                isLoading = isLoading
-            )
-        }
+        _state.update { it.copy(isLoading = isLoading) }
     }
 
     private fun changePasswordVisibility(isVisible: Boolean) {
-        _state.update {
-            it.copy(
-                isPasswordVisible = isVisible
-            )
-        }
+        _state.update { it.copy(isPasswordVisible = isVisible) }
     }
 
     private fun onAuthTypeChange(authType: AuthType) {
-        _state.update {
-            it.copy(
-                authType = authType
-            )
-        }
+        _state.update { it.copy(authType = authType) }
     }
 
     private fun setIsAlertVisible(newValue: Boolean) {
-        _state.update {
-            it.copy(
-                isAlertVisible = newValue
-            )
-        }
+        _state.update { it.copy(isAlertVisible = newValue) }
     }
 
     private fun setPassword(newValue: String) {
-        _state.update {
-            it.copy(
-                password = newValue,
-                isPasswordInputError = false
-            )
-        }
+        _state.update { it.copy(password = newValue, isPasswordInputError = false) }
     }
 
     private fun setLogin(newValue: String) {
-        _state.update {
-            it.copy(
-                login = newValue,
-                isLoginInputError = false
-            )
-        }
+        _state.update { it.copy(login = newValue, isLoginInputError = false) }
     }
 
     private fun setServer(newValue: String) {
-        _state.update {
-            it.copy(
-                server = newValue,
-                isServerInputError = false
-            )
-        }
+        _state.update { it.copy(server = newValue, isServerInputError = false) }
     }
 }

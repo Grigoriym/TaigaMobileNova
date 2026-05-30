@@ -7,9 +7,6 @@ plugins {
 
 kotlin {
     sourceSets {
-        androidMain.dependencies {
-            implementation(libs.androidx.browser)
-        }
         commonMain.dependencies {
             implementation(projects.strings)
             implementation(projects.core.api)
