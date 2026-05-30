@@ -190,6 +190,21 @@ For writing new KMP tests, creating fakes, or understanding test patterns, use t
 - `kotlin.test` assertions + hand-written fakes — no MockK in `commonTest`
 - Test dependencies added automatically via convention plugins
 
+## Skills
+
+Shared skills come from the `agentic-grappim` git submodule at `.claude/agentic-grappim/`.
+
+**After cloning**, initialize the submodule to make shared skills available:
+```bash
+git submodule update --init
+```
+
+| Skill | Description |
+|-------|-------------|
+| `navigation-3` | Google's official Navigation 3 recipes |
+| `edge-to-edge` | System bars, insets, IME handling for SDK 35+ |
+| `adaptive` | Adaptive layouts for tablets/foldables — window size classes, list-detail, FlexboxLayout |
+
 ## Coding Guidelines
 
 **Tradeoff:** These guidelines bias toward caution over speed. For trivial tasks, use judgment.
