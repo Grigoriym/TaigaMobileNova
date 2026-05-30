@@ -5,19 +5,16 @@ import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.server.ServerStorage
+import com.grappim.taigamobile.feature.login.domain.launcher.GithubOAuthLauncher
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
-import com.grappim.taigamobile.feature.login.domain.model.GithubAuthCallbackHandler
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
@@ -26,20 +23,17 @@ import org.koin.core.annotation.KoinViewModel
 class LoginViewModel(
     private val authRepository: AuthRepository,
     serverStorage: ServerStorage,
-    private val githubAuthCallbackHandler: GithubAuthCallbackHandler
+    private val githubOAuthLauncher: GithubOAuthLauncher
 ) : ViewModel() {
 
     companion object {
         private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""
         private const val GITHUB_OAUTH_URL =
-            "https://github.com/login/oauth/authorize?client_id=%CLIENT_ID%&redirect_uri=taigamobile://oauth/callback&state=github&scope=user:email"
+            "https://github.com/login/oauth/authorize?client_id=%CLIENT_ID%&state=github&scope=user:email"
     }
 
     private val _loginSuccessful = MutableSharedFlow<Boolean>()
     val loginSuccessful = _loginSuccessful.asSharedFlow()
-
-    private val _openGithubOAuth = Channel<String>(Channel.BUFFERED)
-    val openGithubOAuth = _openGithubOAuth.receiveAsFlow()
 
     private val _state = MutableStateFlow(
         LoginState(
@@ -56,17 +50,6 @@ class LoginViewModel(
         )
     )
     val state = _state.asStateFlow()
-
-    init {
-        viewModelScope.launch {
-            githubAuthCallbackHandler.code
-                .filterNotNull()
-                .collect { code ->
-                    githubAuthCallbackHandler.clear()
-                    authWithGithub(code)
-                }
-        }
-    }
 
     private fun onActionDialogConfirm() {
         when (_state.value.authType) {
@@ -154,7 +137,13 @@ class LoginViewModel(
             authRepository.getGithubClientId(_state.value.server.trim())
                 .onSuccess { clientId ->
                     isLoading(false)
-                    _openGithubOAuth.send(GITHUB_OAUTH_URL.replace("%CLIENT_ID%", clientId))
+                    val url = GITHUB_OAUTH_URL.replace("%CLIENT_ID%", clientId)
+                    runCatching { githubOAuthLauncher.launch(url) }
+                        .onSuccess { code -> authWithGithub(code) }
+                        .onFailure { error ->
+                            logcat(throwable = error) { "GitHub OAuth launcher error" }
+                            _state.update { it.copy(error = getErrorMessage(error)) }
+                        }
                 }
                 .onFailure { error ->
                     logcat(throwable = error) { "GitHub OAuth error" }

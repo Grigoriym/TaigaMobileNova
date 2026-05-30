@@ -5,7 +5,7 @@ package com.grappim.taigamobile.feature.login.ui
 import app.cash.turbine.test
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
-import com.grappim.taigamobile.testing.FakeGithubAuthCallbackHandler
+import com.grappim.taigamobile.testing.FakeGithubOAuthLauncher
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeAuthRepository
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
@@ -26,7 +26,7 @@ internal class LoginViewModelTest {
     private lateinit var sut: LoginViewModel
 
     private val authRepository = FakeAuthRepository()
-    private val githubAuthCallbackHandler = FakeGithubAuthCallbackHandler()
+    private val githubOAuthLauncher = FakeGithubOAuthLauncher()
     private val defaultServer = getRandomString()
     private val serverStorage = FakeServerStorage(defaultServer)
 
@@ -35,7 +35,7 @@ internal class LoginViewModelTest {
     @BeforeTest
     fun setup() {
         mainDispatcherRule.setup()
-        sut = LoginViewModel(authRepository, serverStorage, githubAuthCallbackHandler)
+        sut = LoginViewModel(authRepository, serverStorage, githubOAuthLauncher)
     }
 
     @AfterTest
@@ -223,40 +223,56 @@ internal class LoginViewModelTest {
     }
 
     @Test
-    fun `on onGithubLoginClick with valid server should open github oauth url`() = runTest {
+    fun `on onGithubLoginClick with valid server should launch oauth with client id`() = runTest {
         val clientId = getRandomString()
         authRepository.githubClientIdResult = Result.success(clientId)
+        githubOAuthLauncher.launchResult = Result.success(getRandomString())
         sut.state.value.onServerValueChange(correctServer)
 
-        sut.openGithubOAuth.test {
-            sut.state.value.onGithubLoginClick()
-            val url = awaitItem()
-            assertTrue(url.contains(clientId))
-        }
+        sut.state.value.onGithubLoginClick()
+
+        assertTrue(githubOAuthLauncher.launchCalls.single().contains(clientId))
     }
 
     @Test
-    fun `on github code received with success should emit login successful`() = runTest {
+    fun `on github oauth success should emit login successful`() = runTest {
         val code = getRandomString()
+        val clientId = getRandomString()
+        authRepository.githubClientIdResult = Result.success(clientId)
+        githubOAuthLauncher.launchResult = Result.success(code)
         authRepository.authWithGithubResult = Result.success(Unit)
+        sut.state.value.onServerValueChange(correctServer)
 
         sut.loginSuccessful.test {
-            githubAuthCallbackHandler.onCodeReceived(code)
+            sut.state.value.onGithubLoginClick()
             assertTrue(awaitItem())
             assertEquals(code, authRepository.authWithGithubCalls.single())
         }
     }
 
     @Test
-    fun `on github code received with failure should update error state`() = runTest {
-        val code = getRandomString()
+    fun `on github oauth auth failure should update error state`() = runTest {
+        val clientId = getRandomString()
+        authRepository.githubClientIdResult = Result.success(clientId)
+        githubOAuthLauncher.launchResult = Result.success(getRandomString())
         authRepository.authWithGithubResult = Result.failure(RuntimeException("auth failed"))
+        sut.state.value.onServerValueChange(correctServer)
 
-        sut.loginSuccessful.test {
-            githubAuthCallbackHandler.onCodeReceived(code)
-            assertFalse(sut.state.value.error.isEmpty())
-            cancelAndIgnoreRemainingEvents()
-        }
+        sut.state.value.onGithubLoginClick()
+
+        assertFalse(sut.state.value.error.isEmpty())
+    }
+
+    @Test
+    fun `on github oauth launcher failure should update error state`() = runTest {
+        val clientId = getRandomString()
+        authRepository.githubClientIdResult = Result.success(clientId)
+        githubOAuthLauncher.launchResult = Result.failure(RuntimeException("user cancelled"))
+        sut.state.value.onServerValueChange(correctServer)
+
+        sut.state.value.onGithubLoginClick()
+
+        assertFalse(sut.state.value.error.isEmpty())
     }
 
     @Test

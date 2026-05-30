@@ -1,0 +1,69 @@
+@startuml GitHub OAuth — Loopback Flow
+
+title GitHub OAuth (Loopback / RFC 8252)
+
+skinparam sequenceArrowThickness 1.5
+skinparam sequenceParticipantBackgroundColor #f5f5f5
+skinparam sequenceParticipantBorderColor #aaaaaa
+skinparam noteBorderColor #aaaaaa
+skinparam noteBackgroundColor #fffde7
+
+actor User
+
+box "App (common)" #e8f5e9
+  participant "LoginViewModel" as VM
+end box
+
+box "App (platform)" #e3f2fd
+  participant "GithubOAuthLauncher" as Launcher
+  participant "LocalHttpServer\n(127.0.0.1:PORT)" as Server
+  participant "In-App Browser\n(CCT / SFSafariVC)" as Browser
+end box
+
+box "External" #fce4ec
+  participant "GitHub OAuth" as GitHub
+  participant "Taiga API" as API
+end box
+
+== Initiation ==
+
+User -> VM : tap "Continue with GitHub"
+VM -> API : GET /conf.json
+API --> VM : { gitHubClientId }
+VM -> Launcher : launch(baseAuthUrl)
+
+== Loopback Setup ==
+
+Launcher -> Server : start on random free port
+note right of Server
+  ServerSocket(0) gives OS-assigned port.
+  GitHub allows http://127.0.0.1 without registration.
+end note
+
+Launcher -> Browser : open\nhttps://github.com/login/oauth/authorize\n?client_id=...&redirect_uri=http://127.0.0.1:PORT/callback\n&state=github&scope=user:email
+
+== User Authentication ==
+
+User -> Browser : authenticate on GitHub
+GitHub -> Server : GET /callback?code=XXX&state=github
+Server --> GitHub : 200 OK (close this tab)
+
+== Code Handoff ==
+
+Server --> Launcher : code = "XXX"
+Launcher -> Browser : close / bring app to foreground
+Launcher --> VM : return code
+
+== Token Exchange ==
+
+VM -> API : POST /api/v1/auth\n{ type: "github", code: "XXX" }
+note right
+  Taiga backend calls GitHub directly
+  with client_secret to exchange code.
+  redirect_uri is NOT sent — no validation.
+end note
+API --> VM : { auth_token, refresh, id }
+VM -> VM : store credentials
+VM --> User : navigate to projects
+
+@enduml

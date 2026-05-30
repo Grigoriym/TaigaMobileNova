@@ -34,7 +34,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -78,7 +77,6 @@ fun LoginScreen(
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val isLoginSuccessful by viewModel.loginSuccessful.collectAsStateWithLifecycle(false)
-    val uriHandler = LocalUriHandler.current
 
     LaunchedEffect(state.error) {
         if (state.error.isNotEmpty()) {
@@ -90,10 +88,6 @@ fun LoginScreen(
             onLoginSuccess()
         }
     }
-    ObserveAsEvents(viewModel.openGithubOAuth) { url ->
-        uriHandler.openUri(url)
-    }
-
     ConfirmActionDialog(
         title = stringResource(RString.login_alert_title),
         description = stringResource(RString.login_alert_text),
