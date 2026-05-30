@@ -74,4 +74,30 @@ internal class AuthRepositoryTest {
         val actual = sut.auth(authData)
         assertTrue(actual.isFailure)
     }
+
+    @Test
+    fun `on authWithGithub without error then return success and store credentials`() = runTest {
+        val code = getRandomString()
+        val response = AuthResponse(
+            authToken = getRandomString(),
+            refresh = getRandomString(),
+            id = getRandomLong()
+        )
+        authApi.githubAuthResult = response
+
+        val actual = sut.authWithGithub(code)
+
+        val call = authApi.githubAuthCalls.single()
+        assertEquals(code, call.code)
+        assertEquals(AuthType.GITHUB.value, call.type)
+        assertEquals(response.authToken, authStorage.setCredentialsToken)
+        assertEquals(response.refresh, authStorage.setCredentialsRefreshToken)
+        assertTrue(actual.isSuccess)
+    }
+
+    @Test
+    fun `on authWithGithub with error then return failure`() = runTest {
+        val actual = sut.authWithGithub(getRandomString())
+        assertTrue(actual.isFailure)
+    }
 }

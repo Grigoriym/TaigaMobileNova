@@ -23,12 +23,16 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class LoginViewModel(private val authRepository: AuthRepository, serverStorage: ServerStorage) : ViewModel() {
+class LoginViewModel(
+    private val authRepository: AuthRepository,
+    serverStorage: ServerStorage,
+    private val githubAuthCallbackHandler: GithubAuthCallbackHandler
+) : ViewModel() {
 
     companion object {
         private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""
         private const val GITHUB_OAUTH_URL =
-            "https://github.com/login/oauth/authorize?client_id=%s&redirect_uri=taigamobile://oauth/callback&state=github&scope=user:email"
+            "https://github.com/login/oauth/authorize?client_id=%CLIENT_ID%&redirect_uri=taigamobile://oauth/callback&state=github&scope=user:email"
     }
 
     private val _loginSuccessful = MutableSharedFlow<Boolean>()
@@ -55,10 +59,10 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
 
     init {
         viewModelScope.launch {
-            GithubAuthCallbackHandler.code
+            githubAuthCallbackHandler.code
                 .filterNotNull()
                 .collect { code ->
-                    GithubAuthCallbackHandler.clear()
+                    githubAuthCallbackHandler.clear()
                     authWithGithub(code)
                 }
         }
@@ -150,7 +154,7 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
             authRepository.getGithubClientId(_state.value.server.trim())
                 .onSuccess { clientId ->
                     isLoading(false)
-                    _openGithubOAuth.send(GITHUB_OAUTH_URL.format(clientId))
+                    _openGithubOAuth.send(GITHUB_OAUTH_URL.replace("%CLIENT_ID%", clientId))
                 }
                 .onFailure { error ->
                     logcat(throwable = error) { "GitHub OAuth error" }

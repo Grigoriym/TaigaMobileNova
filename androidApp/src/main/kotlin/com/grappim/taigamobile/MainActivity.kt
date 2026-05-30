@@ -8,14 +8,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.grappim.taigamobile.feature.login.domain.model.GithubAuthCallbackHandler
 import com.grappim.taigamobile.main.TaigaAppContent
+import org.koin.android.ext.android.inject
 import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
 import io.github.vinceglb.filekit.FileKit
 import io.github.vinceglb.filekit.dialogs.init
 
 class MainActivity : ComponentActivity() {
 
-    private val screenReadySignalController =
-        ScreenReadySignalController()
+    private val screenReadySignalController = ScreenReadySignalController()
+    private val githubAuthCallbackHandler: GithubAuthCallbackHandler by inject()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
@@ -42,7 +43,7 @@ class MainActivity : ComponentActivity() {
         val uri = intent?.data ?: return
         if (uri.scheme == "taigamobile" && uri.host == "oauth") {
             val code = uri.getQueryParameter("code") ?: return
-            GithubAuthCallbackHandler.onCodeReceived(code)
+            githubAuthCallbackHandler.onCodeReceived(code)
         }
     }
 }

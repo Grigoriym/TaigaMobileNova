@@ -1,17 +1,26 @@
 package com.grappim.taigamobile.feature.login.domain.model
 
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.koin.core.annotation.Single
 
-object GithubAuthCallbackHandler {
+interface GithubAuthCallbackHandler {
+    val code: StateFlow<String?>
+    fun onCodeReceived(code: String)
+    fun clear()
+}
+
+@Single
+class GithubAuthCallbackHandlerImpl : GithubAuthCallbackHandler {
     private val _code = MutableStateFlow<String?>(null)
-    val code = _code.asStateFlow()
+    override val code = _code.asStateFlow()
 
-    fun onCodeReceived(code: String) {
+    override fun onCodeReceived(code: String) {
         _code.value = code
     }
 
-    fun clear() {
+    override fun clear() {
         _code.value = null
     }
 }

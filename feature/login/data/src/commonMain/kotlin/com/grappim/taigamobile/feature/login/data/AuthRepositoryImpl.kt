@@ -6,6 +6,7 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
+import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.feature.login.dto.AuthRequest
 import com.grappim.taigamobile.feature.login.dto.GithubAuthRequest
@@ -52,7 +53,7 @@ class AuthRepositoryImpl(
 
     override suspend fun authWithGithub(code: String): Result<Unit> = resultOf {
         withContext(dispatcher) {
-            val response = authApi.githubAuth(GithubAuthRequest(code = code))
+            val response = authApi.githubAuth(GithubAuthRequest(code = code, type = AuthType.GITHUB.value))
             authStorage.setAuthCredentials(
                 token = response.authToken,
                 refreshToken = response.refresh

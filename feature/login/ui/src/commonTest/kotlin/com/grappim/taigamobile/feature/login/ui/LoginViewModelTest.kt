@@ -5,6 +5,7 @@ package com.grappim.taigamobile.feature.login.ui
 import app.cash.turbine.test
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.testing.FakeGithubAuthCallbackHandler
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeAuthRepository
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
@@ -25,6 +26,7 @@ internal class LoginViewModelTest {
     private lateinit var sut: LoginViewModel
 
     private val authRepository = FakeAuthRepository()
+    private val githubAuthCallbackHandler = FakeGithubAuthCallbackHandler()
     private val defaultServer = getRandomString()
     private val serverStorage = FakeServerStorage(defaultServer)
 
@@ -33,7 +35,7 @@ internal class LoginViewModelTest {
     @BeforeTest
     fun setup() {
         mainDispatcherRule.setup()
-        sut = LoginViewModel(authRepository, serverStorage)
+        sut = LoginViewModel(authRepository, serverStorage, githubAuthCallbackHandler)
     }
 
     @AfterTest
@@ -199,6 +201,62 @@ internal class LoginViewModelTest {
 
         assertEquals("login", sut.state.value.login)
         assertFalse(sut.state.value.isLoginInputError)
+    }
+
+    @Test
+    fun `on onGithubLoginClick with invalid server should set server error`() {
+        sut.state.value.onServerValueChange(getRandomString())
+
+        sut.state.value.onGithubLoginClick()
+
+        assertTrue(sut.state.value.isServerInputError)
+    }
+
+    @Test
+    fun `on onGithubLoginClick with http server should show alert`() {
+        sut.state.value.onServerValueChange("http://10.0.2.2:9000")
+
+        sut.state.value.onGithubLoginClick()
+
+        assertFalse(sut.state.value.isServerInputError)
+        assertTrue(sut.state.value.isAlertVisible)
+    }
+
+    @Test
+    fun `on onGithubLoginClick with valid server should open github oauth url`() = runTest {
+        val clientId = getRandomString()
+        authRepository.githubClientIdResult = Result.success(clientId)
+        sut.state.value.onServerValueChange(correctServer)
+
+        sut.openGithubOAuth.test {
+            sut.state.value.onGithubLoginClick()
+            val url = awaitItem()
+            assertTrue(url.contains(clientId))
+        }
+    }
+
+    @Test
+    fun `on github code received with success should emit login successful`() = runTest {
+        val code = getRandomString()
+        authRepository.authWithGithubResult = Result.success(Unit)
+
+        sut.loginSuccessful.test {
+            githubAuthCallbackHandler.onCodeReceived(code)
+            assertTrue(awaitItem())
+            assertEquals(code, authRepository.authWithGithubCalls.single())
+        }
+    }
+
+    @Test
+    fun `on github code received with failure should update error state`() = runTest {
+        val code = getRandomString()
+        authRepository.authWithGithubResult = Result.failure(RuntimeException("auth failed"))
+
+        sut.loginSuccessful.test {
+            githubAuthCallbackHandler.onCodeReceived(code)
+            assertFalse(sut.state.value.error.isEmpty())
+            cancelAndIgnoreRemainingEvents()
+        }
     }
 
     @Test

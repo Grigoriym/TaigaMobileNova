@@ -52,6 +52,7 @@ import com.grappim.taigamobile.strings.generated.resources.login_alert_text
 import com.grappim.taigamobile.strings.generated.resources.login_alert_title
 import com.grappim.taigamobile.strings.generated.resources.login_continue
 import com.grappim.taigamobile.strings.generated.resources.login_github
+import com.grappim.taigamobile.strings.generated.resources.login_github_server_required
 import com.grappim.taigamobile.strings.generated.resources.login_ldap
 import com.grappim.taigamobile.strings.generated.resources.login_password
 import com.grappim.taigamobile.strings.generated.resources.login_taiga_server
@@ -216,6 +217,19 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
             ) {
                 Text(stringResource(RString.login_github))
             }
+
+            Spacer(Modifier.height(4.dp))
+
+            Text(
+                text = stringResource(RString.login_github_server_required),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (state.isServerInputError) {
+                    MaterialTheme.colorScheme.error
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.padding(horizontal = 40.dp)
+            )
         }
     }
 }
