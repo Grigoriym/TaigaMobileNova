@@ -11,11 +11,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 
 @Composable
-actual fun GithubOAuthWebViewDialog(
-    url: String,
-    onCodeReceived: (String) -> Unit,
-    onDismiss: () -> Unit
-) {
+actual fun GithubOAuthWebViewDialog(url: String, onCodeReceive: (String) -> Unit, onDismiss: () -> Unit) {
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
@@ -27,13 +23,10 @@ actual fun GithubOAuthWebViewDialog(
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                     webViewClient = object : WebViewClient() {
-                        override fun shouldOverrideUrlLoading(
-                            view: WebView,
-                            request: WebResourceRequest
-                        ): Boolean {
+                        override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
                             val code = request.url.getQueryParameter("code")
                             if (code != null) {
-                                onCodeReceived(code)
+                                onCodeReceive(code)
                                 return true
                             }
                             if (request.url.getQueryParameter("error") != null) {

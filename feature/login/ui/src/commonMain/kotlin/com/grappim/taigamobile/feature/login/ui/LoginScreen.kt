@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.login.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.autofill.ContentType
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.semantics.contentType
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -55,6 +57,7 @@ import com.grappim.taigamobile.strings.generated.resources.login_alert_title
 import com.grappim.taigamobile.strings.generated.resources.login_continue
 import com.grappim.taigamobile.strings.generated.resources.login_github
 import com.grappim.taigamobile.strings.generated.resources.login_github_server_required
+import com.grappim.taigamobile.strings.generated.resources.login_github_setup_guide
 import com.grappim.taigamobile.strings.generated.resources.login_ldap
 import com.grappim.taigamobile.strings.generated.resources.login_password
 import com.grappim.taigamobile.strings.generated.resources.login_taiga_server
@@ -67,6 +70,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import com.grappim.taigamobile.utils.ui.asString
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
@@ -87,7 +91,7 @@ fun LoginScreen(
     githubWebViewUrl?.let { url ->
         GithubOAuthWebViewDialog(
             url = url,
-            onCodeReceived = { code ->
+            onCodeReceive = { code ->
                 githubWebViewUrl = null
                 viewModel.onGithubCodeReceived(code)
             },
@@ -122,6 +126,8 @@ fun LoginScreen(
 
 @Composable
 fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
+    val uriHandler = LocalUriHandler.current
+    val githubSetupGuideUrl = state.githubSetupGuideUrl.asString()
     Column(
         modifier = modifier
             .verticalScroll(rememberScrollState())
@@ -240,6 +246,17 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
                     MaterialTheme.colorScheme.onSurfaceVariant
                 },
                 modifier = Modifier.padding(horizontal = 40.dp)
+            )
+
+            Text(
+                text = stringResource(RString.login_github_setup_guide),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier
+                    .padding(top = 2.dp)
+                    .clickable {
+                        uriHandler.openUri(githubSetupGuideUrl)
+                    }
             )
         }
     }
