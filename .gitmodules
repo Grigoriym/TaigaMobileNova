@@ -1,3 +1,4 @@
 [submodule ".claude/agentic-grappim"]
 	path = .claude/agentic-grappim
 	url = https://github.com/Grigoriym/agentic-grappim.git
+	branch = master
