@@ -62,6 +62,7 @@ jobs:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
         with:
           files: ./build/reports/kover/report.xml
+          disable_search: true
           flags: unittests
           name: codecov-umbrella
           fail_ci_if_error: false
