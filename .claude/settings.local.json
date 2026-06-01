@@ -20,7 +20,8 @@
       "mcp__codacy__codacy_get_repository_with_analysis",
       "mcp__codacy__codacy_get_repository_pull_request",
       "mcp__codacy__codacy_list_pull_request_issues",
-      "Read(//home/gregory/proj/taiga/**)"
+      "Read(//home/gregory/proj/taiga/**)",
+      "Bash(gh run *)"
     ]
   },
   "enableAllProjectMcpServers": true,
