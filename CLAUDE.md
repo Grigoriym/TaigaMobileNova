@@ -49,7 +49,7 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 
 **Platforms:**
 
-- **Android** — `androidTarget()`, Min SDK 24, Target SDK 36, flavors: Gplay / Fdroid
+- **Android** — `androidTarget()`, Min SDK 24, Target SDK 37, flavors: Gplay / Fdroid
 - **iOS** — `iosArm64()` + `iosSimulatorArm64()`, static framework `TaigaMobileNovaIos`; entry point in `main.ios.kt`
 - **Desktop/JVM** — `jvm()`, entry point `TaigaMobileDesktop.kt`; packages Deb/Dmg/Msi
 

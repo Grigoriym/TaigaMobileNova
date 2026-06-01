@@ -119,6 +119,7 @@ topBarController.update(TopBarConfig(
 |-----------|------|-------|
 | `ConfirmActionDialog` | `dialog/ConfirmActionDialog.kt` | `isVisible, onConfirm, onDismiss, title?, description?, iconId?` — Yes/No dialog |
 | `TaigaLoadingDialog` | `dialog/TaigaLoadingDialog.kt` | `isVisible` — full-screen centered progress indicator |
+| `LoadingDialog` | `dialog/LoadingDialog.kt` | no params — compact Row dialog: spinner + "Loading" text, non-dismissible; use for blocking operations |
 | `CircularLoaderWidget` | `loader/CircularLoaderWidget.kt` | 40dp centered spinner |
 | `DotsLoaderWidget` | `loader/DotsLoaderWidget.kt` | Three pulsing dots animation |
 
