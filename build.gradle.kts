@@ -14,7 +14,7 @@ plugins {
     alias(libs.plugins.koin.compiler) apply false
     alias(libs.plugins.build.konfig) apply false
 
-//    alias(libs.plugins.detekt)
+    alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
 }
