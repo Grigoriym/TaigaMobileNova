@@ -68,7 +68,7 @@ koin-annotations = "4.2.1"
 koin-plugin = "1.0.0"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
-jetbrainsComposeMultiplatform = "1.11.0"
+jetbrainsComposeMultiplatform = "1.11.1"
 jetbrainsNavigationEvent = "1.1.0"
 jetbrainsComposeMaterial3 = "1.10.0-alpha05"
 jetbrainsSavedState = "1.4.0"
