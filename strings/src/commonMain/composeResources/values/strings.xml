@@ -68,6 +68,10 @@
     <string name="login_password">Password</string>
     <string name="login_continue">Continue</string>
     <string name="login_ldap">Continue with LDAP</string>
+    <string name="login_github">Continue with GitHub</string>
+    <string name="login_github_server_required">Server URL must be entered before using GitHub login</string>
+    <string name="login_github_setup_guide">How to set up GitHub login?</string>
+    <string name="login_github_setup_guide_url">https://github.com/Grigoriym/TaigaMobileNova/wiki/Github-Login</string>
     <string name="login_error_message">Error during login. Check credentials or connection</string>
     <string name="login_alert_title">Unencrypted connection</string>
     <string name="login_alert_text">You are going to use an unencrypted connection. Are you sure?</string>
@@ -394,4 +398,5 @@
     <string name="project_values_edit_title">Edit Value</string>
     <string name="project_values_color">Color</string>
     <string name="project_values_by_default">Default</string>
+    <string name="open_by_default_setup">Open by Default Settings</string>
 </resources>

@@ -1,0 +1,2 @@
+- Add GitHub login support
+- Dependency updates and internal improvements

@@ -1,1 +1,1 @@
-../../../../agentic-grappim/templates/spec.md
+../agentic-grappim/templates/spec.md

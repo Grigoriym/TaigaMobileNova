@@ -29,6 +29,7 @@ android {
 
 dependencies {
     implementation(projects.composeApp)
+    implementation(projects.feature.login.domain)
     implementation(projects.uikit)
     implementation(projects.core.storage)
 
