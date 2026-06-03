@@ -1,8 +1,8 @@
 [versions]
 #noinspection UnusedVersionCatalogEntry
-version-code = "40"
+version-code = "41"
 #noinspection UnusedVersionCatalogEntry
-version-name = "2.1.1"
+version-name = "2.1.2"
 #noinspection UnusedVersionCatalogEntry
 app-pkg = "com.grappim.taigamobile"
 #noinspection UnusedVersionCatalogEntry
