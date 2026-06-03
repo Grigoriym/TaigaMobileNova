@@ -49,7 +49,7 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 
 **Platforms:**
 
-- **Android** — `androidTarget()`, Min SDK 24, Target SDK 36, flavors: Gplay / Fdroid
+- **Android** — `androidTarget()`, Min SDK 24, Target SDK 37, flavors: Gplay / Fdroid
 - **iOS** — `iosArm64()` + `iosSimulatorArm64()`, static framework `TaigaMobileNovaIos`; entry point in `main.ios.kt`
 - **Desktop/JVM** — `jvm()`, entry point `TaigaMobileDesktop.kt`; packages Deb/Dmg/Msi
 
@@ -189,6 +189,21 @@ For writing new KMP tests, creating fakes, or understanding test patterns, use t
 - `:testing` module has utilities: `getRandomString()`, `MainDispatcherRule`, fake generators
 - `kotlin.test` assertions + hand-written fakes — no MockK in `commonTest`
 - Test dependencies added automatically via convention plugins
+
+## Skills
+
+Shared skills come from the `agentic-grappim` git submodule at `.claude/agentic-grappim/`.
+
+**After cloning**, initialize the submodule to make shared skills available:
+```bash
+git submodule update --init
+```
+
+| Skill | Description |
+|-------|-------------|
+| `navigation-3` | Google's official Navigation 3 recipes |
+| `edge-to-edge` | System bars, insets, IME handling for SDK 35+ |
+| `adaptive` | Adaptive layouts for tablets/foldables — window size classes, list-detail, FlexboxLayout |
 
 ## Coding Guidelines
 

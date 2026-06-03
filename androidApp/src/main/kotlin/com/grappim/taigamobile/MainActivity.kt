@@ -12,8 +12,7 @@ import io.github.vinceglb.filekit.dialogs.init
 
 class MainActivity : ComponentActivity() {
 
-    private val screenReadySignalController =
-        ScreenReadySignalController()
+    private val screenReadySignalController = ScreenReadySignalController()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {

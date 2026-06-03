@@ -14,7 +14,7 @@ plugins {
     alias(libs.plugins.koin.compiler) apply false
     alias(libs.plugins.build.konfig) apply false
 
-//    alias(libs.plugins.detekt)
+    alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.kover)
 }
@@ -63,6 +63,20 @@ kover {
                     // Preferences — broad glob covers all generated variants
                     "**.*Preferences*",
                     "**.*BuildConfig"
+                )
+
+                // Compose Multiplatform generated string resources — large generated package
+                // (~9 000 lines) that inflates the denominator but has no testable logic
+                packages("com.grappim.taigamobile.strings.generated.resources")
+
+                // Room / storage infrastructure — generated DAOs, DB wiring, cache, DI glue
+                packages(
+                    "com.grappim.taigamobile.core.storage.db",
+                    "com.grappim.taigamobile.core.storage.db.dao",
+                    "com.grappim.taigamobile.core.storage.db.wrapper",
+                    "com.grappim.taigamobile.core.storage.di",
+                    "com.grappim.taigamobile.core.storage.network",
+                    "com.grappim.taigamobile.core.storage.cache"
                 )
             }
         }

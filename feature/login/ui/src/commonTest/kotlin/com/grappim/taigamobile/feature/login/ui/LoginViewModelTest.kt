@@ -202,6 +202,67 @@ internal class LoginViewModelTest {
     }
 
     @Test
+    fun `on onGithubLoginClick with invalid server should set server error`() {
+        sut.state.value.onServerValueChange(getRandomString())
+
+        sut.state.value.onGithubLoginClick()
+
+        assertTrue(sut.state.value.isServerInputError)
+    }
+
+    @Test
+    fun `on onGithubLoginClick with http server should show alert`() {
+        sut.state.value.onServerValueChange("http://10.0.2.2:9000")
+
+        sut.state.value.onGithubLoginClick()
+
+        assertFalse(sut.state.value.isServerInputError)
+        assertTrue(sut.state.value.isAlertVisible)
+    }
+
+    @Test
+    fun `on onGithubLoginClick with valid server should emit webview url with client id`() = runTest {
+        val clientId = getRandomString()
+        authRepository.githubClientIdResult = Result.success(clientId)
+        sut.state.value.onServerValueChange(correctServer)
+
+        sut.openGithubWebView.test {
+            sut.state.value.onGithubLoginClick()
+            val url = awaitItem()
+            assertTrue(url.contains(clientId))
+        }
+    }
+
+    @Test
+    fun `on github oauth success should emit login successful`() = runTest {
+        val code = getRandomString()
+        val clientId = getRandomString()
+        authRepository.githubClientIdResult = Result.success(clientId)
+        authRepository.authWithGithubResult = Result.success(Unit)
+        sut.state.value.onServerValueChange(correctServer)
+
+        sut.loginSuccessful.test {
+            sut.state.value.onGithubLoginClick()
+            sut.onGithubCodeReceived(code)
+            assertTrue(awaitItem())
+            assertEquals(code, authRepository.authWithGithubCalls.single())
+        }
+    }
+
+    @Test
+    fun `on github oauth auth failure should update error state`() = runTest {
+        val clientId = getRandomString()
+        authRepository.githubClientIdResult = Result.success(clientId)
+        authRepository.authWithGithubResult = Result.failure(RuntimeException("auth failed"))
+        sut.state.value.onServerValueChange(correctServer)
+
+        sut.state.value.onGithubLoginClick()
+        sut.onGithubCodeReceived(getRandomString())
+
+        assertFalse(sut.state.value.error.isEmpty())
+    }
+
+    @Test
     fun `on setServer should change the server`() {
         val newServerValue = getRandomString()
 

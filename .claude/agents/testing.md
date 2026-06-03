@@ -69,6 +69,15 @@ Key fields for commonly-used fakes:
 | `FakeServerStorage` | `ServerStorage` |
 | `FakeAuthStorage` | `AuthStorage` |
 | `FakeCacheManager` | `CacheManager` |
+| `FakeFiltersStorage` | `FiltersStorage` |
+| `FakeDatabaseWrapper` | `DatabaseWrapper` |
+| `FakeDataCleaner` | `DataCleaner` |
+
+**`FakeFiltersStorage`**: `scrumFilters`, `epicsFilters`, `issuesFilters`, `kanbanFilters` — mutable `StateFlow<FiltersData>` (initially empty); `resetFiltersCalled: Boolean`
+
+**`FakeDatabaseWrapper`**: `clearAllTablesCalled: Boolean`
+
+**`FakeDataCleaner`**: `cleanOnGoingBackAfterLoginCalled: Boolean`
 
 ### APIs
 

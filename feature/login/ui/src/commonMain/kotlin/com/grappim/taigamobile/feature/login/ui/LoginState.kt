@@ -1,6 +1,8 @@
 package com.grappim.taigamobile.feature.login.ui
 
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.login_github_setup_guide_url
 import com.grappim.taigamobile.utils.ui.NativeText
 
 data class LoginState(
@@ -30,5 +32,9 @@ data class LoginState(
     val isLoading: Boolean = false,
 
     val isPasswordVisible: Boolean = false,
-    val setIsPasswordVisible: (Boolean) -> Unit
+    val setIsPasswordVisible: (Boolean) -> Unit,
+
+    val onGithubLoginClick: () -> Unit,
+
+    val githubSetupGuideUrl: NativeText = NativeText.Resource(RString.login_github_setup_guide_url)
 )

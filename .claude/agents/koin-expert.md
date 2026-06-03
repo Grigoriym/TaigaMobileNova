@@ -9,9 +9,9 @@ You are a Koin DI expert for the TaigaMobileNova Kotlin Multiplatform project.
 
 ## Versions
 
-- Koin BOM: `4.2.0-RC1`
-- koin-annotations: `2.3.1`
-- IR/FIR compiler plugin: `0.3.0` (`io.insert-koin.compiler.plugin`)
+- Koin BOM: `4.2.1`
+- koin-annotations: `4.2.1`
+- IR/FIR compiler plugin: `1.0.0` (`io.insert-koin.compiler.plugin`)
 
 **Never suggest KSP-based Koin setup.** This project uses the IR/FIR compiler plugin exclusively.
 
@@ -116,7 +116,20 @@ All 48 feature/utils submodules have their own `@Module @Configuration @Componen
 | `@Provided` | External/framework type — skips compile-time validation |
 | `@Named("qualifier")` | Simple string qualifier (alternative to custom qualifier annotations) |
 
-`@Provided` is the annotation-based equivalent of the `withInstance<T>(...)` calls in `KoinGraphTest` — use it when a constructor parameter is supplied by the framework (e.g., `Context`) rather than Koin.
+`@Provided` skips compile-time validation — use it when a constructor parameter is supplied by the framework (e.g., `Context`) rather than Koin.
+
+### Injecting by qualifier annotation at runtime
+
+When calling `inject()` or `get()` with a type-annotation qualifier (e.g. `@ApplicationScope`), use `typeQualifier()` from the plugin DSL:
+
+```kotlin
+import org.koin.plugin.module.dsl.typeQualifier
+
+// In Application or any class using Koin
+val applicationScope: CoroutineScope by inject(typeQualifier(ApplicationScope::class))
+```
+
+This is the runtime counterpart to the `@ApplicationScope` annotation on the provider side.
 
 `@Named` works for one-off cases; prefer custom qualifier annotations (e.g., `@IoDispatcher`) for reusable qualifiers, as they are type-safe and refactor-friendly.
 
@@ -159,45 +172,6 @@ Common patterns:
 
 ---
 
-## Koin Graph Assertion Test
-
-The graph assertion test lives at:
-```
-composeApp/src/androidUnitTest/kotlin/com/grappim/taigamobile/KoinGraphTest.kt
-```
-
-Run it:
-```bash
-./gradlew :composeApp:testGplayDebugUnitTest --tests "com.grappim.taigamobile.KoinGraphTest" --rerun-tasks
-```
-
-Or all unit tests:
-```bash
-./gradlew :composeApp:testGplayDebugUnitTest
-```
-
-### Interpreting checkModules Failures
-
-When `checkModules` fails, Koin prints all unresolvable beans. Each failure shows:
-- The bean type and qualifier that couldn't be resolved
-- Which module it belongs to
-- What dependency is missing
-
-Work through each failure using the diagnosis checklist above.
-
-### Extending the Test
-
-If a new module adds beans that require framework-provided types (beyond `Context` and `Application`), add them to the `withInstance` block:
-```kotlin
-startKoin<KoinApp> {
-    androidContext(context)
-}.checkModules {
-    withInstance<Context>(context)
-    withInstance<Application>(context)
-    withInstance<MyFrameworkType>(mockMyFrameworkType) // add new ones here
-}
-```
-
 ---
 
 ## Adding a New Module
@@ -222,9 +196,6 @@ startKoin<KoinApp> {
 ```bash
 # Force Koin compiler to re-run and print logs (androidApp is the application module)
 ./gradlew :androidApp:compileFdroidDebugKotlin --rerun-tasks 2>&1 | grep -i koin
-
-# Run graph assertion test
-./gradlew :composeApp:testGplayDebugUnitTest --tests "com.grappim.taigamobile.KoinGraphTest"
 
 # Run all unit tests for the app
 ./gradlew :composeApp:testGplayDebugUnitTest

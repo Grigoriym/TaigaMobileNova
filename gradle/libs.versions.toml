@@ -17,11 +17,11 @@ app-menugroup = "Office"
 app-category = "utils"
 
 #noinspection UnusedVersionCatalogEntry
-compileSdk = "36"
+compileSdk = "37"
 #noinspection UnusedVersionCatalogEntry
 minSdk = "24"
 #noinspection UnusedVersionCatalogEntry
-targetSdk = "36"
+targetSdk = "37"
 
 # https://github.com/detekt/detekt/releases
 detekt = "2.0.0-alpha.3"
@@ -43,21 +43,21 @@ buildKonfig = "0.21.2"
 # https://github.com/JetBrains/kotlin/releases
 kotlin = "2.3.21"
 # https://github.com/Kotlin/kotlinx.coroutines/releases
-coroutines = "1.10.2"
+coroutines = "1.11.0"
 ksp = "2.3.9"
-kotlin-serialization-plugin = "2.3.20"
+kotlin-serialization-plugin = "2.3.21"
 kotlin-serialization-json = "1.11.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
 kotlinx-collections = "0.4.0"
 # https://github.com/Kotlin/kotlinx-datetime/releases
-kotlin-date-time = "0.7.1"
+kotlin-date-time = "0.8.0"
 kotlinx-io-core = "0.9.0"
 kotlinTest = "2.3.21"
 # https://github.com/Kotlin/kotlinx-atomicfu/releases
-atomicfu = "0.32.1"
+atomicfu = "0.33.0"
 # https://github.com/cashapp/turbine/releases
 turbine = "1.2.1"
-ktor = "3.4.2"
+ktor = "3.5.0"
 slf4j = "2.0.18"
 
 # https://github.com/InsertKoinIO/koin/releases
@@ -65,11 +65,11 @@ koin-bom = "4.2.1"
 # https://github.com/InsertKoinIO/koin-annotations/releases
 koin-annotations = "4.2.1"
 # https://github.com/InsertKoinIO/koin-compiler-plugin
-koin-plugin = "0.6.2"
+koin-plugin = "1.0.0"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
-jetbrainsComposeMultiplatform = "1.10.3"
-jetbrainsNavigationEvent = "1.0.1"
+jetbrainsComposeMultiplatform = "1.11.0"
+jetbrainsNavigationEvent = "1.1.0"
 jetbrainsComposeMaterial3 = "1.10.0-alpha05"
 jetbrainsSavedState = "1.4.0"
 jetbrainsComposeIcons = "1.7.3"
@@ -81,7 +81,7 @@ compose-bom = "2026.05.01"
 material = "1.14.0"
 activity-compose = "1.13.0"
 lifecycle = "2.10.0"
-paging = "3.4.2"
+paging = "3.5.0"
 room = "2.8.4"
 sqlite = "2.6.2"
 
@@ -93,8 +93,8 @@ dataStore = "1.2.1"
 
 # https://github.com/skydoves/colorpicker-compose/releases
 skydovesColorpicker = "1.1.4"
-markdownRenderer = "0.40.2"
-filekit = "0.13.0"
+markdownRenderer = "0.41.0"
+filekit = "0.14.1"
 
 core-ktx = "1.18.0"
 appcompat = "1.7.1"

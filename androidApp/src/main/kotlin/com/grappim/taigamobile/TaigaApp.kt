@@ -6,6 +6,7 @@ import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.core.asynckmp.ApplicationScope
 import com.grappim.taigamobile.core.logger.TimberLogger
 import com.grappim.taigamobile.core.storage.cache.CacheManager
 import com.grappim.taigamobile.data.ImageLoaderProvider
@@ -14,8 +15,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
-import org.koin.core.qualifier.named
 import org.koin.plugin.module.dsl.startKoin
+import org.koin.plugin.module.dsl.typeQualifier
 import timber.log.Timber
 
 class TaigaApp :
@@ -28,7 +29,7 @@ class TaigaApp :
 
     private val cacheManager: CacheManager by inject()
 
-    private val applicationScope: CoroutineScope by inject(named("ApplicationScope"))
+    private val applicationScope: CoroutineScope by inject(typeQualifier(ApplicationScope::class))
 
     override fun onCreate() {
         super.onCreate()
