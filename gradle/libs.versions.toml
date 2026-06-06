@@ -92,7 +92,7 @@ junit4 = "4.13.2"
 dataStore = "1.2.1"
 
 # https://github.com/skydoves/colorpicker-compose/releases
-skydovesColorpicker = "1.1.4"
+skydovesColorpicker = "1.2.0"
 markdownRenderer = "0.41.0"
 filekit = "0.14.1"
 
