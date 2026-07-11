@@ -3,6 +3,7 @@ package com.grappim.taigamobile.core.storage
 import androidx.compose.ui.graphics.Color
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
@@ -20,6 +21,7 @@ interface TaigaSessionStorage {
     val themeSettings: Flow<ThemeSettings>
     val userId: Flow<Long?>
     val currentProjectIdFlow: Flow<Long>
+    val crashReportingEnabled: Flow<Boolean>
 
     suspend fun setKanbanDefaultSwimline(value: Long)
     suspend fun getPresetColors(): ImmutableList<String>
@@ -34,6 +36,7 @@ interface TaigaSessionStorage {
     suspend fun setThemSetting(themeSettings: ThemeSettings)
     suspend fun getCurrentProjectId(): Long
     suspend fun setCurrentProjectId(projectId: Long)
+    suspend fun setCrashReportingEnabled(enabled: Boolean)
     suspend fun clearData()
 }
 
@@ -45,6 +48,7 @@ class TaigaSessionStorageImpl(private val dataStore: DataStore<Preferences>, pri
         private val THEME_SETTINGS_KEY = stringPreferencesKey("theme_settings")
         private val KANBAN_DEFAULT_SWIMLINE_KEY = longPreferencesKey("kanban_default_swimline")
         private val TAG_PRESET_COLORS_KEY = stringPreferencesKey("tag_preset_colors")
+        private val CRASH_REPORTING_ENABLED_KEY = booleanPreferencesKey("crash_reporting_enabled")
     }
 
     private val defaultPresetColors: List<String> = persistentListOf(
@@ -137,6 +141,15 @@ class TaigaSessionStorageImpl(private val dataStore: DataStore<Preferences>, pri
     override suspend fun setCurrentProjectId(projectId: Long) {
         dataStore.edit { prefs ->
             prefs[CURRENT_PROJECT_ID_KEY] = projectId
+        }
+    }
+
+    override val crashReportingEnabled: Flow<Boolean> = dataStore.data
+        .map { prefs -> prefs[CRASH_REPORTING_ENABLED_KEY] ?: true }
+
+    override suspend fun setCrashReportingEnabled(enabled: Boolean) {
+        dataStore.edit { prefs ->
+            prefs[CRASH_REPORTING_ENABLED_KEY] = enabled
         }
     }
 

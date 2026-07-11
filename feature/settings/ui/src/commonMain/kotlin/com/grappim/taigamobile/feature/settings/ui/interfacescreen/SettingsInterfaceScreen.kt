@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,6 +24,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.settings.ui.ThemeSelector
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.appearance
+import com.grappim.taigamobile.strings.generated.resources.crash_reporting
+import com.grappim.taigamobile.strings.generated.resources.crash_reporting_description
+import com.grappim.taigamobile.strings.generated.resources.privacy
 import com.grappim.taigamobile.strings.generated.resources.settings_interface
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
@@ -64,6 +69,12 @@ private fun SettingsInterfaceScreenContent(state: SettingsInterfaceViewState) {
 
             AppearanceSection(state = state)
 
+            if (state.isCrashReportingAvailable) {
+                TaigaHeightSpacer(16.dp)
+
+                PrivacySection(state = state)
+            }
+
             TaigaHeightSpacer(16.dp)
         }
     }
@@ -83,6 +94,32 @@ private fun AppearanceSection(state: SettingsInterfaceViewState) {
         )
 
         ThemeSelector(state = state)
+    }
+}
+
+@Composable
+private fun PrivacySection(state: SettingsInterfaceViewState) {
+    Column(
+        horizontalAlignment = Alignment.Start,
+        modifier = Modifier.padding(horizontal = mainHorizontalScreenPadding)
+    ) {
+        Text(
+            text = stringResource(RString.privacy),
+            style = MaterialTheme.typography.titleSmall,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(bottom = 8.dp)
+        )
+
+        ListItem(
+            headlineContent = { Text(stringResource(RString.crash_reporting)) },
+            supportingContent = { Text(stringResource(RString.crash_reporting_description)) },
+            trailingContent = {
+                Switch(
+                    checked = state.crashReportingEnabled,
+                    onCheckedChange = state.onCrashReportingToggle
+                )
+            }
+        )
     }
 }
 
