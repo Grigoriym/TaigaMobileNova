@@ -12,10 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class SettingsAboutScreenViewModel(
-    appInfoProvider: AppInfoProvider,
-    crashReporter: CrashReporter
-) : ViewModel() {
+class SettingsAboutScreenViewModel(appInfoProvider: AppInfoProvider, crashReporter: CrashReporter) : ViewModel() {
 
     private val _state = MutableStateFlow(
         SettingsAboutScreenState(
