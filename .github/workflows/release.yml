@@ -26,6 +26,7 @@ jobs:
             TAIGA_STORE_PASS_D: ${{ secrets.TAIGA_STORE_PASS_D }}
             TAIGA_ALIAS_D: ${{ secrets.TAIGA_ALIAS_D }}
             ENCODED_STRING_D: ${{ secrets.TAIGA_KEYSTORE_D }}
+            ENCODED_GOOGLE_SERVICES_GPLAY: ${{ secrets.GOOGLE_SERVICES_GPLAY }}
 
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         steps:
@@ -40,6 +41,9 @@ jobs:
 
             - name: Restore taigamobilenova_debug.jks
               run: echo $ENCODED_STRING_D | base64 -d > ./taigamobilenova_debug.jks
+
+            - name: Restore google-services.json
+              run: echo $ENCODED_GOOGLE_SERVICES_GPLAY | base64 -d > ./androidApp/src/gplay/google-services.json
 
             - name: Build Release Fdroid APK
               run: |
