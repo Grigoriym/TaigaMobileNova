@@ -13,6 +13,8 @@ plugins {
     alias(libs.plugins.ksp) apply false
     alias(libs.plugins.koin.compiler) apply false
     alias(libs.plugins.build.konfig) apply false
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
 
     alias(libs.plugins.detekt)
     alias(libs.plugins.ktlint)
@@ -97,6 +99,7 @@ dependencies {
     kover(projects.core.storage)
     kover(projects.core.domain)
     kover(projects.core.appinfoApi)
+    kover(projects.core.crashApi)
     kover(projects.core.navigation)
     kover(projects.core.serialization)
     kover(projects.core.asyncKmp)

@@ -21,6 +21,7 @@ class FakeTaigaSessionStorage(
     override val userId: Flow<Long?> = flowOf(currentUserId)
     private val _currentProjectIdFlow = MutableStateFlow(currentProjectId)
     override val currentProjectIdFlow: Flow<Long> = _currentProjectIdFlow.asStateFlow()
+    override val crashReportingEnabled: Flow<Boolean> = flowOf(true)
 
     var setKanbanDefaultSwimlineCalls: MutableList<Long> = mutableListOf()
     override suspend fun setKanbanDefaultSwimline(value: Long) {
@@ -42,6 +43,11 @@ class FakeTaigaSessionStorage(
         currentProjectId = projectId
         _currentProjectIdFlow.value = projectId
     }
+    var setCrashReportingEnabledCalls: MutableList<Boolean> = mutableListOf()
+    override suspend fun setCrashReportingEnabled(enabled: Boolean) {
+        setCrashReportingEnabledCalls.add(enabled)
+    }
+
     var clearDataCalled = false
 
     override suspend fun clearData() {

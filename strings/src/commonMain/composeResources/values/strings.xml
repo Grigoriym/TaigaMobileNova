@@ -366,6 +366,9 @@
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
     <string name="theme_dark">Dark</string>
+    <string name="privacy">Privacy</string>
+    <string name="crash_reporting">Crash reporting</string>
+    <string name="crash_reporting_description">Automatically send crash reports to help improve the app</string>
     <string name="help">Help</string>
     <string name="submit_report">Submit report</string>
     <string name="github_repo_link">Github Link</string>
@@ -373,6 +376,7 @@
     <string name="github_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova</string>
     <string name="source_code">Source code</string>
     <string name="privacy_policy_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY.md</string>
+    <string name="privacy_policy_url_gplay" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY_GPLAY.md</string>
 
     <!-- ==================== Settings - Project Values ==================== -->
     <string name="settings_project_values">Project Values</string>

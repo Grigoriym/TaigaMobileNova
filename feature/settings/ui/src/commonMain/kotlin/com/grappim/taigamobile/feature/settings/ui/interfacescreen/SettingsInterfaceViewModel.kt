@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.settings.ui.interfacescreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.taigamobile.core.crashapi.CrashReporter
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.strings.RString
@@ -18,12 +19,17 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class SettingsInterfaceViewModel(private val taigaSessionStorage: TaigaSessionStorage) : ViewModel() {
+class SettingsInterfaceViewModel(
+    private val taigaSessionStorage: TaigaSessionStorage,
+    private val crashReporter: CrashReporter
+) : ViewModel() {
 
     private val _state = MutableStateFlow(
         SettingsInterfaceViewState(
             onThemeChanged = ::switchTheme,
-            getThemeTitle = ::getThemeTitle
+            getThemeTitle = ::getThemeTitle,
+            isCrashReportingAvailable = crashReporter.isAvailable,
+            onCrashReportingToggle = ::toggleCrashReporting
         )
     )
     val state = _state.asStateFlow()
@@ -38,6 +44,10 @@ class SettingsInterfaceViewModel(private val taigaSessionStorage: TaigaSessionSt
                 )
             }
         }.launchIn(viewModelScope)
+
+        taigaSessionStorage.crashReportingEnabled.onEach { enabled ->
+            _state.update { it.copy(crashReportingEnabled = enabled) }
+        }.launchIn(viewModelScope)
     }
 
     private fun getThemeTitle(theme: ThemeSettings): NativeText = NativeText.Resource(
@@ -51,6 +61,12 @@ class SettingsInterfaceViewModel(private val taigaSessionStorage: TaigaSessionSt
     private fun switchTheme(theme: ThemeSettings) {
         viewModelScope.launch {
             taigaSessionStorage.setThemSetting(theme)
+        }
+    }
+
+    private fun toggleCrashReporting(enabled: Boolean) {
+        viewModelScope.launch {
+            taigaSessionStorage.setCrashReportingEnabled(enabled)
         }
     }
 }
