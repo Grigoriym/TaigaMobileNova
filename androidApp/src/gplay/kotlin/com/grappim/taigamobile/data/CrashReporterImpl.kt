@@ -1,17 +1,18 @@
 package com.grappim.taigamobile.data
 
-import com.google.firebase.crashlytics.FirebaseCrashlytics
+import com.google.firebase.Firebase
+import com.google.firebase.crashlytics.crashlytics
 import com.grappim.taigamobile.core.crashapi.CrashReporter
 import org.koin.core.annotation.Single
 
 @Single(binds = [CrashReporter::class])
 class CrashReporterImpl : CrashReporter {
-    private val crashlytics = FirebaseCrashlytics.getInstance()
+    private val crashlytics = Firebase.crashlytics
 
     override val isAvailable: Boolean = true
 
     override fun setCollectionEnabled(enabled: Boolean) {
-        crashlytics.setCrashlyticsCollectionEnabled(enabled)
+        crashlytics.isCrashlyticsCollectionEnabled = enabled
     }
 
     override fun recordException(throwable: Throwable) {

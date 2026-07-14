@@ -11,6 +11,7 @@ import com.grappim.taigamobile.core.crashapi.CrashReporter
 import com.grappim.taigamobile.core.logger.TimberLogger
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.cache.CacheManager
+import com.grappim.taigamobile.data.CrashlyticsTree
 import com.grappim.taigamobile.data.ImageLoaderProvider
 import com.grappim.taigamobile.di.KoinApp
 import kotlinx.coroutines.CoroutineScope
@@ -66,6 +67,7 @@ class TaigaApp :
         if (appInfoProvider.isDebug()) {
             Timber.plant(Timber.DebugTree())
         }
+        Timber.plant(CrashlyticsTree(crashReporter))
         TimberLogger.install()
     }
 
