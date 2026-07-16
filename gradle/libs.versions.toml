@@ -73,7 +73,7 @@ jetbrainsNavigationEvent = "1.1.0"
 jetbrainsComposeMaterial3 = "1.10.0-alpha05"
 jetbrainsSavedState = "1.4.0"
 jetbrainsComposeIcons = "1.7.3"
-jetbrainsAndroidxLifecycle = "2.10.0"
+jetbrainsAndroidxLifecycle = "2.11.0"
 jetbrainsNavigationCompose = "2.9.2"
 
 compose-bom = "2026.06.01"
