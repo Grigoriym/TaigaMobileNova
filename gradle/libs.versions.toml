@@ -33,7 +33,7 @@ kover = "0.9.8"
 composeRules = "0.6.2"
 
 # https://developer.android.com/reference/tools/gradle-api
-agp = "9.2.1"
+agp = "9.3.0"
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 androidDesugarJdkLibs = "2.1.5"
 
@@ -41,18 +41,18 @@ androidDesugarJdkLibs = "2.1.5"
 buildKonfig = "0.22.0"
 
 # https://github.com/JetBrains/kotlin/releases
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 # https://github.com/Kotlin/kotlinx.coroutines/releases
 coroutines = "1.11.0"
 ksp = "2.3.9"
-kotlin-serialization-plugin = "2.4.0"
+kotlin-serialization-plugin = "2.4.10"
 kotlin-serialization-json = "1.11.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
 kotlinx-collections = "0.5.1"
 # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlin-date-time = "0.8.0"
 kotlinx-io-core = "0.9.1"
-kotlinTest = "2.4.0"
+kotlinTest = "2.4.10"
 # https://github.com/Kotlin/kotlinx-atomicfu/releases
 atomicfu = "0.33.0"
 # https://github.com/cashapp/turbine/releases
@@ -65,7 +65,7 @@ koin-bom = "4.2.2"
 # https://github.com/InsertKoinIO/koin-annotations/releases
 koin-annotations = "4.2.2"
 # https://github.com/InsertKoinIO/koin-compiler-plugin
-koin-plugin = "1.0.1"
+koin-plugin = "1.0.2"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
 jetbrainsComposeMultiplatform = "1.11.1"
@@ -73,7 +73,7 @@ jetbrainsNavigationEvent = "1.1.0"
 jetbrainsComposeMaterial3 = "1.10.0-alpha05"
 jetbrainsSavedState = "1.4.0"
 jetbrainsComposeIcons = "1.7.3"
-jetbrainsAndroidxLifecycle = "2.10.0"
+jetbrainsAndroidxLifecycle = "2.11.0"
 jetbrainsNavigationCompose = "2.9.2"
 
 compose-bom = "2026.06.01"
@@ -102,7 +102,7 @@ splashScreen = "1.2.0"
 timber = "5.0.1"
 
 # https://firebase.google.com/support/release-notes/android
-firebase-bom = "34.15.0"
+firebase-bom = "34.16.0"
 # https://developers.google.com/android/guides/google-services-plugin
 google-services = "4.5.0"
 # https://firebase.google.com/docs/crashlytics/android/get-started
