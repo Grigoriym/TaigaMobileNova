@@ -41,18 +41,18 @@ androidDesugarJdkLibs = "2.1.5"
 buildKonfig = "0.22.0"
 
 # https://github.com/JetBrains/kotlin/releases
-kotlin = "2.4.0"
+kotlin = "2.4.10"
 # https://github.com/Kotlin/kotlinx.coroutines/releases
 coroutines = "1.11.0"
 ksp = "2.3.9"
-kotlin-serialization-plugin = "2.4.0"
+kotlin-serialization-plugin = "2.4.10"
 kotlin-serialization-json = "1.11.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
 kotlinx-collections = "0.5.1"
 # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlin-date-time = "0.8.0"
 kotlinx-io-core = "0.9.1"
-kotlinTest = "2.4.0"
+kotlinTest = "2.4.10"
 # https://github.com/Kotlin/kotlinx-atomicfu/releases
 atomicfu = "0.33.0"
 # https://github.com/cashapp/turbine/releases
