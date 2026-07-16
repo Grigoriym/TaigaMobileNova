@@ -107,6 +107,8 @@ firebase-bom = "34.15.0"
 google-services = "4.5.0"
 # https://firebase.google.com/docs/crashlytics/android/get-started
 firebase-crashlytics-plugin = "3.0.7"
+# https://developer.android.com/guide/playcore#in-app-updates
+in-app-update = "2.1.0"
 
 [libraries]
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
@@ -202,6 +204,8 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
+
+google-inapp-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "in-app-update" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 
