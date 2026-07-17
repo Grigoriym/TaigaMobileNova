@@ -28,7 +28,7 @@ detekt = "2.0.0-alpha.5"
 # https://github.com/JLLeitschuh/ktlint-gradle/releases
 ktlint = "14.2.0"
 # https://github.com/Kotlin/kotlinx-kover/releases
-kover = "0.9.8"
+kover = "0.9.9"
 # https://github.com/mrmans0n/compose-rules/releases
 composeRules = "0.6.2"
 
