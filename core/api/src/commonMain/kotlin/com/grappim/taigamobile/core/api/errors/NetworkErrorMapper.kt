@@ -2,6 +2,7 @@ package com.grappim.taigamobile.core.api.errors
 
 import com.grappim.taigamobile.core.domain.NetworkException
 import com.grappim.taigamobile.core.domain.PlatformIOException
+import com.grappim.taigamobile.core.domain.mapPlatformNetworkErrorCode
 import io.ktor.client.network.sockets.SocketTimeoutException
 import io.ktor.http.HttpStatusCode
 import org.koin.core.annotation.Single
@@ -20,10 +21,14 @@ class NetworkErrorMapper {
         else -> NetworkException.ERROR_HTTP_EXCEPTION
     }
 
-    fun mapToNetworkException(e: Exception): Throwable = when (e) {
-        is NetworkException -> e
-        is SocketTimeoutException -> NetworkException(NetworkException.ERROR_TIMEOUT)
-        is PlatformIOException -> NetworkException(NetworkException.ERROR_NETWORK_IO)
-        else -> NetworkException(NetworkException.ERROR_UNDEFINED)
+    fun mapToNetworkException(e: Exception): Throwable {
+        val platformErrorCode = mapPlatformNetworkErrorCode(e)
+        return when {
+            e is NetworkException -> e
+            e is SocketTimeoutException -> NetworkException(NetworkException.ERROR_TIMEOUT)
+            platformErrorCode != null -> NetworkException(platformErrorCode)
+            e is PlatformIOException -> NetworkException(NetworkException.ERROR_NETWORK_IO)
+            else -> NetworkException(NetworkException.ERROR_UNDEFINED)
+        }
     }
 }

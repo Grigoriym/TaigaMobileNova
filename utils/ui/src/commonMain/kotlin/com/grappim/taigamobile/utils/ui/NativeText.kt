@@ -15,6 +15,7 @@ import com.grappim.taigamobile.strings.generated.resources.error_not_acceptable
 import com.grappim.taigamobile.strings.generated.resources.error_not_found
 import com.grappim.taigamobile.strings.generated.resources.error_permission_denied
 import com.grappim.taigamobile.strings.generated.resources.error_something_has_gone_wrong
+import com.grappim.taigamobile.strings.generated.resources.error_ssl_certificate
 import com.grappim.taigamobile.strings.generated.resources.error_throttled
 import com.grappim.taigamobile.strings.generated.resources.error_unsupported_media_type
 import com.grappim.taigamobile.strings.generated.resources.error_validation
@@ -109,6 +110,10 @@ fun getErrorMessage(exception: Throwable): NativeText = if (exception is Network
         NetworkException.ERROR_TIMEOUT -> NativeText.Resource(RString.timeout_exceeded)
 
         NetworkException.ERROR_NETWORK_IO -> NativeText.Resource(RString.connection_failed)
+
+        NetworkException.ERROR_SSL_CERTIFICATE -> NativeText.Resource(
+            RString.error_ssl_certificate
+        )
 
         NetworkException.ERROR_UNDEFINED -> NativeText.Resource(RString.request_failed)
 
