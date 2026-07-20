@@ -67,7 +67,7 @@ class ErrorMappingPlugin(
                     throw e
                 } catch (e: Exception) {
                     logcat(priority = LogPriority.ERROR, tag = "ErrorMappingPlugin", throwable = e) {
-                        "Request to ${request.url} failed"
+                        "Request failed"
                     }
                     throw plugin.networkErrorMapper.mapToNetworkException(e)
                 }
