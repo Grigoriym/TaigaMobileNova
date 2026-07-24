@@ -1,3 +1,3 @@
 package com.grappim.taigamobile.core.domain
 
-actual fun mapPlatformNetworkErrorCode(exception: Exception): Int? = null
+actual fun mapPlatformNetworkError(exception: Exception): PlatformNetworkError? = null

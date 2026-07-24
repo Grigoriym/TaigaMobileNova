@@ -29,6 +29,9 @@ import com.grappim.taigamobile.feature.settings.ui.modules.navigateToModules
 import com.grappim.taigamobile.feature.settings.ui.projectdetails.ProjectDetailsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.projectdetails.ProjectDetailsScreen
 import com.grappim.taigamobile.feature.settings.ui.projectdetails.navigateToProjectDetails
+import com.grappim.taigamobile.feature.settings.ui.trustedcerts.TrustedCertificatesNavDestination
+import com.grappim.taigamobile.feature.settings.ui.trustedcerts.TrustedCertificatesScreen
+import com.grappim.taigamobile.feature.settings.ui.trustedcerts.goToTrustedCertificatesScreen
 import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreen
 import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreenNavDestination
 import com.grappim.taigamobile.feature.settings.ui.user.goToSettingsUserScreen
@@ -54,6 +57,9 @@ fun NavGraphBuilder.settingsNavGraph(navController: NavHostController, showSnack
             },
             goToModulesScreen = {
                 navController.navigateToModules()
+            },
+            goToTrustedCertificatesScreen = {
+                navController.goToTrustedCertificatesScreen()
             }
         )
     }
@@ -109,5 +115,9 @@ fun NavGraphBuilder.settingsNavGraph(navController: NavHostController, showSnack
 
     composable<ProjectValuesNavDestination> {
         ProjectValuesScreen(showSnackbar = showSnackbar)
+    }
+
+    composable<TrustedCertificatesNavDestination> {
+        TrustedCertificatesScreen()
     }
 }

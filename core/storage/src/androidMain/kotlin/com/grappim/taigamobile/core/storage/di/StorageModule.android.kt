@@ -12,6 +12,8 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
+import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
+import com.grappim.taigamobile.core.storage.cert.TrustedCertStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
@@ -36,6 +38,10 @@ class AuthDataStoreModule {
     @Single
     fun provideSession(context: Context, @StorageJsonQualifier json: Json): FiltersStorage =
         FiltersStorageImpl(createSessionFiltersDataStore(context), json)
+
+    @Single
+    fun provideTrustedCertStorage(context: Context, @StorageJsonQualifier json: Json): TrustedCertStorage =
+        TrustedCertStorageImpl(createTrustedCertDataStore(context), json)
 }
 
 fun createSessionDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
@@ -65,5 +71,11 @@ fun createAuthDataStore(context: Context): DataStore<Preferences> = PreferenceDa
     ),
     produceFile = {
         context.preferencesDataStoreFile(AUTH_DATA_STORE_FILE_NAME).absolutePath.toPath()
+    }
+)
+
+fun createTrustedCertDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
+    produceFile = {
+        context.preferencesDataStoreFile(TRUSTED_CERT_DATA_STORE_FILE_NAME).absolutePath.toPath()
     }
 )

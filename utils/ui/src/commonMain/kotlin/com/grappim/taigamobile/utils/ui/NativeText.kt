@@ -2,6 +2,7 @@ package com.grappim.taigamobile.utils.ui
 
 import androidx.compose.runtime.Composable
 import com.grappim.taigamobile.core.domain.NetworkException
+import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.auth_error_refresh_token_not_passed
 import com.grappim.taigamobile.strings.generated.resources.connection_failed
@@ -16,6 +17,7 @@ import com.grappim.taigamobile.strings.generated.resources.error_not_found
 import com.grappim.taigamobile.strings.generated.resources.error_permission_denied
 import com.grappim.taigamobile.strings.generated.resources.error_something_has_gone_wrong
 import com.grappim.taigamobile.strings.generated.resources.error_ssl_certificate
+import com.grappim.taigamobile.strings.generated.resources.error_ssl_hostname_mismatch
 import com.grappim.taigamobile.strings.generated.resources.error_throttled
 import com.grappim.taigamobile.strings.generated.resources.error_unsupported_media_type
 import com.grappim.taigamobile.strings.generated.resources.error_validation
@@ -115,6 +117,10 @@ fun getErrorMessage(exception: Throwable): NativeText = if (exception is Network
             RString.error_ssl_certificate
         )
 
+        NetworkException.ERROR_SSL_HOSTNAME_MISMATCH -> NativeText.Resource(
+            RString.error_ssl_hostname_mismatch
+        )
+
         NetworkException.ERROR_UNDEFINED -> NativeText.Resource(RString.request_failed)
 
         NetworkException.ERROR_UNAUTHORIZED -> NativeText.Resource(
@@ -163,6 +169,11 @@ fun getErrorMessage(exception: Throwable): NativeText = if (exception is Network
 
         else -> NativeText.Resource(RString.error_something_has_gone_wrong)
     }
+} else if (exception is UntrustedCertificateNetworkException) {
+    // Callers that specifically handle UntrustedCertificateNetworkException (e.g. the login flow)
+    // check for it before calling getErrorMessage and show a trust-this-certificate prompt instead.
+    // This is the fallback for everyone else.
+    NativeText.Resource(RString.error_ssl_certificate)
 } else {
     NativeText.Simple(exception.message.toString())
 }

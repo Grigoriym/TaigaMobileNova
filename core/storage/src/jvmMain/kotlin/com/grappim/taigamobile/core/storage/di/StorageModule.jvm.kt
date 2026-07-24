@@ -8,6 +8,8 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
+import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
+import com.grappim.taigamobile.core.storage.cert.TrustedCertStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Configuration
@@ -32,6 +34,10 @@ class AuthDataStoreModule {
     @Single
     fun provideSession(@StorageJsonQualifier json: Json): FiltersStorage =
         FiltersStorageImpl(createSessionFiltersDataStore(), json)
+
+    @Single
+    fun provideTrustedCertStorage(@StorageJsonQualifier json: Json): TrustedCertStorage =
+        TrustedCertStorageImpl(createTrustedCertDataStore(), json)
 }
 
 fun createSessionDataStore(): DataStore<Preferences> = createDataStore(
@@ -51,4 +57,10 @@ fun createSessionFiltersDataStore(): DataStore<Preferences> = createDataStore(
 
 fun createAuthDataStore(): DataStore<Preferences> = createDataStore(
     producePath = { File(System.getProperty("java.io.tmpdir"), "$AUTH_DATA_STORE_FILE_NAME$PREFS_EXT").absolutePath }
+)
+
+fun createTrustedCertDataStore(): DataStore<Preferences> = createDataStore(
+    producePath = {
+        File(System.getProperty("java.io.tmpdir"), "$TRUSTED_CERT_DATA_STORE_FILE_NAME$PREFS_EXT").absolutePath
+    }
 )

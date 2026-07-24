@@ -6,6 +6,7 @@ import com.grappim.taigamobile.core.api.errors.NetworkErrorMapper
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
+import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -48,8 +49,9 @@ class KmpNetworkModule {
         baseUrlProvider: BaseUrlProvider,
         appInfoProvider: AppInfoProvider,
         networkErrorMapper: NetworkErrorMapper,
-        errorResponseParser: ErrorResponseParser
-    ): HttpClient = HttpClient {
+        errorResponseParser: ErrorResponseParser,
+        trustedCertStorage: TrustedCertStorage
+    ): HttpClient = HttpClient(createPlatformHttpClientEngine(trustedCertStorage)) {
         expectSuccess = false
         defaultRequest {
             contentType(ContentType.Application.Json)
@@ -87,8 +89,9 @@ class KmpNetworkModule {
         appInfoProvider: AppInfoProvider,
         tokenRefresher: TokenRefresher,
         networkErrorMapper: NetworkErrorMapper,
-        errorResponseParser: ErrorResponseParser
-    ): HttpClient = HttpClient {
+        errorResponseParser: ErrorResponseParser,
+        trustedCertStorage: TrustedCertStorage
+    ): HttpClient = HttpClient(createPlatformHttpClientEngine(trustedCertStorage)) {
         expectSuccess = false
         defaultRequest {
             contentType(ContentType.Application.Json)
