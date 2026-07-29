@@ -12,6 +12,10 @@
 
 taigamobilenova_keystore_release.jks
 taigamobilenova_debug.jks
+
+# Real Firebase config for the gplay flavor — drop your own here, never commit it.
+# The fdroid flavor's src/fdroid/google-services.json is a harmless placeholder and IS committed.
+/androidApp/src/gplay/google-services.json
 /app/gplay/release/
 /app/fdroid/release/
 

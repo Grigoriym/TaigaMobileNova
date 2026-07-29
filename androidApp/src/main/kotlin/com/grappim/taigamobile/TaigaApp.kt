@@ -7,11 +7,16 @@ import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.asynckmp.ApplicationScope
+import com.grappim.taigamobile.core.crashapi.CrashReporter
 import com.grappim.taigamobile.core.logger.TimberLogger
+import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.cache.CacheManager
+import com.grappim.taigamobile.data.CrashlyticsTree
 import com.grappim.taigamobile.data.ImageLoaderProvider
 import com.grappim.taigamobile.di.KoinApp
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
 import org.koin.android.ext.koin.androidContext
@@ -28,6 +33,10 @@ class TaigaApp :
     private val imageLoaderProvider: ImageLoaderProvider by inject()
 
     private val cacheManager: CacheManager by inject()
+
+    private val crashReporter: CrashReporter by inject()
+
+    private val taigaSessionStorage: TaigaSessionStorage by inject()
 
     private val applicationScope: CoroutineScope by inject(typeQualifier(ApplicationScope::class))
 
@@ -46,6 +55,10 @@ class TaigaApp :
         applicationScope.launch {
             cacheManager.cleanExpiredCache()
         }
+
+        taigaSessionStorage.crashReportingEnabled
+            .onEach { enabled -> crashReporter.setCollectionEnabled(enabled) }
+            .launchIn(applicationScope)
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader = imageLoaderProvider.provide()
@@ -54,6 +67,7 @@ class TaigaApp :
         if (appInfoProvider.isDebug()) {
             Timber.plant(Timber.DebugTree())
         }
+        Timber.plant(CrashlyticsTree(crashReporter))
         TimberLogger.install()
     }
 

@@ -18,7 +18,7 @@ jobs:
             pull-requests: write
         steps:
             - name: Check out master
-              uses: actions/checkout@v6
+              uses: actions/checkout@v7
               with:
                   ref: master
                   fetch-depth: 0
@@ -46,9 +46,14 @@ jobs:
               run: |
                   echo "What's new in v${{ inputs.version }}" > fastlane/metadata/android/en-US/changelogs/${{ inputs.version_code }}.txt
 
+            - name: Create Play Store changelog stub
+              run: |
+                  mkdir -p playstore/changelogs
+                  echo "What's new in v${{ inputs.version }}" > playstore/changelogs/${{ inputs.version_code }}.txt
+
             - name: Commit and push
               run: |
-                  git add gradle/libs.versions.toml fastlane/metadata/android/en-US/changelogs/
+                  git add gradle/libs.versions.toml fastlane/metadata/android/en-US/changelogs/ playstore/changelogs/
                   git commit -m "Release v${{ inputs.version }}"
                   git push origin release/v${{ inputs.version }}
 
@@ -66,6 +71,7 @@ jobs:
 
                   ### Before merging
                   - [ ] Edit F-Droid changelog: \`fastlane/metadata/android/en-US/changelogs/${{ inputs.version_code }}.txt\`
+                  - [ ] Edit Play Store changelog: \`playstore/changelogs/${{ inputs.version_code }}.txt\` (copy-paste into Play Console manually — not automated)
                   - [ ] Review version bump in \`gradle/libs.versions.toml\`
 
                   ### After merging (automatic)

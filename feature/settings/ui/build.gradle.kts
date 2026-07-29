@@ -11,6 +11,7 @@ kotlin {
             implementation(projects.strings)
             implementation(projects.core.api)
             implementation(projects.core.appinfoApi)
+            implementation(projects.core.crashApi)
             implementation(projects.core.domain)
             implementation(projects.core.storage)
             implementation(projects.core.navigation)

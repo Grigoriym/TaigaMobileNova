@@ -1,0 +1,4 @@
+- Clearer error messages for API and untrusted certificate errors
+- Added in-app update prompts
+- Added crash reporting to help catch bugs faster
+- Dependency updates and internal improvements

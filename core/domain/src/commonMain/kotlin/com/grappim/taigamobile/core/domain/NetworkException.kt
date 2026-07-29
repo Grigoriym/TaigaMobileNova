@@ -37,5 +37,7 @@ class NetworkException(val errorCode: Int, val request: String? = "", val taigaE
         const val ERROR_INTERNAL_SERVER = -19
         const val ERROR_CONFLICT = -20
         const val ERROR_LOCKED = -21
+        const val ERROR_SSL_CERTIFICATE = -22
+        const val ERROR_SSL_HOSTNAME_MISMATCH = -23
     }
 }

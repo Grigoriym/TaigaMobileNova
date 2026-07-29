@@ -1,0 +1,2 @@
+- Clearer error messages for API and untrusted certificate errors
+- Dependency updates and internal improvements
