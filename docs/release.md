@@ -32,17 +32,23 @@ The workflow will:
 - Create branch `release/v{version}` from that merged state
 - Bump `version-name` and `version-code` in `gradle/libs.versions.toml`
 - Create a changelog stub at `fastlane/metadata/android/en-US/changelogs/{version_code}.txt`
+- Create a changelog stub at `playstore/changelogs/{version_code}.txt`
 - Push the branch and open a PR targeting `master`
 
-### 2. Edit the F-Droid changelog
+### 2. Edit the changelogs
 
-Before merging the PR, edit the changelog stub that was created:
+Before merging the PR, edit the changelog stubs that were created:
 
 ```
-fastlane/metadata/android/en-US/changelogs/{version_code}.txt
+fastlane/metadata/android/en-US/changelogs/{version_code}.txt   # F-Droid
+playstore/changelogs/{version_code}.txt                         # Google Play
 ```
 
-Keep it short (max ~500 chars). F-Droid displays this as "What's new" in the app listing.
+The F-Droid changelog is picked up automatically from the repo (keep it short, max ~500
+chars — F-Droid displays it as "What's new" in the app listing). The Play Store changelog
+is **not** uploaded automatically — copy-paste it into the Play Console release notes
+manually when publishing the Play release.
+
 You can push additional commits to the release branch before merging.
 
 ### 3. Review and merge the PR
