@@ -14,6 +14,7 @@ import org.koin.core.annotation.Single
 internal const val SESSION_FILTERS_DATA_STORE_FILE_NAME = "taiga_session_filters_storage"
 internal const val AUTH_DATA_STORE_FILE_NAME = "auth_storage"
 internal const val TAIGA_SESSION_STORAGE = "taiga_session_storage"
+internal const val TRUSTED_CERT_DATA_STORE_FILE_NAME = "trusted_cert_storage"
 
 @Retention(AnnotationRetention.BINARY)
 @Qualifier

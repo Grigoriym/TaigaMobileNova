@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Abc
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.Icon
@@ -32,6 +33,7 @@ import com.grappim.taigamobile.strings.generated.resources.settings_attributes
 import com.grappim.taigamobile.strings.generated.resources.settings_interface
 import com.grappim.taigamobile.strings.generated.resources.settings_modules
 import com.grappim.taigamobile.strings.generated.resources.settings_project_details
+import com.grappim.taigamobile.strings.generated.resources.settings_trusted_certificates
 import com.grappim.taigamobile.strings.generated.resources.settings_user
 import com.grappim.taigamobile.uikit.generated.resources.ic_brick
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
@@ -54,6 +56,7 @@ fun SettingsScreen(
     goToAttributesScreen: () -> Unit,
     goToProjectDetailsScreen: () -> Unit,
     goToModulesScreen: () -> Unit,
+    goToTrustedCertificatesScreen: () -> Unit,
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -75,7 +78,8 @@ fun SettingsScreen(
         goToUserScreen = goToUserScreen,
         goToAttributesScreen = goToAttributesScreen,
         goToProjectDetailsScreen = goToProjectDetailsScreen,
-        goToModulesScreen = goToModulesScreen
+        goToModulesScreen = goToModulesScreen,
+        goToTrustedCertificatesScreen = goToTrustedCertificatesScreen
     )
 }
 
@@ -87,7 +91,8 @@ fun SettingsScreenContent(
     goToUserScreen: () -> Unit = {},
     goToAttributesScreen: () -> Unit = {},
     goToProjectDetailsScreen: () -> Unit = {},
-    goToModulesScreen: () -> Unit = {}
+    goToModulesScreen: () -> Unit = {},
+    goToTrustedCertificatesScreen: () -> Unit = {}
 ) {
     Surface {
         Column(
@@ -175,6 +180,22 @@ fun SettingsScreenContent(
                     Icon(
                         imageVector = Icons.Outlined.TouchApp,
                         contentDescription = "Interface Screen"
+                    )
+                }
+            )
+
+            ListItem(
+                modifier = Modifier
+                    .clickable {
+                        goToTrustedCertificatesScreen()
+                    },
+                headlineContent = {
+                    Text(text = stringResource(RString.settings_trusted_certificates))
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Default.Lock,
+                        contentDescription = "Trusted Certificates Screen"
                     )
                 }
             )

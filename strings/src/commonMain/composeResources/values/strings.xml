@@ -46,6 +46,8 @@
     <string name="error_host_not_found">Host not found</string>
     <string name="request_failed">Request ended with error</string>
     <string name="connection_failed">Connection error</string>
+    <string name="error_ssl_certificate">Can't verify the server's security certificate. If it's self-signed or from a private CA, log out and log back in to trust it</string>
+    <string name="error_ssl_hostname_mismatch">The server's certificate doesn't match this address. Check the server URL, or the certificate may need to be reissued for this host</string>
     <string name="timeout_exceeded">Waiting limit exceeded</string>
     <string name="auth_error_refresh_token_not_passed">For security reasons, your session was closed</string>
     <string name="error_permission_denied">You do not have permission to perform this action</string>
@@ -75,6 +77,8 @@
     <string name="login_error_message">Error during login. Check credentials or connection</string>
     <string name="login_alert_title">Unencrypted connection</string>
     <string name="login_alert_text">You are going to use an unencrypted connection. Are you sure?</string>
+    <string name="cert_trust_dialog_title">Untrusted certificate</string>
+    <string name="cert_trust_dialog_description">The certificate presented by %1$s could not be automatically verified.\n\nIssuer: %2$s\nSubject: %3$s\nValid: %4$s – %5$s\nSHA-256: %6$s\n\nOnly continue if you trust this server.</string>
 
     <!-- ==================== Dashboard ==================== -->
     <string name="dashboard">Dashboard</string>
@@ -338,6 +342,12 @@
     <string name="settings_user">User</string>
     <string name="settings_attributes">Attributes</string>
     <string name="settings_modules">Modules</string>
+    <string name="settings_trusted_certificates">Trusted Certificates</string>
+    <string name="trusted_cert_issuer">Issued by %1$s</string>
+    <string name="trusted_cert_valid_until">Valid until %1$s</string>
+    <string name="trusted_cert_fingerprint">SHA-256: %1$s</string>
+    <string name="revoke_cert_title">Revoke trust</string>
+    <string name="revoke_cert_text">Stop trusting this certificate for %1$s? You'll need to accept it again next time you connect.</string>
     <string name="module_epics_activated">Epics</string>
     <string name="module_epics_details">Group related user stories under high-level goals</string>
     <string name="module_backlog_activated">Backlog/Scrum</string>
