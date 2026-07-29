@@ -1,6 +1,6 @@
 # Privacy Policy for TaigaMobileNova (Google Play version)
 
-**Last Updated:** July 11, 2026
+**Last Updated:** July 29, 2026
 
 ## Introduction
 
@@ -92,7 +92,7 @@ For questions about this privacy policy or the app, please:
 
 Since we do not collect any data ourselves:
 - There is no data held by us to delete, modify, or export
-- Crash diagnostics sent to Firebase Crashlytics can be stopped at any time via the in-app toggle described above; for removal of previously submitted crash data, see [Firebase's data deletion documentation](https://firebase.google.com/support/privacy) or contact us
+- Crash diagnostics sent to Firebase Crashlytics can be stopped at any time via the in-app toggle described above; previously submitted crash data is automatically deleted by Firebase within 90 days (see [Firebase's data retention policy](https://firebase.google.com/support/privacy))
 - All your other data resides locally on your device and on Taiga.io servers
 - You have full control over your local data through your device settings
 
