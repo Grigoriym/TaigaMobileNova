@@ -1,7 +1,17 @@
 plugins {
     alias(libs.plugins.taigamobile.android.application)
-    alias(libs.plugins.google.services)
-    alias(libs.plugins.firebase.crashlytics)
+    alias(libs.plugins.google.services) apply false
+    alias(libs.plugins.firebase.crashlytics) apply false
+}
+
+// Applied only for the gplay flavor — F-Droid's build must not carry these plugins at all
+// (they inject Firebase-related string resources regardless of flavor's dependency graph,
+// which breaks both F-Droid's non-free scanner and its binary reproducibility check).
+// The plugins {} block can't express this condition itself (it has no access to `project`
+// or `providers`), so the plugin IDs are pulled from the catalog and applied imperatively.
+if (project.hasProperty("gplayBuild")) {
+    apply(plugin = libs.plugins.google.services.get().pluginId)
+    apply(plugin = libs.plugins.firebase.crashlytics.get().pluginId)
 }
 
 koinCompiler {
