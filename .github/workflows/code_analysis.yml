@@ -8,10 +8,18 @@ on:
         branches:
             - dev
             - master
+        paths-ignore:
+            - '**.md'
+            - 'playstore/**'
+            - 'docs/**'
     push:
         branches:
             - dev
             - master
+        paths-ignore:
+            - '**.md'
+            - 'playstore/**'
+            - 'docs/**'
 
 concurrency:
     group: code-analysis-${{ github.event.pull_request.number || github.ref }}
