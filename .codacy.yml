@@ -2,3 +2,4 @@ exclude_paths:
   - ".github/**"
   - "docs/**"
   - ".claude/**"
+  - "PRIVACY_POLICY_GPLAY.md"

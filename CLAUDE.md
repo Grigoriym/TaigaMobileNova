@@ -154,6 +154,12 @@ feature/{name}/
 
 For DI patterns, the `expect/actual @Configuration` rule, module registry, qualifier map, and troubleshooting, see the **koin-expert** subagent (`.claude/agents/koin-expert.md`). Never use KSP — this project uses `io.insert-koin.compiler.plugin` exclusively.
 
+## KMP String Resources
+
+`strings.xml` (`strings/src/commonMain/composeResources/values/`) does not need Android-style
+apostrophe/quote escaping (`\'`) — Compose Multiplatform's resource loader doesn't apply AAPT's
+escaping rules, so plain `'` works correctly. Don't escape apostrophes in new strings.
+
 ## uikit Components
 
 For available Composable components, theme tokens, TopBarController usage, drag-and-drop, and offline/permission UI patterns, see the **uikit-guide** subagent (`.claude/agents/uikit-guide.md`). Consult it before creating any new widget.

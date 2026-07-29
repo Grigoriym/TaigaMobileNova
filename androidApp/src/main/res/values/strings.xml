@@ -2,4 +2,6 @@
 <resources>
     <string name="app_name" translatable="false">Taiga Mobile</string>
     <string name="app_name_debug" translatable="false">Dbg Taiga Mobile</string>
+    <string name="app_update_downloaded">An update has just been downloaded</string>
+    <string name="restart">Restart</string>
 </resources>

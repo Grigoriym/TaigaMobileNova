@@ -52,6 +52,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.app_name
+import com.grappim.taigamobile.strings.generated.resources.cert_trust_dialog_description
+import com.grappim.taigamobile.strings.generated.resources.cert_trust_dialog_title
 import com.grappim.taigamobile.strings.generated.resources.login_alert_text
 import com.grappim.taigamobile.strings.generated.resources.login_alert_title
 import com.grappim.taigamobile.strings.generated.resources.login_continue
@@ -116,6 +118,24 @@ fun LoginScreen(
         onDismiss = { state.setIsAlertVisible(false) },
         iconId = RDrawable.ic_insecure,
         isVisible = state.isAlertVisible
+    )
+    ConfirmActionDialog(
+        title = stringResource(RString.cert_trust_dialog_title),
+        description = state.pendingCertTrust?.let {
+            stringResource(
+                RString.cert_trust_dialog_description,
+                it.host,
+                it.issuer,
+                it.subject,
+                it.notBefore,
+                it.notAfter,
+                it.sha256Fingerprint
+            )
+        },
+        onConfirm = state.onConfirmCertTrust,
+        onDismiss = state.onDismissCertTrust,
+        iconId = RDrawable.ic_insecure,
+        isVisible = state.isCertTrustDialogVisible
     )
 
     LoginScreenContent(
@@ -359,7 +379,9 @@ private fun LoginScreenPreview() {
                 authType = AuthType.NORMAL,
                 onAuthTypeChange = {},
                 setIsPasswordVisible = {},
-                onGithubLoginClick = {}
+                onGithubLoginClick = {},
+                onConfirmCertTrust = {},
+                onDismissCertTrust = {}
             )
         )
     }
@@ -386,7 +408,9 @@ private fun LoginScreenErrorsPreview() {
                 authType = AuthType.NORMAL,
                 onAuthTypeChange = {},
                 setIsPasswordVisible = {},
-                onGithubLoginClick = {}
+                onGithubLoginClick = {},
+                onConfirmCertTrust = {},
+                onDismissCertTrust = {}
             )
         )
     }
@@ -413,7 +437,9 @@ private fun LoginScreenAlertPreview() {
                 authType = AuthType.NORMAL,
                 onAuthTypeChange = {},
                 setIsPasswordVisible = {},
-                onGithubLoginClick = {}
+                onGithubLoginClick = {},
+                onConfirmCertTrust = {},
+                onDismissCertTrust = {}
             )
         )
     }

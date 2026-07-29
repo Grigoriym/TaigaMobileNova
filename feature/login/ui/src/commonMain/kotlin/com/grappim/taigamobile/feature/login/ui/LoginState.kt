@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.login.ui
 
+import com.grappim.taigamobile.core.domain.PendingCertTrust
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.login_github_setup_guide_url
@@ -36,5 +37,10 @@ data class LoginState(
 
     val onGithubLoginClick: () -> Unit,
 
-    val githubSetupGuideUrl: NativeText = NativeText.Resource(RString.login_github_setup_guide_url)
+    val githubSetupGuideUrl: NativeText = NativeText.Resource(RString.login_github_setup_guide_url),
+
+    val isCertTrustDialogVisible: Boolean = false,
+    val pendingCertTrust: PendingCertTrust? = null,
+    val onConfirmCertTrust: () -> Unit,
+    val onDismissCertTrust: () -> Unit
 )

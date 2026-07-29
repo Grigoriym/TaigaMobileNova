@@ -3,11 +3,14 @@
 package com.grappim.taigamobile.feature.login.ui
 
 import app.cash.turbine.test
+import com.grappim.taigamobile.core.domain.PendingCertTrust
+import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeAuthRepository
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
+import com.grappim.taigamobile.testing.storage.FakeTrustedCertStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
@@ -16,6 +19,7 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class LoginViewModelTest {
@@ -27,13 +31,14 @@ internal class LoginViewModelTest {
     private val authRepository = FakeAuthRepository()
     private val defaultServer = getRandomString()
     private val serverStorage = FakeServerStorage(defaultServer)
+    private val trustedCertStorage = FakeTrustedCertStorage()
 
     private val correctServer = "https://10.0.2.2:9000"
 
     @BeforeTest
     fun setup() {
         mainDispatcherRule.setup()
-        sut = LoginViewModel(authRepository, serverStorage)
+        sut = LoginViewModel(authRepository, serverStorage, trustedCertStorage)
     }
 
     @AfterTest
@@ -273,5 +278,78 @@ internal class LoginViewModelTest {
 
         assertEquals(newServerValue, sut.state.value.server)
         assertFalse(sut.state.value.isServerInputError)
+    }
+
+    private fun pendingCertTrust(host: String = "taiga.example.com") = PendingCertTrust(
+        host = host,
+        subject = "CN=$host",
+        issuer = "CN=Home Lab CA",
+        notBefore = "2026-01-01",
+        notAfter = "2027-01-01",
+        sha256Fingerprint = "AA:BB:CC"
+    )
+
+    @Test
+    fun `login failing with an untrusted certificate shows the cert trust dialog instead of the error state`() =
+        runTest {
+            val certTrust = pendingCertTrust()
+            authRepository.authResult = Result.failure(UntrustedCertificateNetworkException(certTrust))
+            sut.state.value.onServerValueChange(correctServer)
+            sut.state.value.onAuthTypeChange(AuthType.LDAP)
+            sut.state.value.onPasswordValueChange(getRandomString())
+            sut.state.value.onLoginValueChange(getRandomString())
+
+            sut.state.value.onActionDialogConfirm()
+
+            assertTrue(sut.state.value.isCertTrustDialogVisible)
+            assertEquals(certTrust, sut.state.value.pendingCertTrust)
+            assertTrue(sut.state.value.error.isEmpty())
+            assertFalse(sut.state.value.isLoading)
+        }
+
+    @Test
+    fun `dismissing the cert trust dialog clears it without trusting or retrying`() = runTest {
+        val certTrust = pendingCertTrust()
+        authRepository.authResult = Result.failure(UntrustedCertificateNetworkException(certTrust))
+        sut.state.value.onServerValueChange(correctServer)
+        sut.state.value.onAuthTypeChange(AuthType.LDAP)
+        sut.state.value.onPasswordValueChange(getRandomString())
+        sut.state.value.onLoginValueChange(getRandomString())
+        sut.state.value.onActionDialogConfirm()
+
+        sut.state.value.onDismissCertTrust()
+
+        assertFalse(sut.state.value.isCertTrustDialogVisible)
+        assertNull(sut.state.value.pendingCertTrust)
+        assertEquals(1, authRepository.authCallCount)
+        assertFalse(trustedCertStorage.isTrusted(certTrust.host, certTrust.sha256Fingerprint))
+    }
+
+    @Test
+    fun `confirming the cert trust dialog persists the pin and retries the login`() = runTest {
+        val server = correctServer
+        val authType = AuthType.LDAP
+        val password = getRandomString()
+        val username = getRandomString()
+        val certTrust = pendingCertTrust(host = server.removePrefix("https://").substringBefore(":"))
+        authRepository.authResult = Result.failure(UntrustedCertificateNetworkException(certTrust))
+        sut.state.value.onServerValueChange(server)
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
+        sut.state.value.onActionDialogConfirm()
+
+        authRepository.authResult = Result.success(Unit)
+
+        sut.loginSuccessful.test {
+            sut.state.value.onConfirmCertTrust()
+
+            assertTrue(awaitItem())
+        }
+
+        assertFalse(sut.state.value.isCertTrustDialogVisible)
+        assertNull(sut.state.value.pendingCertTrust)
+        assertEquals(2, authRepository.authCallCount)
+        assertTrue(trustedCertStorage.isTrusted(certTrust.host, certTrust.sha256Fingerprint))
     }
 }

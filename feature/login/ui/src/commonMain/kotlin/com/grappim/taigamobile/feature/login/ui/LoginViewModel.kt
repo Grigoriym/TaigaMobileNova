@@ -3,7 +3,9 @@ package com.grappim.taigamobile.feature.login.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.api.ApiConstants
+import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
@@ -21,7 +23,11 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class LoginViewModel(private val authRepository: AuthRepository, serverStorage: ServerStorage) : ViewModel() {
+class LoginViewModel(
+    private val authRepository: AuthRepository,
+    serverStorage: ServerStorage,
+    private val trustedCertStorage: TrustedCertStorage
+) : ViewModel() {
 
     companion object {
         private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""
@@ -35,6 +41,10 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
     private val _openGithubWebView = Channel<String>(Channel.BUFFERED)
     val openGithubWebView = _openGithubWebView.receiveAsFlow()
 
+    // Set together with LoginState.pendingCertTrust whenever a request fails on an untrusted
+    // certificate, so onConfirmCertTrust can re-run the exact request that just failed.
+    private var pendingRetry: (() -> Unit)? = null
+
     private val _state = MutableStateFlow(
         LoginState(
             server = serverStorage.server,
@@ -46,7 +56,9 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
             validateAuthData = ::validateAuthData,
             onAuthTypeChange = ::onAuthTypeChange,
             setIsPasswordVisible = ::changePasswordVisibility,
-            onGithubLoginClick = ::validateGithubAuth
+            onGithubLoginClick = ::validateGithubAuth,
+            onConfirmCertTrust = ::onConfirmCertTrust,
+            onDismissCertTrust = ::onDismissCertTrust
         )
     )
     val state = _state.asStateFlow()
@@ -75,9 +87,7 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
                     isLoading(false)
                     _loginSuccessful.emit(true)
                 }.onFailure { error ->
-                    logcat(throwable = error) { "Login error" }
-                    isLoading(false)
-                    _state.update { it.copy(error = getErrorMessage(error)) }
+                    handleFailure(error, "Login error") { login(authData) }
                 }
         }
     }
@@ -140,9 +150,7 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
                     _openGithubWebView.send(GITHUB_OAUTH_URL.replace("%CLIENT_ID%", clientId))
                 }
                 .onFailure { error ->
-                    logcat(throwable = error) { "GitHub OAuth error" }
-                    isLoading(false)
-                    _state.update { it.copy(error = getErrorMessage(error)) }
+                    handleFailure(error, "GitHub OAuth error") { startGithubOAuth() }
                 }
         }
     }
@@ -157,11 +165,38 @@ class LoginViewModel(private val authRepository: AuthRepository, serverStorage: 
                     _loginSuccessful.emit(true)
                 }
                 .onFailure { error ->
-                    logcat(throwable = error) { "GitHub auth error" }
-                    isLoading(false)
-                    _state.update { it.copy(error = getErrorMessage(error)) }
+                    handleFailure(error, "GitHub auth error") { authWithGithub(code) }
                 }
         }
+    }
+
+    private fun handleFailure(error: Throwable, logMessage: String, retry: () -> Unit) {
+        logcat(throwable = error) { logMessage }
+        isLoading(false)
+        if (error is UntrustedCertificateNetworkException) {
+            pendingRetry = retry
+            _state.update {
+                it.copy(pendingCertTrust = error.pendingCertTrust, isCertTrustDialogVisible = true)
+            }
+        } else {
+            _state.update { it.copy(error = getErrorMessage(error)) }
+        }
+    }
+
+    private fun onConfirmCertTrust() {
+        val pendingCertTrust = _state.value.pendingCertTrust ?: return
+        val retry = pendingRetry
+        pendingRetry = null
+        _state.update { it.copy(isCertTrustDialogVisible = false, pendingCertTrust = null) }
+        viewModelScope.launch {
+            trustedCertStorage.trust(pendingCertTrust)
+            retry?.invoke()
+        }
+    }
+
+    private fun onDismissCertTrust() {
+        pendingRetry = null
+        _state.update { it.copy(isCertTrustDialogVisible = false, pendingCertTrust = null) }
     }
 
     private fun isLoading(isLoading: Boolean) {

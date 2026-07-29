@@ -1,5 +1,7 @@
 plugins {
     alias(libs.plugins.taigamobile.android.application)
+    alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 koinCompiler {
@@ -35,6 +37,7 @@ dependencies {
 
     implementation(projects.core.logger)
     implementation(projects.core.appinfoApi)
+    implementation(projects.core.crashApi)
     implementation(projects.core.asyncKmp)
     implementation(projects.strings)
 
@@ -55,4 +58,14 @@ dependencies {
     implementation(libs.okhttp)
     implementation(libs.timber)
     implementation(libs.filekit.dialogs)
+    implementation(libs.material)
+
+    // Crashlytics ships in the gplay flavor only — the fdroid flavor never pulls in
+    // this proprietary dependency, only a no-op CrashReporter implementation.
+    gplayImplementation(project.dependencies.platform(libs.firebase.bom))
+    gplayImplementation(libs.firebase.crashlytics)
+
+    // Play In-App Updates ship in the gplay flavor only — the fdroid flavor never pulls in
+    // this proprietary dependency, only a no-op AppUpdateChecker implementation.
+    gplayImplementation(libs.google.inapp.update.ktx)
 }

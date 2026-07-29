@@ -122,6 +122,7 @@ kotlin {
                 implementation(projects.core.storage)
                 implementation(projects.core.asyncKmp)
                 implementation(projects.core.appinfoApi)
+                implementation(projects.core.crashApi)
                 implementation(projects.core.navigation)
                 implementation(projects.core.serialization)
 
