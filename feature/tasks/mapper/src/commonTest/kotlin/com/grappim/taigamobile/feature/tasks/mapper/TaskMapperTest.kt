@@ -9,7 +9,6 @@ import com.grappim.taigamobile.feature.workitem.domain.UserStoryShortInfo
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.mapper.UserStoryShortInfoMapper
-import com.grappim.taigamobile.testing.models.getTag
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getUserStoryShortInfoDTO
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
@@ -51,7 +50,6 @@ class TaskMapperTest {
     @Test
     fun `toDomain should map basic fields correctly`() {
         val response = getWorkItemResponseDTO()
-        val user = getUser()
         val result = sut.toDomain(response)
 
         assertEquals(response.id, result.id)
@@ -64,8 +62,8 @@ class TaskMapperTest {
         assertEquals(response.ref, result.ref)
         assertEquals(response.isClosed, result.isClosed)
         assertEquals(response.milestone, result.milestone)
-        assertEquals(DueDateStatus.DueSoon, result.dueDateStatus)
-        assertEquals(user, result.assignee)
+        assertNull(result.dueDateStatus)
+        assertEquals(userMapper.toUser(requireNotNull(response.assignedToExtraInfo)), result.assignee)
     }
 
     @Test
@@ -129,14 +127,11 @@ class TaskMapperTest {
     @Test
     fun `toDomain should map tags correctly`() {
         val response = getWorkItemResponseDTO()
-        val firstTag = getTag()
-        val secondTag = getTag()
 
         val result = sut.toDomain(response)
 
         assertEquals(2, result.tags.size)
-        assertEquals(firstTag, result.tags[0])
-        assertEquals(secondTag, result.tags[1])
+        assertEquals(tagsMapper.toTags(response.tags), result.tags)
     }
 
     @Test

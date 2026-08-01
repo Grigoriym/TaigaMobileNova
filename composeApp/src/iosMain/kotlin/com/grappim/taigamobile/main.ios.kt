@@ -9,7 +9,8 @@ import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
 import org.koin.plugin.module.dsl.startKoin
 import platform.UIKit.UIViewController
 
-@Suppress("unused")
+// PascalCase is required — this is the entry point Swift calls into.
+@Suppress("unused", "FunctionNaming")
 fun MainViewController(): UIViewController = ComposeUIViewController(
     configure = {
         onFocusBehavior = OnFocusBehavior.DoNothing
