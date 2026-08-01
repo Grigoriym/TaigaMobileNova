@@ -98,7 +98,7 @@ class LoginViewModel(
             AuthData(
                 taigaServer = _state.value.server.trim(),
                 authType = _state.value.authType,
-                password = _state.value.password.trim(),
+                password = _state.value.password,
                 username = _state.value.login.trim()
             )
         )
@@ -108,7 +108,7 @@ class LoginViewModel(
         onAuthTypeChange(authType)
         val isServerInputError = !_state.value.server.matches(Regex(SERVER_REGEX))
         val isLoginInputError = _state.value.login.isBlank()
-        val isPasswordInputError = _state.value.password.isBlank()
+        val isPasswordInputError = _state.value.password.isEmpty()
 
         _state.update {
             it.copy(
