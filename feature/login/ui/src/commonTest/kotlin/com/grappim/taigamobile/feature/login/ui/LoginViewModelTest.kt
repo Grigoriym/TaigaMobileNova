@@ -135,6 +135,40 @@ internal class LoginViewModelTest {
     }
 
     @Test
+    fun `on validateAuthData should send the password verbatim keeping leading and trailing spaces`() {
+        val authType = AuthType.LDAP
+        val password = "  pass word  "
+        val username = getRandomString()
+
+        sut.state.value.onServerValueChange(correctServer)
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
+
+        sut.state.value.validateAuthData(authType)
+
+        assertEquals(password, authRepository.authCalledWith?.password)
+    }
+
+    @Test
+    fun `on validateAuthData with a whitespace only password should login`() {
+        val authType = AuthType.LDAP
+        val password = "      "
+        val username = getRandomString()
+
+        sut.state.value.onServerValueChange(correctServer)
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
+
+        sut.state.value.validateAuthData(authType)
+
+        assertFalse(sut.state.value.isPasswordInputError)
+        assertEquals(1, authRepository.authCallCount)
+        assertEquals(password, authRepository.authCalledWith?.password)
+    }
+
+    @Test
     fun `on validateAuthData with valid data but without https in server should not login`() {
         val authType = AuthType.LDAP
         val password = getRandomString()
