@@ -29,7 +29,8 @@ console-reports:
         - 'ComplexityReport'
         - 'NotificationReport'
         - 'IssuesReport'
-        - 'FileBasedIssuesReport'
+    # FileBasedIssuesReport stays on so a CI failure names the offending files and rules
+    # in the log, instead of only "Analysis failed with N issues".
     #  - 'LiteIssuesReport'
 
 comments:

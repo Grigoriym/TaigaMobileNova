@@ -167,14 +167,19 @@ the shared `:testing` factories while nobody was running them:
 
 `ProjectMapperTest` passed unchanged.
 
+## Console output
+
+`FileBasedIssuesReport` was removed from the `console-reports` excludes, so a CI failure
+now names the offending file, line and rule in the log instead of only printing
+`Analysis failed with N issues`:
+
+```
+e: .../DetektProbe.kt:5:9 RuntimeException is a too generic Exception. [TooGenericExceptionThrown]
+```
+
 ## Follow-up worth considering (not done)
 
-`config/detekt/detekt.yml:27-33` excludes `IssuesReport` and `FileBasedIssuesReport` from
-console output, so a CI failure prints only `Analysis failed with N issues` with no
-file/rule detail — you have to open the HTML report. Now that detekt gates CI, consider
-re-enabling `FileBasedIssuesReport` so the log names the violations.
-
-Also: `configureLinting()` is applied only by the KMP library convention plugins, so
+`configureLinting()` is applied only by the KMP library convention plugins, so
 `androidApp` and pure `taigamobile.kotlin.library` modules are still not linted by detekt.
 
 ## Reproduction
