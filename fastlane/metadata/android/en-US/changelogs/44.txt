@@ -1,1 +1,1 @@
-What's new in v2.1.5
+- Fixed login failing when the password starts or ends with a space - passwords are no longer trimmed
