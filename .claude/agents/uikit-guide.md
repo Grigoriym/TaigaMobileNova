@@ -61,7 +61,9 @@ Generates two previews: light + dark. Always pair with `TaigaMobilePreviewTheme`
 |-------|------|-------|
 | `LocalOfflineState` | `Boolean` | `val isOffline = LocalOfflineState.current` — disable write actions when true |
 | `LocalTopBarConfig` | `TopBarController` | `val topBarController = LocalTopBarConfig.current` |
-| `LocalScreenReadySignal` | `ScreenReadySignalController` | signals when screen is ready (hides splash) |
+| `LocalScreenReadySignal` | `ScreenReadySignalController` | `utils/ScreenReadySignalController.kt` — call `signalReady()` when the screen is ready, so the splash can hide without flashing an intermediate backstack screen |
+
+`LocalOfflineState` is in `state/LocalOfflineState.kt`, `LocalTopBarConfig` in `widgets/topbar/TopBarController.kt`.
 
 ---
 
@@ -87,16 +89,39 @@ topBarController.update(TopBarConfig(
 - Update in `LaunchedEffect` keyed on state that affects the bar
 - Call `topBarController.reset()` if the screen doesn't own the top bar
 
+**Config types** (`widgets/topbar/TopBarConfig.kt`) — the rendering lives in `TaigaTopAppBar.kt`:
+
+```kotlin
+data class TopBarConfig(
+    val title: NativeText = NativeText.Empty,
+    val subtitle: NativeText = NativeText.Empty,       // second line, often the project name
+    val navigationIcon: NavigationIconConfig = NavigationIconConfig.None,
+    val actions: ImmutableList<TopBarAction> = persistentListOf()
+)
+```
+
+| `TopBarAction` | Params |
+|----------------|--------|
+| `TopBarActionIconButton` | `drawable: DrawableResource, contentDescription, enabled, onClick` |
+| `TopBarActionTextButton` | `text: NativeText, enabled, onClick` |
+
+| `NavigationIconConfig` | Use |
+|------------------------|-----|
+| `None` | no navigation icon (default) |
+| `Back(onBackClick: (() -> Unit)? = null)` | back arrow; omit the lambda for default pop |
+| `Menu` | drawer hamburger |
+| `Custom(icon, contentDescription, onClick)` | anything else |
+
 ---
 
 ## Buttons
 
 | Component | File | Key params |
 |-----------|------|------------|
-| `AddButtonWidget` | `button/AddButtonWidget.kt` | `isOffline, text, onClick` — text button with + icon |
-| `PlusButtonWidget` | `button/PlusButtonWidget.kt` | `isOffline, tint, onClick` — 32dp circular icon button |
-| `TaigaOutlinedButton` | `button/TaigaOutlinedButton.kt` | `text, onClick, painter/imageVector?` — outlined with optional icon |
-| `TaigaTextButtonWidget` | `button/TaigaTextButtonWidget.kt` | `text, isOffline, onClick, icon?` — filled tonal, disabled when offline |
+| `AddButtonWidget` | `widgets/button/AddButtonWidget.kt` | `isOffline, text, onClick` — text button with + icon |
+| `PlusButtonWidget` | `widgets/button/PlusButtonWidget.kt` | `isOffline, tint, onClick` — 32dp circular icon button |
+| `TaigaOutlinedButton` | `widgets/button/TaigaOutlinedButton.kt` | `text, onClick, painter/imageVector?` — outlined with optional icon |
+| `TaigaTextButtonWidget` | `widgets/button/TaigaTextButtonWidget.kt` | `text, isOffline, onClick, icon?` — filled tonal, disabled when offline |
 
 ---
 
@@ -104,9 +129,9 @@ topBarController.update(TopBarConfig(
 
 | Component | File | Key params |
 |-----------|------|------------|
-| `HintTextField` | `editor/TextFieldWithHint.kt` | `value, onValueChange, hint: NativeText, error: NativeText, singleLine` |
-| `TextFieldWithHint` | `editor/TextFieldWithHint.kt` | `hintId: StringResource, value: TextFieldValue` — lower-level with more options |
-| `TextFieldStringWithHint` | `editor/TextFieldWithHint.kt` | Same as above but `value: String` |
+| `HintTextField` | `widgets/editor/TextFieldWithHint.kt` | `value, onValueChange, hint: NativeText, error: NativeText, singleLine` |
+| `TextFieldWithHint` | `widgets/editor/TextFieldWithHint.kt` | `hintId: StringResource, value: TextFieldValue` — lower-level with more options |
+| `TextFieldStringWithHint` | `widgets/editor/TextFieldWithHint.kt` | Same as above but `value: String` |
 | `CreateCommentBar` | `widgets/CreateCommentBar.kt` | `isOffline, onButtonClick, canComment` — only renders if `canComment = true` |
 | `DatePickerDialogWidget` | `widgets/DatePickerDialogWidget.kt` | `isVisible, onConfirmButtonClick: (Long?) -> Unit, initialDate?` |
 | `DropdownSelector<T>` | `widgets/DropdownSelector.kt` | `items, selectedItem, onItemSelect, isOffline, canModify, itemContent, selectedItemContent` |
@@ -117,11 +142,11 @@ topBarController.update(TopBarConfig(
 
 | Component | File | Notes |
 |-----------|------|-------|
-| `ConfirmActionDialog` | `dialog/ConfirmActionDialog.kt` | `isVisible, onConfirm, onDismiss, title?, description?, iconId?` — Yes/No dialog |
-| `TaigaLoadingDialog` | `dialog/TaigaLoadingDialog.kt` | `isVisible` — full-screen centered progress indicator |
-| `LoadingDialog` | `dialog/LoadingDialog.kt` | no params — compact Row dialog: spinner + "Loading" text, non-dismissible; use for blocking operations |
-| `CircularLoaderWidget` | `loader/CircularLoaderWidget.kt` | 40dp centered spinner |
-| `DotsLoaderWidget` | `loader/DotsLoaderWidget.kt` | Three pulsing dots animation |
+| `ConfirmActionDialog` | `widgets/dialog/ConfirmActionDialog.kt` | `isVisible, onConfirm, onDismiss, title?, description?, iconId?` — Yes/No dialog |
+| `TaigaLoadingDialog` | `widgets/dialog/TaigaLoadingDialog.kt` | `isVisible` — full-screen centered progress indicator |
+| `LoadingDialog` | `widgets/dialog/LoadingDialog.kt` | no params — compact Row dialog: spinner + "Loading" text, non-dismissible; use for blocking operations |
+| `CircularLoaderWidget` | `widgets/loader/CircularLoaderWidget.kt` | 40dp centered spinner |
+| `DotsLoaderWidget` | `widgets/loader/DotsLoaderWidget.kt` | Three pulsing dots animation |
 
 ---
 
@@ -129,9 +154,9 @@ topBarController.update(TopBarConfig(
 
 | Component | File | Notes |
 |-----------|------|-------|
-| `EmptyStateWidget` | `emptystate/EmptyStateWidget.kt` | `message: NativeText, icon?, action: EmptyStateAction?` |
+| `EmptyStateWidget` | `widgets/emptystate/EmptyStateWidget.kt` | `message: NativeText, icon?, action: EmptyStateAction?` |
 | `ErrorStateWidget` | `widgets/ErrorStateWidget.kt` | `message: NativeText, onRetry` |
-| `OfflineIndicatorBanner` | `banner/OfflineIndicatorBanner.kt` | `isOffline` — animated orange banner |
+| `OfflineIndicatorBanner` | `widgets/banner/OfflineIndicatorBanner.kt` | `isOffline` — animated orange banner |
 
 ---
 
@@ -139,14 +164,14 @@ topBarController.update(TopBarConfig(
 
 | Component | File | Notes |
 |-----------|------|-------|
-| `SectionTitle` | `text/SectionTitle.kt` | `text, horizontalPadding, onAddClick?` — section header with optional + |
-| `SectionTitleExpandable` | `text/SectionTitle.kt` | `text, isExpanded, onExpandClick` — with animated arrow |
-| `CommonTaskTitle` | `text/CommonTaskTitle.kt` | `ref, title, isInactive, indicatorColorsHex, tags, isBlocked` |
-| `MarkdownTextWidget` | `text/MarkdownTextWidget.kt` | `text, onClick?` — full markdown renderer |
-| `ExpandableMarkdownText` | `text/ExpandableMarkdownText.kt` | `text, maxLinesCollapsed` — collapses with "Show more" |
-| `UserItem` | `list/UserItem.kt` | `displayName, avatarUrl, dateTime?, onUserItemClick` |
-| `CommonTaskItem` | `list/CommonTaskItem.kt` | ⚠️ Deprecated — use `simpleTasksListWithTitle` instead |
-| `simpleTasksListWithTitle` | `list/SimpleTasksListWithTitle.kt` | `LazyListScope` extension for task lists with title, paging, dividers |
+| `SectionTitle` | `widgets/text/SectionTitle.kt` | `text, horizontalPadding, onAddClick?` — section header with optional + |
+| `SectionTitleExpandable` | `widgets/text/SectionTitle.kt` | `text, isExpanded, onExpandClick` — with animated arrow |
+| `CommonTaskTitle` | `widgets/text/CommonTaskTitle.kt` | `ref, title, isInactive, indicatorColorsHex, tags, isBlocked` |
+| `MarkdownTextWidget` | `widgets/text/MarkdownTextWidget.kt` | `text, onClick?` — full markdown renderer |
+| `ExpandableMarkdownText` | `widgets/text/ExpandableMarkdownText.kt` | `text, maxLinesCollapsed` — collapses with "Show more" |
+| `UserItem` | `widgets/list/UserItem.kt` | `displayName, avatarUrl, dateTime?, onUserItemClick` |
+| `CommonTaskItem` | `widgets/list/CommonTaskItem.kt` | ⚠️ Deprecated — use `simpleTasksListWithTitle` instead |
+| `simpleTasksListWithTitle` | `widgets/list/SimpleTasksListWithTitle.kt` | `LazyListScope` extension for task lists with title, paging, dividers |
 
 ---
 
@@ -154,10 +179,10 @@ topBarController.update(TopBarConfig(
 
 | Component | File | Notes |
 |-----------|------|-------|
-| `BadgeWidget` | `badge/BadgeWidget.kt` | `text, isActive` — simple status badge |
-| `ClickableBadge` | `badge/ClickableBadge.kt` | `text, color/colorHex, isLoading, isClickable, onClick` |
+| `BadgeWidget` | `widgets/badge/BadgeWidget.kt` | `text, isActive` — simple status badge |
+| `ClickableBadge` | `widgets/badge/ClickableBadge.kt` | `text, color/colorHex, isLoading, isClickable, onClick` |
 | `ChipWidget` | `widgets/ChipWidget.kt` | `onClick?, color, content` — rounded chip, optionally clickable |
-| `TaigaIcon` | `icon/TaigaIcon.kt` | `painter/imageVector, tint` — icon with testTag support |
+| `TaigaIcon` | `widgets/icon/TaigaIcon.kt` | `painter/imageVector, tint` — icon with testTag support |
 | `TaigaHeightSpacer` | `widgets/TaigaSpacers.kt` | `height: Dp` |
 | `TaigaWidthSpacer` | `widgets/TaigaSpacers.kt` | `width: Dp` |
 

@@ -14,7 +14,7 @@ import org.koin.core.annotation.Single
 /**
  * Though it is better than my initial attempt for such behavior
  * I hope I will find a way to do this the way I want it
- * What I want is shown in docs/workitem_edit_scoping.puml file
+ * What I want is shown in docs/koin/workitem-edit-scoping.puml file
  */
 @Single
 class WorkItemEditStateRepository {
