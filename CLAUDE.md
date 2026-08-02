@@ -198,6 +198,18 @@ For writing new KMP tests, creating fakes, or understanding test patterns, use t
 - `docs/testing/` — [survey.md](docs/testing/survey.md) (what exists) and
   [improvement-plan.md](docs/testing/improvement-plan.md) (sequenced tasks, one per session)
 
+**CI runs `./gradlew jvmTest`, then `koverXmlReport`.** The `jvmTest` step exists because
+`koverXmlReport` only runs tests for modules aggregated in the root `build.gradle.kts` `kover {}`
+block — `:testing`, `:uikit` and `:tools:*` are excluded, so before that step a test written there
+would have been silently skipped forever. Two consequences:
+
+- A new test only runs in CI if its module has a **`jvmTest`** task. `tools/seed` and `tools/utils`
+  are `kotlin("jvm")` modules whose task is `test`, not `jvmTest` — a test added there needs its own
+  workflow step.
+- **Do not add tests under `src/test/`.** KMP tests go in `commonTest` (or `jvmTest` for
+  JVM-specific behaviour). The repo has no Android unit-test source set at all, by design; nothing
+  in CI would execute one.
+
 ## Skills & Agents
 
 `.claude/agents/` in this repo holds only the project-specific agents: **testing** and

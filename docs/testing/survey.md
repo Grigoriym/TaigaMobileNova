@@ -45,7 +45,7 @@ The DI graph is validated only by the app actually starting. Closing this is
 |---|---|---|
 | `src/commonTest` | 43 modules | 956 `@Test` in 97 files — effectively the whole suite |
 | `src/jvmTest` | `core/api`, `core/storage` | 27 `@Test` in 3 files — JVM-only crypto (`CompositeTrustManager`, `TrustedCertStorage`, JVM error mapping) |
-| `src/test` (Android) | `androidApp` | 1 `@Test` — the generated `ExampleUnitTest` (`assertEquals(4, 2 + 2)`) |
+| ~~`src/test` (Android)~~ | ~~`androidApp`~~ | ~~1 `@Test` — the generated `ExampleUnitTest` (`assertEquals(4, 2 + 2)`)~~ — deleted 2026-08-02 by Task 1; the repo now has no Android unit-test source set |
 
 Despite being `commonTest`, these only ever execute on the JVM. The convention plugin registers
 `androidTarget`, `iosArm64`, `iosSimulatorArm64` and `jvm`, but CI and the documented workflow run
@@ -213,15 +213,17 @@ Single job, `.github/workflows/code_analysis.yml`, on `ubuntu-latest`:
 
 1. `./gradlew detekt`
 2. `./gradlew ktlintCheck`
-3. `./gradlew koverXmlReport` — this is what actually runs the tests
-4. Upload `build/reports/kover/report.xml` to Codecov, flag `unittests`
+3. `./gradlew jvmTest` — this is what runs the tests
+4. `./gradlew koverXmlReport` — reuses the results from step 3
+5. Upload `build/reports/kover/report.xml` to Codecov, flag `unittests`
 
-There is **no separate test step**: `koverXmlReport` is the only thing that executes tests. That has
-a consequence worth stating plainly — Kover only runs `jvmTest` for the modules aggregated into the
-report, and `:testing`, `:uikit`, `:tools:seed`, `:tools:utils` and `:androidApp` are excluded from
-aggregation in the root `build.gradle.kts`. **A test added to any of those modules would never run
-in CI, silently.** No tests are currently being lost this way, but nothing prevents it.
-[Task 1](improvement-plan.md#task-1--close-the-tests-that-never-run-in-ci-trap) closes it.
+**Fixed 2026-08-02 by [Task 1](improvement-plan.md#task-1--close-the-tests-that-never-run-in-ci-trap).**
+At the time of the survey there was **no separate test step**: `koverXmlReport` was the only thing
+that executed tests, and Kover only runs `jvmTest` for the modules aggregated into the report —
+`:testing`, `:uikit`, `:tools:seed`, `:tools:utils` and `:androidApp` are excluded from aggregation
+in the root `build.gradle.kts`. A test added to any of those modules would never have run in CI,
+silently. The `jvmTest` step now covers `:testing` and `:uikit`; the `tools/*` modules are
+`kotlin("jvm")` and their task is `test`, so they remain uncovered (and remain testless).
 
 ## Gaps
 
@@ -251,8 +253,9 @@ Structural gaps, independent of any module:
 - **No DI graph test**, despite the tooling being available.
 - **Branch coverage 20 points below line coverage** — error paths and conditionals are
   systematically under-tested relative to happy paths.
-- **`androidApp` has only the generated `ExampleUnitTest`** (`2 + 2 == 4`), the sole inhabitant of
-  the repo's only Android unit-test source set. It tests nothing.
+- ~~**`androidApp` has only the generated `ExampleUnitTest`** (`2 + 2 == 4`), the sole inhabitant of
+  the repo's only Android unit-test source set. It tests nothing.~~ Removed 2026-08-02 by Task 1;
+  `androidApp/src/test` no longer exists.
 
 ## Survey drift
 

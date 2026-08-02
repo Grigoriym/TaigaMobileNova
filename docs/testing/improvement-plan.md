@@ -36,8 +36,8 @@ than pushing through.
 | # | Task | Size | Status |
 |---|---|---|---|
 | 0 | Correct the survey doc | XS | ✅ done — 2026-08-02 |
-| 1 | Close the "tests that never run in CI" trap | S | ⬅ **NEXT** |
-| 2 | Koin DI graph test | M | todo |
+| 1 | Close the "tests that never run in CI" trap | S | ✅ done — 2026-08-02 |
+| 2 | Koin DI graph test | M | ⬅ **NEXT** |
 | 3 | `WikiRepositoryImpl` + `FakeWikiApi` | S | todo |
 | 4 | `GetProfileDataUseCase` | XS | todo |
 | 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | todo |
@@ -133,6 +133,26 @@ deps, which Task 2 needs.
 
 **Finalize focus:** the Kover-aggregation trap itself belongs in `CLAUDE.md` under Testing — "a test
 in a non-aggregated module does not run in CI" is a rule, not a one-off.
+
+**Result (2026-08-02):** done. The workflow's single "Run tests and generate Kover XML report" step
+was split into `./gradlew jvmTest` followed by `./gradlew koverXmlReport`, with a comment stating
+why. The Kover step reuses the already-executed test results, so the split costs nothing.
+`androidApp/src/test` was deleted entirely (`git rm -r`), removing `ExampleUnitTest`.
+
+Verified `:testing:jvmTest` and `:uikit:jvmTest` are in the root `jvmTest` task graph (77 `jvmTest`
+tasks total), so the previously-invisible modules are now covered.
+
+Two decisions worth knowing:
+
+- **The `testImplementation` deps stay.** They are not in `androidApp/build.gradle.kts` — they come
+  from `configureKotlinAndroid()` in `build-logic/.../KotlinConfiguration.kt:82-83`, whose only
+  caller is `AndroidApplicationConventionPlugin`. Leaving them means the next Android unit test
+  someone writes needs no build change; removing them would edit shared convention code for no gain.
+- **Residual gap: `tools/seed` and `tools/utils` are still uncovered.** They are `kotlin("jvm")`
+  modules, so their test task is `test`, not `jvmTest`. Neither has tests today. Running root
+  `./gradlew test` would drag in `androidApp`'s per-flavor Android unit-test variants, which is a
+  much slower step for zero current benefit — so this was left alone deliberately. If a test is ever
+  added under `tools/`, add `./gradlew :tools:seed:test` (or equivalent) to the workflow.
 
 ---
 

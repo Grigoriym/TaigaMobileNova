@@ -59,7 +59,14 @@ jobs:
       - name: Run Ktlint
         run: ./gradlew ktlintCheck
 
-      - name: Run tests and generate Kover XML report
+      # koverXmlReport only runs jvmTest for the modules aggregated in the root
+      # build.gradle.kts kover {} block, so a test in a non-aggregated module
+      # (:testing, :uikit, :tools:*) would never execute. This step runs every
+      # jvmTest task; the Kover step below then reuses the results.
+      - name: Run tests
+        run: ./gradlew jvmTest
+
+      - name: Generate Kover XML report
         run: ./gradlew koverXmlReport
 
       - name: Debug coverage report
