@@ -11,7 +11,7 @@ A global singleton for this communication causes conflicts: if a user navigates 
 `IssueDetailsScreen` into `UserStoryDetailsScreen`, both share the same singleton instance,
 so updates from one bleed into the other.
 
-See `docs/workitem_edit_scoping.puml` for a visual diagram.
+See [`workitem-edit-scoping.puml`](workitem-edit-scoping.puml) for a visual diagram.
 
 ---
 

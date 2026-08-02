@@ -24,6 +24,20 @@ Your job is to write KMP-compatible tests using hand-written fakes.
 
 ## Fake Inventory (`:testing` `commonMain`)
 
+All under `testing/src/commonMain/kotlin/com/grappim/taigamobile/testing/`, split by kind — check the
+right subpackage before concluding a fake doesn't exist:
+
+| Subpackage | Contents |
+|-----------|----------|
+| `repo/` | 12 repository fakes |
+| `api/` | 12 API fakes |
+| `usecases/` | 9 use-case fakes |
+| `storage/` | 7 storage fakes |
+| `dao/` | 3 Room DAO fakes |
+| `cleaner/` | `FakeDataCleaner` |
+| `utils/` | `FakeDateTimeUtils`, `TestUtils.kt`, `PlatformTestUtils.kt` |
+| (root) | `FakeNetworkMonitor`, `FakePatchDataGenerator`, `MainDispatcherRule` |
+
 ### Repositories
 
 | Fake | Interface |
@@ -71,7 +85,8 @@ Key fields for commonly-used fakes:
 | `FakeCacheManager` | `CacheManager` |
 | `FakeFiltersStorage` | `FiltersStorage` |
 | `FakeDatabaseWrapper` | `DatabaseWrapper` |
-| `FakeDataCleaner` | `DataCleaner` |
+| `FakeTrustedCertStorage` | `TrustedCertStorage` — host-scoped TOFU cert pins |
+| `FakeDataCleaner` | `DataCleaner` — in `cleaner/`, not `storage/` |
 
 **`FakeFiltersStorage`**: `scrumFilters`, `epicsFilters`, `issuesFilters`, `kanbanFilters` — mutable `StateFlow<FiltersData>` (initially empty); `resetFiltersCalled: Boolean`
 

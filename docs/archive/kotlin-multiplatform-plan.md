@@ -1,5 +1,11 @@
 # Kotlin Multiplatform Migration Plan
 
+> **ARCHIVED — historical only.** This migration is complete: the app ships on Android, iOS and
+> Desktop, Hilt→Koin and Retrofit→Ktor are done, and the UI is Compose Multiplatform. The unticked
+> checkboxes below describe work that has since shipped, and the "Current State" stack list is from
+> before the migration. Kept for the reasoning and the module classification, not as a plan.
+> For the current architecture see `CLAUDE.md`.
+
 ## Some suggestions
 
 - Don't try to move files, changing imports, and all that stuff that is spread across the project, it is better to do it manually, so just tell what needs to be done

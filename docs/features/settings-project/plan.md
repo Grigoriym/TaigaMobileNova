@@ -1,6 +1,6 @@
 # Settings-Project Implementation Plan
 
-Based on `docs/SETTINGS_PROJECT_API.md` and the current state of `feature/settings/`.
+Based on [`docs/taiga-api/settings-project-api.md`](../../taiga-api/settings-project-api.md) and the current state of `feature/settings/`.
 
 ## Current State
 

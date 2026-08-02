@@ -63,7 +63,7 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 - Kotlin Serialization for JSON
 - Coroutines, Coil 3.x for images (KMP-ready)
 - Room 2.8.4 + BundledSQLiteDriver (KMP-ready)
-- Timber for logging (Android-specific)
+- `core/logger` — KMP logging facade (see Logging below); Timber backs it on Android only
 
 **Convention Plugins** (in `build-logic/`):
 
@@ -152,7 +152,7 @@ feature/{name}/
 
 ## Koin DI
 
-For DI patterns, the `expect/actual @Configuration` rule, module registry, qualifier map, and troubleshooting, see the **koin-expert** subagent (`.claude/agents/koin-expert.md`). Never use KSP — this project uses `io.insert-koin.compiler.plugin` exclusively.
+For DI patterns, the `expect/actual @Configuration` rule, module registry, qualifier map, and troubleshooting, see the **koin-expert** subagent. It is not in this repo — it lives in `agentic-grappim` and is symlinked into `~/.claude/agents/` (see Skills below). Never use KSP — this project uses `io.insert-koin.compiler.plugin` exclusively.
 
 ## KMP String Resources
 
@@ -196,20 +196,26 @@ For writing new KMP tests, creating fakes, or understanding test patterns, use t
 - `kotlin.test` assertions + hand-written fakes — no MockK in `commonTest`
 - Test dependencies added automatically via convention plugins
 
-## Skills
+## Skills & Agents
 
-Shared skills come from the `agentic-grappim` git submodule at `.claude/agentic-grappim/`.
+`.claude/agents/` in this repo holds only the project-specific agents: **testing** and
+**uikit-guide**. Everything else is wired up per-machine, not per-clone.
 
-**After cloning**, initialize the submodule to make shared skills available:
-```bash
-git submodule update --init
-```
+**Shared skills and agents** live in the `agentic-grappim` repo (`~/proj/grappim/agentic-grappim/`),
+symlinked into `~/.claude/skills/` and `~/.claude/agents/`. The **koin-expert** agent comes from
+there — it used to be duplicated in this repo, and the in-repo copy went stale while shadowing the
+real one, so it was removed. Edits to any of these land in `agentic-grappim` and must be committed
+there; changing them affects every project on this machine.
 
 | Skill | Description |
 |-------|-------------|
-| `navigation-3` | Google's official Navigation 3 recipes |
-| `edge-to-edge` | System bars, insets, IME handling for SDK 35+ |
-| `adaptive` | Adaptive layouts for tablets/foldables — window size classes, list-detail, FlexboxLayout |
+| `finalize` | Capture what a session learned into CLAUDE.md, memory, and shared-skill proposals |
+| `investigate-issue` | Root-cause a reported bug and write it up under `docs/issues/` before fixing |
+| `update-gradle-wrapper` | Bump the Gradle wrapper with a real checksum from Gradle's server |
+
+**Android skills** come from the `android-skills` plugin, invoked as `android-skills:<name>`.
+Relevant ones here: `navigation-3`, `edge-to-edge`, `adaptive`, `agp-9-upgrade` (note: that one
+does not cover KMP — see `docs/build/agp9-kmp.md`), `r8-analyzer`, `perfetto-trace-analysis`.
 
 ## Coding Guidelines
 
@@ -253,9 +259,37 @@ When your changes create orphans:
 
 The test: Every changed line should trace directly to the user's request.
 
+## Logging
+
+`core/logger` is a KMP logging facade — it is added to every KMP module's `commonMain` automatically
+by the convention plugin, so `logcat` is always available without a dependency change.
+
+```kotlin
+import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.core.logger.LogPriority   // separate import, only if you set a priority
+
+logcat { "plain debug message" }                               // as an Any extension: tag = this::class.simpleName
+logcat(tag = "Ktor") { "explicit tag" }                        // top-level overload: tag is null unless given
+logcat(LogPriority.ERROR, throwable = e) { "failed to load" }
+```
+
+Priorities: `VERBOSE`, `DEBUG` (default), `INFO`, `WARN`, `ERROR`, `ASSERT`.
+
+The message is a lambda, so it isn't built unless a logger is installed. Never call `Timber`
+directly outside `core/logger`.
+
+**Backends** — `TaigaLogger.install(...)` is called once per platform entry point:
+
+| Platform | Impl | Installed in |
+|----------|------|--------------|
+| Android | `TimberLogger` → Timber (`DebugTree` on debug, `CrashlyticsTree` on gplay) | `androidApp/TaigaApp.kt` |
+| iOS | `NSLogLogger` → `NSLog`, chunked at 3000 chars to survive its ~4096-byte truncation | `main.ios.kt` |
+| Desktop/JVM | **none** — falls back to the `NoLog` no-op, so `logcat` output is silently dropped | — |
+
 ## Error Handling
 
-- Never swallow exceptions silently. Every `catch` block must at least log the exception with `Timber.e(e)`.
+- Never swallow exceptions silently. Every `catch` block must at least log the exception:
+  `logcat(LogPriority.ERROR, throwable = e) { "what failed" }`.
 
 ## Compose / Platform Rules
 
