@@ -210,6 +210,14 @@ would have been silently skipped forever. Two consequences:
   JVM-specific behaviour). The repo has no Android unit-test source set at all, by design; nothing
   in CI would execute one.
 
+**Testing `expect`/`actual` code: prefer the platform whose actual is real over stubbing one out.**
+JVM is a fully supported target here — desktop runs the app for real — so `jvmTest` can exercise
+platform-backed code (Room, DataStore, Ktor/OkHttp) with nothing faked, which `commonTest` cannot.
+Put such a test in `jvmTest` and **state in the test file which platform's behaviour is being
+asserted**, because the Android and iOS actuals stay uncovered. `KoinGraphTest`
+(`composeApp/src/jvmTest/`) is the worked example — see [docs/koin/koin-graph-test.md](docs/koin/koin-graph-test.md),
+including the wiring it deliberately cannot check.
+
 ## Skills & Agents
 
 `.claude/agents/` in this repo holds only the project-specific agents: **testing** and

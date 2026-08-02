@@ -37,8 +37,8 @@ than pushing through.
 |---|---|---|---|
 | 0 | Correct the survey doc | XS | ✅ done — 2026-08-02 |
 | 1 | Close the "tests that never run in CI" trap | S | ✅ done — 2026-08-02 |
-| 2 | Koin DI graph test | M | ⬅ **NEXT** |
-| 3 | `WikiRepositoryImpl` + `FakeWikiApi` | S | todo |
+| 2 | Koin DI graph test | M | ✅ done — 2026-08-02 |
+| 3 | `WikiRepositoryImpl` + `FakeWikiApi` | S | ⬅ **NEXT** |
 | 4 | `GetProfileDataUseCase` | XS | todo |
 | 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | todo |
 | 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | todo |
@@ -193,9 +193,32 @@ list (verify by temporarily breaking one), and passes on a clean tree.
 is exactly the kind of thing that costs an hour to rediscover — route it to `docs/koin/` and tell
 the `koin-expert` agent the test now exists and how to run it.
 
----
+**Result (2026-08-02):** done. `KoinGraphTest` lives in `composeApp/src/jvmTest/`; full write-up in
+[docs/koin/koin-graph-test.md](../koin/koin-graph-test.md). 147 definitions checked in ~1.2 s, and
+it runs in CI via the `jvmTest` step added in task 1. `koin-test` was added to composeApp's `jvmTest`
+(with an explicit `platform(libs.koin.bom)` — the BOM applied by `KmpDiConventionPlugin` only reaches
+`commonMain`). The `androidMain` `koin-test` block in `testing/build.gradle.kts` was left alone; it
+is still dead weight, but removing it is not this task.
 
-## Task 3 — `WikiRepositoryImpl` + `FakeWikiApi`
+Four things differed from the task description:
+
+- **No platform stubbing was needed at all.** The task expected to decide between stubbing platform
+  beans and narrowing the check. JVM has a complete set of actuals — desktop calls
+  `startKoin<KoinApp>` for real — so the JVM graph is a whole graph. Room, DataStore and Ktor all
+  construct against real temp-dir / OkHttp implementations.
+- **`checkModules()` was not usable.** It throws on the *first* failure of any kind, and ~14
+  ViewModels throw `MissingFieldException` from `savedStateHandle.toRoute<T>()` against the blank
+  `SavedStateHandle` the check must declare. The test walks `koin.instanceRegistry.instances`
+  directly instead, failing only on `NoDefinitionFoundException` and reporting every one at once.
+  This is sound because Koin resolves all constructor arguments before invoking the constructor.
+- **The `Done when` criterion turned out to be unsatisfiable as written.** Removing a module from
+  `AppModule.includes` changes nothing on JVM: `@ComponentScan("com.grappim.taigamobile")` on
+  `AppModule` re-discovers the beans across module boundaries. Verified by deleting
+  `UsersDataModule::class` — 147 definitions either way. The includes list is load-bearing only on
+  iOS Native, the one platform this test cannot see. Verified the test instead by commenting out
+  `@Single` on `UsersRepositoryImpl`: it failed and named all 27 affected consumers.
+- **Added a `MIN_EXPECTED_DEFINITIONS = 147` floor**, asserted after the missing-binding report, as
+  the backstop for a leaf definition disappearing with no consumer to notice.
 
 **Why:** the only repository implementation in the project without a test.
 

@@ -31,13 +31,15 @@ Paparazzi, Espresso, `src/androidTest`, and Koin's `checkModules()`/`verify()`. 
 | Compose UI / interaction tests | no | `uikit` and all `ui` modules test ViewModels only |
 | Screenshot / snapshot tests | no | no Roborazzi or Paparazzi dependency |
 | Integration / E2E | no | — |
-| Koin DI graph verification | no | `koin-test` is declared but unreachable — see below |
+| Koin DI graph verification | **yes**, since 2026-08-02 | `KoinGraphTest`, JVM only — see below |
 
-That last row is worth knowing: `koin-test` and `koin-test-junit4` are declared in
-`testing/build.gradle.kts:9-14` — but in the **`androidMain`** source set, so nothing in
-`commonTest` or `jvmTest` can reach them. Nothing in the repo calls `checkModules()` or `verify()`.
-The DI graph is validated only by the app actually starting. Closing this is
-[Task 2](improvement-plan.md#task-2--koin-di-graph-test).
+That last row was "no" when this survey was written: `koin-test` and `koin-test-junit4` are declared
+in `testing/build.gradle.kts:9-14` — but in the **`androidMain`** source set, so nothing in
+`commonTest` or `jvmTest` could reach them, and the DI graph was validated only by the app actually
+starting. [Task 2](improvement-plan.md#task-2--koin-di-graph-test) closed this with `KoinGraphTest`
+in `composeApp/src/jvmTest/`, which resolves all 147 definitions of the real graph. The `androidMain`
+declarations above are still unused. See [docs/koin/koin-graph-test.md](../koin/koin-graph-test.md)
+for what it does and does not cover.
 
 ## Where tests live
 

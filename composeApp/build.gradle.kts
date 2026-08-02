@@ -224,6 +224,11 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(kotlin("test-junit"))
+
+                // koin-test is JVM-only here on purpose: KoinGraphTest resolves the whole
+                // real graph, which only works on a platform that has every actual (JVM does).
+                implementation(project.dependencies.platform(libs.koin.bom))
+                implementation(libs.koin.test)
             }
         }
 
