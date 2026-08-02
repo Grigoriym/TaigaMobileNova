@@ -1,12 +1,16 @@
 package com.grappim.taigamobile.di
 
 import androidx.lifecycle.SavedStateHandle
+import com.grappim.taigamobile.testing.MainDispatcherRule
+import kotlinx.coroutines.test.StandardTestDispatcher
 import org.koin.core.annotation.KoinInternalApi
 import org.koin.core.definition.BeanDefinition
 import org.koin.core.error.NoDefinitionFoundException
 import org.koin.core.logger.Level
 import org.koin.dsl.module
 import org.koin.plugin.module.dsl.koinApplication
+import kotlin.test.AfterTest
+import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -50,11 +54,41 @@ import kotlin.test.assertTrue
  * constructor body then throws has already proven its wiring. Only [NoDefinitionFoundException] is
  * treated as a failure; anything else is printed and tolerated. That is what makes the ViewModels
  * checkable at all — most of them call `savedStateHandle.toRoute<T>()` during construction, which
- * cannot succeed against the blank [SavedStateHandle] declared below, and some launch loads in
- * `init` that hit Room and log a stack trace on a background thread. Both are expected noise.
+ * cannot succeed against the blank [SavedStateHandle] declared below. That noise is expected.
+ *
+ * ## Why `Main` is replaced by a dispatcher that never runs
+ *
+ * Ten ViewModels start a `viewModelScope.launch` from their `init` block. On JVM
+ * `kotlinx-coroutines-swing` is on the classpath, so `Dispatchers.Main` is a live thread and those
+ * bodies really execute — querying an empty Room database and throwing, asynchronously, after this
+ * test has moved on. `kotlinx-coroutines-test` registers `ExceptionCollectorAsService` as a
+ * process-wide `CoroutineExceptionHandler` via `ServiceLoader`, which hands any such uncaught
+ * exception to whichever `runTest` is active at that moment — failing an unrelated test chosen by
+ * thread timing. `MainViewModelTest` was the usual victim.
+ *
+ * [StandardTestDispatcher] queues those launches and is never advanced, so they never run and
+ * nothing escapes. Wiring is unaffected: it is proven when the constructor's arguments resolve,
+ * before `init` would run.
+ *
+ * **This assumes every `viewModelScope.launch` in the codebase is undispatched** — true today
+ * (no `launch(SomeDispatcher)` exists in `feature/` or `composeApp/`). An `init` that launches on
+ * `Dispatchers.IO` would bypass this and bring the flake back. See
+ * `docs/issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md`.
  */
 @OptIn(KoinInternalApi::class)
 internal class KoinGraphTest {
+
+    private val mainDispatcherRule = MainDispatcherRule(StandardTestDispatcher())
+
+    @BeforeTest
+    fun setup() {
+        mainDispatcherRule.setup()
+    }
+
+    @AfterTest
+    fun tearDown() {
+        mainDispatcherRule.tearDown()
+    }
 
     @Test
     fun `every definition in the graph resolves its dependencies`() {

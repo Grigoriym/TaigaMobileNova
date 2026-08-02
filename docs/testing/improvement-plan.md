@@ -38,8 +38,8 @@ than pushing through.
 | 0 | Correct the survey doc | XS | ✅ done — 2026-08-02 |
 | 1 | Close the "tests that never run in CI" trap | S | ✅ done — 2026-08-02 |
 | 2 | Koin DI graph test | M | ✅ done — 2026-08-02 |
-| 3 | `WikiRepositoryImpl` + `FakeWikiApi` | S | ⬅ **NEXT** |
-| 4 | `GetProfileDataUseCase` | XS | todo |
+| 3 | `WikiRepositoryImpl` + `FakeWikiApi` | S | ✅ done — 2026-08-02 |
+| 4 | `GetProfileDataUseCase` | XS | ⬅ **NEXT** |
 | 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | todo |
 | 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | todo |
 | 7 | `TeamViewModel` | S | todo |
@@ -220,6 +220,18 @@ Four things differed from the task description:
 - **Added a `MIN_EXPECTED_DEFINITIONS = 147` floor**, asserted after the missing-binding report, as
   the backstop for a leaf definition disappearing with no consumer to notice.
 
+**Follow-up (2026-08-02, during task 3):** this test shipped with a race that randomly failed
+*unrelated* tests — the ViewModels it constructs launch real work from `init`, and the escaping
+exceptions were attributed to whichever `runTest` was live. Fixed; see
+[docs/issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md](../issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md).
+The lesson generalises to any test that instantiates real ViewModels: **a full-suite `jvmTest` run is
+part of a test task's verification, not just the module's own task** — this was invisible to
+`:composeApp:jvmTest` run alone.
+
+---
+
+## Task 3 — `WikiRepositoryImpl` + `FakeWikiApi`
+
 **Why:** the only repository implementation in the project without a test.
 
 **Scope:** `feature/wiki/data/src/commonTest/…/WikiRepositoryImplTest.kt`, plus a new `FakeWikiApi`
@@ -240,9 +252,25 @@ does **not** — create it, following the shape of the other 12 fake APIs.
 
 **Finalize focus:** low unless creating the fake surfaced something new about the fake-API pattern.
 
----
+**Result (2026-08-02):** done. 17 tests in `WikiRepositoryImplTest`, `:feature:wiki:data:jvmTest`
+green, `detekt` and `KoinGraphTest` still green.
 
-## Task 4 — `GetProfileDataUseCase`
+One thing the task description did not anticipate: **`WikiApi` was a concrete final class**, so it
+could not be faked. Every other API in the repo (12 of them) is already `interface XApi` +
+`@Single(binds = [XApi::class]) class XApiImpl` — `WikiApi` was the last hold-out. It was split to
+match, which is a production change but the strictly conventional one; `WikiApi` is referenced
+nowhere outside `feature/wiki/data`, and the Koin definition count is unchanged (`KoinGraphTest`
+still sees 147). **If a future task needs to fake an API, check first whether it is an interface.**
+
+Also added, beyond the stated scope: `WikiFakes.kt` (`getWikiPageDTO`, `getWikiLinkDTO`) in
+`:testing/models`, because the DTO builders were previously duplicated as private helpers inside
+`WikiPageMapperTest` and `WikiLinkMapperTest`. Those two tests were left alone (surgical-changes
+rule); they can adopt the shared factories whenever they are next touched. `:testing` gained
+`api(projects.feature.wiki.data)`.
+
+`FakeWikiApi` carries an `errorToThrow` hook and per-method call recorders, so all seven methods have
+both a happy path and a propagate-the-error test — this is the Task 9 convention applied early, on a
+file small enough that it cost nothing.
 
 **Why:** smallest remaining gap; a good warm-up task.
 
