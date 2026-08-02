@@ -195,6 +195,8 @@ For writing new KMP tests, creating fakes, or understanding test patterns, use t
 - `:testing` module has utilities: `getRandomString()`, `MainDispatcherRule`, fake generators
 - `kotlin.test` assertions + hand-written fakes — no MockK in `commonTest`
 - Test dependencies added automatically via convention plugins
+- `docs/testing/` — [survey.md](docs/testing/survey.md) (what exists) and
+  [improvement-plan.md](docs/testing/improvement-plan.md) (sequenced tasks, one per session)
 
 ## Skills & Agents
 

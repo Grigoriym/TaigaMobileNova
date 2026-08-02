@@ -58,6 +58,15 @@ Plans and research for features in flight. One folder per feature.
 | [private-cert-trust](features/private-cert-trust/) | TOFU cert pinning — research, phased plan, QA server setup |
 | [settings-project](features/settings-project/) | Project-settings screens implementation plan |
 
+## testing/
+
+State of the test suite and the plan for improving it.
+
+| Doc | About |
+|-----|-------|
+| [survey.md](testing/survey.md) | What the suite contains today — types, layout, tooling, coverage, gaps |
+| [improvement-plan.md](testing/improvement-plan.md) | Sequenced tasks to improve it, one per session |
+
 ## issues/
 
 Investigations of reported bugs, written before the fix. See the `investigate-issue` skill.
