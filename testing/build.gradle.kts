@@ -76,6 +76,7 @@ kotlin {
             api(projects.feature.kanban.domain)
 
             api(projects.feature.wiki.domain)
+            api(projects.feature.wiki.data)
 
             api(projects.feature.dashboard.domain)
 

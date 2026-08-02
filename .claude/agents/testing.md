@@ -110,6 +110,7 @@ Key fields for commonly-used fakes:
 | `FakeAuthApi` | `AuthApi` |
 | `FakeSprintsApi` | `SprintsApi` |
 | `FakeUserStoriesApi` | `UserStoriesApi` |
+| `FakeWikiApi` | `WikiApi` — has an `errorToThrow` hook for failure-path tests |
 
 ### Use Cases (interface + fake pattern)
 
@@ -174,6 +175,7 @@ All in package `com.grappim.taigamobile.testing.models`:
 | `UserStoryFakes` | `getUserStory()` and variants |
 | `CustomFieldsFakes` | custom fields fakes |
 | `BadgesFakes` | badge fakes |
+| `WikiFakes` | `getWikiPageDTO(...)`, `getWikiLinkDTO(...)` |
 
 All factories generate random data — every call returns different values.
 
@@ -424,3 +426,22 @@ kotlin {
 5. **`ByteArray` equality** — use `assertTrue(expected.contentEquals(actual))`, not `assertEquals`.
 
 6. **`persistentListOf()` requires import** — `import kotlinx.collections.immutable.persistentListOf`.
+
+7. **A coroutine that escapes your test can fail someone else's.** `kotlinx-coroutines-test` ships
+   `META-INF/services/kotlinx.coroutines.CoroutineExceptionHandler` →
+   `ExceptionCollectorAsService`, a **JVM-wide** handler that hands any uncaught coroutine exception
+   to whichever `runTest` is currently active. All modules share one test JVM, so a leaked throwing
+   coroutine fails an unrelated test in an unrelated module, chosen by thread timing. If you
+   construct a real ViewModel outside a controlled dispatcher, its `init` launch is exactly this
+   hazard — see `KoinGraphTest` and
+   `docs/issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md`. Symptom: a test that uses
+   only fakes fails with a stack trace naming classes it never touches.
+
+8. **`MainDispatcherRule()` defaults to `UnconfinedTestDispatcher`, which runs launches eagerly.**
+   That is what you want for most ViewModel tests. When the goal is the opposite — construct
+   something without letting its `init` work run — pass `MainDispatcherRule(StandardTestDispatcher())`
+   explicitly and never advance it. Taking the default there makes the problem worse, silently.
+
+9. **Verify with the full `./gradlew jvmTest`**, not only `:feature:x:jvmTest`. Gotcha 7 is invisible
+   to the module task. For an intermittent failure, one green run is not evidence — re-run, and
+   establish the before-state failure rate.
