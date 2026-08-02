@@ -9,8 +9,11 @@ on:
             - dev
         paths-ignore:
             - '**.md'
-            - 'playstore/**'
             - 'docs/**'
+            - 'art/**'
+            - 'playstore/**'
+            - 'fastlane/metadata/**'
+            - 'LICENSE'
 
 concurrency:
     group: build-${{ github.event.pull_request.number || github.ref }}
