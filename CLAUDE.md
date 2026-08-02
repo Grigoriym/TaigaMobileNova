@@ -210,6 +210,17 @@ would have been silently skipped forever. Two consequences:
   JVM-specific behaviour). The repo has no Android unit-test source set at all, by design; nothing
   in CI would execute one.
 
+**Verify with the full `./gradlew jvmTest`, not just the module's own task.** All modules' JVM tests
+share a process, and `kotlinx-coroutines-test` registers a `ServiceLoader`-global
+`CoroutineExceptionHandler` — so an exception escaping a coroutine in *any* test is reported against
+whichever `runTest` happens to be live, in a different module. `:feature:x:jvmTest` passing proves
+your test works; only the full run proves it did not break someone else's. When a failure appears
+alongside your change, A/B it against a clean tree (`git stash -u`) before assuming you caused it.
+
+**Every `XApi` is an `interface XApi` + `@Single(binds = [XApi::class]) class XApiImpl`** — no
+exceptions, so any API can be faked in `:testing`. `WikiApi` was the last concrete one and was split
+in the course of testing it.
+
 **Testing `expect`/`actual` code: prefer the platform whose actual is real over stubbing one out.**
 JVM is a fully supported target here — desktop runs the app for real — so `jvmTest` can exercise
 platform-backed code (Room, DataStore, Ktor/OkHttp) with nothing faked, which `commonTest` cannot.
@@ -278,6 +289,12 @@ When editing existing code:
 When your changes create orphans:
 - Remove imports/variables/functions that YOUR changes made unused.
 - Don't remove pre-existing dead code unless asked.
+
+**When you notice a real problem outside the current task: write it into
+[docs/revisit.md](docs/revisit.md) and keep going.** Not fixed inline (it makes the diff
+unreviewable), not dropped, not just mentioned in chat — chat is not persistence. Give the entry
+enough evidence (`file:line`, or a link to an issue doc) that a cold session can act on it without
+re-deriving anything.
 
 The test: Every changed line should trace directly to the user's request.
 

@@ -3,6 +3,9 @@
 Project documentation. Architecture notes and build knowledge live here; the day-to-day coding
 rules live in [`CLAUDE.md`](../CLAUDE.md).
 
+**[revisit.md](revisit.md)** — the running list of things noticed mid-task and deliberately deferred.
+Add to it instead of fixing out-of-scope problems inline.
+
 ## architecture/
 
 How parts of the app work, and why they work that way.
