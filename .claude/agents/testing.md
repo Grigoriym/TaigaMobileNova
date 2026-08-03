@@ -62,7 +62,7 @@ Key fields for commonly-used fakes:
 
 **`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`
 
-**`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `patchDataResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
+**`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
 
 **`FakeTaigaSessionStorage`**: `currentProjectId: Long`, `currentUserId: Long?`, `clearDataCalled: Boolean`
 
@@ -497,7 +497,32 @@ Use real implementation: `CustomFieldsUIMapper(dfSimple = createDecimalFormatter
 
 ## `PatchDataGenerator` in Tests
 
-Use real `PatchDataGeneratorImpl()` or `FakePatchDataGenerator` from `:testing`.
+Use real `PatchDataGeneratorImpl()` or `FakePatchDataGenerator` from `:testing`. Prefer the real one
+when the assertion depends on the payload *shape* it builds — faking it hides the nesting the test is
+actually checking.
+
+---
+
+## Driving a private pure function through the payload it produces
+
+**Do not widen a function's visibility to test it.** A private helper that shapes data on its way to
+a collaborator is fully reachable through what that collaborator receives — record the call in the
+fake, unwrap the payload in a helper, and assert per input.
+
+`WorkItemCustomFieldsDelegateImpl.getCustomFieldValue` is private and carries 12 of its class's 30
+branches (`Date` non-null/null, `Number` parseable/not, the `else`, and the take-current-vs-original
+switch). `WorkItemCustomFieldsDelegateImplTest` reaches all of them via:
+
+```kotlin
+@Suppress("UNCHECKED_CAST")
+private fun lastPatchedAttributes(): Map<String, Any?> =
+    workItemRepository.patchCustomAttributesCalls.last().payload["attributes_values"] as Map<String, Any?>
+```
+
+…then `assertEquals(42L, lastPatchedAttributes()["1"])`. No production change, and the assertions
+describe the observable contract (what gets sent to the API) rather than an implementation detail.
+Give the unwrapping helper a KDoc saying which generator builds that shape — otherwise the magic
+string is unexplained.
 
 ---
 

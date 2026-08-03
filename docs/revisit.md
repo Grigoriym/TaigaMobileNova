@@ -377,3 +377,32 @@ readout of the gate number, not merely an approximation of it.
 **Fix:** take `:koverVerify` readings on several separate clean-tree invocations. If they are stable
 at ~75/60, raise the bounds to ~73/58. If they flip, that is a bigger finding than the floor and
 belongs in #8.
+
+---
+
+## 15. Saving a non-editable custom field leaks its id into `editingItemIds`
+
+**Where:** `feature/workitem/ui/.../delegates/customfields/WorkItemCustomFieldsDelegateImpl.kt:107` —
+the `onSuccess` arm of `handleCustomFieldSave` calls `onCustomFieldEditToggle(item)` unconditionally.
+
+**What happens:** `onCustomFieldEditToggle` is a *toggle*, and the call is there to close edit mode
+after a successful save. But `CustomFieldsWidget.kt:262-276` renders the save button for **every**
+item type, enabled purely by `item.isModified` — edit mode is only ever entered for `EditableItem`s
+(`RichTextItemState`, `UrlItemState`), whose edit button is the sole caller of the toggle
+(`CustomFieldsWidget.kt:236-243`). So saving a `Text`/`Number`/`Date`/`Dropdown`/`Checkbox` field —
+none of which are `EditableItem` — *adds* its id to `editingItemIds` rather than removing it, and
+nothing ever takes it out again for the life of the screen.
+
+**Consequence:** none visible today. The set is read in exactly one place,
+`CustomFieldsWidget.kt:131` — `val isEditMode = isEditableItem && item.id in editingItemIds` — whose
+first conjunct is false for precisely the items that leak in. It is unbounded state growth guarded
+by an accident, and it will produce a real bug the moment a second reader of `editingItemIds`
+appears, or an existing item type is made `EditableItem`.
+
+**Fix:** make the post-save call an explicit removal rather than a toggle (or guard it with
+`if (item is EditableItem)`). Covered by
+`WorkItemCustomFieldsDelegateImplTest.handleCustomFieldSave - success - adds a non-editing item to
+editingItemIds`, which documents the current behaviour and will need inverting.
+
+**Why deferred:** found while writing that test (improvement-plan task 9a). Changing delegate
+behaviour used by four detail ViewModels is not a test task's business.

@@ -271,11 +271,22 @@ tests, not a smaller bound. The traps when touching those numbers:
   before reading a flat delta as "the tests did nothing" ([revisit #10](docs/revisit.md)).
   The suffix match is exact, so the reverse also holds: `**.*Repository` does **not** match
   `…RepositoryImpl`, and every repository impl in the project is measured normally.
-- **Much of the branch denominator is unreachable.** `equals`/`hashCode`/`copy$default` on data
-  classes, `@Serializable` serializers and Room DAO impls are all compiler-generated branches no
-  test can take — `feature/filters/domain/model` is 2/144 across nine files with no hand-written
-  conditional in them. Rank work by missed branches in *hand-written* code, not by a package's
-  branch percentage.
+- **Much of the branch denominator is unreachable**, in two distinct ways, and a package's
+  missed-branch count distinguishes neither. *Generated:* `equals`/`hashCode`/`copy$default` on data
+  classes, `@Serializable` serializers and Room DAO impls — `feature/filters/domain/model` is 2/144
+  across nine files with no hand-written conditional in them. *Composition-blocked:* hand-written
+  branches inside `@Composable` functions and `@Composable get()` properties, which no plain JVM test
+  can enter — `utils/ui` left 46 such branches and the whole `main` package is 31 of 35 (`MainAppState`
+  is `@Composable` getters; `MainViewModel` is already 4/4). Rank work by missed branches in
+  hand-written, *non-composable* code.
+- **Get the per-class breakdown before scoping a session around a package**, and the per-**method**
+  one before concluding a leftover is real — Kover's XML carries `<counter>` elements on
+  `<package>`, `<class>` *and* `<method>`, so `for c in p.findall('class'): for m in c.findall('method')`
+  answers "which function still has missed branches" in one command instead of by reading the source.
+  That is how `WorkItemCustomFieldsDelegateImpl`'s residual 2/30 was pinned to the `?.` null-checks in
+  `valueToUse?.toString()?.toLongOrNull()`, unreachable because `NumberItemState`'s values are
+  non-null. The worked snippet is in
+  [improvement-plan.md](docs/testing/improvement-plan.md) under `…delegates/customfields`.
 
 Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
 77 modules.

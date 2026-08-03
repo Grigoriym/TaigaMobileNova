@@ -41,6 +41,13 @@ data class PatchDataCall(
     val commonTaskType: CommonTaskType,
 )
 
+data class PatchCustomAttributesCall(
+    val customAttributesVersion: Long,
+    val workItemId: Long,
+    val payload: ImmutableMap<String, Any?>,
+    val commonTaskType: CommonTaskType,
+)
+
 data class PatchWikiPageCall(
     val pageId: Long,
     val version: Long,
@@ -70,6 +77,10 @@ class FakeWorkItemRepository : WorkItemRepository {
 
     var deleteAttachmentThrows: Throwable? = null
     val deleteAttachmentCalls: MutableList<DeleteAttachmentCall> = mutableListOf()
+
+    var patchCustomAttributesResult: PatchedCustomAttributes? = null
+    var patchCustomAttributesThrows: Throwable? = null
+    val patchCustomAttributesCalls: MutableList<PatchCustomAttributesCall> = mutableListOf()
 
     var patchWikiPageResult: PatchedData? = null
     var patchWikiPageThrows: Throwable? = null
@@ -105,7 +116,16 @@ class FakeWorkItemRepository : WorkItemRepository {
         workItemId: Long,
         payload: ImmutableMap<String, Any?>,
         commonTaskType: CommonTaskType,
-    ): PatchedCustomAttributes = error("not used in this test")
+    ): PatchedCustomAttributes {
+        patchCustomAttributesCalls += PatchCustomAttributesCall(
+            customAttributesVersion,
+            workItemId,
+            payload,
+            commonTaskType,
+        )
+        patchCustomAttributesThrows?.let { throw it }
+        return patchCustomAttributesResult ?: error("patchCustomAttributesResult not configured")
+    }
 
     override suspend fun addAttachment(
         workItemId: Long,

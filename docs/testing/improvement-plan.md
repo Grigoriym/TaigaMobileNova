@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03; ⬅ **NEXT** module: `main` (see the re-derived table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03; ⬅ **NEXT** module: `feature/workitem/ui/delegates/badge` (see the re-derived table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -651,6 +651,15 @@ is by missed branches, which finds whatever is untested — not specifically err
 specifically repositories. **Read the module and decide what it actually needs before scoping the
 session**; "add a `testException` test per public method" is one possible answer, not the brief.
 
+**Verify the row before you take it — including the `⬅ next` marker — and be willing to close it
+instead of working it.** The row's number is a package total; it says nothing about whether those
+branches are *reachable* from a JVM test. Get the per-class breakdown out of the report first (the
+snippet is in the `…delegates/customfields` section) and check for `@Composable`. `main` was marked
+NEXT on a 4/35 and turned out to be 31 branches of composition-blocked code over an already-fully-
+covered ViewModel; it was closed with the evidence rather than worked. Two rows' Note columns were
+also simply wrong when re-derived. A row that survives verification is the session; a row that does
+not gets a ⛔ entry recording *why*, which is worth as much as tests.
+
 **Why:** task 9 proved the pattern on one module. These are the modules where a session buys the
 most, ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverXmlReport`):
 
@@ -663,12 +672,12 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`feature/projects/data` + `feature/projects/mapper`~~ | 8/66 | ✅ done 2026-08-03 — now 66/66 |
 | ~~`feature/kanban/ui`~~ | 65/166 | ✅ done 2026-08-03 — now 159/166 |
 | ~~`utils/ui`~~ | 8/107 | ✅ done 2026-08-03 — now 61/107; the residual 46 all need a composition |
-| **`main`** | 4/35 | ⬅ next. `MainViewModel` + navigation state |
-| `feature/workitem/ui/delegates/customfields` | 0/30 | no test at all |
-| `core/api/errors` | 47/76 | 29 of these are inside the Kover-excluded `ErrorMappingPlugin` |
-| `feature/userstories/ui` | 13/40 | ViewModel-heavy |
-| `feature/workitem/ui/delegates/badge` | 0/22 | no test at all |
-| `feature/settings/ui/attributes/projectvalues` | 0/22 | no test at all |
+| ~~`main`~~ | 4/35 | ⛔ closed-as-blocked 2026-08-03 — 31 of the 35 need a composition, `MainViewModel` is already 4/4 + 44/44 |
+| ~~`feature/workitem/ui/delegates/customfields`~~ | 0/30 | ✅ done 2026-08-03 — now 28/30, LINE 86/86; the residual 2 are unreachable |
+| **`feature/workitem/ui/delegates/badge`** | 0/22 | ⬅ next. `WorkItemBadgeDelegateImpl`, LINE 15/66 — same shape as `customfields` |
+| `feature/settings/ui/attributes/projectvalues` | 0/22 | `ProjectValuesViewModel`, no test; LINE 5/125 |
+| `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
+| ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
 
 Skip `feature/filters/domain/model` (142 missed) and `feature/userstories/dto` (38) — generated
 `data class` / `@Serializable` branches, unreachable from a test. `feature/login/ui` has dropped off
@@ -924,6 +933,105 @@ Also found and filed, not fixed: `urlDecode` is an `internal expect` with three 
 call sites** ([revisit #13](../revisit.md#13-urldecode-in-utilsui-is-dead-code-with-three-actuals)).
 `JsonSerializableNavTypeTest` uses it to reverse `serializeAsValue`, so deleting it means rewriting
 two assertions.
+
+### `main` — ⛔ closed-as-blocked 2026-08-03
+
+**No tests written. This module cannot be moved without a composition, and was closed rather than
+worked.** It was marked NEXT on the strength of its 4/35 branch figure alone; reading it first — which
+the preamble above tells you to do — shows the figure is unreachable. Per-class, from a clean
+742-class report:
+
+| Class | BRANCH | LINE | Reachable? |
+|---|---|---|---|
+| `MainViewModel` (+ its two lambdas) | **4/4** | **44/44 + 13/13** | already fully covered |
+| `MainAppState` | 0/22 | 0/29 | 20 of 22 are `@Composable` getters |
+| `TaigaAppContentKt` | 0/9 | 0/14 | `@Composable` |
+| `MainScreenState` / `InitialNavState` | 0/0 | 3/3, 1/1 | — |
+
+`MainAppState`'s 22 decompose exactly: `currentDestination` ~4, `currentTopLevelDestination` ~6,
+`areDrawerGesturesEnabled` 2, `isTopBarVisible` ~8 — all `@Composable get()` — plus
+`navigateToTopLevelDestination` 2. That last one is the *only* thing in the package a JVM test could
+reach, and it needs a `NavHostController` with a real graph installed. A whole session for at most 2
+branches.
+
+`MainScreen.kt` and `MainNavHost.kt` do not appear at all: `**.*Screen` and `**.*NavHost` are in the
+root `excludes`.
+
+**The lesson for whoever picks the next module: a package's missed-branch count does not tell you
+whether the branches are reachable.** This is the second time — after `utils/ui`'s residual 46 — that
+the ranking has pointed at composition-blocked code. Before taking a module, get the *per-class*
+breakdown out of the report (the snippet in the `customfields` section below does it) and check
+whether the classes carrying the branches are `@Composable`. `main` joins `utils/ui` as concrete
+evidence for task 10.
+
+### `feature/workitem/ui/delegates/customfields` — ✅ done 2026-08-03
+
+23 tests in `WorkItemCustomFieldsDelegateImplTest` (1 → 23). `:feature:workitem:ui:jvmTest`, the full
+`jvmTest`, `detekt`, `ktlintCheck` and `:koverVerify` are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| `WorkItemCustomFieldsDelegateImpl` BRANCH | 0/30 — 0 % | **28/30 — 93.3 %** |
+| `WorkItemCustomFieldsDelegateImpl` LINE | 19/86 — 22.1 % | **86/86 — 100 %** |
+| package `…delegates.customfields` BRANCH | 0/30 | **28/30** |
+| package `…delegates.customfields` LINE | 27/94 | **94/94** |
+
+The two reports had different class counts (742 vs 746, raw 742 vs 797), but this package's
+denominators are identical in both — the escape hatch, used a fourth time.
+
+**The residual 2 branches are unreachable**, and the XML says which: a `<method>`-level read shows
+they are both in `getCustomFieldValue`, i.e. the two `?.` null-checks in
+`valueToUse?.toString()?.toLongOrNull()`. `NumberItemState.originalValue` and `.currentValue` are
+non-null `String`s, so `valueToUse` is never null on that arm. Useful technique in general:
+
+```bash
+python3 -c "
+import xml.etree.ElementTree as ET
+r=ET.parse('build/reports/kover/report.xml').getroot()
+for p in r.findall('package'):
+    if 'YOUR.PACKAGE' not in p.get('name').replace('/','.'): continue
+    for c in p.findall('class'):
+        for m in c.findall('method'):
+            cs={x.get('type'):(int(x.get('covered')),int(x.get('missed'))) for x in m.findall('counter')}
+            b=cs.get('BRANCH')
+            if b and b[1]: print(c.get('name').split('/')[-1], m.get('name'), f'B {b[0]}/{b[0]+b[1]}')"
+```
+
+Kover's XML carries per-**method** counters, not just per-class. Nothing in this plan had used them
+before, and they answer "is the leftover real?" in one command instead of by reading the source.
+
+**The 9a table's note on this module — "no test at all" — was wrong**; there was one test, covering
+`setIsCustomFieldsWidgetExpanded`. It contributed 19 lines and 0 branches, which is why the package
+looked untested. Likewise the table's claim that `core/api/errors`' 29 missed branches are "inside
+the Kover-excluded `ErrorMappingPlugin`" was wrong — `kover-rank.py` has already filtered that plugin
+out; the 29 are 25 generated `TaigaErrorResponse` branches plus 4 real ones. Both rows are corrected
+above. **Re-derive a row before trusting its Note column**, not just its number.
+
+Three things worth carrying forward:
+
+- **A private pure function can be driven entirely through the payload it produces.**
+  `getCustomFieldValue` is private and has 12 of the class's 30 branches. Rather than making it
+  internal for testability, the tests read
+  `patchCustomAttributesCalls.last().payload["attributes_values"]` — the map the delegate hands
+  `PatchDataGenerator` — and assert the per-field value. That reached every item type
+  (`Date` non-null / null, `Number` parseable / not, `Checkbox`, `Dropdown`, the `else`) with no
+  production change. The unwrapping is a two-line helper with a KDoc saying why.
+- **`PatchDataGeneratorImpl` is used real, not faked.** It is a pure map-builder in
+  `feature/workitem/data`, already on this module's classpath, and faking it would have hidden the
+  `attributes_values` nesting the assertions depend on.
+- **`FakeWorkItemRepository.patchCustomAttributes` was `error("not used in this test")`** and gained
+  `patchCustomAttributesResult/Throws/Calls` plus a `PatchCustomAttributesCall` record
+  (`.claude/agents/testing.md` updated). That fake now has hooks on every method a test has needed;
+  the remaining `error("not used in this test")` stubs are `createWorkItem` and nothing else.
+
+One behaviour finding, filed not fixed:
+[revisit #15](../revisit.md#15-saving-a-non-editable-custom-field-leaks-its-id-into-editingitemids) —
+`handleCustomFieldSave`'s success path calls the *toggle* `onCustomFieldEditToggle(item)` to close
+edit mode, but the save button is rendered for every item type while edit mode is only ever entered
+for `EditableItem`s. So saving a Text/Number/Date/Dropdown/Checkbox field adds its id to
+`editingItemIds` permanently. Invisible today only because the single reader of that set ANDs it with
+`isEditableItem`. The test that documents it is named `- adds a non-editing item to editingItemIds`
+and carries a KDoc saying it will need inverting when the bug is fixed.
 
 ---
 
