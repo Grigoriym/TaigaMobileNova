@@ -48,7 +48,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Error-path sweep: rest of the repo/use-case layer | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03; ⬅ **NEXT** module: re-derive the ranking, then take `feature/kanban/ui` or `feature/login/ui` |
+| 9a | Error-path sweep: rest of the repo/use-case layer | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03; ⬅ **NEXT** module: `utils/ui` (see the re-derived table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -641,22 +641,33 @@ Three things worth carrying forward:
 **Why:** task 9 proved the pattern on one module. These are the modules where it buys the most,
 ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverXmlReport`):
 
+**Re-derived 2026-08-03** after the `feature/kanban/ui` module, with the root `excludes` block
+applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own filtering:
+
 | Module | BRANCH | Note |
 |---|---|---|
-| ~~`core/api` + `core/api/errors`~~ | 73/164 | ✅ done 2026-08-03 |
+| ~~`core/api` + `core/api/errors`~~ | 73/126 | ✅ done 2026-08-03 |
 | ~~`feature/projects/data` + `feature/projects/mapper`~~ | 8/66 | ✅ done 2026-08-03 — now 66/66 |
-| `feature/kanban/ui` | 65/166 | ViewModel-heavy |
-| `feature/login/ui` | 27/126 | ViewModel-heavy |
-| `utils/ui` | 8/107 | `NativeText` and extensions, not repository-shaped |
+| ~~`feature/kanban/ui`~~ | 65/166 | ✅ done 2026-08-03 — now 159/166 |
+| **`utils/ui`** | 8/107 | ⬅ next. `NativeText` and extensions, not repository-shaped |
+| `main` | 4/35 | `MainViewModel` + navigation state |
+| `feature/workitem/ui/delegates/customfields` | 0/30 | no test at all |
+| `core/api/errors` | 47/76 | 29 of these are inside the Kover-excluded `ErrorMappingPlugin` |
+| `feature/userstories/ui` | 13/40 | ViewModel-heavy |
+| `feature/workitem/ui/delegates/badge` | 0/22 | no test at all |
+| `feature/settings/ui/attributes/projectvalues` | 0/22 | no test at all |
 
-⚠️ **This ranking was measured from an 821-class report and is inflated.** That run leaked in every
-class the `excludes` block names, so each row counts branches no test can ever move — `core/api`'s
-164 is really 126 once the five Ktor plugins are dropped, and the `feature/*/ui` rows include
-`*Screen` and `*Widget` classes for the same reason. **Re-derive the table from a 742-class report**
-before picking the next module, and drop from consideration anything whose class name ends in an
-excluded suffix. There is no known way to *force* a 742 run — the `core/api` notes below guessed
-"make a build-file change first", and the `feature/projects/data` session disproved that. Print the
-class count, and if you get a high one, fall back to diffing per-package denominators.
+Skip `feature/filters/domain/model` (142 missed) and `feature/userstories/dto` (38) — generated
+`data class` / `@Serializable` branches, unreachable from a test. `feature/login/ui` has dropped off
+the list: its old 27/126 row was `LoginScreen`, and the ViewModel alone is 27/44.
+
+**Use [kover-rank.py](kover-rank.py) to re-derive this table; do not read it off the raw report.**
+`koverXmlReport` flips unpredictably between applying the `excludes` block and ignoring it (class
+counts 742 / 821 / 854 observed), and a report from the wrong side counts thousands of branches no
+test can move. The script re-applies the exclusion rules itself, so it does not matter which side of
+the flip you got — on 2026-08-03 it turned an 854-class report into 742 classes and reproduced a
+genuine 742-class run's totals to the digit. **This supersedes the earlier advice to keep re-running
+until a 742 appears**; there is still no known way to force one, and now there is no need to.
 
 **Do one module per session**, recording the same before/after table task 9 recorded. Do **not**
 take the packages that top the raw missed-branch list — `core/storage/db/dao` (0/180) and
@@ -772,6 +783,57 @@ Four things worth carrying forward:
   `HttpResponse`; the escaping exception would be attributed to an unrelated test. The reason is in
   a KDoc on the test. `ProjectsPagingSource` is Kover-excluded (`**.*PagingSource`) *and* blocked on
   the same `HttpResponse` problem as task 9b — solve it once, there.
+
+### `feature/kanban/ui` — ✅ done 2026-08-03
+
+25 new tests in `KanbanViewModelTest` (11 → 36). `:feature:kanban:ui:jvmTest`, the full `jvmTest`,
+`detekt`, `ktlintCheck` and `:koverVerify` are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| `KanbanViewModel` BRANCH | 44/142 — 31.0 % | **135/142 — 95.1 %** |
+| `KanbanViewModel` LINE | 109/169 — 64.5 % | **169/169 — 100 %** |
+| package `feature/kanban/ui` BRANCH | 65/166 — 39.2 % | **159/166 — 95.8 %** |
+| package `feature/kanban/ui` LINE | 231/295 — 78.3 % | 291/295 — 98.6 % |
+
+The before/after reports had different class counts (854 vs 744), but every class in this package has
+an *identical* denominator in both, so the table is valid — the escape hatch the
+`feature/projects/data` session documented, used a second time.
+
+**Like the previous module, this was not an error-path sweep.** Both failure paths already had tests.
+What was missing was the ViewModel's two largest private functions, neither of which any test reached
+past its first line:
+
+- **`computeSwimlaneFilters`** (~55 branches) — scopes the project-wide filter list down to the
+  stories actually on the board, counting assignees / creators / statuses / tags / epics / roles and
+  dropping filters that match nothing. Every existing test set `filtersDataResult = FiltersData()`,
+  whose `filtersNumber` is 0, so all eleven of them took the `if (allFilters.filtersNumber == 0)`
+  early return. **A fixture that looks like a neutral default can be an early-return switch**;
+  check what the SUT does with `FiltersData()` before reusing it everywhere.
+- **`filterStories`** (~30 branches) — six `matches*` predicates. One of the six was covered.
+
+Three things worth carrying forward:
+
+- **The Kover class-count flip no longer needs to be fought.** Added
+  [kover-rank.py](kover-rank.py), which re-applies the root `excludes` block to whatever report you
+  have and ranks packages by missed branches. It reduced this session's 854-class report to 742
+  classes and reproduced the genuine 742-class run's totals exactly. Two sessions have now been
+  spent on this flip; the script ends that.
+- **The 9a ranking table was inflated for a second reason beyond the flip.** `feature/login/ui`'s
+  126 branches were almost entirely `LoginScreen`; the ViewModel is 44. Rank on the filtered numbers
+  or you will pick a module whose work is already excluded from the report.
+- **`FakeFiltersRepository.getFiltersData` had no `…Throws` hook**, so the existing failure test
+  forced an error by leaving `filtersDataResult = null` and tripping the fake's own
+  `error("filtersDataResult not set")` guard — exactly the failure-for-the-wrong-reason trap task 9
+  documented. Added `filtersDataThrows` and switched that test to it. `FakeUserStoriesRepository`
+  gained a recorder per `bulkUpdateKanbanOrder` argument, which is what let the neighbour-validation
+  branches in `moveStory` be asserted at all. `.claude/agents/testing.md` updated for both.
+
+One dead branch found, not filed: `computeOptimisticUpdate`'s `.takeIf { it >= 0 } ?: size` fallback
+cannot fire, because `moveStory` has already validated `beforeStoryId` against the target column. It
+is two tokens of defensive code, not worth a revisit entry. Passing an unknown `newStatusId` also
+drops the story off the board entirely — unreachable from the UI, where the id always comes from a
+rendered column; noted in a comment on the test that covers it.
 
 ---
 

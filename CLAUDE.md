@@ -237,16 +237,22 @@ tests, not a smaller bound. Four traps when touching those numbers:
   what CI sees. A build-script edit was once found by bisection to flip it, but that is **not** the
   whole trigger: on 2026-08-03 a clean tree gave 742 and adding only *test sources* gave 854, i.e.
   the opposite direction with no build file touched. Treat the mechanism as unknown.
-  **The reliable guard is the class count: print `len(root.findall('.//class'))` next to every
-  coverage figure you record.** It says which side of the flip a run is on in one number, and does
-  not depend on any theory of the trigger.
-- **When two reports disagree on the class count, do not discard the measurement — diff their
-  per-package denominators.** A few lines of `ElementTree` over both XMLs lists every package the two
-  runs disagree about, and usually shows the package you care about has an *identical* denominator in
-  both, which makes a before/after table valid anyway. This is how the `feature/projects/data` table
-  in [improvement-plan.md](docs/testing/improvement-plan.md) survived a 742-vs-854 pair. To confirm a
-  delta is caused by the change rather than by build staleness, `git stash -u` and re-run: a clean-tree
-  re-run that reproduces the baseline to the digit settles it.
+- **Do not fight the flip — re-apply the `excludes` yourself with
+  [docs/testing/kover-rank.py](docs/testing/kover-rank.py).** It filters whatever report you have by
+  the same suffix/package rules as the root `build.gradle.kts`, prints the kept class count and the
+  filtered totals, and ranks packages by missed branches. On 2026-08-03 it reduced an 854-class
+  report to 742 classes and reproduced a genuine 742-class run's totals to the digit, so which side
+  of the flip you landed on stops mattering. **Use it for every coverage figure you record and for
+  every ranking of what to test next**; the raw report is only trustworthy when it happens to say
+  742, and you cannot make it say that on purpose. Keep the script's lists in sync when the
+  `excludes` block changes.
+- **When two reports still disagree, diff their per-package denominators rather than discarding the
+  measurement.** The package you care about usually has an *identical* denominator in both, which
+  makes a before/after table valid anyway — this is how the `feature/projects/data` and
+  `feature/kanban/ui` tables in [improvement-plan.md](docs/testing/improvement-plan.md) survived
+  742-vs-854 and 744-vs-854 pairs. To confirm a delta is caused by the change rather than by build
+  staleness, `git stash -u` and re-run: a clean-tree re-run that reproduces the baseline to the digit
+  settles it.
 - **`koverXmlReport` always writes `build/reports/kover/report.xml`.** Copy it to a distinct path
   immediately after each run. Forgetting once makes the "before" and "after" the same file, and the
   diff comes back showing nothing changed anywhere — which reads like a plausible result, not like a
