@@ -53,11 +53,12 @@ right subpackage before concluding a fake doesn't exist:
 | `FakeIssuesRepository` | `IssuesRepository` |
 | `FakeWikiRepository` | `WikiRepository` |
 | `FakeFiltersRepository` | `FiltersRepository` |
+| `FakeSwimlanesRepository` | `SwimlanesRepository` |
 | `FakeAuthRepository` | `AuthRepository` |
 
 Key fields for commonly-used fakes:
 
-**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`)
+**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`
 
 **`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `patchDataResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
 
@@ -69,7 +70,13 @@ Key fields for commonly-used fakes:
 
 **`FakeIssuesRepository`**: `getIssueResult/Throws`
 
-**`FakeUsersRepository`**: `getUserResult`, `getUsersListResult`, `isAnyAssignedToMeResult`
+**`FakeUsersRepository`**: `getUserResult`, `getUsersListResult`, `isAnyAssignedToMeResult`, `getTeamMembersResult/Throws`, `getUserStatsResult/Throws`
+
+**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `bulkUpdateKanbanOrderThrows/Called`
+
+**`FakeFiltersRepository`**: `statusesResult/Throws`, `filtersDataResult`
+
+**`FakeSwimlanesRepository`**: `getSwimlanesResult/Throws`
 
 **`FakeHistoryRepository`**: check file for fields
 
@@ -296,6 +303,19 @@ fun `returns items from repository`() = runTest {
     assertEquals(1, result.size)
 }
 ```
+
+**Budget for unstubbing fakes.** A use case fans out across 4–5 repositories, and the odds that
+every one of them is already faked to the depth you need are low — most fakes only implement the
+methods their first caller happened to use, leaving the rest as `error("not used in this test")`.
+Testing `GetKanbanDataUseCase` needed one new fake but *three* existing ones extended
+(`FakeUserStoriesRepository.getUserStories`, `FakeProjectsRepository.getCurrentProjectSimple`,
+`FakeFiltersRepository.getStatuses`). Plan for that, and add both a `…Result` and a `…Throws` field
+while you are in the file so the failure-path test costs nothing later.
+
+**Don't widen the model factories for one test.** The domain models are data classes, so vary them
+with `.copy(...)` behind a small local helper instead of adding parameters to `getUserStory()` &
+co. — that keeps the diff inside the test file. `GetKanbanDataUseCaseTest.story(...)` and
+`KanbanViewModelTest` both do this.
 
 ### Repository implementation test
 ```kotlin

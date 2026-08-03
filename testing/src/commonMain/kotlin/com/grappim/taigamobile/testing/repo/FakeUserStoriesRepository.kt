@@ -34,6 +34,9 @@ class FakeUserStoriesRepository : UserStoriesRepository {
 
     override suspend fun getUserStory(id: Long): UserStory = error("not used in this test")
 
+    var getUserStoriesResult: ImmutableList<UserStory> = persistentListOf()
+    var getUserStoriesThrows: Throwable? = null
+
     override suspend fun getUserStories(
         assignedId: Long?,
         isClosed: Boolean?,
@@ -42,7 +45,10 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         epicId: Long?,
         project: Long?,
         sprint: Any?
-    ): ImmutableList<UserStory> = error("not used in this test")
+    ): ImmutableList<UserStory> {
+        getUserStoriesThrows?.let { throw it }
+        return getUserStoriesResult
+    }
 
     override suspend fun patchData(
         version: Long,

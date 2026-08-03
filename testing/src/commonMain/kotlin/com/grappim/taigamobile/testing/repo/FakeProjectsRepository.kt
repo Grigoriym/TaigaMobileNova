@@ -38,7 +38,13 @@ class FakeProjectsRepository : ProjectsRepository {
         saveProjectCalledWith = project
     }
 
-    override suspend fun getCurrentProjectSimple(): ProjectSimple = error("not used in this test")
+    var getCurrentProjectSimpleResult: ProjectSimple? = null
+    var getCurrentProjectSimpleThrows: Throwable? = null
+
+    override suspend fun getCurrentProjectSimple(): ProjectSimple {
+        getCurrentProjectSimpleThrows?.let { throw it }
+        return getCurrentProjectSimpleResult ?: error("getCurrentProjectSimpleResult not set")
+    }
 
     var projectFlow: Flow<ProjectSimple> = flowOf()
     override fun getCurrentProjectFlow(): Flow<ProjectSimple> = projectFlow
