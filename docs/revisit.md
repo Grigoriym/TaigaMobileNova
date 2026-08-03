@@ -20,6 +20,8 @@ first, then work this list. Nothing here is urgent; nothing here is forgotten.
 | 5 | `tools/seed` and `tools/utils` tests would not run in CI | XS | improvement-plan task 1 |
 | 6 | `GetKanbanDataUseCase` reads the current project three times | XS | improvement-plan task 5 |
 | 7 | Date formatters cache the locale for the process lifetime | S | improvement-plan task 6 |
+| 8 | Kover's excludes are applied partially, and differently by the two tasks | M | improvement-plan task 8 |
+| 9 | `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT | XS | improvement-plan task 9 |
 
 ---
 
@@ -194,3 +196,22 @@ build.
 **When fixing:** raise the bounds in the same commit, otherwise the floor goes ~12 points slack.
 Reproduce with `./gradlew jvmTest :koverXmlReport :koverVerify` and compare the two figures; they
 should be equal, and both should equal the "should produce" row above.
+
+---
+
+## 9. `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT
+
+**What:** the seven `should propagate api error` tests in
+`feature/wiki/data/src/commonTest/…/WikiRepositoryImplTest.kt` assert with a bare
+`assertFailsWith<IllegalStateException> { … }`. `testException` is an `IllegalStateException` — but
+so is every fake's own `error("… not set")` guard, so each of those tests also goes green if
+`FakeWikiApi` bails out *before* the repository reaches the code the test claims to cover. They are
+correct today; they are just not load-bearing.
+
+**Fix:** swap `assertFailsWith<IllegalStateException> { … }` for `assertFailsWithTestException { … }`
+(`:testing`, `utils/TestUtils.kt`), which matches type **and** message. Seven one-line edits plus an
+import.
+
+**Why deferred:** found while establishing the failure-path convention in improvement-plan task 9,
+whose scope was the convention plus `feature/workitem/data`. Editing an unrelated module's test file
+would have made that diff harder to review, and the tests are not currently wrong.

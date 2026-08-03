@@ -15,7 +15,9 @@ Your job is to write KMP-compatible tests using hand-written fakes.
 ## Test Infrastructure
 
 - `kotlin("test")` + `project(":testing")` added to `commonTest` of every KMP module automatically by convention plugin
-- `:testing` exposes `turbine` and `kotlinx-coroutines-test` via `api()` — available transitively
+- `:testing` exposes `kotlin("test")`, `turbine` and `kotlinx-coroutines-test` via `api()` — available
+  transitively. `kotlin("test")` is in `:testing`'s **`commonMain`** on purpose: the module *is* test
+  support, and shared assertion helpers are written against it
 - Use `kotlin.test.Test` / `kotlin.test.BeforeTest` / `kotlin.test.AfterTest` annotations (not `org.junit.*`)
 - `runTest { }` from `kotlinx-coroutines-test` for suspend tests
 - **No MockK** — use hand-written fakes in `commonTest`
@@ -70,7 +72,7 @@ Key fields for commonly-used fakes:
 
 **`FakeIssuesRepository`**: `getIssueResult/Throws`
 
-**`FakeUsersRepository`**: `getUserResult`, `getUsersListResult`, `isAnyAssignedToMeResult`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
+**`FakeUsersRepository`**: `getUserResult/Throws`, `getUsersListResult/Throws`, `isAnyAssignedToMeResult/Throws`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
 
 **`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `bulkUpdateKanbanOrderThrows/Called`
 
@@ -105,7 +107,7 @@ Key fields for commonly-used fakes:
 
 | Fake | Interface |
 |------|-----------|
-| `FakeWorkItemApi` | `WorkItemApi` |
+| `FakeWorkItemApi` | `WorkItemApi` — `errorToThrow` (thrown *after* the call is recorded) |
 | `FakeHistoryApi` | `HistoryApi` |
 | `FakeEpicsApi` | `EpicsApi` |
 | `FakeFiltersApi` | `FiltersApi` |
@@ -139,7 +141,7 @@ Key fields for commonly-used fakes:
 |------|-----------|
 | `FakeProjectDao` | `ProjectDao` |
 | `FakeSprintDao` | `SprintDao` |
-| `FakeWorkItemDao` | `WorkItemDao` |
+| `FakeWorkItemDao` | `WorkItemDao` — `workItemsByProjectIdAndType/AndSprint`, `getByProjectIdAndTypeCalls/AndSprintCalls`, `insertAllCalls` |
 
 ### Other
 
@@ -201,6 +203,7 @@ fun getRandomString(): String     // 15 random lowercase letters
 fun getRandomLocalDateTime(): LocalDateTime
 fun getRandomColor(): Color
 val testException = IllegalStateException("error")
+inline fun assertFailsWithTestException(block: () -> Unit)   // see Failure-path convention below
 ```
 
 `PlatformFile` (FileKit): use `createTestPlatformFile(name, bytes)` from `PlatformTestUtils.kt`. JVM actual creates a real temp file. Android/iOS actuals throw `error("not supported")`.
@@ -332,6 +335,38 @@ class MyRepositoryImplTest {
     }
 }
 ```
+
+### Failure-path convention (required)
+
+**Every public method of a repository impl, use case or ViewModel gets a test where a collaborator
+throws `testException`.** This is the rule that closes the line-vs-branch coverage gap: happy-path
+tests walk a function without ever taking its `catch`, `?:` or `if`.
+
+```kotlin
+@Test
+fun `patchData should propagate api error`() = runTest {
+    fakeWorkItemApi.errorToThrow = testException
+
+    assertFailsWithTestException {
+        sut.patchData(version = 1L, workItemId = 2L, payload = persistentMapOf(), commonTaskType = Task)
+    }
+}
+```
+
+- **Use `assertFailsWithTestException`, not a bare `assertFailsWith<IllegalStateException>`.**
+  `testException` is an `IllegalStateException` and so is every fake's own `error("… not set")`
+  guard — a bare type check goes green when the fake bailed out before the SUT reached the code the
+  test claims to cover. The helper also matches by *message*, which is required when the throw
+  happens inside an `async` child (JVM coroutines rethrow a copy, so identity and equality fail).
+- **A swallowing method flips the assertion, it does not skip it.** `WorkItemRepositoryImpl.getWorkItems`
+  catches API errors and falls back to the Room cache; its failure test sets `errorToThrow` and
+  asserts the DAO was read and nothing was written back.
+- **Give the fake a global `errorToThrow: Throwable?` and record calls *before* throwing.** That way
+  a single field covers every method, and a fallback test can still assert the collaborator was
+  reached. `FakeWorkItemApi` and `FakeWikiApi` are the worked examples (`FakeWikiApi` throws before
+  recording — the newer ordering is the better one).
+- Per-collaborator `…Throws` fields (`FakeUsersRepository.getUsersListThrows`) are for repository
+  and use-case fakes where a test needs exactly one of several methods to fail.
 
 ---
 

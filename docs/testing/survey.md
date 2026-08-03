@@ -202,6 +202,13 @@ tends to exercise happy paths through a function without covering its conditiona
 single clearest quality signal in the survey, and what
 [Task 9](improvement-plan.md#task-9--error-path-convention--first-sweep) targets.
 
+**Qualified 2026-08-03 by Task 9:** the gap is real but the raw number overstates it, because a
+large share of the branch *denominator* is compiler-generated and unreachable from any test —
+`equals`/`hashCode`/`copy$default` on data classes, `@Serializable` serializers, Room DAO impls.
+`feature/filters/domain/model` is 2/144 branches across nine files that contain no hand-written
+conditional at all; `FiltersData` alone is 110 branches in 93 lines. Rank targets by **missed
+branches in hand-written code**, never by a package's branch percentage.
+
 Restoring the 25 orphaned mapper tests (see [Survey drift](#survey-drift)) moved branch coverage by
 0.6 points and line coverage by none — worth knowing, because it means those tests were not the
 reason for the gap. The gap is systemic.
@@ -291,7 +298,8 @@ Structural gaps, independent of any module:
   and `TaskFiltersWidget`, so there is nothing there a unit test could reach.
 - **Common tests never run on iOS.** They are `commonTest` by location but JVM-only in practice,
   so no `expect/actual` divergence is caught by tests.
-- **No DI graph test**, despite the tooling being available.
+- ~~**No DI graph test**, despite the tooling being available.~~ Closed 2026-08-02 by Task 2 —
+  `KoinGraphTest`, see the table above.
 - **Branch coverage 20 points below line coverage** — error paths and conditionals are
   systematically under-tested relative to happy paths.
 - ~~**`androidApp` has only the generated `ExampleUnitTest`** (`2 + 2 == 4`), the sole inhabitant of

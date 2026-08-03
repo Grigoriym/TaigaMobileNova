@@ -213,7 +213,7 @@ would have been silently skipped forever. Two consequences:
 
 **The coverage floor is a ratchet: raise it, never lower it.** `:koverVerify` enforces line ≥ 58 %
 and branch ≥ 38 % (root `build.gradle.kts`, `total { verify { } }`). A PR that breaches it needs
-tests, not a smaller bound. Two traps when touching those numbers:
+tests, not a smaller bound. Four traps when touching those numbers:
 
 - **`koverVerify` and `koverXmlReport` report different coverage** — ~5 points apart on the same
   artifacts, because they apply the `excludes` block differently and neither applies it in full
@@ -222,6 +222,17 @@ tests, not a smaller bound. Two traps when touching those numbers:
 - **A moved percentage is not a moved numerator.** Kover's totals here shift when the denominator
   changes, so compare `covered`/`total` counts between reports before concluding coverage regressed.
   Reading percentages alone once made ~100 new tests look like a 2-point *drop*.
+- **A before/after comparison is only valid between equally fresh runs.** `koverXmlReport` reports
+  on whichever test tasks actually executed, so a baseline taken from a mostly-`UP-TO-DATE` build
+  instruments a different class universe than the after-run. One such pair differed by 855 lines and
+  152 branches in the *totals*, in packages the change never touched. Compare at **package scope**,
+  where you can see the denominator is identical, and treat a moved total denominator as a signal
+  the two runs aren't comparable rather than as a result.
+- **Much of the branch denominator is unreachable.** `equals`/`hashCode`/`copy$default` on data
+  classes, `@Serializable` serializers and Room DAO impls are all compiler-generated branches no
+  test can take — `feature/filters/domain/model` is 2/144 across nine files with no hand-written
+  conditional in them. Rank work by missed branches in *hand-written* code, not by a package's
+  branch percentage.
 
 Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
 77 modules.
@@ -236,6 +247,20 @@ alongside your change, A/B it against a clean tree (`git stash -u`) before assum
 **Every `XApi` is an `interface XApi` + `@Single(binds = [XApi::class]) class XApiImpl`** — no
 exceptions, so any API can be faked in `:testing`. `WikiApi` was the last concrete one and was split
 in the course of testing it.
+
+**Failure-path convention: every public method of a repository impl, use case or ViewModel gets a
+test where a collaborator throws `testException`.** This is what closes the ~20-point line-vs-branch
+coverage gap — happy-path-only tests walk through a function without ever taking its `catch`, its
+`?:` or its `if`. Assert with `assertFailsWithTestException { }` (`:testing`, `TestUtils.kt`), not a
+bare `assertFailsWith<IllegalStateException>`: `testException` *is* an `IllegalStateException`, and
+so is a fake's own `error("… not set")` guard, so a bare type check passes when the test never
+reached the code it claims to cover. It also matches by message rather than identity, which a throw
+from inside an `async` child requires. Any fake the test touches needs a `…Throws` hook; add one
+while you are in the file even if this test doesn't use it.
+
+A method that *swallows* failures is the same convention pointed the other way: assert the fallback.
+`WorkItemRepositoryImpl.getWorkItems` catches API errors and reads the Room cache, so its
+failure-path test asserts the cache was read, not that anything was thrown.
 
 **Testing `expect`/`actual` code: prefer the platform whose actual is real over stubbing one out.**
 JVM is a fully supported target here — desktop runs the app for real — so `jvmTest` can exercise

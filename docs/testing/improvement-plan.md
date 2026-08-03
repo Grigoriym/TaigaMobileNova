@@ -47,11 +47,14 @@ than pushing through.
 | 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | ✅ done — 2026-08-03 |
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
-| 9 | Error-path convention + first sweep | M | ⬅ **NEXT** |
+| 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
+| 9a | Error-path sweep: rest of the repo/use-case layer | M each | ⬅ **NEXT** (one module per session) |
+| 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
-**Scope decision (2026-08-02):** tasks 0–9 — the unit / non-instrumented work — are in scope and
-should be worked straight through. **Task 10 is deferred pending a decision**, along with
+**Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
+are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
+follow-ups and inherit that scope. **Task 10 is deferred pending a decision**, along with
 everything in [Considered and deferred](#considered-and-deferred). Do not start it without asking;
 the other test *types* get decided once the unit-test work has landed.
 
@@ -60,7 +63,8 @@ Sizes: XS = minutes, S = under an hour, M = a focused session.
 Tasks 0–2 are ordered deliberately: 0 makes the reference doc trustworthy, 1 guarantees that
 anything later tasks write actually runs in CI, 2 is the highest-value single test in the plan.
 Tasks 3–7 are independent of each other and can be reordered freely. Task 8 depends on 3–7 having
-landed (the floor should be set from the improved numbers). Tasks 9 and 10 are the open-ended ones.
+landed (the floor should be set from the improved numbers). Tasks 9, 9a and 10 are the open-ended
+ones — 9a is explicitly repeatable, one module per session.
 
 ---
 
@@ -590,6 +594,83 @@ every public method, and the measured before/after branch numbers are recorded a
 
 **Finalize focus:** high — this task's output is mostly a convention, and conventions only survive
 if they land in `CLAUDE.md` and the `testing` agent.
+
+**Result (2026-08-03):** done. The convention is in `CLAUDE.md` (Testing) and in
+`.claude/agents/testing.md` as a required *Failure-path convention* section. `feature/workitem/data`
+gained 22 tests (`WorkItemRepositoryImplTest` 25 → 47) — one failure test per public method of
+`WorkItemRepositoryImpl` plus seven covering `getWorkItems`' offline / cache-fallback branch. The
+full `jvmTest`, `detekt`, `ktlintCheck` and `:koverVerify` are all green.
+
+**Measured branch delta**, `koverXmlReport`, identical denominators before and after (so this is a
+real move, not the denominator trap from task 8):
+
+| Scope | Before | After |
+|---|---|---|
+| `WorkItemRepositoryImpl` BRANCH | 11/24 — 45.8 % | **24/24 — 100 %** |
+| `WorkItemRepositoryImpl` LINE | 101/113 — 89.4 % | 112/113 — 99.1 % |
+| package `feature/workitem/data` BRANCH | 34/63 — 54.0 % | **47/63 — 74.6 %** |
+| package `feature/workitem/data` LINE | 220/267 — 82.4 % | 231/267 — 86.5 % |
+
+The residual 16 package branches are `WorkItemRemoteMediator` (0/11, no test at all) and
+`WorkItemEntityMapper` (19/24) — neither is a failure-path gap; the mediator becomes task 9b.
+
+Three things worth carrying forward:
+
+- **A bare `assertFailsWith<IllegalStateException>` is not a valid failure-path assertion here.**
+  `testException` is an `IllegalStateException`, and so is every fake's own `error("… not set")`
+  guard — so the test passes when the fake bailed out before the SUT reached the code under test.
+  Added `assertFailsWithTestException` to `:testing` `TestUtils.kt`, which matches type **and
+  message**; the message match also handles the async-copy problem task 4 found. The existing
+  `WikiRepositoryImplTest` failure tests use the bare form and are exposed to this — not changed
+  here (surgical-changes rule), but worth fixing when that file is next touched.
+- **`kotlin("test")` is now `api(...)` in `:testing`'s `commonMain`**, which is what let the helper
+  live in `:testing` at all. `:testing` is referenced only from `commonTest` (by the convention
+  plugin — no build file names it), so this cannot reach a production classpath.
+- **The 20-point line-vs-branch gap is not all missing tests.** `feature/filters/domain/model` shows
+  144 branches for nine files of `@Serializable data class` — `FiltersData` alone is 110 branches in
+  93 lines with no hand-written conditional in it. Compiler-generated `equals`/`hashCode`/
+  `copy$default`/serializer branches are a large share of the denominator, and no test will ever
+  take them. Rank sweep targets by *missed branches in hand-written code*, not by package percentage.
+
+---
+
+## Task 9a — Error-path sweep: the rest of the repository/use-case layer
+
+**Depends on:** task 9's convention. Apply it, do not re-derive it.
+
+**Why:** task 9 proved the pattern on one module. These are the modules where it buys the most,
+ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverXmlReport`):
+
+| Module | BRANCH | Note |
+|---|---|---|
+| `core/api` + `core/api/errors` | 73/164 | error handling itself — highest on-theme value |
+| `feature/projects/data` + `feature/projects/mapper` | 8/66 | repository + mappers |
+| `feature/kanban/ui` | 65/166 | ViewModel-heavy |
+| `feature/login/ui` | 27/126 | ViewModel-heavy |
+| `utils/ui` | 8/107 | `NativeText` and extensions, not repository-shaped |
+
+**Do one module per session**, recording the same before/after table task 9 recorded. Do **not**
+take the packages that top the raw missed-branch list — `core/storage/db/dao` (0/180) and
+`feature/filters/domain/model` (2/144) are Room-generated and data-class-generated branches
+respectively, and are unreachable from a test.
+
+---
+
+## Task 9b — `WorkItemRemoteMediator`
+
+**Why:** the one class in `feature/workitem/data` with **zero** coverage (0/11 branches), left
+untouched by task 9 because it is a new-coverage task, not an error-path sweep.
+
+**What the SUT does:** a Paging 3 `RemoteMediator` whose `load()` branches on `LoadType`
+(REFRESH → page 1, PREPEND → early `Success(endOfPaginationReached = true)`, APPEND → page computed
+from `state.pages`), on `taskType == UserStory` for the `sprint` parameter, and on
+`response.hasNextPage()`. `defaultTryCatch` turns any throw into `MediatorResult.Error`.
+
+**The blocker to solve first:** `load()` needs a real Ktor `HttpResponse` — `FakeWorkItemApi`'s
+`getWorkItemsPagination` is `error("not used in this test")` and cannot simply return a stub, since
+the SUT calls `.body()` and `hasNextPage()` (a header read) on it. Decide between a Ktor
+`MockEngine`-backed response and narrowing `WorkItemApi`'s return type; **write the decision into the
+test file.** This is why it is its own task.
 
 ---
 
