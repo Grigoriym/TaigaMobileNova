@@ -74,9 +74,9 @@ Key fields for commonly-used fakes:
 
 **`FakeUsersRepository`**: `getUserResult/Throws`, `getUsersListResult/Throws`, `isAnyAssignedToMeResult/Throws`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
 
-**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `bulkUpdateKanbanOrderThrows/Called`
+**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `bulkUpdateKanbanOrderThrows/Called`, plus one recorder per `bulkUpdateKanbanOrder` argument (`bulkUpdateKanbanOrderStatusId/StoryIds/SwimlaneId/AfterStoryId/BeforeStoryId`)
 
-**`FakeFiltersRepository`**: `statusesResult/Throws`, `filtersDataResult`
+**`FakeFiltersRepository`**: `statusesResult/Throws`, `filtersDataResult/Throws`, `getFiltersDataCallCount`
 
 **`FakeSwimlanesRepository`**: `getSwimlanesResult/Throws`
 
@@ -333,6 +333,14 @@ while you are in the file so the failure-path test costs nothing later.
 with `.copy(...)` behind a small local helper instead of adding parameters to `getUserStory()` &
 co. — that keeps the diff inside the test file. `GetKanbanDataUseCaseTest.story(...)` and
 `KanbanViewModelTest` both do this.
+
+**A neutral-looking default fixture can be an early-return switch.** Every `KanbanViewModelTest`
+case set `filtersRepository.filtersDataResult = FiltersData()` as inert boilerplate — but
+`FiltersData().filtersNumber` is 0, which is exactly the `if (allFilters.filtersNumber == 0) return`
+guard at the top of `computeSwimlaneFilters`. All eleven tests stopped on that line, leaving ~55
+branches of the ViewModel's largest function untouched while the file read as well covered. Before
+reusing an empty default across a file, check what the SUT *branches on* when it gets one; the same
+applies to `emptyList()`, `null` ids and zero counts.
 
 ### Repository implementation test
 ```kotlin

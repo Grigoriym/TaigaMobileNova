@@ -60,6 +60,11 @@ class FakeUserStoriesRepository : UserStoriesRepository {
 
     var bulkUpdateKanbanOrderThrows: Throwable? = null
     var bulkUpdateKanbanOrderCalled = false
+    var bulkUpdateKanbanOrderStatusId: Long? = null
+    var bulkUpdateKanbanOrderStoryIds: List<Long>? = null
+    var bulkUpdateKanbanOrderSwimlaneId: Long? = null
+    var bulkUpdateKanbanOrderAfterStoryId: Long? = null
+    var bulkUpdateKanbanOrderBeforeStoryId: Long? = null
 
     override suspend fun bulkUpdateKanbanOrder(
         statusId: Long,
@@ -69,6 +74,11 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         beforeStoryId: Long?
     ): ImmutableList<UpdatedKanbanStory> {
         bulkUpdateKanbanOrderCalled = true
+        bulkUpdateKanbanOrderStatusId = statusId
+        bulkUpdateKanbanOrderStoryIds = storyIds
+        bulkUpdateKanbanOrderSwimlaneId = swimlaneId
+        bulkUpdateKanbanOrderAfterStoryId = afterStoryId
+        bulkUpdateKanbanOrderBeforeStoryId = beforeStoryId
         bulkUpdateKanbanOrderThrows?.let { throw it }
         return persistentListOf()
     }
