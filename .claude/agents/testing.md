@@ -445,3 +445,19 @@ kotlin {
 9. **Verify with the full `./gradlew jvmTest`**, not only `:feature:x:jvmTest`. Gotcha 7 is invisible
    to the module task. For an intermittent failure, one green run is not evidence — re-run, and
    establish the before-state failure rate.
+
+10. **Never assert a failure by exception identity when the throw happened inside `async` /
+    `coroutineScope`.** On JVM, kotlinx-coroutines' stack-trace recovery rethrows a **copy** of the
+    exception with the original as its `cause`, so `assertEquals(testException, result.exceptionOrNull())`
+    fails — with the maximally confusing message `expected: …<IllegalStateException: error> but was:
+    …<IllegalStateException: error>`. Assert by type and message instead, which is also the portable
+    form (Native does no recovery):
+
+    ```kotlin
+    val exception = assertIs<IllegalStateException>(result.exceptionOrNull())
+    assertEquals(testException.message, exception.message)
+    ```
+
+    This bites every `resultOf { coroutineScope { async … } }` use case — `GetProfileDataUseCase`,
+    `GetKanbanDataUseCase`, the dashboard ones. `assertTrue(result.isFailure)` dodges it but proves
+    less; prefer the two lines above. Worked example: `GetProfileDataUseCaseTest`.

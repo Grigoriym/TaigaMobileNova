@@ -15,7 +15,10 @@ two tasks in your head at once.
 3. Do it. Verify with the task's own `Done when` commands — not by eyeballing.
 4. **Update the status table**: set this task to `✅ done — <date>`, and move the `⬅ NEXT` marker
    to the task that follows. Add a `**Result (<date>):**` note to the task's own section saying
-   what actually happened — especially anything that differed from the description.
+   what actually happened — especially anything that differed from the description. Append the note
+   *above* the next task's `---` separator and re-read the boundary afterwards — a result note that
+   swallows the following `## Task N` heading makes step 2 impossible to follow (this happened to
+   task 4).
 5. Run the **`finalize` skill**. Each task lists a *Finalize focus* — the thing most likely worth
    capturing — but that is a hint, not a substitute for the skill's own harvest step.
 
