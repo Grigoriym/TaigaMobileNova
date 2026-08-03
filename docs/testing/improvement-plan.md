@@ -21,6 +21,11 @@ two tasks in your head at once.
    task 4).
 5. Run the **`finalize` skill**. Each task lists a *Finalize focus* — the thing most likely worth
    capturing — but that is a hint, not a substitute for the skill's own harvest step.
+6. **Commit and push.** Standing authorization (gregory, 2026-08-03) — do not ask, and do not stop
+   after finalize waiting to be told. Finalize runs *before* the commit so its CLAUDE.md/doc edits
+   land alongside the work that taught them. Three limits: never commit a red build (step 3 is a
+   precondition, not a parallel task), never push to `dev`, and ask before anything beyond
+   commit+push — PRs, force-pushes, rebases.
 
 Step 4 is what makes the next cold start work. A session that does the work and skips the table
 leaves the plan lying about where things stand.
