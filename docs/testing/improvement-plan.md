@@ -44,8 +44,8 @@ than pushing through.
 | 3 | `WikiRepositoryImpl` + `FakeWikiApi` | S | ✅ done — 2026-08-02 |
 | 4 | `GetProfileDataUseCase` | XS | ✅ done — 2026-08-03 |
 | 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | ✅ done — 2026-08-03 |
-| 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | ⬅ **NEXT** |
-| 7 | `TeamViewModel` | S | todo |
+| 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | ✅ done — 2026-08-03 |
+| 7 | `TeamViewModel` | S | ⬅ **NEXT** |
 | 8 | Coverage floor in CI (`koverVerify`) | S | todo — blocked on 3–7 |
 | 9 | Error-path convention + first sweep | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -409,6 +409,43 @@ than no test. Pin explicitly rather than relying on the machine default.
 **Finalize focus:** the platform-actual testing decision generalises — it is the same question Task
 2 hits and the same one any future `expect/actual` test will hit. Route it to `CLAUDE.md` or the
 `testing` agent, not just to this plan.
+
+**Result (2026-08-03):** done. 29 tests across three files —
+`DateTimeUtilsImplTest` (16) and `KotlinxDateTimeFormatterTest` (7) in `commonTest`,
+`KotlinxDateTimeFormatterJvmTest` (6) in `jvmTest`. `:utils:formatter:datetime:jvmTest`, the full
+`jvmTest` and `detekt` are all green, and the module's tests also pass under
+`TZ=Asia/Tokyo … --rerun-tasks`. No new fakes, so `:testing` and `.claude/agents/testing.md` were
+untouched. No bug found — the code is correct as written.
+
+**The split that resolved the platform question:** `DateTimeUtilsImpl`'s epoch/ISO half is pure
+`commonMain`, so it is tested in `commonTest`; the medium-format half is only a delegation to the
+`expect` functions, and `commonTest` asserts nothing more than *that the delegation happens*
+(`sut.formatToMediumFormat(d) == KotlinxDateTimeFormatter().formatMediumDate(d)`). Everything about
+what the medium format actually *looks* like lives in `jvmTest`, whose KDoc states plainly that it
+covers the JVM actual, covers Android's by proxy (byte-for-byte the same `java.time` code) and
+**does not cover iOS's `NSDateFormatter` actual at all**.
+
+Two things worth carrying forward:
+
+- **TZ-independence is asserted by hard-coded UTC epoch constants, not by manipulating the zone.**
+  `retrieveEpochMillisAtStartOfDay(2024-01-15) == 1705276800000` only holds if the SUT uses
+  `TimeZone.UTC`; run the suite under any `TZ` and it stays true. Two `fromMillisToLocalDate` cases
+  pick instants near the ends of the UTC day (23:30Z and 00:30Z) so that a switch to the system zone
+  would land on a different calendar date in Tokyo / Honolulu respectively. That is cheaper and more
+  honest than `TimeZone.setDefault`.
+- **Locale is the harder axis, and it cannot be pinned from a test.** The JVM/Android actuals hold
+  `DateTimeFormatter.ofLocalizedDate(MEDIUM)` in a *private top-level `val`*, which bakes in
+  `Locale.getDefault(FORMAT)` at class-initialisation time — before any `@BeforeTest` can run, and
+  in an order no test controls. So the JVM test asserts only locale-independent properties (day,
+  month and year each change the output; time-of-day never does; the default zone never does) plus
+  equality with a JDK formatter built from the *same* default locale. Those properties were verified
+  by hand across en-US, de-DE, ja-JP, sv-SE, th-TH, ar-EG and hu-HU before being relied on.
+
+Note for anyone trying to vary the locale of a Gradle test run: **`LANG` / `LC_ALL` /
+`JAVA_TOOL_OPTIONS` / `-Dorg.gradle.jvmargs` all failed to move it** on this machine — the workers
+stayed `en_US` even with a fresh daemon. `TZ`, by contrast, propagates to the forked test JVM
+correctly (verified with a throwaway probe test). Do not assume a locale override took effect
+without probing it.
 
 ---
 

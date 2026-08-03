@@ -19,6 +19,7 @@ first, then work this list. Nothing here is urgent; nothing here is forgotten.
 | 4 | Dead `koin-test` block in `:testing` `androidMain` | XS | improvement-plan task 2 |
 | 5 | `tools/seed` and `tools/utils` tests would not run in CI | XS | improvement-plan task 1 |
 | 6 | `GetKanbanDataUseCase` reads the current project three times | XS | improvement-plan task 5 |
+| 7 | Date formatters cache the locale for the process lifetime | S | improvement-plan task 6 |
 
 ---
 
@@ -129,3 +130,28 @@ verifies it. The tests now in place make the change safe to do next.
 
 **Not a correctness bug**, just three DB reads per board load. The fix is a few lines: await the
 project once and read `myPermissions` off it.
+
+## 7. Date formatters cache the locale for the process lifetime
+
+**What:** all three actuals of `platformFormatMediumDate` hold their formatter in a **private
+top-level `val`**, so it is built once per process from whatever locale was current at
+class-initialisation time and never rebuilt:
+
+- `utils/formatter/datetime/src/androidMain/.../PlatformDateTimeFormat.android.kt:12`
+- `utils/formatter/datetime/src/jvmMain/.../KotlinxDateTimeFormatter.jvm.kt:10`
+- `utils/formatter/datetime/src/iosMain/.../KotlinxDateTimeFormatter.ios.kt:12` (`NSDateFormatter`,
+  same shape)
+
+Changing the system language does not kill the app process on Android or iOS — activities are
+recreated, the process survives — so every date on screen keeps rendering in the **previous**
+language until the process is killed. Building the formatter inside the function (or caching it
+against the current locale) fixes it; `DateTimeFormatter.ofLocalizedDate` is cheap, and
+`NSDateFormatter` can key its cache on `NSLocale.currentLocale`.
+
+**Why deferred:** found while writing `KotlinxDateTimeFormatterJvmTest` (improvement-plan task 6),
+a test-only task. The app has no in-app language switcher today, so the only trigger is a system
+language change, which makes it low-severity rather than invisible.
+
+**Watch for:** this is also *why* the JVM test cannot pin a locale — the `val` is initialised before
+any `@BeforeTest` can run. Fixing this would make an exact-rendering test possible, which is the
+cheapest way to prove the fix.

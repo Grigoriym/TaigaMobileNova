@@ -227,7 +227,13 @@ platform-backed code (Room, DataStore, Ktor/OkHttp) with nothing faked, which `c
 Put such a test in `jvmTest` and **state in the test file which platform's behaviour is being
 asserted**, because the Android and iOS actuals stay uncovered. `KoinGraphTest`
 (`composeApp/src/jvmTest/`) is the worked example — see [docs/koin/koin-graph-test.md](docs/koin/koin-graph-test.md),
-including the wiring it deliberately cannot check.
+including the wiring it deliberately cannot check. `KotlinxDateTimeFormatterJvmTest` is the smaller
+one: `commonTest` proves the delegation happens, `jvmTest` proves what the JVM actual produces.
+
+Where behaviour depends on the environment (time zone, locale), **assert a fixed expectation rather
+than mutating the global default** — and if you claim a test passes under a changed environment,
+prove the change reached the forked test JVM. `TZ` does; `LANG`, `LC_ALL` and `JAVA_TOOL_OPTIONS`
+do not. The `testing` agent's gotcha 11 has the details.
 
 ## Skills & Agents
 

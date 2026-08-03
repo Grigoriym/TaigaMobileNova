@@ -481,3 +481,23 @@ kotlin {
     This bites every `resultOf { coroutineScope { async … } }` use case — `GetProfileDataUseCase`,
     `GetKanbanDataUseCase`, the dashboard ones. `assertTrue(result.isFailure)` dodges it but proves
     less; prefer the two lines above. Worked example: `GetProfileDataUseCaseTest`.
+
+11. **Environment-dependent code: assert a fixed expectation, don't mutate the global default.**
+    A test that proves "this uses UTC" by hard-coding `1705276800000L` for `2024-01-15` holds under
+    every `TZ`; one that proves it with `TimeZone.setDefault` leaks global state into whichever test
+    runs next. Pick inputs where the two behaviours actually diverge — instants at 23:30Z and 00:30Z
+    land on a different calendar date in Tokyo / Honolulu, so a switch from UTC to the system zone
+    cannot pass. Worked example: `DateTimeUtilsImplTest`.
+
+    **Locale cannot be pinned from a test at all** when the production code holds its formatter in a
+    top-level or companion `val` — that captures `Locale.getDefault(FORMAT)` at class-init, before
+    any `@BeforeTest` runs, in an order no test controls (`KotlinxDateTimeFormatter.jvm.kt` is the
+    live case). Assert locale-*independent* properties instead: which fields change the output,
+    which do not.
+
+    And **`TZ=… ./gradlew …` does reach the forked test JVM, but `LANG` / `LC_ALL` /
+    `JAVA_TOOL_OPTIONS` / `-Dorg.gradle.jvmargs=-Duser.language=…` do not move the workers' locale**
+    — all four were tried and the workers stayed `en_US`, even after `./gradlew --stop`. Before
+    claiming a test passes under a changed environment, prove the change arrived: add a throwaway
+    test asserting `TimeZone.getDefault().id` / `Locale.getDefault(FORMAT)` against a wrong value and
+    read the failure message.
