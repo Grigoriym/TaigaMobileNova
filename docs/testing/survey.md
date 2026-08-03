@@ -242,11 +242,40 @@ through rather than deleted so the baseline stays readable.
 | ~~`feature/wiki/data`~~ | ~~`WikiRepositoryImpl`~~ — closed by plan task 3 |
 | ~~`feature/kanban/domain`~~ | ~~`GetKanbanDataUseCase`~~ — closed by plan task 5 |
 | ~~`feature/profile/domain`~~ | ~~`GetProfileDataUseCase`~~ — closed by plan task 4 |
-| `utils/formatter/datetime` | `DateTimeUtilsImpl`, `KotlinxDateTimeFormatter` (+ 3 platform actuals) |
+| ~~`utils/formatter/datetime`~~ | ~~`DateTimeUtilsImpl`, `KotlinxDateTimeFormatter`~~ — closed by plan task 6; the iOS actual stays uncovered |
 | `utils/formatter/decimal` | platform actuals |
-| `feature/teams/ui` | `TeamViewModel` — the last untested ViewModel; every sibling `ui` module has tests |
+| ~~`feature/teams/ui`~~ | ~~`TeamViewModel`~~ — closed by plan task 7. **The "last untested ViewModel" claim was wrong** — see below |
 | `core/navigation` | — |
 | `uikit` | excluded from Kover aggregation entirely |
+
+**Twelve ViewModels are still untested** (found 2026-08-03 while closing task 7, which the table
+above wrongly called "the last untested ViewModel" — the original survey only walked the modules it
+had flagged, not every `*ViewModel.kt`). Re-derive with:
+
+```bash
+for f in $(grep -rl "ViewModel(" --include="*ViewModel.kt" feature composeApp | grep -v "/build/"); do
+  n=$(basename $f .kt)
+  find . -name "${n}Test.kt" -not -path "*/build/*" | grep -q . || echo "$f"
+done
+```
+
+| Module | ViewModel | Lines |
+|---|---|---|
+| `feature/settings/ui` | `SettingsViewModel` | 28 |
+| `feature/settings/ui` | `SettingsAboutScreenViewModel` | 28 |
+| `feature/settings/ui` | `SettingsUserScreenViewModel` | 57 |
+| `feature/settings/ui` | `SettingsInterfaceViewModel` | 72 |
+| `feature/settings/ui` | `ProjectDetailsViewModel` | 120 |
+| `feature/settings/ui` | `ModulesViewModel` | 127 |
+| `feature/settings/ui` | `ProjectValuesViewModel` | 177 |
+| `feature/scrum/ui` | `ScrumClosedSprintsViewModel` | 14 |
+| `feature/workitem/ui` | `EditDescriptionViewModel` | 72 |
+| `feature/workitem/ui` | `EditSprintViewModel` | 143 |
+| `feature/workitem/ui` | `WorkItemEditTagsViewModel` | 223 |
+| `composeApp` | `CreateTaskViewModel` | 117 |
+
+`feature/settings/ui` is the concentration — 7 of the 12. No plan task covers these; they are not
+sequenced anywhere yet.
 
 Structural gaps, independent of any module:
 
@@ -283,3 +312,12 @@ Two lessons, both of which apply to this file going forward:
 2. **Re-derive counts before citing them.** The figures in this document are re-verified as of
    2026-08-02, but the commands that produce them are cheap — run them rather than trusting the
    table.
+
+A third lesson, added 2026-08-03 while closing plan task 7:
+
+3. **A gap table is only as complete as the sweep that produced it.** This file called
+   `TeamViewModel` "the last untested ViewModel"; enumerating every `*ViewModel.kt` and looking for a
+   matching `*Test.kt` found twelve more (see [Gaps](#gaps)). The original pass inspected the modules
+   it had already flagged instead of the whole set, so the *absence* of a row meant nothing. Any
+   "this is the last X" claim in this document should be re-derived by a mechanical sweep before it
+   is relied on.

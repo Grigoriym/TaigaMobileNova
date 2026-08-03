@@ -45,8 +45,8 @@ than pushing through.
 | 4 | `GetProfileDataUseCase` | XS | ✅ done — 2026-08-03 |
 | 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | ✅ done — 2026-08-03 |
 | 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | ✅ done — 2026-08-03 |
-| 7 | `TeamViewModel` | S | ⬅ **NEXT** |
-| 8 | Coverage floor in CI (`koverVerify`) | S | todo — blocked on 3–7 |
+| 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
+| 8 | Coverage floor in CI (`koverVerify`) | S | ⬅ **NEXT** (3–7 have landed) |
 | 9 | Error-path convention + first sweep | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -463,6 +463,31 @@ names, `internal class`. `WikiCreatePageViewModelTest` is the canonical example.
 load, and the error path.
 
 **Finalize focus:** low.
+
+**Result (2026-08-03):** done. 7 tests in `TeamViewModelTest` — initial state, the init-load success
+and failure paths, the `generateMemberStats = true` argument, and three refresh cases (reload,
+error-cleared-by-a-later-success, failure-keeps-previously-loaded-members).
+`:feature:teams:ui:jvmTest`, the full `jvmTest` and `detekt` are all green. No build-file change was
+needed — the convention plugin already puts `:testing` on every module's `commonTest` classpath.
+
+`FakeUsersRepository` gained `getTeamMembersCallCount` and `getTeamMembersGenerateMemberStats`
+recorders (`.claude/agents/testing.md` updated); nothing else in `:testing` was touched.
+
+**The task's premise was wrong: `TeamViewModel` was not "the last untested ViewModel" — 12 others
+have no test.** The original survey walked only the modules it had already flagged rather than
+enumerating every `*ViewModel.kt`. The full list, with the one-liner that re-derives it, is now in
+[survey.md](survey.md#gaps); 7 of the 12 are in `feature/settings/ui`. **No task in this
+plan covers them** — that is an open decision, not an oversight to fix inside task 8.
+
+Two notes for anyone testing an init-loading ViewModel:
+
+- `MainDispatcherRule` uses `UnconfinedTestDispatcher`, so the `init` block's `viewModelScope.launch`
+  has already completed by the time `createViewModel()` returns. There is no way to observe
+  `isLoading = true` from the outside, and an "initial state" test really asserts the *post-load*
+  state. The test file says so in a comment rather than implying otherwise.
+- Unlike most ViewModels here, `TeamViewModel` has no `SnackbarDelegate` — the failure path only
+  writes `error` into state, so no turbine `snackBarMessage.test { }` dance is needed to let the
+  coroutine finish (contrast `WikiPagesViewModelTest`).
 
 ---
 
