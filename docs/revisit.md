@@ -18,6 +18,7 @@ first, then work this list. Nothing here is urgent; nothing here is forgotten.
 | 3 | Wiki mapper tests duplicate the new shared DTO factories | XS | improvement-plan task 3 |
 | 4 | Dead `koin-test` block in `:testing` `androidMain` | XS | improvement-plan task 2 |
 | 5 | `tools/seed` and `tools/utils` tests would not run in CI | XS | improvement-plan task 1 |
+| 6 | `GetKanbanDataUseCase` reads the current project three times | XS | improvement-plan task 5 |
 
 ---
 
@@ -112,3 +113,19 @@ slow CI down for zero current benefit.
 
 **Trigger:** the moment anyone adds a test under `tools/`, add a `./gradlew :tools:seed:test` step to
 `.github/workflows/code_analysis.yml`. Worth doing pre-emptively if `tools/` grows.
+
+## 6. `GetKanbanDataUseCase` reads the current project three times
+
+**What:** `GetKanbanDataUseCaseImpl.getData` (`feature/kanban/domain/.../GetKanbanDataUseCase.kt:44-86`)
+already has `projectsRepository.getCurrentProjectSimple()` in flight as `async`, then calls
+`getPermissions()` twice more at lines 81-82 — and `ProjectsRepositoryImpl.getPermissions()` is
+literally `getCurrentProjectSimple().myPermissions`
+(`feature/projects/data/.../ProjectsRepositoryImpl.kt:92`). So one kanban load performs three reads
+of the same row where one would do. Both permission flags are derivable from `project.await()`.
+
+**Why deferred:** noticed while writing `GetKanbanDataUseCaseTest` (improvement-plan task 5), which
+is a test-only task — changing the use case would have mixed a behaviour change into the diff that
+verifies it. The tests now in place make the change safe to do next.
+
+**Not a correctness bug**, just three DB reads per board load. The fix is a few lines: await the
+project once and read `myPermissions` off it.

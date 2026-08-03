@@ -233,11 +233,15 @@ silently. The `jvmTest` step now covers `:testing` and `:uikit`; the `tools/*` m
 holders and `domain` modules are often just interfaces plus models. The ones with actual untested
 logic:
 
+This table is a **baseline snapshot**, not a live status — the
+[improvement plan](improvement-plan.md) is where "still open?" is answered. Closed rows are struck
+through rather than deleted so the baseline stays readable.
+
 | Module | What's untested |
 |---|---|
-| `feature/wiki/data` | `WikiRepositoryImpl` — the only repository impl in the project without a test |
-| `feature/kanban/domain` | `GetKanbanDataUseCase` |
-| `feature/profile/domain` | `GetProfileDataUseCase` |
+| ~~`feature/wiki/data`~~ | ~~`WikiRepositoryImpl`~~ — closed by plan task 3 |
+| ~~`feature/kanban/domain`~~ | ~~`GetKanbanDataUseCase`~~ — closed by plan task 5 |
+| ~~`feature/profile/domain`~~ | ~~`GetProfileDataUseCase`~~ — closed by plan task 4 |
 | `utils/formatter/datetime` | `DateTimeUtilsImpl`, `KotlinxDateTimeFormatter` (+ 3 platform actuals) |
 | `utils/formatter/decimal` | platform actuals |
 | `feature/teams/ui` | `TeamViewModel` — the last untested ViewModel; every sibling `ui` module has tests |

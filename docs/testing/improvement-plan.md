@@ -43,8 +43,8 @@ than pushing through.
 | 2 | Koin DI graph test | M | ✅ done — 2026-08-02 |
 | 3 | `WikiRepositoryImpl` + `FakeWikiApi` | S | ✅ done — 2026-08-02 |
 | 4 | `GetProfileDataUseCase` | XS | ✅ done — 2026-08-03 |
-| 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | ⬅ **NEXT** |
-| 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | todo |
+| 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | ✅ done — 2026-08-03 |
+| 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | ⬅ **NEXT** |
 | 7 | `TeamViewModel` | S | todo |
 | 8 | Coverage floor in CI (`koverVerify`) | S | todo — blocked on 3–7 |
 | 9 | Error-path convention + first sweep | M | todo |
@@ -352,6 +352,35 @@ and `.claude/agents/testing.md` lists `FakeSwimlanesRepository`.
 `investigate-issue` skill, not into a silent fix. `docs/architecture/kanban-filters.md` already
 covers the three swimlane modes; check it against what the tests prove and correct it if they
 disagree.
+
+**Result (2026-08-03):** done. 21 tests in `GetKanbanDataUseCaseTest`, covering all three
+`buildSwimlanesWithUnclassified` branches, all four default-swimlane paths plus the no-swimlanes
+case, `getData` assembly (kanban-order sort, permission flags, pass-through of statuses/members,
+grouping through the selected swimlane), a failure test per repository (5), and
+`computeStoriesByStatus` driven directly for the three swimlane modes, status keying and assignee
+resolution. `:feature:kanban:domain:jvmTest`, the full `jvmTest` and `detekt` are all green.
+
+**No behaviour bug was found** — the task expected one. `docs/architecture/kanban-filters.md` matches
+what the tests prove; no correction needed. The one real problem found is an efficiency issue, filed
+as [revisit #6](../revisit.md#6-getkanbandatausecase-reads-the-current-project-three-times): `getData`
+reads the current project three times (once as `async`, twice more via `getPermissions()`, which is
+just `getCurrentProjectSimple().myPermissions`).
+
+Two things differed from the task description:
+
+- **The model factories did not need widening.** `getUserStory()` takes only `id`/`version`, but
+  `UserStory` and `Swimlane` are data classes, so the test uses `.copy(swimlane = …, kanbanOrder = …,
+  status = …, assignedUserIds = …)` via a local `story(...)` helper — the same style
+  `KanbanViewModelTest` already uses. Keeping `:testing`'s factories untouched was the smaller diff.
+- **Three fakes needed hooks, not just the one new fake.** Besides `FakeSwimlanesRepository`,
+  `FakeUserStoriesRepository.getUserStories`, `FakeProjectsRepository.getCurrentProjectSimple`
+  (both were `error("not used in this test")`) and `FakeFiltersRepository.getStatuses` (no throw
+  hook) had to gain result/throws fields. **Budget for this on any use-case task**: a use case fans
+  out across 4-5 repositories, and the odds that every one of them is already faked to the depth you
+  need are low.
+
+The `withContext(Dispatchers.Default)` warning in the task turned out to be a non-issue: `runTest`
+awaits the suspend call on the real dispatcher without any special handling.
 
 ---
 
