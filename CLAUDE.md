@@ -232,9 +232,15 @@ tests, not a smaller bound. Four traps when touching those numbers:
   between them.** Clean tree → 821 classes, 62.00 % line / 43.49 % branch. Any build-file change
   (even one unused line in `libs.versions.toml`) → 742 classes, 71.96 % / 50.37 %, which is the
   run where the `excludes` block is applied in full. Neither cache is responsible — `--no-build-cache`
-  and `--no-configuration-cache` on a clean tree both still give 821. **So make the build-file change
-  first, then take the baseline**, or the two measurements straddle the flip and differ by ~2000
-  lines. CI always sees the 742 behaviour, because a fresh checkout re-executes everything.
+  and `--no-configuration-cache` on a clean tree both still give 821. Make the build-file change
+  first, then take the baseline, or the two measurements straddle the flip and differ by ~2000 lines.
+  CI always sees the 742 behaviour, because a fresh checkout re-executes everything.
+  **The reliable guard is not the ordering rule but the class count: print
+  `len(root.findall('.//class'))` next to every coverage figure you record.** 821 vs 742 says which
+  side of the flip a run is on in one number, works even when the build change arrives midway through
+  a task, and does not depend on the trigger above being a complete description — it was found by
+  bisection, and the *mechanism* is still unknown, so treat it as a symptom to detect rather than a
+  law to rely on.
 - **A class excluded by name shows no movement however well you test it.** The `excludes` block
   filters by suffix — `**.*Plugin`, `**.*Module`, `**.*Repository`, `**.*Api`, `**.*Screen` … — which
   in `core/api` drops all five Ktor plugins, i.e. ~98 lines and 38 branches of real auth and
