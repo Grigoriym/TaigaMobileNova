@@ -39,8 +39,8 @@ than pushing through.
 | 1 | Close the "tests that never run in CI" trap | S | ✅ done — 2026-08-02 |
 | 2 | Koin DI graph test | M | ✅ done — 2026-08-02 |
 | 3 | `WikiRepositoryImpl` + `FakeWikiApi` | S | ✅ done — 2026-08-02 |
-| 4 | `GetProfileDataUseCase` | XS | ⬅ **NEXT** |
-| 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | todo |
+| 4 | `GetProfileDataUseCase` | XS | ✅ done — 2026-08-03 |
+| 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | ⬅ **NEXT** |
 | 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | todo |
 | 7 | `TeamViewModel` | S | todo |
 | 8 | Coverage floor in CI (`koverVerify`) | S | todo — blocked on 3–7 |
@@ -272,6 +272,10 @@ rule); they can adopt the shared factories whenever they are next touched. `:tes
 both a happy path and a propagate-the-error test — this is the Task 9 convention applied early, on a
 file small enough that it cost nothing.
 
+---
+
+## Task 4 — `GetProfileDataUseCase`
+
 **Why:** smallest remaining gap; a good warm-up task.
 
 **Scope:** `feature/profile/domain/src/commonTest/…/GetProfileDataUseCaseTest.kt`.
@@ -288,6 +292,24 @@ needed; this task should not touch `:testing` at all.
 per-dependency failure cases.
 
 **Finalize focus:** low. Likely an empty finalize — that is a valid outcome, say so and stop.
+
+**Result (2026-08-03):** done. 5 tests in `GetProfileDataUseCaseTest` — success assembly, the
+empty-projects case, and one failure test per dependency (`getUser`, `getUserStats`,
+`getUserProjects`). `:feature:profile:domain:jvmTest`, the full `jvmTest` and `detekt` are all green.
+`:testing` was untouched as the task specified; both fakes already carried the `…Throws` hooks.
+
+Also fixed while here: this section had **no `## Task 4 —` heading at all** — Task 3's result ran
+straight into Task 4's `**Why:**`, so "read only that task's section" was impossible to follow.
+
+One thing worth carrying forward, and the reason this XS task was not a no-op finalize:
+**`assertEquals(testException, result.exceptionOrNull())` does not hold when the throw happens inside
+an `async` child.** On JVM, kotlinx-coroutines' stack-trace recovery rethrows a *copy* of the
+exception with the original as its `cause`, so identity and equality both fail while the failure
+message reads confusingly as `expected: …<IllegalStateException: error> but was:
+…<IllegalStateException: error>`. Assert by type + message instead (`assertIs<T>` +
+`assertEquals(testException.message, …)`) — that is also the portable choice, since Native does not
+do the recovery. `assertTrue(result.isFailure)`, which the dashboard use-case tests use, sidesteps
+the issue but proves less.
 
 ---
 
