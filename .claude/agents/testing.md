@@ -114,7 +114,8 @@ Key fields for commonly-used fakes:
 | `FakeIssuesApi` | `IssuesApi` |
 | `FakeUsersApi` | `UsersApi` |
 | `FakeSwimlanesApi` | `SwimlanesApi` |
-| `FakeProjectsApi` | `ProjectsApi` |
+| `FakeProjectsApi` | `ProjectsApi` — `errorToThrow`; `getProjectsCalls`, `getProjectDetailCalls`, `updateProjectCalls`, `updateModulesCalls`, `*TagCalls` |
+| `FakeProjectValuesApi` | `ProjectValuesApi` — `errorToThrow`; `getProjectValuesCalls`, `createProjectValueCalls`, `updateProjectValueCalls`, `deleteProjectValueCalls` |
 | `FakeTasksApi` | `TasksApi` |
 | `FakeAuthApi` | `AuthApi` |
 | `FakeSprintsApi` | `SprintsApi` |
@@ -139,7 +140,7 @@ Key fields for commonly-used fakes:
 
 | Fake | Interface |
 |------|-----------|
-| `FakeProjectDao` | `ProjectDao` |
+| `FakeProjectDao` | `ProjectDao` — `errorToThrow`; `projectsById`, `insertCalls`, plus `projectFlowsById` / `getProjectByIdFlowCalls` for `getProjectByIdFlow` |
 | `FakeSprintDao` | `SprintDao` |
 | `FakeWorkItemDao` | `WorkItemDao` — `workItemsByProjectIdAndType/AndSprint`, `getByProjectIdAndTypeCalls/AndSprintCalls`, `insertAllCalls` |
 
@@ -170,7 +171,7 @@ All in package `com.grappim.taigamobile.testing.models`:
 |------|-----------|
 | `UserFakes` | `getUserDTO()`, `getUser()`, `getTeamMember(...)`, `getProjectMemberDTO()` |
 | `WorkItemFakes` | `getWorkItem(...)` and variants |
-| `ProjectFakes` | `getProject()`, `getProjectDTO()`, `getProjectExtraInfoDTO()` |
+| `ProjectFakes` | `getProject()`, `getProjectDTO()`, `getProjectDetailDTO()`, `getProjectEntity()`, `getProjectSimple()`, `getProjectExtraInfoDTO()`, `getProjectValueItemDTO()` |
 | `SprintFakes` | `getSprint()` and variants |
 | `EpicFakes` | `getEpic()` and variants |
 | `TaskFakes` | `getTask()`, `getTaskDetailsData(...)` |

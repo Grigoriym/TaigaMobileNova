@@ -10,6 +10,7 @@ import com.grappim.taigamobile.testing.utils.getRandomBoolean
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -47,6 +48,24 @@ class ProjectMapperTest {
         assertEquals(dto.isIssuesActivated, result.isIssuesActivated)
         assertEquals(dto.isWikiActivated, result.isWikiActivated)
         assertEquals(dto.defaultSwimlane, result.defaultSwimlane)
+    }
+
+    /**
+     * The DTO→domain permission `when` has one arm per enum constant and no `else`, so the only way
+     * to cover it — and to catch a new constant being mapped to the wrong domain value — is to run
+     * every entry through it. Both enums declare their constants in the same order, which is what
+     * the name equality below relies on.
+     */
+    @Test
+    fun `toProject should map every permission constant to the same-named domain constant`() {
+        val dto = getProjectDTO().copy(myPermissions = TaigaPermissionDTO.entries.toPersistentList())
+
+        val result = sut.toProject(dto)
+
+        assertEquals(TaigaPermissionDTO.entries.size, result.myPermissions.size)
+        TaigaPermissionDTO.entries.forEachIndexed { index, permissionDto ->
+            assertEquals(permissionDto.name, result.myPermissions[index].name)
+        }
     }
 
     @Test
