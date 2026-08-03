@@ -19,8 +19,12 @@ class FakeUsersRepository : UsersRepository {
 
     var getTeamMembersResult: ImmutableList<TeamMember> = persistentListOf()
     var getTeamMembersThrows: Throwable? = null
+    var getTeamMembersCallCount: Int = 0
+    var getTeamMembersGenerateMemberStats: Boolean? = null
 
     override suspend fun getTeamMembers(generateMemberStats: Boolean): ImmutableList<TeamMember> {
+        getTeamMembersCallCount++
+        getTeamMembersGenerateMemberStats = generateMemberStats
         getTeamMembersThrows?.let { throw it }
         return getTeamMembersResult
     }

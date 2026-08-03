@@ -70,7 +70,7 @@ Key fields for commonly-used fakes:
 
 **`FakeIssuesRepository`**: `getIssueResult/Throws`
 
-**`FakeUsersRepository`**: `getUserResult`, `getUsersListResult`, `isAnyAssignedToMeResult`, `getTeamMembersResult/Throws`, `getUserStatsResult/Throws`
+**`FakeUsersRepository`**: `getUserResult`, `getUsersListResult`, `isAnyAssignedToMeResult`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
 
 **`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `bulkUpdateKanbanOrderThrows/Called`
 
