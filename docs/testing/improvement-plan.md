@@ -48,7 +48,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Error-path sweep: rest of the repo/use-case layer | M each | 🔁 in progress — `core/api` ✅ 2026-08-03; ⬅ **NEXT** module: `feature/projects/data` |
+| 9a | Error-path sweep: rest of the repo/use-case layer | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03; ⬅ **NEXT** module: re-derive the ranking, then take `feature/kanban/ui` or `feature/login/ui` |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -643,8 +643,8 @@ ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverX
 
 | Module | BRANCH | Note |
 |---|---|---|
-| `core/api` + `core/api/errors` | 73/164 | error handling itself — highest on-theme value |
-| `feature/projects/data` + `feature/projects/mapper` | 8/66 | repository + mappers |
+| ~~`core/api` + `core/api/errors`~~ | 73/164 | ✅ done 2026-08-03 |
+| ~~`feature/projects/data` + `feature/projects/mapper`~~ | 8/66 | ✅ done 2026-08-03 — now 66/66 |
 | `feature/kanban/ui` | 65/166 | ViewModel-heavy |
 | `feature/login/ui` | 27/126 | ViewModel-heavy |
 | `utils/ui` | 8/107 | `NativeText` and extensions, not repository-shaped |
@@ -653,8 +653,10 @@ ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverX
 class the `excludes` block names, so each row counts branches no test can ever move — `core/api`'s
 164 is really 126 once the five Ktor plugins are dropped, and the `feature/*/ui` rows include
 `*Screen` and `*Widget` classes for the same reason. **Re-derive the table from a 742-class report**
-(any run with a build-file change present — see the `core/api` notes below) before picking the next
-module, and drop from consideration anything whose class name ends in an excluded suffix.
+before picking the next module, and drop from consideration anything whose class name ends in an
+excluded suffix. There is no known way to *force* a 742 run — the `core/api` notes below guessed
+"make a build-file change first", and the `feature/projects/data` session disproved that. Print the
+class count, and if you get a high one, fall back to diffing per-package denominators.
 
 **Do one module per session**, recording the same before/after table task 9 recorded. Do **not**
 take the packages that top the raw missed-branch list — `core/storage/db/dao` (0/180) and
@@ -702,12 +704,14 @@ not done here.
   `MockEngine`: install the plugin on a `HttpClient(MockEngine { … })` and read the *final*
   `HttpRequestData` from the engine lambda to see what the plugin rewrote. `HttpSend.intercept` is
   not reachable any other way.
-- **`koverXmlReport` has two stable outputs and a build-file change flips between them** — 821
-  classes / 62.00 % on a clean tree, 742 / 71.96 % once any build script changes, because the
-  `excludes` are only applied in full in the second. A baseline taken before editing
-  `build.gradle.kts` is therefore *not* comparable with the after-run; this cost most of a session.
-  Full reproduction in [revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify).
-  Take both measurements with a build-file change present and check the denominators match.
+- **`koverXmlReport` flips between two class universes and the trigger is unknown** — 821 classes /
+  62.00 % here, 742 / 71.96 % after a build-script edit, because the `excludes` are only applied in
+  full in the second. A baseline and an after-run on opposite sides are *not* comparable; this cost
+  most of a session. Full reproduction in
+  [revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify).
+  ⚠️ The rule this note originally gave — "take both measurements with a build-file change present" —
+  **was disproved** by the `feature/projects/data` session below, which saw a third value (854) with
+  no build file touched. Print the class count and compare package denominators instead.
 - **The fakes are local to the module, not in `:testing`.** `CoreApiFakes.kt` holds
   `FakeAppInfoProvider`, `FakeBaseUrlProvider` and `FakeTokenRefresher`; hosting them in `:testing`
   would make it depend on `:core:api`, which everything else already depends on. `.claude/agents/testing.md`
@@ -718,6 +722,56 @@ Two behaviour findings came out of it, both deferred:
 [revisit #11](../revisit.md#11-tokenrefreshplugins-max_retries-guard-is-unreachable) (the plugin's
 retry cap can never fire, because `execute()` does not re-enter its own interceptor) and
 [revisit #12](../revisit.md#12-two-small-dead-spots-in-coreapi).
+
+### `feature/projects/data` + `feature/projects/mapper` — ✅ done 2026-08-03
+
+39 new tests: `ProjectsRepositoryImplTest` 12 → 36, a new `ProjectValuesRepositoryImplTest` (14), and
+one test in `ProjectMapperTest`. `:testing` gained `FakeProjectValuesApi` and `getProjectValueItemDTO()`;
+`FakeProjectsApi`, `FakeProjectDao` gained `errorToThrow` and call recorders
+(`.claude/agents/testing.md` updated). The full `jvmTest`, `detekt`, `ktlintCheck` and `:koverVerify`
+are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| package `feature/projects/data` BRANCH | 3/26 — 11.5 % | **26/26 — 100 %** |
+| package `feature/projects/data` LINE | 50/124 — 40.3 % | 120/125 — 96.0 % |
+| `ProjectValuesRepositoryImpl` BRANCH | 0/20 | **20/20** |
+| `ProjectValuesRepositoryImpl` LINE | 3/41 | **41/41** |
+| `ProjectsRepositoryImpl` BRANCH | 3/6 | **6/6** |
+| `ProjectsRepositoryImpl` LINE | 47/83 | 79/84 |
+| package `feature/projects/mapper` BRANCH | 5/40 | **40/40** |
+| package `feature/projects/mapper` LINE | 77/146 | **146/146** |
+
+Unlike `core/api`, none of this module is hidden by the `excludes` block — `**.*Repository` does not
+match `…RepositoryImpl` — so the delta is real and visible in the report.
+
+**This was not purely an error-path sweep.** `ProjectValuesRepositoryImpl` had **no test at all**
+(0/20 branches), and four `ProjectsRepositoryImpl` methods (`getProjectDetails`, `getProjectModules`,
+`updateModules`, `updateProject`) and `getCurrentProjectFlow` were untested. Check whether the module
+actually has happy-path coverage before scoping the next one as "just add the failure paths".
+
+Four things worth carrying forward:
+
+- **The Kover class-count flip is not triggered only by build-file changes.** CLAUDE.md records two
+  stable outputs (821 / 742) with a build-script edit as the trigger. This session produced a **third,
+  854**, with *no* build file touched — adding test sources was enough. Comparing the package tables
+  of the two reports shows exactly what the 854 run leaks in: `core/storage/db/dao` (+1182 lines),
+  `core/storage/db`, `core/storage/di`, `*Widget`/`*Screen` classes in `feature/*/ui`, the Ktor
+  plugins in `core/api` — i.e. **854 = excludes not applied, 742 = excludes applied in full**. The
+  direction is the opposite of what CLAUDE.md's "clean tree → 821" note implies, so treat the trigger
+  as unknown and the *class count* as the only reliable signal, exactly as that note's last bullet says.
+- **The escape hatch when the counts disagree: diff the per-package denominators.** A three-line
+  script over the two XMLs showed every package the two runs disagree about, and confirmed
+  `feature/projects/data` (BRANCH 26) and `feature/projects/mapper` (BRANCH 40) have *identical*
+  denominators in both. That makes the table above valid despite 742 vs 854. Do this instead of
+  discarding the measurement.
+- **`git stash -u` + re-run reproduced the baseline exactly** (742, same numbers to the digit), which
+  is what proved the 854 was caused by the change rather than by a stale build.
+- **`fetchProjects` is tested without collecting the flow, deliberately.** Collecting it runs
+  `ProjectsPagingSource` against `FakeProjectsApi.getProjectsPaging`, which cannot return an
+  `HttpResponse`; the escaping exception would be attributed to an unrelated test. The reason is in
+  a KDoc on the test. `ProjectsPagingSource` is Kover-excluded (`**.*PagingSource`) *and* blocked on
+  the same `HttpResponse` problem as task 9b — solve it once, there.
 
 ---
 

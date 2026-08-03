@@ -228,24 +228,36 @@ tests, not a smaller bound. Four traps when touching those numbers:
   152 branches in the *totals*, in packages the change never touched. Compare at **package scope**,
   where you can see the denominator is identical, and treat a moved total denominator as a signal
   the two runs aren't comparable rather than as a result.
-- **Concretely: `koverXmlReport` has exactly two stable outputs, and editing any build script flips
-  between them.** Clean tree → 821 classes, 62.00 % line / 43.49 % branch. Any build-file change
-  (even one unused line in `libs.versions.toml`) → 742 classes, 71.96 % / 50.37 %, which is the
-  run where the `excludes` block is applied in full. Neither cache is responsible — `--no-build-cache`
-  and `--no-configuration-cache` on a clean tree both still give 821. Make the build-file change
-  first, then take the baseline, or the two measurements straddle the flip and differ by ~2000 lines.
-  CI always sees the 742 behaviour, because a fresh checkout re-executes everything.
-  **The reliable guard is not the ordering rule but the class count: print
-  `len(root.findall('.//class'))` next to every coverage figure you record.** 821 vs 742 says which
-  side of the flip a run is on in one number, works even when the build change arrives midway through
-  a task, and does not depend on the trigger above being a complete description — it was found by
-  bisection, and the *mechanism* is still unknown, so treat it as a symptom to detect rather than a
-  law to rely on.
+- **Concretely: `koverXmlReport` flips between a "high class count" and a "low class count" mode, and
+  which one you get is not predictable.** Observed values so far: **821** (62.00 % line / 43.49 %
+  branch), **854** (62.70 % / 43.24 %) and **742** (71.96–72.07 % / 50.37–50.51 %). The high counts
+  are the runs where the `excludes` block is **not** applied — they leak in `core/storage/db/dao`
+  (+1182 lines alone), `core/storage/db|di|cache|network`, the Ktor plugins in `core/api` and every
+  `*Widget`/`*Screen` in `feature/*/ui`. 742 is the run where `excludes` is applied in full, and is
+  what CI sees. A build-script edit was once found by bisection to flip it, but that is **not** the
+  whole trigger: on 2026-08-03 a clean tree gave 742 and adding only *test sources* gave 854, i.e.
+  the opposite direction with no build file touched. Treat the mechanism as unknown.
+  **The reliable guard is the class count: print `len(root.findall('.//class'))` next to every
+  coverage figure you record.** It says which side of the flip a run is on in one number, and does
+  not depend on any theory of the trigger.
+- **When two reports disagree on the class count, do not discard the measurement — diff their
+  per-package denominators.** A few lines of `ElementTree` over both XMLs lists every package the two
+  runs disagree about, and usually shows the package you care about has an *identical* denominator in
+  both, which makes a before/after table valid anyway. This is how the `feature/projects/data` table
+  in [improvement-plan.md](docs/testing/improvement-plan.md) survived a 742-vs-854 pair. To confirm a
+  delta is caused by the change rather than by build staleness, `git stash -u` and re-run: a clean-tree
+  re-run that reproduces the baseline to the digit settles it.
+- **`koverXmlReport` always writes `build/reports/kover/report.xml`.** Copy it to a distinct path
+  immediately after each run. Forgetting once makes the "before" and "after" the same file, and the
+  diff comes back showing nothing changed anywhere — which reads like a plausible result, not like a
+  mistake.
 - **A class excluded by name shows no movement however well you test it.** The `excludes` block
   filters by suffix — `**.*Plugin`, `**.*Module`, `**.*Repository`, `**.*Api`, `**.*Screen` … — which
   in `core/api` drops all five Ktor plugins, i.e. ~98 lines and 38 branches of real auth and
   error-mapping logic. Check the exclusion list before ranking a package by its missed branches, and
   before reading a flat delta as "the tests did nothing" ([revisit #10](docs/revisit.md)).
+  The suffix match is exact, so the reverse also holds: `**.*Repository` does **not** match
+  `…RepositoryImpl`, and every repository impl in the project is measured normally.
 - **Much of the branch denominator is unreachable.** `equals`/`hashCode`/`copy$default` on data
   classes, `@Serializable` serializers and Room DAO impls are all compiler-generated branches no
   test can take — `feature/filters/domain/model` is 2/144 across nine files with no hand-written
