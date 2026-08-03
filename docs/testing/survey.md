@@ -181,7 +181,13 @@ implementations each have their own test file.
 
 ## Coverage
 
-Measured via `./gradlew koverXmlReport` on a clean `dev` at `21bcb6ad`, re-run 2026-08-02:
+Measured via `./gradlew koverXmlReport` on a clean `dev` at `21bcb6ad`, re-run 2026-08-02. **This is
+the pre-improvement baseline, kept for comparison — it is not the current figure.** After
+improvement-plan tasks 3–7, the same command at `af8a185a` reports line 65.3 % / branch 45.9 %; the
+apparent drop is denominator growth, not lost coverage, and the like-for-like numbers are line
+71.9 % / branch 49.7 %. Before quoting any Kover percentage, read
+[task 8's result note](improvement-plan.md#task-8--coverage-floor-in-ci-koververify) — `koverVerify`
+and `koverXmlReport` report different numbers.
 
 | Counter | Covered | Total | % |
 |---|---|---|---|

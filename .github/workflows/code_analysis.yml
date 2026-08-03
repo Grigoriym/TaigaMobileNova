@@ -90,3 +90,10 @@ jobs:
           verbose: true
           override_branch: ${{ github.head_ref || github.ref_name }}
           override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      # Runs after the Codecov upload on purpose: when the floor is breached, the report
+      # is already published, so the drop can be diagnosed from the PR rather than by
+      # re-running the build locally. Qualified as :koverVerify because the unqualified
+      # name would also run the rule-less koverVerify of every module.
+      - name: Check coverage floor
+        run: ./gradlew :koverVerify

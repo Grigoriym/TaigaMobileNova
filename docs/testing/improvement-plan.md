@@ -46,8 +46,8 @@ than pushing through.
 | 5 | `GetKanbanDataUseCase` + `FakeSwimlanesRepository` | M | ✅ done — 2026-08-03 |
 | 6 | `DateTimeUtilsImpl` + `KotlinxDateTimeFormatter` | M | ✅ done — 2026-08-03 |
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
-| 8 | Coverage floor in CI (`koverVerify`) | S | ⬅ **NEXT** (3–7 have landed) |
-| 9 | Error-path convention + first sweep | M | todo |
+| 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
+| 9 | Error-path convention + first sweep | M | ⬅ **NEXT** |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02):** tasks 0–9 — the unit / non-instrumented work — are in scope and
@@ -531,6 +531,39 @@ above actual, and the workflow runs it.
 
 **Finalize focus:** record the chosen numbers and the ratcheting intent in `CLAUDE.md` — otherwise
 the next person to hit the gate will just lower it.
+
+**Result (2026-08-03):** done. Two named bounds — `Line coverage` ≥ 58 and `Branch coverage` ≥ 38 —
+in `total { verify { } }` in the root `build.gradle.kts`, plus a `./gradlew :koverVerify` step in
+`code_analysis.yml` placed **after** the Codecov upload so a breached floor still publishes the
+report that explains it. `:koverVerify` is qualified because the bare task name also runs the
+rule-less `koverVerify` of all 77 modules. Verified both ways: green on a clean tree, and red with
+both rules named when the bounds were temporarily set to 63/43. `detekt`, `ktlintCheck` and the full
+`jvmTest koverXmlReport :koverVerify` sequence are green.
+
+**The task's premise about the numbers was wrong, in two separate ways.**
+
+*First*, coverage appeared to have **dropped** since the recorded `21bcb6ad` baseline — line
+67.4 % → 65.3 %, branch 47.9 % → 45.9 % — despite tasks 3–7 adding ~100 tests. It had not. Covered
+counts rose across every counter; the *denominator* grew by 1147 lines while production code changed
+by +22 (the `WikiApi` interface split). Subtracting the four packages listed below reproduces the
+baseline denominators to within 78 lines on LINE and 2 on BRANCH, and shows the real improvement:
+**line 67.4 % → 71.9 %, branch 47.9 % → 49.7 %.** Do not read a Kover delta without checking whether
+the denominator moved.
+
+*Second*, `koverXmlReport` and `koverVerify` **do not agree**. In one invocation, over identical
+artifacts: XML 65.30 % / 45.88 %, verify 60.47 % / 40.29 %. With all filters removed they agree to
+four decimal places, so the divergence is entirely in how each applies the `excludes` block — and
+neither applies it in full (a faithful application gives 71.97 % / 49.73 %). Several exclusion
+entries are silent no-ops, all of them in `:core:storage`; full evidence in
+[revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify).
+
+The bounds are therefore set from **`:koverVerify`'s own numbers, not the XML's** — the gate has to
+be tuned to the task that enforces it. This is safe: fixing the excludes can only raise coverage.
+**Anyone tuning these bounds must read them off `./gradlew :koverVerify`**; the Codecov figure is a
+different number and will mislead by ~5 points.
+
+The measurement snippet in this section still works, but it reports the *XML* figures — treat it as
+the Codecov number, not the gate number.
 
 ---
 

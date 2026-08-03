@@ -155,3 +155,42 @@ language change, which makes it low-severity rather than invisible.
 **Watch for:** this is also *why* the JVM test cannot pin a locale — the `val` is initialised before
 any `@BeforeTest` can run. Fixing this would make an exact-rendering test possible, which is the
 cheapest way to prove the fix.
+
+## 8. Kover's excludes are applied partially, and differently by `koverXmlReport` and `koverVerify`
+
+**What:** the `excludes` block in the root `build.gradle.kts` (`kover { reports { filters { … } } }`)
+is not fully honoured, and the two consumers of it disagree with each other. Measured on
+2026-08-03 at `af8a185a`, same invocation, same artifacts:
+
+| | LINE | BRANCH |
+|---|---|---|
+| `koverXmlReport` (uploaded to Codecov) | 65.30 % | 45.88 % |
+| `:koverVerify` (the CI gate) | 60.47 % | 40.29 % |
+| what the configured excludes *should* produce | 71.97 % | 49.73 % |
+
+With **all** filters removed the two tasks agree to four decimal places (35.8939 % / 14.1084 %), so
+the class universe is identical — the divergence is entirely in how each applies the excludes.
+
+**Which entries silently no-op** (verified by deleting the `packages(…)` block and diffing the
+package list in `report.xml`): of the seven `packages(…)` entries, only
+`strings.generated.resources`, `core.storage.db` and `core.storage.cache` take effect.
+`core.storage.db.dao`, `core.storage.db.wrapper`, `core.storage.di` and `core.storage.network` do
+nothing. Class patterns fail in the same place: `**.*Module` leaves `DBModule`,
+`AuthDataStoreModule`, `PlatformDBModule`, `PlatformStorageModule` in the report, and
+`**.*Preferences*` leaves `LongPreferences` — while `**.*Repository`, `**.*Api`, `**.*Widget`,
+`**.*Screen` and `**.*Delegate` match **zero** classes repo-wide, i.e. work perfectly everywhere
+else.
+
+**Every failing exclusion is in `:core:storage`.** No mechanism found for why that module is
+special; that is the thing to work out first. The cost today is 982 lines of Room-generated
+`SprintDao_Impl` / `WorkItemDao_Impl` at 1.6 % coverage sitting in the denominator, which is most of
+the ~6-point gap between the real and reported figures.
+
+**Why deferred:** found while setting the coverage floor (improvement-plan task 8), whose scope is
+the gate, not Kover's filter engine. The gate is tuned to `:koverVerify`'s own numbers, so it is
+correct and conservative as it stands — fixing this can only push coverage *up*, never break the
+build.
+
+**When fixing:** raise the bounds in the same commit, otherwise the floor goes ~12 points slack.
+Reproduce with `./gradlew jvmTest :koverXmlReport :koverVerify` and compare the two figures; they
+should be equal, and both should equal the "should produce" row above.

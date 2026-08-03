@@ -1,3 +1,5 @@
+import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
@@ -85,6 +87,30 @@ kover {
         total {
             xml { }
             html { }
+
+            // Floors, not targets. Ratchet them up as coverage improves; never lower them to
+            // make a build pass. The branch bound is the point of the exercise — it sits ~20
+            // points under the line bound, and that gap is the untested error paths.
+            //
+            // Bounds are ~2 points under what koverVerify itself measured on 2026-08-03
+            // (line 60.5 %, branch 40.3 %). Note those are NOT the koverXmlReport figures
+            // uploaded to Codecov (line 65.3 %, branch 45.9 %): the two tasks apply the
+            // excludes above differently, and neither applies them in full. See
+            // docs/revisit.md #8. Tune these against `./gradlew :koverVerify`, not the XML.
+            verify {
+                rule("Line coverage") {
+                    bound {
+                        minValue = 58
+                        coverageUnits = CoverageUnit.LINE
+                    }
+                }
+                rule("Branch coverage") {
+                    bound {
+                        minValue = 38
+                        coverageUnits = CoverageUnit.BRANCH
+                    }
+                }
+            }
         }
     }
 }

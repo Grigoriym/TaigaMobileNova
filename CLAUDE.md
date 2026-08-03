@@ -30,6 +30,7 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 # Generate coverage report (Kover — runs jvmTest on all aggregated modules)
 ./gradlew koverXmlReport    # XML → build/reports/kover/report.xml (uploaded to Codecov)
 ./gradlew koverHtmlReport   # HTML → build/reports/kover/html/index.html
+./gradlew :koverVerify      # coverage floor (line ≥ 58 %, branch ≥ 38 %) — must be qualified
 
 # Force Koin compiler to re-run (skipped on UP-TO-DATE, which causes "no definition found" crashes)
 # Run this before launching from Xcode whenever DI definitions may have changed
@@ -198,7 +199,7 @@ For writing new KMP tests, creating fakes, or understanding test patterns, use t
 - `docs/testing/` — [survey.md](docs/testing/survey.md) (what exists) and
   [improvement-plan.md](docs/testing/improvement-plan.md) (sequenced tasks, one per session)
 
-**CI runs `./gradlew jvmTest`, then `koverXmlReport`.** The `jvmTest` step exists because
+**CI runs `./gradlew jvmTest`, then `koverXmlReport`, then `:koverVerify`.** The `jvmTest` step exists because
 `koverXmlReport` only runs tests for modules aggregated in the root `build.gradle.kts` `kover {}`
 block — `:testing`, `:uikit` and `:tools:*` are excluded, so before that step a test written there
 would have been silently skipped forever. Two consequences:
@@ -209,6 +210,21 @@ would have been silently skipped forever. Two consequences:
 - **Do not add tests under `src/test/`.** KMP tests go in `commonTest` (or `jvmTest` for
   JVM-specific behaviour). The repo has no Android unit-test source set at all, by design; nothing
   in CI would execute one.
+
+**The coverage floor is a ratchet: raise it, never lower it.** `:koverVerify` enforces line ≥ 58 %
+and branch ≥ 38 % (root `build.gradle.kts`, `total { verify { } }`). A PR that breaches it needs
+tests, not a smaller bound. Two traps when touching those numbers:
+
+- **`koverVerify` and `koverXmlReport` report different coverage** — ~5 points apart on the same
+  artifacts, because they apply the `excludes` block differently and neither applies it in full
+  ([revisit #8](docs/revisit.md)). The bounds are tuned to **`./gradlew :koverVerify`**; the Codecov
+  figure is a different number. Never set a bound from the XML report or the Codecov dashboard.
+- **A moved percentage is not a moved numerator.** Kover's totals here shift when the denominator
+  changes, so compare `covered`/`total` counts between reports before concluding coverage regressed.
+  Reading percentages alone once made ~100 new tests look like a 2-point *drop*.
+
+Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
+77 modules.
 
 **Verify with the full `./gradlew jvmTest`, not just the module's own task.** All modules' JVM tests
 share a process, and `kotlinx-coroutines-test` registers a `ServiceLoader`-global
