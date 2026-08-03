@@ -9,24 +9,38 @@ import kotlinx.coroutines.flow.flowOf
 
 class FakeWorkItemDao : WorkItemDao {
 
-    override suspend fun insertAll(items: List<WorkItemEntity>) = Unit
+    val insertAllCalls = mutableListOf<List<WorkItemEntity>>()
+
+    override suspend fun insertAll(items: List<WorkItemEntity>) {
+        insertAllCalls += items
+    }
 
     override suspend fun insert(item: WorkItemEntity) = error("not used in this test")
 
     override fun getByProjectId(projectId: Long): Flow<List<WorkItemEntity>> =
         error("not used in this test")
 
+    var workItemsByProjectIdAndType: List<WorkItemEntity> = emptyList()
+    val getByProjectIdAndTypeCalls = mutableListOf<Pair<Long, CommonTaskType>>()
+
     override fun getByProjectIdAndType(
         projectId: Long,
         taskType: CommonTaskType
-    ): Flow<List<WorkItemEntity>> = error("not used in this test")
+    ): Flow<List<WorkItemEntity>> {
+        getByProjectIdAndTypeCalls += projectId to taskType
+        return flowOf(workItemsByProjectIdAndType)
+    }
 
     var workItemsByProjectIdAndSprint: List<WorkItemEntity> = emptyList()
+    val getByProjectIdAndSprintCalls = mutableListOf<Pair<Long, Long>>()
 
     override fun getByProjectIdAndSprint(
         projectId: Long,
         sprintId: Long
-    ): Flow<List<WorkItemEntity>> = flowOf(workItemsByProjectIdAndSprint)
+    ): Flow<List<WorkItemEntity>> {
+        getByProjectIdAndSprintCalls += projectId to sprintId
+        return flowOf(workItemsByProjectIdAndSprint)
+    }
 
     override fun getBacklogItems(
         projectId: Long,

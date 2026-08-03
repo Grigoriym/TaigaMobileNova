@@ -15,6 +15,9 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.jetbrains.compose.ui)
 
+            // this module *is* test support, so kotlin.test belongs in its main source set:
+            // shared assertion helpers (assertFailsWithTestException) are written against it.
+            api(kotlin("test"))
             api(libs.turbine)
             api(libs.kotlinx.coroutines.test)
 

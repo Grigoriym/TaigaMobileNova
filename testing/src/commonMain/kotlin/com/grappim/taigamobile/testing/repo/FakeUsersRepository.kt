@@ -10,7 +10,9 @@ import kotlinx.collections.immutable.persistentListOf
 class FakeUsersRepository : UsersRepository {
 
     var getUsersListResult: ImmutableList<User> = persistentListOf()
+    var getUsersListThrows: Throwable? = null
     var isAnyAssignedToMeResult: Boolean = false
+    var isAnyAssignedToMeThrows: Throwable? = null
     var getUserResult: User? = null
     var getUserThrows: Throwable? = null
 
@@ -41,8 +43,15 @@ class FakeUsersRepository : UsersRepository {
         return getUserResult ?: error("getUserResult not set")
     }
 
-    override suspend fun getUsersList(ids: List<Long>): ImmutableList<User> = getUsersListResult
-    override suspend fun isAnyAssignedToMe(list: ImmutableList<User>): Boolean = isAnyAssignedToMeResult
+    override suspend fun getUsersList(ids: List<Long>): ImmutableList<User> {
+        getUsersListThrows?.let { throw it }
+        return getUsersListResult
+    }
+
+    override suspend fun isAnyAssignedToMe(list: ImmutableList<User>): Boolean {
+        isAnyAssignedToMeThrows?.let { throw it }
+        return isAnyAssignedToMeResult
+    }
 
     override suspend fun getUserStats(userId: Long): UserStats {
         getUserStatsThrows?.let { throw it }
