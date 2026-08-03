@@ -215,6 +215,19 @@ inline fun assertFailsWithTestException(block: () -> Unit)   // see Failure-path
 ### Placement rule
 Always create new fakes in `:testing` `commonMain`, even if only one test currently needs them.
 
+**The one exception: a fake for a type in `:core:api` (or anything else `:testing` would then have to
+depend on that everything else already depends on).** `:testing` is on every module's `commonTest`
+classpath, so making it depend on `:core:api` inverts a dependency the whole repo relies on. Put
+those fakes in the module's own `commonTest` instead — `core/api/src/commonTest/…/CoreApiFakes.kt`
+(`FakeAppInfoProvider`, `FakeBaseUrlProvider`, `FakeTokenRefresher`) and
+`core/api/src/jvmTest/…/FakeX509TrustManager.kt` are the precedents. They are deliberately *not* in
+the inventory above, because nothing outside the module can reach them.
+
+**Naming trap when faking a `getX()`-style interface:** name the backing property `xToReturn`, not
+`x`. A `var versionName` behind `override fun getVersionName()` is a JVM signature clash
+(`Platform declaration clash: … same JVM signature (getVersionName()Ljava/lang/String;)`) and fails
+to compile on the JVM target only.
+
 ### Fake structure
 ```kotlin
 class FakeMyRepository : MyRepository {
@@ -367,6 +380,42 @@ fun `patchData should propagate api error`() = runTest {
   recording — the newer ordering is the better one).
 - Per-collaborator `…Throws` fields (`FakeUsersRepository.getUsersListThrows`) are for repository
   and use-case fakes where a test needs exactly one of several methods to fail.
+
+### Ktor plugins and anything needing a real `HttpResponse`
+
+`ktor-client-mock` is in the catalog as `libs.ktor.client.mock`. Add it to the module's
+`commonTest.dependencies`. A Ktor `HttpClientPlugin` hooks `HttpSend.intercept`, which is not
+reachable except through a real `HttpClient`, so drive it with a `MockEngine`:
+
+```kotlin
+private var lastRequest: HttpRequestData? = null
+
+private fun createClient(): HttpClient = HttpClient(
+    MockEngine { request ->
+        lastRequest = request          // the FINAL request — what the plugin rewrote
+        respond(content = "", status = HttpStatusCode.OK)
+    }
+) {
+    install(MyPlugin) { this.dep = this@MyPluginTest.dep }
+}
+```
+
+- Read `lastRequest.url` / `.headers` / `.body as TextContent` to assert what the plugin did; the
+  engine lambda sees the request *after* every interceptor.
+- Return different responses per call with a counter in the lambda — that is how a
+  401-then-200 retry sequence is tested (`TokenRefreshPluginTest`).
+- `AttributeKey` compares by name, so a test can reach a plugin's `private` attribute key by
+  constructing `AttributeKey<T>("TheSameName")`.
+- **`execute(request)` inside an interceptor does not re-enter that interceptor** — it dispatches to
+  the next sender. A plugin that retries by re-invoking `execute` runs its own body exactly once.
+- `core/api/src/commonTest/` has eight worked examples (auth headers, host rewriting, error mapping,
+  token refresh).
+
+**Before writing tests purely to move coverage, check the class is not excluded.** The root
+`build.gradle.kts` `kover { … excludes { … } }` drops `**.*Plugin`, `**.*Module`, `**.*Repository`,
+`**.*Api`, `**.*Screen`, `**.*Widget` and more by *name suffix*, so a well-tested `FooPlugin` shows
+up as zero movement (see [revisit #10](../../docs/revisit.md)). The tests are still worth writing —
+just do not expect them in the report, and do not conclude coverage regressed.
 
 ---
 

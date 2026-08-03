@@ -22,6 +22,9 @@ first, then work this list. Nothing here is urgent; nothing here is forgotten.
 | 7 | Date formatters cache the locale for the process lifetime | S | improvement-plan task 6 |
 | 8 | Kover's excludes are applied partially, and differently by the two tasks | M | improvement-plan task 8 |
 | 9 | `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT | XS | improvement-plan task 9 |
+| 10 | The `Plugin`/`Module` exclusion patterns hide real logic in `core/api` | S | improvement-plan task 9a |
+| 11 | `TokenRefreshPlugin`'s `MAX_RETRIES` guard is unreachable | S | improvement-plan task 9a |
+| 12 | Two small dead spots in `core/api` | XS | improvement-plan task 9a |
 
 ---
 
@@ -197,6 +200,39 @@ build.
 Reproduce with `./gradlew jvmTest :koverXmlReport :koverVerify` and compare the two figures; they
 should be equal, and both should equal the "should produce" row above.
 
+### Update (2026-08-03, improvement-plan task 9a) — the trigger is now known
+
+`koverXmlReport` has **two stable outputs**, and which one you get depends on whether any build
+script changed since the last run — not on the tests, not on the caches:
+
+| Tree state | Classes in report | LINE | BRANCH |
+|---|---|---|---|
+| clean (no build-file change since last run) | 821 | 62.00 % | 43.49 % |
+| **any** build-file change | 742 | 71.96 % | 50.37 % |
+
+The 742-class output is the one where the `excludes` block is applied **in full** — 79 classes that
+the filters name are dropped, and the totals land on the "what the configured excludes should
+produce" row above (71.97 % / 49.73 %). The 821-class output leaks those 79 classes back in.
+
+Isolated by bisection on 2026-08-03: adding a **single unused line to `gradle/libs.versions.toml`**
+is enough to flip it. Ruled out as causes — `--no-configuration-cache` and `--no-build-cache` on a
+clean tree both still give 821, and deleting `report.xml` to force report regeneration also gives
+821. So it is neither cache; the remaining difference is whether the compile/test tasks re-executed,
+which matches the standing warning in `CLAUDE.md` that "`koverXmlReport` reports on whichever test
+tasks actually executed".
+
+**Two consequences that matter more than the mechanism:**
+
+- **CI always gets the 742 / 71.96 % behaviour**, because a fresh checkout always re-executes
+  everything. The ~62 % a local clean-tree run prints is a local-only artifact. Anyone comparing a
+  local figure to Codecov is comparing two different numbers for a third reason, on top of the two
+  already in this entry.
+- **A local before/after comparison is invalid unless both runs are on the same side of this flip.**
+  Task 9a hit this: the baseline was taken on a clean tree (821) and the after-run had a modified
+  `build.gradle.kts` (742), making the totals differ by 1988 lines in packages the change never
+  touched. The fix is to take both measurements with a build-file change present, then check the
+  denominators match before reading anything into the numerators.
+
 ---
 
 ## 9. `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT
@@ -215,3 +251,77 @@ import.
 **Why deferred:** found while establishing the failure-path convention in improvement-plan task 9,
 whose scope was the convention plus `feature/workitem/data`. Editing an unrelated module's test file
 would have made that diff harder to review, and the tests are not currently wrong.
+
+---
+
+## 10. The `Plugin` and `Module` exclusion patterns hide real logic in `core/api`
+
+**What:** the root `build.gradle.kts` excludes `**.*Plugin` and `**.*Module` (plus the `$*` nested
+variants) as "architecture boilerplate". In `core/api` that is wrong — five of the classes it drops
+are the app's entire HTTP behaviour, not boilerplate:
+
+| Class | Hand-written LINE / BRANCH hidden |
+|---|---|
+| `TokenRefreshPlugin$Plugin$install$1` | 50 / 14 — the whole 401-refresh, mutex and retry path |
+| `ErrorMappingPlugin$Plugin` (+ `$install$1`) | 24 / 10 — status mapping, project-limit headers |
+| `DebugLocalhostPlugin$Plugin$install$1` | 9 / 6 |
+| `HostSelectionPlugin$Plugin$install$1` | 8 / 4 |
+| `AuthHeaderPlugin$Plugin$install$1` | 7 / 4 |
+
+That is ~98 lines and 38 branches of genuine conditional logic — auth, error translation, host
+rewriting — excluded purely because the class names end in `Plugin`. Improvement-plan task 9a wrote
+55 tests covering all of it and the reported package coverage barely moved (`core/api` LINE
+55/74 → 63/74, BRANCH 26/50 → 28/50; `core/api/errors` did not move at all), because the tested
+classes are not in the report.
+
+**Fix:** narrow the two patterns so they only catch what they were meant to catch — the Koin
+`@Module` classes and the generated Koin module facades — rather than any class whose name happens
+to end in `Plugin`/`Module`. Naming the Koin modules explicitly, or excluding by package, would do
+it. `KmpNetworkModule` (a real Koin `@Module`) should stay excluded; the five Ktor plugins should
+not.
+
+**Why deferred:** improvement-plan task 9a's scope is tests for one module, and changing the
+excludes moves the whole project's reported coverage — see entry 8, which has to be resolved in the
+same breath. Doing both here would have made the test diff unreviewable. When fixed, the
+`:koverVerify` bounds must be re-tuned in the same commit.
+
+---
+
+## 11. `TokenRefreshPlugin`'s `MAX_RETRIES` guard is unreachable
+
+**What:** `core/api/src/commonMain/…/TokenRefreshPlugin.kt:56-63` reads a `retryCountKey` attribute
+and logs out once it reaches `MAX_RETRIES` (3). The counter is only ever written at the end of the
+same interceptor invocation (`:82`, `:96`, `:123`), and `execute(request)` inside an
+`HttpSend.intercept` block dispatches to the **next** sender in the chain — it does not re-enter the
+interceptor that called it. So `retries` is 0 on every real request and the guard never fires.
+
+**Evidence:** `TokenRefreshPluginTest` drives a MockEngine that answers 401 to everything. If the
+interceptor re-entered, the retry loop would run until the cap and issue 4 requests; it issues
+exactly 2. The test that covers the guard has to seed the attribute on the request builder by hand.
+
+**Consequence:** a server that answers 401 to both the original request *and* the retry-with-a-
+fresh-token leaves the user logged in with a token that does not work, rather than logging out.
+Whether that is worth fixing depends on whether it happens in practice — the refresh call itself
+failing *is* handled (`:103-111`), and that is the common case.
+
+**Fix, if wanted:** loop inside the interceptor instead of relying on the attribute, or drop the
+counter and the constant. Do not "fix" it by installing the plugin twice.
+
+**Why deferred:** found while writing tests for the plugin (improvement-plan task 9a). It is a
+behaviour change to auth code, which is not a test task's business.
+
+---
+
+## 12. Two small dead spots in `core/api`
+
+Both found while testing the module (improvement-plan task 9a); neither is a bug, and neither is
+worth its own commit — fold them into the next change that touches these files.
+
+- **`defaultTryCatch`'s second `catch` is unreachable.**
+  `TryCatchExtensions.kt:10` catches `TimeoutCancellationException` after `:8` has already caught
+  `CancellationException`, which is its supertype. Behaviour is correct either way (both rethrow);
+  the clause is just dead.
+- **`ErrorMappingPlugin` holds a `Json` it never uses.** It is taken in `Config`, stored as a
+  constructor property (`ErrorMappingPlugin.kt:17`) and read nowhere — parsing goes through
+  `ErrorResponseParser`, which has its own. Removing it means touching both `KmpNetworkModule`
+  install blocks.

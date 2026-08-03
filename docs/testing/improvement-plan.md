@@ -48,7 +48,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Error-path sweep: rest of the repo/use-case layer | M each | ⬅ **NEXT** (one module per session) |
+| 9a | Error-path sweep: rest of the repo/use-case layer | M each | 🔁 in progress — `core/api` ✅ 2026-08-03; ⬅ **NEXT** module: `feature/projects/data` |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -649,10 +649,75 @@ ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverX
 | `feature/login/ui` | 27/126 | ViewModel-heavy |
 | `utils/ui` | 8/107 | `NativeText` and extensions, not repository-shaped |
 
+⚠️ **This ranking was measured from an 821-class report and is inflated.** That run leaked in every
+class the `excludes` block names, so each row counts branches no test can ever move — `core/api`'s
+164 is really 126 once the five Ktor plugins are dropped, and the `feature/*/ui` rows include
+`*Screen` and `*Widget` classes for the same reason. **Re-derive the table from a 742-class report**
+(any run with a build-file change present — see the `core/api` notes below) before picking the next
+module, and drop from consideration anything whose class name ends in an excluded suffix.
+
 **Do one module per session**, recording the same before/after table task 9 recorded. Do **not**
 take the packages that top the raw missed-branch list — `core/storage/db/dao` (0/180) and
 `feature/filters/domain/model` (2/144) are Room-generated and data-class-generated branches
 respectively, and are unreachable from a test.
+
+### `core/api` — ✅ done 2026-08-03
+
+55 tests across 8 new files, plus `CoreApiFakes.kt`. `:core:api:jvmTest` goes 20 → 75 tests; the full
+`jvmTest`, `detekt`, `ktlintCheck` and `:koverVerify` are all green.
+
+| File | Tests | Covers |
+|---|---|---|
+| `TokenRefreshPluginTest` | 7 | every branch of the 401/refresh/retry path, incl. both double-check paths and the refresh-throws fallback |
+| `ErrorMappingPluginTest` | 8 | pass-through, status→code mapping, project-limit headers (both / one / unparseable), rethrow vs. map |
+| `TokenRefresherImplTest` | 3 | request shape + response mapping, failure propagation, `logout()` through a real `AuthStateManager` |
+| `TryCatchExtensionsTest` | 4 | success, catch, and both rethrow clauses |
+| `DebugLocalhostPluginTest` | 3 | all three host-rewrite branches |
+| `AuthHeaderPluginTest` | 3 | user-agent, token present / absent |
+| `HostSelectionPluginTest` | 2 | rewrite and no-op |
+| `ResponseExtensionsTest` | 2 | `hasNextPage` both ways |
+
+**The measured coverage delta is almost nil, and that is the headline finding.** Taken between two
+runs with identical denominators (see the comparability trap below):
+
+| Scope | Before | After |
+|---|---|---|
+| package `core/api` LINE | 55/74 — 74.3 % | 63/74 — 85.1 % |
+| package `core/api` BRANCH | 26/50 — 52.0 % | 28/50 — 56.0 % |
+| package `core/api/errors` LINE | 52/54 | **52/54 — unchanged** |
+| package `core/api/errors` BRANCH | 47/76 | **47/76 — unchanged** |
+
+**Why:** the root `kover` `excludes` block drops `**.*Plugin` and `**.*Module` as "architecture
+boilerplate", which in this module means all five Ktor plugins — ~98 lines and 38 branches of real
+auth / error-mapping / host-rewriting logic, previously at 0 % and now fully covered, none of it in
+the report. `core/api/errors` does not move at all because `ErrorMappingPlugin` is entirely excluded.
+Filed as [revisit #10](../revisit.md#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi)
+with the per-class figures; narrowing the patterns has to happen together with revisit #8, so it was
+not done here.
+
+**Three things to know before taking the next module:**
+
+- **`ktor-client-mock` is now in the catalog** (`ktor-client-mock`), wired into `core/api`'s
+  `commonTest`. Any Ktor plugin, or anything needing a real `HttpResponse`, is testable through
+  `MockEngine`: install the plugin on a `HttpClient(MockEngine { … })` and read the *final*
+  `HttpRequestData` from the engine lambda to see what the plugin rewrote. `HttpSend.intercept` is
+  not reachable any other way.
+- **`koverXmlReport` has two stable outputs and a build-file change flips between them** — 821
+  classes / 62.00 % on a clean tree, 742 / 71.96 % once any build script changes, because the
+  `excludes` are only applied in full in the second. A baseline taken before editing
+  `build.gradle.kts` is therefore *not* comparable with the after-run; this cost most of a session.
+  Full reproduction in [revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify).
+  Take both measurements with a build-file change present and check the denominators match.
+- **The fakes are local to the module, not in `:testing`.** `CoreApiFakes.kt` holds
+  `FakeAppInfoProvider`, `FakeBaseUrlProvider` and `FakeTokenRefresher`; hosting them in `:testing`
+  would make it depend on `:core:api`, which everything else already depends on. `.claude/agents/testing.md`
+  was therefore not touched. Name the backing property `xToReturn`, not `x` — a `var versionName`
+  behind `getVersionName()` is a JVM signature clash.
+
+Two behaviour findings came out of it, both deferred:
+[revisit #11](../revisit.md#11-tokenrefreshplugins-max_retries-guard-is-unreachable) (the plugin's
+retry cap can never fire, because `execute()` does not re-enter its own interceptor) and
+[revisit #12](../revisit.md#12-two-small-dead-spots-in-coreapi).
 
 ---
 

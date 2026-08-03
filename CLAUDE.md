@@ -228,6 +228,18 @@ tests, not a smaller bound. Four traps when touching those numbers:
   152 branches in the *totals*, in packages the change never touched. Compare at **package scope**,
   where you can see the denominator is identical, and treat a moved total denominator as a signal
   the two runs aren't comparable rather than as a result.
+- **Concretely: `koverXmlReport` has exactly two stable outputs, and editing any build script flips
+  between them.** Clean tree → 821 classes, 62.00 % line / 43.49 % branch. Any build-file change
+  (even one unused line in `libs.versions.toml`) → 742 classes, 71.96 % / 50.37 %, which is the
+  run where the `excludes` block is applied in full. Neither cache is responsible — `--no-build-cache`
+  and `--no-configuration-cache` on a clean tree both still give 821. **So make the build-file change
+  first, then take the baseline**, or the two measurements straddle the flip and differ by ~2000
+  lines. CI always sees the 742 behaviour, because a fresh checkout re-executes everything.
+- **A class excluded by name shows no movement however well you test it.** The `excludes` block
+  filters by suffix — `**.*Plugin`, `**.*Module`, `**.*Repository`, `**.*Api`, `**.*Screen` … — which
+  in `core/api` drops all five Ktor plugins, i.e. ~98 lines and 38 branches of real auth and
+  error-mapping logic. Check the exclusion list before ranking a package by its missed branches, and
+  before reading a flat delta as "the tests did nothing" ([revisit #10](docs/revisit.md)).
 - **Much of the branch denominator is unreachable.** `equals`/`hashCode`/`copy$default` on data
   classes, `@Serializable` serializers and Room DAO impls are all compiler-generated branches no
   test can take — `feature/filters/domain/model` is 2/144 across nine files with no hand-written
