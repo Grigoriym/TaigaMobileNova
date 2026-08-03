@@ -48,7 +48,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Error-path sweep: rest of the repo/use-case layer | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03; ⬅ **NEXT** module: `utils/ui` (see the re-derived table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03; ⬅ **NEXT** module: `main` (see the re-derived table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -634,12 +634,20 @@ Three things worth carrying forward:
 
 ---
 
-## Task 9a — Error-path sweep: the rest of the repository/use-case layer
+## Task 9a — Missed-branch sweep, one module per session
 
-**Depends on:** task 9's convention. Apply it, do not re-derive it.
+**Depends on:** task 9's convention. Apply it where it fits, do not re-derive it.
 
-**Why:** task 9 proved the pattern on one module. These are the modules where it buys the most,
-ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverXmlReport`):
+**This task was originally called "error-path sweep: the rest of the repository/use-case layer", and
+all four modules done so far have falsified that name.** `core/api` was Ktor plugins, `feature/kanban/ui`
+was a ViewModel whose failure paths were *already* tested, `feature/projects/data` had a repository
+with no happy-path test at all, and `utils/ui` has no collaborator that can throw. The ranking below
+is by missed branches, which finds whatever is untested — not specifically error paths and not
+specifically repositories. **Read the module and decide what it actually needs before scoping the
+session**; "add a `testException` test per public method" is one possible answer, not the brief.
+
+**Why:** task 9 proved the pattern on one module. These are the modules where a session buys the
+most, ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverXmlReport`):
 
 **Re-derived 2026-08-03** after the `feature/kanban/ui` module, with the root `excludes` block
 applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own filtering:
@@ -649,8 +657,8 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`core/api` + `core/api/errors`~~ | 73/126 | ✅ done 2026-08-03 |
 | ~~`feature/projects/data` + `feature/projects/mapper`~~ | 8/66 | ✅ done 2026-08-03 — now 66/66 |
 | ~~`feature/kanban/ui`~~ | 65/166 | ✅ done 2026-08-03 — now 159/166 |
-| **`utils/ui`** | 8/107 | ⬅ next. `NativeText` and extensions, not repository-shaped |
-| `main` | 4/35 | `MainViewModel` + navigation state |
+| ~~`utils/ui`~~ | 8/107 | ✅ done 2026-08-03 — now 61/107; the residual 46 all need a composition |
+| **`main`** | 4/35 | ⬅ next. `MainViewModel` + navigation state |
 | `feature/workitem/ui/delegates/customfields` | 0/30 | no test at all |
 | `core/api/errors` | 47/76 | 29 of these are inside the Kover-excluded `ErrorMappingPlugin` |
 | `feature/userstories/ui` | 13/40 | ViewModel-heavy |
@@ -834,6 +842,83 @@ cannot fire, because `moveStory` has already validated `beforeStoryId` against t
 is two tokens of defensive code, not worth a revisit entry. Passing an unknown `newStatusId` also
 drops the story off the board entirely — unreachable from the UI, where the id always comes from a
 rendered column; noted in a comment on the test that covers it.
+
+### `utils/ui` — ✅ done 2026-08-03
+
+68 new tests across 6 new files. `:utils:ui:jvmTest` goes 7 → 75 tests; the full `jvmTest`, `detekt`,
+`ktlintCheck` and `:koverVerify` are all green. `:testing` was **not** touched — this module needs no
+fakes, so `.claude/agents/testing.md` is unchanged.
+
+| File | Tests | Covers |
+|---|---|---|
+| `GetErrorMessageTest` (commonTest) | 24 | all 19 `NetworkException` error codes, the `taigaError.message` short-circuit, the `else`, `UntrustedCertificateNetworkException`, and the generic-throwable fallback |
+| `JsonSerializableNavTypeTest` (commonTest) | 11 | `typeMapOf` both branches; `put`/`get`/`serializeAsValue`/`parseValue` on both nav types, incl. the whole nullable one |
+| `ColorMapperTest` (commonTest) | 9 | `fromColorToString`, `fromStringToColor` (6/8/invalid), `fromStringToInt` all three branches |
+| `ComposableUtilsTest` (commonTest) | 7 | `fixNullColor`, `textColor` both sides, the deprecated `toHex`/`toColor` |
+| `NativeTextTest` (commonTest) | 6 | `isEmpty`/`isNotEmpty`, `asStringBlocking` for `Simple`/`Empty`/`Multi` incl. nesting |
+| `StringUtilsJvmTest` (**jvmTest**) | 5 | the JVM actuals of `formatColor` and `formatStringKmp` |
+| `PagingUtilsTest` (commonTest) | 5 | `CombinedLoadStates.getErrorMessage` — error, non-error, append/prepend ignored, custom fallback |
+
+| Scope | Before | After |
+|---|---|---|
+| package `utils/ui` BRANCH | 8/107 — 7.5 % | **61/107 — 57.0 %** |
+| package `utils/ui` LINE | 46/185 — 24.9 % | **126/185 — 68.1 %** |
+| `NativeTextKt` BRANCH | 2/52 | **35/52** |
+| `JsonSerializableNullableNavType` BRANCH | 0/8 | **8/8** (LINE 0/17 → 17/17) |
+| `PagingUtilsKt` BRANCH | 0/12 | 7/12 |
+| `ColorMapperKt` / `ComposableUtilsKt` / `JsonSerializableNavTypeKt` BRANCH | 1/3, 4/6, 1/2 | **3/3, 6/6, 2/2** |
+
+Both reports were 742-class runs with identical totals (2049 BRANCH / 9709 LINE), so no comparability
+dance was needed this time.
+
+**This was not an error-path sweep at all, and the next-module ranking should stop assuming one.**
+`utils/ui` has no repository, no ViewModel and no collaborator that can throw — it is pure functions
+plus Composables. The 99 missed branches were simply *never-tested code*, and the one place a
+`catch` exists (`fromStringToColor`) needed a malformed string, not a fake. The 9a table ranks by
+missed branches, which finds modules like this one just as readily as repository-shaped ones; read
+the module before scoping the session.
+
+**The residual 46 missed branches are all blocked on the same thing: a composition.** Nothing left in
+this module is reachable from a plain JVM test —
+
+- `ObserveAsEventsKt` 0/16 and `ColorSourceKt.asColor` 0/4 are `@Composable`;
+- `NativeTextKt`'s remaining 17 are the `@Composable` `asString` plus the `Resource`/`Plural`/
+  `Arguments` arms of `asStringBlocking`;
+- `PagingUtilsKt`'s remaining 5 are the `LazyPagingItems` extensions, and `LazyPagingItems` has no
+  constructor outside a composition;
+- `ContextExtensionsKt` 0/4 is `androidMain`, which no JVM test can reach at all.
+
+So this module is **done** as far as non-instrumented testing goes, and the leftover is a concrete
+argument for task 10 rather than an omission here.
+
+Three things worth carrying forward:
+
+- **Compose resources cannot be resolved from a plain KMP module's `jvmTest`.** A probe calling
+  `NativeText.Resource(RString.error_not_found).asStringBlocking()` dies with
+  `ExceptionInInitializerError` ← `org.jetbrains.skiko.LibraryLoadException: Cannot find
+  libskiko-linux-x64.so.sha256`: the resource loader's initialisation pulls in Skiko, whose native
+  binary only arrives with `compose.desktop.currentOs`. That was **not** added — it is a native
+  dependency on a test classpath to buy three `when` arms, and it overlaps task 10's wiring. Anyone
+  who wants `getString`/`getPluralString` under test should do it there, once, deliberately. Asserting
+  on `NativeText` structurally (`assertEquals(NativeText.Resource(RString.x), …)`) needs none of it,
+  which is why `GetErrorMessageTest`'s 24 tests cost nothing.
+- **`:koverVerify` and a 742-class `koverXmlReport` agree exactly.** `:koverVerify` reported
+  75.4249 % / 60.5173 %; `kover-rank.py` over the same run's XML reported 75.42 % / 60.52 %. The
+  "~5 points apart" warning in CLAUDE.md and [revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify)
+  therefore describes `koverVerify` versus an **821/854-class** XML, not an intrinsic difference —
+  **`kover-rank.py`'s totals are the gate number**, not an approximation of it. Read `:koverVerify`'s
+  own figures by temporarily setting both `minValue`s to 99; it names both rules and prints the actual
+  percentages.
+- **The floor is now ~17/22 points below actual** (58/38 versus 75.42/60.52) and was deliberately
+  *not* raised — the gap is far larger than the tests added since task 8 can explain, which suggests
+  `:koverVerify` may flip between excludes modes the same way `koverXmlReport` does. Filed as
+  [revisit #14](../revisit.md#14-the-kover-coverage-floor-is-now-1722-points-below-actual) with the
+  arithmetic and the check to run first. Do not raise it from a single reading.
+
+Also found and filed, not fixed: `urlDecode` is an `internal expect` with three actuals and **zero
+call sites** ([revisit #13](../revisit.md#13-urldecode-in-utilsui-is-dead-code-with-three-actuals)).
+`JsonSerializableNavTypeTest` uses it to reverse `serializeAsValue`, so deleting it means rewriting
+two assertions.
 
 ---
 

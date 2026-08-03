@@ -594,3 +594,21 @@ kotlin {
     claiming a test passes under a changed environment, prove the change arrived: add a throwaway
     test asserting `TimeZone.getDefault().id` / `Locale.getDefault(FORMAT)` against a wrong value and
     read the failure message.
+12. **Compose *resources* cannot be resolved from a plain KMP module's `jvmTest`.** Anything that
+    calls `getString` / `getPluralString` — including `NativeText.asStringBlocking()` for the
+    `Resource`, `Plural` and `Arguments` arms — dies at class-init with
+    `ExceptionInInitializerError` ← `org.jetbrains.skiko.LibraryLoadException: Cannot find
+    libskiko-linux-x64.so.sha256`. The resource loader pulls in Skiko, whose native binary only
+    arrives with `compose.desktop.currentOs`, which no `feature/*` or `utils/*` module has.
+
+    **Assert on `NativeText` structurally instead** — `StringResource` has value equality, so
+    `assertEquals(NativeText.Resource(RString.error_not_found), getErrorMessage(exception))` proves
+    the mapping without loading a resource, without a composition and without a locale. That is how
+    `GetErrorMessageTest` covers all 19 `NetworkException` codes for free. Do **not** add a Skiko
+    dependency to a test source set to get around this; resolving resources under test is part of
+    the deferred Compose-UI-test work (improvement-plan task 10).
+
+    Same shape as gotcha 11's closing rule, now seen twice: **when a test depends on a runtime
+    facility you have not exercised in that module before — a resource loader, an env override, a
+    native lib — spend one throwaway test proving it works before writing the tests that assume it.**
+    A whole file written against a broken assumption is expensive; the probe is a minute.

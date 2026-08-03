@@ -213,12 +213,19 @@ would have been silently skipped forever. Two consequences:
 
 **The coverage floor is a ratchet: raise it, never lower it.** `:koverVerify` enforces line ≥ 58 %
 and branch ≥ 38 % (root `build.gradle.kts`, `total { verify { } }`). A PR that breaches it needs
-tests, not a smaller bound. Four traps when touching those numbers:
+tests, not a smaller bound. The traps when touching those numbers:
 
-- **`koverVerify` and `koverXmlReport` report different coverage** — ~5 points apart on the same
-  artifacts, because they apply the `excludes` block differently and neither applies it in full
-  ([revisit #8](docs/revisit.md)). The bounds are tuned to **`./gradlew :koverVerify`**; the Codecov
-  figure is a different number. Never set a bound from the XML report or the Codecov dashboard.
+- **`koverVerify` and `koverXmlReport` can report different coverage** — up to ~5 points apart on the
+  same artifacts ([revisit #8](docs/revisit.md)). The bounds are tuned to **`./gradlew :koverVerify`**;
+  never set one from the Codecov dashboard. But the divergence is **not** intrinsic to the two tasks:
+  when the XML lands on the 742-class side, `:koverVerify` and `kover-rank.py`'s filtered totals agree
+  to four decimal places (75.4249 / 60.5173 vs. 75.42 / 60.52, measured 2026-08-03). The gap is the
+  class-count flip below, not a second mechanism — so **`kover-rank.py`'s output *is* the gate number**,
+  whichever side of the flip your report landed on.
+- **To read `:koverVerify`'s own percentages, temporarily set both `minValue`s to 99** in the root
+  `build.gradle.kts` and run it: it names each violated rule and prints the actual figure. There is no
+  other way to get the number the gate is actually comparing against. `git checkout build.gradle.kts`
+  afterwards.
 - **A moved percentage is not a moved numerator.** Kover's totals here shift when the denominator
   changes, so compare `covered`/`total` counts between reports before concluding coverage regressed.
   Reading percentages alone once made ~100 new tests look like a 2-point *drop*.

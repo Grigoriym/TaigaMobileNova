@@ -325,3 +325,55 @@ worth its own commit — fold them into the next change that touches these files
   constructor property (`ErrorMappingPlugin.kt:17`) and read nowhere — parsing goes through
   `ErrorResponseParser`, which has its own. Removing it means touching both `KmpNetworkModule`
   install blocks.
+
+---
+
+## 13. `urlDecode` in `utils/ui` is dead code with three actuals
+
+**Where:** `utils/ui/src/commonMain/…/JsonSerializableNavType.kt:32` (`internal expect fun
+urlDecode`), plus actuals in `JsonSerializableNavType.android.kt:7`, `.ios.kt:8` and `.jvm.kt:8`.
+
+**Evidence:** `grep -rn "urlDecode" --include=*.kt . | grep -v build/` returns exactly those four
+declarations and no call site. `urlEncode` is used by `serializeAsValue` on both nav types;
+`parseValue` decodes the JSON directly (`Json.decodeFromString`) without ever URL-decoding, because
+Navigation has already decoded the argument by the time it reaches `parseValue`.
+
+**Consequence:** none at runtime — it is four lines of unused `expect`/`actual` and an unnecessary
+`io.ktor.http.decodeURLPart` import on JVM/iOS. It does cost the reader a moment wondering why
+`parseValue` does not call it.
+
+**Why deferred:** found while writing `JsonSerializableNavTypeTest` (improvement-plan task 9a).
+Deleting production declarations is not a test task's business. Note that
+`JsonSerializableNavTypeTest` currently *calls* `urlDecode` to reverse `serializeAsValue`, so
+removing it means rewriting those two assertions (the honest replacement is a decoded-literal
+comparison, which would then be JVM-specific).
+
+---
+
+## 14. The Kover coverage floor is now ~17/22 points below actual
+
+**Where:** root `build.gradle.kts:100-112` — `Line coverage` ≥ 58, `Branch coverage` ≥ 38.
+
+**Evidence:** on 2026-08-03, after the `utils/ui` sweep, `./gradlew :koverVerify` reports
+**75.42 % line / 60.52 % branch** (read by temporarily setting both bounds to 99). Task 8 set the
+bounds from a `:koverVerify` run that reported 60.47 / 40.29 the same day. CLAUDE.md states the
+floor is a ratchet, so it is due a raise.
+
+**The reason it was not raised here, and what to check first:** the gap is too large to be explained
+by the tests added since. Tasks 9a's three modules plus this one added roughly 250 covered branches
+against a 2049 denominator — about 12 points, not 20. So **`:koverVerify` itself may flip between
+the excludes-applied and excludes-not-applied modes**, exactly as `koverXmlReport` does
+([#8](#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify)),
+and task 8's 60.47 / 40.29 may have been a run on the other side. Raising the floor to just under
+75/60 would then break CI on the next flip.
+
+**New evidence that narrows #8:** in this session `:koverVerify` (75.4249 / 60.5173) agreed *to four
+decimal places* with `kover-rank.py`'s filtered totals over a genuine 742-class `koverXmlReport`
+(75.42 % / 60.52 %). So the "~5 points apart" claim in #8 and CLAUDE.md describes `koverVerify`
+against an **821/854-class** XML run, not an intrinsic difference between the two tasks: when the
+XML lands on the 742 side, all three numbers coincide. That makes `kover-rank.py`'s output a
+readout of the gate number, not merely an approximation of it.
+
+**Fix:** take `:koverVerify` readings on several separate clean-tree invocations. If they are stable
+at ~75/60, raise the bounds to ~73/58. If they flip, that is a bigger finding than the floor and
+belongs in #8.
