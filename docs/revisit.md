@@ -259,6 +259,16 @@ first), and it is so far the only transition that has reproduced. Practical cons
 before/after session: **assume the pair will straddle the flip** and reach for the package-scope
 denominator check by default rather than as a fallback.
 
+### Update (2026-08-04, improvement-plan task 9a, `settings/ui/user`) — the transition reverses
+
+The "test-sources-only edit flips a clean run *into* the leaking mode" reading died the next session.
+Baseline on a **clean tree**: **822** with **20** leaks — the leaking mode, with no uncommitted change
+of any kind to explain it. After adding one test file and three fields to `FakeUsersRepository`, the
+same command gave a clean **742** with **zero** leaks, i.e. the CI-equivalent mode. So the flip is
+bidirectional and a clean tree does not imply the excludes-applied side. Four observed transitions
+now: 742→854, 781→822, 742→822, 822→742. The only durable advice is the package-scope denominator
+check; stop trying to predict which side a given run will land on.
+
 ---
 
 ## 9. `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT

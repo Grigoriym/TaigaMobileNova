@@ -73,7 +73,7 @@ Key fields for commonly-used fakes:
 
 **`FakeIssuesRepository`**: `getIssueResult/Throws`, `createIssueResult/Throws/Calls` (`CreateIssueCall` records)
 
-**`FakeUsersRepository`**: `getUserResult/Throws`, `getUsersListResult/Throws`, `isAnyAssignedToMeResult/Throws`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
+**`FakeUsersRepository`**: `getUserResult/Throws`, `getMeResult/Throws/CallCount`, `getUsersListResult/Throws`, `isAnyAssignedToMeResult/Throws`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
 
 **`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `createUserStoryResult/Throws/Calls` (`CreateUserStoryCall` records), `bulkUpdateKanbanOrderThrows/Called`, plus one recorder per `bulkUpdateKanbanOrder` argument (`bulkUpdateKanbanOrderStatusId/StoryIds/SwimlaneId/AfterStoryId/BeforeStoryId`)
 

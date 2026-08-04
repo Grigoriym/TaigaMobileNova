@@ -255,7 +255,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   before/after pair to straddle the flip and plan on the package-scope escape hatch below.
   Confirmed a third time on 2026-08-04, from the cleanest possible starting point: a **742** baseline
   (zero leaks, i.e. exactly what CI sees) → **822** with 20 leaks after adding two test files and four
-  `:testing` fields. Three sessions running, so treat the straddle as the expected case, not bad luck.
+  `:testing` fields. **But the direction is not a rule — it reversed on the very next session** (also
+  2026-08-04): a *clean tree* gave an **822** baseline with 20 leaks, and after adding one test file
+  and three `:testing` fields the after-run was a clean **742** with zero leaks. So neither the
+  starting mode nor the effect of adding test sources is predictable; only the *straddle* is the
+  expected case. Plan on the package-scope escape hatch below and do not assume which side either run
+  will land on.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
   `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45

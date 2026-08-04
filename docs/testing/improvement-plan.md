@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/settings/ui/user` (verified 2026-08-04 — only **4** of its 12 branches are reachable, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04; ⬅ **NEXT** module: `core/storage` (surfaced 2026-08-04 — 18 missed branches, all hand-written non-composable, see the table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -680,8 +680,9 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`feature/workitem/ui/screens/sprint`~~ | 0/18 | ✅ done 2026-08-04 — now **18/18**, LINE 74/75 |
 | ~~`feature/settings/ui/modules`~~ | 0/16 | ✅ done 2026-08-04 — now **14/16**, LINE 88/88; the residual 2 are unreachable |
 | ~~`createtask`~~ | 0/13 | ✅ done 2026-08-04 — now **13/13**, LINE 96/97 |
-| **`feature/settings/ui/user`** | 0/12 | ⬅ next, but **only 4 branches are reachable** — verified 2026-08-04: `SettingsUserScreenViewModel$loadData$1` 0/4 + LINE 0/17 is the whole session; the other 8 (`OpenByDefaultSettingsButton_androidKt` 0/6, `_jvmKt` 0/2) are `@Composable` `expect`/`actual` bodies, the JVM one an empty function. Scope it as XS/S, not M |
-| `feature/settings/ui` | 0/8 | surfaced 2026-08-04. All 8 are `ThemeSelectorKt` (`@Composable`) — likely another ⛔. `SettingsViewModel` is 0 branches, LINE 7/7 + `$1` 0/5. Verify before taking |
+| ~~`feature/settings/ui/user`~~ | 0/12 | ✅ done 2026-08-04 — the 4 reachable branches are now **4/4**, LINE 16/17; the other 8 are `@Composable` and stay 0 |
+| ~~`feature/settings/ui`~~ | 0/8 | ⛔ closed-as-blocked 2026-08-04 — all 8 are `ThemeSelectorKt`, a `@Composable`. See the section below |
+| **`core/storage`** | 0/18 | ⬅ next. Surfaced 2026-08-04, and the only remaining row where every missed branch is hand-written and non-composable: `FiltersStorageImpl` 0/8 (LINE 20/26), `TaigaSessionStorageImpl` 0/4 (LINE 29/49), `ThemeSettingsKt` 0/6 (LINE 0/3). Needs a `DataStore<Preferences>` — the module already has both `commonTest` and `jvmTest`, so decide between a hand-written in-memory `DataStore` in `commonTest` and `PreferenceDataStoreFactory` over a temp dir in `jvmTest`, and write the decision into the test file |
 | `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
 | ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
 
@@ -1338,6 +1339,51 @@ Also: `assertFailsWithTestException` does not fit a function returning `Result` 
 throwing block, and `resultOf` returns the throwable instead of rethrowing. `CreateWorkItemUseCaseTest`
 has a local `assertFailure(result)` doing the same type+message check on `result.exceptionOrNull()`.
 Two tests now want this; if a third appears, move it to `:testing`. No behaviour bug found.
+
+### `feature/settings/ui/user` — ✅ done 2026-08-04
+
+4 tests in a new `SettingsUserScreenViewModelTest`. `:feature:settings:ui:jvmTest`, the full
+`jvmTest`, `koverXmlReport`, `:koverVerify`, `detekt` and `ktlintCheck` are all green. `:testing`
+gained `FakeUsersRepository.getMeResult/Throws/CallCount` — `getMe()` was
+`error("not used in this test")`; `.claude/agents/testing.md`'s entry was updated.
+
+| Scope | Before | After |
+|---|---|---|
+| `SettingsUserScreenViewModel$loadData$1` BRANCH | 0/4 | **4/4** |
+| `SettingsUserScreenViewModel$loadData$1` LINE | 0/17 | **16/17** |
+| package `…settings.ui.user` BRANCH | 0/12 — 0 % | **4/12 — 33.3 %** (the reachable 4 are 4/4) |
+| package `…settings.ui.user` LINE | 14/46 — 30.4 % | **30/46 — 65.2 %** |
+
+The residual 1 line is the documented `logcat` hole — `SettingsUserScreenViewModel.kt:46`, the
+`"Error loading user"` message lambda, `mi=1 mb=0 cb=0`. The failure test does take that path.
+The residual 8 branches are `OpenByDefaultSettingsButton`'s Android actual (0/6) and JVM actual
+(0/2), both `@Composable`; the JVM one is a deliberately empty function that Kover still credits
+with 2 branches. Neither is reachable from a JVM unit test, exactly as the row predicted.
+
+**The class-count flip went the other way this session**, for the first time: the baseline was an
+**822**-class run with 20 excluded-suffix leaks (excludes-skipped mode) on a *clean tree*, and the
+after-run — with two test-source files added — was a clean **742** with zero leaks, i.e. the
+CI-equivalent mode. That is the exact opposite of the "adding test sources flips a clean run *into*
+the leaky mode" transition recorded for the three preceding sessions. Treat the direction as
+genuinely unpredictable and rely on the package-scope escape hatch, which held: this package's
+denominators (12 BRANCH / 46 LINE) are identical in both reports, so the table is valid.
+`kover-rank.py` on the after-run: 742 classes, BRANCH 1385/2049 67.59 %, LINE 7895/9709 81.32 %.
+
+No behaviour bug found. Nothing about this ViewModel needed a turbine dance — it has no
+`SnackbarDelegate` and no channel; the failure path only writes `error` into state, same shape as
+`TeamViewModel`.
+
+### `feature/settings/ui` — ⛔ closed-as-blocked 2026-08-04
+
+Verified from the same 742-class report as the row above, without spending a session on it. All 8 of
+the package's missed branches are in `ThemeSelectorKt` (0/8 BRANCH, 0/25 LINE), a `@Composable` — the
+same composition-blocked shape that closed `main`. The rest of the package is already covered:
+`SettingsState` LINE 1/1, `SettingsViewModel` LINE 7/7.
+
+The one genuine leftover is **`SettingsViewModel$1` at LINE 0/5 and 0 branches** — the `init`
+coroutine that reads `getCurrentProjectSimple().isAdmin` into `canSeeAttributes`. A two-test file
+would close it, but it buys **zero branches**, so it does not belong in a sweep ranked by missed
+branches. Worth doing only if someone is in that file anyway.
 
 ---
 

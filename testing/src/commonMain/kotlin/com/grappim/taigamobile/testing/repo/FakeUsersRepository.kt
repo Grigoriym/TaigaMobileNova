@@ -16,6 +16,10 @@ class FakeUsersRepository : UsersRepository {
     var getUserResult: User? = null
     var getUserThrows: Throwable? = null
 
+    var getMeResult: User? = null
+    var getMeThrows: Throwable? = null
+    var getMeCallCount: Int = 0
+
     var getUserStatsResult: UserStats? = null
     var getUserStatsThrows: Throwable? = null
 
@@ -36,7 +40,11 @@ class FakeUsersRepository : UsersRepository {
         generateMemberStats: Boolean
     ): ImmutableList<TeamMember> = error("not used in this test")
 
-    override suspend fun getMe(): User = error("not used in this test")
+    override suspend fun getMe(): User {
+        getMeCallCount++
+        getMeThrows?.let { throw it }
+        return getMeResult ?: error("getMeResult not set")
+    }
 
     override suspend fun getUser(userId: Long): User {
         getUserThrows?.let { throw it }
