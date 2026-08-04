@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/settings/ui/attributes/projectvalues` (see the re-derived table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/workitem/ui/screens/edittags` (verified — see the re-derived table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -675,8 +675,11 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`main`~~ | 4/35 | ⛔ closed-as-blocked 2026-08-03 — 31 of the 35 need a composition, `MainViewModel` is already 4/4 + 44/44 |
 | ~~`feature/workitem/ui/delegates/customfields`~~ | 0/30 | ✅ done 2026-08-03 — now 28/30, LINE 86/86; the residual 2 are unreachable |
 | ~~`feature/workitem/ui/delegates/badge`~~ | 0/22 | ✅ done 2026-08-04 — now **22/22, LINE 66/66** |
-| **`feature/settings/ui/attributes/projectvalues`** | 0/22 | ⬅ next. `ProjectValuesViewModel`, no test; LINE 5/125 |
-| `feature/workitem/ui/screens/edittags` | 0/20 | not yet verified — check for `@Composable` before taking it; LINE 13/127 |
+| ~~`feature/settings/ui/attributes/projectvalues`~~ | 0/22 | ✅ done 2026-08-04 — now **22/22**, LINE 117/125 |
+| **`feature/workitem/ui/screens/edittags`** | 0/20 | ⬅ next, and **verified 2026-08-04**: all 20 are in `WorkItemEditTagsViewModel` (0/6) and its `fetchTags$1` (0/10) / `notifyChange$1` (0/4) lambdas — no `@Composable` in the package. LINE 13/127 |
+| `feature/workitem/ui/screens/sprint` | 0/18 | verified 2026-08-04: `EditSprintViewModel` (0/6) + `getPermissions$1`/`getSprints$1`/`notifyChange$1` (0/4 each). LINE 8/75. Same shape as `edittags` |
+| `feature/settings/ui/modules` | 0/16 | verified 2026-08-04: `ModulesViewModel$loadModules$1` 0/12 + `save$1` 0/4; the ViewModel body itself is already 20/28 LINE. LINE 38/88 |
+| `createtask` | 0/13 | verified 2026-08-04: `CreateTaskViewModel` 0/6 + `onCreateTask$3` 0/4 + `CreateWorkItemUseCase` 0/3. LINE 9/97 |
 | `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
 | ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
 
@@ -1079,6 +1082,56 @@ The one behaviour observation, not filed as a revisit because it is unreachable 
 badge that is **not** in `workItemBadges` patches the work item and changes nothing in state — the
 badge handed to `handleBadgeSave` always comes from a rendered `workItemBadges` entry. It is the
 `else` arm of `badge == type` and is covered by a test whose KDoc says so.
+
+### `feature/settings/ui/attributes/projectvalues` — ✅ done 2026-08-04
+
+20 tests in a new `ProjectValuesViewModelTest`. `:feature:settings:ui:jvmTest`, the full `jvmTest`,
+`koverXmlReport`, `:koverVerify`, `detekt` and `ktlintCheck` are all green. `:testing` gained
+`FakeProjectValuesRepository` and a settable `presetColorsResult` on `FakeTaigaSessionStorage`
+(`.claude/agents/testing.md` updated for both).
+
+| Scope | Before | After |
+|---|---|---|
+| `ProjectValuesViewModel` (+ its 4 lambdas) BRANCH | 0/22 — 0 % | **22/22 — 100 %** |
+| `ProjectValuesViewModel` (+ its 4 lambdas) LINE | 5/99 — 5.1 % | **99/99 — 100 %** |
+| package `…attributes.projectvalues` BRANCH | 0/22 | **22/22** |
+| package `…attributes.projectvalues` LINE | 5/125 | **117/125** |
+
+The baseline and the final after-run were both 742-class runs with identical totals (2049 BRANCH /
+9709 LINE), so no comparability dance was needed. Repo-wide: BRANCH 1293 → 1314, LINE 7451 → 7563.
+The *intermediate* after-run came back at **787** classes and is what turned up a third Kover
+class-count mode — `excludes` applied in full, surplus made up of Android-variant / Room classes.
+That is written up in `CLAUDE.md` (Testing) and [revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify);
+the package's denominators were identical in all three runs, so it did not affect this table.
+
+**The residual 8 lines are unreachable and carry no branches.** `EditFormState` (0/7) is a
+`private data class` declared *inside* `ProjectValuesScreen.kt` and constructed only by
+`initialEditState`, which is called from a `@Composable`; the file's `*Screen` function is
+Kover-excluded but the nested private class is not, so it shows up as a 7-line hole that no JVM test
+can fill. The other is `ProjectValuesState.kt:30` — the *default* value of the `onSaveItem` parameter,
+a six-underscore no-op lambda the ViewModel always overrides.
+
+Three things worth carrying forward:
+
+- **`resultOf`'s cancellation rethrow is testable inside a `viewModelScope.launch`, not just from a
+  plain suspend call.** The badge session established the pattern with `assertFailsWith`; here the
+  call sites are fire-and-forget launches, so setting `…Throws = CancellationException("cancelled")`
+  and asserting the *loading flag is still set* is what proves the rethrow happened — neither
+  `onSuccess` nor `onFailure` ran, so nothing cleared it. `viewModelScope` is a `SupervisorJob`, so the
+  cancelled child neither fails the test nor disturbs its siblings. One such test per `resultOf` call
+  site (three here) is what took the package from 19/22 to 22/22.
+- **A repeated inline expression is repeated branches.** `color.ifBlank { null }` appears once in the
+  create arm and once in the update arm of `onSaveItem`; covering blank-vs-blank on the create path
+  left the update path's copy missed, and the after-run came back 21/22 for that one reason. The fix
+  was one argument in an existing test, but only a per-method re-read of the XML found it — budget a
+  second measurement pass for any method with duplicated argument-building code.
+- **The `…Calls` recorder as a single `data class` per method pays for itself.**
+  `FakeProjectValuesRepository.SaveCall` holds all eight create/update arguments (`id = null` marks a
+  create), which lets the create test assert the entire argument set in one `assertEquals` instead of
+  eight. That is what made the `ifBlank` / `toDoubleOrNull` / `toIntOrNull` argument mapping cheap to
+  pin down.
+
+No behaviour bug found; nothing filed to [revisit.md](../revisit.md) this session.
 
 ---
 

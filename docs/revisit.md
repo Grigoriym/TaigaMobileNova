@@ -233,6 +233,22 @@ tasks actually executed".
   touched. The fix is to take both measurements with a build-file change present, then check the
   denominators match before reading anything into the numerators.
 
+### Update (2026-08-04, improvement-plan task 9a, `projectvalues`) — a third mode, and one concrete gap
+
+The "two stable outputs" table above is incomplete, and the bisection result it reports has since been
+contradicted twice (854 with no build file touched, and the run below). A **787**-class run appeared
+with the `excludes` applied *in full* — zero `*Screen` / `*Widget` / `*Plugin` classes — exceeding a
+742 run by 45 **Android-variant / Room-generated** classes only (`*_Impl`, `TaigaDB_Impl`,
+`core/storage/db/entities/*`, `StorageModule_androidKt`, `NetworkMonitorImpl`). So class count alone
+does not identify the mode; count the excluded-suffix leaks instead (one-liner in `CLAUDE.md`).
+Disproved lead: touching only `:testing`'s `commonMain` and re-running gave 744, not 787.
+
+**The one actionable item here:** `com.grappim.taigamobile.core.storage.db.entities` is in *neither*
+the root `excludes` `packages(…)` list nor `kover-rank.py`, so in that mode three `@Entity` data
+classes (53 lines) survive filtering and inflate the LINE denominator — BRANCH is unaffected. Whoever
+fixes this entry should add `…db.entities` to the `packages(…)` block alongside the existing
+`core.storage.db*` entries and to the script's `PACKAGES`, in the same commit.
+
 ---
 
 ## 9. `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT

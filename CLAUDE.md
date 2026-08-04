@@ -244,6 +244,34 @@ tests, not a smaller bound. The traps when touching those numbers:
   what CI sees. A build-script edit was once found by bisection to flip it, but that is **not** the
   whole trigger: on 2026-08-03 a clean tree gave 742 and adding only *test sources* gave 854, i.e.
   the opposite direction with no build file touched. Treat the mechanism as unknown.
+- **A high class count does not by itself mean the `excludes` were skipped — there are at least two
+  high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
+  `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45
+  **Android-variant / Room-generated** classes — `*_Impl`, `TaigaDB_Impl`,
+  `core/storage/db/entities/*`, `StorageModule_androidKt`, `NetworkMonitorImpl`. Tell the modes apart
+  in one command before reaching for any of the advice above:
+
+  ```bash
+  python3 -c "
+  import xml.etree.ElementTree as ET
+  n=[c.get('name') for p in ET.parse('build/reports/kover/report.xml').getroot().findall('package') for c in p.findall('class')]
+  print(len(n), 'excluded-suffix leaks:', len([x for x in n if x.split('/')[-1].split('\$')[0].endswith(('Screen','Widget','Plugin'))]))"
+  ```
+
+  Zero leaks means the `excludes` ran and the surplus is variant artifacts; a non-zero count is the
+  821/854 mode. Two 742-side runs also differ by ±2 classes (Koin-generated `LoginDataModule`, both
+  lines covered, BRANCH identical) — that much wobble is noise, not a mode.
+- **In the 787 mode, `kover-rank.py` normalises BRANCH exactly but leaves LINE ~53 lines high.** It
+  filtered that report to 745 classes, not 742: the three `core.storage.db.entities` classes survive
+  because the root `excludes` `packages(...)` list does not name `…db.entities` either, so the script
+  is faithfully in sync and the 742 run simply never contained them. The BRANCH denominator was 2049
+  in both, i.e. identical to the gate; only LINE was inflated. So the "`kover-rank.py`'s output *is*
+  the gate number" claim above holds **for branch coverage**; check the LINE denominator against a
+  known 742 run before quoting a line figure. Package-scope tables are unaffected either way.
+- **One thing that is *not* the flip trigger:** re-running `koverXmlReport` after touching only
+  `:testing`'s `commonMain` (which does recompile its `androidMain`) gave **744**, not 787 — so the
+  Android-artifact regeneration that coincided with the 787 run does not reproduce it on its own.
+  Recorded so the experiment is not repeated.
 - **Do not fight the flip — re-apply the `excludes` yourself with
   [docs/testing/kover-rank.py](docs/testing/kover-rank.py).** It filters whatever report you have by
   the same suffix/package rules as the root `build.gradle.kts`, prints the kept class count and the

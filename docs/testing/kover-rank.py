@@ -11,6 +11,12 @@ Rather than trying to force a 742-class run, this script re-applies the exclusio
 whatever report you have. On 2026-08-03 it reduced an 854-class report to 742 classes and
 reproduced a genuine 742-class run's totals to the digit, so the two are interchangeable.
 
+Caveat found 2026-08-04: on a 787-class report (a mode where the `excludes` *were* applied and the
+surplus is Android-variant / Room classes) it stops at 745, because the three
+`com.grappim.taigamobile.core.storage.db.entities` classes are named by neither the root `excludes`
+nor the lists below. BRANCH totals still match the gate exactly; LINE runs ~53 lines high. See
+docs/revisit.md #8 — fix both lists together if that entry is ever addressed.
+
 Usage:
     ./gradlew koverXmlReport
     python3 docs/testing/kover-rank.py build/reports/kover/report.xml

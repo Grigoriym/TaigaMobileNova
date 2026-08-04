@@ -56,6 +56,7 @@ right subpackage before concluding a fake doesn't exist:
 | `FakeWikiRepository` | `WikiRepository` |
 | `FakeFiltersRepository` | `FiltersRepository` |
 | `FakeSwimlanesRepository` | `SwimlanesRepository` |
+| `FakeProjectValuesRepository` | `ProjectValuesRepository` |
 | `FakeAuthRepository` | `AuthRepository` |
 
 Key fields for commonly-used fakes:
@@ -64,7 +65,7 @@ Key fields for commonly-used fakes:
 
 **`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
 
-**`FakeTaigaSessionStorage`**: `currentProjectId: Long`, `currentUserId: Long?`, `clearDataCalled: Boolean`
+**`FakeTaigaSessionStorage`**: `currentProjectId: Long`, `currentUserId: Long?`, `clearDataCalled: Boolean`, `presetColorsResult` (backs `getPresetColors()`), `tagPresetColorsResult` (backs `getPresetColorsAsColor()`)
 
 **`FakeWikiRepository`**: `getProjectWikiPagesResult`, `getProjectWikiPageBySlugResult/Throws`, `getWikiLinksResult/Throws`, `deleteWikiPageThrows/Called/Id`, `deleteWikiLinkCalled/Id`
 
@@ -79,6 +80,8 @@ Key fields for commonly-used fakes:
 **`FakeFiltersRepository`**: `statusesResult/Throws`, `filtersDataResult/Throws`, `getFiltersDataCallCount`
 
 **`FakeSwimlanesRepository`**: `getSwimlanesResult/Throws`
+
+**`FakeProjectValuesRepository`**: `getProjectValuesResult/Throws/Calls`, `createProjectValueResult/Throws/Calls`, `updateProjectValueResult/Throws/Calls`, `deleteProjectValueThrows/Calls`. The `…Calls` lists hold `SaveCall` (every create/update argument, `id = null` for creates) and `DeleteCall` records, so a test can assert the whole argument set in one `assertEquals`
 
 **`FakeHistoryRepository`**: check file for fields
 
