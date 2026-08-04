@@ -636,4 +636,25 @@ kotlin {
     Same shape as gotcha 11's closing rule, now seen twice: **when a test depends on a runtime
     facility you have not exercised in that module before — a resource loader, an env override, a
     native lib — spend one throwaway test proving it works before writing the tests that assume it.**
+13. **`assertEquals` against an `ImmutableMap<String, Any?>` needs the expected side typed.**
+    `assertEquals(mapOf("status" to id), call.payload)` does not compile — *"the value of the type
+    parameter 'T' must be mentioned in input types"*, because `Map<String, Long>` and
+    `ImmutableMap<String, Any?>` have no inferrable common `T`. Write
+    `assertEquals(mapOf<String, Any?>("status" to id), call.payload)`. This hits every payload
+    assertion against `PatchDataGenerator` output; extract the payload read into a one-line helper so
+    the widened `mapOf` still fits ktlint's 120 columns.
+14. **`resultOf`'s cancellation rethrow is a real, testable branch of its *caller*.** `resultOf` is
+    `inline`, so `catch (e: CancellationException) { throw e }` counts against whichever method
+    inlined it. Cover it by making the fake throw cancellation:
+
+    ```kotlin
+    workItemRepository.patchDataThrows = CancellationException("cancelled")
+    assertFailsWith<CancellationException> { save(...) }
+    ```
+
+    This works inside `runTest` — the exception comes from a plain suspend call, not from a cancelled
+    job, so the test coroutine is unaffected. Assert that the `doOnError` callback did **not** run;
+    that is the behaviour the clause exists for. The `catch (e: TimeoutCancellationException)` clause
+    below it is dead code (it is a `CancellationException` subclass, so the first clause always wins)
+    and needs no test. Worked example: `WorkItemBadgeDelegateImplTest`.
     A whole file written against a broken assumption is expensive; the probe is a minute.

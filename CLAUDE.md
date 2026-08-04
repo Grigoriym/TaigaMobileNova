@@ -263,7 +263,10 @@ tests, not a smaller bound. The traps when touching those numbers:
 - **`koverXmlReport` always writes `build/reports/kover/report.xml`.** Copy it to a distinct path
   immediately after each run. Forgetting once makes the "before" and "after" the same file, and the
   diff comes back showing nothing changed anywhere — which reads like a plausible result, not like a
-  mistake.
+  mistake. Equally, **do not write test sources while a baseline run is in flight** — the run compiles
+  test sources partway through, so a file added at the wrong moment silently lands in the "before".
+  Cheap check either way: confirm the baseline reports the *pre-change* figure for the class you are
+  about to test before trusting it.
 - **A class excluded by name shows no movement however well you test it.** The `excludes` block
   filters by suffix — `**.*Plugin`, `**.*Module`, `**.*Repository`, `**.*Api`, `**.*Screen` … — which
   in `core/api` drops all five Ktor plugins, i.e. ~98 lines and 38 branches of real auth and

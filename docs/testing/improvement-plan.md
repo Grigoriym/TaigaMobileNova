@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03; ⬅ **NEXT** module: `feature/workitem/ui/delegates/badge` (see the re-derived table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/settings/ui/attributes/projectvalues` (see the re-derived table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -674,8 +674,9 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`utils/ui`~~ | 8/107 | ✅ done 2026-08-03 — now 61/107; the residual 46 all need a composition |
 | ~~`main`~~ | 4/35 | ⛔ closed-as-blocked 2026-08-03 — 31 of the 35 need a composition, `MainViewModel` is already 4/4 + 44/44 |
 | ~~`feature/workitem/ui/delegates/customfields`~~ | 0/30 | ✅ done 2026-08-03 — now 28/30, LINE 86/86; the residual 2 are unreachable |
-| **`feature/workitem/ui/delegates/badge`** | 0/22 | ⬅ next. `WorkItemBadgeDelegateImpl`, LINE 15/66 — same shape as `customfields` |
-| `feature/settings/ui/attributes/projectvalues` | 0/22 | `ProjectValuesViewModel`, no test; LINE 5/125 |
+| ~~`feature/workitem/ui/delegates/badge`~~ | 0/22 | ✅ done 2026-08-04 — now **22/22, LINE 66/66** |
+| **`feature/settings/ui/attributes/projectvalues`** | 0/22 | ⬅ next. `ProjectValuesViewModel`, no test; LINE 5/125 |
+| `feature/workitem/ui/screens/edittags` | 0/20 | not yet verified — check for `@Composable` before taking it; LINE 13/127 |
 | `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
 | ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
 
@@ -1032,6 +1033,52 @@ for `EditableItem`s. So saving a Text/Number/Date/Dropdown/Checkbox field adds i
 `editingItemIds` permanently. Invisible today only because the single reader of that set ANDs it with
 `isEditableItem`. The test that documents it is named `- adds a non-editing item to editingItemIds`
 and carries a KDoc saying it will need inverting when the bug is fixed.
+
+### `feature/workitem/ui/delegates/badge` — ✅ done 2026-08-04
+
+17 tests added to `WorkItemBadgeDelegateImplTest` (2 → 19). `:feature:workitem:ui:jvmTest`, the full
+`jvmTest`, `koverXmlReport`, `:koverVerify`, `detekt` and `ktlintCheck` are all green. `:testing` was
+**not** touched — `FakeWorkItemRepository` already carried `patchDataResult/Throws/Calls` and
+`getStatusUI()` already existed, so `.claude/agents/testing.md` is unchanged.
+
+| Scope | Before | After |
+|---|---|---|
+| `WorkItemBadgeDelegateImpl` BRANCH | 0/22 — 0 % | **22/22 — 100 %** |
+| `WorkItemBadgeDelegateImpl` LINE | 15/66 — 22.7 % | **66/66 — 100 %** |
+| package `…delegates.badge` BRANCH | 0/22 | **22/22** |
+| package `…delegates.badge` LINE | 20/71 | **71/71** |
+
+Both reports were 742-class runs with identical totals (2049 BRANCH / 9709 LINE), so no comparability
+dance was needed. Repo-wide: BRANCH 1271 → 1293, LINE 7400 → 7451.
+
+**All 22 branches were in one method.** A per-method read of the baseline XML (the snippet in the
+`customfields` section) put every one of them in `handleBadgeSave` — the class's other four members
+were already covered by the two pre-existing tests. That made the session's shape obvious before any
+code was read: 4 payload arms × the same 4 `badge.copy(currentValue = item)` arms, the `badge == type`
+else arm, the `?.invoke` null-checks on `doOnPreExecute`/`doOnSuccess`, and `resultOf`'s catches.
+
+Three things worth carrying forward:
+
+- **The 9a row's note was right this time** — "same shape as `customfields`" held, and the module took
+  well under a session because the fake needed no new hooks. Two `…delegates/*` modules in a row have
+  been the cheapest rows on the table; the remaining delegates are a reasonable place to keep going
+  when a short session is what's available.
+- **`resultOf`'s cancellation rethrow is testable and worth one test.** `resultOf` is `inline`, so its
+  `catch (e: CancellationException) { throw e }` counts against the *caller's* branch total. Setting
+  `patchDataThrows = CancellationException("cancelled")` and wrapping the call in
+  `assertFailsWith<CancellationException>` inside `runTest` works — the exception is thrown by a plain
+  suspend call, not by a cancelled job, so `runTest` does not treat it as a test cancellation. The
+  `catch (e: TimeoutCancellationException)` clause below it is dead code (it is a `CancellationException`
+  subclass, so the first clause always wins) and needs no test.
+- **`assertEquals` against an `ImmutableMap<String, Any?>` needs the expected side typed.**
+  `assertEquals(mapOf("status" to id), call.payload)` fails to compile with "the value of the type
+  parameter 'T' must be mentioned in input types"; `mapOf<String, Any?>(…)` fixes it. Extracting the
+  payload read into a one-line helper also keeps those assertions inside ktlint's 120-column limit.
+
+The one behaviour observation, not filed as a revisit because it is unreachable from the UI: saving a
+badge that is **not** in `workItemBadges` patches the work item and changes nothing in state — the
+badge handed to `handleBadgeSave` always comes from a rendered `workItemBadges` entry. It is the
+`else` arm of `badge == type` and is covered by a test whose KDoc says so.
 
 ---
 
