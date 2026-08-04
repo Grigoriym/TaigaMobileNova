@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04; ⬅ **NEXT** module: `core/storage` (surfaced 2026-08-04 — 18 missed branches, all hand-written non-composable, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/userstories/ui` (27 missed branches — `UserStoryDetailsViewModel`, LINE 263/528; verify and expect to split it, see the table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -660,6 +660,12 @@ covered ViewModel; it was closed with the evidence rather than worked. Two rows'
 also simply wrong when re-derived. A row that survives verification is the session; a row that does
 not gets a ⛔ entry recording *why*, which is worth as much as tests.
 
+**Verify in both directions — a row can be *under*stated too.** `core/storage` was written down as
+0/18 across three named classes; the same package tree also held `AuthStorageImpl$isLoggedIn$1` (0/6)
+and `DataStoreServerStorage` (2/8), both hand-written and equally reachable, making the real figure
+2/32. Re-derive the per-class breakdown for the whole package prefix rather than reading the row's
+class list as complete.
+
 **Why:** task 9 proved the pattern on one module. These are the modules where a session buys the
 most, ranked by missed branches in **hand-written** code (measured 2026-08-03, `koverXmlReport`):
 
@@ -682,9 +688,22 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`createtask`~~ | 0/13 | ✅ done 2026-08-04 — now **13/13**, LINE 96/97 |
 | ~~`feature/settings/ui/user`~~ | 0/12 | ✅ done 2026-08-04 — the 4 reachable branches are now **4/4**, LINE 16/17; the other 8 are `@Composable` and stay 0 |
 | ~~`feature/settings/ui`~~ | 0/8 | ⛔ closed-as-blocked 2026-08-04 — all 8 are `ThemeSelectorKt`, a `@Composable`. See the section below |
-| **`core/storage`** | 0/18 | ⬅ next. Surfaced 2026-08-04, and the only remaining row where every missed branch is hand-written and non-composable: `FiltersStorageImpl` 0/8 (LINE 20/26), `TaigaSessionStorageImpl` 0/4 (LINE 29/49), `ThemeSettingsKt` 0/6 (LINE 0/3). Needs a `DataStore<Preferences>` — the module already has both `commonTest` and `jvmTest`, so decide between a hand-written in-memory `DataStore` in `commonTest` and `PreferenceDataStoreFactory` over a temp dir in `jvmTest`, and write the decision into the test file |
-| `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
+| ~~`core/storage` + `/auth` + `/server`~~ | 2/32 | ✅ done 2026-08-04 — now **45/46**; the row said 0/18 and was an undercount, see the section below |
+| **`feature/userstories/ui`** | 13/40 | ⬅ next. `UserStoryDetailsViewModel`, LINE 263/528 with a large block of wholly-untested lambdas — likely needs splitting |
 | ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
+
+**Re-derived 2026-08-04** after the `core/storage` module, with [kover-rank.py](kover-rank.py) over a
+clean 742-class report. The candidates below `feature/userstories/ui`, for whoever takes the session
+after it — none verified yet, so check each for `@Composable` and generated code before scoping:
+
+| Module | BRANCH | Note |
+|---|---|---|
+| `feature/epics/ui/details` | 12/30 | LINE 245/468 — a details ViewModel, same shape as `feature/userstories/ui` |
+| `feature/issues/ui/details` | 17/34 | LINE 285/512 — likewise |
+| `core/domain` | 20/36 | LINE 43/53, small and hand-written |
+| `feature/workitem/ui/mappers` | 41/56 | **LINE 105/105 already** — pure mappers whose conditionals are untested, so this is branch-only work and cheap |
+| `feature/sprint/data` | 16/29 | LINE 147/205 |
+| `feature/tasks/ui` | 17/30 | LINE 274/479 |
 
 Skip `feature/filters/domain/model` (142 missed) and `feature/userstories/dto` (38) — generated
 `data class` / `@Serializable` branches, unreachable from a test. `feature/login/ui` has dropped off
@@ -1384,6 +1403,77 @@ The one genuine leftover is **`SettingsViewModel$1` at LINE 0/5 and 0 branches**
 coroutine that reads `getCurrentProjectSimple().isAdmin` into `canSeeAttributes`. A two-test file
 would close it, but it buys **zero branches**, so it does not belong in a sweep ranked by missed
 branches. Worth doing only if someone is in that file anyway.
+
+### `core/storage` — ✅ done 2026-08-04
+
+56 new tests across 5 files; the module goes 12 → 68 tests. `:core:storage:jvmTest`, the full
+`jvmTest`, `detekt`, `ktlintCheck` and `:koverVerify` are all green. Nothing in `:testing` was
+touched, so `.claude/agents/testing.md` needed no update.
+
+| File | Source set | Tests | Covers |
+|---|---|---|---|
+| `ThemeSettingsTest` | `commonTest` | 8 | `fromValue` (each entry, null, unknown, case), `default()`, the three `is*` extensions |
+| `AuthStorageImplTest` | `jvmTest` | 10 | empty defaults, store/overwrite, all four `isLoggedIn` combinations, `clear` |
+| `TaigaSessionStorageImplTest` | `jvmTest` | 23 | every property and method, incl. all six defaults and the preset-colour add/remove branches |
+| `FiltersStorageImplTest` | `jvmTest` | 9 | all four sections, the null/blank/populated decode paths, key independence, `resetFilters` |
+| `DataStoreServerStorageTest` | `jvmTest` | 6 | all three host-fallback branches, `defineServer`, the file-name constant |
+
+**The decision the row asked for: real `PreferenceDataStoreFactory` over a temp file in `jvmTest`,
+not a hand-written in-memory `DataStore` in `commonTest`.** `TrustedCertStorageImplTest` already set
+that precedent in this module. The rationale is written into
+`jvmTest/…/core/storage/TestDataStore.kt`, which holds the shared `createTestDataStore(name)` helper:
+a fake `DataStore` would assert the fake's behaviour rather than the real read-modify-write and
+serialization these classes depend on. Nothing platform-specific is under test — the storage classes
+are all `commonMain`; `jvmTest` is purely where a filesystem path is available.
+`TrustedCertStorageImplTest` was left with its own inline copy (surgical-changes rule).
+
+| Scope | Before | After |
+|---|---|---|
+| package `core/storage` BRANCH | 0/18 | **27/28** |
+| package `core/storage` LINE | 54/100 | **106/106** |
+| package `core/storage/auth` BRANCH | 0/6 | **10/10** |
+| package `core/storage/auth` LINE | 23/31 | **33/33** |
+| package `core/storage/server` BRANCH | 2/8 | **8/8** |
+| package `core/storage/server` LINE | 15/19 | **19/19** |
+| `TaigaSessionStorageImpl` BRANCH | 0/4 | **14/14** |
+| `TaigaSessionStorageImpl` LINE | 29/49 | **55/55** |
+| whole-report BRANCH | 1385/2049 — 67.59 % | **1465/2063 — 71.01 %** |
+
+Both runs were the clean 742-class / zero-leak mode, i.e. directly comparable and what CI sees.
+
+Five things worth carrying forward:
+
+- **The row's 18 branches were an undercount.** It named `FiltersStorageImpl` 0/8,
+  `TaigaSessionStorageImpl` 0/4 and `ThemeSettingsKt` 0/6, but `AuthStorageImpl$isLoggedIn$1` (0/6)
+  and `DataStoreServerStorage` (1/6 + 1/2) are in the same package tree, hand-written and equally
+  reachable. Re-derive a row's per-class breakdown before scoping, in both directions — the standing
+  advice is to check whether a row is *over*stated, and this one was understated by more than half.
+- **`:testing`'s `getFiltersData()` returns a value equal to `FiltersData()`** — every one of its
+  nine lists is `persistentListOf()`. A `StateFlow` conflates an update equal to the value it already
+  holds, so a `changeScrumFilters(getFiltersData())` test times out in turbine with "No value
+  produced in 3s" while the write has in fact succeeded. Cost half an hour; the DataStore probe
+  showed `filters_scrum={}` on disk with the `StateFlow` unmoved. The test file now builds its own
+  non-default `FiltersData` and says why. **Before using a model factory as a "changed" value, check
+  that it differs from the type's default.**
+- **A Kover denominator can grow simply because the code started executing.**
+  `TaigaSessionStorageImpl` went BRANCH 0/4 → 14/14 and LINE 29/49 → 55/55 in two same-mode,
+  same-class-count runs. CLAUDE.md treats a moved denominator as a signal that two runs are not
+  comparable; that rule is about *report-level* totals and does not hold at class level, where an
+  unexecuted class can be reported with fewer branches than it has. Compare `covered` against the
+  *after* denominator, and do not read a growing denominator here as a bad measurement.
+- **`feature/filters/domain/model` moved from 2/144 to 39/144 as a side effect**, without a single
+  test being written against it. Round-tripping `FiltersData` through `Json` in
+  `FiltersStorageImplTest` exercised the generated serializer branches. Both this plan and CLAUDE.md
+  write that package off as unreachable generated code — that is **too strong**: the `equals`/
+  `hashCode`/`copy$default` share is genuinely unreachable, but the `@Serializable` share is reached
+  by any test that serializes the type. Do not add it to a sweep on the strength of this, but do not
+  quote "142 unreachable" either.
+- **Residuals, all verified unreachable or out of scope.** `FiltersStorageImpl` sits at 7/8: the
+  per-line view pins it to line 33, `value?.takeIf { … }?.let { … } ?: FiltersData()`, whose elvis
+  null arm is dead once `let` has run — the same always-one-short `?.`-plus-elvis shape CLAUDE.md
+  records for `x?.toString() ?: ""`. `core/storage/utils/StringPreference` (0/2 BRANCH, 0/10 LINE) is
+  `androidMain`-only and invisible to a JVM test. `TrustedCertStorageImpl` stays at 7/10 — that is
+  its pre-existing test file, untouched here.
 
 ---
 

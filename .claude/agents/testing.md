@@ -196,7 +196,10 @@ All in package `com.grappim.taigamobile.testing.models`:
 | `BadgesFakes` | badge fakes |
 | `WikiFakes` | `getWikiPageDTO(...)`, `getWikiLinkDTO(...)` |
 
-All factories generate random data — every call returns different values.
+Most factories generate random data — every call returns different values. **`getFiltersData()` is
+the exception and it is a trap:** all nine of its lists are `persistentListOf()`, so what it returns
+is `==` to `FiltersData()`. Anything asserting "the value changed" against it silently proves
+nothing. See gotcha 15.
 
 ---
 
@@ -725,3 +728,57 @@ kotlin {
     distinguishes the two tests (`WorkItemEditTagsViewModelTest`). Inventing a difference that isn't
     there is worse than documenting that there isn't one. One test per `resultOf` call site.
     A whole file written against a broken assumption is expensive; the probe is a minute.
+
+15. **Check a model factory differs from the type's default before using it as a "changed" value.**
+    `getFiltersData()` returns a `FiltersData` equal to `FiltersData()`. A `StateFlow` conflates an
+    update equal to the value it already holds, so
+    `sut.changeScrumFilters(getFiltersData())` followed by turbine's `awaitItem()` fails with
+    **"No value produced in 3s"** — while the write has in fact succeeded and is on disk. The message
+    points at dispatchers and test scoping; the cause is the assertion having no content. Build a
+    locally distinct value instead (`FiltersStorageImplTest.filtersNamed(...)`).
+
+    Generalises past `StateFlow`: an assertion whose expected value equals the SUT's default passes
+    for the wrong reason on every `distinctUntilChanged`, `copy()` and `assertEquals` in the suite.
+
+16. **When an async test hangs or times out, probe the underlying state before theorising.** Reading
+    the raw `DataStore` contents in a throwaway test — three `println`s and a `Thread.sleep` — settled
+    gotcha 15 in one run, after several rounds of reasoning about `UnconfinedTestDispatcher`,
+    schedulers and turbine's timeout clock had produced nothing. The timeout tells you the value
+    never arrived; it does not tell you whether the write, the propagation or the assertion is at
+    fault, and only the first of those three is cheap to observe directly. Delete the probe
+    afterwards.
+
+---
+
+## Testing a class backed by `DataStore<Preferences>`
+
+Use a **real** `PreferenceDataStoreFactory` over a temp file in **`jvmTest`**, not a hand-written
+in-memory `DataStore` in `commonTest`. A fake would assert the fake's behaviour rather than the real
+read-modify-write and serialization the storage classes depend on. `core/storage`'s
+`jvmTest/…/core/storage/TestDataStore.kt` holds the shared helper:
+
+```kotlin
+internal fun createTestDataStore(name: String): DataStore<Preferences> {
+    val file = File.createTempFile(name, ".preferences_pb")
+    file.deleteOnExit()
+    return PreferenceDataStoreFactory.createWithPath(produceFile = { file.absolutePath.toPath() })
+}
+```
+
+Nothing platform-specific is being asserted this way — the storage classes are `commonMain`;
+`jvmTest` is only where a filesystem path exists. Say so in the test file, per the `expect`/`actual`
+rule in `CLAUDE.md`.
+
+Two shapes to watch for:
+
+- **A class whose flows are `stateIn(CoroutineScope(Dispatchers.Main + SupervisorJob()), Eagerly)`
+  and whose writers are fire-and-forget `scope.launch { }`** (`FiltersStorageImpl`) needs
+  `MainDispatcherRule` — without it the writes are not observable at all. Observe the result with
+  turbine, whose timeout is wallclock, so real DataStore IO completes inside it.
+- **A synchronous API that wraps its access in `runBlocking`** (`DataStoreServerStorage.server`) is
+  better tested *without* `runTest`. Driving a `runBlocking` getter from a virtual-time scope buys
+  nothing and obscures the call.
+
+Worked examples in `core/storage/src/jvmTest/`: `TaigaSessionStorageImplTest` (23 tests, plain
+`runTest`), `FiltersStorageImplTest` (9, `MainDispatcherRule` + turbine), `AuthStorageImplTest` (10),
+`DataStoreServerStorageTest` (6, no `runTest`).

@@ -240,6 +240,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   152 branches in the *totals*, in packages the change never touched. Compare at **package scope**,
   where you can see the denominator is identical, and treat a moved total denominator as a signal
   the two runs aren't comparable rather than as a result.
+  **That rule is about report-level totals and does not extend to a single class or package.** An
+  unexecuted class is reported with *fewer* branches than it has, so covering it grows its own
+  denominator: `TaigaSessionStorageImpl` went BRANCH 0/4 → **14/14** and LINE 29/49 → **55/55**
+  between two same-mode, same-742-class runs. Compare `covered` against the **after** denominator at
+  class scope, and don't read the growth as a bad measurement.
 - **Concretely: `koverXmlReport` flips between a "high class count" and a "low class count" mode, and
   which one you get is not predictable.** Observed values so far: **821** (62.00 % line / 43.49 %
   branch), **854** (62.70 % / 43.24 %) and **742** (71.96–72.07 % / 50.37–50.51 %). The high counts
@@ -325,8 +330,14 @@ tests, not a smaller bound. The traps when touching those numbers:
   `…RepositoryImpl`, and every repository impl in the project is measured normally.
 - **Much of the branch denominator is unreachable**, in two distinct ways, and a package's
   missed-branch count distinguishes neither. *Generated:* `equals`/`hashCode`/`copy$default` on data
-  classes, `@Serializable` serializers and Room DAO impls — `feature/filters/domain/model` is 2/144
-  across nine files with no hand-written conditional in them. *Composition-blocked:* hand-written
+  classes and Room DAO impls — `feature/filters/domain/model` is 2/144 across nine files with no
+  hand-written conditional in them. **`@Serializable` serializers are *not* in this category**,
+  though: they are reached by any test that serializes the type, wherever it lives. Round-tripping
+  `FiltersData` through `Json` inside `FiltersStorageImplTest` (a different module) took that same
+  package from 2/144 to **39/144** with no test written against it. So don't quote a
+  `@Serializable`-heavy package's missed branches as unreachable — but don't take it as a sweep
+  target either, since the reachable share moves as a side effect of testing its callers.
+  *Composition-blocked:* hand-written
   branches inside `@Composable` functions and `@Composable get()` properties, which no plain JVM test
   can enter — `utils/ui` left 46 such branches and the whole `main` package is 31 of 35 (`MainAppState`
   is `@Composable` getters; `MainViewModel` is already 4/4). Rank work by missed branches in
@@ -334,7 +345,9 @@ tests, not a smaller bound. The traps when touching those numbers:
   is always 3/4: the safe call contributes two branches and the elvis two, but `toString()` on a
   non-null receiver never returns null, so the elvis's null arm is dead on that path. Seen twice —
   `WorkItemCustomFieldsDelegateImpl` and `ModulesViewModel` lines 59–60 — so recognise it rather than
-  hunting for the test.
+  hunting for the test. Same family, same one-short result: a `?.`-chain whose last link cannot
+  return null feeding an elvis, e.g. `FiltersStorageImpl:33`
+  `value?.takeIf { it.isNotBlank() }?.let { json.decodeFromString(it) } ?: FiltersData()` at 7/8.
 - **The same is true of LINE for every `logcat { }` call site** — 96 of them. The JVM backend is the
   no-op `NoLog` (see Logging), which never invokes the `message: () -> String` lambda, so each one is
   a synthetic method Kover reports as one missed line and zero branches. **Signature to recognise: a

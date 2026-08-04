@@ -481,3 +481,25 @@ into the covered `invokeSuspend` and cost nothing; that package finished at LINE
 `EditSprintViewModel`'s, in the same syntactic position, was split out at 0/1. So the 1-line-hole
 signature is still the right thing to stop at, but 100 % LINE is not out of reach a priori, and the
 "~96 lines reclaimable" figure is an upper bound rather than a count.
+
+---
+
+## 17. `StringPreference` and `LongPreferences` in `core/storage` are dead code
+
+**Where:** `core/storage/src/androidMain/kotlin/com/grappim/taigamobile/core/storage/utils/StringPreference.kt`
+and `.../utils/LongPreferences.kt`.
+
+**Evidence:** `grep -rn "StringPreference\|LongPreferences" --include=*.kt . | grep -v /build/`
+returns only the two declaration files themselves — no call site anywhere in the project, including
+`androidApp`. They are `ReadWriteProperty` delegates over `SharedPreferences`, i.e. the pre-DataStore
+storage mechanism; every storage class in the module now takes a `DataStore<Preferences>` instead.
+
+**Consequence:** none at runtime. In the coverage report they show as `StringPreference` BRANCH 0/2
+LINE 0/10 and `StringPreferenceKt` LINE 0/2 — permanently, since `androidMain` code is unreachable
+from `jvmTest` and the repo has no Android unit-test source set by design. Anyone ranking
+`core/storage` by missed lines will keep re-finding them and re-concluding they are untestable, which
+is true but beside the point: they should not exist.
+
+**Why deferred:** found while writing the `core/storage` tests (improvement-plan task 9a). Deleting
+production files is not a test task's business, and the surgical-changes rule says to mention
+unrelated dead code rather than remove it.
