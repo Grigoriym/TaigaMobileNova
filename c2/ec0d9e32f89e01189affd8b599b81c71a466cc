@@ -1,0 +1,28 @@
+docs/testing/improvement-plan.md
+  s_a82b84180f3450::t_905a98807e7122 677-679
+  s_a82b84180f3450::t_2b8d657b6e9764 1037-1082
+  s_a82b84180f3450::t_f17eaf0b0f5ecb 56
+.claude/agents/testing.md
+  s_a82b84180f3450::t_8adcb95f64fce2 639-659
+feature/workitem/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/workitem/ui/delegates/badge/WorkItemBadgeDelegateImplTest.kt
+  s_a82b84180f3450::t_ac8019666612b5 52-53,140,152,164,176
+  s_a82b84180f3450::t_9bb0b1dcbac067 3,7-13,15,17-21,25-26,28,34,39,48-51,54-69,73,75,77,83-139,141-151,153-163,165-175,177-345,347-350,352-357
+CLAUDE.md
+  s_a82b84180f3450::t_f163d68607641c 266-269
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "c2ec0d9e32f89e01189affd8b599b81c71a466cc",
+  "prompts": {},
+  "sessions": {
+    "s_a82b84180f3450": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "d62b8e1a-d1ec-482f-ad9f-d1c051e95089",
+        "model": "claude-opus-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
