@@ -1,0 +1,32 @@
+.claude/agents/testing.md
+  s_ca6a1777cdeb2e::t_087fcf73333829 690-697
+  s_ca6a1777cdeb2e::t_e9bce6fc0bfc2f 497-523
+docs/testing/improvement-plan.md
+  s_ca6a1777cdeb2e::t_4d54d3823976b1 679-680
+  s_ca6a1777cdeb2e::t_17a25da17fd7b1 1179
+  s_ca6a1777cdeb2e::t_c10b8ee1b79e39 56
+  s_ca6a1777cdeb2e::t_ef222677d24117 1136-1178,1180-1184
+feature/workitem/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/workitem/ui/screens/edittags/WorkItemEditTagsViewModelTest.kt
+  s_ca6a1777cdeb2e::t_dcf56db2345b18 1-395
+docs/revisit.md
+  s_ca6a1777cdeb2e::t_17a25da17fd7b1 428
+  s_ca6a1777cdeb2e::t_365bc8ac663c43 425-427,429-455
+CLAUDE.md
+  s_ca6a1777cdeb2e::t_99dca5c43337aa 313-319
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "3bbb0f036c7e7c46bebf64135f9b80e323183eec",
+  "prompts": {},
+  "sessions": {
+    "s_ca6a1777cdeb2e": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "fe46853e-d59b-4584-8fc8-a3f117cf409b",
+        "model": "claude-opus-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
