@@ -249,6 +249,16 @@ classes (53 lines) survive filtering and inflate the LINE denominator — BRANCH
 fixes this entry should add `…db.entities` to the `packages(…)` block alongside the existing
 `core.storage.db*` entries and to the script's `PACKAGES`, in the same commit.
 
+### Update (2026-08-04, improvement-plan task 9a, `modules`) — the most repeatable transition
+
+Baseline on a clean tree: **781**, zero leaks (the 787/781 Android-variant mode). After adding one
+test file and one field to a `:testing` fake — no build file touched — the same command gave **822**
+with **20** excluded-suffix leaks, i.e. the excludes-skipped mode. That is the second time a
+*test-sources-only* edit has flipped a clean run into the leaking mode (854 on 2026-08-03 was the
+first), and it is so far the only transition that has reproduced. Practical consequence for a
+before/after session: **assume the pair will straddle the flip** and reach for the package-scope
+denominator check by default rather than as a fallback.
+
 ---
 
 ## 9. `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT
@@ -453,3 +463,11 @@ share one process (CLAUDE.md, Testing). Installing it from a `@BeforeTest` anywh
 state for every concurrently-running test in the suite; doing it safely means a single install at
 suite scope, which is a build/infra change, not a test task. Found while closing improvement-plan
 task 9a's `edittags` module.
+
+**Correction to the title (2026-08-04, task 9a `modules`):** not *every* one — the ~96 upper bound
+stands, but whether the lambda becomes its own synthetic method varies. `ModulesViewModel`'s two
+`logcat` calls, both inside `viewModelScope.launch { }` arms that the failure tests take, were folded
+into the covered `invokeSuspend` and cost nothing; that package finished at LINE **88/88**.
+`EditSprintViewModel`'s, in the same syntactic position, was split out at 0/1. So the 1-line-hole
+signature is still the right thing to stop at, but 100 % LINE is not out of reach a priori, and the
+"~96 lines reclaimable" figure is an upper bound rather than a count.

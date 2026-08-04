@@ -75,8 +75,19 @@ class FakeProjectsRepository : ProjectsRepository {
         return getProjectModulesResult ?: error("getProjectModulesResult not set")
     }
 
+    data class UpdateModulesCall(
+        val isEpicsActivated: Boolean,
+        val isBacklogActivated: Boolean,
+        val isKanbanActivated: Boolean,
+        val isIssuesActivated: Boolean,
+        val isWikiActivated: Boolean,
+        val totalMilestones: Int?,
+        val totalStoryPoints: Double?
+    )
+
     var updateModulesCalled = false
     var updateModulesThrows: Throwable? = null
+    val updateModulesCalls: MutableList<UpdateModulesCall> = mutableListOf()
 
     override suspend fun updateModules(
         isEpicsActivated: Boolean,
@@ -88,6 +99,15 @@ class FakeProjectsRepository : ProjectsRepository {
         totalStoryPoints: Double?
     ) {
         updateModulesCalled = true
+        updateModulesCalls += UpdateModulesCall(
+            isEpicsActivated = isEpicsActivated,
+            isBacklogActivated = isBacklogActivated,
+            isKanbanActivated = isKanbanActivated,
+            isIssuesActivated = isIssuesActivated,
+            isWikiActivated = isWikiActivated,
+            totalMilestones = totalMilestones,
+            totalStoryPoints = totalStoryPoints
+        )
         updateModulesThrows?.let { throw it }
     }
 

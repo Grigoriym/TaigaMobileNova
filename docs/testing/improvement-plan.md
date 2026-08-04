@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/settings/ui/modules` (re-verified 2026-08-04 — still 0/16, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04; ⬅ **NEXT** module: `createtask` (verified 2026-08-04 — still 0/13, see the table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -678,8 +678,9 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`feature/settings/ui/attributes/projectvalues`~~ | 0/22 | ✅ done 2026-08-04 — now **22/22**, LINE 117/125 |
 | ~~`feature/workitem/ui/screens/edittags`~~ | 0/20 | ✅ done 2026-08-04 — now **20/20**, LINE 124/127 |
 | ~~`feature/workitem/ui/screens/sprint`~~ | 0/18 | ✅ done 2026-08-04 — now **18/18**, LINE 74/75 |
-| **`feature/settings/ui/modules`** | 0/16 | ⬅ next. Re-verified 2026-08-04 against a post-`sprint` report — unchanged: `ModulesViewModel$loadModules$1` 0/12 + `save$1` 0/4; the ViewModel body itself is already 20/28 LINE. LINE 38/88 |
-| `createtask` | 0/13 | verified 2026-08-04: `CreateTaskViewModel` 0/6 + `onCreateTask$3` 0/4 + `CreateWorkItemUseCase` 0/3. LINE 9/97 |
+| ~~`feature/settings/ui/modules`~~ | 0/16 | ✅ done 2026-08-04 — now **14/16**, LINE 88/88; the residual 2 are unreachable |
+| **`createtask`** | 0/13 | ⬅ next. Verified 2026-08-04, re-confirmed unchanged after the `modules` module: `CreateTaskViewModel` 0/6 + `onCreateTask$3` 0/4 + `CreateWorkItemUseCase` 0/3. LINE 9/97 |
+| `feature/settings/ui/user` | 0/12 | surfaced 2026-08-04 by the post-`modules` re-derivation. LINE 14/46 — wholly untested, same ViewModel shape as `modules`. Verify per-class before taking |
 | `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
 | ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
 
@@ -1226,6 +1227,63 @@ Two things worth carrying forward:
   at — `getSprints`' `"Error while getting sprints"` failure log, reported as
   `EditSprintViewModel$getSprints$1.invokeSuspend$lambda$2$0` at 0/1. Recognised and left; see
   [revisit #16](../revisit.md#16-every-logcat-message-lambda-is-a-permanently-uncovered-line).
+
+---
+
+### `feature/settings/ui/modules` — ✅ done 2026-08-04
+
+16 tests in a new `ModulesViewModelTest`. `:feature:settings:ui:jvmTest`, the full `jvmTest`,
+`koverXmlReport`, `:koverVerify`, `detekt` and `ktlintCheck` are all green. `:testing` gained
+`FakeProjectsRepository.UpdateModulesCall` + `updateModulesCalls` (the fake only had a
+`updateModulesCalled` boolean, which cannot see the `toIntOrNull` / `toDoubleOrNull` conversions);
+`.claude/agents/testing.md`'s `FakeProjectsRepository` entry now lists it.
+
+| Scope | Before | After |
+|---|---|---|
+| `ModulesViewModel` LINE | 20/28 | **28/28** |
+| `…$loadModules$1` BRANCH | 0/12 | **10/12** |
+| `…$save$1` BRANCH | 0/4 | **4/4** |
+| package `…settings.ui.modules` BRANCH | 0/16 — 0 % | **14/16 — 87.5 %** |
+| package `…settings.ui.modules` LINE | 38/88 — 43.2 % | **88/88 — 100 %** |
+
+The baseline was a **781**-class run (Android-variant mode, zero excluded-suffix leaks) and the
+after-run an **822**-class one *with* 20 leaks — i.e. the excludes-skipped mode, so the repo-wide
+totals in the two are not comparable. This package's own denominators (16 BRANCH / 88 LINE) are
+identical in both, so the table above is valid: the package-scope escape hatch, used again.
+`kover-rank.py` filtered the after-run to 746 classes / BRANCH 1368-2053 / LINE 7842-9771.
+
+**LINE reached 100 %, which no module in this sweep had managed before** — this ViewModel has no
+`logcat { }` message lambda that a test cannot enter, because both of its two `logcat` calls sit on
+paths the failure tests take *and* Kover attributes them to the already-covered `invokeSuspend`
+rather than to a separate synthetic method. Do not generalise the 96-`logcat` rule into "LINE can
+never be 100 %".
+
+**The residual 2 branches are the documented unreachable shape, not a gap.** Lines 59–60 are
+`modules.totalMilestones?.toString() ?: ""` (and the same for `totalStoryPoints`), each reported
+`mb=1 cb=3`: the safe call contributes 2 branches and the elvis 2, but `toString()` on a non-null
+receiver never returns null, so the elvis's null arm is unreachable from the non-null path. Same
+shape as `WorkItemCustomFieldsDelegateImpl`'s residual 2/30. **`<line mb= cb=>` attributes in the
+`<sourcefile>` element are how to pin this down** — the per-*method* breakdown says only
+"`invokeSuspend` 10/12", which is not enough to tell an unreachable elvis from a missing test:
+
+```bash
+python3 -c "
+import xml.etree.ElementTree as ET
+r=ET.parse('build/reports/kover/report.xml').getroot()
+for p in r.findall('package'):
+  if p.get('name','').endswith('settings/ui/modules'):
+    for sf in p.findall('sourcefile'):
+      for l in sf.findall('line'):
+        if l.get('mb')!='0': print(sf.get('name'), 'line', l.get('nr'), 'mb', l.get('mb'), 'cb', l.get('cb'))"
+```
+
+One thing worth carrying forward: **this ViewModel suspends on *two* rendezvous channels, and each
+needs the collector started first.** `save`'s success arm ends in `_navigateBack.send(Unit)` and its
+failure arm calls `showSnackbarSuspend` — both `Channel()` with no buffer. So `onSaveClick()` has to
+be triggered *inside* the turbine block (`sut.navigateBack.test { sut.state.value.onSaveClick();
+awaitItem() }`), and any assertion about state the coroutine sets *after* the send — `isSaving =
+false` on the failure path — has to come after the block, not inside it. Getting that order wrong
+hangs the failure test rather than failing it. No behaviour bug found.
 
 ---
 

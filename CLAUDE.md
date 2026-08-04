@@ -243,7 +243,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   `*Widget`/`*Screen` in `feature/*/ui`. 742 is the run where `excludes` is applied in full, and is
   what CI sees. A build-script edit was once found by bisection to flip it, but that is **not** the
   whole trigger: on 2026-08-03 a clean tree gave 742 and adding only *test sources* gave 854, i.e.
-  the opposite direction with no build file touched. Treat the mechanism as unknown.
+  the opposite direction with no build file touched. Treat the mechanism as unknown. That direction
+  reproduced on 2026-08-04 with different numbers — baseline **781** (zero leaks) → after adding only
+  a test file and one `:testing` field, **822** with 20 leaks — so a test-sources-only edit flipping a
+  clean run *into* the excludes-skipped mode is the most reliably observed transition. Expect the
+  before/after pair to straddle the flip and plan on the package-scope escape hatch below.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
   `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45
@@ -313,7 +317,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   branches inside `@Composable` functions and `@Composable get()` properties, which no plain JVM test
   can enter — `utils/ui` left 46 such branches and the whole `main` package is 31 of 35 (`MainAppState`
   is `@Composable` getters; `MainViewModel` is already 4/4). Rank work by missed branches in
-  hand-written, *non-composable* code.
+  hand-written, *non-composable* code. A third, much smaller kind is **`x?.toString() ?: ""`**, which
+  is always 3/4: the safe call contributes two branches and the elvis two, but `toString()` on a
+  non-null receiver never returns null, so the elvis's null arm is dead on that path. Seen twice —
+  `WorkItemCustomFieldsDelegateImpl` and `ModulesViewModel` lines 59–60 — so recognise it rather than
+  hunting for the test.
 - **The same is true of LINE for every `logcat { }` call site** — 96 of them. The JVM backend is the
   no-op `NoLog` (see Logging), which never invokes the `message: () -> String` lambda, so each one is
   a synthetic method Kover reports as one missed line and zero branches. **Signature to recognise: a
@@ -321,6 +329,10 @@ tests, not a smaller bound. The traps when touching those numbers:
   reach it. Also unreachable in the same way: the default value of a state class's callback parameter
   (`onSaveClick: (String, Color) -> Unit = { _, _ -> }`), which the ViewModel always overrides.
   [revisit #16](docs/revisit.md) has the fix if it is ever judged worth the ~96 lines.
+  **This is not a ceiling on LINE, though** — whether the lambda becomes its own synthetic method
+  varies. `EditSprintViewModel`'s `logcat` inside a `viewModelScope.launch` was split out at 0/1, and
+  `ModulesViewModel`'s two were folded into the covered `invokeSuspend`, taking that package to LINE
+  88/88. So "1-line hole → stop" is the right rule, but "100 % LINE is impossible here" is not.
 - **Get the per-class breakdown before scoping a session around a package**, and the per-**method**
   one before concluding a leftover is real — Kover's XML carries `<counter>` elements on
   `<package>`, `<class>` *and* `<method>`, so `for c in p.findall('class'): for m in c.findall('method')`
@@ -329,6 +341,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   `valueToUse?.toString()?.toLongOrNull()`, unreachable because `NumberItemState`'s values are
   non-null. The worked snippet is in
   [improvement-plan.md](docs/testing/improvement-plan.md) under `…delegates/customfields`.
+- **When the per-method breakdown is still too coarse, go to the `<sourcefile>` element** — its
+  `<line>` children carry `nr`, `mb` (missed branches) and `cb` (covered), which names the *source
+  line*. A whole coroutine body is one `invokeSuspend` method, so "`invokeSuspend` 10/12" is as much
+  as the per-method view can say; the per-line view says "line 59 `mb=1 cb=3`" and the question is
+  answered without reading Kotlin. The snippet is in
+  [improvement-plan.md](docs/testing/improvement-plan.md) under `…settings/ui/modules`.
 
 Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
 77 modules.

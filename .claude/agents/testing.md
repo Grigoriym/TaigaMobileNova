@@ -61,7 +61,7 @@ right subpackage before concluding a fake doesn't exist:
 
 Key fields for commonly-used fakes:
 
-**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`
+**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`, `updateModulesCalled/Throws/Calls` (the `Calls` list holds `UpdateModulesCall` records — every argument, so a test can assert the whole set in one `assertEquals`), `updateProjectCalled/Throws`, `saveProjectCalled/CalledWith`, `fetchAndSaveProjectInfoCalled/Throws`, `createTagCalled/Throws`, `deleteTagCalled/TagName/Throws`, `editTagFromTagName/ToTagName/Throws`, `mixTagsCalled/FromTags/ToTag/Throws`, `projectFlow`
 
 **`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
 
