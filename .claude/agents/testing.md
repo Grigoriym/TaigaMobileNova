@@ -85,7 +85,7 @@ Key fields for commonly-used fakes:
 
 **`FakeHistoryRepository`**: check file for fields
 
-**`FakeSprintsRepository`**: check file for fields
+**`FakeSprintsRepository`**: `getSprintsResult/Throws/IsClosed` (the recorder captures the `isClosed` argument), `getSprintDataResult`, `getSprintResult`, `deleteSprintThrows/Called`. `createSprint()` and `editSprint()` are no-ops; the remaining `getSprint*` list methods are still `error("not used in this test")`
 
 ### Storage
 
@@ -520,6 +520,14 @@ the same `SavedStateHandle` wiring for a `TaskIdentifier` route argument:
 ```kotlin
 SavedStateHandle(mapOf("workItemId" to workItemId, "taskIdentifier" to Json.encodeToString(taskIdentifier)))
 ```
+
+**Build that handle inside `createViewModel(taskIdentifier = …)`, not as a test field, whenever the
+SUT branches on `route.taskIdentifier`.** `EditSprintViewModel.getPermissions()` is a `when` over
+`is TaskIdentifier.WorkItem` × `CommonTaskType.Issue`-vs-`else`, so its four branches need three
+different routes in one test class — `WorkItem(Issue)` with and without the permission,
+`WorkItem(UserStory)`, and `TaskIdentifier.Wiki`. `EditSprintViewModelTest` is the example; a
+`taskIdentifier` parameter defaulting to `WorkItem(CommonTaskType.UserStory)` keeps every other test
+unchanged. `Json.encodeToString(TaskIdentifier.Wiki)` round-trips through `typeMapOf` fine.
 
 ## `CustomFieldsUIMapper` in Tests
 

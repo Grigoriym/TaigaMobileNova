@@ -261,7 +261,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   Zero leaks means the `excludes` ran and the surplus is variant artifacts; a non-zero count is the
   821/854 mode. Two 742-side runs also differ by ±2 classes (Koin-generated `LoginDataModule`, both
   lines covered, BRANCH identical) — that much wobble is noise, not a mode.
-- **In the 787 mode, `kover-rank.py` normalises BRANCH exactly but leaves LINE ~53 lines high.** It
+  **The raw count in this mode is not a fixed number** — a second run on 2026-08-04 gave **781**, and
+  it is the same mode: zero leaks, `kover-rank.py` filters it to the same 745 classes, BRANCH 2049 and
+  LINE 9762 identical to the 787 run's. Recognise the mode by *zero leaks plus a 745 filtered count*,
+  not by matching 787.
+- **In the 787/781 mode, `kover-rank.py` normalises BRANCH exactly but leaves LINE ~53 lines high.** It
   filtered that report to 745 classes, not 742: the three `core.storage.db.entities` classes survive
   because the root `excludes` `packages(...)` list does not name `…db.entities` either, so the script
   is faithfully in sync and the 742 run simply never contained them. The BRANCH denominator was 2049

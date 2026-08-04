@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/workitem/ui/screens/sprint` (verified 2026-08-04 — see the re-derived table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/settings/ui/modules` (re-verified 2026-08-04 — still 0/16, see the table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -677,8 +677,8 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`feature/workitem/ui/delegates/badge`~~ | 0/22 | ✅ done 2026-08-04 — now **22/22, LINE 66/66** |
 | ~~`feature/settings/ui/attributes/projectvalues`~~ | 0/22 | ✅ done 2026-08-04 — now **22/22**, LINE 117/125 |
 | ~~`feature/workitem/ui/screens/edittags`~~ | 0/20 | ✅ done 2026-08-04 — now **20/20**, LINE 124/127 |
-| **`feature/workitem/ui/screens/sprint`** | 0/18 | ⬅ next. Verified 2026-08-04: `EditSprintViewModel` (0/6) + `getPermissions$1`/`getSprints$1`/`notifyChange$1` (0/4 each). LINE 8/75. Same shape as `edittags`, which took well under a session |
-| `feature/settings/ui/modules` | 0/16 | verified 2026-08-04: `ModulesViewModel$loadModules$1` 0/12 + `save$1` 0/4; the ViewModel body itself is already 20/28 LINE. LINE 38/88 |
+| ~~`feature/workitem/ui/screens/sprint`~~ | 0/18 | ✅ done 2026-08-04 — now **18/18**, LINE 74/75 |
+| **`feature/settings/ui/modules`** | 0/16 | ⬅ next. Re-verified 2026-08-04 against a post-`sprint` report — unchanged: `ModulesViewModel$loadModules$1` 0/12 + `save$1` 0/4; the ViewModel body itself is already 20/28 LINE. LINE 38/88 |
 | `createtask` | 0/13 | verified 2026-08-04: `CreateTaskViewModel` 0/6 + `onCreateTask$3` 0/4 + `CreateWorkItemUseCase` 0/3. LINE 9/97 |
 | `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
 | ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
@@ -1181,6 +1181,51 @@ Three things worth carrying forward:
   **Recognise the signature — a 1-line hole in an otherwise 100 % method — and stop.**
 
 No behaviour bug found in the ViewModel itself.
+
+### `feature/workitem/ui/screens/sprint` — ✅ done 2026-08-04
+
+20 tests in a new `EditSprintViewModelTest`. `:feature:workitem:ui:jvmTest`, the full `jvmTest`,
+`koverXmlReport`, `:koverVerify`, `detekt` and `ktlintCheck` are all green. `:testing` gained
+`getSprintsResult` / `getSprintsThrows` / `getSprintsIsClosed` on `FakeSprintsRepository`
+(`getSprints` was `error("not used in this test")`); `.claude/agents/testing.md`'s
+`FakeSprintsRepository` entry said "check file for fields" and now lists them.
+
+| Scope | Before | After |
+|---|---|---|
+| `EditSprintViewModel` BRANCH | 0/6 | **6/6** |
+| `…$getPermissions$1` BRANCH | 0/4 | **4/4** |
+| `…$getSprints$1` BRANCH | 0/4 | **4/4** |
+| `…$notifyChange$1` BRANCH | 0/4 | **4/4** |
+| package `…screens.sprint` BRANCH | 0/18 — 0 % | **18/18 — 100 %** |
+| package `…screens.sprint` LINE | 8/75 — 10.7 % | **74/75 — 98.7 %** |
+
+The baseline was a 742-class run and the after-run a **781**-class one (745 after `kover-rank.py`
+filtering) — the Android-variant/Room mode, not the excludes-skipped mode (zero excluded-suffix
+leaks in both). The BRANCH denominator is 2049 in both, i.e. identical to the gate; LINE is 9762 vs
+9709, the ~53-line inflation that mode is already documented to cause. This package's own
+denominators (18 BRANCH / 75 LINE) are identical in both reports, so the table is valid — the escape
+hatch used again. Repo-wide BRANCH 1335 → 1353.
+
+**The `edittags` row's claim that `screens/sprint` is "the same shape again" was correct**, and this
+was the cheapest row yet: `EditEpicViewModelTest`'s skeleton transferred almost verbatim (same
+`SavedStateHandle(mapOf("workItemId" to …, "taskIdentifier" to Json.encodeToString(taskIdentifier)))`
+wiring, same real `WorkItemEditStateRepository`, same `launch { …getSprintFlow(…).take(1)
+.collect { } }` + `sut.onBackAction.test { }` pairing for the rendezvous channel). No behaviour bug
+found.
+
+Two things worth carrying forward:
+
+- **A `when` over `TaskIdentifier` means the test's `SavedStateHandle` has to be per-test, not a
+  field.** `getPermissions`' four branches are `is TaskIdentifier.WorkItem` × `CommonTaskType.Issue`
+  vs. `else`, so covering them needs three different routes — `WorkItem(Issue)` with and without
+  `MODIFY_ISSUE`, `WorkItem(UserStory)`, and `TaskIdentifier.Wiki`. Making `createViewModel()` take a
+  `taskIdentifier` parameter (defaulting to `WorkItem(UserStory)`) and building the handle inside it
+  is what made that cheap; the sibling tests all hold the handle as a field and could not have done
+  this. `Json.encodeToString(TaskIdentifier.Wiki)` round-trips through `typeMapOf` fine.
+- **The single residual line is a `logcat { }` lambda**, exactly the signature CLAUDE.md says to stop
+  at — `getSprints`' `"Error while getting sprints"` failure log, reported as
+  `EditSprintViewModel$getSprints$1.invokeSuspend$lambda$2$0` at 0/1. Recognised and left; see
+  [revisit #16](../revisit.md#16-every-logcat-message-lambda-is-a-permanently-uncovered-line).
 
 ---
 

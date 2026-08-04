@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.sprint.domain.SprintData
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.datetime.LocalDate
@@ -20,8 +21,15 @@ class FakeSprintsRepository: SprintsRepository {
     override fun getSprintsPaging(isClosed: Boolean): Flow<PagingData<Sprint>> =
         flowOf(PagingData.empty())
 
-    override suspend fun getSprints(isClosed: Boolean): ImmutableList<Sprint> =
-        error("not used in this test")
+    var getSprintsResult: ImmutableList<Sprint> = persistentListOf()
+    var getSprintsThrows: Throwable? = null
+    var getSprintsIsClosed: Boolean? = null
+
+    override suspend fun getSprints(isClosed: Boolean): ImmutableList<Sprint> {
+        getSprintsIsClosed = isClosed
+        getSprintsThrows?.let { throw it }
+        return getSprintsResult
+    }
 
     var getSprintResult: Sprint? = null
 
