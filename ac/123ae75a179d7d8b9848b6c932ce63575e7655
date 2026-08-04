@@ -1,0 +1,31 @@
+.claude/agents/testing.md
+  s_aa303c639f90b8::t_a674b06c4f7daa 88
+  s_aa303c639f90b8::t_575239586a381a 524-531
+CLAUDE.md
+  s_aa303c639f90b8::t_b220f68d4bde3f 264-268
+feature/workitem/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/workitem/ui/screens/sprint/EditSprintViewModelTest.kt
+  s_aa303c639f90b8::t_288f133d64ff4b 1-345
+testing/src/commonMain/kotlin/com/grappim/taigamobile/testing/repo/FakeSprintsRepository.kt
+  s_aa303c639f90b8::t_9d26825515ab5c 24-32
+  s_aa303c639f90b8::t_14a4583d391410 9
+docs/testing/improvement-plan.md
+  s_aa303c639f90b8::t_95e3bb14777480 680-681
+  s_aa303c639f90b8::t_414ac76f46689f 1185-1229
+  s_aa303c639f90b8::t_95dce24cf05e6a 56
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "ac123ae75a179d7d8b9848b6c932ce63575e7655",
+  "prompts": {},
+  "sessions": {
+    "s_aa303c639f90b8": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "52e3d5e2-7444-4303-bf1e-90399e21fac0",
+        "model": "claude-opus-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
