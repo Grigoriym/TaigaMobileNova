@@ -1,0 +1,39 @@
+docs/testing/kover-rank.py
+  s_4ca7da74d04283::t_9c8451d98568bd 14-19
+feature/settings/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/settings/ui/attributes/projectvalues/ProjectValuesViewModelTest.kt
+  s_4ca7da74d04283::t_f2ef00c1d6843e 1-252,255-264,266,268-392
+  s_4ca7da74d04283::t_df22a616778962 253-254,265,267
+testing/src/commonMain/kotlin/com/grappim/taigamobile/testing/storage/FakeTaigaSessionStorage.kt
+  s_4ca7da74d04283::t_af1c3967a95c22 30-31
+CLAUDE.md
+  s_4ca7da74d04283::t_98e5b6c349717a 247-274
+.claude/agents/testing.md
+  s_4ca7da74d04283::t_117cf8df188237 59
+  s_4ca7da74d04283::t_3d40885ff1fb74 68
+  s_4ca7da74d04283::t_4f5ec8e30b0557 84-85
+testing/src/commonMain/kotlin/com/grappim/taigamobile/testing/repo/FakeProjectValuesRepository.kt
+  s_4ca7da74d04283::t_dc3e7c5a23ae12 1-100
+docs/testing/improvement-plan.md
+  s_4ca7da74d04283::t_7894ce61af1afb 678-682
+  s_4ca7da74d04283::t_b64074e0b27d27 1100-1105
+  s_4ca7da74d04283::t_7100212c333e27 56
+  s_4ca7da74d04283::t_f599e40754e994 1086-1099,1106-1135
+docs/revisit.md
+  s_4ca7da74d04283::t_efccb15b68202a 236-251
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "37d029822a3d4c29f0652aa4a5f9f5256e9262c9",
+  "prompts": {},
+  "sessions": {
+    "s_4ca7da74d04283": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b9d23d34-5cf3-408a-9f74-689c8ff83258",
+        "model": "claude-opus-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
