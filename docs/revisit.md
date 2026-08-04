@@ -422,3 +422,34 @@ editingItemIds`, which documents the current behaviour and will need inverting.
 
 **Why deferred:** found while writing that test (improvement-plan task 9a). Changing delegate
 behaviour used by four detail ViewModels is not a test task's business.
+
+---
+
+## 16. Every `logcat` message lambda is a permanently-uncovered line
+
+**Where:** 96 `logcat` call sites across `feature/`, `core/`, `utils/`, `composeApp/` and `main`
+(`grep -rn "logcat" --include=*.kt feature core utils composeApp main | grep -v /build/ | grep -v "import\|core/logger" | wc -l`).
+
+**What happens:** `TaigaLogger.logger` defaults to the private `NoLog` object, whose `log()` is a
+no-op that never invokes the `message: () -> String` lambda it is handed
+(`core/logger/.../TaigaLogger.kt`). `install()` is called from the Android and iOS entry points only
+— CLAUDE.md's Logging table already records that **Desktop/JVM installs nothing**. So under
+`jvmTest`, every `logcat { "…" }` message lambda is compiled to a synthetic method that no test can
+enter. Kover counts each as one missed LINE, carrying zero branches.
+
+**Consequence:** measurement noise with a consistent signature. In fully-covered code it shows up as
+a 1-line residual per `logcat` call — e.g. `feature/workitem/ui/screens/edittags` finished at LINE
+124/127 with two of the three holes being exactly this (`onTagClick$lambda$0$2`, the not-found
+warning, and `fetchTags$1.invokeSuspend$lambda$3$0`, the fetch-failure log). Upper bound repo-wide
+is ~96 lines of the 9709 LINE denominator, i.e. under 1 point. **A session that chases one of these
+to zero is chasing an unreachable line**, which is why it is written down rather than fixed.
+
+**Fix, if it is ever judged worth it:** install a counting `TaigaLogger` in `:testing` that invokes
+`message()` and discards the result. That reclaims all ~96 lines and would additionally let tests
+assert *that* something was logged, which nothing can do today.
+
+**Why deferred:** `TaigaLogger.logger` is a `@Volatile` process-global, and all modules' JVM tests
+share one process (CLAUDE.md, Testing). Installing it from a `@BeforeTest` anywhere changes global
+state for every concurrently-running test in the suite; doing it safely means a single install at
+suite scope, which is a build/infra change, not a test task. Found while closing improvement-plan
+task 9a's `edittags` module.

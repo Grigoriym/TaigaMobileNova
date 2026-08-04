@@ -310,6 +310,13 @@ tests, not a smaller bound. The traps when touching those numbers:
   can enter — `utils/ui` left 46 such branches and the whole `main` package is 31 of 35 (`MainAppState`
   is `@Composable` getters; `MainViewModel` is already 4/4). Rank work by missed branches in
   hand-written, *non-composable* code.
+- **The same is true of LINE for every `logcat { }` call site** — 96 of them. The JVM backend is the
+  no-op `NoLog` (see Logging), which never invokes the `message: () -> String` lambda, so each one is
+  a synthetic method Kover reports as one missed line and zero branches. **Signature to recognise: a
+  1-line hole in an otherwise 100 % method.** Stop there rather than hunting for the test that would
+  reach it. Also unreachable in the same way: the default value of a state class's callback parameter
+  (`onSaveClick: (String, Color) -> Unit = { _, _ -> }`), which the ViewModel always overrides.
+  [revisit #16](docs/revisit.md) has the fix if it is ever judged worth the ~96 lines.
 - **Get the per-class breakdown before scoping a session around a package**, and the per-**method**
   one before concluding a leftover is real — Kover's XML carries `<counter>` elements on
   `<package>`, `<class>` *and* `<method>`, so `for c in p.findall('class'): for m in c.findall('method')`

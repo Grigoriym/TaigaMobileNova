@@ -494,6 +494,33 @@ assertFalse(sut.state.value.isLoading)
 
 Use the **real** `WorkItemEditStateRepository` (pure in-memory, no I/O). Assert state via its getter methods.
 
+Seed it with `setTags` / `setCurrentEpics` / `setCurrentSprint` … before `createViewModel()` — the
+edit screens read their initial selection from it during `init`.
+
+**Its `getXFlow()` channels are rendezvous `Channel()`s, so `updateX()` suspends until a collector is
+already waiting.** A test that triggers the ViewModel's go-back callback without one deadlocks or
+silently observes nothing. The working pairing, in `runTest`:
+
+```kotlin
+var received: PersistentList<SelectableTagUI>? = null
+val collectJob = launch {
+    workItemEditStateRepository.getTagsFlow(workItemId, taskIdentifier).take(1).collect { received = it }
+}
+sut.onBackAction.test {
+    sut.state.value.shouldGoBackWithCurrentValue(true)
+    awaitItem()
+}
+collectJob.join()          // .cancel() instead, when asserting that nothing was sent
+```
+
+`EditEpicViewModelTest` and `WorkItemEditTagsViewModelTest` are drop-in templates for the whole
+`feature/workitem/ui/screens/*` edit-screen family — same real repository, same collector pairing, and
+the same `SavedStateHandle` wiring for a `TaskIdentifier` route argument:
+
+```kotlin
+SavedStateHandle(mapOf("workItemId" to workItemId, "taskIdentifier" to Json.encodeToString(taskIdentifier)))
+```
+
 ## `CustomFieldsUIMapper` in Tests
 
 Use real implementation: `CustomFieldsUIMapper(dfSimple = createDecimalFormatter())`.
@@ -660,4 +687,12 @@ kotlin {
     that is the behaviour the clause exists for. The `catch (e: TimeoutCancellationException)` clause
     below it is dead code (it is a `CancellationException` subclass, so the first clause always wins)
     and needs no test. Worked example: `WorkItemBadgeDelegateImplTest`.
+
+    At a **fire-and-forget `viewModelScope.launch` call site** there is nothing to `assertFailsWith`
+    on — `viewModelScope` is a `SupervisorJob`, so the cancelled child neither fails the test nor
+    disturbs its siblings. Assert instead that *neither* arm ran: a loading flag still set
+    (`ProjectValuesViewModelTest`), or — when the failure arm only logs, so both paths look identical
+    from outside — assert the unchanged state and say in a KDoc that only the branch counter
+    distinguishes the two tests (`WorkItemEditTagsViewModelTest`). Inventing a difference that isn't
+    there is worse than documenting that there isn't one. One test per `resultOf` call site.
     A whole file written against a broken assumption is expensive; the probe is a minute.

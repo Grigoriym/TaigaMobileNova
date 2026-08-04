@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/workitem/ui/screens/edittags` (verified — see the re-derived table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/workitem/ui/screens/sprint` (verified 2026-08-04 — see the re-derived table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -676,8 +676,8 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`feature/workitem/ui/delegates/customfields`~~ | 0/30 | ✅ done 2026-08-03 — now 28/30, LINE 86/86; the residual 2 are unreachable |
 | ~~`feature/workitem/ui/delegates/badge`~~ | 0/22 | ✅ done 2026-08-04 — now **22/22, LINE 66/66** |
 | ~~`feature/settings/ui/attributes/projectvalues`~~ | 0/22 | ✅ done 2026-08-04 — now **22/22**, LINE 117/125 |
-| **`feature/workitem/ui/screens/edittags`** | 0/20 | ⬅ next, and **verified 2026-08-04**: all 20 are in `WorkItemEditTagsViewModel` (0/6) and its `fetchTags$1` (0/10) / `notifyChange$1` (0/4) lambdas — no `@Composable` in the package. LINE 13/127 |
-| `feature/workitem/ui/screens/sprint` | 0/18 | verified 2026-08-04: `EditSprintViewModel` (0/6) + `getPermissions$1`/`getSprints$1`/`notifyChange$1` (0/4 each). LINE 8/75. Same shape as `edittags` |
+| ~~`feature/workitem/ui/screens/edittags`~~ | 0/20 | ✅ done 2026-08-04 — now **20/20**, LINE 124/127 |
+| **`feature/workitem/ui/screens/sprint`** | 0/18 | ⬅ next. Verified 2026-08-04: `EditSprintViewModel` (0/6) + `getPermissions$1`/`getSprints$1`/`notifyChange$1` (0/4 each). LINE 8/75. Same shape as `edittags`, which took well under a session |
 | `feature/settings/ui/modules` | 0/16 | verified 2026-08-04: `ModulesViewModel$loadModules$1` 0/12 + `save$1` 0/4; the ViewModel body itself is already 20/28 LINE. LINE 38/88 |
 | `createtask` | 0/13 | verified 2026-08-04: `CreateTaskViewModel` 0/6 + `onCreateTask$3` 0/4 + `CreateWorkItemUseCase` 0/3. LINE 9/97 |
 | `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
@@ -1132,6 +1132,55 @@ Three things worth carrying forward:
   pin down.
 
 No behaviour bug found; nothing filed to [revisit.md](../revisit.md) this session.
+
+### `feature/workitem/ui/screens/edittags` — ✅ done 2026-08-04
+
+20 tests in a new `WorkItemEditTagsViewModelTest`. `:feature:workitem:ui:jvmTest`, the full
+`jvmTest`, `koverXmlReport`, `:koverVerify`, `detekt` and `ktlintCheck` are all green. **`:testing`
+was not touched** — `FakeProjectsRepository` already had `getTagsColorsResult/Throws`,
+`createTagCalled/Throws` and the `editTag…` recorders, and `FakeTaigaSessionStorage` already had
+`tagPresetColorsResult`, so `.claude/agents/testing.md` is unchanged.
+
+| Scope | Before | After |
+|---|---|---|
+| `WorkItemEditTagsViewModel` BRANCH | 0/6 | **6/6** |
+| `…$fetchTags$1` BRANCH | 0/10 | **10/10** |
+| `…$notifyChange$1` BRANCH | 0/4 | **4/4** |
+| package `…screens.edittags` BRANCH | 0/20 — 0 % | **20/20 — 100 %** |
+| package `…screens.edittags` LINE | 13/127 — 10.2 % | **124/127 — 97.6 %** |
+
+Both reports were 742-class runs with identical totals (2049 BRANCH / 9709 LINE), so no
+comparability dance was needed. Repo-wide: BRANCH 1314 → 1335, LINE 7563 → 7676.
+
+**`EditEpicViewModelTest` is a drop-in template for this whole family of screens.** Same
+`SavedStateHandle(mapOf("workItemId" to …, "taskIdentifier" to Json.encodeToString(taskIdentifier)))`
+wiring, same real (not faked) `WorkItemEditStateRepository`, same `launch { …getXFlow(…).take(1)
+.collect { } }` + `sut.onBackAction.test { }` pairing for the `onGoingBack`/`notifyChange` paths —
+those channels are rendezvous, so nothing is sent unless a collector is already waiting. Copying its
+skeleton is most of why this row cost well under a session. `screens/sprint` is the same shape again.
+
+Three things worth carrying forward:
+
+- **The reload arm of a fetch function may only be reachable through a *different* public entry
+  point.** `fetchTags`' four `isInitialLoad = false` branches cannot be reached from `init` — the
+  only second call is the one `onSaveTag`'s `doOnSuccess` makes after a tag is created. So the test
+  that covers them is the `onSaveClick` test, not a "refresh" test; there is no refresh callback on
+  this screen. Before concluding a branch is unreachable, look for an indirect caller.
+- **`resultOf`'s cancellation rethrow can be covered without any observable difference in state.**
+  Unlike the badge (`assertFailsWith`) and projectvalues (a still-set loading flag) sessions, this
+  ViewModel has no loading flag and swallows failures into a log line, so the cancellation test and
+  the failure test assert *the same thing* — an empty `tags`. Only the branch counter tells them
+  apart. The test carries a KDoc saying so; that is more honest than inventing an assertion.
+- **Every `logcat { }` message lambda is an uncovered line no JVM test can reach**, because the JVM
+  backend is the no-op `NoLog` and it never invokes the lambda. Two of this package's three residual
+  lines are exactly that (`onTagClick`'s tag-not-found warning and `fetchTags`' failure log); the
+  third is `EditTagsState`'s six-underscore default `onSaveClick`, the same unreachable
+  default-parameter lambda the projectvalues session found. Repo-wide there are 96 such call sites.
+  Written up as [revisit #16](../revisit.md#16-every-logcat-message-lambda-is-a-permanently-uncovered-line),
+  including the `:testing`-installs-a-logger fix and why it is a build change rather than a test one.
+  **Recognise the signature — a 1-line hole in an otherwise 100 % method — and stop.**
+
+No behaviour bug found in the ViewModel itself.
 
 ---
 
