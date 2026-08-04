@@ -10,19 +10,26 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
+import com.grappim.taigamobile.feature.userstories.domain.UserStory
+import com.grappim.taigamobile.feature.userstories.domain.UserStoryEpic
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
-import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
+import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.userstory_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.models.getAttachment
+import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getUserStory
 import com.grappim.taigamobile.testing.models.getUserStoryDetailsData
+import com.grappim.taigamobile.testing.repo.EpicLinkCall
 import com.grappim.taigamobile.testing.repo.FakeEpicsRepository
 import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
@@ -30,11 +37,15 @@ import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.usecases.FakeUserStoryDetailsDataUseCase
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
+import com.grappim.taigamobile.testing.utils.createTestPlatformFile
 import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -68,10 +79,10 @@ internal class UserStoryDetailsViewModelTest {
     private val userStoryDetailsDataUseCase = FakeUserStoryDetailsDataUseCase()
     private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
     private val historyRepository: HistoryRepository = FakeHistoryRepository()
-    private val workItemRepository: WorkItemRepository = FakeWorkItemRepository()
+    private val workItemRepository = FakeWorkItemRepository()
     private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
-    private val usersRepository: UsersRepository = FakeUsersRepository()
-    private val epicsRepository: EpicsRepository = FakeEpicsRepository()
+    private val usersRepository = FakeUsersRepository()
+    private val epicsRepository = FakeEpicsRepository()
     private val workItemEditStateRepository = WorkItemEditStateRepository()
     private val customFieldsUIMapper = CustomFieldsUIMapper(dfSimple = createDecimalFormatter())
 
@@ -106,13 +117,28 @@ internal class UserStoryDetailsViewModelTest {
         )
     }
 
-    private fun setupSuccessfulLoad() {
-        val userStory = getUserStory(id = userStoryId)
+    private fun setupSuccessfulLoad(userStory: UserStory = getUserStory(id = userStoryId)) {
         userStoryDetailsDataUseCase.getUserStoryDataResult = Result.success(
             getUserStoryDetailsData(userStory = userStory)
         )
         userStoryDetailsDataUseCase.getUserStoryResult = userStory
     }
+
+    private fun setupFailedLoad() {
+        userStoryDetailsDataUseCase.getUserStoryDataResult = Result.failure(testException)
+    }
+
+    private fun userStoryWithEpics(vararg epicIds: Long): UserStory = getUserStory(id = userStoryId)
+        .copy(
+            userStoryEpics = epicIds.map { epicId ->
+                UserStoryEpic(
+                    id = epicId,
+                    title = getRandomString(),
+                    ref = getRandomLong(),
+                    color = getRandomString()
+                )
+            }.toPersistentList()
+        )
 
     @Test
     fun `initial state should have correct toolbar title`() {
@@ -268,5 +294,242 @@ internal class UserStoryDetailsViewModelTest {
         sut.state.value.onGoingToEditEpics()
 
         assertTrue(workItemEditStateRepository.getCurrentEpics(userStoryId, type).isNotEmpty())
+    }
+
+    @Test
+    fun `onGoingToEditEpics without a loaded user story should set no epics`() {
+        setupFailedLoad()
+        createViewModel()
+
+        sut.state.value.onGoingToEditEpics()
+
+        assertTrue(workItemEditStateRepository.getCurrentEpics(userStoryId, type).isEmpty())
+    }
+
+    @Test
+    fun `loadUserStory with a null status should still populate the state`() {
+        setupSuccessfulLoad(getUserStory(id = userStoryId).copy(status = null))
+
+        createViewModel()
+
+        val state = sut.state.value
+        assertFalse(state.isLoading)
+        assertEquals(NativeText.Empty, state.initialLoadError)
+        assertNotNull(state.currentUserStory)
+    }
+
+    @Test
+    fun `onAttachmentAdd with a null file should set the error and not call the repository`() {
+        setupSuccessfulLoad()
+        createViewModel()
+
+        sut.state.value.onAttachmentAdd(null)
+
+        assertEquals(NativeText.Resource(RString.common_error_message), sut.state.value.error)
+        assertTrue(workItemRepository.addAttachmentCalls.isEmpty())
+    }
+
+    /**
+     * [io.github.vinceglb.filekit.PlatformFile.readBytes] runs on a real IO dispatcher, so the
+     * `viewModelScope.launch` does not complete before the call returns the way every other
+     * handler here does. The state has to be awaited rather than read.
+     */
+    @Test
+    fun `onAttachmentAdd with a file should add the attachment`() = runTest {
+        setupSuccessfulLoad()
+        val attachment = getAttachment()
+        workItemRepository.addAttachmentResult = attachment
+        createViewModel()
+
+        sut.attachmentsState.test {
+            val initial = awaitItem()
+
+            sut.state.value.onAttachmentAdd(
+                createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3))
+            )
+
+            assertTrue(awaitItem().areAttachmentsLoading)
+
+            val loaded = awaitItem()
+            assertFalse(loaded.areAttachmentsLoading)
+            assertEquals(initial.attachments + attachment, loaded.attachments)
+        }
+
+        assertEquals(1, workItemRepository.addAttachmentCalls.size)
+        assertEquals(userStoryId, workItemRepository.addAttachmentCalls.first().workItemId)
+    }
+
+    @Test
+    fun `onDelete without a loaded user story should set the error and not delete`() {
+        setupFailedLoad()
+        createViewModel()
+
+        sut.state.value.onDelete()
+
+        assertFalse(sut.state.value.isLoading)
+        assertEquals(NativeText.Resource(RString.common_error_message), sut.state.value.error)
+        assertEquals(0, userStoryDetailsDataUseCase.deleteUserStoryCallCount)
+    }
+
+    @Test
+    fun `single assignee update should be ignored`() = runTest {
+        setupSuccessfulLoad()
+        createViewModel()
+
+        workItemEditStateRepository.updateAssignee(userStoryId, type, getRandomLong())
+
+        assertTrue(workItemRepository.patchDataCalls.isEmpty())
+    }
+
+    @Test
+    fun `assignees update should patch the assignees and bump the version`() = runTest {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = PatchedData(
+            newVersion = newVersion,
+            dueDateStatus = null
+        )
+        usersRepository.getUsersListResult = persistentListOf(getUser())
+        createViewModel()
+
+        workItemEditStateRepository.updateAssignees(
+            userStoryId,
+            type,
+            persistentListOf(getRandomLong())
+        )
+
+        assertEquals(1, workItemRepository.patchDataCalls.size)
+        assertEquals(newVersion, sut.state.value.currentUserStory?.version)
+    }
+
+    @Test
+    fun `watchers update should update the watchers and bump the version`() = runTest {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.updateWatchersDataResult = WatchersListUpdateData(
+            version = newVersion,
+            isWatchedByMe = true,
+            watchers = persistentListOf(getUser())
+        )
+        createViewModel()
+
+        workItemEditStateRepository.updateWatchers(
+            userStoryId,
+            type,
+            persistentListOf(getRandomLong())
+        )
+
+        assertEquals(newVersion, sut.state.value.currentUserStory?.version)
+        assertTrue(sut.watchersState.value.isWatchedByMe)
+    }
+
+    @Test
+    fun `onEpicRemoveClick success should unlink the epic and reload the user story`() {
+        val epicId = getRandomLong()
+        setupSuccessfulLoad(userStoryWithEpics(epicId))
+        val reloaded = userStoryWithEpics()
+        userStoryDetailsDataUseCase.getUserStoryResult = reloaded
+        createViewModel()
+
+        sut.state.value.onEpicRemoveClick(epicId)
+
+        assertEquals(
+            listOf(EpicLinkCall(epicId = epicId, userStoryId = userStoryId)),
+            epicsRepository.unlinkFromEpicCalls
+        )
+        assertEquals(reloaded, sut.state.value.currentUserStory)
+        assertEquals(reloaded, sut.state.value.originalUserStory)
+        assertFalse(sut.state.value.areUserStoryEpicsLoading)
+    }
+
+    @Test
+    fun `onEpicRemoveClick failure should show a snackbar and stop loading`() = runTest {
+        val epicId = getRandomLong()
+        setupSuccessfulLoad(userStoryWithEpics(epicId))
+        epicsRepository.unlinkFromEpicThrows = testException
+        createViewModel()
+
+        sut.snackBarMessage.test {
+            sut.state.value.onEpicRemoveClick(epicId)
+
+            assertTrue(awaitItem() !is NativeText.Empty)
+        }
+
+        assertFalse(sut.state.value.areUserStoryEpicsLoading)
+    }
+
+    @Test
+    fun `onEpicsUpdate with unchanged ids should do nothing`() = runTest {
+        val epicId = getRandomLong()
+        setupSuccessfulLoad(userStoryWithEpics(epicId))
+        createViewModel()
+
+        workItemEditStateRepository.updateEpics(userStoryId, type, persistentListOf(epicId))
+
+        assertTrue(epicsRepository.linkToEpicCalls.isEmpty())
+        assertTrue(epicsRepository.unlinkFromEpicCalls.isEmpty())
+        assertFalse(sut.state.value.areUserStoryEpicsLoading)
+    }
+
+    @Test
+    fun `onEpicsUpdate with an added id should link the epic and reload`() = runTest {
+        val keptId = getRandomLong()
+        val addedId = getRandomLong()
+        setupSuccessfulLoad(userStoryWithEpics(keptId))
+        val reloaded = userStoryWithEpics(keptId, addedId)
+        userStoryDetailsDataUseCase.getUserStoryResult = reloaded
+        createViewModel()
+
+        workItemEditStateRepository.updateEpics(
+            userStoryId,
+            type,
+            persistentListOf(keptId, addedId)
+        )
+
+        assertEquals(
+            listOf(EpicLinkCall(epicId = addedId, userStoryId = userStoryId)),
+            epicsRepository.linkToEpicCalls
+        )
+        assertTrue(epicsRepository.unlinkFromEpicCalls.isEmpty())
+        assertEquals(reloaded, sut.state.value.currentUserStory)
+        assertFalse(sut.state.value.areUserStoryEpicsLoading)
+    }
+
+    @Test
+    fun `onEpicsUpdate with only a removed id should unlink the epic and reload`() = runTest {
+        val removedId = getRandomLong()
+        setupSuccessfulLoad(userStoryWithEpics(removedId))
+        val reloaded = userStoryWithEpics()
+        userStoryDetailsDataUseCase.getUserStoryResult = reloaded
+        createViewModel()
+
+        workItemEditStateRepository.updateEpics(userStoryId, type, persistentListOf())
+
+        assertEquals(
+            listOf(EpicLinkCall(epicId = removedId, userStoryId = userStoryId)),
+            epicsRepository.unlinkFromEpicCalls
+        )
+        assertTrue(epicsRepository.linkToEpicCalls.isEmpty())
+        assertEquals(reloaded, sut.state.value.currentUserStory)
+        assertFalse(sut.state.value.areUserStoryEpicsLoading)
+    }
+
+    @Test
+    fun `onEpicsUpdate failure should show a snackbar and stop loading`() = runTest {
+        setupSuccessfulLoad(userStoryWithEpics())
+        epicsRepository.linkToEpicThrows = testException
+        createViewModel()
+
+        sut.snackBarMessage.test {
+            workItemEditStateRepository.updateEpics(
+                userStoryId,
+                type,
+                persistentListOf(getRandomLong())
+            )
+
+            assertTrue(awaitItem() !is NativeText.Empty)
+        }
+
+        assertFalse(sut.state.value.areUserStoryEpicsLoading)
     }
 }

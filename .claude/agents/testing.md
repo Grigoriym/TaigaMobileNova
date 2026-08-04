@@ -46,7 +46,7 @@ right subpackage before concluding a fake doesn't exist:
 |------|-----------|
 | `FakeWorkItemRepository` | `WorkItemRepository` |
 | `FakeProjectsRepository` | `ProjectsRepository` |
-| `FakeEpicsRepository` | `EpicsRepository` |
+| `FakeEpicsRepository` | `EpicsRepository` — `linkToEpic`/`unlinkFromEpic` record into `linkToEpicCalls`/`unlinkFromEpicCalls` (`EpicLinkCall(epicId, userStoryId)`) and have `…Throws` hooks |
 | `FakeUsersRepository` | `UsersRepository` |
 | `FakeHistoryRepository` | `HistoryRepository` |
 | `FakeSprintsRepository` | `SprintsRepository` |
@@ -553,6 +553,36 @@ different routes in one test class — `WorkItem(Issue)` with and without the pe
 `taskIdentifier` parameter defaulting to `WorkItem(CommonTaskType.UserStory)` keeps every other test
 unchanged. `Json.encodeToString(TaskIdentifier.Wiki)` round-trips through `typeMapOf` fine.
 
+### The other side: driving a **details** ViewModel's cross-screen handlers
+
+The edit screens above are the producers; the `*DetailsViewModel`s are the consumers, collecting the
+same channels with `launchIn(viewModelScope)` from `init`. Several of their handlers —
+`onEpicsUpdate`, `onAssigneeUpdated`, `onWatchersUpdated`, `onNewTagsUpdate`,
+`onNewDescriptionUpdate`, `handleTeamMemberUpdate` — are **private and absent from the state class**,
+so `sut.state.value.onX(...)` cannot reach them. Call the repository's `updateX` instead:
+
+```kotlin
+@Test
+fun `onEpicsUpdate with an added id should link the epic and reload`() = runTest {
+    setupSuccessfulLoad(userStoryWithEpics(keptId))
+    createViewModel()
+
+    workItemEditStateRepository.updateEpics(userStoryId, type, persistentListOf(keptId, addedId))
+
+    assertEquals(listOf(EpicLinkCall(addedId, userStoryId)), epicsRepository.linkToEpicCalls)
+}
+```
+
+No collector pairing is needed in this direction — the ViewModel *is* the collector, and under
+`MainDispatcherRule`'s `UnconfinedTestDispatcher` the whole handler runs synchronously inside the
+`send`, so plain assert-after works. `UserStoryDetailsViewModelTest` is the template.
+
+**The one handler this does not hold for is `onAttachmentAdd`:** `PlatformFile.readBytes()` hops to a
+real IO dispatcher, so the `viewModelScope.launch` has not finished when the call returns and the
+fake's `addAttachmentCalls` is still empty — it fails as a flat `expected:<1> but was:<0>` that reads
+like a wiring bug. Await `sut.attachmentsState` with turbine instead. Use
+`createTestPlatformFile(name, bytes)` from `:testing` (real file on JVM, `error(...)` on Android/iOS).
+
 ## `CustomFieldsUIMapper` in Tests
 
 Use real implementation: `CustomFieldsUIMapper(dfSimple = createDecimalFormatter())`.
@@ -747,6 +777,18 @@ kotlin {
     never arrived; it does not tell you whether the write, the propagation or the assertion is at
     fault, and only the first of those three is cheap to observe directly. Delete the probe
     afterwards.
+
+17. **A compound `&&` condition is four branches and needs three tests.** For
+    `if (idsToAdd.isEmpty() && idsToRemove.isEmpty())`, Kover counts true/false for *each* operand:
+    both-empty covers `true`/`true`, first-non-empty covers `false` (the second operand is never
+    evaluated), and first-empty-second-non-empty covers `true`/`false`. The obvious two tests —
+    "no change" and "some change" — leave it at 3/4 with nothing in the source to suggest what is
+    missing.
+
+18. **A JUnit failure truncates the rest of the test class.** A run reporting "10 tests completed,
+    1 failed, 1 skipped" for a 26-test class is the abort, not a second bug, and the test marked
+    SKIPPED is unrelated to the failure. Fix the failure and re-run before investigating either
+    number.
 
 ---
 

@@ -503,3 +503,57 @@ is true but beside the point: they should not exist.
 **Why deferred:** found while writing the `core/storage` tests (improvement-plan task 9a). Deleting
 production files is not a test task's business, and the surgical-changes rule says to mention
 unrelated dead code rather than remove it.
+
+## 18. `currentUserStory` throws from `viewModelScope` when the initial load failed
+
+**Where:** `feature/userstories/ui/.../UserStoryDetailsViewModel.kt:198-199`
+
+```kotlin
+private val currentUserStory: UserStory
+    get() = requireNotNull(_state.value.currentUserStory)
+```
+
+**Evidence:** the same ViewModel guards the identical read in two other places —
+`doOnDelete` (`:477`) does `_state.value.currentUserStory?.id ?: return@launch`-style null handling,
+and `onGoingToEditEpics` (`:823`) uses `_state.value.currentUserStory?.userStoryEpics`. Sixteen other
+handlers go through the `requireNotNull` getter instead.
+
+**Consequence:** if `loadUserStory` failed, `currentUserStory` throws `IllegalArgumentException`
+inside a `viewModelScope.launch`, which is an uncaught coroutine exception, not a caught error. Most
+of the sixteen callers are UI callbacks that the error state presumably hides, but **`onEpicsUpdate`
+is not** — it is driven by `workItemEditStateRepository.getEpicsFlow(...)`, i.e. by a *different*
+screen finishing its edit, and fires regardless of whether this screen loaded. Same for
+`onNewTagsUpdate`, `onNewDescriptionUpdate` and `handleTeamMemberUpdate`'s two branches.
+
+The three sibling details ViewModels (`TaskDetailsViewModel`, `EpicDetailsViewModel`,
+`IssueDetailsViewModel`) have the same getter shape — check them together.
+
+**Consequence for tests:** this is why `getCurrentUserStory` stays at BRANCH 1/2. Covering the throw
+arm requires letting an exception escape a `viewModelScope` coroutine, which under
+`kotlinx-coroutines-test` gets attributed to whichever `runTest` is live in *another module* (the
+`KoinGraphTest` failure mode, see `docs/issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md`).
+So the branch is not merely untested — it is untestable until the code stops throwing.
+
+**Why deferred:** found while writing the `feature/userstories/ui` tests (improvement-plan task 9a).
+Changing a null-handling policy across four ViewModels is a production change, not a test task's
+business.
+
+## 19. `TeamMemberUpdate.Clear` is a dead `when` arm in four ViewModels
+
+**Where:** `UserStoryDetailsViewModel.kt:708`, `TaskDetailsViewModel.kt:715`,
+`IssueDetailsViewModel.kt:469`, `EpicDetailsViewModel.kt:282` — each
+`TeamMemberUpdate.Clear -> {}`.
+
+**Evidence:** `grep -rn "TeamMemberUpdate.Clear" --include=*.kt . | grep -v /build/` returns exactly
+those four lines and nothing else. The only producers of `TeamMemberUpdate` are
+`WorkItemEditStateRepository.updateAssignee` / `.updateAssignees` / `.updateWatchers`, which send
+`Assignee`, `Assignees` and `Watchers` respectively. Nothing constructs `Clear`.
+
+**Consequence:** none at runtime — it is an empty arm. In coverage it is a permanent 1 missed branch
+per ViewModel (4 total), and it is the sole reason `handleTeamMemberUpdate` sits at BRANCH 5/6 in
+each. Anyone sweeping one of those four packages will re-derive this.
+
+**Why deferred:** found while writing the `feature/userstories/ui` tests (improvement-plan task 9a).
+Deleting the arm — or the `Clear` variant itself, if it has no purpose — is a production change
+across four files, and the surgical-changes rule says to mention unrelated dead code rather than
+remove it. Check whether `Clear` is meant to be sent by something unimplemented before deleting.

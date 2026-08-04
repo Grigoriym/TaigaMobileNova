@@ -53,8 +53,9 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/userstories/ui` (27 missed branches — `UserStoryDetailsViewModel`, LINE 263/528; verify and expect to split it, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c); ⬅ **NEXT** module: `feature/workitem/ui/mappers` (15 missed branches, LINE already 105/105 — branch-only and cheap; verify first) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
+| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -689,7 +690,7 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`feature/settings/ui/user`~~ | 0/12 | ✅ done 2026-08-04 — the 4 reachable branches are now **4/4**, LINE 16/17; the other 8 are `@Composable` and stay 0 |
 | ~~`feature/settings/ui`~~ | 0/8 | ⛔ closed-as-blocked 2026-08-04 — all 8 are `ThemeSelectorKt`, a `@Composable`. See the section below |
 | ~~`core/storage` + `/auth` + `/server`~~ | 2/32 | ✅ done 2026-08-04 — now **45/46**; the row said 0/18 and was an undercount, see the section below |
-| **`feature/userstories/ui`** | 13/40 | ⬅ next. `UserStoryDetailsViewModel`, LINE 263/528 with a large block of wholly-untested lambdas — likely needs splitting |
+| ~~`feature/userstories/ui`~~ | 13/40 | ✅ done 2026-08-04 — now **37/40**, LINE 263/528 → **375/528**; the residual 3 are unreachable, and the line half became task 9c |
 | ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
 
 **Re-derived 2026-08-04** after the `core/storage` module, with [kover-rank.py](kover-rank.py) over a
@@ -698,10 +699,10 @@ after it — none verified yet, so check each for `@Composable` and generated co
 
 | Module | BRANCH | Note |
 |---|---|---|
-| `feature/epics/ui/details` | 12/30 | LINE 245/468 — a details ViewModel, same shape as `feature/userstories/ui` |
+| `feature/workitem/ui/mappers` | 41/56 | ⬅ **next**. **LINE 105/105 already** — pure mappers whose conditionals are untested, so this is branch-only work and cheap |
+| `feature/epics/ui/details` | 12/30 | LINE 245/468 — a details ViewModel, same shape as `feature/userstories/ui`; **read that section first**, the branch map transfers almost line for line |
 | `feature/issues/ui/details` | 17/34 | LINE 285/512 — likewise |
 | `core/domain` | 20/36 | LINE 43/53, small and hand-written |
-| `feature/workitem/ui/mappers` | 41/56 | **LINE 105/105 already** — pure mappers whose conditionals are untested, so this is branch-only work and cheap |
 | `feature/sprint/data` | 16/29 | LINE 147/205 |
 | `feature/tasks/ui` | 17/30 | LINE 274/479 |
 
@@ -1475,6 +1476,76 @@ Five things worth carrying forward:
   `androidMain`-only and invisible to a JVM test. `TrustedCertStorageImpl` stays at 7/10 — that is
   its pre-existing test file, untouched here.
 
+### `feature/userstories/ui` — ✅ done 2026-08-04 (branch half; line half split out as task 9c)
+
+14 new tests in `UserStoryDetailsViewModelTest`; the file goes 12 → 26 tests.
+`:feature:userstories:ui:jvmTest`, the full `jvmTest`, `detekt`, `ktlintCheck` and `:koverVerify` are
+all green.
+
+| Scope | Before | After |
+|---|---|---|
+| package `feature/userstories/ui` BRANCH | 13/40 | **37/40** |
+| package `feature/userstories/ui` LINE | 263/528 | **375/528** |
+| `handleTeamMemberUpdate` BRANCH | 0/6 | 5/6 |
+| `onEpicsUpdate$1` BRANCH | 0/8 | **8/8** |
+| `onEpicRemoveClick$1` BRANCH | 0/4 | **4/4** |
+| `doOnDelete$1` BRANCH | 6/8 | **8/8** |
+| `loadUserStory$1` BRANCH | 5/6 | **6/6** |
+| `onAttachmentAdd` BRANCH | 0/2 | **2/2** |
+| `onGoingToEditEpics` BRANCH | 2/4 | 3/4 |
+| `getCurrentUserStory` BRANCH | 0/2 | 1/2 |
+
+Denominators are identical on both sides, so the comparison is valid — but note the two runs were
+**not** the same class-count mode (742 before, 780 after, both zero-leak). That is the
+"Android-variant surplus" mode CLAUDE.md describes, and it moved only `core/storage/db|di|cache|network`
+package rows, none of which this change touches. Package scope is exactly the escape hatch for this.
+
+Side effects, both from delegate code the new tests now drive: `feature/workitem/ui` BRANCH 7/8 →
+**8/8** and `feature/workitem/ui/screens` LINE 44/50 → 45/50.
+
+**The map that made this a 90-minute session instead of an exploratory one:** the per-`<sourcefile>`
+`<line nr= mb= cb=>` view named all 27 missed branches by source line up front, so every test was
+written against a known target rather than by guessing. Worth doing first on any details ViewModel.
+
+**All three residual branches are unreachable, each for a different documented reason:**
+
+- **`getCurrentUserStory` 1/2** — `requireNotNull(_state.value.currentUserStory)`. Covering the throw
+  arm means letting an exception escape a `viewModelScope.launch`, which
+  `kotlinx-coroutines-test` attributes to whichever `runTest` is live *in another module*. Filed as
+  [revisit #18](../revisit.md) — it is also a real crash risk, because `onEpicsUpdate` is driven by a
+  flow from *another screen* and fires whether or not this screen's load succeeded.
+- **`handleTeamMemberUpdate` 5/6** — the `TeamMemberUpdate.Clear` arm. `grep -rn "TeamMemberUpdate.Clear"`
+  returns **only the four ViewModels' own `when` arms**; nothing in the project ever sends it.
+  `WorkItemEditStateRepository` has `updateAssignee`/`updateAssignees`/`updateWatchers` and no
+  `Clear` producer. The other three details ViewModels carry the identical dead arm — filed as
+  [revisit #19](../revisit.md).
+- **`onGoingToEditEpics` 3/4** — line 824, the tail of
+  `currentUserStory?.userStoryEpics?.map { it.id }?.toImmutableList()`. `userStoryEpics` is a
+  non-null `ImmutableList` and `map` cannot return null, so the last `?.`'s null arm is dead. Same
+  always-one-short family as `x?.toString() ?: ""` and `FiltersStorageImpl:33`.
+
+Three things worth carrying forward:
+
+- **The `WorkItemEditStateRepository` channels are the only way to reach a details ViewModel's
+  cross-screen handlers**, and they work cleanly from a test: `updateEpics` / `updateAssignees` /
+  `updateWatchers` / `updateTags` / `updateDescription` are `suspend` sends on a rendezvous `Channel`
+  that the ViewModel's `init` collects with `launchIn(viewModelScope)`. Under `MainDispatcherRule`'s
+  `UnconfinedTestDispatcher` the whole handler runs synchronously inside the `send`, so a plain
+  `runTest` + assert-after works. This is how `onEpicsUpdate`, `onAssigneeUpdated` and
+  `onWatchersUpdated` were driven — none of them is reachable through `state.value`.
+- **`onAttachmentAdd` is the one handler where assert-after-the-call does not work.**
+  `PlatformFile.readBytes()` hops to a real IO dispatcher, so the `launch` has not finished when the
+  call returns and `addAttachmentCalls` is still empty — it fails with a flat `expected:<1> but
+  was:<0>` that reads like a wiring bug. Await `sut.attachmentsState` with turbine instead. Every
+  *other* handler in this ViewModel is fully synchronous under the Unconfined dispatcher.
+- **A JUnit failure truncates the rest of the class.** The first run of the new tests reported
+  "10 tests completed, 1 failed, 1 skipped" out of 26, with an unrelated test marked SKIPPED. That is
+  the aborted run, not a second problem — fix the failure and re-run before investigating the count.
+
+**Compound conditions need three tests, not two.** `if (idsToAdd.isEmpty() && idsToRemove.isEmpty())`
+is 4 branches: both-empty (both operands true), added-non-empty (first false, second never
+evaluated), and removed-only (first true, second false). Two tests leave it at 3/4.
+
 ---
 
 ## Task 9b — `WorkItemRemoteMediator`
@@ -1492,6 +1563,41 @@ from `state.pages`), on `taskType == UserStory` for the `sprint` parameter, and 
 the SUT calls `.body()` and `hasNextPage()` (a header read) on it. Decide between a Ktor
 `MockEngine`-backed response and narrowing `WorkItemApi`'s return type; **write the decision into the
 test file.** This is why it is its own task.
+
+---
+
+## Task 9c — Details-ViewModel delegate handlers (LINE-only)
+
+**Split out of task 9a's `feature/userstories/ui` session (2026-08-04)** because it buys **zero
+branches** and so does not belong in a sweep ranked by missed branches — but it is the single
+largest block of untested *lines* left in the `feature/*/ui` tree.
+
+**Why:** `UserStoryDetailsViewModel`, `TaskDetailsViewModel`, `EpicDetailsViewModel` and
+`IssueDetailsViewModel` each wire ~16 UI callbacks straight through to a `WorkItem*Delegate`:
+`onTitleSave`, `onBadgeSave`, `createComment`, `deleteComment`, `onAttachmentRemove`,
+`onBlockToggle`, `onCustomFieldSave`, `removeAssignee`, `onAssignToMe`, `removeWatcher`,
+`onRemoveMeFromWatchersClick`, `onAddMeToWatchersClick`, `setDueDate`, `onTagRemove`,
+`onNewTagsUpdate`, `onNewDescriptionUpdate`. Each compiles to its own `$1` lambda class of 4–24
+lines, **all at LINE 0 and BRANCH 0/0** — that is ~150 of the 153 lines still missing in
+`feature/userstories/ui` after the branch work above, and the same shape in the other three modules.
+
+**Scope:** one module per session, same as 9a. Take `feature/userstories/ui` first — its
+`UserStoryDetailsViewModelTest` already has the fakes wired and the `setupSuccessfulLoad` /
+`userStoryWithEpics` helpers.
+
+**What each test looks like:** configure the fake's `…Result`, invoke `sut.state.value.onX(...)`,
+assert the delegate's own state flow moved *and* that the version was bumped through
+`updateVersion` (`sut.state.value.currentUserStory?.version`). The failure counterpart sets the
+fake's `…Throws` and asserts the snackbar via `sut.snackBarMessage.test { }` — `emitError` sends on a
+rendezvous channel, so without a collector the test hangs rather than fails.
+
+**Watch for:** the delegates themselves are already tested in
+`feature/workitem/ui/.../delegates/*Test`, so **do not re-assert delegate behaviour** — assert only
+the wiring the ViewModel adds (which version it passes, what it does in `doOnSuccess`, that
+`clearError` ran). Otherwise this becomes 60 tests that duplicate an existing suite.
+
+**Done when:** the module's `*DetailsViewModel` has no `$1` lambda class left at LINE 0, and the
+before/after LINE table is recorded here.
 
 ---
 

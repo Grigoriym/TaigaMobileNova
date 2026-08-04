@@ -348,6 +348,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   hunting for the test. Same family, same one-short result: a `?.`-chain whose last link cannot
   return null feeding an elvis, e.g. `FiltersStorageImpl:33`
   `value?.takeIf { it.isNotBlank() }?.let { json.decodeFromString(it) } ?: FiltersData()` at 7/8.
+  **The elvis is not required** — any `?.`-chain with a link that cannot return null is one short,
+  e.g. `UserStoryDetailsViewModel:823-824`
+  `currentUserStory?.userStoryEpics?.map { it.id }?.toImmutableList()` at 3/4, because
+  `userStoryEpics` is a non-null `ImmutableList` and `map` never returns null. Recognise the shape,
+  not the elvis.
 - **The same is true of LINE for every `logcat { }` call site** — 96 of them. The JVM backend is the
   no-op `NoLog` (see Logging), which never invokes the `message: () -> String` lambda, so each one is
   a synthetic method Kover reports as one missed line and zero branches. **Signature to recognise: a
@@ -373,6 +378,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   as the per-method view can say; the per-line view says "line 59 `mb=1 cb=3`" and the question is
   answered without reading Kotlin. The snippet is in
   [improvement-plan.md](docs/testing/improvement-plan.md) under `…settings/ui/modules`.
+  **Run it at scoping time, not only to explain a leftover.** Dumping every `mb>0` line for the
+  target class *before writing any test* turns a large ViewModel from an exploration into a
+  checklist — `feature/userstories/ui`'s 27 missed branches resolved to 15 named source lines in one
+  command, and each test was then written against a known target. It also prices the session
+  honestly: that dump is what showed the line half was branch-free and had to be split off.
 
 Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
 77 modules.
