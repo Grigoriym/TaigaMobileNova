@@ -48,6 +48,13 @@ data class PatchCustomAttributesCall(
     val commonTaskType: CommonTaskType,
 )
 
+data class CreateWorkItemCall(
+    val commonTaskType: CommonTaskType,
+    val subject: String,
+    val description: String,
+    val status: Long?,
+)
+
 data class PatchWikiPageCall(
     val pageId: Long,
     val version: Long,
@@ -225,12 +232,20 @@ class FakeWorkItemRepository : WorkItemRepository {
         return patchWikiPageResult ?: error("patchWikiPageResult not configured")
     }
 
+    var createWorkItemResult: WorkItem? = null
+    var createWorkItemThrows: Throwable? = null
+    val createWorkItemCalls: MutableList<CreateWorkItemCall> = mutableListOf()
+
     override suspend fun createWorkItem(
         commonTaskType: CommonTaskType,
         subject: String,
         description: String,
         status: Long?,
-    ): WorkItem = error("not used in this test")
+    ): WorkItem {
+        createWorkItemCalls += CreateWorkItemCall(commonTaskType, subject, description, status)
+        createWorkItemThrows?.let { throw it }
+        return createWorkItemResult ?: error("createWorkItemResult not configured")
+    }
 
     override suspend fun promoteToUserStory(
         workItemId: Long,

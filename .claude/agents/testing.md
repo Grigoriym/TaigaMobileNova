@@ -63,19 +63,19 @@ Key fields for commonly-used fakes:
 
 **`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`, `updateModulesCalled/Throws/Calls` (the `Calls` list holds `UpdateModulesCall` records — every argument, so a test can assert the whole set in one `assertEquals`), `updateProjectCalled/Throws`, `saveProjectCalled/CalledWith`, `fetchAndSaveProjectInfoCalled/Throws`, `createTagCalled/Throws`, `deleteTagCalled/TagName/Throws`, `editTagFromTagName/ToTagName/Throws`, `mixTagsCalled/FromTags/ToTag/Throws`, `projectFlow`
 
-**`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
+**`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `createWorkItemResult/Throws/Calls` (`CreateWorkItemCall` records), `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
 
 **`FakeTaigaSessionStorage`**: `currentProjectId: Long`, `currentUserId: Long?`, `clearDataCalled: Boolean`, `presetColorsResult` (backs `getPresetColors()`), `tagPresetColorsResult` (backs `getPresetColorsAsColor()`)
 
 **`FakeWikiRepository`**: `getProjectWikiPagesResult`, `getProjectWikiPageBySlugResult/Throws`, `getWikiLinksResult/Throws`, `deleteWikiPageThrows/Called/Id`, `deleteWikiLinkCalled/Id`
 
-**`FakeTasksRepository`**: `getTaskResult/Throws`, `deleteTaskCalled/Throws`
+**`FakeTasksRepository`**: `getTaskResult/Throws`, `deleteTaskCalled/Throws`, `createTaskResult/Throws/Calls` (`CreateTaskCall` records — every argument)
 
-**`FakeIssuesRepository`**: `getIssueResult/Throws`
+**`FakeIssuesRepository`**: `getIssueResult/Throws`, `createIssueResult/Throws/Calls` (`CreateIssueCall` records)
 
 **`FakeUsersRepository`**: `getUserResult/Throws`, `getUsersListResult/Throws`, `isAnyAssignedToMeResult/Throws`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
 
-**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `bulkUpdateKanbanOrderThrows/Called`, plus one recorder per `bulkUpdateKanbanOrder` argument (`bulkUpdateKanbanOrderStatusId/StoryIds/SwimlaneId/AfterStoryId/BeforeStoryId`)
+**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `createUserStoryResult/Throws/Calls` (`CreateUserStoryCall` records), `bulkUpdateKanbanOrderThrows/Called`, plus one recorder per `bulkUpdateKanbanOrder` argument (`bulkUpdateKanbanOrderStatusId/StoryIds/SwimlaneId/AfterStoryId/BeforeStoryId`)
 
 **`FakeFiltersRepository`**: `statusesResult/Throws`, `filtersDataResult/Throws`, `getFiltersDataCallCount`
 
@@ -163,6 +163,12 @@ Some use cases are concrete `@Factory` classes (e.g. `WikiPageUseCase`). Two opt
 
 1. **Extract an interface** (preferred when the ViewModel is heavily tested): rename impl to `*Impl`, create `FakeXxx` in `:testing`. See `TaskDetailsDataUseCase` pattern.
 2. **Use the real use case with fake repositories** (acceptable for simpler cases): instantiate `WikiPageUseCase(wikiRepository = fakeWikiRepository, ...)` directly in the test.
+
+**Option 1 is not available at all for a use case that lives in `composeApp`** — `:testing` cannot
+depend on `composeApp` (it is `composeApp`'s own `commonTest` dependency, so that is a cycle), and a
+fake has nowhere else to live. `CreateWorkItemUseCase` is the case: `CreateTaskViewModelTest` builds
+the real use case over four repository fakes, which is also why 23 tests took both classes to 100 % of
+branches. Same reasoning as `MainViewModelTest` building a real `AuthStateManager`.
 
 ---
 
@@ -284,6 +290,14 @@ internal class MyViewModelTest {
 
 `MainDispatcherRule` is only needed for classes using `viewModelScope`. Use `setup()` / `tearDown()` manually — it is NOT a JUnit4 `@get:Rule`.
 
+**A route argument declared through `typeMapOf` goes into the handle as its JSON encoding, not its
+value.** That covers plain enums as well as sealed types: `"type" to Json.encodeToString(CommonTaskType.Task)`
+puts in the string `"Task"` *with the quotes*, because `JsonSerializableNavType.get` calls
+`Json.decodeFromString`. Nullable primitives in the same route (`parentId: Long?`) use navigation's own
+types and go in as raw `Long`/`null`; one `toRoute` call parses both kinds together, and every key must
+be present since these destinations declare no defaults. `CreateTaskViewModelTest` is the mixed
+example; see also the `TaskIdentifier` note under `WorkItemEditStateRepository`.
+
 ### ViewModel init loads data synchronously
 With `MainDispatcherRule` using `UnconfinedTestDispatcher`, `init { viewModelScope.launch { ... } }` completes before `createViewModel()` returns. Assert state directly after `createViewModel()` without `runTest`.
 
@@ -392,6 +406,13 @@ fun `patchData should propagate api error`() = runTest {
   recording — the newer ordering is the better one).
 - Per-collaborator `…Throws` fields (`FakeUsersRepository.getUsersListThrows`) are for repository
   and use-case fakes where a test needs exactly one of several methods to fail.
+- **`assertFailsWithTestException` does not fit a method that returns `Result`.** It takes a throwing
+  block, and a `resultOf { }`-wrapped function returns the throwable instead of rethrowing it. Do the
+  same type + message check on `result.exceptionOrNull()` — `assertIs<IllegalStateException>(thrown)`
+  then `assertEquals(testException.message, thrown.message)`. `assertTrue(result.isFailure)` alone
+  proves less: it passes when a fake hit its own `error("… not set")` guard.
+  `CreateWorkItemUseCaseTest` and `GetProfileDataUseCaseTest` both do this with a local helper; if a
+  third file needs it, promote it to `:testing`'s `TestUtils.kt`.
 
 ### Ktor plugins and anything needing a real `HttpResponse`
 

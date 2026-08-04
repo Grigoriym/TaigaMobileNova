@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04; ⬅ **NEXT** module: `createtask` (verified 2026-08-04 — still 0/13, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04; ⬅ **NEXT** module: `feature/settings/ui/user` (verified 2026-08-04 — only **4** of its 12 branches are reachable, see the table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -679,8 +679,9 @@ applied by [kover-rank.py](kover-rank.py) rather than trusting the report's own 
 | ~~`feature/workitem/ui/screens/edittags`~~ | 0/20 | ✅ done 2026-08-04 — now **20/20**, LINE 124/127 |
 | ~~`feature/workitem/ui/screens/sprint`~~ | 0/18 | ✅ done 2026-08-04 — now **18/18**, LINE 74/75 |
 | ~~`feature/settings/ui/modules`~~ | 0/16 | ✅ done 2026-08-04 — now **14/16**, LINE 88/88; the residual 2 are unreachable |
-| **`createtask`** | 0/13 | ⬅ next. Verified 2026-08-04, re-confirmed unchanged after the `modules` module: `CreateTaskViewModel` 0/6 + `onCreateTask$3` 0/4 + `CreateWorkItemUseCase` 0/3. LINE 9/97 |
-| `feature/settings/ui/user` | 0/12 | surfaced 2026-08-04 by the post-`modules` re-derivation. LINE 14/46 — wholly untested, same ViewModel shape as `modules`. Verify per-class before taking |
+| ~~`createtask`~~ | 0/13 | ✅ done 2026-08-04 — now **13/13**, LINE 96/97 |
+| **`feature/settings/ui/user`** | 0/12 | ⬅ next, but **only 4 branches are reachable** — verified 2026-08-04: `SettingsUserScreenViewModel$loadData$1` 0/4 + LINE 0/17 is the whole session; the other 8 (`OpenByDefaultSettingsButton_androidKt` 0/6, `_jvmKt` 0/2) are `@Composable` `expect`/`actual` bodies, the JVM one an empty function. Scope it as XS/S, not M |
+| `feature/settings/ui` | 0/8 | surfaced 2026-08-04. All 8 are `ThemeSelectorKt` (`@Composable`) — likely another ⛔. `SettingsViewModel` is 0 branches, LINE 7/7 + `$1` 0/5. Verify before taking |
 | `feature/userstories/ui` | 13/40 | `UserStoryDetailsViewModel`, LINE 150/221 with ~25 wholly-untested lambdas — likely needs splitting |
 | ~~`core/api/errors`~~ | 47/76 | ⛔ do not take. 25 of the 29 missed are `TaigaErrorResponse`, a `@Serializable data class` at LINE 5/5; the two real classes are 10/12 and 28/30 |
 
@@ -1284,6 +1285,59 @@ be triggered *inside* the turbine block (`sut.navigateBack.test { sut.state.valu
 awaitItem() }`), and any assertion about state the coroutine sets *after* the send — `isSaving =
 false` on the failure path — has to come after the block, not inside it. Getting that order wrong
 hangs the failure test rather than failing it. No behaviour bug found.
+
+### `createtask` — ✅ done 2026-08-04
+
+23 tests in two new files under `composeApp/src/commonTest/…/createtask/`:
+`CreateWorkItemUseCaseTest` (9) and `CreateTaskViewModelTest` (14). The full `jvmTest`,
+`koverXmlReport`, `:koverVerify`, `detekt` and `ktlintCheck` are all green. `:testing` gained
+`create*Result/Throws/Calls` on all four repository fakes the use case fans out to —
+`FakeTasksRepository.CreateTaskCall`, `FakeIssuesRepository.CreateIssueCall`,
+`FakeUserStoriesRepository.CreateUserStoryCall` and the top-level `CreateWorkItemCall` for
+`FakeWorkItemRepository`; all four `create*` methods were `error("not used in this test")` before.
+`.claude/agents/testing.md`'s four entries were updated.
+
+| Scope | Before | After |
+|---|---|---|
+| `CreateWorkItemUseCase` BRANCH | 0/3 | **3/3** |
+| `CreateWorkItemUseCase` LINE | 5/31 | **31/31** |
+| `CreateTaskViewModel` BRANCH | 0/6 | **6/6** |
+| `CreateTaskViewModel` LINE | 4/34 | **34/34** |
+| `…$onCreateTask$3` BRANCH | 0/4 | **4/4** |
+| `…$onCreateTask$3` LINE | 0/23 | 22/23 |
+| package `createtask` BRANCH | 0/13 — 0 % | **13/13 — 100 %** |
+| package `createtask` LINE | 9/97 — 9.3 % | **96/97 — 99.0 %** |
+
+The baseline was a clean **742**-class run — the CI-equivalent mode — and the after-run an
+**822**-class one with 20 leaks, i.e. the test-sources-only flip *into* the excludes-skipped mode
+documented in CLAUDE.md, for the third session running. This package's denominators (13 BRANCH /
+97 LINE) are identical in both, so the table is valid. `kover-rank.py` filtered the after-run to 746
+classes / BRANCH 1381-2053 67.27 % / LINE 7929-9771 81.15 %.
+
+**The residual 1 line is the documented `logcat` hole** — `CreateTaskViewModel.kt:94`, the
+`"Error creating task"` message lambda, `mi=1 ci=0 mb=0 cb=0`. The failure test does take that path;
+the JVM `NoLog` backend just never invokes the lambda.
+
+Three things worth carrying forward:
+
+- **The `else ->` arm of a `when` over a 4-value enum is reachable only through the one value the
+  `when` doesn't name.** `CreateWorkItemUseCase` handles `Task`/`Issue`/`UserStory` explicitly and
+  routes everything else to `WorkItemRepository.createWorkItem`, so `CommonTaskType.Epic` *is* the
+  `else` test. Kover counts that `when` as 3 branches, not 4.
+- **A route argument that goes through `typeMapOf` must be put into the `SavedStateHandle` as its
+  JSON encoding, not its name.** `"type" to Json.encodeToString(CommonTaskType.Task)` — i.e. the
+  string `"Task"` *including the quotes*, since `JsonSerializableNavType.get` calls
+  `Json.decodeFromString`. The four `Long?` arguments alongside it use navigation's own nullable
+  types and go in as raw `Long`/`null` values, and `toRoute` parses both in the same call.
+- **`CreateWorkItemUseCase` is a concrete class in `composeApp`, so it cannot be faked and `:testing`
+  cannot host a fake for it** (that would be a dependency cycle). The ViewModel test therefore builds
+  the **real** use case over the four repository fakes — same shape as `MainViewModelTest` building a
+  real `AuthStateManager`. This is why 23 tests cover both classes to 100 % of branches.
+
+Also: `assertFailsWithTestException` does not fit a function returning `Result` — it takes a
+throwing block, and `resultOf` returns the throwable instead of rethrowing. `CreateWorkItemUseCaseTest`
+has a local `assertFailure(result)` doing the same type+message check on `result.exceptionOrNull()`.
+Two tests now want this; if a third appears, move it to `:testing`. No behaviour bug found.
 
 ---
 

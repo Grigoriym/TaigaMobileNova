@@ -25,12 +25,32 @@ class FakeUserStoriesRepository : UserStoriesRepository {
     override suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem> =
         getEpicUserStoriesSimplifiedResult
 
+    data class CreateUserStoryCall(
+        val subject: String,
+        val description: String,
+        val status: Long?,
+        val swimlane: Long?
+    )
+
+    var createUserStoryResult: WorkItem? = null
+    var createUserStoryThrows: Throwable? = null
+    val createUserStoryCalls: MutableList<CreateUserStoryCall> = mutableListOf()
+
     override suspend fun createUserStory(
         subject: String,
         description: String,
         status: Long?,
         swimlane: Long?
-    ): WorkItem = error("not used in this test")
+    ): WorkItem {
+        createUserStoryCalls += CreateUserStoryCall(
+            subject = subject,
+            description = description,
+            status = status,
+            swimlane = swimlane
+        )
+        createUserStoryThrows?.let { throw it }
+        return createUserStoryResult ?: error("createUserStoryResult not set")
+    }
 
     override suspend fun getUserStory(id: Long): UserStory = error("not used in this test")
 

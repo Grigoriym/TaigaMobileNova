@@ -35,10 +35,30 @@ class FakeTasksRepository : TasksRepository {
         deleteTaskThrows?.let { throw it }
     }
 
+    data class CreateTaskCall(
+        val title: String,
+        val description: String,
+        val parentId: Long?,
+        val sprintId: Long?
+    )
+
+    var createTaskResult: WorkItem? = null
+    var createTaskThrows: Throwable? = null
+    val createTaskCalls: MutableList<CreateTaskCall> = mutableListOf()
+
     override suspend fun createTask(
         title: String,
         description: String,
         parentId: Long?,
         sprintId: Long?
-    ): WorkItem = error("not used in this test")
+    ): WorkItem {
+        createTaskCalls += CreateTaskCall(
+            title = title,
+            description = description,
+            parentId = parentId,
+            sprintId = sprintId
+        )
+        createTaskThrows?.let { throw it }
+        return createTaskResult ?: error("createTaskResult not set")
+    }
 }

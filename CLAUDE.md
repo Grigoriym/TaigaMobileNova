@@ -157,6 +157,11 @@ For DI patterns, the `expect/actual @Configuration` rule, module registry, quali
 
 ## KMP String Resources
 
+Every `RString.x` reference needs its **own** import (`import com.grappim.taigamobile.strings.generated.resources.create_task`)
+— the generated strings are extension properties, so importing `RString` alone gives
+`Unresolved reference 'create_task'`. This bites in test files as often as in Composables: a test
+asserting `NativeText.Resource(RString.title_is_empty)` needs the same import line the ViewModel has.
+
 `strings.xml` (`strings/src/commonMain/composeResources/values/`) does not need Android-style
 apostrophe/quote escaping (`\'`) — Compose Multiplatform's resource loader doesn't apply AAPT's
 escaping rules, so plain `'` works correctly. Don't escape apostrophes in new strings.
@@ -248,6 +253,9 @@ tests, not a smaller bound. The traps when touching those numbers:
   a test file and one `:testing` field, **822** with 20 leaks — so a test-sources-only edit flipping a
   clean run *into* the excludes-skipped mode is the most reliably observed transition. Expect the
   before/after pair to straddle the flip and plan on the package-scope escape hatch below.
+  Confirmed a third time on 2026-08-04, from the cleanest possible starting point: a **742** baseline
+  (zero leaks, i.e. exactly what CI sees) → **822** with 20 leaks after adding two test files and four
+  `:testing` fields. Three sessions running, so treat the straddle as the expected case, not bad luck.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
   `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45

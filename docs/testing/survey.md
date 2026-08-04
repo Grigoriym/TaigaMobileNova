@@ -261,9 +261,10 @@ through rather than deleted so the baseline stays readable.
 | `core/navigation` | — |
 | `uikit` | excluded from Kover aggregation entirely |
 
-**Twelve ViewModels are still untested** (found 2026-08-03 while closing task 7, which the table
-above wrongly called "the last untested ViewModel" — the original survey only walked the modules it
-had flagged, not every `*ViewModel.kt`). Re-derive with:
+**Twelve ViewModels were untested when this was found** (2026-08-03, while closing task 7, which the
+table above wrongly called "the last untested ViewModel" — the original survey only walked the modules
+it had flagged, not every `*ViewModel.kt`). **Seven remain as of 2026-08-04**; task 9a has since closed
+five of them. Re-derive with:
 
 ```bash
 for f in $(grep -rl "ViewModel(" --include="*ViewModel.kt" feature composeApp | grep -v "/build/"); do
@@ -272,23 +273,24 @@ for f in $(grep -rl "ViewModel(" --include="*ViewModel.kt" feature composeApp | 
 done
 ```
 
-| Module | ViewModel | Lines |
-|---|---|---|
-| `feature/settings/ui` | `SettingsViewModel` | 28 |
-| `feature/settings/ui` | `SettingsAboutScreenViewModel` | 28 |
-| `feature/settings/ui` | `SettingsUserScreenViewModel` | 57 |
-| `feature/settings/ui` | `SettingsInterfaceViewModel` | 72 |
-| `feature/settings/ui` | `ProjectDetailsViewModel` | 120 |
-| `feature/settings/ui` | `ModulesViewModel` | 127 |
-| `feature/settings/ui` | `ProjectValuesViewModel` | 177 |
-| `feature/scrum/ui` | `ScrumClosedSprintsViewModel` | 14 |
-| `feature/workitem/ui` | `EditDescriptionViewModel` | 72 |
-| `feature/workitem/ui` | `EditSprintViewModel` | 143 |
-| `feature/workitem/ui` | `WorkItemEditTagsViewModel` | 223 |
-| `composeApp` | `CreateTaskViewModel` | 117 |
+| Module | ViewModel | Lines | Status |
+|---|---|---|---|
+| `feature/settings/ui` | `SettingsViewModel` | 28 | |
+| `feature/settings/ui` | `SettingsAboutScreenViewModel` | 28 | |
+| `feature/settings/ui` | `SettingsUserScreenViewModel` | 57 | |
+| `feature/settings/ui` | `SettingsInterfaceViewModel` | 72 | |
+| `feature/settings/ui` | `ProjectDetailsViewModel` | 120 | |
+| ~~`feature/settings/ui`~~ | ~~`ModulesViewModel`~~ | 127 | ✅ closed by task 9a (`modules`) 2026-08-04 |
+| ~~`feature/settings/ui`~~ | ~~`ProjectValuesViewModel`~~ | 177 | ✅ closed by task 9a (`attributes/projectvalues`) 2026-08-04 |
+| `feature/scrum/ui` | `ScrumClosedSprintsViewModel` | 14 | |
+| `feature/workitem/ui` | `EditDescriptionViewModel` | 72 | |
+| ~~`feature/workitem/ui`~~ | ~~`EditSprintViewModel`~~ | 143 | ✅ closed by task 9a (`screens/sprint`) 2026-08-04 |
+| ~~`feature/workitem/ui`~~ | ~~`WorkItemEditTagsViewModel`~~ | 223 | ✅ closed by task 9a (`screens/edittags`) 2026-08-04 |
+| ~~`composeApp`~~ | ~~`CreateTaskViewModel`~~ | 117 | ✅ closed by task 9a (`createtask`) 2026-08-04 |
 
-`feature/settings/ui` is the concentration — 7 of the 12. No plan task covers these; they are not
-sequenced anywhere yet.
+`feature/settings/ui` is the concentration — 7 of the original 12, and 5 of the 7 still open. Task 9a
+picks them off by missed-branch rank rather than by module, so the remaining rows get taken as they
+surface in [kover-rank.py](kover-rank.py)'s output; `SettingsUserScreenViewModel` is next.
 
 Structural gaps, independent of any module:
 
