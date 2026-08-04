@@ -1,0 +1,35 @@
+testing/src/commonMain/kotlin/com/grappim/taigamobile/testing/repo/FakeProjectsRepository.kt
+  s_fc46f9b0fdc36b::t_8f371640d68097 78-87,90,102-110
+feature/settings/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/settings/ui/modules/ModulesViewModelTest.kt
+  s_fc46f9b0fdc36b::t_e4d6df4b484ef7 1-306
+docs/testing/improvement-plan.md
+  s_fc46f9b0fdc36b::t_939910431c210c 681-683
+  s_fc46f9b0fdc36b::t_dba78b2c6b04ba 56
+  s_fc46f9b0fdc36b::t_1b2eb28418a861 1233-1289
+.claude/agents/testing.md
+  s_fc46f9b0fdc36b::t_e0024e76c30534 64
+CLAUDE.md
+  s_fc46f9b0fdc36b::t_ab3e1d3f68be72 246-250
+  s_fc46f9b0fdc36b::t_62671a2055ce9b 320-324
+  s_fc46f9b0fdc36b::t_0a79da3d77b637 332-335
+  s_fc46f9b0fdc36b::t_ae53b008b95323 344-349
+docs/revisit.md
+  s_fc46f9b0fdc36b::t_f3cdb94d57b143 252-261
+  s_fc46f9b0fdc36b::t_e2cbe6d8041d67 466-473
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "6a39957252f1c788a7a167bb0e80d41557933682",
+  "prompts": {},
+  "sessions": {
+    "s_fc46f9b0fdc36b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "9d913a59-c736-4e34-858c-00d85860dc94",
+        "model": "claude-opus-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
