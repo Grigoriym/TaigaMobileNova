@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/epics/ui/details` (12/30 branches — a details ViewModel, read the `feature/userstories/ui` section first) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/issues/ui/details` (17/34 branches — the third details ViewModel; read the `feature/epics/ui/details` section first, its branch map transfers) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -700,8 +700,8 @@ after it — none verified yet, so check each for `@Composable` and generated co
 | Module | BRANCH | Note |
 |---|---|---|
 | ~~`feature/workitem/ui/mappers`~~ | 41/56 | ✅ done 2026-08-05 — now **48/56**; the residual 8 are unreachable, see the section below |
-| `feature/epics/ui/details` | 12/30 | ⬅ **next**. LINE 245/468 — a details ViewModel, same shape as `feature/userstories/ui`; **read that section first**, the branch map transfers almost line for line |
-| `feature/issues/ui/details` | 17/34 | LINE 285/512 — likewise |
+| ~~`feature/epics/ui/details`~~ | 12/30 | ✅ done 2026-08-05 — now **28/30**, LINE 245/468 → **325/468**; the residual 2 are unreachable, see the section below |
+| `feature/issues/ui/details` | 17/34 | ⬅ **next**. LINE 285/512 — the third details ViewModel; **read the `feature/epics/ui/details` section first**, the branch map transfers |
 | `core/domain` | 20/36 | LINE 43/53, small and hand-written |
 | `feature/sprint/data` | 16/29 | LINE 147/205 |
 | `feature/tasks/ui` | 17/30 | LINE 274/479 |
@@ -1589,6 +1589,72 @@ The sibling lines confirm the reading rather than leaving it a guess: `field.val
 `?.booleanValue ?: false`, `?.doubleValue ?: 0.0` and Dropdown's *elvis-free*
 `field.value?.stringValue` (lines 102–103) are all fully covered at 2/2 or 4/4 — the dead arm
 appears only where a non-null-typed getter feeds an elvis.
+
+### `feature/epics/ui/details` — ✅ done 2026-08-05
+
+10 new tests in `EpicDetailsViewModelTest`; the file goes 12 → 22 tests. No new fakes, so `:testing`
+and `.claude/agents/testing.md` were untouched. `:feature:epics:ui:jvmTest`, the full `jvmTest`,
+`detekt`, `ktlintCheck` and `:koverVerify` are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| package `feature/epics/ui/details` BRANCH | 12/30 | **28/30** |
+| package `feature/epics/ui/details` LINE | 245/468 | **325/468** |
+| `EpicDetailsViewModel` BRANCH | 1/12 | 10/12 |
+| `onEpicColorPick$1` BRANCH | 0/4 | **4/4**, LINE 0/28 → **28/28** |
+| `doOnDelete$1` BRANCH | 6/8 | **8/8** |
+| `loadEpic$1` BRANCH | 5/6 | **6/6** |
+
+Both runs were **742 classes with zero leaks** — the same mode, and the mode CI sees — and every
+denominator is identical, so this is the cleanest before/after pair recorded in this plan so far. No
+package outside `feature/epics/ui/details` moved at all, which is itself worth noting: unlike the
+`feature/userstories/ui` session, none of these tests drive delegate code that was previously
+uncovered.
+
+**The per-`<sourcefile>` line map predicted the final number exactly, before any test was written.**
+The eleven `mb>0` lines were classified up front as +16 reachable / 2 dead, i.e. 12/30 → 28/30, and
+that is precisely where it landed. This is the third session in a row where that dump turned a
+details ViewModel into a checklist; on this shape of class it is no longer worth starting without it.
+
+**The `feature/userstories/ui` branch map transferred almost line for line**, as that section
+predicted. Six of the ten tests are near-copies with the names changed:
+`loadEpic with a null status`, `onDelete without a loaded epic`, both `onAttachmentAdd` cases, and
+the watchers / assignees `WorkItemEditStateRepository` updates. **Take the two remaining details
+ViewModels the same way** — read the sibling section, write the map, then port.
+
+Three differences from `feature/userstories/ui` worth knowing before taking `feature/issues/ui/details`:
+
+- **The single-assignee delegate inverts which `TeamMemberUpdate` arm does the work.**
+  `EpicDetailsViewModel` uses `WorkItemSingleAssigneeDelegate`, so `TeamMemberUpdate.Assignee` calls
+  `onAssigneeUpdated` and `Assignees` is the empty no-op arm — the exact opposite of
+  `UserStoryDetailsViewModel`. The two tests still exist and still buy the same 4 branches, but the
+  assertions swap: `updateAssignee` is the one that patches, `updateAssignees` is the one asserted to
+  do nothing. Check which delegate the ViewModel mixes in before copying those two tests.
+- **`onEpicColorPick` has no counterpart** and was the single largest win here — 4 branches and 28
+  lines from two tests, because the whole `$1` lambda was at LINE 0/28. `FakeEpicDetailsDataUseCase`
+  already had `changeEpicColorResult`, so the failure path needs `Result.failure(testException)`
+  rather than a `…Throws` hook. Assert the hex through `state.currentEpic?.epicColor` against
+  `Color.Red.toHex()` — that proves the `toHex()` conversion without needing a call recorder on the
+  fake.
+- **`getEpicDetailsData` takes only an `epic` parameter**, so the empty-assignees case for
+  `onGoingToEditAssignee`'s `firstOrNull()?.id` is reached with
+  `getEpicDetailsData(...).copy(assignees = persistentListOf())`. `EpicDetailsData` is a data class;
+  widening the factory was not needed and would have been the larger diff.
+
+**Both residual branches were already filed, and this session confirms them rather than finding them:**
+
+- **line 163, `currentEpic` 1/2** — `requireNotNull(_state.value.currentEpic)`, exactly the shape
+  [revisit #18](../revisit.md) predicted for the sibling ViewModels. Untestable for the same reason:
+  covering the throw arm means letting an exception escape a `viewModelScope.launch`.
+- **line 282, `TeamMemberUpdate.Clear` 5/6** — [revisit #19](../revisit.md) already names
+  `EpicDetailsViewModel.kt:282` explicitly. Nothing in the project constructs `Clear`.
+
+Expect both again in `feature/issues/ui/details` and `feature/tasks/ui`; budget those two branches as
+spent rather than re-deriving them.
+
+One ktlint trap: a single-parameter helper signature split across three lines fails
+`standard:function-signature` when it fits on one. `setupSuccessfulLoad(data: EpicDetailsData = …)`
+had to be joined. `:feature:epics:ui:jvmTest` passes before `ktlintCheck` ever runs, so run both.
 
 ---
 

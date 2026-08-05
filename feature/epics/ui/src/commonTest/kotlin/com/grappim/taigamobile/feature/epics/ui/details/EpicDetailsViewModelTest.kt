@@ -1,14 +1,18 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.feature.epics.domain.EpicColorUpdateData
+import com.grappim.taigamobile.feature.epics.domain.EpicDetailsData
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
-import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
+import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
@@ -16,21 +20,29 @@ import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.WorkItemUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.epic_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.models.getEpic
 import com.grappim.taigamobile.testing.models.getEpicDetailsData
+import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.usecases.FakeEpicDetailsDataUseCase
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
+import com.grappim.taigamobile.testing.utils.createTestPlatformFile
 import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.toHex
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
@@ -39,6 +51,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class EpicDetailsViewModelTest {
@@ -60,7 +73,7 @@ internal class EpicDetailsViewModelTest {
     private val workItemRepository = FakeWorkItemRepository()
     private val patchDataGenerator: PatchDataGenerator = PatchDataGeneratorImpl()
     private val historyRepository: HistoryRepository = FakeHistoryRepository()
-    private val usersRepository: UsersRepository = FakeUsersRepository()
+    private val usersRepository = FakeUsersRepository()
     private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
     private val workItemsGenerator = WorkItemsGenerator(
         dispatcher = UnconfinedTestDispatcher(),
@@ -105,10 +118,12 @@ internal class EpicDetailsViewModelTest {
         )
     }
 
-    private fun setupSuccessfulLoad() {
-        epicDetailsDataUseCase.getEpicDataResult = Result.success(
-            getEpicDetailsData(epic = getEpic(id = epicId))
-        )
+    private fun setupSuccessfulLoad(data: EpicDetailsData = getEpicDetailsData(getEpic(id = epicId))) {
+        epicDetailsDataUseCase.getEpicDataResult = Result.success(data)
+    }
+
+    private fun setupFailedLoad() {
+        epicDetailsDataUseCase.getEpicDataResult = Result.failure(testException)
     }
 
     @Test
@@ -268,5 +283,169 @@ internal class EpicDetailsViewModelTest {
         sut.onGoingToEditAssignee()
 
         assertNotNull(workItemEditStateRepository.getCurrentAssignee(epicId, type))
+    }
+
+    @Test
+    fun `onGoingToEditAssignee without an assignee should set a null assignee`() {
+        setupSuccessfulLoad(
+            getEpicDetailsData(epic = getEpic(id = epicId)).copy(assignees = persistentListOf())
+        )
+        createViewModel()
+
+        sut.onGoingToEditAssignee()
+
+        assertNull(workItemEditStateRepository.getCurrentAssignee(epicId, type))
+    }
+
+    @Test
+    fun `loadEpic with a null status should still populate the state`() {
+        setupSuccessfulLoad(
+            getEpicDetailsData(epic = getEpic(id = epicId).copy(status = null))
+        )
+
+        createViewModel()
+
+        val state = sut.state.value
+        assertFalse(state.isLoading)
+        assertEquals(NativeText.Empty, state.initialLoadError)
+        assertNotNull(state.currentEpic)
+    }
+
+    @Test
+    fun `onDelete without a loaded epic should set the error and not delete`() {
+        setupFailedLoad()
+        createViewModel()
+
+        sut.state.value.onDelete()
+
+        assertFalse(sut.state.value.isLoading)
+        assertEquals(NativeText.Resource(RString.common_error_message), sut.state.value.error)
+        assertFalse(workItemRepository.deleteWorkItemCalled)
+    }
+
+    @Test
+    fun `onAttachmentAdd with a null file should set the error and not call the repository`() {
+        setupSuccessfulLoad()
+        createViewModel()
+
+        sut.state.value.onAttachmentAdd(null)
+
+        assertEquals(NativeText.Resource(RString.common_error_message), sut.state.value.error)
+        assertTrue(workItemRepository.addAttachmentCalls.isEmpty())
+    }
+
+    /**
+     * [io.github.vinceglb.filekit.PlatformFile.readBytes] runs on a real IO dispatcher, so the
+     * `viewModelScope.launch` does not complete before the call returns the way every other
+     * handler here does. The state has to be awaited rather than read.
+     */
+    @Test
+    fun `onAttachmentAdd with a file should add the attachment`() = runTest {
+        setupSuccessfulLoad()
+        val attachment = getAttachment()
+        workItemRepository.addAttachmentResult = attachment
+        createViewModel()
+
+        sut.attachmentsState.test {
+            val initial = awaitItem()
+
+            sut.state.value.onAttachmentAdd(
+                createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3))
+            )
+
+            assertTrue(awaitItem().areAttachmentsLoading)
+
+            val loaded = awaitItem()
+            assertFalse(loaded.areAttachmentsLoading)
+            assertEquals(initial.attachments + attachment, loaded.attachments)
+        }
+
+        assertEquals(1, workItemRepository.addAttachmentCalls.size)
+        assertEquals(epicId, workItemRepository.addAttachmentCalls.first().workItemId)
+    }
+
+    @Test
+    fun `assignees update should be ignored`() = runTest {
+        setupSuccessfulLoad()
+        createViewModel()
+
+        workItemEditStateRepository.updateAssignees(
+            epicId,
+            type,
+            persistentListOf(getRandomLong())
+        )
+
+        assertTrue(workItemRepository.patchDataCalls.isEmpty())
+    }
+
+    @Test
+    fun `single assignee update should patch the assignee and bump the version`() = runTest {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = PatchedData(
+            newVersion = newVersion,
+            dueDateStatus = null
+        )
+        usersRepository.getUsersListResult = persistentListOf(getUser())
+        createViewModel()
+
+        workItemEditStateRepository.updateAssignee(epicId, type, getRandomLong())
+
+        assertEquals(1, workItemRepository.patchDataCalls.size)
+        assertEquals(newVersion, sut.state.value.currentEpic?.version)
+    }
+
+    @Test
+    fun `watchers update should update the watchers and bump the version`() = runTest {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.updateWatchersDataResult = WatchersListUpdateData(
+            version = newVersion,
+            isWatchedByMe = true,
+            watchers = persistentListOf(getUser())
+        )
+        createViewModel()
+
+        workItemEditStateRepository.updateWatchers(epicId, type, persistentListOf(getRandomLong()))
+
+        assertEquals(newVersion, sut.state.value.currentEpic?.version)
+        assertTrue(sut.watchersState.value.isWatchedByMe)
+    }
+
+    @Test
+    fun `onEpicColorPick success should update the color, the version and the user stories`() {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        epicDetailsDataUseCase.changeEpicColorResult = Result.success(
+            EpicColorUpdateData(
+                patchedData = PatchedData(newVersion = newVersion, dueDateStatus = null),
+                userStories = persistentListOf(getWorkItem())
+            )
+        )
+        createViewModel()
+
+        sut.state.value.onEpicColorPick(Color.Red)
+
+        val state = sut.state.value
+        assertFalse(state.isEpicColorLoading)
+        assertEquals(Color.Red.toHex(), state.currentEpic?.epicColor)
+        assertEquals(newVersion, state.currentEpic?.version)
+        assertEquals(state.currentEpic, state.originalEpic)
+        assertEquals(1, state.userStories.size)
+    }
+
+    @Test
+    fun `onEpicColorPick failure should show a snackbar and stop loading`() = runTest {
+        setupSuccessfulLoad()
+        epicDetailsDataUseCase.changeEpicColorResult = Result.failure(testException)
+        createViewModel()
+
+        sut.snackBarMessage.test {
+            sut.state.value.onEpicColorPick(Color.Red)
+
+            assertTrue(awaitItem() !is NativeText.Empty)
+        }
+
+        assertFalse(sut.state.value.isEpicColorLoading)
     }
 }

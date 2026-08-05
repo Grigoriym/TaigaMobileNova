@@ -321,6 +321,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   test sources partway through, so a file added at the wrong moment silently lands in the "before".
   Cheap check either way: confirm the baseline reports the *pre-change* figure for the class you are
   about to test before trusting it.
+  **On a clean tree at the same commit as the last session's final run, you do not need a baseline
+  run at all** — `koverXmlReport` comes back `UP-TO-DATE` and the `report.xml` already on disk *is*
+  the baseline. Copy it aside and run the class-count/leak check on it as usual; that plus the
+  pre-change-figure check is the same evidence a fresh run would give, for free. Do this before
+  writing any test, since the first test source you add is what makes the task out-of-date.
 - **A class excluded by name shows no movement however well you test it.** The `excludes` block
   filters by suffix — `**.*Plugin`, `**.*Module`, `**.*Repository`, `**.*Api`, `**.*Screen` … — which
   in `core/api` drops all five Ktor plugins, i.e. ~98 lines and 38 branches of real auth and

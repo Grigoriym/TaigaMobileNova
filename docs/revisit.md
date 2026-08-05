@@ -526,7 +526,9 @@ screen finishing its edit, and fires regardless of whether this screen loaded. S
 `onNewTagsUpdate`, `onNewDescriptionUpdate` and `handleTeamMemberUpdate`'s two branches.
 
 The three sibling details ViewModels (`TaskDetailsViewModel`, `EpicDetailsViewModel`,
-`IssueDetailsViewModel`) have the same getter shape — check them together.
+`IssueDetailsViewModel`) have the same getter shape — check them together. **Confirmed for
+`EpicDetailsViewModel` (2026-08-05):** `currentEpic` (`:162-163`) is one of the two residual missed
+branches after that module's sweep, for exactly this reason.
 
 **Consequence for tests:** this is why `getCurrentUserStory` stays at BRANCH 1/2. Covering the throw
 arm requires letting an exception escape a `viewModelScope` coroutine, which under
