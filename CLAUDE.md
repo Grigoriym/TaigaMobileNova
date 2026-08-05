@@ -299,6 +299,10 @@ tests, not a smaller bound. The traps when touching those numbers:
   denominator changes anywhere in the report. `feature/userstories/mapper` (2026-08-05) repeated that
   exactly — three consecutive sessions have now had a *free* baseline (the on-disk `report.xml` from
   the previous session, clean tree, same commit) and a provably comparable pair.
+  `feature/workitem/ui/screens/editdescription` (2026-08-05) made it four: same free 742/0 baseline,
+  742/0 after-run, zero-length key-set difference, zero denominator changes, and movement confined to
+  the target package. So the free baseline is the *normal* case on a clean tree, and a straddle is
+  what needs explaining — not the other way round.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
   `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45
@@ -397,6 +401,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   `**.*Exception` is on that list too, which hides real logic in `core/domain`
   (`NetworkException.message`, and every custom exception in the module), and
   `**.*ResultExtensionKt` is named explicitly.
+  **`**.*DTO` is on it as well, so a `…/dto` package's report rows are its *non*-`DTO`-suffixed
+  classes only** — `feature/userstories/dto` shows `BulkUpdateKanbanOrderRequest` and
+  `CreateUserStoryRequest` at BRANCH 0/38 while `UserStoryShortInfoDTO`, which
+  `UserStoryShortInfoMapperTest` covers thoroughly, has no row at all. Don't read a `dto` package's
+  ranking as a statement about its DTOs.
   **An excluded class is absent from the report entirely — not listed at 0 % — so a class that is
   both excluded *and* dead is invisible to every coverage-driven ranking.** `SprintPagingSource`
   (`**.*PagingSource`) has zero references repo-wide and no report row of any kind; nothing in a
@@ -462,6 +471,21 @@ tests, not a smaller bound. The traps when touching those numbers:
   **Rank such a row by its LINE gap, not by `missedB`**; `kover-rank.py` prints both columns for
   exactly this reason. The inverse of the mapper heuristic below, and it points at the same thing: a
   row whose LINE is also short is the cheap, high-yield kind.
+  It repeated on `feature/workitem/ui/screens/editdescription` (2026-08-05, 0/4 BRANCH but LINE
+  6/36 → **100 % on every counter**), and that session added a cheap way to *find* the sleeper's
+  test: **when a sweep row is a `screens/<x>` sibling of an already-tested `screens/<y>`, read the
+  sibling's test before writing anything.** `EditDescriptionViewModel` is a strictly smaller
+  `EditSprintViewModel` — same `SavedStateHandle` + `WorkItemEditStateRepository` constructor, same
+  `onGoingBack` / `setIsDialogVisible` / rendezvous-channel shape — so `EditSprintViewModelTest`
+  transferred almost verbatim, including the `launch { … take(1) }` collector that a rendezvous
+  channel requires. `WorkItemEditStateRepository` needs no fake: it is a plain in-memory class, and
+  these tests construct the real one.
+- **As of 2026-08-05 the *branch* sweep (task 9a) is out of worthwhile rows** — every remaining high
+  row is generated `equals`/`hashCode`, a `@Serializable` serializer, `@Composable`-blocked, or dead
+  `*_androidKt` weight. Rank what is left by **missed lines on never-executed classes** instead; the
+  query and the resulting backlog are in
+  [improvement-plan.md](docs/testing/improvement-plan.md#where-9a-stands-2026-08-05). Don't re-derive
+  the exhausted ranking — that table names what each misleading row actually is.
 - **Get the per-class breakdown before scoping a session around a package**, and the per-**method**
   one before concluding a leftover is real — Kover's XML carries `<counter>` elements on
   `<package>`, `<class>` *and* `<method>`, so `for c in p.findall('class'): for m in c.findall('method')`

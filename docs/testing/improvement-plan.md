@@ -53,9 +53,9 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05, `feature/filters/domain` ✅ 2026-08-05 (100 % on every counter); ⬅ **NEXT** module: `feature/workitem/ui/screens/editdescription` (0/4 BRANCH, **LINE 6/36** — a sleeper: `EditDescriptionViewModel` is wholly untested and `onGoingBack$1` is BRANCH 0/4 *and* LINE 0/9; rank it by the line gap, verified 2026-08-05, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05, `feature/filters/domain` ✅ 2026-08-05 (100 % on every counter), `feature/workitem/ui/screens/editdescription` ✅ 2026-08-05 (100 % on every counter). **The branch sweep is out of worthwhile rows — see [Where 9a stands](#where-9a-stands-2026-08-05) below; continue with task 9c instead** |
 | 9b | `WorkItemRemoteMediator` | M | ✅ done 2026-08-05 — 13 tests; the class went BRANCH 0/11 → **11/11**, LINE 0/33 → **32/33**, and took the whole `feature/workitem/data` package to **100 % BRANCH**. See the section below |
-| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
+| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | ⬅ **NEXT** — take `feature/userstories/ui` first. Split out of 9a's `feature/userstories/ui` session; now also the top of the whole remaining ranking, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -2212,6 +2212,100 @@ than diffing the one package you care about, and it costs nothing extra once the
 This is a **second counter-example to the `:testing`-edit hypothesis in the *harmless* direction**
 (it predicts nothing about pairs where `:testing` is untouched, and this pair straddled anyway);
 after `feature/tasks/ui`, that is now twice.
+
+---
+
+### `feature/workitem/ui/screens/editdescription` — ✅ done 2026-08-05
+
+10 tests in one new file, `EditDescriptionViewModelTest`
+(`feature/workitem/ui/src/commonTest/…/screens/editdescription/EditDescriptionViewModelTest.kt`).
+No `:testing` fake, factory or field was added — `WorkItemEditStateRepository` is a plain in-memory
+class with no collaborators, so the test constructs the **real** one rather than faking it, exactly
+as `EditSprintViewModelTest` does. `:feature:workitem:ui:jvmTest`, the full `jvmTest` and
+`ktlintCheck` all green.
+
+| counter | before | after |
+|---|---|---|
+| BRANCH | 0/4 | **4/4** |
+| LINE | 6/36 | **36/36** |
+| METHOD | 1/6 | **6/6** |
+| INSTRUCTION | 17/218 | **218/218** |
+| CLASS | 1/3 | **3/3** |
+
+**100 % on every counter**, the fourth such row in two days. Gate figures after the change, via
+`kover-rank.py` over a clean 742-class report: **BRANCH 78.57 % (1621/2063), LINE 87.04 %
+(8458/9717)**. `:koverVerify` green.
+
+**The sleeper call was right, and `EditSprintViewModelTest` was the whole session.** The row ranked
+only 0/4 on missed branches but paired that with LINE 6/36, and `onGoingBack$1` was BRANCH 0/4 *and*
+LINE 0/9 — the signature from CLAUDE.md. `EditDescriptionViewModel` is a strictly smaller
+`EditSprintViewModel`: same `SavedStateHandle` + `WorkItemEditStateRepository` constructor, same
+`onGoingBack` / `setIsDialogVisible` / rendezvous-channel shape. Copying that test's structure —
+including the `launch { … take(1) }` collector before triggering the back action — meant no new
+pattern had to be worked out. **When a sweep row is a `screens/<x>` sibling of an already-tested
+`screens/<y>`, read the sibling's test first; it is likely to be a rename away.**
+
+**Sizing:** the only branching line was `if (shouldReturnCurrentValue && wasDescriptionChanged)` at
+`mb=4 cb=0` — two two-valued inputs, so three tests (false / true+unchanged / true+changed) closed
+all four. Predicted exactly.
+
+**A free baseline and a fully comparable pair.** Clean tree at the previous session's commit, so the
+on-disk `report.xml` was already a **742 / 0-leak** run (what CI sees) and no baseline run was
+needed; the after-run was also **742 / 0**. The all-counter diff came back with a **zero-length
+key-set difference, zero denominator changes anywhere, and movement in the target package only** —
+5 package rows and 10 class rows, all `editdescription`. `:testing` was untouched, which is
+consistent with the hypothesis but proves nothing about it either way.
+
+<a id="where-9a-stands-2026-08-05"></a>
+
+### Where 9a stands (2026-08-05) — the branch sweep is out of worthwhile rows
+
+Scoping this session's successor turned up that **the top of the missed-branch ranking is now
+exhausted**, and every remaining high row is one of the unreachable kinds CLAUDE.md already
+documents. Recorded so the next session does not re-derive it:
+
+| package | missedB | what it actually is |
+|---|---|---|
+| `feature/filters/domain/model` | 105 | generated `equals`/`hashCode` + `@Serializable` serializers (39/144) |
+| `utils/ui` | 46 | `@Composable`-blocked — already closed as far as JVM tests reach |
+| `feature/userstories/dto` | 38 | three `@Serializable` request/response classes, BRANCH 0/38 |
+| `main` | 31 | ⛔ closed-as-blocked (`@Composable` getters) |
+| `core/api/errors` | 29 | **25 of them are `TaigaErrorResponse`'s serializer** (9/34, LINE 5/5 full); `ErrorResponseParser` 10/12 and `NetworkErrorMapper` 28/30 are residual-unreachable |
+| `feature/login/ui` | 13 | **8 are `GithubOAuthWebViewDialog_androidKt`** (dead `*_androidKt` weight); only ~5 real |
+| `feature/settings/ui/user` | 8 | **all 8 are `OpenByDefaultSettingsButton_androidKt`/`_jvmKt`**; the ViewModel is already 4/4 BRANCH |
+
+Two traps worth naming. **`**.*DTO` is on the `excludes` list, so a `…/dto` package's report rows are
+its *non*-`DTO`-suffixed classes only** — `userstories/dto` shows `BulkUpdateKanbanOrderRequest` and
+friends while `UserStoryShortInfoDTO` (well-tested, via `UserStoryShortInfoMapperTest`) is absent
+entirely. And **a `@Serializable`-heavy package inflates a branch ranking without offering a session**:
+`core/api/errors` looks like the third-biggest row left and is really one data class's generated
+serializer.
+
+**So rank the remaining work by missed *lines* on never-executed classes, not by missed branches.**
+The query that produces the real backlog — every class at LINE 0/n, excluding `*_androidKt`/`*_iosKt`:
+
+```bash
+python3 -c "
+import xml.etree.ElementTree as ET
+r=ET.parse('build/reports/kover/report.xml').getroot()
+rows=[]
+for p in r.findall('package'):
+    for c in p.findall('class'):
+        n=c.get('name').split('/')[-1]
+        if '_android' in n or '_ios' in n: continue
+        d={x.get('type'):(int(x.get('covered')),int(x.get('covered'))+int(x.get('missed'))) for x in c.findall('counter')}
+        l=d.get('LINE',(0,0)); b=d.get('BRANCH',(0,0))
+        if l[1]>0 and l[0]==0: rows.append((l[1],b[1]-b[0],p.get('name'),n))
+rows.sort(reverse=True)
+for ml,mb,pk,n in rows[:22]: print('%-6d %-6d %s / %s'%(ml,mb,pk,n))"
+```
+
+Its top is **task 9c almost exclusively** — `$onBlockToggle$1` at 24 missed lines in *each* of the
+four Details ViewModels, `$setDueDate$1` at 13 in three of them, `$removeWatcher$1` at 11 in two,
+`$onBadgeSave$1` at 8 in four. The single largest one is
+`UserStoryDetailsDataUseCaseImpl$getUserStoryData$2$1` at **32 lines, 0 branches**
+(`feature/userstories/domain`) — worth folding into 9c's `feature/userstories/ui` session or taking
+straight after it.
 
 ---
 
