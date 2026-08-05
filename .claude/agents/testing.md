@@ -121,7 +121,7 @@ Key fields for commonly-used fakes:
 | `FakeProjectValuesApi` | `ProjectValuesApi` — `errorToThrow`; `getProjectValuesCalls`, `createProjectValueCalls`, `updateProjectValueCalls`, `deleteProjectValueCalls` |
 | `FakeTasksApi` | `TasksApi` |
 | `FakeAuthApi` | `AuthApi` |
-| `FakeSprintsApi` | `SprintsApi` |
+| `FakeSprintsApi` | `SprintApi` — `shouldThrowOnGetSprints`; `sprintsPagingResponse` (feed it `jsonHttpResponse(...)`), `getSprintsPagingThrows`, `lastPagingProject`/`lastPagingPage`/`lastPagingIsClosed` |
 | `FakeUserStoriesApi` | `UserStoriesApi` |
 | `FakeWikiApi` | `WikiApi` — has an `errorToThrow` hook for failure-path tests |
 
@@ -144,7 +144,7 @@ Key fields for commonly-used fakes:
 | Fake | Interface |
 |------|-----------|
 | `FakeProjectDao` | `ProjectDao` — `errorToThrow`; `projectsById`, `insertCalls`, plus `projectFlowsById` / `getProjectByIdFlowCalls` for `getProjectByIdFlow` |
-| `FakeSprintDao` | `SprintDao` |
+| `FakeSprintDao` | `SprintDao` — `sprintsByProjectId`; `insertedAll`/`insertAllThrows`, `deletedByProjectIdAndClosed`/`deleteByProjectIdAndClosedThrows` |
 | `FakeWorkItemDao` | `WorkItemDao` — `workItemsByProjectIdAndType/AndSprint`, `getByProjectIdAndTypeCalls/AndSprintCalls`, `insertAllCalls` |
 
 ### Other
@@ -206,7 +206,7 @@ nothing. See gotcha 15.
 ## Test Utilities (`:testing` `commonMain`)
 
 ```kotlin
-// TestUtils.kt
+// TestUtils.kt — package com.grappim.taigamobile.testing.utils (NOT ...testing)
 val nowLocalDate: LocalDate
 val nowLocalDateTime: LocalDateTime
 fun getRandomLong(): Long
@@ -217,6 +217,9 @@ fun getRandomLocalDateTime(): LocalDateTime
 fun getRandomColor(): Color
 val testException = IllegalStateException("error")
 inline fun assertFailsWithTestException(block: () -> Unit)   // see Failure-path convention below
+
+// api/TestHttpResponse.kt
+suspend fun jsonHttpResponse(json: String, hasNextPage: Boolean = false): HttpResponse
 ```
 
 `PlatformFile` (FileKit): use `createTestPlatformFile(name, bytes)` from `PlatformTestUtils.kt`. JVM actual creates a real temp file. Android/iOS actuals throw `error("not supported")`.
@@ -447,6 +450,24 @@ private fun createClient(): HttpClient = HttpClient(
 - `core/api/src/commonTest/` has eight worked examples (auth headers, host rewriting, error mapping,
   token refresh).
 
+**If you only need an `HttpResponse` to feed a fake, do not build a client — use
+`jsonHttpResponse(json, hasNextPage)` from `:testing` (`api/TestHttpResponse.kt`).** Paging endpoints
+(`SprintApi.getSprintsPaging`, `WorkItemApi.getWorkItemsPaging`) return a raw `HttpResponse`, and the
+`RemoteMediator` consuming it calls **both** `body()` and `hasNextPage()` — neither is stubbable, so
+the fake has to hand back a genuine response. The helper installs `ContentNegotiation`, sets
+`Content-Type: application/json` and adds the `X-Pagination-Next` header when `hasNextPage = true`.
+It is deliberately **not** `inline`: MockEngine / ContentNegotiation / serialization-json stay
+`implementation` deps of `:testing`, so a consuming module needs no build-file change at all. Usage:
+
+```kotlin
+sprintApi.sprintsPagingResponse = jsonHttpResponse(Json.encodeToString(listOf(dto)))
+sprintApi.sprintsPagingResponse = jsonHttpResponse(Json.encodeToString(listOf(dto)), hasNextPage = true)
+sprintApi.sprintsPagingResponse = jsonHttpResponse("null")   // exercises the `body() ?: emptyList()` arm
+```
+
+`"null"` really does deserialize to `null` through content negotiation, so the elvis arm that guards
+a null body is reachable — do not write it off as unreachable.
+
 **Before writing tests purely to move coverage, check the class is not excluded.** The root
 `build.gradle.kts` `kover { … excludes { … } }` drops `**.*Plugin`, `**.*Module`, `**.*Repository`,
 `**.*Api`, `**.*Screen`, `**.*Widget` and more by *name suffix*, so a well-tested `FooPlugin` shows
@@ -469,6 +490,24 @@ Fakes that return `flowOf(PagingData.empty())` for paging (safe to construct):
 | `FakeProjectsRepository` | `fetchProjects(query)` |
 
 If you add a ViewModel that calls another paging method at construction, implement it in the corresponding fake with `flowOf(PagingData.empty())`.
+
+### Driving a `RemoteMediator` directly
+
+`PagingState` is constructible straight from `commonTest` — no Paging test artifact needed:
+
+```kotlin
+PagingState(
+    pages = listOf(PagingSource.LoadResult.Page<Int, SprintEntity>(entities, prevKey = null, nextKey = null)),
+    anchorPosition = null,
+    config = PagingConfig(pageSize = 10),
+    leadingPlaceholderCount = 0
+)
+```
+
+**Spell the key type on `LoadResult.Page` explicitly.** With `prevKey = null, nextKey = null` it
+infers `Page<Nothing, T>`, which will not match `PagingState<Int, T>` — a confusing type error for
+something that reads correct. `SprintRemoteMediatorTest` (`feature/sprint/data`) is the worked
+example: the `LoadType` matrix, the APPEND page arithmetic, the null-body arm and both failure paths.
 
 ---
 

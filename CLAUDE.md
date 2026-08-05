@@ -272,13 +272,14 @@ tests, not a smaller bound. The traps when touching those numbers:
   starting mode nor the effect of adding test sources is predictable; only the *straddle* is the
   expected case. Plan on the package-scope escape hatch below and do not assume which side either run
   will land on.
-  **Candidate discriminator (hypothesis, 4 supporting sessions, 0 counter-examples since it was
+  **Candidate discriminator (hypothesis, 5 supporting sessions, 0 counter-examples since it was
   noticed): crossing into the leaky excludes-skipped mode has only ever been seen alongside a change
   to `:testing`'s own sources.** Sessions that added *only* test files under a feature/core module
   stayed zero-leak — `feature/epics/ui/details`, `feature/issues/ui/details` and `core/domain` each
   ran 742 → 742, and `feature/workitem/ui/mappers` went 780 → 742, i.e. it moved between the two
   *zero-leak* counts without ever reaching 822/854. Every recorded 822/854 flip above involved adding
-  `:testing` fields. This is **not** established — the 2026-08-03 note says "adding only test sources
+  `:testing` fields — including `feature/sprint/data` on 2026-08-05, which added a `:testing` source
+  file plus fake fields and went 742/0 leaks → **823/20 leaks**. This is **not** established — the 2026-08-03 note says "adding only test sources
   gave 854", and it is not known whether that session also touched `:testing` — so keep taking the
   before/after diff. But if your change touches no `:testing` source, expect a comparable pair and
   don't pre-emptively plan around a straddle.
@@ -361,6 +362,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   `**.*Exception` is on that list too, which hides real logic in `core/domain`
   (`NetworkException.message`, and every custom exception in the module), and
   `**.*ResultExtensionKt` is named explicitly.
+  **An excluded class is absent from the report entirely — not listed at 0 % — so a class that is
+  both excluded *and* dead is invisible to every coverage-driven ranking.** `SprintPagingSource`
+  (`**.*PagingSource`) has zero references repo-wide and no report row of any kind; nothing in a
+  missed-branch sweep could ever have surfaced it ([revisit #21](docs/revisit.md)). When a sweep
+  closes a package, `ls` its source directory against the class names in the report before calling
+  the package done — the difference is the excluded set, and it is worth a look.
 - **A `*_androidKt` / `*_iosKt` class in the report is dead weight, and it can dominate a sweep row.**
   Android- and iOS-variant classes get compiled into the report, but CI runs `jvmTest` only and the
   repo has no Android unit-test source set by design — so they sit at 0 % forever. In `core/domain`

@@ -53,8 +53,8 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below); ⬅ **NEXT** module: `feature/sprint/data` (16/29 branches, LINE 147/205 — not yet verified, so check for `@Composable`/generated/excluded code before scoping) |
-| 9b | `WorkItemRemoteMediator` | M | todo |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/tasks/ui` (17/30 branches, LINE 274/479 — not yet verified, so check for `@Composable`/generated/excluded code before scoping) |
+| 9b | `WorkItemRemoteMediator` | M | todo — **start from `feature/sprint/data`'s `SprintRemoteMediatorTest`**, which solved the shared `HttpResponse` problem; see that section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -712,8 +712,8 @@ after it — none verified yet, so check each for `@Composable` and generated co
 | ~~`feature/epics/ui/details`~~ | 12/30 | ✅ done 2026-08-05 — now **28/30**, LINE 245/468 → **325/468**; the residual 2 are unreachable, see the section below |
 | ~~`feature/issues/ui/details`~~ | 17/34 | ✅ done 2026-08-05 — now **32/34**, LINE 285/512 → **354/512**; the residual 2 are unreachable, see the section below |
 | ~~`core/domain`~~ | 20/36 | ⛔ closed-as-blocked 2026-08-05 — 14 of the 16 missed are the **Android actual** of `mapPlatformNetworkError`, whose JVM twin is byte-identical and already 14/14; the other 2 are generated `data class` branches. See the section below |
-| `feature/sprint/data` | 16/29 | ⬅ **next**. LINE 147/205 — not verified yet |
-| `feature/tasks/ui` | 17/30 | LINE 274/479 |
+| ~~`feature/sprint/data`~~ | 16/29 | ✅ done 2026-08-05 — now **25/29**, LINE 147/205 → **183/205**; the row was stale (the repository impl was already 16/16), the whole gap was `SprintRemoteMediator`. See the section below |
+| `feature/tasks/ui` | 17/30 | ⬅ **next**. LINE 274/479 — not verified yet |
 
 Skip `feature/filters/domain/model` (142 missed) and `feature/userstories/dto` (38) — generated
 `data class` / `@Serializable` branches, unreachable from a test. `feature/login/ui` has dropped off
@@ -1779,6 +1779,75 @@ leaks, and it already showed `core/domain` at 20/36, i.e. the pre-change figure.
 
 ---
 
+### `feature/sprint/data` — ✅ done 2026-08-05
+
+12 tests in `SprintRemoteMediatorTest`. `:feature:sprint:data:jvmTest`, the full `jvmTest`,
+`ktlintCheck`, `detekt` and `:koverVerify` are all green.
+
+**The row was stale, and re-deriving it changed the whole session.** It said 16/29 BRANCH for the
+package, which reads like a repository-impl sweep. The per-class breakdown says otherwise:
+`SprintsRepositoryImpl` was **already 16/16** — every one of the 13 missed branches was
+`SprintRemoteMediator` (0/9, LINE 0/36, no test at all) plus 4 generated ones. So this was a
+new-coverage task on a single untested class, i.e. task 9b's shape, not task 9's. **Get the per-class
+breakdown before scoping — a package total cannot tell a swept class from an untouched one.**
+
+| Scope | Before | After |
+|---|---|---|
+| `SprintRemoteMediator` BRANCH | 0/9 | **9/9** |
+| `SprintRemoteMediator` LINE | 0/36 | **36/36** |
+| `SprintRemoteMediator` METHOD | 0/2 | **2/2** |
+| package `feature/sprint/data` BRANCH | 16/29 | **25/29** |
+| package `feature/sprint/data` LINE | 147/205 | **183/205** |
+
+The before/after pair straddled the flip (742 classes / zero leaks → **823 / 20 leaks**), and this
+session *did* touch `:testing` sources — a fifth data point for CLAUDE.md's candidate discriminator,
+still with no counter-example. It did not matter: the all-counters diff showed
+`feature/sprint/data`'s denominators **identical** in both reports (BRANCH 29, LINE 205, METHOD 37,
+INSTRUCTION 1642), so the table is provably comparable. Every other package that moved also moved its
+denominator — all of them leak artifacts (`core/api`, `feature/login/ui`, `feature/dashboard/ui`, …).
+Zero classes present in one report and absent from the other on the shared key set.
+
+**The residual 4 branches are unreachable.** `CreateSprintRequest` and `EditSprintRequest` are 0/2
+each: `@Serializable data class`es with no default values, so the 2 branches are the synthetic
+`<init>(seen, …)` mask check that only *deserialization* takes. Both are request bodies — the app
+only ever serializes them. Their `LINE 5/7` / `4/6` holes are the `estimatedStart`/`estimatedFinish`
+getters, unread for the same reason. The package's residual **LINE** is real but branch-free:
+`SprintsRepositoryImpl` at 86/102, mostly the `getSprintsPaging` `Pager` lambdas — a 9c-shaped
+leftover, not a sweep target.
+
+**What this session produced for task 9b:** `jsonHttpResponse(json, hasNextPage)` in `:testing`
+(`api/TestHttpResponse.kt`). A `RemoteMediator` calls both `body()` and `hasNextPage()` on the raw
+`HttpResponse` its API returns, so neither can be stubbed and the fake must hand back a genuine
+response. The helper builds one over `MockEngine` with `ContentNegotiation` installed and the
+`X-Pagination-Next` header set on demand. Three decisions worth keeping:
+
+- **It is deliberately not `inline`.** A reified `jsonHttpResponse(body: T)` would read better at call
+  sites, but an inline body forces `ktor-client-mock`, `ktor-contentNegotiation` and
+  `ktor-serialization-json` onto every *consumer's* compile classpath — i.e. `api(...)` in `:testing`
+  plus a build-file edit in each module that uses it. Taking a pre-encoded `String` keeps all three
+  as `implementation` deps of `:testing`, and `feature/sprint/data` needed **no build-file change at
+  all**. Call sites pay one `Json.encodeToString(...)`.
+- **`jsonHttpResponse("null")` really does make `response.body()` return null**, so the
+  `response.body() ?: emptyList()` arm is reachable and worth a test. It was not obvious in advance
+  that content negotiation would decode a bare `null` into a nullable `List<T>`.
+- `FakeSprintsApi` gained `sprintsPagingResponse` / `getSprintsPagingThrows` / `lastPagingProject` /
+  `lastPagingPage` / `lastPagingIsClosed`; `FakeSprintDao` gained `insertedAll` / `insertAllThrows`
+  and a real `deleteByProjectIdAndClosed` with `deletedByProjectIdAndClosed` / its throws hook.
+  `.claude/agents/testing.md` updated for all of it.
+
+`PagingState` is constructible directly from `commonTest`
+(`PagingState(pages, anchorPosition = null, config = PagingConfig(pageSize), leadingPlaceholderCount = 0)`),
+and `PagingSource.LoadResult.Page` needs its **key type spelled explicitly** — `prevKey = null,
+nextKey = null` infers `Page<Nothing, T>`, which does not match `PagingState<Int, T>`.
+
+**Also found:** `SprintPagingSource` is dead code — zero references repo-wide — and the `excludes`
+block's `**.*PagingSource` pattern means it never appears in the report in any form. Filed as
+[revisit #21](../revisit.md). The general lesson is in that entry: a class that is both dead and
+excluded is invisible to every coverage-driven ranking, so grep the module for classes *absent* from
+the report before believing the report covers it.
+
+---
+
 ## Task 9b — `WorkItemRemoteMediator`
 
 **Why:** the one class in `feature/workitem/data` with **zero** coverage (0/11 branches), left
@@ -1789,11 +1858,15 @@ untouched by task 9 because it is a new-coverage task, not an error-path sweep.
 from `state.pages`), on `taskType == UserStory` for the `sprint` parameter, and on
 `response.hasNextPage()`. `defaultTryCatch` turns any throw into `MediatorResult.Error`.
 
-**The blocker to solve first:** `load()` needs a real Ktor `HttpResponse` — `FakeWorkItemApi`'s
-`getWorkItemsPagination` is `error("not used in this test")` and cannot simply return a stub, since
-the SUT calls `.body()` and `hasNextPage()` (a header read) on it. Decide between a Ktor
-`MockEngine`-backed response and narrowing `WorkItemApi`'s return type; **write the decision into the
-test file.** This is why it is its own task.
+**The blocker is already solved — do not re-decide it.** `load()` needs a real Ktor `HttpResponse`
+(the SUT calls `.body()` *and* `hasNextPage()`, a header read, so a stub cannot work), and
+`FakeWorkItemApi.getWorkItemsPagination` is still `error("not used in this test")`. The
+`feature/sprint/data` session below hit the identical wall and put
+**`jsonHttpResponse(json, hasNextPage)` in `:testing`** (`api/TestHttpResponse.kt`). Give
+`FakeWorkItemApi` the same three-field shape `FakeSprintsApi` now has
+(`…PagingResponse` / `…PagingThrows` / `lastPaging*` recorders) and copy
+`SprintRemoteMediatorTest`'s structure — `PagingState` construction, the `LoadType` matrix and the
+null-body case are all worked out there. Expect this task to be much smaller than its M size implies.
 
 ---
 

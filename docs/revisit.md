@@ -595,3 +595,31 @@ to branch on `isSuccess` / `fold` rather than on nullability.
 Both the deletion and the null-handling fix are production changes to a `commonMain` utility, and the
 surgical-changes rule says to record unrelated dead code rather than remove it. Decide first whether
 `mapResult` is meant to have callers; if not, deleting it resolves both halves at once.
+
+## 21. `SprintPagingSource` is dead code, and it is invisible to Kover
+
+**Where:** `feature/sprint/data/src/commonMain/kotlin/com/grappim/taigamobile/feature/sprint/data/SprintPagingSource.kt`
+(41 lines).
+
+**Evidence:** `grep -rn "SprintPagingSource" --include=*.kt --include=*.kts . | grep -v /build/`
+returns **only the class declaration itself** — zero construction sites, zero DI registrations
+(2026-08-05). Sprint paging is served by `SprintRemoteMediator` + `SprintDao.pagingSource(...)`
+instead; `SprintsRepositoryImpl.getSprintsPaging` builds its `Pager` from the Room DAO, not from this
+`PagingSource`.
+
+**Why it went unnoticed:** the root `kover` `excludes` block drops `**.*PagingSource`, so the class
+does not appear in `report.xml` at all — not as 0 %, not as anything. A dead class that is also
+excluded is doubly invisible: neither the coverage report nor a missed-branch ranking can surface it.
+That is the general lesson worth keeping, and it is the same shape as
+[#10](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi): **grep the module for
+classes absent from the report before concluding the report covers the module.**
+
+**Consequence:** none at runtime — it is unreachable. It is ~40 lines of maintenance surface that
+looks load-bearing, and it duplicates the mediator's paging logic with *different* behaviour (it
+returns `LoadResult.Error` via `defaultTryCatch` and computes `nextKey` itself), so a future edit
+could plausibly be made to the wrong one.
+
+**Why deferred:** found while writing `SprintRemoteMediatorTest` (improvement-plan task 9a,
+`feature/sprint/data`). Deleting it is a production change unrelated to that task's diff; the
+surgical-changes rule says to record it. Check `WorkItemPagingSource` and any other `*PagingSource`
+for the same condition when acting on this — task 9b (`WorkItemRemoteMediator`) is the natural moment.

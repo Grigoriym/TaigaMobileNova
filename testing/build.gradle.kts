@@ -23,6 +23,11 @@ kotlin {
 
             implementation(libs.androidx.paging.common)
 
+            // jsonHttpResponse() builds real HttpResponse objects for fakes of paging endpoints
+            implementation(libs.ktor.client.mock)
+            implementation(libs.ktor.contentNegotiation)
+            implementation(libs.ktor.serialization.json)
+
             api(projects.core.domain)
             api(projects.core.storage)
 
