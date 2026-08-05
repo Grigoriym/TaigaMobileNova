@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c); ⬅ **NEXT** module: `feature/workitem/ui/mappers` (15 missed branches, LINE already 105/105 — branch-only and cheap; verify first) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/epics/ui/details` (12/30 branches — a details ViewModel, read the `feature/userstories/ui` section first) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -699,8 +699,8 @@ after it — none verified yet, so check each for `@Composable` and generated co
 
 | Module | BRANCH | Note |
 |---|---|---|
-| `feature/workitem/ui/mappers` | 41/56 | ⬅ **next**. **LINE 105/105 already** — pure mappers whose conditionals are untested, so this is branch-only work and cheap |
-| `feature/epics/ui/details` | 12/30 | LINE 245/468 — a details ViewModel, same shape as `feature/userstories/ui`; **read that section first**, the branch map transfers almost line for line |
+| ~~`feature/workitem/ui/mappers`~~ | 41/56 | ✅ done 2026-08-05 — now **48/56**; the residual 8 are unreachable, see the section below |
+| `feature/epics/ui/details` | 12/30 | ⬅ **next**. LINE 245/468 — a details ViewModel, same shape as `feature/userstories/ui`; **read that section first**, the branch map transfers almost line for line |
 | `feature/issues/ui/details` | 17/34 | LINE 285/512 — likewise |
 | `core/domain` | 20/36 | LINE 43/53, small and hand-written |
 | `feature/sprint/data` | 16/29 | LINE 147/205 |
@@ -1545,6 +1545,50 @@ Three things worth carrying forward:
 **Compound conditions need three tests, not two.** `if (idsToAdd.isEmpty() && idsToRemove.isEmpty())`
 is 4 branches: both-empty (both operands true), added-non-empty (first false, second never
 evaluated), and removed-only (first true, second false). Two tests leave it at 3/4.
+
+### `feature/workitem/ui/mappers` — ✅ done 2026-08-05
+
+4 new tests in `CustomFieldsUIMapperTest`; the file goes 15 → 19 tests. No new fakes, so `:testing`
+and `.claude/agents/testing.md` were untouched. `:feature:workitem:ui:jvmTest`, the full `jvmTest`,
+`detekt`, `ktlintCheck` and `:koverVerify` are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| package `feature/workitem/ui/mappers` BRANCH | 41/56 | **48/56** |
+| package `feature/workitem/ui/mappers` LINE | 105/105 | 105/105 |
+
+Denominators identical on both sides, so the comparison is valid even though the two runs straddled
+the class-count flip (780 before, 742 after, both zero-leak).
+
+**The whole package is one class.** `StatusUIMapper`, `TagUIMapper`, `TeamMemberUIMapper` and
+`WorkItemUIMapper` are **0/0 branches and already 100 % LINE** — every missed branch in the row was
+`CustomFieldsUIMapper`. Worth knowing before scoping a "mappers" session: a package row can be a
+single file.
+
+**The per-`<sourcefile>` line map made this a 20-minute session**, exactly as the
+`feature/userstories/ui` section predicted. The nine `mb>0` lines split cleanly into two groups, and
+the group sizes said in advance what each test would buy:
+
+- `mb=2 cb=2` on lines 39/40, 49/50, 71/72 — Multiline, RichText and Url had **no null-value test**,
+  only the non-null one. One test each closed the safe-call null arm: **+6**.
+- `mb=1 cb=1` on line 101 — `field.options?.toImmutableList()` for Dropdown, never exercised with
+  `options = null`: **+1**.
+- `mb=1 cb=3` on lines 29/30 — Text, which already had both tests. That residual is the tell.
+
+**All 8 residual branches are the always-one-short shape, and `CustomFieldValue` is why.**
+`field.value?.stringValue ?: ""` appears on 8 lines (Text, Multiline, RichText, Url × original +
+current). `CustomFieldValue.stringValue` is `get() = value as? String ?: error("value is not
+String")`, whose inferred type is **non-null `String`** because `error()` returns `Nothing`. So the
+elvis's null arm is dead on the non-null path, and every one of the 8 lines settles at `mb=1 cb=3`
+once both a null-value and a non-null-value test exist. This is the family CLAUDE.md already
+records (`x?.toString() ?: ""`, `FiltersStorageImpl:33`), here in its clearest form: **the same
+source line is 3/4 in eight places for one reason, and `mb=1 cb=3` on a `?.`-chain is the signature
+to stop at.**
+
+The sibling lines confirm the reading rather than leaving it a guess: `field.value?.dateValue`,
+`?.booleanValue ?: false`, `?.doubleValue ?: 0.0` and Dropdown's *elvis-free*
+`field.value?.stringValue` (lines 102–103) are all fully covered at 2/2 or 4/4 — the dead arm
+appears only where a non-null-typed getter feeds an elvis.
 
 ---
 

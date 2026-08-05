@@ -352,7 +352,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   e.g. `UserStoryDetailsViewModel:823-824`
   `currentUserStory?.userStoryEpics?.map { it.id }?.toImmutableList()` at 3/4, because
   `userStoryEpics` is a non-null `ImmutableList` and `map` never returns null. Recognise the shape,
-  not the elvis.
+  not the elvis. **Its report signature is `mb=1 cb=3` on a `?.`-chain line**, and a getter declared
+  `get() = x as? T ?: error(...)` is a reliable producer of it — `error()` returns `Nothing`, so the
+  property is typed non-null and every `field.value?.stringValue ?: ""` reading it is 3/4 forever.
+  That one getter, `CustomFieldValue.stringValue`, accounts for all 8 residual branches in
+  `feature/workitem/ui/mappers`. When the same line shape is one short in several places at once,
+  look for a shared non-null-typed callee rather than testing each site.
 - **The same is true of LINE for every `logcat { }` call site** — 96 of them. The JVM backend is the
   no-op `NoLog` (see Logging), which never invokes the `message: () -> String` lambda, so each one is
   a synthetic method Kover reports as one missed line and zero branches. **Signature to recognise: a
@@ -383,6 +388,10 @@ tests, not a smaller bound. The traps when touching those numbers:
   checklist — `feature/userstories/ui`'s 27 missed branches resolved to 15 named source lines in one
   command, and each test was then written against a known target. It also prices the session
   honestly: that dump is what showed the line half was branch-free and had to be split off.
+  **Read the `mb`/`cb` split, not just `mb>0`** — it says which lines are worth a test before you
+  write one. On a `?.`-chain, `mb=2 cb=2` is a missing test (one input never tried, +1 branch each);
+  `mb=1 cb=3` is the dead arm above and buys nothing. In `feature/workitem/ui/mappers` that split
+  predicted the exact final figure — 41/56 → **48/56**, four tests — before any test was written.
 
 Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
 77 modules.
