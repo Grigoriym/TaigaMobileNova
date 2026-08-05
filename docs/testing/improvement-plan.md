@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/issues/ui/details` (17/34 branches — the third details ViewModel; read the `feature/epics/ui/details` section first, its branch map transfers) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05; ⬅ **NEXT** module: `core/domain` (20/36 branches, LINE 43/53 — small and hand-written, and **not** a details ViewModel, so scope it from its own line map rather than porting) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -701,8 +701,8 @@ after it — none verified yet, so check each for `@Composable` and generated co
 |---|---|---|
 | ~~`feature/workitem/ui/mappers`~~ | 41/56 | ✅ done 2026-08-05 — now **48/56**; the residual 8 are unreachable, see the section below |
 | ~~`feature/epics/ui/details`~~ | 12/30 | ✅ done 2026-08-05 — now **28/30**, LINE 245/468 → **325/468**; the residual 2 are unreachable, see the section below |
-| `feature/issues/ui/details` | 17/34 | ⬅ **next**. LINE 285/512 — the third details ViewModel; **read the `feature/epics/ui/details` section first**, the branch map transfers |
-| `core/domain` | 20/36 | LINE 43/53, small and hand-written |
+| ~~`feature/issues/ui/details`~~ | 17/34 | ✅ done 2026-08-05 — now **32/34**, LINE 285/512 → **354/512**; the residual 2 are unreachable, see the section below |
+| `core/domain` | 20/36 | ⬅ **next**. LINE 43/53, small and hand-written — **not** a details ViewModel, so scope it fresh rather than porting |
 | `feature/sprint/data` | 16/29 | LINE 147/205 |
 | `feature/tasks/ui` | 17/30 | LINE 274/479 |
 
@@ -1655,6 +1655,64 @@ spent rather than re-deriving them.
 One ktlint trap: a single-parameter helper signature split across three lines fails
 `standard:function-signature` when it fits on one. `setupSuccessfulLoad(data: EpicDetailsData = …)`
 had to be joined. `:feature:epics:ui:jvmTest` passes before `ktlintCheck` ever runs, so run both.
+
+### `feature/issues/ui/details` — ✅ done 2026-08-05
+
+10 new tests in `IssueDetailsViewModelTest`; the file goes 12 → 22 tests. No new fakes, so `:testing`
+and `.claude/agents/testing.md` were untouched. `:feature:issues:ui:jvmTest`, the full `jvmTest`,
+`detekt`, `ktlintCheck` and `:koverVerify` are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| package `feature/issues/ui/details` BRANCH | 17/34 | **32/34** |
+| package `feature/issues/ui/details` LINE | 285/512 | **354/512** |
+| `IssueDetailsViewModel` BRANCH | 3/14 | 12/14 |
+| `onNewSprintUpdate$1` BRANCH | 0/4 | **4/4**, LINE 0/20 → **20/20** |
+| `doOnDelete$1` BRANCH | 6/8 | **8/8** |
+| `onAttachmentAdd$2` LINE | 0/4 | **4/4** |
+| `onAssigneeUpdated$1` LINE | 0/7 | 6/7 |
+| `onWatchersUpdated$1` LINE | 0/7 | 6/7 |
+
+**This is the cleanest before/after pair in the plan.** Both runs were 742 classes with zero leaks,
+*and* a full diff of every package- and class-level counter found **zero** denominator changes and
+**zero** classes present in one report but not the other. No package outside
+`feature/issues/ui/details` moved at all.
+
+**The baseline needed no run.** The tree was clean at the previous session's final commit, so the
+`report.xml` already on disk was the baseline — copied aside, class-count/leak-checked, and confirmed
+to report the pre-change 17/34 before any test was written. This is the CLAUDE.md shortcut working
+exactly as documented; it saved a full `koverXmlReport` cycle.
+
+**The line map predicted the final number exactly for the second session running.** The eleven `mb>0`
+lines classified up front as +15 reachable / 2 dead, i.e. 17/34 → 32/34, and that is where it landed.
+Worth stating plainly now that three consecutive details ViewModels have behaved this way: **on this
+shape of class the dump is not an optimisation, it is the scoping step.**
+
+**The port from `feature/epics/ui/details` was near-total** — 8 of the 10 tests are the sibling tests
+with names changed. `IssueDetailsViewModel` mixes in `WorkItemSingleAssigneeDelegate`, the same as
+`EpicDetailsViewModel`, so the `TeamMemberUpdate.Assignee`-patches / `Assignees`-no-ops pairing
+transferred without the inversion the epics section warns to check for.
+
+The two tests with no epics counterpart are the sprint pair, and they are the analogue of that
+session's `onEpicColorPick` finding — **each details ViewModel has exactly one handler that is
+uniquely its own, and it is the largest single win available.** Here `onNewSprintUpdate` was BRANCH
+0/4 and LINE 0/20; two tests took it to 4/4 and 20/20. It is reached by
+`workItemEditStateRepository.updateSprint(issueId, type, id)`, and `FakeIssueDetailsDataUseCase`
+already carried `updateSprintResult`, so the failure path is `Result.failure(testException)` rather
+than a `…Throws` hook — the same shape the epics section records for `changeEpicColorResult`.
+
+**Both residual branches are the already-filed unreachable pair, confirmed for the third ViewModel in
+a row:** line 200 `requireNotNull(_state.value.currentIssue)` ([revisit #18](../revisit.md)) and line
+469 `TeamMemberUpdate.Clear -> {}` ([revisit #19](../revisit.md)). The `Clear` arm settles at exactly
+`mb=1 cb=1`: sending any of the other three arms covers its false branch, and nothing in the project
+ever constructs `Clear` to cover the true one. **`feature/tasks/ui` will do the same — budget those
+two branches as spent.**
+
+The ktlint `standard:function-signature` trap the epics section records **reproduced verbatim**, on
+the same helper. `setupSuccessfulLoad(data: IssueDetailsData = getIssueDetailsData(getIssueTask(issueId)))`
+is 106 characters, so ktlint requires it on one line even though it reads as over-long; dropping the
+argument names in the nested calls is what brings it under 120. `:feature:issues:ui:jvmTest` went
+green before `ktlintCheck` caught it, exactly as warned.
 
 ---
 

@@ -314,6 +314,15 @@ tests, not a smaller bound. The traps when touching those numbers:
   742-vs-854 and 744-vs-854 pairs. To confirm a delta is caused by the change rather than by build
   staleness, `git stash -u` and re-run: a clean-tree re-run that reproduces the baseline to the digit
   settles it.
+  **Better than checking the one package you care about: diff *every* counter in both reports at once
+  and assert nothing else moved.** Load `{(name, type): (covered, total)}` for every `<package>` *and*
+  `<class>` from each report, then print the entries whose values differ, the entries whose
+  *denominator* differs, and the size of the symmetric difference of the key sets. On 2026-08-05 that
+  came back as "only `feature/issues/ui/details` moved, zero denominator changes, zero classes in one
+  report but not the other" — which turns a before/after table from *probably* comparable into
+  provably so, and simultaneously catches side effects in packages you would never have thought to
+  look at (the `feature/userstories/ui` session moved two `feature/workitem/ui` rows). It costs one
+  command and subsumes the per-package check above.
 - **`koverXmlReport` always writes `build/reports/kover/report.xml`.** Copy it to a distinct path
   immediately after each run. Forgetting once makes the "before" and "after" the same file, and the
   diff comes back showing nothing changed anywhere — which reads like a plausible result, not like a
@@ -407,6 +416,13 @@ share a process, and `kotlinx-coroutines-test` registers a `ServiceLoader`-globa
 whichever `runTest` happens to be live, in a different module. `:feature:x:jvmTest` passing proves
 your test works; only the full run proves it did not break someone else's. When a failure appears
 alongside your change, A/B it against a clean tree (`git stash -u`) before assuming you caused it.
+
+**Run `ktlintCheck` too — a green `jvmTest` says nothing about it.** The rule that catches new test
+code is `standard:function-signature`: a signature written across multiple lines fails if it *would
+fit* on one within the 120-char limit. It bit two consecutive sessions on the same construct — a
+`setupSuccessfulLoad(data: XDetailsData = getXDetailsData(...))` default-argument helper at ~106
+characters, which reads as over-long and is nonetheless required to be one line. Dropping argument
+names in the nested factory calls is what keeps it under the limit.
 
 **Every `XApi` is an `interface XApi` + `@Single(binds = [XApi::class]) class XApiImpl`** — no
 exceptions, so any API can be faked in `:testing`. `WikiApi` was the last concrete one and was split
