@@ -139,6 +139,14 @@ class FakeWorkItemApi : WorkItemApi {
         return getWorkItemsLambda?.invoke(taskPath, sprint, userStory) ?: workItemsResponse
     }
 
+    var workItemsPaginationResponse: HttpResponse? = null
+    var getWorkItemsPaginationThrows: Throwable? = null
+    var lastPaginationTaskPath: String? = null
+    var lastPaginationProject: Long? = null
+    var lastPaginationPage: Int? = null
+    var lastPaginationPageSize: Int? = null
+    var lastPaginationSprint: Any? = null
+
     override suspend fun getWorkItemsPagination(
         taskPath: String,
         page: Int?,
@@ -155,7 +163,15 @@ class FakeWorkItemApi : WorkItemApi {
         priorities: String?,
         severities: String?,
         types: String?
-    ): HttpResponse = error("not used in this test")
+    ): HttpResponse {
+        lastPaginationTaskPath = taskPath
+        lastPaginationProject = project
+        lastPaginationPage = page
+        lastPaginationPageSize = pageSize
+        lastPaginationSprint = sprint
+        getWorkItemsPaginationThrows?.let { throw it }
+        return workItemsPaginationResponse ?: error("workItemsPaginationResponse not set")
+    }
 
     override suspend fun createWorkItem(
         taskPath: String,

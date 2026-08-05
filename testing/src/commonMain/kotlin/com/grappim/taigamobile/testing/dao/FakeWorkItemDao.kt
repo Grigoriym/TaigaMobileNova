@@ -10,9 +10,11 @@ import kotlinx.coroutines.flow.flowOf
 class FakeWorkItemDao : WorkItemDao {
 
     val insertAllCalls = mutableListOf<List<WorkItemEntity>>()
+    var insertAllThrows: Throwable? = null
 
     override suspend fun insertAll(items: List<WorkItemEntity>) {
         insertAllCalls += items
+        insertAllThrows?.let { throw it }
     }
 
     override suspend fun insert(item: WorkItemEntity) = error("not used in this test")
@@ -55,7 +57,11 @@ class FakeWorkItemDao : WorkItemDao {
 
     override suspend fun deleteByProjectId(projectId: Long) = error("not used in this test")
 
-    override suspend fun deleteByProjectIdAndType(projectId: Long, taskType: CommonTaskType) = Unit
+    var deletedByProjectIdAndType: Pair<Long, CommonTaskType>? = null
+
+    override suspend fun deleteByProjectIdAndType(projectId: Long, taskType: CommonTaskType) {
+        deletedByProjectIdAndType = projectId to taskType
+    }
 
     override suspend fun deleteOlderThan(timestamp: Long) = error("not used in this test")
 

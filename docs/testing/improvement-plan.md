@@ -54,7 +54,7 @@ than pushing through.
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
 | 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/filters/domain` (0/10 BRANCH, **LINE 0/6** — three pure extension functions in one file that nothing tests at all; XS, verified 2026-08-05, see the table below) |
-| 9b | `WorkItemRemoteMediator` | M | todo — **start from `feature/sprint/data`'s `SprintRemoteMediatorTest`**, which solved the shared `HttpResponse` problem; see that section below |
+| 9b | `WorkItemRemoteMediator` | M | ✅ done 2026-08-05 — 13 tests; the class went BRANCH 0/11 → **11/11**, LINE 0/33 → **32/33**, and took the whole `feature/workitem/data` package to **100 % BRANCH**. See the section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
@@ -749,6 +749,31 @@ badly understates it:
 Skip `feature/filters/domain/model` (105 missed) and `feature/userstories/dto` (38) — generated
 `data class` / `@Serializable` branches, unreachable from a test. `feature/login/ui` has dropped off
 the list: its old 27/126 row was `LoginScreen`, and the ViewModel alone is 27/44.
+
+**`core/api`'s row is stale — reopen it. `CompositeTrustManager` is 26/48, and all 22 missed
+branches are real, reachable JVM code** (verified 2026-08-05 while scoping 9b):
+
+| method | BRANCH |
+|---|---|
+| `hostMatchesCertificate` | 14/24 |
+| `checkServerTrusted(chain, authType)` | 0/6 |
+| `matchesHostname` | 3/8 |
+| `checkServerTrusted$internal` | 9/10 |
+
+It already has a `jvmTest` (`CompositeTrustManagerTest`) plus `FakeX509Certificate` /
+`FakeX509TrustManager`, so the wiring cost is zero — this is the largest genuinely reachable row
+left and is a better session than either sleeper above.
+
+**Beware the near-miss that nearly killed this row.** `CompositeTrustManager` has an `androidMain`
+and a `jvmMain` actual that are byte-identical bar a `@Suppress` annotation, and its single
+`<class>` element lists `checkServerTrusted` **four** times and `checkClientTrusted` **three** —
+which reads exactly like the two actuals being merged and their denominators doubled, i.e. the
+documented `*_androidKt` dead-row trap. It is not: the **jvm actual on its own** declares 3
+`checkClientTrusted` and 4 `checkServerTrusted` overloads (`X509ExtendedTrustManager` requires the
+`Socket` and `SSLEngine` variants), which matches the report exactly. **Duplicated method names in a
+class entry are not evidence of a merge — count the overloads in the one source file before
+concluding a row is double-counted**, or a 22-branch target gets written off as unreachable. The
+real merge signature remains a `*_androidKt`/`*_iosKt` *suffix*, which is a distinct class entry.
 
 **Use [kover-rank.py](kover-rank.py) to re-derive this table; do not read it off the raw report.**
 `koverXmlReport` flips unpredictably between applying the `excludes` block and ignoring it (class
@@ -2141,7 +2166,49 @@ source edit".
 
 ---
 
-## Task 9b — `WorkItemRemoteMediator`
+## Task 9b — `WorkItemRemoteMediator` — ✅ done 2026-08-05
+
+13 tests in `WorkItemRemoteMediatorTest` plus 3 added to `WorkItemEntityMapperTest`.
+`:feature:workitem:data:jvmTest`, the full `jvmTest`, `ktlintCheck` and `:koverVerify` all green.
+
+**The prediction below held exactly: this was an S, not an M.** `SprintRemoteMediatorTest` ported
+across almost verbatim — same `PagingState`/`pageOf`/`stateOf` helpers, same `LoadType` matrix, same
+`jsonHttpResponse` usage — and the only new work was the `FakeWorkItemApi` /
+`FakeWorkItemDao` recorders. Under an hour end to end. **When a second instance of an
+already-solved shape shows up in the sweep, port the test file first and only then read the SUT.**
+
+| | before | after |
+|---|---|---|
+| `WorkItemRemoteMediator` BRANCH | 0/11 | **11/11** |
+| `WorkItemRemoteMediator` LINE | 0/33 | **32/33** |
+| `WorkItemRemoteMediator` METHOD | 0/3 | **2/3** |
+| `WorkItemEntityMapper` BRANCH | 19/24 | **24/24** |
+| package `feature/workitem/data` BRANCH | 47/63 | **63/63 (100 %)** |
+| package `feature/workitem/data` LINE | 231/267 | **263/267** |
+| package `feature/workitem/data` CLASS | 7/8 | **8/8** |
+
+**The package is at its reachable ceiling.** All four residual missed lines are the `logcat`
+message-lambda holes (`WorkItemRemoteMediator:74`, `WorkItemEntityMapper:94` and `:111`,
+`WorkItemRepositoryImpl:87`) — the documented 1-line-hole signature, not a missing test. The
+unreached `WorkItemRemoteMediator` METHOD is the same synthetic lambda.
+
+**`WorkItemEntityMapper`'s residual 5 branches were an unrelated freebie worth taking.** The
+per-line dump priced them in one command: `toEntity`'s three `workItem.assignee?.x` lines at
+`mb=1 cb=1` (one test with `assignee = null`), the `if (parts.size == 2) … else null` tag filter
+(one test with a separator-less tag), and `parseColorsJson`'s blank guard (one test) — 5 branches
+for 3 tests. The tags path already had a blank-JSON test and the colors path did not, which is the
+kind of asymmetry the `mb`/`cb` dump finds and reading the test names does not.
+
+**Report comparability:** both runs landed in the leaky excludes-skipped mode (849 and 827 classes,
+20 leaks each), and the all-counter diff showed `feature/workitem/data`'s denominators **identical**
+in both (BRANCH 63, LINE 267, CLASS 8, METHOD 55) with no class of the package missing from either,
+so the table above is provably valid. The 19 denominator changes elsewhere are all in
+`feature/login/*` and `feature/wiki/ui/page/*`, i.e. leaked `*Screen` classes present in different
+numbers between the two runs — nothing the change touched. One genuine incidental gain:
+`core/serialization`'s `LocalDateSerializer` went LINE 3/4 → 4/4, because `jsonHttpResponse`
+deserializes a real `createdDate` through it.
+
+**Original task notes, kept for the record:**
 
 **Why:** the one class in `feature/workitem/data` with **zero** coverage (0/11 branches), left
 untouched by task 9 because it is a new-coverage task, not an error-path sweep.

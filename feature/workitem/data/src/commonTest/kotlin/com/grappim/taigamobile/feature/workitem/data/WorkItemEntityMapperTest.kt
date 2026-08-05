@@ -122,6 +122,25 @@ class WorkItemEntityMapperTest {
     }
 
     @Test
+    fun `toDomain should skip tags that carry no color separator`() {
+        val entity = createEntity(tagsJson = """["name|color","noSeparator"]""")
+
+        val result = sut.toDomain(entity)
+
+        assertEquals(1, result.tags.size)
+        assertEquals("name", result.tags[0].name)
+    }
+
+    @Test
+    fun `toDomain should return empty colors for blank JSON`() {
+        val entity = createEntity(colorsJson = "")
+
+        val result = sut.toDomain(entity)
+
+        assertTrue(result.colors.isEmpty())
+    }
+
+    @Test
     fun `toDomain should parse colors from JSON`() {
         val colorsJson = """["#FF0000","#00FF00","#0000FF"]"""
         val entity = createEntity(colorsJson = colorsJson)
@@ -185,6 +204,17 @@ class WorkItemEntityMapperTest {
         val result = sut.toEntity(workItem)
 
         assertNull(result.sprintId)
+    }
+
+    @Test
+    fun `toEntity should leave the assignee columns null when there is no assignee`() {
+        val workItem = getWorkItem().copy(assignee = null)
+
+        val result = sut.toEntity(workItem)
+
+        assertNull(result.assigneeId)
+        assertNull(result.assigneeName)
+        assertNull(result.assigneePhoto)
     }
 
     @Test
