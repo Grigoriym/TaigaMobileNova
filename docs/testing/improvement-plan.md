@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/workitem/ui/delegates/sprint` (`WorkItemSprintDelegateImpl` 28/40 branches, LINE 120/144 — one hand-written class, verified 2026-08-05 as the whole of the package's 12 missed) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/filters/mapper` (all 12 missed are `StatusesMapper`, LINE 22/30 — verify the row before taking it) |
 | 9b | `WorkItemRemoteMediator` | M | todo — **start from `feature/sprint/data`'s `SprintRemoteMediatorTest`**, which solved the shared `HttpResponse` problem; see that section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -720,8 +720,8 @@ after it — none verified yet, so check each for `@Composable` and generated co
 
 | Module | BRANCH | Note |
 |---|---|---|
-| `feature/workitem/ui/delegates/sprint` | 28/40 | ⬅ **next**. All 12 missed are `WorkItemSprintDelegateImpl`, one hand-written class, LINE 120/144. Same shape as the `badge` (22/22) and `customfields` (28/30) delegate rows |
-| `feature/filters/mapper` | 36/48 | all 12 missed are `StatusesMapper`, LINE 22/30 |
+| ~~`feature/workitem/ui/delegates/sprint`~~ | 28/40 | ✅ done 2026-08-05 — now **40/40**, LINE 120/144 → **142/144**; the residual 2 lines are `logcat` lambdas. See the section below |
+| `feature/filters/mapper` | 36/48 | ⬅ **next**. All 12 missed are `StatusesMapper`, LINE 22/30 |
 | `feature/userstories/mapper` | 11/22 | all 11 missed are `UserStoryMapper`, LINE 40/46 |
 | `feature/filters/domain` | 0/10 | all in `UtilsKt`, LINE 0/6 — small, and nothing tests it at all |
 | ~~`feature/login/ui`~~ | 27/40 | ⛔ weak row. **8 of the 13 missed are `GithubOAuthWebViewDialog_androidKt`**, an Android-variant class that `jvmTest` can never execute. Only 5 are reachable, spread over three classes |
@@ -1902,6 +1902,59 @@ plan on the straddle regardless of what you touch. The all-counter diff is what 
 364 classes were present only in the "before", yet `feature/tasks/ui`'s own denominators (BRANCH 30,
 LINE 479, CLASS 31) were **identical in both** and no class in that package was missing from either
 report, which makes the row valid despite the straddle.
+
+### `feature/workitem/ui/delegates/sprint` — ✅ done 2026-08-05
+
+10 tests added to the existing `WorkItemSprintDelegateImplTest` (16 → 26). The row was accurate:
+all 12 missed branches were `WorkItemSprintDelegateImpl`, all reachable, and **the package is now
+40/40**. `FakeSprintsRepository` gained `createSprintThrows/Called` and `editSprintThrows/Called`
+(`.claude/agents/testing.md` updated); nothing else in `:testing` was touched. The full `jvmTest`,
+`ktlintCheck`, `detekt` and `:koverVerify` are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| `WorkItemSprintDelegateImpl` BRANCH | 28/40 | **40/40 — 100 %** |
+| `WorkItemSprintDelegateImpl` LINE | 120/144 | **142/144** |
+| package BRANCH | 28/40 | **40/40** |
+| package LINE | 140/164 | **162/164** |
+
+**The residual 2 lines are the two `logcat { }` message lambdas** (lines 111 and 171) — the known
+`NoLog` no-op signature, 1-line hole in an otherwise 100 % method. Nothing else is missed.
+
+**Scoping this took one command and no source reading.** The per-`<sourcefile>` `mb`/`cb` dump named
+all 10 source lines up front, and the `mb`/`cb` split predicted the shape of each test: lines 113 and
+173 (`doOnError?.invoke()`) were `mb=2 cb=0` — never executed at all, so *two* tests each (callback
+present and callback null) — while the other eight were `mb=1 cb=1`, one test each. The final figure
+was 40/40 exactly as predicted.
+
+Two things worth carrying forward:
+
+- **`setInitialSprint` cannot produce a start-date-without-end-date state** — it always fills both
+  (end defaults to start + 14 days). The `endDate == null` guard in *both* `editSprint` and
+  `createSprint` is therefore only reachable through the date pickers: set the name, then call
+  `onStartDateConfirmButtonClick(millis)` and leave the end picker alone. That is the whole reason
+  those two branches survived the original test file, which used `setupSprintState` everywhere. The
+  helper that does it carries a KDoc saying so.
+- **The LINE half was worth the extra two tests and was invisible in the branch row.** After the
+  branch work the class sat at 138/144, and four of the six residual lines were
+  `onStartDateDismissRequest` / `onStartDateDismissButonClick` / `onEndDateDismissRequest` /
+  `onEndDateDismissButonClick` — one-line private callbacks with no branches at all, so no
+  missed-branch ranking could ever surface them. **Re-run the `mi>0` line dump after the branch
+  tests land**; on a delegate whose public surface is a state object full of callbacks, the leftovers
+  are cheap and there are usually a handful.
+
+**This is the cleanest before/after pair recorded in this task so far, and it was free.** The
+baseline was the `report.xml` already on disk from the previous session (clean tree, same commit —
+`koverXmlReport` comes back `UP-TO-DATE`, so no baseline run was needed), and it was already a
+742-class / zero-leak report. The final run also landed on 742/0, and the all-counter diff came back
+with **identical key sets, zero denominator changes, and only `WorkItemSprintDelegateImpl`'s four
+counters moved**. Worth noting against the flip lore: the *first* after-run — same sources, one
+`koverXmlReport` earlier — gave **798 classes with zero leaks** (a third value in the 787/781
+"high-but-excludes-applied" family), and simply adding two more tests and re-running produced the
+clean 742. So the mode is not sticky within a session, and a straddled pair is sometimes fixed by
+running it again. This session touched `:testing` and did *not* cross into the leaky mode, which is
+consistent with the hypothesis as stated — it claims a `:testing` edit is *necessary* to reach the
+leaky mode, not sufficient — so this is neither support nor a counter-example.
 
 ---
 

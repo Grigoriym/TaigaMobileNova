@@ -307,7 +307,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   **The raw count in this mode is not a fixed number** — a second run on 2026-08-04 gave **781**, and
   it is the same mode: zero leaks, `kover-rank.py` filters it to the same 745 classes, BRANCH 2049 and
   LINE 9762 identical to the 787 run's. Recognise the mode by *zero leaks plus a 745 filtered count*,
-  not by matching 787.
+  not by matching 787. A third value, **798**, was seen on 2026-08-05.
+  **The mode is not sticky within a session, so re-running is worth one attempt before you reach for
+  the escape hatches.** That 798 run and a clean **742** were consecutive `koverXmlReport`
+  invocations minutes apart, with only two more test methods added in between — the second one
+  matched the 742-class baseline exactly, giving identical key sets and zero denominator changes in
+  the all-counter diff. Cheaper than reasoning about a straddle, and it costs one command.
 - **In the 787/781 mode, `kover-rank.py` normalises BRANCH exactly but leaves LINE ~53 lines high.** It
   filtered that report to 745 classes, not 742: the three `core.storage.db.entities` classes survive
   because the root `excludes` `packages(...)` list does not name `…db.entities` either, so the script
@@ -451,6 +456,17 @@ tests, not a smaller bound. The traps when touching those numbers:
   write one. On a `?.`-chain, `mb=2 cb=2` is a missing test (one input never tried, +1 branch each);
   `mb=1 cb=3` is the dead arm above and buys nothing. In `feature/workitem/ui/mappers` that split
   predicted the exact final figure — 41/56 → **48/56**, four tests — before any test was written.
+  `mb=2 cb=0` means the line was **never executed at all**, so it needs *two* tests, not one — an
+  `x?.invoke()` callback site wants both the present and the null case. Sizing
+  `WorkItemSprintDelegateImpl` that way (two lines at `mb=2 cb=0`, eight at `mb=1 cb=1`) predicted
+  ten tests and 40/40, and both were exact.
+  **Then re-run the dump for missed *lines* (`mi>0`) once the branch tests are green** — a
+  missed-branch ranking is structurally blind to branch-free code, so one-line functions are
+  invisible to it however untested they are. `WorkItemSprintDelegateImpl` sat at LINE 138/144 after
+  reaching 40/40 BRANCH, and four of the six leftovers were one-line private callbacks
+  (`onStartDateDismissRequest` and friends) that two more tests closed. Expect this on any delegate
+  whose public surface is a state object full of callbacks; what is left after that is the `logcat`
+  1-line holes, which are the signal to stop.
 
 Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
 77 modules.

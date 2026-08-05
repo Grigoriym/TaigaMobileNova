@@ -45,12 +45,20 @@ class FakeSprintsRepository: SprintsRepository {
     override suspend fun getSprintTasks(sprintId: Long): ImmutableList<WorkItem> =
         error("not used in this test")
 
+    var createSprintThrows: Throwable? = null
+    var createSprintCalled = false
+
     override suspend fun createSprint(
         name: String,
         start: LocalDate,
         end: LocalDate
     ) {
+        createSprintCalled = true
+        createSprintThrows?.let { throw it }
     }
+
+    var editSprintThrows: Throwable? = null
+    var editSprintCalled = false
 
     override suspend fun editSprint(
         sprintId: Long,
@@ -58,6 +66,8 @@ class FakeSprintsRepository: SprintsRepository {
         start: LocalDate,
         end: LocalDate
     ) {
+        editSprintCalled = true
+        editSprintThrows?.let { throw it }
     }
 
     override suspend fun deleteSprint(sprintId: Long) {

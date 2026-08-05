@@ -85,7 +85,7 @@ Key fields for commonly-used fakes:
 
 **`FakeHistoryRepository`**: check file for fields
 
-**`FakeSprintsRepository`**: `getSprintsResult/Throws/IsClosed` (the recorder captures the `isClosed` argument), `getSprintDataResult`, `getSprintResult`, `deleteSprintThrows/Called`. `createSprint()` and `editSprint()` are no-ops; the remaining `getSprint*` list methods are still `error("not used in this test")`
+**`FakeSprintsRepository`**: `getSprintsResult/Throws/IsClosed` (the recorder captures the `isClosed` argument), `getSprintDataResult`, `getSprintResult`, `deleteSprintThrows/Called`, `createSprintThrows/Called`, `editSprintThrows/Called`. `createSprint()` and `editSprint()` succeed silently unless their `…Throws` is set; the remaining `getSprint*` list methods are still `error("not used in this test")`
 
 ### Storage
 
@@ -547,7 +547,7 @@ sut.reloadOpenSprints.test {
 assertFalse(sut.state.value.isLoading)
 ```
 
-`FakeSprintsRepository.createSprint()` and `editSprint()` are no-ops (succeed silently).
+`FakeSprintsRepository.createSprint()` and `editSprint()` succeed silently; set `createSprintThrows` / `editSprintThrows` to drive the delegate's `onFailure` arm.
 
 `FakeDateTimeUtils.fixedDate` defaults to `LocalDate(2024, 1, 15)`. `setInitialSprint()` uses it for both start and end (end = start + 14 days), so dates are always non-null after `onCreateSprintClick()`.
 
