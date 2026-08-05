@@ -61,7 +61,7 @@ right subpackage before concluding a fake doesn't exist:
 
 Key fields for commonly-used fakes:
 
-**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`, `updateModulesCalled/Throws/Calls` (the `Calls` list holds `UpdateModulesCall` records — every argument, so a test can assert the whole set in one `assertEquals`), `updateProjectCalled/Throws`, `saveProjectCalled/CalledWith`, `fetchAndSaveProjectInfoCalled/Throws`, `createTagCalled/Throws`, `deleteTagCalled/TagName/Throws`, `editTagFromTagName/ToTagName/Throws`, `mixTagsCalled/FromTags/ToTag/Throws`, `projectFlow`
+**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`, `updateModulesCalled/Throws/Calls` (the `Calls` list holds `UpdateModulesCall` records — every argument, so a test can assert the whole set in one `assertEquals`), `updateProjectCalled/Throws/Calls` (same shape — the `Calls` list holds `UpdateProjectCall` records of all six arguments), `saveProjectCalled/CalledWith`, `fetchAndSaveProjectInfoCalled/Throws`, `createTagCalled/Throws`, `deleteTagCalled/TagName/Throws`, `editTagFromTagName/ToTagName/Throws`, `mixTagsCalled/FromTags/ToTag/Throws`, `projectFlow`
 
 **`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `createWorkItemResult/Throws/Calls` (`CreateWorkItemCall` records), `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
 
@@ -575,6 +575,16 @@ sut.onBackAction.test {
 }
 collectJob.join()          // .cancel() instead, when asserting that nothing was sent
 ```
+
+**Before scoping any ViewModel test session, look for a structurally identical sibling in the same
+module and start from its test file.** ViewModels here cluster into a few shapes, and a sibling's
+test carries the non-obvious parts already solved — which is most of the session. `ModulesViewModel`
+and `ProjectDetailsViewModel` are both load-in-`init` + `save()`-with-`_navigateBack`-and-
+`showSnackbarSuspend`, so all three of `ModulesViewModelTest`'s tricky comments transferred verbatim:
+the unconfined-dispatcher note explaining why `isLoading = true` is unobservable, triggering the save
+*inside* the `navigateBack.test { }` block because the channel is a rendezvous, and asserting
+`isSaving` *after* the `snackBarMessage` turbine block because `showSnackbarSuspend` is a rendezvous
+send too. `feature/settings/ui` has 7 of the repo's untested ViewModels and they share this shape.
 
 `EditEpicViewModelTest` and `WorkItemEditTagsViewModelTest` are drop-in templates for the whole
 `feature/workitem/ui/screens/*` edit-screen family — same real repository, same collector pairing, and

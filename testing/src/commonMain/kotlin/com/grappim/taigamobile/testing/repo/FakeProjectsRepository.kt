@@ -111,8 +111,18 @@ class FakeProjectsRepository : ProjectsRepository {
         updateModulesThrows?.let { throw it }
     }
 
+    data class UpdateProjectCall(
+        val name: String,
+        val description: String,
+        val isPrivate: Boolean,
+        val isLookingForPeople: Boolean,
+        val lookingForPeopleNote: String,
+        val isContactActivated: Boolean
+    )
+
     var updateProjectCalled = false
     var updateProjectThrows: Throwable? = null
+    val updateProjectCalls: MutableList<UpdateProjectCall> = mutableListOf()
 
     override suspend fun updateProject(
         name: String,
@@ -123,6 +133,14 @@ class FakeProjectsRepository : ProjectsRepository {
         isContactActivated: Boolean,
     ) {
         updateProjectCalled = true
+        updateProjectCalls += UpdateProjectCall(
+            name = name,
+            description = description,
+            isPrivate = isPrivate,
+            isLookingForPeople = isLookingForPeople,
+            lookingForPeopleNote = lookingForPeopleNote,
+            isContactActivated = isContactActivated
+        )
         updateProjectThrows?.let { throw it }
     }
 

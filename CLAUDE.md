@@ -272,7 +272,7 @@ tests, not a smaller bound. The traps when touching those numbers:
   starting mode nor the effect of adding test sources is predictable; only the *straddle* is the
   expected case. Plan on the package-scope escape hatch below and do not assume which side either run
   will land on.
-  **Candidate discriminator (hypothesis, 8 supporting sessions, 0 counter-examples since it was
+  **Candidate discriminator (hypothesis, 9 supporting sessions, 0 counter-examples since it was
   noticed): crossing *into* the leaky excludes-skipped mode has only ever been seen alongside a change
   to `:testing`'s own sources.** Sessions that added *only* test files under a feature/core module
   stayed zero-leak — `feature/epics/ui/details`, `feature/issues/ui/details`, `core/domain` and
@@ -280,7 +280,9 @@ tests, not a smaller bound. The traps when touching those numbers:
   ran 742 → 742, and `feature/workitem/ui/mappers` went 780 → 742, i.e. it moved between the two
   *zero-leak* counts without ever reaching 822/854. Every recorded 822/854 flip above involved adding
   `:testing` fields — including `feature/sprint/data` on 2026-08-05, which added a `:testing` source
-  file plus fake fields and went 742/0 leaks → **823/20 leaks**. This is **not** established — the 2026-08-03 note says "adding only test sources
+  file plus fake fields and went 742/0 leaks → **823/20 leaks**, and
+  `feature/settings/ui/projectdetails` the same day, which added one recorder to `FakeProjectsRepository`
+  and went 742/0 → **849/20**. This is **not** established — the 2026-08-03 note says "adding only test sources
   gave 854", and it is not known whether that session also touched `:testing` — so keep taking the
   before/after diff. **The hypothesis constrains one direction only: it does *not* predict a
   comparable pair when you leave `:testing` alone.** `feature/tasks/ui` (2026-08-05) touched exactly
@@ -439,6 +441,15 @@ tests, not a smaller bound. The traps when touching those numbers:
   varies. `EditSprintViewModel`'s `logcat` inside a `viewModelScope.launch` was split out at 0/1, and
   `ModulesViewModel`'s two were folded into the covered `invokeSuspend`, taking that package to LINE
   88/88. So "1-line hole → stop" is the right rule, but "100 % LINE is impossible here" is not.
+- **A low missed-branch row can still be the best session available — look for the "sleeper"
+  signature: a `$1`/`$2` coroutine-body class at BRANCH 0/n *and* LINE 0/m.** That pairing means a
+  whole `viewModelScope.launch` body has never executed, so the branch number only prices the
+  `resultOf` `onSuccess`/`onFailure` arms while the real prize is the untested body around them.
+  `feature/settings/ui/projectdetails` ranked 0/8 — below a dozen bigger-looking rows — and closing it
+  took the package to **100 % on every counter**, buying 47 lines, 9 methods and 547 instructions.
+  **Rank such a row by its LINE gap, not by `missedB`**; `kover-rank.py` prints both columns for
+  exactly this reason. The inverse of the mapper heuristic below, and it points at the same thing: a
+  row whose LINE is also short is the cheap, high-yield kind.
 - **Get the per-class breakdown before scoping a session around a package**, and the per-**method**
   one before concluding a leftover is real — Kover's XML carries `<counter>` elements on
   `<package>`, `<class>` *and* `<method>`, so `for c in p.findall('class'): for m in c.findall('method')`

@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/settings/ui/projectdetails` (the sleeper — 8 branches but **LINE 0/40** across two coroutine bodies of a wholly untested `ProjectDetailsViewModel`; re-verified 2026-08-05, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/filters/domain` (0/10 BRANCH, **LINE 0/6** — three pure extension functions in one file that nothing tests at all; XS, verified 2026-08-05, see the table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo — **start from `feature/sprint/data`'s `SprintRemoteMediatorTest`**, which solved the shared `HttpResponse` problem; see that section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -732,10 +732,19 @@ sessions can skip the per-class re-derivation:
 
 | Module | BRANCH | Note |
 |---|---|---|
-| `feature/settings/ui/projectdetails` | 0/8 | ⬅ **next**. **The sleeper — take this before its branch count suggests.** Both classes are coroutine bodies of `ProjectDetailsViewModel` (`loadProjectDetails$1` BRANCH 0/4 LINE 0/22, `save$1` BRANCH 0/4 LINE 0/18) — the ViewModel is entirely untested, so this row buys 40 lines, not 8 branches. One of the 12 untested ViewModels [survey.md](survey.md#gaps) lists. Re-verified per-class 2026-08-05 |
+| ~~`feature/settings/ui/projectdetails`~~ | 0/8 | ✅ done 2026-08-05 — now **8/8, LINE 82/82, METHOD 12/12, INSTRUCTION 771/771**. The whole package is 100 % on every counter; the sleeper call was right — it bought 47 lines, not 8 branches. See the section below |
 | `feature/workitem/domain/customfield` | 15/24 | ⚠️ verify hard before taking. All 9 missed are `CustomFieldValue`, already at **LINE 12/12** — and this is the exact class `CLAUDE.md` names as the source of the `mb=1 cb=3` dead-elvis shape. A line-complete class with residual branches is the signature of unreachable ones |
 | `feature/issues/mapper` | 22/30 | same caveat: `IssueMapper` is at **LINE 70/70**, so the 8 missed are branches inside already-executed lines. Get the `mb`/`cb` split before scoping — `mb=2 cb=2` lines are real, `mb=1 cb=3` are not |
 | `feature/workitem/ui/widgets/customfields` | 3/10 | `DateItemState` 3/8 (LINE 9/11) and `CheckboxItemState` 0/2 (LINE 6/7). Small but genuinely hand-written state classes |
+
+**Two rows verified 2026-08-05** while closing `feature/settings/ui/projectdetails` — both are
+*sleepers* of the same kind that row turned out to be, i.e. wholly untested code whose branch count
+badly understates it:
+
+| Module | BRANCH | Note |
+|---|---|---|
+| `feature/filters/domain` | 0/10 | ⬅ **next**, and an **XS**. One file, `Utils.kt`, three pure `List<T>` extension functions (`commaString`, `tagsCommaString`, `hasData`) with no collaborator, no coroutine and no `@Composable` — nothing tests them at all. Each has an empty / non-empty / `takeIf`-null case; `tagsCommaString` also replaces `" "` with `"+"`. Should close to 10/10 and LINE 6/6 in minutes |
+| `feature/workitem/ui/screens/editdescription` | 0/4 | the bigger sleeper — **LINE 6/36** over a wholly untested `EditDescriptionViewModel`. Same shape as the `projectdetails` session below; take it once the XS above is done |
 
 Skip `feature/filters/domain/model` (105 missed) and `feature/userstories/dto` (38) — generated
 `data class` / `@Serializable` branches, unreachable from a test. `feature/login/ui` has dropped off
@@ -2077,6 +2086,58 @@ local copy. Adding the shared factory would have meant editing `:testing` — wh
 above says is the one edit correlated with losing the comparable coverage pair — for a four-field
 data class. Filed as a note rather than done: worth folding into `:testing` whenever a session is
 already touching it for another reason.
+
+### `feature/settings/ui/projectdetails` — ✅ done 2026-08-05
+
+12 tests in `ProjectDetailsViewModelTest`, the first test of `ProjectDetailsViewModel` — one of the
+12 untested ViewModels [survey.md](survey.md#gaps) lists. The full `jvmTest`, `ktlintCheck`, `detekt`
+and `:koverVerify` are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| package BRANCH | 0/8 | **8/8 — 100 %** |
+| package LINE | 35/82 | **82/82 — 100 %** |
+| package METHOD | 3/12 | **12/12 — 100 %** |
+| package INSTRUCTION | 224/771 | **771/771 — 100 %** |
+| package CLASS | 2/4 | **4/4 — 100 %** |
+
+**The "sleeper" call in the row was right, and is worth generalising.** The row was ranked 0/8 — far
+below a dozen bigger-looking rows — but the eight branches were the `onSuccess`/`onFailure` arms of
+two `resultOf` blocks in a ViewModel that *nothing* had ever instantiated, so closing them dragged
+47 lines and 9 methods with them. **A `$1`/`$2` coroutine-body class sitting at BRANCH 0/n *and*
+LINE 0/m is the signature**: the branch number prices the `resultOf` arms, while the real prize is
+the untested body around them. Rank such a row by its LINE gap, not its `missedB`.
+
+`ModulesViewModelTest` (same module) is a near-exact template — `ModulesViewModel` and
+`ProjectDetailsViewModel` are structurally identical (load-in-`init`, `save()` with
+`_navigateBack` + `showSnackbarSuspend` on failure), so all three of its non-obvious comments
+transferred verbatim: the unconfined-dispatcher note on the "initial state" test, triggering the
+save *inside* the `navigateBack.test { }` block because the channel is a rendezvous, and asserting
+`isSaving` *after* the `snackBarMessage` turbine block because `showSnackbarSuspend` is itself a
+rendezvous send. **Before scoping any settings-ui ViewModel session, check whether a sibling
+ViewModel in the same module has the same load/save shape** — it converts most of the session into
+transcription.
+
+**LINE reached 82/82 despite two `logcat` call sites**, which `CLAUDE.md` warns are normally
+permanent 1-line holes under the JVM `NoLog` backend. Both here were folded into the covered
+`invokeSuspend` rather than split into their own synthetic methods — the same variance
+`ModulesViewModel` showed. Confirms that "1-line hole → stop hunting" is the right rule but "100 %
+LINE is impossible in a class with `logcat`" is not.
+
+**`:testing` change:** `FakeProjectsRepository.updateProject` gained an `UpdateProjectCall` data
+class and an `updateProjectCalls` recorder, mirroring the `UpdateModulesCall` shape already in the
+file — the fake previously recorded only `updateProjectCalled`, which cannot prove `save()` sends
+the *edited* state rather than the loaded details. `.claude/agents/testing.md` updated.
+
+**The straddle happened, exactly as the `:testing`-edit hypothesis predicts — and the all-counter
+diff rescued the pair.** Baseline was the free on-disk `report.xml` (clean tree, same commit): a
+clean **742 / zero-leak** run. The after-run landed **849 / 20 leaks**, with 478 keys present in only
+one report and 43 changed denominators across `core/api`, `core/domain`, `feature/login/ui`,
+`feature/wiki/ui/*` and others. **The target package's own denominators were byte-identical in both**
+(BRANCH 8, LINE 82, METHOD 12, CLASS 4), with the same four classes present in each — so the table
+above is provably valid while the report totals are not comparable at all. This is now **9 supporting
+sessions and 0 counter-examples** for "crossing into the leaky mode co-occurs with a `:testing`
+source edit".
 
 ---
 
