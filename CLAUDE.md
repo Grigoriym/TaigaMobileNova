@@ -301,7 +301,9 @@ tests, not a smaller bound. The traps when touching those numbers:
   the previous session, clean tree, same commit) and a provably comparable pair.
   `feature/workitem/ui/screens/editdescription` (2026-08-05) made it four: same free 742/0 baseline,
   742/0 after-run, zero-length key-set difference, zero denominator changes, and movement confined to
-  the target package. So the free baseline is the *normal* case on a clean tree, and a straddle is
+  the target package. `feature/userstories/ui` (2026-08-05, task 9c) made it five, and additionally
+  stayed on the 742/0 side across **three** `koverXmlReport` runs in one session as test sources were
+  added between them. So the free baseline is the *normal* case on a clean tree, and a straddle is
   what needs explaining — not the other way round.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
@@ -462,6 +464,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   varies. `EditSprintViewModel`'s `logcat` inside a `viewModelScope.launch` was split out at 0/1, and
   `ModulesViewModel`'s two were folded into the covered `invokeSuspend`, taking that package to LINE
   88/88. So "1-line hole → stop" is the right rule, but "100 % LINE is impossible here" is not.
+- **`onCleared()` is unreachable from a unit test, and every details ViewModel has one.**
+  `ViewModel.onCleared` is `protected` and `ViewModel.clear()` is internal to `lifecycle-viewmodel`,
+  so nothing in `commonTest` can trigger it. In `UserStoryDetailsViewModel` its body is 6 of the 10
+  residual lines after the package was otherwise closed. Recognise the override and skip it — same
+  family as the `logcat` holes, just bigger.
 - **A low missed-branch row can still be the best session available — look for the "sleeper"
   signature: a `$1`/`$2` coroutine-body class at BRANCH 0/n *and* LINE 0/m.** That pairing means a
   whole `viewModelScope.launch` body has never executed, so the branch number only prices the
@@ -533,6 +540,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   (`onStartDateDismissRequest` and friends) that two more tests closed. Expect this on any delegate
   whose public surface is a state object full of callbacks; what is left after that is the `logcat`
   1-line holes, which are the signal to stop.
+  **Filter that dump on `ci=0`, not on `mi>0`** — a `<line>` carries both, and Kover counts the line
+  *covered* if `ci>0`, so an `mi>0 ci>0` line is a partially-covered expression that no test can
+  move off the list. `UserStoryDetailsViewModel:199`
+  `get() = requireNotNull(_state.value.currentUserStory)` reports `mi=9 ci=7 mb=1 cb=1` and is
+  executed by nearly every test in the file; filtering on `mi>0` puts it top of a list of "untested"
+  lines. Only `ci=0` lines are the never-executed ones the LINE counter is actually missing.
 - **On a `*Mapper`, a block of `mb=0 mi>0` lines is usually one collection lambda starved by a
   hard-coded `null` in a `:testing` factory** — not a missing test *shape*, just a missing input.
   `getWorkItemResponseDTO()` sets `epics = null`, which left all six lines of

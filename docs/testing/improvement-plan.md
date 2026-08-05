@@ -55,7 +55,7 @@ than pushing through.
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
 | 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05, `feature/filters/domain` ✅ 2026-08-05 (100 % on every counter), `feature/workitem/ui/screens/editdescription` ✅ 2026-08-05 (100 % on every counter). **The branch sweep is out of worthwhile rows — see [Where 9a stands](#where-9a-stands-2026-08-05) below; continue with task 9c instead** |
 | 9b | `WorkItemRemoteMediator` | M | ✅ done 2026-08-05 — 13 tests; the class went BRANCH 0/11 → **11/11**, LINE 0/33 → **32/33**, and took the whole `feature/workitem/data` package to **100 % BRANCH**. See the section below |
-| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | ⬅ **NEXT** — take `feature/userstories/ui` first. Split out of 9a's `feature/userstories/ui` session; now also the top of the whole remaining ranking, see the section below |
+| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | 🔁 in progress — `feature/userstories/ui` ✅ 2026-08-05 (LINE 375/528 → **518/528**, CLASS 17/34 → **34/34**; every `$1` lambda class closed). ⬅ **NEXT: `feature/tasks/ui`**, then `feature/epics/ui/details` and `feature/issues/ui/details`. See the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -2405,6 +2405,47 @@ the wiring the ViewModel adds (which version it passes, what it does in `doOnSuc
 
 **Done when:** the module's `*DetailsViewModel` has no `$1` lambda class left at LINE 0, and the
 before/after LINE table is recorded here.
+
+**Result — `feature/userstories/ui` (2026-08-05):** 31 tests added to `UserStoryDetailsViewModelTest`
+(22 → 53). Provably comparable 742/0-leak pair on both sides — zero key-set difference, zero
+denominator changes, and the only package that moved was the target.
+
+| counter | before | after |
+|---|---|---|
+| LINE | 375/528 | **518/528** |
+| METHOD | 41/123 | **117/123** |
+| CLASS | 17/34 | **34/34** |
+| INSTRUCTION | 3016/4235 | **4198/4235** |
+| BRANCH | 37/40 | 37/40 (unchanged, as predicted) |
+
+Every `$1` lambda class that was at LINE 0 is now at 100 %. **The 10 residual lines are all
+unreachable:** four are `logcat { }` message lambdas (the documented 1-line-hole signature, at
+`loadUserStory`'s `onFailure`, `emitError`, `onTitleSave`'s `doOnError`, `doOnDelete`'s `onFailure`),
+and six are the body of **`onCleared()`** — `ViewModel.onCleared` is `protected` and
+`ViewModel.clear()` is internal to `lifecycle-viewmodel`, so no unit test can trigger it. Expect the
+same two residues in the other three modules; do not hunt for tests for them.
+
+**What the session learned, for the next module:**
+
+- **The shape is mechanical: two tests per handler** — success asserts the version was bumped
+  (`sut.state.value.currentX?.version`), failure sets a `…Throws` on the fake and asserts the
+  snackbar inside `sut.snackBarMessage.test { }`. Nothing needed adding to `:testing`;
+  `FakeWorkItemRepository` already has a `…Throws` for every method, and `PatchedCustomAttributes` /
+  `UpdateWorkItem` are one-field data classes constructed inline.
+- **Three handlers need state primed first, and silently no-op otherwise.** `onTitleSave` early-returns
+  unless `titleState.value.onTitleChange(...)` made the title differ from the original;
+  `removeAssignee` early-returns unless `multipleAssigneesState.value.onRemoveAssigneeClick(user)` set
+  `assigneeToRemove`; `removeWatcher` needs `watchersState.value.onRemoveWatcherClick(id)`. A test
+  that skips the priming passes while covering nothing.
+- **`FakeTaigaSessionStorage` must be declared as the concrete type with a `currentUserId`.** The
+  test declared it as `TaigaSessionStorage`, and `handleAssignToMe` / `handleRemoveWatcher` call
+  `requireUserId()`, which `error()`s when it is null. Same for `FakeHistoryRepository` — declaring
+  it as the interface hides `getCommentsResult` / `deleteCommentThrows`.
+- **The flow-driven handlers are reached through `WorkItemEditStateRepository`, not the state
+  object** — `onNewTagsUpdate`, `onNewDescriptionUpdate`, `onAssigneeUpdated` and `onWatchersUpdated`
+  are private and only fire from `updateTags` / `updateDescription` / `updateAssignees` /
+  `updateWatchers` on the real (not faked) repository. `updateDescription` additionally early-returns
+  when the new description equals the loaded one, so pass a fresh `getRandomString()`.
 
 ---
 

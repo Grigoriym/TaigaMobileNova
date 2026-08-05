@@ -839,6 +839,14 @@ kotlin {
     SKIPPED is unrelated to the failure. Fix the failure and re-run before investigating either
     number.
 
+19. **Declare a fake field as the fake's own type, never as the interface it implements.** A
+    `private val historyRepository: HistoryRepository = FakeHistoryRepository()` compiles and works
+    until the first test needs `getCommentsResult` or a `…Throws` hook, which are not on the
+    interface. The same applies to state you must *seed*: `FakeTaigaSessionStorage(currentUserId = …)`
+    is unreachable through `TaigaSessionStorage`, and `requireUserId()` `error()`s when it is null —
+    which any delegate calling `handleAssignToMe` / `handleRemoveWatcher` will hit. Existing test
+    files have both spellings; fix the declaration rather than working around it.
+
 ---
 
 ## Testing a class backed by `DataStore<Preferences>`
