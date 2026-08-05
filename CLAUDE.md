@@ -201,6 +201,12 @@ For writing new KMP tests, creating fakes, or understanding test patterns, use t
 - `:testing` module has utilities: `getRandomString()`, `MainDispatcherRule`, fake generators
 - `kotlin.test` assertions + hand-written fakes — no MockK in `commonTest`
 - Test dependencies added automatically via convention plugins
+- **The apparent `:testing` ↔ module dependency cycle is not a problem.** `:testing` `api`-depends on
+  ~40 modules (`core:domain`, `core:storage`, every `feature/*`), and the convention plugin puts
+  `:testing` on *every* module's `commonTest`. So `:core:domain:commonTest` → `:testing` →
+  `:core:domain:commonMain` looks circular and Gradle resolves it fine — the test and main source
+  sets are separate compilations. Verified for `core/domain` (2026-08-05); no build-file change was
+  needed to add its first test.
 - `docs/testing/` — [survey.md](docs/testing/survey.md) (what exists) and
   [improvement-plan.md](docs/testing/improvement-plan.md) (sequenced tasks, one per session)
 
@@ -266,6 +272,16 @@ tests, not a smaller bound. The traps when touching those numbers:
   starting mode nor the effect of adding test sources is predictable; only the *straddle* is the
   expected case. Plan on the package-scope escape hatch below and do not assume which side either run
   will land on.
+  **Candidate discriminator (hypothesis, 4 supporting sessions, 0 counter-examples since it was
+  noticed): crossing into the leaky excludes-skipped mode has only ever been seen alongside a change
+  to `:testing`'s own sources.** Sessions that added *only* test files under a feature/core module
+  stayed zero-leak — `feature/epics/ui/details`, `feature/issues/ui/details` and `core/domain` each
+  ran 742 → 742, and `feature/workitem/ui/mappers` went 780 → 742, i.e. it moved between the two
+  *zero-leak* counts without ever reaching 822/854. Every recorded 822/854 flip above involved adding
+  `:testing` fields. This is **not** established — the 2026-08-03 note says "adding only test sources
+  gave 854", and it is not known whether that session also touched `:testing` — so keep taking the
+  before/after diff. But if your change touches no `:testing` source, expect a comparable pair and
+  don't pre-emptively plan around a straddle.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
   `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45
@@ -342,6 +358,18 @@ tests, not a smaller bound. The traps when touching those numbers:
   before reading a flat delta as "the tests did nothing" ([revisit #10](docs/revisit.md)).
   The suffix match is exact, so the reverse also holds: `**.*Repository` does **not** match
   `…RepositoryImpl`, and every repository impl in the project is measured normally.
+  `**.*Exception` is on that list too, which hides real logic in `core/domain`
+  (`NetworkException.message`, and every custom exception in the module), and
+  `**.*ResultExtensionKt` is named explicitly.
+- **A `*_androidKt` / `*_iosKt` class in the report is dead weight, and it can dominate a sweep row.**
+  Android- and iOS-variant classes get compiled into the report, but CI runs `jvmTest` only and the
+  repo has no Android unit-test source set by design — so they sit at 0 % forever. In `core/domain`
+  that is **14 of the package's 16 missed branches**, all in `PlatformNetworkErrorMapper_androidKt`,
+  whose JVM twin `PlatformNetworkErrorMapper_jvmKt` is **byte-for-byte identical** and already 14/14
+  BRANCH / 10/10 LINE (covered incidentally by `core/api`'s `NetworkErrorMapper` tests). The logic is
+  not untested; it is counted twice and only one copy is executable. **Diff the actuals before
+  scoping any `expect`/`actual` package** — a `*_androidKt` row is a reason to close the row, not to
+  write tests.
 - **Much of the branch denominator is unreachable**, in two distinct ways, and a package's
   missed-branch count distinguishes neither. *Generated:* `equals`/`hashCode`/`copy$default` on data
   classes and Room DAO impls — `feature/filters/domain/model` is 2/144 across nine files with no

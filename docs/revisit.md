@@ -564,3 +564,34 @@ non-`Clear` send covers its false branch and nothing can cover the true one.
 Deleting the arm — or the `Clear` variant itself, if it has no purpose — is a production change
 across four files, and the surgical-changes rule says to mention unrelated dead code rather than
 remove it. Check whether `Clear` is meant to be sent by something unimplemented before deleting.
+
+## 20. `mapResult` is dead code, and its "unreachable" state is reachable
+
+**Where:** `core/domain/src/commonMain/kotlin/com/grappim/taigamobile/core/domain/ResultExtension.kt:39-45`.
+
+**Evidence:** `grep -rn "mapResult" --include=*.kt . | grep -v /build/` returns only the declaration
+itself — **zero call sites** across the whole repo (2026-08-05).
+
+Separately, the implementation decides success from `getOrNull() != null`:
+
+```kotlin
+val successResult = getOrNull()
+return when {
+    successResult != null -> resultOf { transform(successResult) }
+    else -> Result.failure(exceptionOrNull() ?: error("Unreachable state"))
+}
+```
+
+so a **successful** `Result` holding `null` falls into the `else` branch, finds no exception, and
+throws `IllegalStateException("Unreachable state")`. Asserted by
+`ResultExtensionTest.mapResult throws on a success holding null` — the test documents the trap
+rather than endorsing it. `Result.success<String?>(null).mapResult { … }` is the reproduction.
+
+**Consequence:** none today, since nothing calls it. It becomes a live bug the moment someone uses
+`mapResult` on a `Result<T?>` — which is exactly the shape a nullable API response takes. The fix is
+to branch on `isSuccess` / `fold` rather than on nullability.
+
+**Why deferred:** found while writing `ResultExtensionTest` (improvement-plan task 9a, `core/domain`).
+Both the deletion and the null-handling fix are production changes to a `commonMain` utility, and the
+surgical-changes rule says to record unrelated dead code rather than remove it. Decide first whether
+`mapResult` is meant to have callers; if not, deleting it resolves both halves at once.

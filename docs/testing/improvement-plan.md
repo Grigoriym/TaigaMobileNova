@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05; ⬅ **NEXT** module: `core/domain` (20/36 branches, LINE 43/53 — small and hand-written, and **not** a details ViewModel, so scope it from its own line map rather than porting) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below); ⬅ **NEXT** module: `feature/sprint/data` (16/29 branches, LINE 147/205 — not yet verified, so check for `@Composable`/generated/excluded code before scoping) |
 | 9b | `WorkItemRemoteMediator` | M | todo |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -661,6 +661,15 @@ covered ViewModel; it was closed with the evidence rather than worked. Two rows'
 also simply wrong when re-derived. A row that survives verification is the session; a row that does
 not gets a ⛔ entry recording *why*, which is worth as much as tests.
 
+**A closed row is not automatically an empty session.** Once the row is closed, look at the module
+for gaps the report *structurally cannot see* — classes dropped by the `excludes` block, `inline`
+functions (no class to measure at all), and `expect`/`actual` declarations. `core/domain` closed on
+all 16 branches being unreachable, and the same module turned out to have `resultOf` — ~140 call
+sites, the cancellation-safety contract every use case depends on — with no test whatsoever, because
+it is both excluded by name *and* `inline`. Decide explicitly whether such a gap is worth the session;
+if you take it, say up front that the measured delta will be nil, and prove the nil rather than
+assuming it.
+
 **Verify in both directions — a row can be *under*stated too.** `core/storage` was written down as
 0/18 across three named classes; the same package tree also held `AuthStorageImpl$isLoggedIn$1` (0/6)
 and `DataStoreServerStorage` (2/8), both hand-written and equally reachable, making the real figure
@@ -702,8 +711,8 @@ after it — none verified yet, so check each for `@Composable` and generated co
 | ~~`feature/workitem/ui/mappers`~~ | 41/56 | ✅ done 2026-08-05 — now **48/56**; the residual 8 are unreachable, see the section below |
 | ~~`feature/epics/ui/details`~~ | 12/30 | ✅ done 2026-08-05 — now **28/30**, LINE 245/468 → **325/468**; the residual 2 are unreachable, see the section below |
 | ~~`feature/issues/ui/details`~~ | 17/34 | ✅ done 2026-08-05 — now **32/34**, LINE 285/512 → **354/512**; the residual 2 are unreachable, see the section below |
-| `core/domain` | 20/36 | ⬅ **next**. LINE 43/53, small and hand-written — **not** a details ViewModel, so scope it fresh rather than porting |
-| `feature/sprint/data` | 16/29 | LINE 147/205 |
+| ~~`core/domain`~~ | 20/36 | ⛔ closed-as-blocked 2026-08-05 — 14 of the 16 missed are the **Android actual** of `mapPlatformNetworkError`, whose JVM twin is byte-identical and already 14/14; the other 2 are generated `data class` branches. See the section below |
+| `feature/sprint/data` | 16/29 | ⬅ **next**. LINE 147/205 — not verified yet |
 | `feature/tasks/ui` | 17/30 | LINE 274/479 |
 
 Skip `feature/filters/domain/model` (142 missed) and `feature/userstories/dto` (38) — generated
@@ -1713,6 +1722,60 @@ the same helper. `setupSuccessfulLoad(data: IssueDetailsData = getIssueDetailsDa
 is 106 characters, so ktlint requires it on one line even though it reads as over-long; dropping the
 argument names in the nested calls is what brings it under 120. `:feature:issues:ui:jvmTest` went
 green before `ktlintCheck` caught it, exactly as warned.
+
+### `core/domain` — ⛔ closed-as-blocked 2026-08-05 (but tested anyway)
+
+**The row was 20/36 BRANCH, LINE 43/53. Not one of the 16 missed branches is reachable from a JVM
+test**, and the per-class breakdown says so in one command — this row could have been closed before
+any source file was opened:
+
+| Class | BRANCH | LINE | Why it cannot move |
+|---|---|---|---|
+| `PlatformNetworkErrorMapper_androidKt` | 0/14 | 0/10 | the **Android actual**. The repo has no Android unit-test source set by design, and CI runs `jvmTest` only |
+| `PendingCertTrust` | 1/2 | 7/7 | generated `@Serializable data class` branch |
+| `TaskIdentifier$WorkItem` | 1/2 | 2/2 | generated `@Serializable data class` branch |
+| everything else | — | — | already 100 % |
+
+The Android row is the strongest closure evidence in this plan so far, and a **new** category worth
+recognising: `PlatformNetworkErrorMapper.android.kt` and `.jvm.kt` are **byte-for-byte identical**
+(diff them), and the JVM one is already **14/14 BRANCH, 10/10 LINE** — covered incidentally by
+`core/api`'s `NetworkErrorMapper` tests. So the 14 "missed" branches are not untested logic at all;
+they are the same logic counted twice, once per variant, with only the JVM copy executable. **When a
+row's misses are concentrated in a `*_androidKt` / `*_iosKt` class, check for a JVM twin before
+scoping anything** — CLAUDE.md already notes Android-variant classes inflate the class count in some
+report modes, and this is what that looks like at package scope.
+
+**What the module actually needed, which the coverage number could never have surfaced:**
+`ResultExtension.kt` had **no test at all**, despite `resultOf` having ~140 call sites and being the
+helper every use case and repository failure path runs through. It is invisible to the report twice
+over — `**.*ResultExtensionKt` is named in the root `excludes`, *and* the functions are `inline`, so
+they have no class to measure. Added `ResultExtensionTest` (15 tests) covering both `resultOf`
+overloads (success, captured failure, `CancellationException` rethrow, a real `job.cancel()`, and a
+`withTimeout` timeout) and `mapResult`.
+
+**Measured delta: exactly nil, and proved rather than assumed.** Both runs landed on 742 classes with
+zero leaks, and the all-counter diff (every `<package>` *and* `<class>`, both directions) came back
+**0 changed entries, 0 denominator changes, 0 key-set differences** — totals identical at LINE
+8223/9717, BRANCH 1528/2063. That is the cleanest possible confirmation that an excluded-and-`inline`
+target moves nothing, and it is the `core/api` finding again: *the report is not a map of what is
+worth testing.* `:koverVerify` still green.
+
+Two findings, both filed rather than fixed:
+
+- **`mapResult` has zero call sites, and its `error("Unreachable state")` is reachable** — it decides
+  success from `getOrNull() != null`, so `Result.success<String?>(null).mapResult { … }` throws.
+  [revisit #20](../revisit.md). The test asserts the trap and says in its KDoc that it documents
+  rather than endorses it.
+- **`resultOf`'s `catch (e: TimeoutCancellationException)` clause is dead.**
+  `TimeoutCancellationException` *is* a `CancellationException`, so the preceding clause always wins.
+  Behaviour-neutral — the exception is rethrown either way, which the `withTimeout` test confirms —
+  so this is noise, not a bug, and was left alone. Recorded here so the next reader does not spend
+  time on it.
+
+**Process note:** the baseline needed no run at all. The tree was clean at the previous session's
+commit, so `build/reports/kover/report.xml` already on disk *was* the baseline — 742 classes, zero
+leaks, and it already showed `core/domain` at 20/36, i.e. the pre-change figure. CLAUDE.md's
+"copy it aside before writing any test source" rule is what made the nil-delta proof trustworthy.
 
 ---
 
