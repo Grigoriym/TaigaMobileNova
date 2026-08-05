@@ -272,7 +272,7 @@ tests, not a smaller bound. The traps when touching those numbers:
   starting mode nor the effect of adding test sources is predictable; only the *straddle* is the
   expected case. Plan on the package-scope escape hatch below and do not assume which side either run
   will land on.
-  **Candidate discriminator (hypothesis, 6 supporting sessions, 0 counter-examples since it was
+  **Candidate discriminator (hypothesis, 7 supporting sessions, 0 counter-examples since it was
   noticed): crossing *into* the leaky excludes-skipped mode has only ever been seen alongside a change
   to `:testing`'s own sources.** Sessions that added *only* test files under a feature/core module
   stayed zero-leak — `feature/epics/ui/details`, `feature/issues/ui/details` and `core/domain` each
@@ -286,7 +286,10 @@ tests, not a smaller bound. The traps when touching those numbers:
   one test file, and its pair still straddled — an 823/20-leak baseline (inherited on-disk from the
   previous session) against a clean 742/0 after-run, with 364 classes present in only one report.
   Plan on the straddle and the package-scope escape hatch regardless of what you touched; the
-  all-counter diff below is what makes such a pair usable.
+  all-counter diff below is what makes such a pair usable. It is only *unpredictable*, though, not
+  hopeless — `feature/filters/mapper` (2026-08-05) also touched exactly one test file and got a
+  perfectly comparable 742/0 → 742/0 pair, with a zero-length key-set difference and zero
+  denominator changes anywhere in the report.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
   `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45
@@ -460,6 +463,13 @@ tests, not a smaller bound. The traps when touching those numbers:
   `x?.invoke()` callback site wants both the present and the null case. Sizing
   `WorkItemSprintDelegateImpl` that way (two lines at `mb=2 cb=0`, eight at `mb=1 cb=1`) predicted
   ten tests and 40/40, and both were exact.
+  **A high `mb` on one line does not price as many tests** — `mb=4 cb=2` on a
+  `find { … } ?: return null` line means the `find` *lambda* was executed (by some other method's
+  test walking the same collection) while this method's own elvis never was, so one happy-path test
+  closes all four. In `StatusesMapper`, `getSeverity`/`getPriority` each showed `mb=1 cb=1` on their
+  first guard, `mb=4 cb=2` on the `find` line, and `mb=0 mi>0` on the whole constructor body below
+  it — the signature of *a method never called at all*, which prices as three tests (happy path,
+  null id, no match), not as six. Read the block of lines together, not line by line.
   **Then re-run the dump for missed *lines* (`mi>0`) once the branch tests are green** — a
   missed-branch ranking is structurally blind to branch-free code, so one-line functions are
   invisible to it however untested they are. `WorkItemSprintDelegateImpl` sat at LINE 138/144 after
