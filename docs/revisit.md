@@ -386,7 +386,7 @@ comparison, which would then be JVM-specific).
 
 ---
 
-## 14. The Kover coverage floor is now ~17/22 points below actual
+## 14. The Kover coverage floor is far below actual (~17/22 points in 2026-08-03, ~29/40 by 2026-08-05)
 
 **Where:** root `build.gradle.kts:100-112` — `Line coverage` ≥ 58, `Branch coverage` ≥ 38.
 
@@ -410,9 +410,15 @@ against an **821/854-class** XML run, not an intrinsic difference between the tw
 XML lands on the 742 side, all three numbers coincide. That makes `kover-rank.py`'s output a
 readout of the gate number, not merely an approximation of it.
 
-**Fix:** take `:koverVerify` readings on several separate clean-tree invocations. If they are stable
-at ~75/60, raise the bounds to ~73/58. If they flip, that is a bigger finding than the floor and
-belongs in #8.
+**The gap has widened a lot since — re-measure before acting on the numbers above.** On 2026-08-05,
+after ~15 further 9a sweep sessions, `kover-rank.py` over a clean 742-class report reports
+**86.73 % line (8428/9717) / 78.38 % branch (1617/2063)** — i.e. the floor is now ~29 points below
+actual on line and ~40 on branch, not 17/22. Per the note above, that readout *is* the gate number
+when the XML lands on the 742 side, so the widening is real rather than a mode artifact.
+
+**Fix:** take `:koverVerify` readings on several separate clean-tree invocations. If they are stable,
+raise the bounds to a couple of points under the lowest reading. If they flip, that is a bigger
+finding than the floor and belongs in #8.
 
 ---
 

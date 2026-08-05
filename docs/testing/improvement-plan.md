@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/filters/domain` (0/10 BRANCH, **LINE 0/6** — three pure extension functions in one file that nothing tests at all; XS, verified 2026-08-05, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05, `feature/filters/domain` ✅ 2026-08-05 (100 % on every counter); ⬅ **NEXT** module: `feature/workitem/ui/screens/editdescription` (0/4 BRANCH, **LINE 6/36** — a sleeper: `EditDescriptionViewModel` is wholly untested and `onGoingBack$1` is BRANCH 0/4 *and* LINE 0/9; rank it by the line gap, verified 2026-08-05, see the table below) |
 | 9b | `WorkItemRemoteMediator` | M | ✅ done 2026-08-05 — 13 tests; the class went BRANCH 0/11 → **11/11**, LINE 0/33 → **32/33**, and took the whole `feature/workitem/data` package to **100 % BRANCH**. See the section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -723,7 +723,7 @@ after it — none verified yet, so check each for `@Composable` and generated co
 | ~~`feature/workitem/ui/delegates/sprint`~~ | 28/40 | ✅ done 2026-08-05 — now **40/40**, LINE 120/144 → **142/144**; the residual 2 lines are `logcat` lambdas. See the section below |
 | ~~`feature/filters/mapper`~~ | 36/48 | ✅ done 2026-08-05 — now **48/48**, LINE 103/111 → **111/111**. The whole package is 100 % on every counter; see the section below |
 | ~~`feature/userstories/mapper`~~ | 11/22 | ✅ done 2026-08-05 — now **22/22, LINE 46/46, INSTRUCTION 242/242**. The whole package is 100 % on every counter; see the section below |
-| `feature/filters/domain` | 0/10 | all in `UtilsKt`, LINE 0/6 — small, and nothing tests it at all. Re-verified 2026-08-05: unchanged, one file (`Utils.kt`) |
+| ~~`feature/filters/domain`~~ | 0/10 | ✅ done 2026-08-05 — now **10/10, LINE 6/6, METHOD 3/3, INSTRUCTION 83/83**. The whole package is 100 % on every counter; see the section below |
 | ~~`feature/login/ui`~~ | 27/40 | ⛔ weak row. **8 of the 13 missed are `GithubOAuthWebViewDialog_androidKt`**, an Android-variant class that `jvmTest` can never execute. Only 5 are reachable, spread over three classes |
 | ~~`feature/login/dto`~~ | 1/20 | ⛔ do not take. Six `@Serializable` DTOs, all generated branches |
 
@@ -743,8 +743,15 @@ badly understates it:
 
 | Module | BRANCH | Note |
 |---|---|---|
-| `feature/filters/domain` | 0/10 | ⬅ **next**, and an **XS**. One file, `Utils.kt`, three pure `List<T>` extension functions (`commaString`, `tagsCommaString`, `hasData`) with no collaborator, no coroutine and no `@Composable` — nothing tests them at all. Each has an empty / non-empty / `takeIf`-null case; `tagsCommaString` also replaces `" "` with `"+"`. Should close to 10/10 and LINE 6/6 in minutes |
-| `feature/workitem/ui/screens/editdescription` | 0/4 | the bigger sleeper — **LINE 6/36** over a wholly untested `EditDescriptionViewModel`. Same shape as the `projectdetails` session below; take it once the XS above is done |
+| ~~`feature/filters/domain`~~ | 0/10 | ✅ done 2026-08-05 — closed to 10/10 and LINE 6/6 in minutes, exactly as sized. See the section below |
+| `feature/workitem/ui/screens/editdescription` | 0/4 | ⬅ **next**. The bigger sleeper — **LINE 6/36** over a wholly untested `EditDescriptionViewModel`. Same shape as the `projectdetails` session below. Per-class, re-verified 2026-08-05 on a clean 742 report: `EditDescriptionViewModel` LINE 6/21, `EditDescriptionState` LINE 0/6, `EditDescriptionViewModel$onGoingBack$1` BRANCH 0/4 **and** LINE 0/9 — the coroutine body has never run, so the 4 branches price the `resultOf` arms while the real prize is the 30 missed lines |
+
+**One more row verified 2026-08-05** while closing `feature/filters/domain`, so it can be skipped
+without re-deriving:
+
+| Module | BRANCH | Note |
+|---|---|---|
+| `core/api/errors` | 47/76 | ⛔ weak row despite ranking 5th at 29 missed. **25 of the 29 are `TaigaErrorResponse` (9/34), a `@Serializable` data class at LINE 5/5** — generated `equals`/`hashCode`/serializer branches. The two hand-written classes are nearly closed already: `ErrorResponseParser` 10/12 (LINE 26/28) and `NetworkErrorMapper` 28/30 (LINE 20/20) |
 
 Skip `feature/filters/domain/model` (105 missed) and `feature/userstories/dto` (38) — generated
 `data class` / `@Serializable` branches, unreachable from a test. `feature/login/ui` has dropped off
@@ -1018,7 +1025,7 @@ Three things worth carrying forward:
 - **The floor is now ~17/22 points below actual** (58/38 versus 75.42/60.52) and was deliberately
   *not* raised — the gap is far larger than the tests added since task 8 can explain, which suggests
   `:koverVerify` may flip between excludes modes the same way `koverXmlReport` does. Filed as
-  [revisit #14](../revisit.md#14-the-kover-coverage-floor-is-now-1722-points-below-actual) with the
+  [revisit #14](../revisit.md#14-the-kover-coverage-floor-is-far-below-actual-1722-points-in-2026-08-03-2940-by-2026-08-05) with the
   arithmetic and the check to run first. Do not raise it from a single reading.
 
 Also found and filed, not fixed: `urlDecode` is an `internal expect` with three actuals and **zero
@@ -2163,6 +2170,48 @@ one report and 43 changed denominators across `core/api`, `core/domain`, `featur
 above is provably valid while the report totals are not comparable at all. This is now **9 supporting
 sessions and 0 counter-examples** for "crossing into the leaky mode co-occurs with a `:testing`
 source edit".
+
+---
+
+### `feature/filters/domain` — ✅ done 2026-08-05
+
+7 tests in one new file, `UtilsTest` (`feature/filters/domain/src/commonTest/…/UtilsTest.kt`) — the
+module's first test of any kind. No `:testing` fake, factory or field was added; two private helpers
+in the test file build `StatusFilters` / `TagFilters` directly, since three pure `List<T>` extensions
+do not justify shared factories. `:feature:filters:domain:jvmTest`, the full `jvmTest` and
+`ktlintCheck` all green.
+
+| counter | before | after |
+|---|---|---|
+| BRANCH | 0/10 | **10/10** |
+| LINE | 0/6 | **6/6** |
+| METHOD | 0/3 | **3/3** |
+| INSTRUCTION | 0/83 | **83/83** |
+| CLASS | 0/1 | **1/1** |
+
+**The whole package is 100 % on every counter** — the third such row in two days, after
+`feature/filters/mapper` and `feature/userstories/mapper`, and for the same reason: pure functions
+with no collaborator, no coroutine, no `logcat` and no `@Composable`. The XS estimate held (minutes).
+Gate figures after the change, via `kover-rank.py` over a clean 742-class report: **BRANCH 78.38 %
+(1617/2063), LINE 86.73 % (8428/9717)**.
+
+**Sizing note that made this exact:** all 10 branches came from three call sites of the same shape —
+`takeIf { it.isNotEmpty() }` twice and one `any { }`. Each is one two-valued input, so empty /
+non-empty per function closed everything; the `" "` → `"+"` replace in `tagsCommaString` is
+branch-free and only needed a value assertion. Predicted 6–7 tests and 10/10; both were exact.
+
+**The straddle happened even though `:testing` was never touched — and the all-counter diff rescued
+the pair.** Baseline was the free on-disk `report.xml` (clean tree, same commit), which was an
+**827 / 20-leak** run inherited from the previous session; the after-run landed a clean **742 / 0
+leaks**, with 385 keys present in only one report. The target package's own denominators were
+identical in both (BRANCH 10, LINE 6, METHOD 3, CLASS 1), and — the useful new detail —
+**zero class-level counters moved anywhere outside the target package**. All 28 non-target
+denominator changes were `<package>`-level only, i.e. purely the excludes-mode flip removing leaked
+classes from the totals. That "no class-level movement elsewhere" check is a sharper isolation proof
+than diffing the one package you care about, and it costs nothing extra once the diff is loaded.
+This is a **second counter-example to the `:testing`-edit hypothesis in the *harmless* direction**
+(it predicts nothing about pairs where `:testing` is untouched, and this pair straddled anyway);
+after `feature/tasks/ui`, that is now twice.
 
 ---
 

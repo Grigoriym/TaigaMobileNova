@@ -288,6 +288,10 @@ tests, not a smaller bound. The traps when touching those numbers:
   comparable pair when you leave `:testing` alone.** `feature/tasks/ui` (2026-08-05) touched exactly
   one test file, and its pair still straddled — an 823/20-leak baseline (inherited on-disk from the
   previous session) against a clean 742/0 after-run, with 364 classes present in only one report.
+  `feature/filters/domain` (2026-08-05) reproduced that exactly: one test file, no `:testing` edit,
+  an 827/20-leak inherited baseline → clean 742/0, 385 keys in one report only. So a straddle with
+  `:testing` untouched is now the *expected* case, seen twice, and is not evidence against the
+  hypothesis — which only ever claimed the leaky direction.
   Plan on the straddle and the package-scope escape hatch regardless of what you touched; the
   all-counter diff below is what makes such a pair usable. It is only *unpredictable*, though, not
   hopeless — `feature/filters/mapper` (2026-08-05) also touched exactly one test file and got a
@@ -363,6 +367,14 @@ tests, not a smaller bound. The traps when touching those numbers:
   package missing from either — which makes the row provably valid even though the totals are not
   comparable at all. Read the key-set difference and the per-target denominators as two separate
   answers; only the second one gates your table.
+  **Split the "moved" list by element type — mode-flip noise is `<package>`-level *only*.** When the
+  flip drops leaked classes, they leave the key set entirely rather than moving, so every counter it
+  disturbs is a package total; a `<class>` row that moves is real. `feature/filters/domain`
+  (2026-08-05) straddled 827/20-leak → 742/0 and the diff showed 28 changed package denominators
+  across `core/api`, `core/domain`, `feature/login/ui`, `feature/wiki/ui/*` — and **zero class-level
+  movement outside the target package**. That last count is the isolation proof: it says the change
+  touched nothing else *anywhere*, which checking your own package's denominators cannot. Print the
+  two levels separately and read a non-empty class-level list as the only thing worth explaining.
 - **`koverXmlReport` always writes `build/reports/kover/report.xml`.** Copy it to a distinct path
   immediately after each run. Forgetting once makes the "before" and "after" the same file, and the
   diff comes back showing nothing changed anywhere — which reads like a plausible result, not like a
@@ -507,6 +519,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   `feature/workitem/domain/customfield`). Two consecutive pure-mapper rows — `feature/filters/mapper`
   and `feature/userstories/mapper` — went to 100 % on every counter in well under an hour each,
   because a pure mapper has no `logcat`, no coroutine and no collaborator that can throw.
+  **A file of pure top-level extension functions is the same row type and is even cheaper** —
+  `feature/filters/domain` is one `Utils.kt` of three `List<T>` extensions, and 7 tests took the
+  package 0/10 → **10/10 BRANCH, 6/6 LINE, 3/3 METHOD, 83/83 INSTRUCTION** in minutes. Recognise it
+  by a whole package at LINE 0/n with a `…Kt` class name: no class to construct, no fake to wire, so
+  the only work is enumerating each expression's input values.
 
 Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
 77 modules.
