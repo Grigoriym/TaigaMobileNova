@@ -9,19 +9,23 @@ import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.tasks.domain.TaskDetailsData
-import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
+import com.grappim.taigamobile.feature.workitem.domain.WatchersListUpdateData
 import com.grappim.taigamobile.feature.workitem.ui.WorkItemsGenerator
 import com.grappim.taigamobile.feature.workitem.ui.mappers.CustomFieldsUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.StatusUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TagUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.task_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.models.getTask
 import com.grappim.taigamobile.testing.models.getTaskDetailsData
+import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.testing.repo.FakeHistoryRepository
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
@@ -29,10 +33,13 @@ import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.usecases.FakeTaskDetailsDataUseCase
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
+import com.grappim.taigamobile.testing.utils.createTestPlatformFile
 import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -42,6 +49,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class TaskDetailsViewModelTest {
@@ -68,7 +76,7 @@ internal class TaskDetailsViewModelTest {
     private val historyRepository: HistoryRepository = FakeHistoryRepository()
     private val workItemRepository = FakeWorkItemRepository()
     private val taigaSessionStorage: TaigaSessionStorage = FakeTaigaSessionStorage()
-    private val usersRepository: UsersRepository = FakeUsersRepository()
+    private val usersRepository = FakeUsersRepository()
     private val workItemEditStateRepository = WorkItemEditStateRepository()
     private val customFieldsUIMapper = CustomFieldsUIMapper(dfSimple = createDecimalFormatter())
 
@@ -105,6 +113,10 @@ internal class TaskDetailsViewModelTest {
     private fun setupSuccessfulLoad(taskDetailsData: TaskDetailsData? = null) {
         val data = taskDetailsData ?: getTaskDetailsData(task = getTask(id = taskId))
         taskDetailsDataUseCase.getTaskDataResult = Result.success(data)
+    }
+
+    private fun setupFailedLoad() {
+        taskDetailsDataUseCase.getTaskDataResult = Result.failure(testException)
     }
 
     @Test
@@ -286,5 +298,138 @@ internal class TaskDetailsViewModelTest {
 
         assertFalse(sut.state.value.isLoading)
         assertTrue(workItemRepository.promoteToUserStoryCalled)
+    }
+
+    @Test
+    fun `onGoingToEditAssignee without an assignee should set a null assignee`() {
+        setupSuccessfulLoad(
+            getTaskDetailsData(task = getTask(id = taskId)).copy(assignees = persistentListOf())
+        )
+        createViewModel()
+
+        sut.onGoingToEditAssignee()
+
+        assertNull(workItemEditStateRepository.getCurrentAssignee(taskId, type))
+    }
+
+    @Test
+    fun `loadTask with a null status should still populate the state without a status badge`() {
+        setupSuccessfulLoad(
+            getTaskDetailsData(task = getTask(id = taskId).copy(status = null))
+        )
+
+        createViewModel()
+
+        val state = sut.state.value
+        assertFalse(state.isLoading)
+        assertEquals(NativeText.Empty, state.initialLoadError)
+        assertNotNull(state.currentTask)
+        assertTrue(sut.badgeState.value.workItemBadges.isEmpty())
+    }
+
+    @Test
+    fun `onDelete without a loaded task should set the error and not delete`() {
+        setupFailedLoad()
+        createViewModel()
+
+        sut.state.value.onDelete()
+
+        assertFalse(sut.state.value.isLoading)
+        assertEquals(NativeText.Resource(RString.common_error_message), sut.state.value.error)
+        assertEquals(0, taskDetailsDataUseCase.deleteTaskCallCount)
+    }
+
+    @Test
+    fun `onAttachmentAdd with a null file should set the error and not call the repository`() {
+        setupSuccessfulLoad()
+        createViewModel()
+
+        sut.state.value.onAttachmentAdd(null)
+
+        assertEquals(NativeText.Resource(RString.common_error_message), sut.state.value.error)
+        assertTrue(workItemRepository.addAttachmentCalls.isEmpty())
+    }
+
+    /**
+     * [io.github.vinceglb.filekit.PlatformFile.readBytes] runs on a real IO dispatcher, so the
+     * `viewModelScope.launch` does not complete before the call returns the way every other
+     * handler here does. The state has to be awaited rather than read.
+     */
+    @Test
+    fun `onAttachmentAdd with a file should add the attachment`() = runTest {
+        setupSuccessfulLoad()
+        val attachment = getAttachment()
+        workItemRepository.addAttachmentResult = attachment
+        createViewModel()
+
+        sut.attachmentsState.test {
+            val initial = awaitItem()
+
+            sut.state.value.onAttachmentAdd(
+                createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3))
+            )
+
+            assertTrue(awaitItem().areAttachmentsLoading)
+
+            val loaded = awaitItem()
+            assertFalse(loaded.areAttachmentsLoading)
+            assertEquals(initial.attachments + attachment, loaded.attachments)
+        }
+
+        assertEquals(1, workItemRepository.addAttachmentCalls.size)
+        assertEquals(taskId, workItemRepository.addAttachmentCalls.first().workItemId)
+    }
+
+    /**
+     * [TaskDetailsViewModel] mixes in the *single* assignee delegate, so
+     * [com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate.Assignees] is the
+     * no-op arm of `handleTeamMemberUpdate` and `Assignee` is the one that patches.
+     */
+    @Test
+    fun `assignees update should be ignored`() = runTest {
+        setupSuccessfulLoad()
+        createViewModel()
+
+        workItemEditStateRepository.updateAssignees(
+            taskId,
+            type,
+            persistentListOf(getRandomLong())
+        )
+
+        assertTrue(workItemRepository.patchDataCalls.isEmpty())
+    }
+
+    @Test
+    fun `single assignee update should patch the assignee and bump the version`() = runTest {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = PatchedData(
+            newVersion = newVersion,
+            dueDateStatus = null
+        )
+        usersRepository.getUsersListResult = persistentListOf(getUser())
+        createViewModel()
+
+        workItemEditStateRepository.updateAssignee(taskId, type, getRandomLong())
+
+        assertEquals(1, workItemRepository.patchDataCalls.size)
+        assertEquals(newVersion, sut.state.value.currentTask?.version)
+    }
+
+    @Test
+    fun `watchers update should update the watchers and bump the version`() = runTest {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.updateWatchersDataResult = WatchersListUpdateData(
+            version = newVersion,
+            isWatchedByMe = true,
+            watchers = persistentListOf(getUser())
+        )
+        createViewModel()
+
+        workItemEditStateRepository.updateWatchers(taskId, type, persistentListOf(getRandomLong()))
+
+        assertEquals(newVersion, sut.state.value.currentTask?.version)
+        assertTrue(sut.watchersState.value.isWatchedByMe)
     }
 }

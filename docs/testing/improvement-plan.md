@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/tasks/ui` (17/30 branches, LINE 274/479 — not yet verified, so check for `@Composable`/generated/excluded code before scoping) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/workitem/ui/delegates/sprint` (`WorkItemSprintDelegateImpl` 28/40 branches, LINE 120/144 — one hand-written class, verified 2026-08-05 as the whole of the package's 12 missed) |
 | 9b | `WorkItemRemoteMediator` | M | todo — **start from `feature/sprint/data`'s `SprintRemoteMediatorTest`**, which solved the shared `HttpResponse` problem; see that section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -713,9 +713,21 @@ after it — none verified yet, so check each for `@Composable` and generated co
 | ~~`feature/issues/ui/details`~~ | 17/34 | ✅ done 2026-08-05 — now **32/34**, LINE 285/512 → **354/512**; the residual 2 are unreachable, see the section below |
 | ~~`core/domain`~~ | 20/36 | ⛔ closed-as-blocked 2026-08-05 — 14 of the 16 missed are the **Android actual** of `mapPlatformNetworkError`, whose JVM twin is byte-identical and already 14/14; the other 2 are generated `data class` branches. See the section below |
 | ~~`feature/sprint/data`~~ | 16/29 | ✅ done 2026-08-05 — now **25/29**, LINE 147/205 → **183/205**; the row was stale (the repository impl was already 16/16), the whole gap was `SprintRemoteMediator`. See the section below |
-| `feature/tasks/ui` | 17/30 | ⬅ **next**. LINE 274/479 — not verified yet |
+| ~~`feature/tasks/ui`~~ | 17/30 | ✅ done 2026-08-05 — now **28/30**, LINE 274/479 → **321/479**; the residual 2 are the same unreachable pair as epics/issues, see the section below |
 
-Skip `feature/filters/domain/model` (142 missed) and `feature/userstories/dto` (38) — generated
+**Re-derived 2026-08-05** after `feature/tasks/ui`, with [kover-rank.py](kover-rank.py) over a clean
+742-class report, and each row's per-class breakdown checked before listing it:
+
+| Module | BRANCH | Note |
+|---|---|---|
+| `feature/workitem/ui/delegates/sprint` | 28/40 | ⬅ **next**. All 12 missed are `WorkItemSprintDelegateImpl`, one hand-written class, LINE 120/144. Same shape as the `badge` (22/22) and `customfields` (28/30) delegate rows |
+| `feature/filters/mapper` | 36/48 | all 12 missed are `StatusesMapper`, LINE 22/30 |
+| `feature/userstories/mapper` | 11/22 | all 11 missed are `UserStoryMapper`, LINE 40/46 |
+| `feature/filters/domain` | 0/10 | all in `UtilsKt`, LINE 0/6 — small, and nothing tests it at all |
+| ~~`feature/login/ui`~~ | 27/40 | ⛔ weak row. **8 of the 13 missed are `GithubOAuthWebViewDialog_androidKt`**, an Android-variant class that `jvmTest` can never execute. Only 5 are reachable, spread over three classes |
+| ~~`feature/login/dto`~~ | 1/20 | ⛔ do not take. Six `@Serializable` DTOs, all generated branches |
+
+Skip `feature/filters/domain/model` (105 missed) and `feature/userstories/dto` (38) — generated
 `data class` / `@Serializable` branches, unreachable from a test. `feature/login/ui` has dropped off
 the list: its old 27/126 row was `LoginScreen`, and the ViewModel alone is 27/44.
 
@@ -1845,6 +1857,51 @@ block's `**.*PagingSource` pattern means it never appears in the report in any f
 [revisit #21](../revisit.md). The general lesson is in that entry: a class that is both dead and
 excluded is invisible to every coverage-driven ranking, so grep the module for classes *absent* from
 the report before believing the report covers it.
+
+### `feature/tasks/ui` — ✅ done 2026-08-05
+
+8 new tests in `TaskDetailsViewModelTest`; the file goes 13 → 21 tests. No new fakes, so `:testing`
+and `.claude/agents/testing.md` were untouched. `:feature:tasks:ui:jvmTest`, the full `jvmTest`,
+`ktlintCheck`, `detekt` and `:koverVerify` are all green.
+
+| Scope | Before | After |
+|---|---|---|
+| package `feature/tasks/ui` BRANCH | 17/30 | **28/30** |
+| package `feature/tasks/ui` LINE | 274/479 | **321/479** |
+| `TaskDetailsViewModel` BRANCH | 2/12 | **10/12** |
+| `doOnDelete$1` BRANCH | 6/8 | **8/8**, LINE 13/19 → 18/19 |
+| `loadTask$1` BRANCH | 5/6 | **6/6** |
+| `onAttachmentAdd$2` LINE | 0/4 | **4/4** |
+| `onAssigneeUpdated$1` LINE | 0/7 | 6/7 |
+| `onWatchersUpdated$1` LINE | 0/7 | 6/7 |
+
+**The port from `feature/issues/ui/details` was near-total** — `TaskDetailsViewModel` mixes in the
+same `WorkItemSingleAssigneeDelegate`, so 7 of the 8 tests are the sibling tests with names changed.
+The eighth is the null-status load, which is the epics counterpart rather than the issues one. Unlike
+the previous three ViewModels, **this one has no handler uniquely its own** — no sprint, no epic
+colour — which is why the session is 8 tests rather than 10 and why the branch total is 30 rather
+than 34.
+
+**The line map predicted the final number exactly, for the fourth ViewModel running.** The nine
+`mb>0` lines classified up front as +11 reachable / 2 dead, i.e. 17/30 → 28/30, and that is where it
+landed. On this shape of class the dump *is* the scoping step.
+
+**Both residual branches are the already-filed unreachable pair, now confirmed on the fourth
+ViewModel:** line 199 `requireNotNull(_state.value.currentTask)`
+([revisit #18](../revisit.md)) and line 715 `TeamMemberUpdate.Clear -> {}` at exactly `mb=1 cb=1`
+([revisit #19](../revisit.md)). `Clear` is constructed nowhere in the repo — `grep -rn
+"TeamMemberUpdate.Clear"` returns only the four `when` arms that handle it. **`feature/userstories/ui`
+is the only details ViewModel left with these two, and they are already spent there.**
+
+**The before/after pair straddled the class-count flip with no `:testing` change at all** — before
+823 classes / 20 leaks, after a clean 742 / 0. That is a **counter-example to CLAUDE.md's advice
+"if your change touches no `:testing` source, expect a comparable pair"**: this change touched one
+test file and nothing else. It does not falsify the narrower hypothesis (crossing *into* the leaky
+mode has still only been seen alongside a `:testing` edit) — the movement here was *out* of it — but
+plan on the straddle regardless of what you touch. The all-counter diff is what rescued the table:
+364 classes were present only in the "before", yet `feature/tasks/ui`'s own denominators (BRANCH 30,
+LINE 479, CLASS 31) were **identical in both** and no class in that package was missing from either
+report, which makes the row valid despite the straddle.
 
 ---
 

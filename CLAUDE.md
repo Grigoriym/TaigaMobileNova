@@ -272,8 +272,8 @@ tests, not a smaller bound. The traps when touching those numbers:
   starting mode nor the effect of adding test sources is predictable; only the *straddle* is the
   expected case. Plan on the package-scope escape hatch below and do not assume which side either run
   will land on.
-  **Candidate discriminator (hypothesis, 5 supporting sessions, 0 counter-examples since it was
-  noticed): crossing into the leaky excludes-skipped mode has only ever been seen alongside a change
+  **Candidate discriminator (hypothesis, 6 supporting sessions, 0 counter-examples since it was
+  noticed): crossing *into* the leaky excludes-skipped mode has only ever been seen alongside a change
   to `:testing`'s own sources.** Sessions that added *only* test files under a feature/core module
   stayed zero-leak — `feature/epics/ui/details`, `feature/issues/ui/details` and `core/domain` each
   ran 742 → 742, and `feature/workitem/ui/mappers` went 780 → 742, i.e. it moved between the two
@@ -281,8 +281,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   `:testing` fields — including `feature/sprint/data` on 2026-08-05, which added a `:testing` source
   file plus fake fields and went 742/0 leaks → **823/20 leaks**. This is **not** established — the 2026-08-03 note says "adding only test sources
   gave 854", and it is not known whether that session also touched `:testing` — so keep taking the
-  before/after diff. But if your change touches no `:testing` source, expect a comparable pair and
-  don't pre-emptively plan around a straddle.
+  before/after diff. **The hypothesis constrains one direction only: it does *not* predict a
+  comparable pair when you leave `:testing` alone.** `feature/tasks/ui` (2026-08-05) touched exactly
+  one test file, and its pair still straddled — an 823/20-leak baseline (inherited on-disk from the
+  previous session) against a clean 742/0 after-run, with 364 classes present in only one report.
+  Plan on the straddle and the package-scope escape hatch regardless of what you touched; the
+  all-counter diff below is what makes such a pair usable.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
   `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45
@@ -340,6 +344,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   provably so, and simultaneously catches side effects in packages you would never have thought to
   look at (the `feature/userstories/ui` session moved two `feature/workitem/ui` rows). It costs one
   command and subsumes the per-package check above.
+  **It is also what rescues a *straddled* pair, so run it before discarding one.** In
+  `feature/tasks/ui` the two reports differed by 364 classes, and the same diff showed the target
+  package's own denominators (BRANCH 30, LINE 479, CLASS 31) identical in both with no class of that
+  package missing from either — which makes the row provably valid even though the totals are not
+  comparable at all. Read the key-set difference and the per-target denominators as two separate
+  answers; only the second one gates your table.
 - **`koverXmlReport` always writes `build/reports/kover/report.xml`.** Copy it to a distinct path
   immediately after each run. Forgetting once makes the "before" and "after" the same file, and the
   diff comes back showing nothing changed anywhere — which reads like a plausible result, not like a

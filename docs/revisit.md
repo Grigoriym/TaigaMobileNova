@@ -530,7 +530,10 @@ The three sibling details ViewModels (`TaskDetailsViewModel`, `EpicDetailsViewMo
 `EpicDetailsViewModel` (2026-08-05):** `currentEpic` (`:162-163`) is one of the two residual missed
 branches after that module's sweep, for exactly this reason. **Confirmed again for
 `IssueDetailsViewModel` (2026-08-05):** `currentIssue` (`:199-200`), likewise one of that module's two
-residuals. Three of the four now measured; only `TaskDetailsViewModel` is unswept.
+residuals. **And for `TaskDetailsViewModel` (2026-08-05):** `currentTask` (`:198-199`), same story.
+**All four are now measured and all four behave identically** — the getter is a permanent 1 missed
+branch in every details package, so nothing further is learned by re-deriving it; act on it or leave
+it, but do not re-measure.
 
 **Consequence for tests:** this is why `getCurrentUserStory` stays at BRANCH 1/2. Covering the throw
 arm requires letting an exception escape a `viewModelScope` coroutine, which under
@@ -556,9 +559,11 @@ those four lines and nothing else. The only producers of `TeamMemberUpdate` are
 **Consequence:** none at runtime — it is an empty arm. In coverage it is a permanent 1 missed branch
 per ViewModel (4 total), and it is the sole reason `handleTeamMemberUpdate` sits at BRANCH 5/6 in
 each. Anyone sweeping one of those four packages will re-derive this. **Confirmed by measurement for
-`UserStoryDetailsViewModel`, `EpicDetailsViewModel` and `IssueDetailsViewModel` (2026-08-05)** — in
-each the `Clear` line settles at exactly `mb=1 cb=1` once any other arm is exercised, since a
-non-`Clear` send covers its false branch and nothing can cover the true one.
+all four (2026-08-05: `UserStoryDetailsViewModel`, `EpicDetailsViewModel`, `IssueDetailsViewModel`,
+`TaskDetailsViewModel`)** — in each the `Clear` line settles at exactly `mb=1 cb=1` once any other arm
+is exercised, since a non-`Clear` send covers its false branch and nothing can cover the true one.
+All four packages have now been swept, so this entry is closed as re-derivation risk; it stays open
+as a dead-code question.
 
 **Why deferred:** found while writing the `feature/userstories/ui` tests (improvement-plan task 9a).
 Deleting the arm — or the `Clear` variant itself, if it has no purpose — is a production change
