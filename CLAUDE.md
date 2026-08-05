@@ -272,10 +272,11 @@ tests, not a smaller bound. The traps when touching those numbers:
   starting mode nor the effect of adding test sources is predictable; only the *straddle* is the
   expected case. Plan on the package-scope escape hatch below and do not assume which side either run
   will land on.
-  **Candidate discriminator (hypothesis, 7 supporting sessions, 0 counter-examples since it was
+  **Candidate discriminator (hypothesis, 8 supporting sessions, 0 counter-examples since it was
   noticed): crossing *into* the leaky excludes-skipped mode has only ever been seen alongside a change
   to `:testing`'s own sources.** Sessions that added *only* test files under a feature/core module
-  stayed zero-leak — `feature/epics/ui/details`, `feature/issues/ui/details` and `core/domain` each
+  stayed zero-leak — `feature/epics/ui/details`, `feature/issues/ui/details`, `core/domain` and
+  `feature/userstories/mapper` each
   ran 742 → 742, and `feature/workitem/ui/mappers` went 780 → 742, i.e. it moved between the two
   *zero-leak* counts without ever reaching 822/854. Every recorded 822/854 flip above involved adding
   `:testing` fields — including `feature/sprint/data` on 2026-08-05, which added a `:testing` source
@@ -289,7 +290,9 @@ tests, not a smaller bound. The traps when touching those numbers:
   all-counter diff below is what makes such a pair usable. It is only *unpredictable*, though, not
   hopeless — `feature/filters/mapper` (2026-08-05) also touched exactly one test file and got a
   perfectly comparable 742/0 → 742/0 pair, with a zero-length key-set difference and zero
-  denominator changes anywhere in the report.
+  denominator changes anywhere in the report. `feature/userstories/mapper` (2026-08-05) repeated that
+  exactly — three consecutive sessions have now had a *free* baseline (the on-disk `report.xml` from
+  the previous session, clean tree, same commit) and a provably comparable pair.
 - **A high class count does not by itself mean the `excludes` were skipped — there are at least two
   high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
   `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45
@@ -470,6 +473,12 @@ tests, not a smaller bound. The traps when touching those numbers:
   first guard, `mb=4 cb=2` on the `find` line, and `mb=0 mi>0` on the whole constructor body below
   it — the signature of *a method never called at all*, which prices as three tests (happy path,
   null id, no match), not as six. Read the block of lines together, not line by line.
+  **The general rule behind both: `mb` counts branches, and one expression's branches are usually
+  driven by a single input — so price a line by how many distinct *values* it can take, not by its
+  `mb`.** `UserStoryMapper:64` `resp.fromTaskRef?.isNotEmpty() == true` is `mb=5 cb=1`: six branches
+  (the safe call, the `isNotEmpty` test, the boxed `== true` comparison) fed by one three-valued
+  `String?`, so three tests — null / empty / non-empty — close all five. Any
+  `x?.someBooleanCall() == true` has this shape.
   **Then re-run the dump for missed *lines* (`mi>0`) once the branch tests are green** — a
   missed-branch ranking is structurally blind to branch-free code, so one-line functions are
   invisible to it however untested they are. `WorkItemSprintDelegateImpl` sat at LINE 138/144 after
@@ -477,6 +486,16 @@ tests, not a smaller bound. The traps when touching those numbers:
   (`onStartDateDismissRequest` and friends) that two more tests closed. Expect this on any delegate
   whose public surface is a state object full of callbacks; what is left after that is the `logcat`
   1-line holes, which are the signal to stop.
+- **On a `*Mapper`, a block of `mb=0 mi>0` lines is usually one collection lambda starved by a
+  hard-coded `null` in a `:testing` factory** — not a missing test *shape*, just a missing input.
+  `getWorkItemResponseDTO()` sets `epics = null`, which left all six lines of
+  `UserStoryMapper.epicsToDomain`'s body unexecuted; one `.copy(epics = listOf(…))` test closed the
+  whole LINE gap. So **a `*Mapper` row whose LINE is *also* short is the cheap, high-yield kind** —
+  check the factory's defaults before scoping it. The inverse holds too: a `*Mapper` at full LINE
+  with residual branches is the `mb=1 cb=3` unreachable kind (`feature/issues/mapper`,
+  `feature/workitem/domain/customfield`). Two consecutive pure-mapper rows — `feature/filters/mapper`
+  and `feature/userstories/mapper` — went to 100 % on every counter in well under an hour each,
+  because a pure mapper has no `logcat`, no coroutine and no collaborator that can throw.
 
 Qualify the task as **`:koverVerify`** — the bare name also runs the rule-less `koverVerify` in all
 77 modules.

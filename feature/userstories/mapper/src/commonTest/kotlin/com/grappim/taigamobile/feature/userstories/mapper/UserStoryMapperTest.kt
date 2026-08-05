@@ -1,20 +1,26 @@
 package com.grappim.taigamobile.feature.userstories.mapper
 
 import com.grappim.taigamobile.core.storage.server.ServerStorage
+import com.grappim.taigamobile.feature.epics.dto.EpicShortInfoDTO
 import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
+import com.grappim.taigamobile.feature.userstories.domain.UserStoryEpic
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
 import com.grappim.taigamobile.testing.models.getTag
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
+import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
+import kotlin.test.assertTrue
 import kotlin.test.fail
 
 class UserStoryMapperTest {
@@ -115,4 +121,129 @@ class UserStoryMapperTest {
 
         assertEquals(2, result.tags.size)
     }
+
+    @Test
+    fun `toDomain should map null assignedToExtraInfo to null assignee`() {
+        val response = getWorkItemResponseDTO().copy(assignedToExtraInfo = null)
+
+        val result = sut.toDomain(response)
+
+        assertNull(result.assignee)
+    }
+
+    @Test
+    fun `toDomain should fall back to assignedTo when assignedUsers is null`() {
+        val assignedTo = getRandomLong()
+        val response = getWorkItemResponseDTO().copy(
+            assignedUsers = null,
+            assignedTo = assignedTo
+        )
+
+        val result = sut.toDomain(response)
+
+        assertEquals(listOf(assignedTo), result.assignedUserIds)
+    }
+
+    @Test
+    fun `toDomain should map empty assignedUserIds when assignedUsers and assignedTo are null`() {
+        val response = getWorkItemResponseDTO().copy(
+            assignedUsers = null,
+            assignedTo = null
+        )
+
+        val result = sut.toDomain(response)
+
+        assertEquals(emptyList(), result.assignedUserIds)
+    }
+
+    @Test
+    fun `toDomain should map null watchers to empty watcherUserIds`() {
+        val response = getWorkItemResponseDTO().copy(watchers = null)
+
+        val result = sut.toDomain(response)
+
+        assertEquals(emptyList(), result.watcherUserIds)
+    }
+
+    @Test
+    fun `toDomain should map null description to empty string`() {
+        val response = getWorkItemResponseDTO().copy(description = null)
+
+        val result = sut.toDomain(response)
+
+        assertEquals("", result.description)
+    }
+
+    @Test
+    fun `toDomain should set wasPromotedFromTask when fromTaskRef is not empty`() {
+        val response = getWorkItemResponseDTO().copy(fromTaskRef = getRandomString())
+
+        val result = sut.toDomain(response)
+
+        assertTrue(result.wasPromotedFromTask)
+    }
+
+    @Test
+    fun `toDomain should not set wasPromotedFromTask when fromTaskRef is empty`() {
+        val response = getWorkItemResponseDTO().copy(fromTaskRef = "")
+
+        val result = sut.toDomain(response)
+
+        assertFalse(result.wasPromotedFromTask)
+    }
+
+    @Test
+    fun `toDomain should not set wasPromotedFromTask when fromTaskRef is null`() {
+        val response = getWorkItemResponseDTO().copy(fromTaskRef = null)
+
+        val result = sut.toDomain(response)
+
+        assertFalse(result.wasPromotedFromTask)
+    }
+
+    @Test
+    fun `toDomain should map epics to userStoryEpics`() {
+        val first = getEpicShortInfoDTO()
+        val second = getEpicShortInfoDTO()
+        val response = getWorkItemResponseDTO().copy(epics = listOf(first, second))
+
+        val result = sut.toDomain(response)
+
+        assertEquals(2, result.userStoryEpics.size)
+        assertEquals(
+            UserStoryEpic(
+                id = first.id,
+                title = first.title,
+                ref = first.ref,
+                color = first.color
+            ),
+            result.userStoryEpics.first()
+        )
+        assertEquals(second.id, result.userStoryEpics.last().id)
+    }
+
+    @Test
+    fun `toDomain should map null epics to empty userStoryEpics`() {
+        val response = getWorkItemResponseDTO().copy(epics = null)
+
+        val result = sut.toDomain(response)
+
+        assertTrue(result.userStoryEpics.isEmpty())
+    }
+
+    @Test
+    fun `toListDomain should map every item`() {
+        val responses = listOf(getWorkItemResponseDTO(), getWorkItemResponseDTO())
+
+        val result = sut.toListDomain(responses)
+
+        assertEquals(responses.map { it.id }, result.map { it.id })
+    }
+
+    private fun getEpicShortInfoDTO() = EpicShortInfoDTO(
+        id = getRandomLong(),
+        title = getRandomString(),
+        ref = getRandomLong(),
+        color = "#FF0000"
+    )
 }

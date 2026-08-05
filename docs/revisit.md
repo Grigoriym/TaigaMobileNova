@@ -628,3 +628,25 @@ could plausibly be made to the wrong one.
 `feature/sprint/data`). Deleting it is a production change unrelated to that task's diff; the
 surgical-changes rule says to record it. Check `WorkItemPagingSource` and any other `*PagingSource`
 for the same condition when acting on this — task 9b (`WorkItemRemoteMediator`) is the natural moment.
+
+## 22. `EpicShortInfoDTO` is built by hand in three test files; no `:testing` factory exists
+
+**Where:** `feature/workitem/mapper/src/commonTest/…/WorkItemMapperTest.kt:108,114` (inline),
+`feature/workitem/mapper/src/commonTest/…/UserStoryShortInfoMapperTest.kt:82` (private
+`createEpicShortInfoDTO()` helper), and now
+`feature/userstories/mapper/src/commonTest/…/UserStoryMapperTest.kt` (private `getEpicShortInfoDTO()`).
+
+**Evidence:** `grep -rn "EpicShortInfoDTO" testing/src/` returns nothing (2026-08-05) — every other
+DTO of this shape has a factory in `:testing/models`. It is a four-field `@Serializable data class`.
+
+**Related, and the more useful half:** `getWorkItemResponseDTO()` hard-codes `epics = null`
+(`testing/src/commonMain/…/models/WorkItemFakes.kt:36`). That default is why
+`UserStoryMapper.epicsToDomain`'s entire body sat at LINE 0/6 — no test could reach it without a
+`.copy(epics = …)`. Check the factory's other hard-coded `null`s (`userStoryExtraInfo`,
+`dueDateStatusDTO`, `fromTaskRef`) for the same effect when a row's LINE gap looks unexplained.
+
+**Why deferred:** found while closing improvement-plan task 9a's `feature/userstories/mapper` row.
+Adding the factory means editing `:testing`, which is the one edit correlated with `koverXmlReport`
+flipping into its leaky mode and costing the session's comparable before/after pair (see CLAUDE.md,
+Testing). Not worth that for a four-field data class on its own — fold it in when a session is
+already touching `:testing` for another reason, and de-duplicate the three local copies then.

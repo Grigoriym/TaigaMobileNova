@@ -53,7 +53,7 @@ than pushing through.
 | 7 | `TeamViewModel` | S | ✅ done — 2026-08-03 |
 | 8 | Coverage floor in CI (`koverVerify`) | S | ✅ done — 2026-08-03 |
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
-| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/userstories/mapper` (all 11 missed are `UserStoryMapper`, LINE 40/46 — row verified 2026-08-05, see the table below) |
+| 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05; ⬅ **NEXT** module: `feature/settings/ui/projectdetails` (the sleeper — 8 branches but **LINE 0/40** across two coroutine bodies of a wholly untested `ProjectDetailsViewModel`; re-verified 2026-08-05, see the table below) |
 | 9b | `WorkItemRemoteMediator` | M | todo — **start from `feature/sprint/data`'s `SprintRemoteMediatorTest`**, which solved the shared `HttpResponse` problem; see that section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | todo — split out of 9a's `feature/userstories/ui` session, see the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
@@ -722,8 +722,8 @@ after it — none verified yet, so check each for `@Composable` and generated co
 |---|---|---|
 | ~~`feature/workitem/ui/delegates/sprint`~~ | 28/40 | ✅ done 2026-08-05 — now **40/40**, LINE 120/144 → **142/144**; the residual 2 lines are `logcat` lambdas. See the section below |
 | ~~`feature/filters/mapper`~~ | 36/48 | ✅ done 2026-08-05 — now **48/48**, LINE 103/111 → **111/111**. The whole package is 100 % on every counter; see the section below |
-| `feature/userstories/mapper` | 11/22 | ⬅ **next**. All 11 missed are `UserStoryMapper`, LINE 40/46. Re-verified 2026-08-05: still the highest row with both a branch *and* a line gap in one hand-written class |
-| `feature/filters/domain` | 0/10 | all in `UtilsKt`, LINE 0/6 — small, and nothing tests it at all |
+| ~~`feature/userstories/mapper`~~ | 11/22 | ✅ done 2026-08-05 — now **22/22, LINE 46/46, INSTRUCTION 242/242**. The whole package is 100 % on every counter; see the section below |
+| `feature/filters/domain` | 0/10 | all in `UtilsKt`, LINE 0/6 — small, and nothing tests it at all. Re-verified 2026-08-05: unchanged, one file (`Utils.kt`) |
 | ~~`feature/login/ui`~~ | 27/40 | ⛔ weak row. **8 of the 13 missed are `GithubOAuthWebViewDialog_androidKt`**, an Android-variant class that `jvmTest` can never execute. Only 5 are reachable, spread over three classes |
 | ~~`feature/login/dto`~~ | 1/20 | ⛔ do not take. Six `@Serializable` DTOs, all generated branches |
 
@@ -732,7 +732,7 @@ sessions can skip the per-class re-derivation:
 
 | Module | BRANCH | Note |
 |---|---|---|
-| `feature/settings/ui/projectdetails` | 0/8 | **the sleeper — take this before its branch count suggests.** Both classes are coroutine bodies of `ProjectDetailsViewModel` (`loadProjectDetails$1`, `save$1`) at **LINE 0/40**: the ViewModel is entirely untested, so this row buys 40 lines, not 8 branches. One of the 12 untested ViewModels [survey.md](survey.md#gaps) lists |
+| `feature/settings/ui/projectdetails` | 0/8 | ⬅ **next**. **The sleeper — take this before its branch count suggests.** Both classes are coroutine bodies of `ProjectDetailsViewModel` (`loadProjectDetails$1` BRANCH 0/4 LINE 0/22, `save$1` BRANCH 0/4 LINE 0/18) — the ViewModel is entirely untested, so this row buys 40 lines, not 8 branches. One of the 12 untested ViewModels [survey.md](survey.md#gaps) lists. Re-verified per-class 2026-08-05 |
 | `feature/workitem/domain/customfield` | 15/24 | ⚠️ verify hard before taking. All 9 missed are `CustomFieldValue`, already at **LINE 12/12** — and this is the exact class `CLAUDE.md` names as the source of the `mb=1 cb=3` dead-elvis shape. A line-complete class with residual branches is the signature of unreachable ones |
 | `feature/issues/mapper` | 22/30 | same caveat: `IssueMapper` is at **LINE 70/70**, so the 8 missed are branches inside already-executed lines. Get the `mb`/`cb` split before scoping — `mb=2 cb=2` lines are real, `mb=1 cb=3` are not |
 | `feature/workitem/ui/widgets/customfields` | 3/10 | `DateItemState` 3/8 (LINE 9/11) and `CheckboxItemState` 0/2 (LINE 6/7). Small but genuinely hand-written state classes |
@@ -2012,6 +2012,71 @@ back with **zero key-set difference, zero denominator changes, and exactly the s
 moved** — nothing else in the repository shifted. This session did *not* touch `:testing` and did
 *not* cross into the leaky mode, consistent with the `:testing`-edit hypothesis (7 supporting
 sessions, 0 counter-examples).
+
+---
+
+### `feature/userstories/mapper` — ✅ done 2026-08-05
+
+11 tests added to the existing `UserStoryMapperTest` (6 → 17). `:feature:userstories:mapper:jvmTest`,
+the full `jvmTest`, `ktlintCheck`, `detekt` and `:koverVerify` are all green. Nothing outside the one
+test file was touched — no `:testing` change, no new fake, no production change.
+
+**The row was accurate as written**, the second in a row that was: 11 missed branches, all
+`UserStoryMapper`, all reachable.
+
+| Scope | Before | After |
+|---|---|---|
+| `UserStoryMapper` BRANCH | 11/22 — 50 % | **22/22 — 100 %** |
+| `UserStoryMapper` LINE | 40/46 | **46/46 — 100 %** |
+| `UserStoryMapper` INSTRUCTION | 205/242 | **242/242 — 100 %** |
+| package `feature/userstories/mapper` BRANCH | 11/22 | **22/22 — 100 %** |
+| package `feature/userstories/mapper` LINE | 40/46 | **46/46 — 100 %** |
+
+**The package is now 100 % on every counter** — the second row in this task to close completely, and
+for the same structural reason as `feature/filters/mapper`: a pure mapper with no `logcat`, no
+coroutine and no collaborator that can throw.
+
+**The `mb`/`cb` split predicted this one exactly too**, and it is worth recording that the *third*
+shape in `CLAUDE.md`'s list showed up here in its "real" form. The pre-flight dump said:
+
+- Lines 47, 55, 56, 57 at `mb=1 cb=1` — four independent null-vs-present inputs
+  (`assignedToExtraInfo?.let`, `assignedUsers ?:`, `watchers.orEmpty()`, `description ?:`), one test
+  each, +1 branch each.
+- Line 64 at **`mb=5 cb=1`** — `resp.fromTaskRef?.isNotEmpty() == true`, a 6-branch line with only
+  the null arm taken. Three tests (null / empty / non-empty) closed all five.
+- Line 69 at `mb=1 cb=1` **plus lines 70–75 at `mb=0 mi>0`** — the `epicsToDomain` lambda body had
+  never executed, because `getWorkItemResponseDTO()` hard-codes `epics = null`. One test with a
+  non-null list closed the branch *and* all six lines, which is the whole LINE gap.
+
+Four + three + one + a null-epics case = 11 tests → 22/22 and 46/46, predicted before writing any.
+
+**A `mb=5 cb=1` line does not price as five tests** — same lesson as `feature/filters/mapper`'s
+`mb=4 cb=2`, from the opposite direction. `x?.isNotEmpty() == true` compiles to six branches (the
+safe call, the `isNotEmpty` test, and the boxed `== true` comparison), but they are driven by a
+single three-valued input, so *three* tests close six branches. Read a high `mb` as "how many
+distinct values does this one expression take", not as a test count.
+
+**Sizing note that generalises the last two rows:** both were pure mappers, both were listed at
+~half their branches, and both closed to 100 % in well under an hour. When the ranking shows a
+`*Mapper` class whose LINE is *also* short, the line gap is nearly always one un-exercised
+collection lambda fed by a hard-coded `null` in a `:testing` factory — cheap and high-yield. A
+`*Mapper` at full LINE with residual branches is the opposite (see `feature/issues/mapper`'s caveat
+above).
+
+**A third consecutive free, provably-clean before/after pair.** The baseline was the `report.xml`
+already on disk (clean tree, same commit as the previous session's final run — `koverXmlReport` was
+not run for it), already 742-class / zero-leak; the after-run also landed 742/0. The all-counter
+diff came back with **zero key-set difference, zero denominator changes, and exactly the six counters
+above moved**. `:testing` was untouched again — the `:testing`-edit hypothesis is now at **8
+supporting sessions, 0 counter-examples**.
+
+**One `:testing` gap left deliberately un-filled:** there is no `getEpicShortInfoDTO()` factory, and
+`WorkItemMapperTest` and `UserStoryShortInfoMapperTest` each build `EpicShortInfoDTO` by hand
+(the latter via a private `createEpicShortInfoDTO()` helper). This test file now makes a *third*
+local copy. Adding the shared factory would have meant editing `:testing` — which the hypothesis
+above says is the one edit correlated with losing the comparable coverage pair — for a four-field
+data class. Filed as a note rather than done: worth folding into `:testing` whenever a session is
+already touching it for another reason.
 
 ---
 
