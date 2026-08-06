@@ -1,0 +1,31 @@
+feature/epics/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/epics/ui/details/EpicDetailsViewModelTest.kt
+  s_874594fb9be69b::t_09dbae037d08a7 421-435,453-466
+  s_874594fb9be69b::t_39058f2fc38fdf 372,420,467,505-769,774,776-780,785,787-990
+  s_874594fb9be69b::t_4a6a24b275a55a 80,82
+  s_874594fb9be69b::t_12c8a0df2b8a57 770-773,775,781-784,786
+  s_874594fb9be69b::t_ba7d71bce57be5 373-388
+  s_874594fb9be69b::t_ef91eaa064ec15 13,15,23,29,32,35
+  s_874594fb9be69b::t_f999ee44cfc978 468
+.claude/agents/testing.md
+  s_874594fb9be69b::t_19db1bbbc0e42f 848-858
+docs/testing/improvement-plan.md
+  s_874594fb9be69b::t_424aa9f997bce8 2501-2502
+  s_874594fb9be69b::t_457429aa14caf8 58
+  s_874594fb9be69b::t_7b2b496158c524 2494-2500,2503-2543
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "e0dd1fc44a51e57ca9f7fa755b1cb13f7260667a",
+  "prompts": {},
+  "sessions": {
+    "s_874594fb9be69b": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "16edbb83-7a3b-47cd-9d43-6701001375b4",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
