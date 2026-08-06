@@ -36,7 +36,7 @@ Paparazzi, Espresso, `src/androidTest`, and Koin's `checkModules()`/`verify()`. 
 That last row was "no" when this survey was written: `koin-test` and `koin-test-junit4` are declared
 in `testing/build.gradle.kts:9-14` — but in the **`androidMain`** source set, so nothing in
 `commonTest` or `jvmTest` could reach them, and the DI graph was validated only by the app actually
-starting. [Task 2](improvement-plan.md#task-2--koin-di-graph-test) closed this with `KoinGraphTest`
+starting. [Task 2](../archive/testing-improvement-plan-tasks-0-9f.md#task-2--koin-di-graph-test) closed this with `KoinGraphTest`
 in `composeApp/src/jvmTest/`, which resolves all 147 definitions of the real graph. The `androidMain`
 declarations above are still unused. See [docs/koin/koin-graph-test.md](../koin/koin-graph-test.md)
 for what it does and does not cover.
@@ -186,7 +186,7 @@ the pre-improvement baseline, kept for comparison — it is not the current figu
 improvement-plan tasks 3–7, the same command at `af8a185a` reports line 65.3 % / branch 45.9 %; the
 apparent drop is denominator growth, not lost coverage, and the like-for-like numbers are line
 71.9 % / branch 49.7 %. Before quoting any Kover percentage, read
-[task 8's result note](improvement-plan.md#task-8--coverage-floor-in-ci-koververify) — `koverVerify`
+[task 8's result note](../archive/testing-improvement-plan-tasks-0-9f.md#task-8--coverage-floor-in-ci-koververify) — `koverVerify`
 and `koverXmlReport` report different numbers.
 
 | Counter | Covered | Total | % |
@@ -200,7 +200,7 @@ and `koverXmlReport` report different numbers.
 Note the shape: line coverage is decent but **branch coverage is ~20 points lower**. The suite
 tends to exercise happy paths through a function without covering its conditionals. This is the
 single clearest quality signal in the survey, and what
-[Task 9](improvement-plan.md#task-9--error-path-convention--first-sweep) targets.
+[Task 9](../archive/testing-improvement-plan-tasks-0-9f.md#task-9--error-path-convention--first-sweep) targets.
 
 **Qualified 2026-08-03 by Task 9:** the gap is real but the raw number overstates it, because a
 large share of the branch *denominator* is compiler-generated and unreachable from any test —
@@ -232,7 +232,7 @@ Single job, `.github/workflows/code_analysis.yml`, on `ubuntu-latest`:
 4. `./gradlew koverXmlReport` — reuses the results from step 3
 5. Upload `build/reports/kover/report.xml` to Codecov, flag `unittests`
 
-**Fixed 2026-08-02 by [Task 1](improvement-plan.md#task-1--close-the-tests-that-never-run-in-ci-trap).**
+**Fixed 2026-08-02 by [Task 1](../archive/testing-improvement-plan-tasks-0-9f.md#task-1--close-the-tests-that-never-run-in-ci-trap).**
 At the time of the survey there was **no separate test step**: `koverXmlReport` was the only thing
 that executed tests, and Kover only runs `jvmTest` for the modules aggregated into the report —
 `:testing`, `:uikit`, `:tools:seed`, `:tools:utils` and `:androidApp` are excluded from aggregation

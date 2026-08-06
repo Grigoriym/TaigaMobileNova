@@ -68,7 +68,7 @@ State of the test suite and the plan for improving it.
 | Doc | About |
 |-----|-------|
 | [survey.md](testing/survey.md) | What the suite contains today — types, layout, tooling, coverage, gaps |
-| [improvement-plan.md](testing/improvement-plan.md) | Sequenced tasks to improve it, one per session |
+| [improvement-plan.md](testing/improvement-plan.md) | Sequenced tasks to improve it, one per session — active tasks only; tasks 0–9f are archived (see below) |
 
 ## issues/
 

@@ -354,7 +354,8 @@ tests, not a smaller bound. The traps when touching those numbers:
 - **When two reports still disagree, diff their per-package denominators rather than discarding the
   measurement.** The package you care about usually has an *identical* denominator in both, which
   makes a before/after table valid anyway — this is how the `feature/projects/data` and
-  `feature/kanban/ui` tables in [improvement-plan.md](docs/testing/improvement-plan.md) survived
+  `feature/kanban/ui` tables in
+  [the archived task 9a write-up](docs/archive/testing-improvement-plan-tasks-0-9f.md) survived
   742-vs-854 and 744-vs-854 pairs. To confirm a delta is caused by the change rather than by build
   staleness, `git stash -u` and re-run: a clean-tree re-run that reproduces the baseline to the digit
   settles it.
@@ -493,23 +494,25 @@ tests, not a smaller bound. The traps when touching those numbers:
 - **As of 2026-08-05 the *branch* sweep (task 9a) is out of worthwhile rows** — every remaining high
   row is generated `equals`/`hashCode`, a `@Serializable` serializer, `@Composable`-blocked, or dead
   `*_androidKt` weight. Rank what is left by **missed lines on never-executed classes** instead; the
-  query and the resulting backlog are in
-  [improvement-plan.md](docs/testing/improvement-plan.md#where-9a-stands-2026-08-05). Don't re-derive
-  the exhausted ranking — that table names what each misleading row actually is.
+  query and the resulting backlog are in the archived task 9a write-up,
+  [improvement-plan-tasks-0-9f.md](docs/archive/testing-improvement-plan-tasks-0-9f.md#where-9a-stands-2026-08-05).
+  Don't re-derive the exhausted ranking — that table names what each misleading row actually is.
 - **Get the per-class breakdown before scoping a session around a package**, and the per-**method**
   one before concluding a leftover is real — Kover's XML carries `<counter>` elements on
   `<package>`, `<class>` *and* `<method>`, so `for c in p.findall('class'): for m in c.findall('method')`
   answers "which function still has missed branches" in one command instead of by reading the source.
   That is how `WorkItemCustomFieldsDelegateImpl`'s residual 2/30 was pinned to the `?.` null-checks in
   `valueToUse?.toString()?.toLongOrNull()`, unreachable because `NumberItemState`'s values are
-  non-null. The worked snippet is in
-  [improvement-plan.md](docs/testing/improvement-plan.md) under `…delegates/customfields`.
+  non-null. The worked snippet is in the archive,
+  [improvement-plan-tasks-0-9f.md](docs/archive/testing-improvement-plan-tasks-0-9f.md), under
+  `…delegates/customfields`.
 - **When the per-method breakdown is still too coarse, go to the `<sourcefile>` element** — its
   `<line>` children carry `nr`, `mb` (missed branches) and `cb` (covered), which names the *source
   line*. A whole coroutine body is one `invokeSuspend` method, so "`invokeSuspend` 10/12" is as much
   as the per-method view can say; the per-line view says "line 59 `mb=1 cb=3`" and the question is
-  answered without reading Kotlin. The snippet is in
-  [improvement-plan.md](docs/testing/improvement-plan.md) under `…settings/ui/modules`.
+  answered without reading Kotlin. The snippet is in the archive,
+  [improvement-plan-tasks-0-9f.md](docs/archive/testing-improvement-plan-tasks-0-9f.md), under
+  `…settings/ui/modules`.
   **Run it at scoping time, not only to explain a leftover.** Dumping every `mb>0` line for the
   target class *before writing any test* turns a large ViewModel from an exploration into a
   checklist — `feature/userstories/ui`'s 27 missed branches resolved to 15 named source lines in one
