@@ -57,6 +57,7 @@ than pushing through.
 | 9b | `WorkItemRemoteMediator` | M | ✅ done 2026-08-05 — 13 tests; the class went BRANCH 0/11 → **11/11**, LINE 0/33 → **32/33**, and took the whole `feature/workitem/data` package to **100 % BRANCH**. See the section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | 🔁 in progress — `feature/userstories/ui` ✅ 2026-08-05 (LINE 375/528 → **518/528**, CLASS 17/34 → **34/34**; every `$1` lambda class closed), `feature/tasks/ui` ✅ 2026-08-06 (LINE 321/479 → **472/479**, CLASS 13/31 → **31/31**), `feature/epics/ui/details` ✅ 2026-08-06 (LINE 325/468 → **460/468**, CLASS 12/29 → **28/29**), `feature/issues/ui/details` ✅ 2026-08-06 (LINE 354/512 → **503/512**, CLASS 13/30 → **30/30**). **All four `feature/*/ui` details ViewModels are now closed — this task is done.** |
 | 9d | `UserStoryDetailsDataUseCaseImpl` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
+| 9e | `WikiPageViewModel` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -2633,6 +2634,121 @@ Two things worth carrying forward:
   case calls it twice (assignees, watchers), so the fake returns the *same* list both times. The
   assembly test asserts `data.assignees == data.watchers == members` rather than assuming
   independence; that's a property of the fake, not a bug in the use case.
+
+---
+
+## Task 9e — `WikiPageViewModel` (LINE-0 sleeper)
+
+**Why:** re-derived from a clean, `UP-TO-DATE` 742-class report at `f0f0d1f2` (no fresh run needed —
+the free-baseline case documented in CLAUDE.md). The branch sweep (9a) is still exhausted — nothing
+new appears in `kover-rank.py`'s top rows that isn't already documented as unreachable. The
+missed-*lines* query from [Where 9a stands](#where-9a-stands-2026-08-05), re-run and filtered to
+exclude what 9c/9d already closed, tops out at `WikiPageViewModel` — three handlers with **zero**
+coverage: `onAttachmentAdd`, `onAttachmentRemove` (both LINE 0/4 and 0/3 on their `$1` lambda
+classes) and `onNewDescriptionUpdate` (LINE 0/1 on `$onNewDescriptionUpdate$4`, called from a flow
+subscription in `init`). Package `feature/wiki/ui/page/details`: LINE 105/142 missing 37, BRANCH
+11/12.
+
+**Scope:** `feature/wiki/ui/src/commonTest/…/WikiPageViewModelTest.kt` (existing file, 15 tests
+already covering init/delete/dropdown/delete-alert). Same recipe as task 9c: success asserts the
+delegate's own state moved (`sut.attachmentsState.value` / `sut.descriptionState.value`), failure
+sets a fake's `…Throws` and asserts `sut.state.value.error !is NativeText.Empty` (this ViewModel's
+`doOnError` writes straight into `_state`, not the snackbar — same shape epics/issues used in 9c, not
+userstories/tasks). **Do not re-assert delegate behaviour** — `WorkItemAttachmentsDelegateImplTest`
+and the description delegate already cover `handleAddAttachment`/`handleRemoveAttachment`/
+`updateDescription` in full; assert only the wiring `WikiPageViewModel` adds.
+
+**Pieces already in place, no new fakes needed:**
+
+- `createTestPlatformFile(name, bytes)` (`:testing/utils`) — build a `PlatformFile` for
+  `onAttachmentAdd`; the null-file early-return is already covered at the delegate level, so only the
+  non-null path needs a ViewModel-level test.
+- `FakeWorkItemRepository.addAttachmentResult` / `addAttachmentThrows`, `deleteAttachmentThrows`,
+  `patchWikiPageResult` / `patchWikiPageThrows` — all already have throws hooks.
+- `onNewDescriptionUpdate` fires by calling the **real** (not faked)
+  `workItemEditStateRepository.updateDescription(wikiId, TaskIdentifier.Wiki, newDescription)` —
+  same pattern task 9c used for the other four ViewModels. `handleWikiContentUpdate`
+  early-returns when `newDescription == descriptionState.value.currentDescription`, so pass a fresh
+  `getRandomString()`. `init` calls `setInitialDescription(data.page.content)` from `loadData()`'s
+  success branch, so the fake `WikiPage.content` sets the baseline to diff against.
+
+**Known-unreachable residue (do not chase):** `onCleared()`'s body (`ViewModel.onCleared` is
+`protected`) and the `logcat {}` message lambdas in `loadData`/`deleteWikiPage` — same two categories
+task 9c documented in all four details ViewModels.
+
+**Done when:** `./gradlew :feature:wiki:ui:jvmTest` is green, all three handlers have a success +
+failure test, and the before/after LINE table is recorded here.
+
+**Result (2026-08-06):** done. 7 tests added to `WikiPageViewModelTest` (12 → 19): success + failure
+for `onAttachmentAdd`, success + failure for `onAttachmentRemove`, and success + failure +
+unchanged-content-is-a-no-op for the description-flow update. `:feature:wiki:ui:jvmTest`, the full
+`jvmTest`, `ktlintCheck`, `detekt` and `:koverVerify` are all green.
+
+| counter (package `feature/wiki/ui/page/details`) | before | after |
+|---|---|---|
+| LINE | 105/142 | **136/142** |
+| CLASS | 4/9 | **9/9** |
+| METHOD | 9/26 | **22/26** |
+| INSTRUCTION | 713/1114 | **1082/1114** |
+| BRANCH | 11/12 | 11/12 (unchanged, as expected — none of these lines had a branch) |
+
+Every one of the three previously LINE-0 handler classes (`$onAttachmentAdd$1` + its nested `$2`
+lambda, `$onAttachmentRemove$1` + its nested `$2` lambda, `$onNewDescriptionUpdate$4`) is now at
+100 %. Verified with [kover-diff.py](kover-diff.py) against the free `f0f0d1f2` baseline (`UP-TO-DATE`
+report already on disk): the run landed on opposite sides of the documented 797-vs-742-class mode
+flip (baseline 797/0 leaks, after 742/0 leaks), so the raw report gained ~220 class-level and 40
+package-level key-set entries — but every one of them is `core/storage/db*` / `core/storage/cache`
+Room-generated classes or their `feature/login/*` Android-actual counterparts, i.e. the documented
+flip artifact, not this change. Filtering to entries where the **denominator stayed identical**
+leaves exactly 18 class-level rows and 4 package-level rows, all inside
+`feature/wiki/ui/page/details`, all `covered` moving with `total` unchanged — the change touched
+nothing else.
+
+The residual 6 missed lines are the two known-unreachable categories 9c/9d already documented:
+`onCleared()`'s 3-line body (`ViewModel.onCleared` is `protected`, no unit test can trigger it) and
+2 `logcat {}` message-lambda 1-line holes (`loadData`'s `onFailure`, `deleteWikiPage`'s `onFailure`).
+The 1 residual branch is `WikiPageViewModel$deleteWikiPage$1`'s `link?.id` safe call inside
+`onSuccess` — already exercised by both the with-link and without-link delete tests; not chased
+further (same `mb=1 cb=3`-shaped dead arm the branch sweep already documents elsewhere).
+
+**One real synchronization gotcha, worth carrying to the next `PlatformFile`-touching test:**
+`onAttachmentAdd`/`onAttachmentRemove` are fire-and-forget (`private fun` wrapping
+`viewModelScope.launch { ... }`, not `suspend fun`), and the delegate's `handleAddAttachment` calls
+the real `PlatformFile.readBytes()`, which does `withContext(Dispatchers.IO)` — a genuine hop to a
+*real* thread pool dispatcher outside `MainDispatcherRule`'s `UnconfinedTestDispatcher`. Asserting
+immediately after calling `sut.state.value.onAttachmentAdd(file)` races the background IO thread and
+fails nondeterministically (state still shows `areAttachmentsLoading = true`, the fake was never
+called). `WorkItemAttachmentsDelegateImplTest` never hits this because it awaits
+`handleAddAttachment` directly inside `runTest`'s own coroutine, which genuinely suspends until the
+real IO completes. At the ViewModel layer, where the call is fire-and-forget, the fix is to collect
+`sut.attachmentsState` via Turbine *before* triggering the action and `awaitItem()` through to the
+final state — Turbine's suspension is real (backed by a `Channel`), not tied to virtual time, so it
+correctly waits out the background thread regardless of which dispatcher posts the result back.
+`onAttachmentRemove` has no such hop (`handleRemoveAttachment` calls the fake repository directly,
+no file I/O) and did not need this; the description-update tests call the real, unfaked
+`workItemEditStateRepository.updateDescription(...)` directly inside `runTest`, so they didn't need
+it either — this only bites handlers that both (a) run via `viewModelScope.launch` and (b) cross a
+real (non-test) dispatcher before reaching a fake.
+
+No fakes needed new hooks — `FakeWorkItemRepository.addAttachmentResult/…Throws`,
+`deleteAttachmentThrows` and `patchWikiPageResult/…Throws` already existed with the right shape, so
+`.claude/agents/testing.md` was not touched.
+
+**Candidates for a possible task 9f, found while scoping this session and not yet taken** (small —
+budget XS/S, not a full module sweep):
+
+- `AuthRepositoryImpl.getGithubClientId` (`feature/login/data`) — **zero tests at all**, unlike
+  `auth`/`authWithGithub` in the same file (`AuthRepositoryTest`). Real branch:
+  `authApi.getConfJson(cleanServer).gitHubClientId ?: error(...)`.
+- `TagsScreenViewModel.onSaveTag` (`feature/settings/ui/attributes/tags`) — the one handler in an
+  otherwise fully-tested `TagsScreenViewModelTest` with no test; delegates to
+  `TagEditDialogDelegate.handleSaveTag` (already tested at the delegate level), so only the
+  ViewModel's own wiring (`doOnPreExecute`/`doOnSuccess`/`doOnError`) needs asserting.
+
+Both were found via the LINE-0-sleeper query in [Where 9a stands](#where-9a-stands-2026-08-05),
+re-run on the `f0f0d1f2` free baseline and filtered to exclude what 9c/9d/9e already closed and
+what's `androidMain`-only (`StringPreference`/`LongPreferences` in `core/storage/utils` — real gaps,
+but unreachable from `jvmTest` by construction, not worth a task).
 
 ---
 
