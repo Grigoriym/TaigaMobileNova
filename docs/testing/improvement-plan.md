@@ -59,13 +59,16 @@ than pushing through.
 | 9d | `UserStoryDetailsDataUseCaseImpl` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 9e | `WikiPageViewModel` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
-| 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
+| 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
-follow-ups and inherit that scope. **Task 10 is deferred pending a decision**, along with
-everything in [Considered and deferred](#considered-and-deferred). Do not start it without asking;
-the other test *types* get decided once the unit-test work has landed.
+follow-ups and inherit that scope. **Task 10 was gated on asking first and got started without
+that** (2026-08-06 — a session read only the task's own section, not this table, and missed the
+gate; the resulting work was reviewed and kept, see the task's Result note). Treat any future gated
+item the same as this one was *supposed* to be treated: read this table, not just the target task's
+section, before starting. Everything in [Considered and deferred](#considered-and-deferred) is still
+gated — the other test *types* get decided once asked, not assumed from Task 10 having landed.
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
 
