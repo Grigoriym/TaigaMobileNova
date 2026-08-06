@@ -366,7 +366,10 @@ tests, not a smaller bound. The traps when touching those numbers:
   report but not the other" — which turns a before/after table from *probably* comparable into
   provably so, and simultaneously catches side effects in packages you would never have thought to
   look at (the `feature/userstories/ui` session moved two `feature/workitem/ui` rows). It costs one
-  command and subsumes the per-package check above.
+  command and subsumes the per-package check above. **Use
+  [docs/testing/kover-diff.py](docs/testing/kover-diff.py)** (`python3 docs/testing/kover-diff.py
+  before.xml after.xml`) rather than retyping this snippet — added 2026-08-06 after writing it out
+  ad hoc often enough that it was worth saving next to `kover-rank.py`.
   **It is also what rescues a *straddled* pair, so run it before discarding one.** In
   `feature/tasks/ui` the two reports differed by 364 classes, and the same diff showed the target
   package's own denominators (BRANCH 30, LINE 479, CLASS 31) identical in both with no class of that
