@@ -55,7 +55,7 @@ than pushing through.
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
 | 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05, `feature/filters/domain` ✅ 2026-08-05 (100 % on every counter), `feature/workitem/ui/screens/editdescription` ✅ 2026-08-05 (100 % on every counter). **The branch sweep is out of worthwhile rows — see [Where 9a stands](#where-9a-stands-2026-08-05) below; continue with task 9c instead** |
 | 9b | `WorkItemRemoteMediator` | M | ✅ done 2026-08-05 — 13 tests; the class went BRANCH 0/11 → **11/11**, LINE 0/33 → **32/33**, and took the whole `feature/workitem/data` package to **100 % BRANCH**. See the section below |
-| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | 🔁 in progress — `feature/userstories/ui` ✅ 2026-08-05 (LINE 375/528 → **518/528**, CLASS 17/34 → **34/34**; every `$1` lambda class closed), `feature/tasks/ui` ✅ 2026-08-06 (LINE 321/479 → **472/479**, CLASS 13/31 → **31/31**). ⬅ **NEXT: `feature/epics/ui/details`**, then `feature/issues/ui/details`. See the section below |
+| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | 🔁 in progress — `feature/userstories/ui` ✅ 2026-08-05 (LINE 375/528 → **518/528**, CLASS 17/34 → **34/34**; every `$1` lambda class closed), `feature/tasks/ui` ✅ 2026-08-06 (LINE 321/479 → **472/479**, CLASS 13/31 → **31/31**), `feature/epics/ui/details` ✅ 2026-08-06 (LINE 325/468 → **460/468**, CLASS 12/29 → **28/29**). ⬅ **NEXT: `feature/issues/ui/details`**. See the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -2490,6 +2490,56 @@ and `FakeTaigaSessionStorage` already had every hook this module needed, so
   `onAssigneeUpdated`, `onWatchersUpdated`) that only surfaced by re-running the per-line `mi>0` dump
   after the first `koverXmlReport` — the handler checklist alone undercounted. Always re-check the
   dump rather than trusting the checklist as complete.
+
+**Result — `feature/epics/ui/details` (2026-08-06):** 36 tests added to `EpicDetailsViewModelTest`
+(19 → 55). Provably comparable 742-class/0-leak pair on both sides — zero key-set difference, zero
+denominator changes anywhere, and every one of the 57 class-level moves plus all 4 package-level
+moves stayed inside `feature/epics/ui/details`.
+
+| counter | before | after |
+|---|---|---|
+| LINE (`EpicDetailsViewModel`) | 164/200 | **197/200** |
+| METHOD (`EpicDetailsViewModel`) | 20/43 | **41/43** |
+| LINE (package) | 325/468 | **460/468** |
+| METHOD (package) | 36/115 | **108/115** |
+| CLASS (package) | 12/29 | **28/29** |
+| INSTRUCTION (package) | 2527/3676 | **3649/3676** |
+| BRANCH (package) | 28/30 | 28/30 (unchanged, as predicted) |
+
+**The residual 8 lines are the same two known-unreachable categories as the prior two sessions:**
+two are `onCleared()`'s body (`super.onCleared()` + `workItemEditStateRepository.clearSession(...)`
+— `ViewModel.onCleared` is `protected`, no unit test can trigger it), and five are `logcat { }`
+message lambdas (1-line holes — the JVM logger backend is a no-op).
+
+Epics have **no due-date delegate and no multiple-assignee delegate** — unlike Task/UserStory, so
+those handler categories don't apply here; none were invented. `onEpicColorPick`
+(epic-specific, calls `EpicDetailsDataUseCase.changeEpicColor` directly, not a `WorkItem*Delegate`)
+was already tested and left alone.
+
+No fakes needed changes — `FakeWorkItemRepository`, `FakeHistoryRepository`, `FakeUsersRepository`
+and `FakeTaigaSessionStorage` already had every hook this module needed, so
+`.claude/agents/testing.md` was not touched.
+
+**What differed from the two prior sessions:**
+
+- **`removeAssignee`/`onUnassign` needed no priming.** `EpicDetailsViewModel` uses the
+  single-assignee delegate (like `TaskDetailsViewModel`, not `UserStoryDetailsViewModel`'s
+  multiple-assignee one) — `removeAssignee()` calls `onUnassign()` directly with no primed
+  "assignee to remove" field to set up first.
+- **`removeWatcher`'s failure path does not go through the snackbar**, unlike every other handler in
+  this ViewModel — its `doOnError` writes straight into `_state.value.error` (the same pattern the
+  pre-existing `onDelete` failure test already used). A first attempt with
+  `sut.snackBarMessage.test { }` hung (`TurbineAssertionError: No value produced in 3s`); fixed by
+  asserting `sut.state.value.error !is NativeText.Empty` synchronously instead. **Check each
+  handler's own `doOnError` body rather than assuming snackbar-vs-state-error is uniform across a
+  ViewModel** — it isn't, even within one file.
+- Same fake-typing gotcha as both prior sessions, on the same two fields: `historyRepository` and
+  `taigaSessionStorage` were declared at their interface types, hiding `getCommentsResult`/
+  `deleteCommentThrows` and blocking the `currentUserId` seed `onAssignToMe`'s `requireUserId()`
+  needs. Declaring fakes at their concrete type is now the rule for the third time running.
+- The re-check-the-dump step (from the `feature/tasks/ui` session) again found real gaps before
+  declaring done: 3 failure counterparts for handlers that had only ever gotten a success test
+  (`onAttachmentAdd`, the single-assignee update flow, and the watchers update flow).
 
 ---
 
