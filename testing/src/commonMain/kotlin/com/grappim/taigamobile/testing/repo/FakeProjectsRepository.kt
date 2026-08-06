@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.flowOf
 class FakeProjectsRepository : ProjectsRepository {
 
     var permissions: ImmutableList<TaigaPermission> = persistentListOf(TaigaPermission.MODIFY_PROJECT)
+    var getPermissionsThrows: Throwable? = null
 
     override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> =
         flowOf(PagingData.empty())
@@ -49,7 +50,10 @@ class FakeProjectsRepository : ProjectsRepository {
     var projectFlow: Flow<ProjectSimple> = flowOf()
     override fun getCurrentProjectFlow(): Flow<ProjectSimple> = projectFlow
 
-    override suspend fun getPermissions(): ImmutableList<TaigaPermission> = permissions
+    override suspend fun getPermissions(): ImmutableList<TaigaPermission> {
+        getPermissionsThrows?.let { throw it }
+        return permissions
+    }
 
     var fetchAndSaveProjectInfoCalled = false
     var fetchAndSaveProjectInfoThrows: Throwable? = null

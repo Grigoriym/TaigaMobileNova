@@ -32,9 +32,12 @@ class FakeSprintsRepository: SprintsRepository {
     }
 
     var getSprintResult: Sprint? = null
+    var getSprintThrows: Throwable? = null
 
-    override suspend fun getSprint(sprintId: Long): Sprint =
-        getSprintResult ?: error("getSprintResult not set")
+    override suspend fun getSprint(sprintId: Long): Sprint {
+        getSprintThrows?.let { throw it }
+        return getSprintResult ?: error("getSprintResult not set")
+    }
 
     override suspend fun getSprintIssues(sprintId: Long): ImmutableList<WorkItem> =
         error("not used in this test")

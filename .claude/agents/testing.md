@@ -61,9 +61,9 @@ right subpackage before concluding a fake doesn't exist:
 
 Key fields for commonly-used fakes:
 
-**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`, `updateModulesCalled/Throws/Calls` (the `Calls` list holds `UpdateModulesCall` records — every argument, so a test can assert the whole set in one `assertEquals`), `updateProjectCalled/Throws/Calls` (same shape — the `Calls` list holds `UpdateProjectCall` records of all six arguments), `saveProjectCalled/CalledWith`, `fetchAndSaveProjectInfoCalled/Throws`, `createTagCalled/Throws`, `deleteTagCalled/TagName/Throws`, `editTagFromTagName/ToTagName/Throws`, `mixTagsCalled/FromTags/ToTag/Throws`, `projectFlow`
+**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getPermissionsThrows`, `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`, `updateModulesCalled/Throws/Calls` (the `Calls` list holds `UpdateModulesCall` records — every argument, so a test can assert the whole set in one `assertEquals`), `updateProjectCalled/Throws/Calls` (same shape — the `Calls` list holds `UpdateProjectCall` records of all six arguments), `saveProjectCalled/CalledWith`, `fetchAndSaveProjectInfoCalled/Throws`, `createTagCalled/Throws`, `deleteTagCalled/TagName/Throws`, `editTagFromTagName/ToTagName/Throws`, `mixTagsCalled/FromTags/ToTag/Throws`, `projectFlow`
 
-**`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `createWorkItemResult/Throws/Calls` (`CreateWorkItemCall` records), `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult`
+**`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `createWorkItemResult/Throws/Calls` (`CreateWorkItemCall` records), `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult/Throws`, `getCustomFieldsResult/Throws`
 
 **`FakeTaigaSessionStorage`**: `currentProjectId: Long`, `currentUserId: Long?`, `clearDataCalled: Boolean`, `presetColorsResult` (backs `getPresetColors()`), `tagPresetColorsResult` (backs `getPresetColorsAsColor()`)
 
@@ -75,7 +75,7 @@ Key fields for commonly-used fakes:
 
 **`FakeUsersRepository`**: `getUserResult/Throws`, `getMeResult/Throws/CallCount`, `getUsersListResult/Throws`, `isAnyAssignedToMeResult/Throws`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
 
-**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getEpicUserStoriesSimplifiedResult`, `createUserStoryResult/Throws/Calls` (`CreateUserStoryCall` records), `bulkUpdateKanbanOrderThrows/Called`, plus one recorder per `bulkUpdateKanbanOrder` argument (`bulkUpdateKanbanOrderStatusId/StoryIds/SwimlaneId/AfterStoryId/BeforeStoryId`)
+**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getUserStoryResult/Throws`, `deleteUserStoryThrows/Called`, `getEpicUserStoriesSimplifiedResult`, `createUserStoryResult/Throws/Calls` (`CreateUserStoryCall` records), `bulkUpdateKanbanOrderThrows/Called`, plus one recorder per `bulkUpdateKanbanOrder` argument (`bulkUpdateKanbanOrderStatusId/StoryIds/SwimlaneId/AfterStoryId/BeforeStoryId`)
 
 **`FakeFiltersRepository`**: `statusesResult/Throws`, `filtersDataResult/Throws`, `getFiltersDataCallCount`
 
@@ -83,9 +83,9 @@ Key fields for commonly-used fakes:
 
 **`FakeProjectValuesRepository`**: `getProjectValuesResult/Throws/Calls`, `createProjectValueResult/Throws/Calls`, `updateProjectValueResult/Throws/Calls`, `deleteProjectValueThrows/Calls`. The `…Calls` lists hold `SaveCall` (every create/update argument, `id = null` for creates) and `DeleteCall` records, so a test can assert the whole argument set in one `assertEquals`
 
-**`FakeHistoryRepository`**: check file for fields
+**`FakeHistoryRepository`**: `getCommentsResult/Throws`, `deleteCommentThrows`
 
-**`FakeSprintsRepository`**: `getSprintsResult/Throws/IsClosed` (the recorder captures the `isClosed` argument), `getSprintDataResult`, `getSprintResult`, `deleteSprintThrows/Called`, `createSprintThrows/Called`, `editSprintThrows/Called`. `createSprint()` and `editSprint()` succeed silently unless their `…Throws` is set; the remaining `getSprint*` list methods are still `error("not used in this test")`
+**`FakeSprintsRepository`**: `getSprintsResult/Throws/IsClosed` (the recorder captures the `isClosed` argument), `getSprintDataResult`, `getSprintResult/Throws`, `deleteSprintThrows/Called`, `createSprintThrows/Called`, `editSprintThrows/Called`. `createSprint()` and `editSprint()` succeed silently unless their `…Throws` is set; the remaining `getSprint*` list methods are still `error("not used in this test")`
 
 ### Storage
 
@@ -857,6 +857,15 @@ kotlin {
     `EpicDetailsViewModel` and `IssueDetailsViewModel`, matching the pre-existing `onDelete` failure
     test in the same file). Assuming the file is uniform produces a `TurbineAssertionError: No value
     produced in 3s` that looks like a wiring bug rather than a wrong assertion target.
+
+21. **A fake with one result field per method returns the same value at every call site, however
+    many times the SUT calls it with different arguments.** `FakeUsersRepository.getUsersList` has a
+    single `getUsersListResult`; `UserStoryDetailsDataUseCaseImpl.getUserStoryData` calls it twice —
+    once for assignees, once for watchers — and both calls return the identical list. That's a
+    property of the fake, not a bug in the SUT: assert `data.assignees == data.watchers == theSharedList`
+    rather than assuming the two are independent. Check whether the method you're relying on takes an
+    argument that would normally distinguish call sites before writing the "expected" side of an
+    assembly test.
 
 ---
 

@@ -56,6 +56,7 @@ than pushing through.
 | 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05, `feature/filters/domain` ✅ 2026-08-05 (100 % on every counter), `feature/workitem/ui/screens/editdescription` ✅ 2026-08-05 (100 % on every counter). **The branch sweep is out of worthwhile rows — see [Where 9a stands](#where-9a-stands-2026-08-05) below; continue with task 9c instead** |
 | 9b | `WorkItemRemoteMediator` | M | ✅ done 2026-08-05 — 13 tests; the class went BRANCH 0/11 → **11/11**, LINE 0/33 → **32/33**, and took the whole `feature/workitem/data` package to **100 % BRANCH**. See the section below |
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | 🔁 in progress — `feature/userstories/ui` ✅ 2026-08-05 (LINE 375/528 → **518/528**, CLASS 17/34 → **34/34**; every `$1` lambda class closed), `feature/tasks/ui` ✅ 2026-08-06 (LINE 321/479 → **472/479**, CLASS 13/31 → **31/31**), `feature/epics/ui/details` ✅ 2026-08-06 (LINE 325/468 → **460/468**, CLASS 12/29 → **28/29**), `feature/issues/ui/details` ✅ 2026-08-06 (LINE 354/512 → **503/512**, CLASS 13/30 → **30/30**). **All four `feature/*/ui` details ViewModels are now closed — this task is done.** |
+| 9d | `UserStoryDetailsDataUseCaseImpl` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -2587,6 +2588,51 @@ and `FakeTaigaSessionStorage` already had every hook this module needed.
 (`userstories`/`tasks`/`epics`/`issues`) are closed.** The mechanical two-tests-per-handler recipe,
 the fake-concrete-type rule, and the two unreachable-line categories (`onCleared()`, `logcat {}`)
 generalised cleanly across all four modules with no surprises in the last one.
+
+---
+
+## Task 9d — `UserStoryDetailsDataUseCaseImpl` (LINE-0 sleeper)
+
+**Why:** with 9a's branch sweep exhausted and 9c closed, [Where 9a stands](#where-9a-stands-2026-08-05)
+already named the next target: `UserStoryDetailsDataUseCaseImpl$getUserStoryData$2$1` topped the
+missed-*lines* ranking at **32 lines, 0 branches** — the whole class had **zero tests**, and
+`feature/userstories/domain` had no `commonTest` source set at all.
+
+**Scope:** `feature/userstories/domain/src/commonTest/…/UserStoryDetailsDataUseCaseTest.kt` (new
+file, new source set). The class has three methods: `getUserStory` (one-line delegate),
+`getUserStoryData` (fans out ~13 parallel `async` calls across 7 repositories inside
+`resultOf { coroutineScope { … } }`), `deleteUserStory` (one-line, `resultOf`-wrapped). One real
+branch: `sprint` is fetched only when `userStory.milestone != null`.
+
+**Result (2026-08-06):** done. 17 tests. Package `feature/userstories/domain`: BRANCH 0/2 → **2/2**,
+LINE 48/105 → **104/105**, CLASS 4/17 → **16/17**, METHOD 4/20 → **19/20**. `UserStoryDetailsDataUseCaseImpl`
+itself: LINE 8/15 → **15/15**, INSTRUCTION 23/138 → **138/138**. Every inner lambda class
+(`$getUserStoryData$2$1` and its six nested `async` lambdas) went from LINE 0 to 100 %. `jvmTest`,
+`ktlintCheck`, `detekt` and `:koverVerify` all green.
+
+Before/after denominators for the target package are identical (verified with
+[kover-diff.py](kover-diff.py)); the raw report flipped into the leaky excludes-skipped mode between
+runs (742 → 797, `core/storage/db` classes leaking in — the same mode-flip the CLAUDE.md testing
+section documents), but that flip is a `<package>`-level-only artefact confined to unrelated
+packages. Class-level movement was confined to exactly two classes' worth of counters:
+`UserStoryDetailsDataUseCaseImpl` (+ its lambdas) and `ProjectPermissionsKt` — the latter moved
+because the assembly test exercises `canDeleteUserStory()`/`canModifyEpic()`/`canModifyUserStory()`/
+`canCommentUserStory()` for real, which is a legitimate side effect, not noise.
+
+Two things worth carrying forward:
+
+- **7 of the use case's collaborators already had fakes, but 4 fakes were missing throws hooks
+  for the exact methods this class calls**: `FakeUserStoriesRepository.getUserStory`/`deleteUserStory`
+  were `error("not used in this test")` stubs with no result field at all;
+  `FakeWorkItemRepository.getWorkItemAttachments`/`getCustomFields`, `FakeHistoryRepository.getComments`,
+  `FakeSprintsRepository.getSprint` had result fields but no `…Throws`; `FakeProjectsRepository.getPermissions`
+  had neither a throws hook (it's a `var permissions` field, not a request/response method). Budget
+  for this on any use-case task, same lesson task 5 already recorded: a use case fanning out across
+  many repositories rarely finds every collaborator already faked to the depth it needs.
+- **`FakeUsersRepository.getUsersList` has one shared result field for every call site** — this use
+  case calls it twice (assignees, watchers), so the fake returns the *same* list both times. The
+  assembly test asserts `data.assignees == data.watchers == members` rather than assuming
+  independence; that's a property of the fake, not a bug in the use case.
 
 ---
 

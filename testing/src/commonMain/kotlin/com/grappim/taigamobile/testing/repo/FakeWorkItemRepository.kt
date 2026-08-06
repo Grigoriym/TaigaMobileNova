@@ -155,11 +155,15 @@ class FakeWorkItemRepository : WorkItemRepository {
     }
 
     var getWorkItemAttachmentsResult: ImmutableList<Attachment> = persistentListOf()
+    var getWorkItemAttachmentsThrows: Throwable? = null
 
     override suspend fun getWorkItemAttachments(
         workItemId: Long,
         taskIdentifier: TaskIdentifier,
-    ): ImmutableList<Attachment> = getWorkItemAttachmentsResult
+    ): ImmutableList<Attachment> {
+        getWorkItemAttachmentsThrows?.let { throw it }
+        return getWorkItemAttachmentsResult
+    }
 
     var watchWorkItemThrows: Throwable? = null
     var watchWorkItemCalled = false
@@ -208,11 +212,15 @@ class FakeWorkItemRepository : WorkItemRepository {
     }
 
     var getCustomFieldsResult: CustomFields? = null
+    var getCustomFieldsThrows: Throwable? = null
 
     override suspend fun getCustomFields(
         workItemId: Long,
         commonTaskType: CommonTaskType,
-    ): CustomFields = getCustomFieldsResult ?: error("getCustomFieldsResult not set")
+    ): CustomFields {
+        getCustomFieldsThrows?.let { throw it }
+        return getCustomFieldsResult ?: error("getCustomFieldsResult not set")
+    }
 
     override suspend fun deleteWorkItem(
         workItemId: Long,

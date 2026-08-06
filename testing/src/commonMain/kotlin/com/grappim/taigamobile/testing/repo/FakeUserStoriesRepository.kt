@@ -52,7 +52,13 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         return createUserStoryResult ?: error("createUserStoryResult not set")
     }
 
-    override suspend fun getUserStory(id: Long): UserStory = error("not used in this test")
+    var getUserStoryResult: UserStory? = null
+    var getUserStoryThrows: Throwable? = null
+
+    override suspend fun getUserStory(id: Long): UserStory {
+        getUserStoryThrows?.let { throw it }
+        return getUserStoryResult ?: error("getUserStoryResult not set")
+    }
 
     var getUserStoriesResult: ImmutableList<UserStory> = persistentListOf()
     var getUserStoriesThrows: Throwable? = null
@@ -76,7 +82,13 @@ class FakeUserStoriesRepository : UserStoriesRepository {
         payload: ImmutableMap<String, Any?>
     ): PatchedData = error("not used in this test")
 
-    override suspend fun deleteUserStory(id: Long) = error("not used in this test")
+    var deleteUserStoryThrows: Throwable? = null
+    var deleteUserStoryCalled = false
+
+    override suspend fun deleteUserStory(id: Long) {
+        deleteUserStoryCalled = true
+        deleteUserStoryThrows?.let { throw it }
+    }
 
     var bulkUpdateKanbanOrderThrows: Throwable? = null
     var bulkUpdateKanbanOrderCalled = false
