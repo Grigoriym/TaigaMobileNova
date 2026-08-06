@@ -70,6 +70,8 @@ than pushing through.
 | 9e | `WikiPageViewModel` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
+| 11 | Compose UI test sweep, one uikit widget per session | S each | todo — ⬅ NEXT |
+| 12 | Expand Compose UI tests to feature-level Screens (Composable + ViewModel + fakes) | ? | 🧭 future phase — not yet scoped, see note below task 11. Do not start until 11's candidate list is exhausted and this task has been sized properly first. |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
@@ -79,6 +81,14 @@ gate; the resulting work was reviewed and kept, see the task's Result note). Tre
 item the same as this one was *supposed* to be treated: read this table, not just the target task's
 section, before starting. Everything in [Considered and deferred](#considered-and-deferred) is still
 gated — the other test *types* get decided once asked, not assumed from Task 10 having landed.
+
+**Task 11 is explicitly ungated (gregory, 2026-08-06):** now that task 10 proved the wiring, expanding
+Compose UI tests to more `uikit` widgets does not need a per-task ask — treat it like tasks 0–9f,
+take the NEXT candidate and run it. **Task 12 is a different kind of not-yet** — not gated on asking,
+but not yet scoped at all: gregory's stated intent is to eventually expand Compose UI testing to the
+whole project (feature-level Screens, not just uikit widgets), but there is no precedent yet for
+wiring a ViewModel + Koin + navigation into a `runComposeUiTest`, so it needs its own sizing/spike
+pass — written as its own task — before it can be picked up the way 11's candidates can.
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
 
@@ -2848,6 +2858,82 @@ resolves at top level but not inside a nested `dependencies {}` block), the
 this re-derived. Confirmed the new test runs under the root `./gradlew jvmTest` aggregate task (what
 CI invokes before `koverXmlReport`), so no CI change was needed. `jvmTest`, `ktlintCheck` and
 `detekt` are all green; `:uikit` stays outside Kover aggregation so `:koverVerify` is unaffected.
+
+---
+
+## Task 11 — Compose UI test sweep, one uikit widget per session
+
+**Why:** task 10 proved the `runComposeUiTest` wiring on one widget; this task spends it. Same shape
+as the 9a/9c sweeps — repeatable, one widget (or occasionally a tight pair) per session, following
+the priority order below unless scoping the session finds something better.
+
+**Scope:** `uikit` `commonMain` Composables only, JVM/desktop `jvmTest`, same pattern as task 10 —
+prefer widgets that own real interactive state over ones that only forward an `onClick`. Add
+`Modifier.testTag(...)` (+ a public `const val ..._TEST_TAG`) wherever a widget's interactive element
+has no unique text/content-description semantics, same as `CreateCommentBar`'s send button.
+
+**Candidates, in priority order (scoped 2026-08-06, not yet taken):**
+
+1. **`DropdownSelector`** (`uikit/src/commonMain/.../widgets/DropdownSelector.kt`) — generic `<T>`,
+   owns real `isExpanded` state (`remember { mutableStateOf(false) }`). Test: click to open, click an
+   item, assert `onItemSelect` fired with the right value and the menu closed. Needs a concrete `T`
+   in the test (e.g. `String`) and `itemContent`/`selectedItemContent` lambdas that render
+   distinguishable text.
+2. **`ConfirmActionDialog`** (`uikit/src/commonMain/.../widgets/dialog/ConfirmActionDialog.kt`) — no
+   owned state, but real confirm/cancel button wiring worth verifying directly rather than trusting
+   it by inspection. Check its actual parameter names before writing the test.
+3. **`ExpandableMarkdownText`** (`uikit/src/commonMain/.../widgets/text/ExpandableMarkdownText.kt`) —
+   real `isExpanded` toggle, but gated on `naturalHeight > maxHeight` computed from a real
+   `onSizeChanged` layout pass. **Unknown risk, flag it explicitly in this session's Result note
+   either way**: the desktop `runComposeUiTest` backend may not lay out to a real pixel size by
+   default, in which case `naturalHeight` could stay `0.dp` and the "show more" button never
+   appears. If so, this either needs an explicit test window size (check
+   `runComposeUiTest`'s `effectContext`/size parameters — task 10 didn't need any) or gets written up
+   as a real gap and deferred, not silently skipped.
+4. **`SectionTitle`** — has `onAddClick`, but no owned state beyond the arrow-rotation animation.
+   Lowest priority of the four; only the click-callback wiring is worth asserting.
+
+**Deferred separately — not part of this sweep, don't pick them up under task 11:**
+
+- `MultiColumnDragDrop` — gesture-based drag & drop. Testing a drag sequence
+  (`performTouchInput`/`performMouseInput` with move/up) is a different shape of test than a click/type
+  interaction and deserves its own scoping, not a same-priority-list entry.
+- `DatePickerDialogWidget` — thin wrapper over Material3's own `DatePickerDialog`; a test here would
+  mostly be re-testing M3's component, not this repo's code. Low value.
+
+**Done when (per widget):** the widget's test passes via `./gradlew :uikit:jvmTest`, and the status
+table + this task's own section gets a dated note recording what happened — including if a candidate
+turned out not to work (see the `ExpandableMarkdownText` risk above), same as 9a records
+closed-as-blocked modules rather than silently dropping them.
+
+**Finalize focus:** medium. Mostly execution of an already-validated pattern; only worth a deeper
+harvest if a candidate surfaces a *new* wiring gotcha (like `ExpandableMarkdownText`'s layout risk
+might).
+
+**Ungated** — per gregory's 2026-08-06 decision (see the scope note above), take the next candidate
+without asking.
+
+---
+
+## Task 12 — Expand Compose UI tests to feature-level Screens (not yet scoped)
+
+**Not a runnable task yet.** Recorded so gregory's stated direction ("after uikit, enlarge this to
+the whole project") isn't lost, and so nobody re-derives from scratch that this is the intended next
+phase once task 11's candidate list is exhausted.
+
+**Why this needs its own scoping pass before it's a task:** everything task 10 proved holds for a
+bare `commonMain` Composable with no external dependencies. A feature-level Screen additionally has a
+ViewModel (needs a real one with `:testing` fakes, or a fake ViewModel — no precedent for either
+inside a `runComposeUiTest` in this repo), typically reads `SavedStateHandle`/nav-route arguments
+(task 10's test called the Composable directly with plain parameters — a Screen doesn't have that
+option), and often composes uikit widgets that would themselves need `testTag`s added under task 11
+first. None of that is hard, but none of it is proven either, and sizing it accurately means picking
+one real Screen and finding out — the same spike shape task 10 already used once.
+
+**When picked up:** open with a proper Task-10-style spike section (Why / Scope / Watch for / Done
+when / Finalize focus) against one concrete Screen, not a general "add Screen tests" mandate — the
+existing task-sizing convention in this doc (XS/S/M, one clean context) applies here as much as
+anywhere else in the plan.
 
 ---
 
