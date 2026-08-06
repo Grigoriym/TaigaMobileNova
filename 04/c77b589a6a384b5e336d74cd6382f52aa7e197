@@ -1,0 +1,27 @@
+feature/tasks/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/tasks/ui/TaskDetailsViewModelTest.kt
+  s_366d262cb42644::t_8f8941fb3419a4 83
+  s_366d262cb42644::t_fb31442aaa0827 424,488-703,707-1032
+  s_366d262cb42644::t_83c21677971986 81
+  s_366d262cb42644::t_533f8740cb93d9 425-439,456-487
+  s_366d262cb42644::t_6317ceac5d710a 13,15,22,28-29,34
+  s_366d262cb42644::t_0b374870d8e451 704-706
+docs/testing/improvement-plan.md
+  s_366d262cb42644::t_2d310687695b03 2450-2493
+  s_366d262cb42644::t_15de200a61407a 58
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "04c77b589a6a384b5e336d74cd6382f52aa7e197",
+  "prompts": {},
+  "sessions": {
+    "s_366d262cb42644": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "79807976-b529-4553-9467-a52359cd24ad",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
