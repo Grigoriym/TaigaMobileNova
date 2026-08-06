@@ -11,6 +11,11 @@ two tasks in your head at once.
 
 1. Read the status table below and take the task marked **NEXT**. (If none is marked, take the
    first `todo`.) Never take a `deferred` task without asking.
+   **Do this even if you found the task another way** — by `grep`, by `tail`, by jumping straight
+   to its `## Task N` section. A task's own section is not required to repeat a gate that lives in
+   the table or in the "Scope decision" note above it (see the rule at the end of this list), so
+   skipping the table is how a gated task gets started unasked — it happened to task 10
+   (2026-08-06): a session read the section body via `tail`, never saw the table, and did the work.
 2. Read only that task's section, plus [survey.md](survey.md) if you need the wider picture.
 3. Do it. Verify with the task's own `Done when` commands — not by eyeballing.
 4. **Update the status table**: set this task to `✅ done — <date>`, and move the `⬅ NEXT` marker
@@ -29,6 +34,11 @@ two tasks in your head at once.
 
 Step 4 is what makes the next cold start work. A session that does the work and skips the table
 leaves the plan lying about where things stand.
+
+**Any task added to this doc in a `deferred`/gated state must repeat that gate as the first line
+under its own `## Task N` heading** — e.g. `⛔ **Gated — do not start without asking (see status
+table).**` — not only in the table row and the "Scope decision" note. Two places to look beats one;
+step 1 above is the primary defense, this is the backstop for when it's skipped anyway.
 
 **Standing rule for every task:** if the task adds a fake, a model factory, or a test utility to
 `:testing`, updating the **fake inventory in `.claude/agents/testing.md`** is part of the task, not
