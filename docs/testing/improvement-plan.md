@@ -58,6 +58,7 @@ than pushing through.
 | 9c | Details-ViewModel delegate handlers (LINE-only) | M each | 🔁 in progress — `feature/userstories/ui` ✅ 2026-08-05 (LINE 375/528 → **518/528**, CLASS 17/34 → **34/34**; every `$1` lambda class closed), `feature/tasks/ui` ✅ 2026-08-06 (LINE 321/479 → **472/479**, CLASS 13/31 → **31/31**), `feature/epics/ui/details` ✅ 2026-08-06 (LINE 325/468 → **460/468**, CLASS 12/29 → **28/29**), `feature/issues/ui/details` ✅ 2026-08-06 (LINE 354/512 → **503/512**, CLASS 13/30 → **30/30**). **All four `feature/*/ui` details ViewModels are now closed — this task is done.** |
 | 9d | `UserStoryDetailsDataUseCaseImpl` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 9e | `WikiPageViewModel` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
+| 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -2749,6 +2750,48 @@ Both were found via the LINE-0-sleeper query in [Where 9a stands](#where-9a-stan
 re-run on the `f0f0d1f2` free baseline and filtered to exclude what 9c/9d/9e already closed and
 what's `androidMain`-only (`StringPreference`/`LongPreferences` in `core/storage/utils` — real gaps,
 but unreachable from `jvmTest` by construction, not worth a task).
+
+---
+
+## Task 9f — `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag`
+
+**Why:** the two small candidates named at the end of task 9e — both zero-test public methods left
+over after the 9c/9d/9e sleeper sweep, each cheap enough to do in one XS session rather than open a
+new module row.
+
+**Result (2026-08-06):** done. 8 tests added across two files.
+
+`AuthRepositoryTest` (7 → 10 tests): `getGithubClientId` covers the success path (client id present,
+`removeTrailingSlashes` applied before `getConfJson`/`defineServer`), the `gitHubClientId == null`
+branch (`error("GitHub auth is not configured on this server")`), and the api-throws failure path.
+`FakeAuthApi` gained `confJsonThrows` (the other four fake methods already had a throw hook or a
+call-recorder-only shape; `getConfJson` had neither).
+
+`TagsScreenViewModelTest` (24 → 26 tests): `onSaveTag` covers the success path (creates the tag,
+dismisses the dialog, reloads via `fetchTagsColors`) and the failure path (`projectsRepository`
+throws → snackbar shown, `isOperationLoading` reset). Only the `create` branch was exercised —
+`onSaveTag` while a dialog is open for **editing** would take `editTag` instead, but that branch is
+identical in shape and already indirectly covered by `TagEditDialogDelegateImplTest`'s own
+`editTag`-path tests; adding it here would just re-assert delegate behaviour, which
+[task 9c's own note](#task-9c--details-viewmodel-delegate-handlers-line-only) says not to do. No new
+fake hooks needed — `createTagCalled`/`createTagThrows` already existed.
+
+Verified with [kover-diff.py](kover-diff.py) against the free `f0f0d1f2`-derived baseline: zero
+package-level and zero class-level key-set difference, every denominator-identical change confined to
+`feature/login/data`, `feature/login/dto` (a `TaigaConfJson` `@Serializable` gained real coverage as a
+side effect of constructing it in the new test — not chased, per the documented `**.*DTO`-exclusion
+caveat), `feature/settings/ui/attributes/tags` and `feature/workitem/ui/delegates/tagedit` (the
+`createTag` branch in the shared delegate picked up incidental coverage from the ViewModel-level
+test — a legitimate side effect, not noise). The full `jvmTest`, `detekt`, `ktlintCheck` and
+`:koverVerify` are all green.
+
+**One pre-existing flake surfaced, unrelated to this change:**
+`WikiPageViewModelTest`'s `onAttachmentAdd failure updates state with error` timed out once
+(`TurbineAssertionError: No value produced in 3s`) on the first full-suite run and passed cleanly on
+a re-run of just that class. This is the same real-IO-thread-hop race task 9e's own result section
+already documents (`PlatformFile.readBytes()` does a genuine `Dispatchers.IO` hop outside
+`MainDispatcherRule`'s control) — recorded here only as confirmation it can still flake under load,
+not as something this task touched or fixed.
 
 ---
 

@@ -17,6 +17,7 @@ class FakeAuthApi : AuthApi {
 
     var confJsonResult: TaigaConfJson? = null
     var confJsonCalls = mutableListOf<String>()
+    var confJsonThrows: Throwable? = null
 
     var githubAuthResult: AuthResponse? = null
     var githubAuthCalls = mutableListOf<GithubAuthRequest>()
@@ -33,6 +34,7 @@ class FakeAuthApi : AuthApi {
 
     override suspend fun getConfJson(serverUrl: String): TaigaConfJson {
         confJsonCalls += serverUrl
+        confJsonThrows?.let { throw it }
         return confJsonResult ?: error("confJsonResult not set")
     }
 
