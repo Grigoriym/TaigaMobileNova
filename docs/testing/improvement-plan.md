@@ -55,7 +55,7 @@ than pushing through.
 | 9 | Error-path convention + first sweep | M | ✅ done — 2026-08-03 |
 | 9a | Missed-branch sweep, one module per session | M each | 🔁 in progress — `core/api` ✅ 2026-08-03, `feature/projects/data` + `mapper` ✅ 2026-08-03, `feature/kanban/ui` ✅ 2026-08-03, `utils/ui` ✅ 2026-08-03, `main` ⛔ closed-as-blocked 2026-08-03, `feature/workitem/ui/delegates/customfields` ✅ 2026-08-03, `feature/workitem/ui/delegates/badge` ✅ 2026-08-04, `feature/settings/ui/attributes/projectvalues` ✅ 2026-08-04, `feature/workitem/ui/screens/edittags` ✅ 2026-08-04, `feature/workitem/ui/screens/sprint` ✅ 2026-08-04, `feature/settings/ui/modules` ✅ 2026-08-04, `createtask` ✅ 2026-08-04, `feature/settings/ui/user` ✅ 2026-08-04, `feature/settings/ui` ⛔ closed-as-blocked 2026-08-04, `core/storage` ✅ 2026-08-04, `feature/userstories/ui` ✅ 2026-08-04 (branch half; the line half was split out — see 9c), `feature/workitem/ui/mappers` ✅ 2026-08-05, `feature/epics/ui/details` ✅ 2026-08-05, `feature/issues/ui/details` ✅ 2026-08-05, `core/domain` ⛔ closed-as-blocked 2026-08-05 (all 16 missed branches are unreachable — but the module's real gap, `ResultExtension`, was tested anyway; see the section below), `feature/sprint/data` ✅ 2026-08-05, `feature/tasks/ui` ✅ 2026-08-05, `feature/workitem/ui/delegates/sprint` ✅ 2026-08-05, `feature/filters/mapper` ✅ 2026-08-05, `feature/userstories/mapper` ✅ 2026-08-05, `feature/settings/ui/projectdetails` ✅ 2026-08-05, `feature/filters/domain` ✅ 2026-08-05 (100 % on every counter), `feature/workitem/ui/screens/editdescription` ✅ 2026-08-05 (100 % on every counter). **The branch sweep is out of worthwhile rows — see [Where 9a stands](#where-9a-stands-2026-08-05) below; continue with task 9c instead** |
 | 9b | `WorkItemRemoteMediator` | M | ✅ done 2026-08-05 — 13 tests; the class went BRANCH 0/11 → **11/11**, LINE 0/33 → **32/33**, and took the whole `feature/workitem/data` package to **100 % BRANCH**. See the section below |
-| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | 🔁 in progress — `feature/userstories/ui` ✅ 2026-08-05 (LINE 375/528 → **518/528**, CLASS 17/34 → **34/34**; every `$1` lambda class closed). ⬅ **NEXT: `feature/tasks/ui`**, then `feature/epics/ui/details` and `feature/issues/ui/details`. See the section below |
+| 9c | Details-ViewModel delegate handlers (LINE-only) | M each | 🔁 in progress — `feature/userstories/ui` ✅ 2026-08-05 (LINE 375/528 → **518/528**, CLASS 17/34 → **34/34**; every `$1` lambda class closed), `feature/tasks/ui` ✅ 2026-08-06 (LINE 321/479 → **472/479**, CLASS 13/31 → **31/31**). ⬅ **NEXT: `feature/epics/ui/details`**, then `feature/issues/ui/details`. See the section below |
 | 10 | Compose UI test spike (one uikit widget) | M | ⛔ deferred — do not start |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -2446,6 +2446,50 @@ same two residues in the other three modules; do not hunt for tests for them.
   are private and only fire from `updateTags` / `updateDescription` / `updateAssignees` /
   `updateWatchers` on the real (not faked) repository. `updateDescription` additionally early-returns
   when the new description equals the loaded one, so pass a fresh `getRandomString()`.
+
+**Result — `feature/tasks/ui` (2026-08-06):** 37 tests added to `TaskDetailsViewModelTest`
+(21 → 58). Comparable 742-class/0-leak pair both runs, zero denominator changes, zero class-level
+movement outside `feature/tasks/ui`.
+
+| counter | before | after |
+|---|---|---|
+| LINE (`TaskDetailsViewModel`) | 168/206 | **202/206** |
+| METHOD (`TaskDetailsViewModel`) | 18/42 | **40/42** |
+| INSTRUCTION (`TaskDetailsViewModel`) | 982/1382 | **1351/1382** |
+| BRANCH (`TaskDetailsViewModel`) | 10/12 | 10/12 (unchanged, as predicted) |
+| LINE (package) | 321/479 | **472/479** |
+| METHOD (package) | 35/121 | **116/121** |
+| CLASS (package) | 13/31 | **31/31** |
+| INSTRUCTION (package) | 2432/3706 | **3672/3706** |
+| BRANCH (package) | 28/30 | 28/30 (unchanged) |
+
+**The residual 7 lines are the same two known-unreachable categories as `feature/userstories/ui`:**
+three are `onCleared()`'s body (protected, no unit test can trigger it), four are `logcat { }`
+message lambdas (1-line holes — the JVM logger backend is a no-op). One more line
+(`get() = requireNotNull(_state.value.currentTask)`) shows `mi=9 ci=7` — already exercised by nearly
+every test in the file; it's the documented one-short getter shape, not chased further.
+
+No fakes needed changes — `FakeWorkItemRepository`, `FakeHistoryRepository`, `FakeUsersRepository`
+and `FakeTaigaSessionStorage` already had every hook this module needed, so
+`.claude/agents/testing.md` was not touched.
+
+**What differed from the `feature/userstories/ui` session:**
+
+- **`TaskDetailsViewModel` uses the single-assignee delegate** (`WorkItemSingleAssigneeDelegate`,
+  field `singleAssigneeState`), not the multiple-assignee one. Its `handleUnassign` needs no priming
+  call — unlike `UserStoryDetailsViewModel`'s `removeAssignee`, which requires
+  `multipleAssigneesState.value.onRemoveAssigneeClick(user)` to have run first.
+- **No epics-related callbacks** — `TaskDetailsViewModel` has no `EpicsRepository` dependency, so
+  that whole category of handlers from the userstories template doesn't apply here.
+- **Two incidental fake-typing fixes, same root cause as gotcha 3 above but on different fields:**
+  `historyRepository` and `taigaSessionStorage` were declared with their interface types
+  (`HistoryRepository` / `TaigaSessionStorage`), hiding `getCommentsResult`/`deleteCommentThrows` and
+  blocking `currentUserId` seeding that `handleAssignToMe`'s `requireUserId()` needs. Declare fakes at
+  their concrete type, not the interface, as a rule — this is now the second module to hit it.
+- **The first pass of 34 tests missed three failure branches** (`onAttachmentAdd`,
+  `onAssigneeUpdated`, `onWatchersUpdated`) that only surfaced by re-running the per-line `mi>0` dump
+  after the first `koverXmlReport` — the handler checklist alone undercounted. Always re-check the
+  dump rather than trusting the checklist as complete.
 
 ---
 
