@@ -2820,6 +2820,22 @@ documented well enough that the next widget test needs no research.
 to be painful or flaky, **say so** and recommend against expanding — a negative result is a
 successful spike.
 
+**Result (2026-08-06):** done, and it's a positive spike — recommend expanding incrementally. Wired
+`compose.dependencies.uiTest` + the desktop `uiTestJUnit4`/`currentOs` artifacts into
+`uikit/build.gradle.kts` (JVM/desktop only — no `iosTest`/`androidUnitTest` source sets exist here,
+and CI only runs `jvmTest`), and wrote `CreateCommentBarTest`
+(`uikit/src/jvmTest/kotlin/.../widgets/CreateCommentBarTest.kt`): two tests against
+`CreateCommentBar`, chosen because it owns real `rememberSaveable` state that changes through
+interaction rather than for being the simplest widget available. Needed two `Modifier.testTag`
+additions in `CreateCommentBar.kt` itself, since its send button's icon has
+`contentDescription = null`. Full write-up — the build-script accessor gotcha (`compose.dependencies`
+resolves at top level but not inside a nested `dependencies {}` block), the
+`assertExists`/`assertDoesNotExist` member-vs-import trap, why `jvmTest` over `commonTest` — is in
+[compose-ui-test-spike.md](compose-ui-test-spike.md), written so the next widget test needs none of
+this re-derived. Confirmed the new test runs under the root `./gradlew jvmTest` aggregate task (what
+CI invokes before `koverXmlReport`), so no CI change was needed. `jvmTest`, `ktlintCheck` and
+`detekt` are all green; `:uikit` stays outside Kover aggregation so `:koverVerify` is unaffected.
+
 ---
 
 ## Considered and deferred
