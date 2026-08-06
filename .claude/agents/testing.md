@@ -845,17 +845,18 @@ kotlin {
     interface. The same applies to state you must *seed*: `FakeTaigaSessionStorage(currentUserId = …)`
     is unreachable through `TaigaSessionStorage`, and `requireUserId()` `error()`s when it is null —
     which any delegate calling `handleAssignToMe` / `handleRemoveWatcher` will hit. Existing test
-    files have both spellings; fix the declaration rather than working around it. Hit a third time in
-    `EpicDetailsViewModelTest` (`historyRepository`, `taigaSessionStorage`) — check the fake's own
+    files have both spellings; fix the declaration rather than working around it. Hit in all four
+    `*DetailsViewModelTest` files running through task 9c (`userstories`, `tasks`, `epics`,
+    `issues` — `historyRepository`/`taigaSessionStorage`, every time) — check the fake's own
     declared type before adding a handler test, not just when one fails.
 
 20. **On a `*DetailsViewModel`, a handler's failure path does not uniformly go through the snackbar —
     check each handler's own `doOnError` body.** Most delegate-wired handlers call `emitError`
     (`showSnackbarSuspend`, a rendezvous send — needs `sut.snackBarMessage.test { }` or the test
-    hangs), but some write straight into `_state.value.error` instead (`EpicDetailsViewModel.removeWatcher`,
-    matching the pre-existing `onDelete` failure test in the same file). Assuming the file is uniform
-    produces a `TurbineAssertionError: No value produced in 3s` that looks like a wiring bug rather
-    than a wrong assertion target.
+    hangs), but some write straight into `_state.value.error` instead (`removeWatcher` in both
+    `EpicDetailsViewModel` and `IssueDetailsViewModel`, matching the pre-existing `onDelete` failure
+    test in the same file). Assuming the file is uniform produces a `TurbineAssertionError: No value
+    produced in 3s` that looks like a wiring bug rather than a wrong assertion target.
 
 ---
 
