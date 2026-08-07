@@ -1,0 +1,33 @@
+feature/issues/ui/src/jvmTest/kotlin/com/grappim/taigamobile/feature/issues/ui/list/IssuesScreenTest.kt
+  s_6353d500f6b82c::t_4217f7a4e913cd 1-90
+docs/testing/improvement-plan.md
+  s_6353d500f6b82c::t_15822f86ea4341 93
+  s_6353d500f6b82c::t_ce557901d2f7c2 862-893
+testing/src/commonMain/kotlin/com/grappim/taigamobile/testing/repo/FakeIssuesRepository.kt
+  s_6353d500f6b82c::t_71ee05eb9ba3dc 8-9,11,23-24,26-30
+feature/issues/ui/build.gradle.kts
+  s_6353d500f6b82c::t_44055f270c01fb 42-46
+  s_6353d500f6b82c::t_4e50ab73d87146 1-2,10-12
+  s_6353d500f6b82c::t_4a8225b0277d95 13
+.claude/agents/testing.md
+  s_6353d500f6b82c::t_015e8bc26a9f96 492
+  s_6353d500f6b82c::t_100e7b79e76bbf 503-508
+  s_6353d500f6b82c::t_3a8ec0323dd452 55
+  s_6353d500f6b82c::t_79f1f893f1192c 74
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "8e8c99fdc24c6a06502f69105423dc4baae9085e",
+  "prompts": {},
+  "sessions": {
+    "s_6353d500f6b82c": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "dc054280-0d01-4530-8f53-99d49c2bc32d",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
