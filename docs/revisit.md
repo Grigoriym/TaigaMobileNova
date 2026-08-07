@@ -185,6 +185,21 @@ language change, which makes it low-severity rather than invisible.
 any `@BeforeTest` can run. Fixing this would make an exact-rendering test possible, which is the
 cheapest way to prove the fix.
 
+**Resolved (2026-08-07):** changed all three actuals from a top-level cached `val` to a private
+function that builds the formatter fresh on every call — `mediumFormatter()` in
+`PlatformDateTimeFormat.android.kt`, `KotlinxDateTimeFormatter.jvm.kt` and
+`KotlinxDateTimeFormatter.ios.kt`. `DateTimeFormatter.ofLocalizedDate` / `NSDateFormatter` read the
+current default locale each time they're constructed, so a locale change now takes effect on the
+very next call instead of only after a process restart. Added
+`KotlinxDateTimeFormatterJvmTest.\`medium date picks up a locale changed after the formatter was
+first used\`` — it calls the formatter once under `Locale.US`, switches the default to
+`Locale.GERMANY`, and asserts the *exact* rendering matches a JDK formatter built fresh with that
+locale. This is the exact-rendering test the entry above says was previously impossible, now possible
+because the formatter is no longer baked in at class-init time; updated the test file's class doc
+comment to match. `./gradlew jvmTest ktlintCheck` both green (one `core/storage` `jvmTest` failure on
+the first run was the known cross-module `CoroutineExceptionHandler` flake — see CLAUDE.md, Testing —
+confirmed by re-running `:core:storage:jvmTest` alone, which passed).
+
 ## 8. Kover's excludes are applied partially, and differently by `koverXmlReport` and `koverVerify`
 
 **What:** the `excludes` block in the root `build.gradle.kts` (`kover { reports { filters { … } } }`)
