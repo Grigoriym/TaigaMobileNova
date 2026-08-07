@@ -113,6 +113,18 @@ today. See [improvement-plan.md](improvement-plan.md) task 13 for the worked exa
 (`ProjectValuesScreenTest`), which also closed the "route-carrying Screen" gap task 12 left open by
 building its `SavedStateHandle` the same way the equivalent `ViewModel` unit test already does.
 
+**A dialog visibility transition (closed → open → closed) needs no clock advance beyond a plain
+`performClick()` (task 15, 2026-08-07), and seeding a fake through a `suspend` method that never
+actually suspends doesn't need `MainDispatcherRule` either — a bare `kotlinx.coroutines.runBlocking { }`
+around the seed call, before `setContent`, is enough.** `TrustedCertificatesScreenTest` seeds
+`FakeTrustedCertStorage` via `runBlocking { trustedCertStorage.trust(entry) }` (the fake's `trust`/
+`untrust` are declared `suspend` to match the real interface but only assign a `MutableStateFlow`
+field), then relies on the usual `MainDispatcherRule`/`UnconfinedTestDispatcher` trick for `init`'s
+`collect { }`. Each click (open the dialog, then confirm) runs its `onClick` — including the
+ViewModel's own `viewModelScope.launch { }` — synchronously under the unconfined dispatcher, so the
+assertion right after `performClick()` already sees the settled state. See
+[improvement-plan.md](improvement-plan.md) task 15 for the worked example.
+
 ## Recommendation
 
 Expanding is worth it, incrementally — the wiring cost (build-script accessor gotcha, source-set
