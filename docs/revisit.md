@@ -678,6 +678,15 @@ Both the deletion and the null-handling fix are production changes to a `commonM
 surgical-changes rule says to record unrelated dead code rather than remove it. Decide first whether
 `mapResult` is meant to have callers; if not, deleting it resolves both halves at once.
 
+**Resolved (2026-08-07):** re-confirmed zero call sites (still only the declaration itself). Deleted
+`mapResult` from `ResultExtension.kt` and its six tests from `ResultExtensionTest.kt` (the `region
+mapResult` block plus the cross-function `resultOf feeding mapResult carries a failure through both`
+test), along with the now-unused `assertNull`/`assertIs` imports. `resultOf` itself is untouched.
+`:core:domain:jvmTest`, the full `./gradlew jvmTest`, `ktlintCheck` and `:koverVerify` all green — one
+`uikit:jvmTest` Skiko `ComposeTimeoutException` flake appeared on the first full run and reproduced on
+a clean stashed tree with no changes present, then passed on rerun, confirming it predates and is
+unrelated to this change.
+
 ## 21. `SprintPagingSource` is dead code, and it is invisible to Kover
 
 **Where:** `feature/sprint/data/src/commonMain/kotlin/com/grappim/taigamobile/feature/sprint/data/SprintPagingSource.kt`

@@ -12,8 +12,6 @@ import kotlin.coroutines.cancellation.CancellationException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertIs
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 /**
@@ -110,72 +108,4 @@ class ResultExtensionTest {
     }
 
     // endregion
-
-    // region mapResult
-
-    @Test
-    fun `mapResult transforms the value of a success`() {
-        val value = getRandomString()
-
-        val result = Result.success(value).mapResult { it.length }
-
-        assertEquals(value.length, result.getOrNull())
-    }
-
-    @Test
-    fun `mapResult keeps the original exception of a failure`() {
-        val result = Result.failure<String>(testException).mapResult { it.length }
-
-        assertTrue(result.isFailure)
-        assertEquals(testException, result.exceptionOrNull())
-    }
-
-    @Test
-    fun `mapResult captures an exception thrown by the transform`() {
-        val result = Result.success(getRandomString()).mapResult { throw testException }
-
-        assertTrue(result.isFailure)
-        assertEquals(testException, result.exceptionOrNull())
-    }
-
-    @Test
-    fun `mapResult rethrows a CancellationException thrown by the transform`() {
-        assertFailsWith<CancellationException> {
-            Result.success(getRandomString()).mapResult { throw CancellationException("cancelled") }
-        }
-    }
-
-    /**
-     * Documents a latent trap rather than desired behaviour: `mapResult` decides success from
-     * `getOrNull() != null`, so a *successful* result holding `null` falls into the `else` branch,
-     * finds no exception and throws `error("Unreachable state")` — the state the message calls
-     * unreachable is reachable. Harmless today only because `mapResult` has no call sites at all.
-     * Filed as docs/revisit.md #20.
-     */
-    @Test
-    fun `mapResult throws on a success holding null`() {
-        val thrown = assertFailsWith<IllegalStateException> {
-            Result.success<String?>(null).mapResult { it?.length }
-        }
-
-        assertEquals("Unreachable state", thrown.message)
-    }
-
-    @Test
-    fun `mapResult transforms a success into null without failing`() {
-        val result = Result.success(getRandomString()).mapResult { null }
-
-        assertTrue(result.isSuccess)
-        assertNull(result.getOrNull())
-    }
-
-    // endregion
-
-    @Test
-    fun `resultOf feeding mapResult carries a failure through both`() {
-        val result = resultOf { throw testException }.mapResult { "unreachable" }
-
-        assertIs<IllegalStateException>(result.exceptionOrNull())
-        assertEquals(testException.message, result.exceptionOrNull()?.message)
-    }
 }
