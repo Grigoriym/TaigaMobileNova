@@ -100,6 +100,19 @@ try — no new gotcha. See [improvement-plan.md](improvement-plan.md) task 12's 
 Screen with a real `ViewModel` needs beyond a bare uikit widget (constructing the ViewModel directly
 with `:testing` fakes, no Koin; `LocalTopBarConfig` needs an explicit `CompositionLocalProvider`).
 
+**A `ViewModel` that loads state in `init` via `viewModelScope.launch` needs no special handling
+(task 13, 2026-08-07), *if* its fakes return immediately.** Add a `MainDispatcherRule` (default
+`UnconfinedTestDispatcher`) and call `.setup()` **before** constructing the `ViewModel` inside the
+test body — the unconfined dispatcher runs the `init` block's coroutines to completion synchronously
+as part of the constructor call, so `setContent { ... }` renders already-loaded state. No
+`waitUntil`, no `advanceUntilIdle`, no interaction between `kotlinx-coroutines-test`'s `Dispatchers.Main`
+and Compose's own test frame clock — the coroutine work finishes before either matters. **This is not
+proven to survive a fake with a real suspension point** (an artificial `delay()` standing in for a
+slow load) — only that it survives fakes that return immediately, which is every fake in `:testing`
+today. See [improvement-plan.md](improvement-plan.md) task 13 for the worked example
+(`ProjectValuesScreenTest`), which also closed the "route-carrying Screen" gap task 12 left open by
+building its `SavedStateHandle` the same way the equivalent `ViewModel` unit test already does.
+
 ## Recommendation
 
 Expanding is worth it, incrementally — the wiring cost (build-script accessor gotcha, source-set

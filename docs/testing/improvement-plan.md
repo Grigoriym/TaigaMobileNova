@@ -72,6 +72,7 @@ than pushing through.
 | 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
 | 11 | Compose UI test sweep, one uikit widget per session | S each | ✅ done — 2026-08-07. `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07, `ExpandableMarkdownText` ✅ 2026-08-07, `SectionTitle` ✅ 2026-08-07. All four candidates closed — task complete. |
 | 12 | Compose UI test spike, feature-level Screen (`SettingsAboutScreen`) | S | ✅ done — 2026-08-07 |
+| 13 | Compose UI test, route-carrying + async-loading Screen (`ProjectValuesScreen`) | S | ✅ done — 2026-08-07 |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
@@ -124,7 +125,8 @@ spike write-up and all four per-widget Result notes (`DropdownSelector`, `Confir
 doc, not a task write-up) stayed in this directory since it's still the first read for the next
 Compose UI test.
 
-Task 12 is next, and is now scoped and runnable — see its own section below.
+Task 12 is next, and is now scoped and runnable — see its own section below. Task 13 (also done) picks
+up where task 12's Result note left off — see its own section below.
 
 ---
 
@@ -233,6 +235,63 @@ sizing is its own small scoping pass, same as this task needed before task 12 wa
 up as a new task the same way task 11 was added after task 10, rather than assuming this pilot's
 single data point generalizes to every `*Screen` shape (multi-state-source Screens, dialogs,
 paging lists) without a second worked example.
+
+---
+
+## Task 13 — Compose UI test, route-carrying + async-loading Screen (scoped and done 2026-08-07)
+
+**Why:** task 12 proved a Screen with a real `ViewModel` and no nav-route params. Its Result note
+flagged one gap as "resolved by inference, not by a test that actually exercises it": a Screen whose
+`ViewModel` reads `SavedStateHandle.toRoute<T>()`, combined with a `ViewModel` that loads state
+asynchronously in `init` (every existing Screen test so far had a synchronous constructor). This task
+picks one Screen that has both and proves the combination for real.
+
+**Pilot: `ProjectValuesScreen`** (`feature/settings/ui/.../attributes/projectvalues/`). Chosen because
+it needed zero new scaffolding, so the task was pure verification of the pattern rather than more
+build-wiring or fake work:
+
+- Its `NavDestination` is `data class ProjectValuesNavDestination(val typeName: String)` — a plain
+  `toRoute<T>()` with no `typeMap`, unlike `WorkItemEditTagsNavDestination` (which carries a
+  `TaskIdentifier` and needs one). `ProjectValuesViewModelTest` already builds the route as
+  `SavedStateHandle(mapOf("typeName" to type.name))` for its own unit tests — the Compose UI test
+  reuses that exact construction.
+- `init` calls `loadItems()` and `loadPresetColors()`, both `viewModelScope.launch { ... }` —
+  the async-loading half of the gap.
+- `feature/settings/ui` already has the `uiTest` build wiring from task 12, and
+  `FakeProjectValuesRepository` / `FakeTaigaSessionStorage` already exist in `:testing` — no new
+  dependencies, no new fakes.
+
+**Result:** Works, and the async-loading half turned out to need nothing extra.
+`ProjectValuesScreenTest` (`feature/settings/ui/src/jvmTest/.../attributes/projectvalues/ProjectValuesScreenTest.kt`)
+constructs `MainDispatcherRule` (which defaults to `UnconfinedTestDispatcher`) and calls `.setup()` in
+`@BeforeTest`, **before** the `ViewModel` is constructed inside the test body. Because the dispatcher
+is unconfined, `init`'s two `viewModelScope.launch` calls run to completion synchronously as part of
+the `ProjectValuesViewModel(...)` constructor call itself — by the time `setContent { ... }` runs, the
+state already holds the loaded items. No `waitUntil`, no `advanceUntilIdle`, no interaction with
+Compose's own test clock at all; the two dispatchers (`kotlinx-coroutines-test`'s `Dispatchers.Main`
+and Compose's `runComposeUiTest` frame clock) never needed to interact because the coroutine work was
+already finished before the first frame. This is the same reasoning
+`ProjectValuesViewModelTest`'s own doc comment already states for its plain unit tests — it just also
+turned out to be true inside `runComposeUiTest`, which was the one thing this task didn't already know.
+**Expect this to fail to generalize** the moment a Screen's `ViewModel` uses a real `Dispatchers.IO`-style
+suspension point (a fake with an artificial `delay`, for instance) instead of a fake that returns
+immediately — nothing here proves the unconfined-dispatcher trick survives an actual suspension, only
+that it survives a same-thread call. Flagging that as the next real unknown rather than assuming it away.
+
+The test asserts the loaded item's name is visible (`onNodeWithText(item.name).assertExists()`) and
+that `getProjectValuesCalls == listOf(type)`, i.e. the type parsed out of the route by
+`toRoute<ProjectValuesNavDestination>()` is what actually reached the repository — the concrete proof
+that the route wiring, not just the loading wiring, works inside `runComposeUiTest`.
+
+Passes via `./gradlew :feature:settings:ui:jvmTest`, confirmed picked up by the root `./gradlew jvmTest`
+(the `TEST-...ProjectValuesScreenTest.xml` file was deleted and reappeared after a full-root run, same
+check tasks 10 and 12 used). `ktlintCheck` is clean.
+
+**Recommendation:** the route-carrying-Screen and async-loading-Screen gaps flagged after task 12 are
+both closed now — a Screen test for any `ViewModel` whose collaborators are ordinary `:testing` fakes
+(no artificial delay) can follow this pattern directly. The one remaining open question is the
+artificial-suspension case named above; worth a one-off check if a future Screen's fakes ever need a
+real `delay()` to simulate loading UI, but not worth a dedicated task until one actually does.
 
 ---
 
