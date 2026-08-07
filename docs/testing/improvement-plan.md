@@ -71,7 +71,7 @@ than pushing through.
 | 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
 | 11 | Compose UI test sweep, one uikit widget per session | S each | ✅ done — 2026-08-07. `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07, `ExpandableMarkdownText` ✅ 2026-08-07, `SectionTitle` ✅ 2026-08-07. All four candidates closed — task complete. |
-| 12 | Expand Compose UI tests to feature-level Screens (Composable + ViewModel + fakes) | ? | 🧭 future phase — not yet scoped, see note below task 11. ⬅ NEXT — needs its own scoping/spike pass before it's runnable, see the task's own section. |
+| 12 | Compose UI test spike, feature-level Screen (`SettingsAboutScreen`) | S | 📋 scoped — 2026-08-07, not yet started. ⬅ NEXT — see the task's own section for the pilot and the two resolved unknowns. |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
@@ -84,11 +84,11 @@ gated — the other test *types* get decided once asked, not assumed from Task 1
 
 **Task 11 is explicitly ungated (gregory, 2026-08-06):** now that task 10 proved the wiring, expanding
 Compose UI tests to more `uikit` widgets does not need a per-task ask — treat it like tasks 0–9f,
-take the NEXT candidate and run it. **Task 12 is a different kind of not-yet** — not gated on asking,
-but not yet scoped at all: gregory's stated intent is to eventually expand Compose UI testing to the
-whole project (feature-level Screens, not just uikit widgets), but there is no precedent yet for
-wiring a ViewModel + Koin + navigation into a `runComposeUiTest`, so it needs its own sizing/spike
-pass — written as its own task — before it can be picked up the way 11's candidates can.
+take the NEXT candidate and run it. **Task 12 was scoped 2026-08-07** — gregory's stated intent is to
+eventually expand Compose UI testing to the whole project (feature-level Screens, not just uikit
+widgets); the scoping pass resolved the two real unknowns (no Koin graph needed; `LocalTopBarConfig`
+needs an explicit provider) and named a concrete pilot Screen. It is runnable now, same as any other
+ungated task — see its own section.
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
 
@@ -124,30 +124,75 @@ spike write-up and all four per-widget Result notes (`DropdownSelector`, `Confir
 doc, not a task write-up) stayed in this directory since it's still the first read for the next
 Compose UI test.
 
-Task 12 is next, but it isn't runnable yet: it needs its own scoping/spike pass first, per its
-section below.
+Task 12 is next, and is now scoped and runnable — see its own section below.
 
 ---
 
-## Task 12 — Expand Compose UI tests to feature-level Screens (not yet scoped)
+## Task 12 — Compose UI test spike, feature-level Screen (scoped 2026-08-07)
 
-**Not a runnable task yet.** Recorded so gregory's stated direction ("after uikit, enlarge this to
-the whole project") isn't lost, and so nobody re-derives from scratch that this is the intended next
-phase now that task 11's candidate list is exhausted.
+**Why:** task 10 proved `runComposeUiTest` wiring on a bare `commonMain` Composable with no external
+dependencies. A feature-level Screen is a different shape — it has a real `ViewModel`, typically reads
+`SavedStateHandle`/nav-route arguments, and composes uikit widgets — and nothing in the repo proves
+that shape works inside `runComposeUiTest` yet. This is a **spike**, same as task 10: prove the wiring
+on one Screen, then decide whether to sweep the rest the way task 11 swept uikit widgets.
 
-**Why this needs its own scoping pass before it's a task:** everything task 10 proved holds for a
-bare `commonMain` Composable with no external dependencies. A feature-level Screen additionally has a
-ViewModel (needs a real one with `:testing` fakes, or a fake ViewModel — no precedent for either
-inside a `runComposeUiTest` in this repo), typically reads `SavedStateHandle`/nav-route arguments
-(task 10's test called the Composable directly with plain parameters — a Screen doesn't have that
-option), and often composes uikit widgets that would themselves need `testTag`s added under task 11
-first. None of that is hard, but none of it is proven either, and sizing it accurately means picking
-one real Screen and finding out — the same spike shape task 10 already used once.
+**Scoping already done this session — the two real unknowns are resolved:**
 
-**When picked up:** open with a proper Task-10-style spike section (Why / Scope / Watch for / Done
-when / Finalize focus) against one concrete Screen, not a general "add Screen tests" mandate — the
-existing task-sizing convention in this doc (XS/S/M, one clean context) applies here as much as
-anywhere else in the plan.
+- **No Koin graph needed in the test.** Checked all 45 `*Screen` composables in `feature/*/ui`; every
+  one takes `viewModel: XViewModel = koinViewModel()` as a default parameter (11 sampled directly).
+  A test can construct the ViewModel directly with `:testing` fakes and pass it in as an explicit
+  argument — exactly like every existing ViewModel unit test already does — and never touch Koin.
+  This was the biggest open question the previous (unscoped) version of this task flagged; it's closed.
+- **`LocalTopBarConfig` needs an explicit provider in the test.** It's `compositionLocalOf<TopBarController> { error(...) }`
+  (`uikit/.../topbar/TopBarController.kt`) — reading `.current` without one crashes. Any Screen test
+  must wrap `setContent` in `CompositionLocalProvider(LocalTopBarConfig provides TopBarController())`.
+
+**Pilot: `SettingsAboutScreen`** (`feature/settings/ui/.../about/SettingsAboutScreen.kt` +
+`SettingsAboutScreenViewModel.kt`). Chosen over the alternatives already surveyed in `feature/settings/ui`
+(`TrustedCertificatesScreen`, `SettingsUserScreen`, `SettingsInterfaceScreen`) for having the fewest
+moving parts to prove the pattern:
+
+- No nav-route params — `SettingsAboutScreenRouteNavDestination` is a bare `data object`, so the test
+  doesn't need to touch `SavedStateHandle`/`toRoute<T>()` at all (a real gap this pilot does **not**
+  close — flag it as still open in the Result note either way).
+- Trivial `ViewModel` constructor: `AppInfoProvider` (6 methods, `getAppInfo()`/`isDebug()`/etc.) and
+  `CrashReporter` (`isAvailable` + 3 methods) — both tiny interfaces with **no existing `:testing`
+  fake**. Adding `FakeAppInfoProvider` and `FakeCrashReporter` is part of this task, not a blocker —
+  per the plan's standing rule, update the fake inventory in `.claude/agents/testing.md` when they land.
+- Renders via `koinViewModel()` default like every other screen, uses `LocalTopBarConfig` (the second
+  resolved unknown above), and its content (`GithubRepoContent`/`PrivacyPolicyContent`/`VersionContent`)
+  is plain `Text`/`TaigaOutlinedButton` — nothing gesture-based, matching task 11's click/type-only scope.
+
+**Build wiring needed:** `feature/settings/ui` has a `commonTest` source set already but **no `jvmTest`
+and no `compose.dependencies.uiTest`/desktop artifacts** — the same one-time addition task 10 made to
+`uikit/build.gradle.kts` (`composeUiTestDep`/`composeDesktopUiTestJUnit4Dep`/`composeDesktopCurrentOsDep`
+in a `jvmTest.dependencies` block) needs to happen here too, on `feature/settings/ui/build.gradle.kts`.
+
+**Scope — deliberately still tiny, same as task 10:**
+
+- Add the `uiTest` build wiring to `feature/settings/ui`.
+- Add `FakeAppInfoProvider` + `FakeCrashReporter` to `:testing` (update the fake inventory).
+- Write **one** `SettingsAboutScreenTest` that constructs `SettingsAboutScreenViewModel` directly with
+  the two new fakes, wraps `setContent` in the `LocalTopBarConfig` provider, and asserts real rendered
+  content (e.g. `state.appInfo`'s text is visible) — a render-only assertion is enough for the spike;
+  it doesn't need a click interaction since this screen has none worth testing beyond `uriHandler.openUri`
+  calls, which are platform side effects, not state changes.
+- Write down what a route-carrying Screen (`SavedStateHandle`/`toRoute<T>()`) would need differently —
+  as a **note**, not as a second test. That's the one real gap this pilot leaves open; naming it
+  precisely is enough to size a follow-up, don't chase it in this session.
+
+**Done when:** `SettingsAboutScreenTest` passes via `./gradlew :feature:settings:ui:jvmTest`, runs
+under the root `./gradlew jvmTest` (confirm, don't assume, same as task 10), and the write-up says
+plainly whether the Screen-test pattern is worth sweeping across other Screens next — a negative
+result (too much friction per Screen) is as valid an outcome as a positive one.
+
+**Finalize focus:** high, same reasoning as task 10 — the output of a spike is knowledge. If
+`SavedStateHandle`-carrying Screens turn out to need a fundamentally different setup, say so explicitly
+rather than letting the next session assume this pilot's pattern generalizes.
+
+**Not yet started.** This section is the scoping pass task 10/11's own notes said this task needed
+before it becomes runnable — running it (writing the fakes, the build wiring, and the test) is the
+next session's work, not this one's.
 
 ---
 
