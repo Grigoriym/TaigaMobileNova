@@ -391,6 +391,15 @@ counter and the constant. Do not "fix" it by installing the plugin twice.
 **Why deferred:** found while writing tests for the plugin (improvement-plan task 9a). It is a
 behaviour change to auth code, which is not a test task's business.
 
+**Resolved (2026-08-07):** investigated via the `investigate-issue` skill —
+[docs/issues/2026-08-07-tokenrefreshplugin-max-retries-unreachable.md](issues/2026-08-07-tokenrefreshplugin-max-retries-unreachable.md).
+Confirmed the root cause against Ktor's `HttpSend` source (`execute()` always dispatches to the next
+sender in the chain, never back into the calling interceptor) and against the plugin's own test suite,
+where two tests already demonstrated the silent-failure shape without meaning to. Removed the dead
+`MAX_RETRIES`/`retryCountKey` machinery and replaced it with a `retryOrLogout` check after each of the
+three retry call sites: if the retry also comes back 401, log out instead of returning it silently.
+`:core:api:jvmTest`, the full `./gradlew jvmTest` and `ktlintCheck` all green.
+
 ---
 
 ## 12. Two small dead spots in `core/api`

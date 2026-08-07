@@ -449,6 +449,12 @@ private fun createClient(): HttpClient = HttpClient(
   constructing `AttributeKey<T>("TheSameName")`.
 - **`execute(request)` inside an interceptor does not re-enter that interceptor** — it dispatches to
   the next sender. A plugin that retries by re-invoking `execute` runs its own body exactly once.
+  This is not just a testing quirk: `TokenRefreshPlugin` relied on this for a `MAX_RETRIES` guard
+  that could never fire, and — more consequentially — never checked whether the retried response was
+  *also* a 401, silently returning it instead of logging out. A retry site must inspect the result of
+  its own `execute()` call, not assume a failure there will be caught on a "next" pass through the
+  interceptor. See
+  [docs/issues/2026-08-07-tokenrefreshplugin-max-retries-unreachable.md](../../docs/issues/2026-08-07-tokenrefreshplugin-max-retries-unreachable.md).
 - `core/api/src/commonTest/` has eight worked examples (auth headers, host rewriting, error mapping,
   token refresh).
 

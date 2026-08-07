@@ -12,7 +12,6 @@ import io.ktor.client.request.HttpResponseData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.http.HttpStatusCode
-import io.ktor.util.AttributeKey
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -52,24 +51,13 @@ class TokenRefreshPluginTest {
     }
 
     @Test
-    fun `on 401 with the retry count already at the maximum should log out and return the response`() = runTest {
-        val client = createClient(authStorage) { unauthorized() }
-
-        val response = client.get("https://example.com/") {
-            header(ApiConstants.AUTHORIZATION, bearer("tokenA"))
-            attributes.put(RETRY_COUNT_KEY, MAX_RETRIES)
-        }
-
-        assertEquals(HttpStatusCode.Unauthorized, response.status)
-        assertEquals(1, tokenRefresher.logoutCallCount)
-        assertEquals(0, tokenRefresher.refreshCallCount)
-        assertEquals(1, requests.size)
-    }
-
-    @Test
     fun `on 401 after another coroutine refreshed should retry with the stored token and not refresh`() = runTest {
         authStorage.tokenToReturn = "tokenB"
-        val client = createClient(authStorage) { unauthorized() }
+        var callCount = 0
+        val client = createClient(authStorage) {
+            callCount++
+            if (callCount == 1) unauthorized() else respond(content = "", status = HttpStatusCode.OK)
+        }
 
         client.get("https://example.com/") { header(ApiConstants.AUTHORIZATION, bearer("tokenA")) }
 
@@ -85,7 +73,11 @@ class TokenRefreshPluginTest {
         // Returning a different value the second time is the only way to reach the double-check
         // branch, which exists for the case where a concurrent call refreshed while we waited.
         val storage = QueuedAuthStorage(listOf("tokenA", "tokenB"))
-        val client = createClient(storage) { unauthorized() }
+        var callCount = 0
+        val client = createClient(storage) {
+            callCount++
+            if (callCount == 1) unauthorized() else respond(content = "", status = HttpStatusCode.OK)
+        }
 
         client.get("https://example.com/") { header(ApiConstants.AUTHORIZATION, bearer("tokenA")) }
 
@@ -115,6 +107,22 @@ class TokenRefreshPluginTest {
         assertEquals(2, requests.size)
         assertEquals(bearer("newToken"), requests[1].headers[ApiConstants.AUTHORIZATION])
         assertEquals(0, tokenRefresher.logoutCallCount)
+    }
+
+    @Test
+    fun `on 401 after a successful refresh if the retry is also unauthorized should log out`() = runTest {
+        authStorage.tokenToReturn = "tokenA"
+        authStorage.refreshTokenToReturn = "refreshA"
+        val client = createClient(authStorage) { unauthorized() }
+
+        val response = client.get("https://example.com/") { header(ApiConstants.AUTHORIZATION, bearer("tokenA")) }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(1, tokenRefresher.refreshCallCount)
+        assertEquals("newToken", authStorage.setCredentialsToken)
+        assertEquals(2, requests.size)
+        assertEquals(bearer("newToken"), requests[1].headers[ApiConstants.AUTHORIZATION])
+        assertEquals(1, tokenRefresher.logoutCallCount)
     }
 
     @Test
@@ -148,16 +156,6 @@ class TokenRefreshPluginTest {
                 this.tokenRefresher = this@TokenRefreshPluginTest.tokenRefresher
             }
         }
-
-    private companion object {
-        const val MAX_RETRIES = 3
-
-        /**
-         * Mirrors the plugin's private key. `AttributeKey` compares by name, so this resolves to the
-         * same attribute.
-         */
-        val RETRY_COUNT_KEY = AttributeKey<Int>("TokenRefreshRetryCount")
-    }
 }
 
 private class QueuedAuthStorage(tokens: List<String>) : AuthStorage {

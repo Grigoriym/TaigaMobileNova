@@ -4,9 +4,12 @@ import com.grappim.taigamobile.core.logger.LogPriority
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import io.ktor.client.HttpClient
+import io.ktor.client.call.HttpClientCall
 import io.ktor.client.plugins.HttpClientPlugin
 import io.ktor.client.plugins.HttpSend
+import io.ktor.client.plugins.Sender
 import io.ktor.client.plugins.plugin
+import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.http.HttpStatusCode
 import io.ktor.util.AttributeKey
 import kotlinx.coroutines.sync.Mutex
@@ -31,10 +34,6 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
     companion object Plugin : HttpClientPlugin<Config, TokenRefreshPlugin> {
         override val key: AttributeKey<TokenRefreshPlugin> = AttributeKey("TokenRefreshPlugin")
 
-        private const val MAX_RETRIES = 3
-
-        private val retryCountKey = AttributeKey<Int>("TokenRefreshRetryCount")
-
         override fun prepare(block: Config.() -> Unit): TokenRefreshPlugin {
             val config = Config().apply(block)
             return TokenRefreshPlugin(
@@ -46,19 +45,21 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
         override fun install(plugin: TokenRefreshPlugin, scope: HttpClient) {
             val mutex = Mutex()
 
+            suspend fun Sender.retryOrLogout(request: HttpRequestBuilder): HttpClientCall {
+                val retried = execute(request)
+                if (retried.response.status == HttpStatusCode.Unauthorized) {
+                    logcat(tag = "TokenRefreshPlugin") {
+                        "Retry with refreshed token is still unauthorized, logging out"
+                    }
+                    plugin.tokenRefresher.logout()
+                }
+                return retried
+            }
+
             scope.plugin(HttpSend).intercept { request ->
                 val response = execute(request)
 
                 if (response.response.status != HttpStatusCode.Unauthorized) {
-                    return@intercept response
-                }
-
-                val retries = request.attributes.getOrNull(retryCountKey) ?: 0
-                if (retries >= MAX_RETRIES) {
-                    logcat(tag = "TokenRefreshPlugin") {
-                        "Max retries ($MAX_RETRIES) exceeded, logging out"
-                    }
-                    plugin.tokenRefresher.logout()
                     return@intercept response
                 }
 
@@ -79,8 +80,7 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
                         ApiConstants.AUTHORIZATION,
                         ApiConstants.generateBearerToken(currentToken)
                     )
-                    request.attributes.put(retryCountKey, retries + 1)
-                    return@intercept execute(request)
+                    return@intercept retryOrLogout(request)
                 }
 
                 // We need to refresh — use mutex to prevent concurrent refresh calls
@@ -93,8 +93,7 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
                             ApiConstants.AUTHORIZATION,
                             ApiConstants.generateBearerToken(latestToken)
                         )
-                        request.attributes.put(retryCountKey, retries + 1)
-                        return@withLock execute(request)
+                        return@withLock retryOrLogout(request)
                     }
 
                     val refreshed = try {
@@ -120,8 +119,7 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
                         ApiConstants.AUTHORIZATION,
                         ApiConstants.generateBearerToken(refreshed.authToken)
                     )
-                    request.attributes.put(retryCountKey, retries + 1)
-                    execute(request)
+                    retryOrLogout(request)
                 }
             }
         }
