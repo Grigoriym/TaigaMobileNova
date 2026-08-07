@@ -181,7 +181,7 @@ All in package `com.grappim.taigamobile.testing.models`:
 | File | Functions |
 |------|-----------|
 | `UserFakes` | `getUserDTO()`, `getUser()`, `getTeamMember(...)`, `getProjectMemberDTO()` |
-| `WorkItemFakes` | `getWorkItem(...)` and variants |
+| `WorkItemFakes` | `getWorkItem(...)` and variants, `getEpicShortInfoDTO(...)` |
 | `ProjectFakes` | `getProject()`, `getProjectDTO()`, `getProjectDetailDTO()`, `getProjectEntity()`, `getProjectSimple()`, `getProjectExtraInfoDTO()`, `getProjectValueItemDTO()` |
 | `SprintFakes` | `getSprint()` and variants |
 | `EpicFakes` | `getEpic()` and variants |

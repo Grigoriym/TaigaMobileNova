@@ -742,3 +742,15 @@ Adding the factory means editing `:testing`, which is the one edit correlated wi
 flipping into its leaky mode and costing the session's comparable before/after pair (see CLAUDE.md,
 Testing). Not worth that for a four-field data class on its own — fold it in when a session is
 already touching `:testing` for another reason, and de-duplicate the three local copies then.
+
+**Resolved (2026-08-07):** added `getEpicShortInfoDTO(id, title, ref, color)` to `:testing`
+`WorkItemFakes.kt` (next to `getWorkItemResponseDTO`, whose `epics` field is what it feeds) and
+switched all three call sites to it — `WorkItemMapperTest`'s two inline constructions (now
+`getEpicShortInfoDTO(color = "#FF0000")` / `getEpicShortInfoDTO(color = "#00FF00")`),
+`UserStoryShortInfoMapperTest`'s private `createEpicShortInfoDTO()`, and
+`UserStoryMapperTest`'s private `getEpicShortInfoDTO()`. Left the `getWorkItemResponseDTO().epics =
+null` default untouched — that half of the entry is about a *different* factory default and wasn't
+part of this de-duplication. Removed the now-unused `EpicShortInfoDTO`/`getRandomLong`/
+`getRandomString` imports each edit orphaned. `.claude/agents/testing.md`'s fake inventory updated.
+`:feature:workitem:mapper:jvmTest`, `:feature:userstories:mapper:jvmTest`, the full `./gradlew
+jvmTest` and `ktlintCheck` all green.

@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.userstories.mapper
 
 import com.grappim.taigamobile.core.storage.server.ServerStorage
-import com.grappim.taigamobile.feature.epics.dto.EpicShortInfoDTO
 import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
@@ -9,6 +8,7 @@ import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryEpic
 import com.grappim.taigamobile.feature.workitem.dto.DueDateStatusDTO
 import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
+import com.grappim.taigamobile.testing.models.getEpicShortInfoDTO
 import com.grappim.taigamobile.testing.models.getTag
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
@@ -239,11 +239,4 @@ class UserStoryMapperTest {
 
         assertEquals(responses.map { it.id }, result.map { it.id })
     }
-
-    private fun getEpicShortInfoDTO() = EpicShortInfoDTO(
-        id = getRandomLong(),
-        title = getRandomString(),
-        ref = getRandomLong(),
-        color = "#FF0000"
-    )
 }

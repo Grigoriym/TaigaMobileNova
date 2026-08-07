@@ -1,14 +1,12 @@
 package com.grappim.taigamobile.feature.workitem.mapper
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.feature.epics.dto.EpicShortInfoDTO
 import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import com.grappim.taigamobile.feature.users.mapper.UserMapper
+import com.grappim.taigamobile.testing.models.getEpicShortInfoDTO
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
-import com.grappim.taigamobile.testing.utils.getRandomLong
-import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -105,18 +103,8 @@ class WorkItemMapperTest {
 
     @Test
     fun `toDomain should use epic colors when color is null`() = runTest {
-        val epic1 = EpicShortInfoDTO(
-            id = getRandomLong(),
-            title = getRandomString(),
-            ref = getRandomLong(),
-            color = "#FF0000"
-        )
-        val epic2 = EpicShortInfoDTO(
-            id = getRandomLong(),
-            title = getRandomString(),
-            ref = getRandomLong(),
-            color = "#00FF00"
-        )
+        val epic1 = getEpicShortInfoDTO(color = "#FF0000")
+        val epic2 = getEpicShortInfoDTO(color = "#00FF00")
         val dto = getWorkItemResponseDTO().copy(color = null, epics = listOf(epic1, epic2))
         val taskType = CommonTaskType.UserStory
 
