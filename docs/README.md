@@ -68,7 +68,8 @@ State of the test suite and the plan for improving it.
 | Doc | About |
 |-----|-------|
 | [survey.md](testing/survey.md) | What the suite contains today — types, layout, tooling, coverage, gaps |
-| [improvement-plan.md](testing/improvement-plan.md) | Sequenced tasks to improve it, one per session — active tasks only; tasks 0–9f are archived (see below) |
+| [improvement-plan.md](testing/improvement-plan.md) | Sequenced tasks to improve it, one per session — active tasks only; tasks 0–9f and 10–11 are archived (see below) |
+| [compose-ui-test-spike.md](testing/compose-ui-test-spike.md) | How-to for wiring `runComposeUiTest` into a KMP module — read before writing the next Compose UI test |
 
 ## issues/
 
