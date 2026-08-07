@@ -140,6 +140,19 @@ content-description (a bare `Switch`) can be addressed via `isToggleable()` +
 a second, cheaper option alongside the `testTag` tax the Recommendation below describes, worth trying
 first when there's only one such widget in the tree.
 
+**A `TopBarConfig.actions` icon button (the "Add X" pattern) cannot be clicked from a test that only
+composes the target Screen (task 18, 2026-08-07).** `LocalTopBarConfig`/`TopBarController`
+(`uikit/.../topbar/TopBarController.kt`) is a plain state holder — `topBarController.update(...)`
+just writes a `mutableStateOf(TopBarConfig())`. The `TopAppBar` that actually reads
+`.config.actions` and renders the icon buttons lives in an **outer `Scaffold`** (`MainScreen`-level),
+outside the Screen composable any of these tests render in isolation. So a `LaunchedEffect` in the
+Screen correctly updates the controller, but there is no button in the test's semantics tree to
+`performClick()` on. This applies to essentially every Screen, since `TopBarConfig.actions` is the
+standard way Screens expose topbar actions — not something specific to
+`ScrumOpenSprintsScreen`/`EditSprintDialog`. If a future test needs to exercise a topbar action, it
+will need to also compose whatever Scaffold consumes `LocalTopBarConfig.current`, not just the target
+Screen.
+
 ## Recommendation
 
 Expanding is worth it, incrementally — the wiring cost (build-script accessor gotcha, source-set

@@ -81,8 +81,8 @@ than pushing through.
 | 15 | Compose UI test, dialog Screen (`TrustedCertificatesScreen`) | S | ✅ done — 2026-08-07 |
 | 16 | Compose UI test, multi-state-source Screen (`SettingsInterfaceScreen`) | S | ✅ done — 2026-08-07 |
 | 17 | Paging sweep — `ScrumClosedSprintsScreen` | S | ✅ done — 2026-08-07 |
-| 18 | Paging sweep — `ScrumOpenSprintsScreen` | S | ⬅ NEXT |
-| 19 | Paging sweep — `ScrumBacklogScreen` | S | todo |
+| 18 | Paging sweep — `ScrumOpenSprintsScreen` | S | ✅ done — 2026-08-07 |
+| 19 | Paging sweep — `ScrumBacklogScreen` | S | ⬅ NEXT |
 | 20 | Paging sweep — `EpicsScreen` | S | todo |
 | 21 | Paging sweep — `IssuesScreen` | S | todo |
 
@@ -656,6 +656,48 @@ interaction can be a note for later, same as task 12 left a gap noted rather tha
 
 **Finalize focus:** whether the `isClosed` fake gap from task 17 actually mattered here, and if the
 `EditSprintDialog` interaction was attempted, whether it needed anything task 15 didn't already show.
+
+**Result (2026-08-07):** The render-only test worked with zero surprises; the `EditSprintDialog`
+interaction turned out to be **not attempted as planned, and for a new reason** — not because it
+needed anything task 15 didn't already show, but because it couldn't be exercised at all in this
+test shape.
+
+- **`ScrumOpenSprintsScreenTest`**
+  (`feature/scrum/ui/src/jvmTest/.../open/ScrumOpenSprintsScreenTest.kt`) constructs
+  `ScrumOpenSprintsViewModel` directly with a `FakeSprintsRepository` (seeded via the same
+  `getSprintsPagingResult` extension task 17 added) and a `FakeProjectsRepository`, wraps
+  `setContent` the same way tasks 12–17 do, and asserts `onNodeWithText(sprint.name).assertExists()`.
+  `MainDispatcherRule` is needed for the same `cachedIn(viewModelScope)` reason task 17 documented,
+  plus this ViewModel's own `init { getPermissions() }` launch.
+- **The `isClosed` fake gap from task 17 did not matter here** — each test constructs its own
+  `FakeSprintsRepository` instance, so `ScrumOpenSprintsScreenTest` and
+  `ScrumClosedSprintsScreenTest` never share one fake and the flag being ignored has no visible
+  effect. The gap only bites a test that constructs *both* view models against *one* fake instance,
+  which nothing here does.
+- **The `EditSprintDialog` interaction test was written, then deleted after it failed** — clicking
+  `onNodeWithContentDescription("Add Sprint")` threw `AssertionError: ... could not find any node
+  that satisfies: (ContentDescription = 'Add Sprint')`. Root cause: `TopBarController`
+  (`uikit/.../topbar/TopBarController.kt`) is a **plain state holder** — `LocalTopBarConfig.current`
+  exposes a `mutableStateOf(TopBarConfig())` that `topBarController.update(...)` writes to, but
+  nothing in `ScrumOpenSprintsScreen` itself renders a `TopAppBar` from that config. The actual
+  `TopAppBar` that reads `.config.actions` and draws the icon buttons lives in an **outer `Scaffold`**
+  (`MainScreen`-level), which a test that only calls `setContent { ScrumOpenSprintsScreen(...) }`
+  never composes. So `state.canAddSprint` reaching `true` and the `LaunchedEffect` calling
+  `topBarController.update(...)` both happen correctly — there is just no button on screen to click.
+  **This generalizes to every Screen whose actions are wired through `TopBarConfig.actions`
+  (i.e. essentially all of them, per the uikit pattern), not just this one** — any future Screen test
+  that wants to click a topbar action will hit the same wall unless the test also composes whatever
+  Scaffold renders `LocalTopBarConfig.current.config`. Worth a one-off note if that's ever needed; not
+  worth chasing for this sweep, since the render-only test already proves the paging shape.
+
+Passes via `./gradlew :feature:scrum:ui:jvmTest`, confirmed picked up by the root `./gradlew jvmTest`
+(the `TEST-...ScrumOpenSprintsScreenTest.xml` file was deleted and reappeared after a full-root run,
+same check tasks 10/12–17 used). `ktlintCheck` is clean (one fix needed: the two-parameter
+`createViewModel` helper hit the same `standard:function-signature` trap CLAUDE.md already documents
+— a multi-line signature that fits on one line within 120 chars must be written on one line).
+
+**Next: task 19** (`ScrumBacklogScreen`) — the first paging-sweep Screen with a real `combine()` +
+`flatMapLatest`, per its own scope note.
 
 ---
 
