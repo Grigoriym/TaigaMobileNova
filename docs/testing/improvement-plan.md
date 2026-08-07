@@ -73,6 +73,7 @@ than pushing through.
 | 11 | Compose UI test sweep, one uikit widget per session | S each | ✅ done — 2026-08-07. `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07, `ExpandableMarkdownText` ✅ 2026-08-07, `SectionTitle` ✅ 2026-08-07. All four candidates closed — task complete. |
 | 12 | Compose UI test spike, feature-level Screen (`SettingsAboutScreen`) | S | ✅ done — 2026-08-07 |
 | 13 | Compose UI test, route-carrying + async-loading Screen (`ProjectValuesScreen`) | S | ✅ done — 2026-08-07 |
+| 14 | Compose UI test, paging-list Screen (`ProjectSelectorScreen`) | S | ✅ done — 2026-08-07 |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
@@ -126,7 +127,12 @@ doc, not a task write-up) stayed in this directory since it's still the first re
 Compose UI test.
 
 Task 12 is next, and is now scoped and runnable — see its own section below. Task 13 (also done) picks
-up where task 12's Result note left off — see its own section below.
+up where task 12's Result note left off — see its own section below. Task 14 (also done) picks up
+where task 13's Result note left off, closing the last of the three Screen shapes it named
+(paging lists) — see its own section below. No task is scoped yet for the other two named shapes
+(multi-state-source Screens, dialogs) or for a sweep across the remaining paging-list Screens; pick
+one up as a new task the same way 12 → 13 → 14 were each scoped from the previous task's Result note,
+rather than assuming a single paging-list data point generalizes.
 
 ---
 
@@ -292,6 +298,93 @@ both closed now — a Screen test for any `ViewModel` whose collaborators are or
 (no artificial delay) can follow this pattern directly. The one remaining open question is the
 artificial-suspension case named above; worth a one-off check if a future Screen's fakes ever need a
 real `delay()` to simulate loading UI, but not worth a dedicated task until one actually does.
+
+---
+
+## Task 14 — Compose UI test, paging-list Screen (scoped and done 2026-08-07)
+
+**Why:** task 12's Result note named three Screen *shapes* not yet covered by a worked example and
+explicitly declined to assume the pattern generalizes to them from inference alone:
+multi-state-source Screens, dialogs, and paging lists (`LazyPagingItems`). This task picks the paging
+list shape and proves it for real, the same way task 13 picked and closed the route-carrying +
+async-loading shape.
+
+**Survey:** grepped `feature/*/ui/src/commonMain` for `collectAsLazyPagingItems`/`LazyPagingItems`.
+Seven Screens qualify: `EpicsScreen`, `IssuesScreen`, `ScrumBacklogScreen`, `ScrumOpenSprintsScreen`,
+`ScrumClosedSprintsScreen` (via `SprintsListContentWidget`), and `ProjectSelectorScreen`.
+(`WikiPagesScreen`/`WikiBookmarksScreen`, named as candidates in the task brief, turned out not to use
+Paging at all — grepped and confirmed empty.)
+
+**Pilot: `ProjectSelectorScreen`** (`feature/projectselector/ui/.../ProjectSelectorScreen.kt` +
+`ProjectSelectorViewModel.kt`). Chosen over the other six for having the fewest moving parts on top of
+the paging list itself:
+
+- `EpicsScreen`/`IssuesScreen` also render a `TaskFiltersWidget` and a top-bar add action gated on a
+  permission — real functionality, but extra state this pilot doesn't need to prove the paging shape.
+- The three `feature/scrum/ui` sprint screens back a swimlane/kanban-style list with drag-and-drop
+  affordances (`SprintsListContentWidget`) — more moving parts again, and a worse fit for a first
+  worked example.
+- `ProjectSelectorScreen` is a search field plus a `LazyColumn` of `projects.itemCount` rendered from
+  `viewModel.projects.collectAsLazyPagingItems()` — nothing else. Its `NavDestination` is a plain
+  `data class ProjectSelectorNavDestination(val isFromLogin: Boolean = false)`, so the route half of
+  task 13's pattern reuses directly, and `ProjectSelectorViewModelTest` already builds its
+  `SavedStateHandle` and all four collaborator fakes (`FakeProjectsRepository`, `FakeFiltersStorage`,
+  `FakeTaigaSessionStorage`, `FakeDataCleaner`) — no new fakes needed for construction.
+
+**Result:** Works, but not for free — the one genuinely new problem was that every existing paging
+fake (`FakeProjectsRepository.fetchProjects` included) hard-codes `flowOf(PagingData.empty())`, so
+nothing in `:testing` could make a paging list actually render an item. `PagingData.empty()` never
+presents anything to `collectAsLazyPagingItems()`, by design — it exists to make ViewModel
+*construction* safe, not to drive a rendering test. Extended `FakeProjectsRepository` with a
+`fetchProjectsResult: ImmutableList<Project>` field: empty still returns `PagingData.empty()` (so
+every existing consumer of the fake is unaffected), non-empty returns `PagingData.from
+(fetchProjectsResult)` — a static, already-loaded page that needs no `Pager`/`RemoteMediator` to
+construct, which is all a "does this Screen shape render inside `runComposeUiTest`" test needs. Also
+added `fetchProjectsCalls` to record the `query` argument, matching the recorder convention used
+everywhere else in the fake inventory (not asserted by this test, but free to add while in the file).
+
+`ProjectSelectorScreenTest`
+(`feature/projectselector/ui/src/jvmTest/.../ProjectSelectorScreenTest.kt`) constructs
+`ProjectSelectorViewModel` directly with a `FakeProjectsRepository` seeded with one project via
+`fetchProjectsResult`, wraps `setContent` the same way tasks 12–13 do
+(`CompositionLocalProvider(LocalTopBarConfig provides TopBarController())`), and asserts
+`onNodeWithText("${project.name} (${project.slug})").assertExists()` — the exact text
+`project_name_template` renders, proving a real item reached the screen through
+`collectAsLazyPagingItems()`. `MainDispatcherRule` is needed (same reasoning as task 13): `init`
+collects `taigaSessionStorage.currentProjectIdFlow`, and `UnconfinedTestDispatcher` runs that
+collector to completion before `setContent` runs.
+
+**Everything else about the pattern held with zero surprises** — no Koin, same
+`LocalTopBarConfig` provider, same direct-construction `SavedStateHandle`, same "unconfined dispatcher
+finishes `init`'s coroutine work before the first frame" reasoning as task 13. The paging-specific
+unknown was entirely inside the fake, not inside `runComposeUiTest` itself: once
+`FakeProjectsRepository` could hand back a real `PagingData`, `collectAsLazyPagingItems()` presented
+it exactly as it would from a real `Pager`, with no special handling needed in the test or the
+Screen. Build wiring (`uiTest`/`desktop.uiTestJUnit4`/`desktop.currentOs` hoisted to top-level `val`s
+under `@file:OptIn(ExperimentalComposeLibrary::class)`, referenced in `jvmTest.dependencies`) was a
+direct copy of the same block tasks 10 and 12 added elsewhere — `feature/projectselector/ui` had no
+`jvmTest` source set or `uiTest` wiring before this task, same starting point task 12 found in
+`feature/settings/ui`.
+
+Passes via `./gradlew :feature:projectselector:ui:jvmTest`, confirmed picked up by the root
+`./gradlew jvmTest` (the `TEST-...ProjectSelectorScreenTest.xml` file was deleted and reappeared after
+a full-root run, same check tasks 10, 12 and 13 used). `ktlintCheck` is clean. One unrelated
+intermittent failure was seen during verification (`core/storage:jvmTest`'s `FiltersStorageImplTest`
+on one run, `feature/wiki/ui:jvmTest`'s `WikiPageViewModelTest` on another) — confirmed pre-existing
+by reproducing the same flakiness on a clean `git stash`'d tree with none of this task's changes
+present; this is gotcha 7's cross-module leaked-coroutine-exception hazard, not something this task
+introduced.
+
+**Recommendation:** all three Screen shapes task 12 named (route-carrying + async-loading, closed by
+task 13; paging lists, closed by this task) now have a worked example. **Dialogs and
+multi-state-source Screens are still open** — pick either up as a new task the same way this one was
+scoped from task 13's Result note. A **sweep across the other six paging-list Screens** is also not
+scoped: each of `EpicsScreen`/`IssuesScreen`/the three scrum sprint screens adds its own extra state
+(filters widget, permissions, swimlanes) on top of the paging list, so — same reasoning task 12 used
+for not assuming a sweep from one Screen — size that as its own task rather than assuming this
+pilot's fake extension covers `FakeEpicsRepository`/`FakeUserStoriesRepository`/`FakeSprintsRepository`
+too; each still only returns `PagingData.empty()` and would need the identical treatment given to
+`FakeProjectsRepository` here.
 
 ---
 

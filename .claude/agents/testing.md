@@ -61,7 +61,7 @@ right subpackage before concluding a fake doesn't exist:
 
 Key fields for commonly-used fakes:
 
-**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getPermissionsThrows`, `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`, `updateModulesCalled/Throws/Calls` (the `Calls` list holds `UpdateModulesCall` records — every argument, so a test can assert the whole set in one `assertEquals`), `updateProjectCalled/Throws/Calls` (same shape — the `Calls` list holds `UpdateProjectCall` records of all six arguments), `saveProjectCalled/CalledWith`, `fetchAndSaveProjectInfoCalled/Throws`, `createTagCalled/Throws`, `deleteTagCalled/TagName/Throws`, `editTagFromTagName/ToTagName/Throws`, `mixTagsCalled/FromTags/ToTag/Throws`, `projectFlow`
+**`FakeProjectsRepository`**: `permissions: ImmutableList<TaigaPermission>` (default: `[MODIFY_PROJECT]`), `getPermissionsThrows`, `getCurrentProjectSimpleResult/Throws`, `getUserProjectsResult/Throws`, `getProjectDetailsResult/Throws`, `getProjectModulesResult/Throws`, `getTagsColorsResult/Throws`, `updateModulesCalled/Throws/Calls` (the `Calls` list holds `UpdateModulesCall` records — every argument, so a test can assert the whole set in one `assertEquals`), `updateProjectCalled/Throws/Calls` (same shape — the `Calls` list holds `UpdateProjectCall` records of all six arguments), `saveProjectCalled/CalledWith`, `fetchAndSaveProjectInfoCalled/Throws`, `createTagCalled/Throws`, `deleteTagCalled/TagName/Throws`, `editTagFromTagName/ToTagName/Throws`, `mixTagsCalled/FromTags/ToTag/Throws`, `projectFlow`, `fetchProjectsResult: ImmutableList<Project>` (backs `fetchProjects(query)` — empty returns `PagingData.empty()`, non-empty returns `PagingData.from(fetchProjectsResult)` so a paging-list Screen test can assert a real item renders) / `fetchProjectsCalls` (records every `query` argument)
 
 **`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `createWorkItemResult/Throws/Calls` (`CreateWorkItemCall` records), `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult/Throws`, `getCustomFieldsResult/Throws`
 
@@ -492,6 +492,15 @@ Fakes that return `flowOf(PagingData.empty())` for paging (safe to construct):
 | `FakeProjectsRepository` | `fetchProjects(query)` |
 
 If you add a ViewModel that calls another paging method at construction, implement it in the corresponding fake with `flowOf(PagingData.empty())`.
+
+**To render a real item through a `LazyPagingItems`-backed Screen in a Compose UI test, the fake needs
+to return non-empty `PagingData` too** — `flowOf(PagingData.empty())` never presents anything to
+`collectAsLazyPagingItems()`. `FakeProjectsRepository.fetchProjects` is the worked example: set
+`fetchProjectsResult` to a non-empty list and it returns `PagingData.from(fetchProjectsResult)`
+instead. `PagingData.from(list)` needs no `Pager`/`RemoteMediator` — it is a static, already-loaded
+page, which is all a "does this Screen shape render inside `runComposeUiTest`" test needs (see task
+14, `docs/testing/improvement-plan.md`). The other three paging fakes above still only support the
+empty case; extend them the same way if a test for one of their Screens needs a real item to render.
 
 ### Driving a `RemoteMediator` directly
 

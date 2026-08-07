@@ -18,8 +18,17 @@ class FakeProjectsRepository : ProjectsRepository {
     var permissions: ImmutableList<TaigaPermission> = persistentListOf(TaigaPermission.MODIFY_PROJECT)
     var getPermissionsThrows: Throwable? = null
 
-    override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> =
-        flowOf(PagingData.empty())
+    var fetchProjectsResult: ImmutableList<Project> = persistentListOf()
+    val fetchProjectsCalls: MutableList<String> = mutableListOf()
+
+    override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> {
+        fetchProjectsCalls += query
+        return if (fetchProjectsResult.isEmpty()) {
+            flowOf(PagingData.empty())
+        } else {
+            flowOf(PagingData.from(fetchProjectsResult))
+        }
+    }
 
     override suspend fun getMyProjects(): ImmutableList<Project> = error("not used in this test")
 
