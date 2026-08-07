@@ -89,24 +89,28 @@ kover {
             html { }
 
             // Floors, not targets. Ratchet them up as coverage improves; never lower them to
-            // make a build pass. The branch bound is the point of the exercise — it sits ~20
+            // make a build pass. The branch bound is the point of the exercise — it sits ~15
             // points under the line bound, and that gap is the untested error paths.
             //
-            // Bounds are ~2 points under what koverVerify itself measured on 2026-08-03
-            // (line 60.5 %, branch 40.3 %). Note those are NOT the koverXmlReport figures
-            // uploaded to Codecov (line 65.3 %, branch 45.9 %): the two tasks apply the
-            // excludes above differently, and neither applies them in full. See
-            // docs/revisit.md #8. Tune these against `./gradlew :koverVerify`, not the XML.
+            // Bounds are ~3 points under what koverVerify measured on 2026-08-07:
+            // line 94.8723 %, branch 79.8736 %.
+            //
+            // koverXmlReport and koverVerify agree to six significant figures *within a single
+            // invocation* — VariantReportsSet hands both tasks the same filters and the same
+            // artifacts. Across invocations they can differ, because the report counts whichever
+            // compiler output happens to exist on disk, which an Android build or a KSP re-run
+            // changes. So take the reading from a run that also produced the XML you compare it
+            // against. See docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md.
             verify {
                 rule("Line coverage") {
                     bound {
-                        minValue = 58
+                        minValue = 92
                         coverageUnits = CoverageUnit.LINE
                     }
                 }
                 rule("Branch coverage") {
                     bound {
-                        minValue = 38
+                        minValue = 77
                         coverageUnits = CoverageUnit.BRANCH
                     }
                 }

@@ -1,21 +1,17 @@
 #!/usr/bin/env python3
 """Rank packages in a Kover XML report by missed branches, with the root `excludes` applied.
 
-Why this exists: `koverXmlReport` non-deterministically flips between applying the root
-`build.gradle.kts` `excludes` block and ignoring it (observed class counts 742 / 821 / 854 —
-see CLAUDE.md "Testing" and docs/revisit.md #8). A report from the wrong side of the flip
-counts thousands of lines no test can ever move, which silently inflates any ranking taken
-from it.
+Why this exists: a report's class universe is whatever compiler output happens to exist on disk
+(Kover's report task ends its file collection in `.existing()`), and the root aggregates each
+module's *total* variant, which includes the KMP Android library target. So an Android build or a
+KSP re-run leaves classes behind that a later `koverXmlReport` counts, and observed class counts
+range over 742 / 781 / 787 / 798 / 821 / 854 on the same source. Re-applying the exclusion rules
+here makes a ranking usable whichever compilations happened to have run. See
+docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md finding 3.
 
-Rather than trying to force a 742-class run, this script re-applies the exclusion rules to
-whatever report you have. On 2026-08-03 it reduced an 854-class report to 742 classes and
-reproduced a genuine 742-class run's totals to the digit, so the two are interchangeable.
-
-Caveat found 2026-08-04: on a 787-class report (a mode where the `excludes` *were* applied and the
-surplus is Android-variant / Room classes) it stops at 745, because the three
-`com.grappim.taigamobile.core.storage.db.entities` classes are named by neither the root `excludes`
-nor the lists below. BRANCH totals still match the gate exactly; LINE runs ~53 lines high. See
-docs/revisit.md #8 — fix both lists together if that entry is ever addressed.
+Note this is *not* Kover failing to apply the `excludes` — it applies them faithfully (finding 5:
+0-1 leaked classes, and the one leak is a rare intermittent Kover bug worth <=1 line). What varies
+is the denominator, not the filtering.
 
 Usage:
     ./gradlew koverXmlReport
@@ -53,7 +49,11 @@ PACKAGES = [
 
 
 def is_excluded(package: str, class_name: str) -> bool:
-    if package in PACKAGES:
+    # Kover turns `packages("a.b")` into the class pattern `a.b.*`, and its `*` matches dots too
+    # (`#` is its non-dot wildcard) — so a listed package covers all of its subpackages. Matching
+    # by equality here kept e.g. `...core.storage.db.entities`, which the real gate excludes via
+    # `...core.storage.db.*`. See docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md.
+    if any(package == p or package.startswith(p + ".") for p in PACKAGES):
         return True
     # Kover's suffix match is on the outer class, so strip the `Foo$Bar` nesting first.
     base = class_name.split("/")[-1].split("$")[0]

@@ -11,18 +11,18 @@ or a doc link, not just a description.
 **Current agreement (2026-08-02):** finish the [testing improvement plan](testing/improvement-plan.md)
 first, then work this list. Nothing here is urgent; nothing here is forgotten.
 
+**Still open** (the table only lists these; every other entry below carries a **Resolved** note in
+its own section, kept for the reasoning rather than the outcome):
+
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 2 | Non-ViewModel beans may leak application-scoped coroutines | S to check | same |
-| 3 | Wiki mapper tests duplicate the new shared DTO factories | XS | improvement-plan task 3 |
 | 5 | `tools/seed` and `tools/utils` tests would not run in CI | XS | improvement-plan task 1 |
-| 6 | `GetKanbanDataUseCase` reads the current project three times | XS | improvement-plan task 5 |
-| 7 | Date formatters cache the locale for the process lifetime | S | improvement-plan task 6 |
-| 8 | Kover's excludes are applied partially, and differently by the two tasks | M | improvement-plan task 8 |
-| 9 | `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT | XS | improvement-plan task 9 |
 | 10 | The `Plugin`/`Module` exclusion patterns hide real logic in `core/api` | S | improvement-plan task 9a |
-| 11 | `TokenRefreshPlugin`'s `MAX_RETRIES` guard is unreachable | S | improvement-plan task 9a |
+| 16 | Every `logcat` message lambda is a permanently-uncovered line | S | improvement-plan task 9a |
+| 18 | `currentUserStory` throws from `viewModelScope` when the initial load failed | S–M | improvement-plan task 9a |
+| 23 | The coverage report counts Android-variant classes no test can reach | M | [kover issue](issues/2026-08-07-kover-excludes-and-report-mode-flip.md) |
 
 ---
 
@@ -202,111 +202,44 @@ confirmed by re-running `:core:storage:jvmTest` alone, which passed).
 
 ## 8. Kover's excludes are applied partially, and differently by `koverXmlReport` and `koverVerify`
 
-**What:** the `excludes` block in the root `build.gradle.kts` (`kover { reports { filters { … } } }`)
-is not fully honoured, and the two consumers of it disagree with each other. Measured on
-2026-08-03 at `af8a185a`, same invocation, same artifacts:
+**Resolved (2026-08-07) — and the premise was wrong.** Investigated properly against Kover 0.9.9's
+own sources: [docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md](issues/2026-08-07-kover-excludes-and-report-mode-flip.md).
+Both headline claims are false, so the ~100 lines of analysis and four contradicted trigger
+hypotheses that used to live here have been deleted rather than archived — they would only send the
+next reader down the same path. What replaced them:
 
-| | LINE | BRANCH |
-|---|---|---|
-| `koverXmlReport` (uploaded to Codecov) | 65.30 % | 45.88 % |
-| `:koverVerify` (the CI gate) | 60.47 % | 40.29 % |
-| what the configured excludes *should* produce | 71.97 % | 49.73 % |
+- **The two tasks cannot apply excludes differently.** `VariantReportsSet.kt:87` and `:110` hand
+  `koverXmlReport` and `koverDoVerify` the *same* filter object from the same root config, resolved
+  through the same `collectAllFiles()`. Measured in one invocation: XML LINE 9214/9712 =
+  94.872323 % / BRANCH 1643/2057 = 79.873602 %, against `:koverVerify`'s own 94.872300 % /
+  79.873600 %. Agreement to six significant figures. The historical "~5 points apart" was always a
+  comparison between *different invocations*.
+- **No `excludes` entry silently no-ops.** `packages("a.b")` becomes the class pattern `a.b.*`
+  (`ReportsImpl.kt:349`) and Kover's `*` matches dots (`#` is its non-dot wildcard,
+  `KoverFeatures.kt:23`) — so a listed package covers its subpackages. `core.storage.db.dao` and
+  `core.storage.db.wrapper` are **redundant** with `core.storage.db`, not broken, and deleting a
+  redundant entry changing nothing is exactly what "delete an entry and diff the package list"
+  should show. Nothing is special about `:core:storage`.
+- **What actually varies is the denominator.** Kover's report task ends its file collection in
+  `.existing()` (`AbstractKoverReportTask.kt:85`), and the root aggregates each module's *total*
+  variant, which includes the KMP Android library target (`KotlinMultiPlatformLocator.kt:84`). A
+  class is counted iff its compiler output is on disk — so an Android build or a KSP re-run since the
+  last `clean` changes the class universe. That is the whole 742 / 744 / 781 / 787 / 798 spread, and
+  it is why every "the trigger is X" hypothesis died: the trigger was never the edit.
+- **The one real bug was ours.** `kover-rank.py:56` matched excluded packages by equality where Kover
+  matches by prefix, so it kept `…core.storage.db.entities` — the script's own documented "745 not
+  742, LINE ~53 high" caveat, misdiagnosed the same way. Fixed to prefix matching in the same session.
 
-With **all** filters removed the two tasks agree to four decimal places (35.8939 % / 14.1084 %), so
-the class universe is identical — the divergence is entirely in how each applies the excludes.
+**Still not explained:** the 821–854 counts with ~20 suffix leaks were not reproduced; today's two
+runs leaked 1 class and 0 classes respectively, and the one leak (`UtilsUiModule` vs `**.*Module`) is
+intermittent and worth <=1 line. Tracked as open question 1 in the issue doc. CI has never been
+affected — it always measures a fresh checkout.
 
-**Which entries silently no-op** (verified by deleting the `packages(…)` block and diffing the
-package list in `report.xml`): of the seven `packages(…)` entries, only
-`strings.generated.resources`, `core.storage.db` and `core.storage.cache` take effect.
-`core.storage.db.dao`, `core.storage.db.wrapper`, `core.storage.di` and `core.storage.network` do
-nothing. Class patterns fail in the same place: `**.*Module` leaves `DBModule`,
-`AuthDataStoreModule`, `PlatformDBModule`, `PlatformStorageModule` in the report, and
-`**.*Preferences*` leaves `LongPreferences` — while `**.*Repository`, `**.*Api`, `**.*Widget`,
-`**.*Screen` and `**.*Delegate` match **zero** classes repo-wide, i.e. work perfectly everywhere
-else.
-
-**Every failing exclusion is in `:core:storage`.** No mechanism found for why that module is
-special; that is the thing to work out first. The cost today is 982 lines of Room-generated
-`SprintDao_Impl` / `WorkItemDao_Impl` at 1.6 % coverage sitting in the denominator, which is most of
-the ~6-point gap between the real and reported figures.
-
-**Why deferred:** found while setting the coverage floor (improvement-plan task 8), whose scope is
-the gate, not Kover's filter engine. The gate is tuned to `:koverVerify`'s own numbers, so it is
-correct and conservative as it stands — fixing this can only push coverage *up*, never break the
-build.
-
-**When fixing:** raise the bounds in the same commit, otherwise the floor goes ~12 points slack.
-Reproduce with `./gradlew jvmTest :koverXmlReport :koverVerify` and compare the two figures; they
-should be equal, and both should equal the "should produce" row above.
-
-### Update (2026-08-03, improvement-plan task 9a) — the trigger is now known
-
-`koverXmlReport` has **two stable outputs**, and which one you get depends on whether any build
-script changed since the last run — not on the tests, not on the caches:
-
-| Tree state | Classes in report | LINE | BRANCH |
-|---|---|---|---|
-| clean (no build-file change since last run) | 821 | 62.00 % | 43.49 % |
-| **any** build-file change | 742 | 71.96 % | 50.37 % |
-
-The 742-class output is the one where the `excludes` block is applied **in full** — 79 classes that
-the filters name are dropped, and the totals land on the "what the configured excludes should
-produce" row above (71.97 % / 49.73 %). The 821-class output leaks those 79 classes back in.
-
-Isolated by bisection on 2026-08-03: adding a **single unused line to `gradle/libs.versions.toml`**
-is enough to flip it. Ruled out as causes — `--no-configuration-cache` and `--no-build-cache` on a
-clean tree both still give 821, and deleting `report.xml` to force report regeneration also gives
-821. So it is neither cache; the remaining difference is whether the compile/test tasks re-executed,
-which matches the standing warning in `CLAUDE.md` that "`koverXmlReport` reports on whichever test
-tasks actually executed".
-
-**Two consequences that matter more than the mechanism:**
-
-- **CI always gets the 742 / 71.96 % behaviour**, because a fresh checkout always re-executes
-  everything. The ~62 % a local clean-tree run prints is a local-only artifact. Anyone comparing a
-  local figure to Codecov is comparing two different numbers for a third reason, on top of the two
-  already in this entry.
-- **A local before/after comparison is invalid unless both runs are on the same side of this flip.**
-  Task 9a hit this: the baseline was taken on a clean tree (821) and the after-run had a modified
-  `build.gradle.kts` (742), making the totals differ by 1988 lines in packages the change never
-  touched. The fix is to take both measurements with a build-file change present, then check the
-  denominators match before reading anything into the numerators.
-
-### Update (2026-08-04, improvement-plan task 9a, `projectvalues`) — a third mode, and one concrete gap
-
-The "two stable outputs" table above is incomplete, and the bisection result it reports has since been
-contradicted twice (854 with no build file touched, and the run below). A **787**-class run appeared
-with the `excludes` applied *in full* — zero `*Screen` / `*Widget` / `*Plugin` classes — exceeding a
-742 run by 45 **Android-variant / Room-generated** classes only (`*_Impl`, `TaigaDB_Impl`,
-`core/storage/db/entities/*`, `StorageModule_androidKt`, `NetworkMonitorImpl`). So class count alone
-does not identify the mode; count the excluded-suffix leaks instead (one-liner in `CLAUDE.md`).
-Disproved lead: touching only `:testing`'s `commonMain` and re-running gave 744, not 787.
-
-**The one actionable item here:** `com.grappim.taigamobile.core.storage.db.entities` is in *neither*
-the root `excludes` `packages(…)` list nor `kover-rank.py`, so in that mode three `@Entity` data
-classes (53 lines) survive filtering and inflate the LINE denominator — BRANCH is unaffected. Whoever
-fixes this entry should add `…db.entities` to the `packages(…)` block alongside the existing
-`core.storage.db*` entries and to the script's `PACKAGES`, in the same commit.
-
-### Update (2026-08-04, improvement-plan task 9a, `modules`) — the most repeatable transition
-
-Baseline on a clean tree: **781**, zero leaks (the 787/781 Android-variant mode). After adding one
-test file and one field to a `:testing` fake — no build file touched — the same command gave **822**
-with **20** excluded-suffix leaks, i.e. the excludes-skipped mode. That is the second time a
-*test-sources-only* edit has flipped a clean run into the leaking mode (854 on 2026-08-03 was the
-first), and it is so far the only transition that has reproduced. Practical consequence for a
-before/after session: **assume the pair will straddle the flip** and reach for the package-scope
-denominator check by default rather than as a fallback.
-
-### Update (2026-08-04, improvement-plan task 9a, `settings/ui/user`) — the transition reverses
-
-The "test-sources-only edit flips a clean run *into* the leaking mode" reading died the next session.
-Baseline on a **clean tree**: **822** with **20** leaks — the leaking mode, with no uncommitted change
-of any kind to explain it. After adding one test file and three fields to `FakeUsersRepository`, the
-same command gave a clean **742** with **zero** leaks, i.e. the CI-equivalent mode. So the flip is
-bidirectional and a clean tree does not imply the excludes-applied side. Four observed transitions
-now: 742→854, 781→822, 742→822, 822→742. The only durable advice is the package-scope denominator
-check; stop trying to predict which side a given run will land on.
+**Consequences elsewhere:** the false comment at `build.gradle.kts:95-99` is gone, CLAUDE.md's
+Testing section lost the workarounds built on the false premise, and [#14](#14-the-kover-coverage-floor-is-far-below-actual) is
+resolved (the floor was raised to 92/77 against a same-invocation reading). [#10](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi)
+is untouched by all of this and still open — it is a question about whether five Ktor plugins
+*should* be excluded, not about whether exclusion works. The deferred half is now [#23](#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach).
 
 ---
 
@@ -492,6 +425,21 @@ when the XML lands on the 742 side, so the widening is real rather than a mode a
 **Fix:** take `:koverVerify` readings on several separate clean-tree invocations. If they are stable,
 raise the bounds to a couple of points under the lowest reading. If they flip, that is a bigger
 finding than the floor and belongs in #8.
+
+**Resolved (2026-08-07):** the blocker named above — "`:koverVerify` itself may flip between the
+excludes-applied and excludes-not-applied modes" — is ruled out. `koverXmlReport` and `koverVerify`
+are handed the same filter object and the same artifacts (`VariantReportsSet.kt:87` and `:110`), and
+in one invocation they agreed to six significant figures: XML 94.872323 % LINE / 79.873602 % BRANCH
+against the gate's 94.872300 % / 79.873600 %. See
+[#8](#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify) and
+[the issue doc](issues/2026-08-07-kover-excludes-and-report-mode-flip.md). So the correct procedure
+is not "several clean-tree readings" but **one reading from the same invocation that produced the XML**.
+
+Raised the bounds to **line 92 / branch 77**, ~3 points under the 2026-08-07 measurement, and
+replaced the comment above them (which asserted the two tasks disagree). `./gradlew :koverVerify`
+green. Note the reading was taken on a local tree carrying Android compilation outputs, which only
+*depresses* the figure (those classes can never be covered under `jvmTest`) — CI, on a fresh
+checkout, sits at or above it, so the new floor has margin on the side that matters.
 
 ---
 
@@ -786,3 +734,39 @@ part of this de-duplication. Removed the now-unused `EpicShortInfoDTO`/`getRando
 `getRandomString` imports each edit orphaned. `.claude/agents/testing.md`'s fake inventory updated.
 `:feature:workitem:mapper:jvmTest`, `:feature:userstories:mapper:jvmTest`, the full `./gradlew
 jvmTest` and `ktlintCheck` all green.
+
+## 23. The coverage report counts Android-variant classes no test can reach
+
+**Where:** root `build.gradle.kts` `kover { reports { filters { excludes` — what is *not* in it.
+
+**Mechanism** (established in [the #8 investigation](issues/2026-08-07-kover-excludes-and-report-mode-flip.md),
+finding 3): Kover's report task ends its file collection in `.existing()`
+(`AbstractKoverReportTask.kt:85`), so a class is counted iff its compiler output is on disk. The root
+aggregates each module's **total** variant, and `locateKotlinMultiplatformVariants`
+(`KotlinMultiPlatformLocator.kt:32-84`) locates both the plain `jvm` target *and* the KMP Android
+library target as JVM origins. Native targets are not located, so iOS classes never appear — but
+Android ones do.
+
+**Consequence:** the denominator depends on whether an Android build or a KSP re-run has happened
+since the last `clean`, which is the entire observed 742 / 744 / 781 / 787 / 798 class-count spread.
+Every class it adds is permanently 0 %, because CI runs `jvmTest` only and the repo has no Android
+unit-test source set by design. Concrete example from a clean 2026-08-07 report:
+`utils/formatter/decimal/DecimalFormatterModule_androidKt` at LINE 0/1, sitting beside its covered
+`_jvmKt` twin. This is also the root of three separate CLAUDE.md warnings (`*_androidKt` rows are
+dead weight; `StringPreference` is unreachable from `jvmTest`; Room `*_Impl` leaks) and of
+[#17](#17-stringpreference-and-longpreferences-in-corestorage-are-dead-code).
+
+**Why deferred:** this was option C of the #8 investigation and gregory chose option A. Excluding
+those classes changes *what the project measures* at the same moment as the floor ratchet, and the two
+should not land in one commit. #8's docs and floor work landed first precisely so this has a
+trustworthy baseline to be measured against.
+
+**When doing it:** there is **no DSL path to a JVM-only aggregated report** — checked. The root is not
+a Kotlin project so it has no `jvm` variant, and `addWithDependencies("jvm", optional = true)` then
+"will not be searched even in dependencies" (`KoverVariantConfig.kt:271`); `excludedSourceSets`
+filters by *compilation* name (`JvmVariantArtifacts.kt:57-72`) and both targets' compilation is named
+`main`. So the realistic implementation is a name/package denylist (`**.*_androidKt`, Room `*_Impl` /
+`TaigaDB_Impl`, `core.storage.utils`) — which is the same brittleness
+[#10](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi) complains about, and
+that tension is the real decision to make. Re-tune the floor in the same commit, and keep
+`docs/testing/kover-rank.py`'s lists in sync.

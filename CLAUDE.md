@@ -30,7 +30,7 @@ TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io target
 # Generate coverage report (Kover — runs jvmTest on all aggregated modules)
 ./gradlew koverXmlReport    # XML → build/reports/kover/report.xml (uploaded to Codecov)
 ./gradlew koverHtmlReport   # HTML → build/reports/kover/html/index.html
-./gradlew :koverVerify      # coverage floor (line ≥ 58 %, branch ≥ 38 %) — must be qualified
+./gradlew :koverVerify      # coverage floor (line ≥ 92 %, branch ≥ 77 %) — must be qualified
 
 # Force Koin compiler to re-run (skipped on UP-TO-DATE, which causes "no definition found" crashes)
 # Run this before launching from Xcode whenever DI definitions may have changed
@@ -222,17 +222,29 @@ would have been silently skipped forever. Two consequences:
   JVM-specific behaviour). The repo has no Android unit-test source set at all, by design; nothing
   in CI would execute one.
 
-**The coverage floor is a ratchet: raise it, never lower it.** `:koverVerify` enforces line ≥ 58 %
-and branch ≥ 38 % (root `build.gradle.kts`, `total { verify { } }`). A PR that breaches it needs
+**The coverage floor is a ratchet: raise it, never lower it.** `:koverVerify` enforces line ≥ 92 %
+and branch ≥ 77 % (root `build.gradle.kts`, `total { verify { } }`). A PR that breaches it needs
 tests, not a smaller bound. The traps when touching those numbers:
 
-- **`koverVerify` and `koverXmlReport` can report different coverage** — up to ~5 points apart on the
-  same artifacts ([revisit #8](docs/revisit.md)). The bounds are tuned to **`./gradlew :koverVerify`**;
-  never set one from the Codecov dashboard. But the divergence is **not** intrinsic to the two tasks:
-  when the XML lands on the 742-class side, `:koverVerify` and `kover-rank.py`'s filtered totals agree
-  to four decimal places (75.4249 / 60.5173 vs. 75.42 / 60.52, measured 2026-08-03). The gap is the
-  class-count flip below, not a second mechanism — so **`kover-rank.py`'s output *is* the gate number**,
-  whichever side of the flip your report landed on.
+- **`koverXmlReport` and `:koverVerify` agree exactly — within a single invocation.** Both are handed
+  the same filter object and the same artifacts (`VariantReportsSet.kt:87` and `:110`). Measured
+  2026-08-07: XML 94.872323 % line / 79.873602 % branch against the gate's own 94.872300 % /
+  79.873600 %. **Older notes claiming the two tasks "apply the excludes differently" were wrong**, as
+  was the claim that individual `excludes` entries silently no-op — `packages("a.b")` becomes the
+  pattern `a.b.*` and Kover's `*` matches dots, so a listed package covers its subpackages and the
+  `db.dao`/`db.wrapper` entries are merely redundant. Full write-up:
+  [docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md](docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md).
+  Never set a bound from the Codecov dashboard.
+- **What varies between runs is the denominator, not the filtering.** Kover's report task ends its
+  file collection in `.existing()` (`AbstractKoverReportTask.kt:85`) and the root aggregates each
+  module's *total* variant, which includes the KMP Android library target — so a class is counted iff
+  its compiler output is on disk *right now*. An Android build, an iOS link or a KSP re-run since the
+  last `clean` changes the class universe; 742 / 744 / 781 / 787 / 798 / 821 / 854 have all been seen
+  on the same source. **CI is always the deterministic case** (fresh checkout, JVM compilations only),
+  which is why it has never been wrong. Locally: take before and after from runs with the same
+  compilation state, or simply re-run — the count is not sticky within a session, and one re-run is
+  cheaper than reasoning about a mismatched pair. Every Android-variant class it adds is permanently
+  0 % under `jvmTest`; that half is [revisit #23](docs/revisit.md), still open.
 - **To read `:koverVerify`'s own percentages, temporarily set both `minValue`s to 99** in the root
   `build.gradle.kts` and run it: it names each violated rule and prints the actual figure. There is no
   other way to get the number the gate is actually comparing against. `git checkout build.gradle.kts`
@@ -240,77 +252,12 @@ tests, not a smaller bound. The traps when touching those numbers:
 - **A moved percentage is not a moved numerator.** Kover's totals here shift when the denominator
   changes, so compare `covered`/`total` counts between reports before concluding coverage regressed.
   Reading percentages alone once made ~100 new tests look like a 2-point *drop*.
-- **A before/after comparison is only valid between equally fresh runs.** `koverXmlReport` reports
-  on whichever test tasks actually executed, so a baseline taken from a mostly-`UP-TO-DATE` build
-  instruments a different class universe than the after-run. One such pair differed by 855 lines and
-  152 branches in the *totals*, in packages the change never touched. Compare at **package scope**,
-  where you can see the denominator is identical, and treat a moved total denominator as a signal
-  the two runs aren't comparable rather than as a result.
-  **That rule is about report-level totals and does not extend to a single class or package.** An
-  unexecuted class is reported with *fewer* branches than it has, so covering it grows its own
-  denominator: `TaigaSessionStorageImpl` went BRANCH 0/4 → **14/14** and LINE 29/49 → **55/55**
-  between two same-mode, same-742-class runs. Compare `covered` against the **after** denominator at
-  class scope, and don't read the growth as a bad measurement.
-- **Concretely: `koverXmlReport` flips between a "high class count" and a "low class count" mode, and
-  which one you get is not predictable.** Observed values so far: **821** (62.00 % line / 43.49 %
-  branch), **854** (62.70 % / 43.24 %) and **742** (71.96–72.07 % / 50.37–50.51 %). The high counts
-  are the runs where the `excludes` block is **not** applied — they leak in `core/storage/db/dao`
-  (+1182 lines alone), `core/storage/db|di|cache|network`, the Ktor plugins in `core/api` and every
-  `*Widget`/`*Screen` in `feature/*/ui`. 742 is the run where `excludes` is applied in full, and is
-  what CI sees. A build-script edit was once found by bisection to flip it, but that is **not** the
-  whole trigger: on 2026-08-03 a clean tree gave 742 and adding only *test sources* gave 854, i.e.
-  the opposite direction with no build file touched. Treat the mechanism as unknown. That direction
-  reproduced on 2026-08-04 with different numbers — baseline **781** (zero leaks) → after adding only
-  a test file and one `:testing` field, **822** with 20 leaks — so a test-sources-only edit flipping a
-  clean run *into* the excludes-skipped mode is the most reliably observed transition. Expect the
-  before/after pair to straddle the flip and plan on the package-scope escape hatch below.
-  Confirmed a third time on 2026-08-04, from the cleanest possible starting point: a **742** baseline
-  (zero leaks, i.e. exactly what CI sees) → **822** with 20 leaks after adding two test files and four
-  `:testing` fields. **But the direction is not a rule — it reversed on the very next session** (also
-  2026-08-04): a *clean tree* gave an **822** baseline with 20 leaks, and after adding one test file
-  and three `:testing` fields the after-run was a clean **742** with zero leaks. So neither the
-  starting mode nor the effect of adding test sources is predictable; only the *straddle* is the
-  expected case. Plan on the package-scope escape hatch below and do not assume which side either run
-  will land on.
-  **Candidate discriminator (hypothesis, 9 supporting sessions, 0 counter-examples since it was
-  noticed): crossing *into* the leaky excludes-skipped mode has only ever been seen alongside a change
-  to `:testing`'s own sources.** Sessions that added *only* test files under a feature/core module
-  stayed zero-leak — `feature/epics/ui/details`, `feature/issues/ui/details`, `core/domain` and
-  `feature/userstories/mapper` each
-  ran 742 → 742, and `feature/workitem/ui/mappers` went 780 → 742, i.e. it moved between the two
-  *zero-leak* counts without ever reaching 822/854. Every recorded 822/854 flip above involved adding
-  `:testing` fields — including `feature/sprint/data` on 2026-08-05, which added a `:testing` source
-  file plus fake fields and went 742/0 leaks → **823/20 leaks**, and
-  `feature/settings/ui/projectdetails` the same day, which added one recorder to `FakeProjectsRepository`
-  and went 742/0 → **849/20**. This is **not** established — the 2026-08-03 note says "adding only test sources
-  gave 854", and it is not known whether that session also touched `:testing` — so keep taking the
-  before/after diff. **The hypothesis constrains one direction only: it does *not* predict a
-  comparable pair when you leave `:testing` alone.** `feature/tasks/ui` (2026-08-05) touched exactly
-  one test file, and its pair still straddled — an 823/20-leak baseline (inherited on-disk from the
-  previous session) against a clean 742/0 after-run, with 364 classes present in only one report.
-  `feature/filters/domain` (2026-08-05) reproduced that exactly: one test file, no `:testing` edit,
-  an 827/20-leak inherited baseline → clean 742/0, 385 keys in one report only. So a straddle with
-  `:testing` untouched is now the *expected* case, seen twice, and is not evidence against the
-  hypothesis — which only ever claimed the leaky direction.
-  Plan on the straddle and the package-scope escape hatch regardless of what you touched; the
-  all-counter diff below is what makes such a pair usable. It is only *unpredictable*, though, not
-  hopeless — `feature/filters/mapper` (2026-08-05) also touched exactly one test file and got a
-  perfectly comparable 742/0 → 742/0 pair, with a zero-length key-set difference and zero
-  denominator changes anywhere in the report. `feature/userstories/mapper` (2026-08-05) repeated that
-  exactly — three consecutive sessions have now had a *free* baseline (the on-disk `report.xml` from
-  the previous session, clean tree, same commit) and a provably comparable pair.
-  `feature/workitem/ui/screens/editdescription` (2026-08-05) made it four: same free 742/0 baseline,
-  742/0 after-run, zero-length key-set difference, zero denominator changes, and movement confined to
-  the target package. `feature/userstories/ui` (2026-08-05, task 9c) made it five, and additionally
-  stayed on the 742/0 side across **three** `koverXmlReport` runs in one session as test sources were
-  added between them. So the free baseline is the *normal* case on a clean tree, and a straddle is
-  what needs explaining — not the other way round.
-- **A high class count does not by itself mean the `excludes` were skipped — there are at least two
-  high modes.** On 2026-08-04 a run gave **787** classes with the `excludes` applied *in full* (zero
-  `*Screen` / `*Widget` / `*Plugin` classes in the report); it exceeded a 742 run by 45
-  **Android-variant / Room-generated** classes — `*_Impl`, `TaigaDB_Impl`,
-  `core/storage/db/entities/*`, `StorageModule_androidKt`, `NetworkMonitorImpl`. Tell the modes apart
-  in one command before reaching for any of the advice above:
+- **The denominator rule is about report-level totals and does not extend to a single class or
+  package.** An unexecuted class is reported with *fewer* branches than it has, so covering it grows
+  its own denominator: `TaigaSessionStorageImpl` went BRANCH 0/4 → **14/14** and LINE 29/49 → **55/55**
+  between two same-class-count runs. Compare `covered` against the **after** denominator at class
+  scope, and don't read the growth as a bad measurement.
+- **Sanity-check a report before quoting it**, in one command:
 
   ```bash
   python3 -c "
@@ -319,38 +266,20 @@ tests, not a smaller bound. The traps when touching those numbers:
   print(len(n), 'excluded-suffix leaks:', len([x for x in n if x.split('/')[-1].split('\$')[0].endswith(('Screen','Widget','Plugin'))]))"
   ```
 
-  Zero leaks means the `excludes` ran and the surplus is variant artifacts; a non-zero count is the
-  821/854 mode. Two 742-side runs also differ by ±2 classes (Koin-generated `LoginDataModule`, both
-  lines covered, BRANCH identical) — that much wobble is noise, not a mode.
-  **The raw count in this mode is not a fixed number** — a second run on 2026-08-04 gave **781**, and
-  it is the same mode: zero leaks, `kover-rank.py` filters it to the same 745 classes, BRANCH 2049 and
-  LINE 9762 identical to the 787 run's. Recognise the mode by *zero leaks plus a 745 filtered count*,
-  not by matching 787. A third value, **798**, was seen on 2026-08-05.
-  **The mode is not sticky within a session, so re-running is worth one attempt before you reach for
-  the escape hatches.** That 798 run and a clean **742** were consecutive `koverXmlReport`
-  invocations minutes apart, with only two more test methods added in between — the second one
-  matched the 742-class baseline exactly, giving identical key sets and zero denominator changes in
-  the all-counter diff. Cheaper than reasoning about a straddle, and it costs one command.
-- **In the 787/781 mode, `kover-rank.py` normalises BRANCH exactly but leaves LINE ~53 lines high.** It
-  filtered that report to 745 classes, not 742: the three `core.storage.db.entities` classes survive
-  because the root `excludes` `packages(...)` list does not name `…db.entities` either, so the script
-  is faithfully in sync and the 742 run simply never contained them. The BRANCH denominator was 2049
-  in both, i.e. identical to the gate; only LINE was inflated. So the "`kover-rank.py`'s output *is*
-  the gate number" claim above holds **for branch coverage**; check the LINE denominator against a
-  known 742 run before quoting a line figure. Package-scope tables are unaffected either way.
-- **One thing that is *not* the flip trigger:** re-running `koverXmlReport` after touching only
-  `:testing`'s `commonMain` (which does recompile its `androidMain`) gave **744**, not 787 — so the
-  Android-artifact regeneration that coincided with the 787 run does not reproduce it on its own.
-  Recorded so the experiment is not repeated.
-- **Do not fight the flip — re-apply the `excludes` yourself with
-  [docs/testing/kover-rank.py](docs/testing/kover-rank.py).** It filters whatever report you have by
-  the same suffix/package rules as the root `build.gradle.kts`, prints the kept class count and the
-  filtered totals, and ranks packages by missed branches. On 2026-08-03 it reduced an 854-class
-  report to 742 classes and reproduced a genuine 742-class run's totals to the digit, so which side
-  of the flip you landed on stops mattering. **Use it for every coverage figure you record and for
-  every ranking of what to test next**; the raw report is only trustworthy when it happens to say
-  742, and you cannot make it say that on purpose. Keep the script's lists in sync when the
-  `excludes` block changes.
+  **0 or 1 leaks is normal.** Kover has a rare intermittent bug where a single class survives a
+  pattern it matches — the two ever seen are `UtilsUiModule` and `LoginDataModule`, both hand-written
+  Koin `@Module` classes worth ≤1 line and ≤2 branches, and one of them accounted for an entire
+  742-vs-741 difference between two runs minutes apart. A count near 20 means the report is not usable
+  as-is: re-run, and if it persists, note it on the issue doc's open question 1 (it has never been
+  reproduced deliberately).
+- **`kover-rank.py` re-applies the excludes to whatever report you have** —
+  [docs/testing/kover-rank.py](docs/testing/kover-rank.py). It filters by the same suffix/package
+  rules as the root `build.gradle.kts`, prints the kept class count and the filtered totals, and ranks
+  packages by missed branches, so a report carrying stray Android-variant classes still gives a usable
+  ranking. Its package matching was equality-based until 2026-08-07 and therefore kept
+  `core.storage.db.entities` (~53 lines) that the real gate excludes — that is the true story behind
+  the old "745 not 742, LINE runs high" caveat. Keep its lists in sync when the `excludes` block
+  changes.
 - **When two reports still disagree, diff their per-package denominators rather than discarding the
   measurement.** The package you care about usually has an *identical* denominator in both, which
   makes a before/after table valid anyway — this is how the `feature/projects/data` and
@@ -377,9 +306,10 @@ tests, not a smaller bound. The traps when touching those numbers:
   package missing from either — which makes the row provably valid even though the totals are not
   comparable at all. Read the key-set difference and the per-target denominators as two separate
   answers; only the second one gates your table.
-  **Split the "moved" list by element type — mode-flip noise is `<package>`-level *only*.** When the
-  flip drops leaked classes, they leave the key set entirely rather than moving, so every counter it
-  disturbs is a package total; a `<class>` row that moves is real. `feature/filters/domain`
+  **Split the "moved" list by element type — class-universe noise is `<package>`-level *only*.** When
+  a run counts a different set of classes, the extra ones leave or enter the key set entirely rather
+  than moving, so every counter that disturbs is a package total; a `<class>` row that moves is real.
+  `feature/filters/domain`
   (2026-08-05) straddled 827/20-leak → 742/0 and the diff showed 28 changed package denominators
   across `core/api`, `core/domain`, `feature/login/ui`, `feature/wiki/ui/*` — and **zero class-level
   movement outside the target package**. That last count is the isolation proof: it says the change
