@@ -52,7 +52,7 @@ right subpackage before concluding a fake doesn't exist:
 | `FakeSprintsRepository` | `SprintsRepository` |
 | `FakeUserStoriesRepository` | `UserStoriesRepository` |
 | `FakeTasksRepository` | `TasksRepository` |
-| `FakeIssuesRepository` | `IssuesRepository` |
+| `FakeIssuesRepository` | `IssuesRepository` — `getIssuesPagingResult: ImmutableList<WorkItem>` (backs `getIssuesPaging(filtersData, query)` — empty returns `PagingData.empty()`, non-empty returns `PagingData.from(getIssuesPagingResult)`, same pattern as `FakeEpicsRepository.getEpicsPagingResult`; added for the paging sweep, task 21 in `docs/testing/improvement-plan.md` — this also **fixed a pre-existing bug**: the method previously returned `emptyFlow()`, not the `flowOf(PagingData.empty())` baseline every other paging fake has, so it never emitted any `PagingData` at all) |
 | `FakeWikiRepository` | `WikiRepository` |
 | `FakeFiltersRepository` | `FiltersRepository` |
 | `FakeSwimlanesRepository` | `SwimlanesRepository` |
@@ -71,7 +71,7 @@ Key fields for commonly-used fakes:
 
 **`FakeTasksRepository`**: `getTaskResult/Throws`, `deleteTaskCalled/Throws`, `createTaskResult/Throws/Calls` (`CreateTaskCall` records — every argument)
 
-**`FakeIssuesRepository`**: `getIssueResult/Throws`, `createIssueResult/Throws/Calls` (`CreateIssueCall` records)
+**`FakeIssuesRepository`**: `getIssueResult/Throws`, `createIssueResult/Throws/Calls` (`CreateIssueCall` records), `getIssuesPagingResult: ImmutableList<WorkItem>` (backs `getIssuesPaging(filtersData, query)` — empty returns `PagingData.empty()`, non-empty returns `PagingData.from(getIssuesPagingResult)`, same pattern as `FakeEpicsRepository.getEpicsPagingResult`; added for the paging sweep, task 21 in `docs/testing/improvement-plan.md`)
 
 **`FakeUsersRepository`**: `getUserResult/Throws`, `getMeResult/Throws/CallCount`, `getUsersListResult/Throws`, `isAnyAssignedToMeResult/Throws`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
 
@@ -489,6 +489,7 @@ Fakes that return `flowOf(PagingData.empty())` for paging (safe to construct):
 | `FakeSprintsRepository` | `getSprintsPaging(isClosed)` |
 | `FakeEpicsRepository` | `getEpicsPaging(filters, query)` |
 | `FakeProjectsRepository` | `fetchProjects(query)` |
+| `FakeIssuesRepository` | `getIssuesPaging(filtersData, query)` |
 
 If you add a ViewModel that calls another paging method at construction, implement it in the corresponding fake with `flowOf(PagingData.empty())`.
 
@@ -499,10 +500,12 @@ to return non-empty `PagingData` too** — `flowOf(PagingData.empty())` never pr
 `FakeSprintsRepository.getSprintsPaging` follows the same pattern via `getSprintsPagingResult`
 (added for the paging sweep, task 17 in `docs/testing/improvement-plan.md`),
 `FakeUserStoriesRepository.getUserStoriesPaging` follows it too via `getUserStoriesPagingResult`
-(task 19), and `FakeEpicsRepository.getEpicsPaging` follows it too via `getEpicsPagingResult`
-(task 20). `PagingData.from(list)` needs no `Pager`/`RemoteMediator` — it is a static, already-loaded
-page, which is all a "does this Screen shape render inside `runComposeUiTest`" test needs (see task
-14, `docs/testing/improvement-plan.md`).
+(task 19), `FakeEpicsRepository.getEpicsPaging` follows it too via `getEpicsPagingResult`
+(task 20), and `FakeIssuesRepository.getIssuesPaging` follows it too via `getIssuesPagingResult`
+(task 21 — this fake previously returned `emptyFlow()` instead of the `flowOf(PagingData.empty())`
+baseline, fixed as part of adding the extension). `PagingData.from(list)` needs no
+`Pager`/`RemoteMediator` — it is a static, already-loaded page, which is all a "does this Screen shape
+render inside `runComposeUiTest`" test needs (see task 14, `docs/testing/improvement-plan.md`).
 
 ### Driving a `RemoteMediator` directly
 

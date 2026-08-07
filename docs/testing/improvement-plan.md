@@ -90,7 +90,7 @@ than pushing through.
 | 18 | Paging sweep — `ScrumOpenSprintsScreen` | S | ✅ done — 2026-08-07 |
 | 19 | Paging sweep — `ScrumBacklogScreen` | S | ✅ done — 2026-08-07 |
 | 20 | Paging sweep — `EpicsScreen` | S | ✅ done — 2026-08-07 |
-| 21 | Paging sweep — `IssuesScreen` | S | ⬅ NEXT |
+| 21 | Paging sweep — `IssuesScreen` | S | ✅ done — 2026-08-07 |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
@@ -858,6 +858,38 @@ others. Treat the first step as a real bug fix worth calling out on its own, not
 **Finalize focus:** the `emptyFlow()` bug itself — was it dead code no test exercised, or did fixing it
 change behavior for an existing test? Either answer is worth recording; this is the one task in the
 sweep with a real pre-existing defect, not just a missing extension.
+
+**Result (2026-08-07):** Worked exactly as predicted — mechanical, zero surprises, first-run green.
+Same `combine()`+`flatMapLatest` shape as tasks 19/20, same `substring = true` text match, same
+"topbar add action not tested" reasoning (`TopBarConfig.actions`, outer `Scaffold`).
+
+- **The `emptyFlow()` bug was dead code no test exercised.** Grepped every call site of
+  `FakeIssuesRepository.getIssuesPaging` before changing it — only `IssuesViewModel.issues`'s
+  property initializer calls it, and no existing test (`IssuesViewModelTest` included) ever collected
+  that flow, so fixing it to the `flowOf(PagingData.empty())` baseline changed nothing for any
+  existing test. `IssuesScreenTest` is the first test to actually collect it.
+- **`FakeIssuesRepository.getIssuesPaging`** got the same treatment as the other three: fixed the
+  `emptyFlow()` bug to the `flowOf(PagingData.empty())` baseline, then added a
+  `getIssuesPagingResult: ImmutableList<WorkItem>` field with the identical
+  empty→`PagingData.empty()`/non-empty→`PagingData.from(...)` shape as
+  `FakeEpicsRepository.getEpicsPagingResult` (task 20). Fake inventory in
+  `.claude/agents/testing.md` updated (the `FakeIssuesRepository` bullet in both the table and the
+  key-fields list, plus the paging-fakes table and worked-example paragraph).
+- **Build wiring** for `feature/issues/ui` had no `jvmTest`/`uiTest` wiring before this task — added
+  fresh with the same hoist-to-top-level-`val` pattern as tasks 10/12/14/17/20.
+- `IssuesScreenTest` (`feature/issues/ui/src/jvmTest/.../list/IssuesScreenTest.kt`) passed
+  `./gradlew :feature:issues:ui:jvmTest` on the first run — no iteration needed. Confirmed picked up
+  by the full `./gradlew jvmTest` (`TEST-...IssuesScreenTest.xml` present after a full-root run,
+  same check tasks 10/12–20 used) and `./gradlew ktlintCheck` is clean.
+
+**This closes the five-Screen paging sweep tasks 17–21 scoped from task 14's Result note** — all six
+paging-list Screens found in the original survey (`ProjectSelectorScreen` via task 14,
+`ScrumClosedSprintsScreen`/`ScrumOpenSprintsScreen`/`ScrumBacklogScreen`/`EpicsScreen`/`IssuesScreen`
+via tasks 17–21) now have a Compose UI test. **Nothing is scoped next** — the queue in the status
+table above has no `todo` left. The only open items are in
+[Considered and deferred](#considered-and-deferred) below (all still gated — ask before picking one
+up) and the still-open `runComposeUiTest` v1→v2 migration note above the status table (not acted on,
+not blocking anything yet).
 
 ---
 

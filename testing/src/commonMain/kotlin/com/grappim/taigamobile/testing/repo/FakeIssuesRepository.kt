@@ -5,8 +5,10 @@ import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.domain.Issue
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.coroutines.flow.flowOf
 
 class FakeIssuesRepository : IssuesRepository {
 
@@ -18,8 +20,14 @@ class FakeIssuesRepository : IssuesRepository {
         return getIssueResult ?: error("getIssueResult not set")
     }
 
+    var getIssuesPagingResult: ImmutableList<WorkItem> = persistentListOf()
+
     override fun getIssuesPaging(filtersData: FiltersData, query: String): Flow<PagingData<WorkItem>> =
-        emptyFlow()
+        if (getIssuesPagingResult.isEmpty()) {
+            flowOf(PagingData.empty())
+        } else {
+            flowOf(PagingData.from(getIssuesPagingResult))
+        }
 
     data class CreateIssueCall(val title: String, val description: String, val sprintId: Long?)
 
