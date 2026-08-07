@@ -85,7 +85,7 @@ Key fields for commonly-used fakes:
 
 **`FakeHistoryRepository`**: `getCommentsResult/Throws`, `deleteCommentThrows`
 
-**`FakeSprintsRepository`**: `getSprintsResult/Throws/IsClosed` (the recorder captures the `isClosed` argument), `getSprintDataResult`, `getSprintResult/Throws`, `deleteSprintThrows/Called`, `createSprintThrows/Called`, `editSprintThrows/Called`. `createSprint()` and `editSprint()` succeed silently unless their `…Throws` is set; the remaining `getSprint*` list methods are still `error("not used in this test")`
+**`FakeSprintsRepository`**: `getSprintsResult/Throws/IsClosed` (the recorder captures the `isClosed` argument), `getSprintDataResult`, `getSprintResult/Throws`, `deleteSprintThrows/Called`, `createSprintThrows/Called`, `editSprintThrows/Called`, `getSprintsPagingResult: ImmutableList<Sprint>` (backs `getSprintsPaging(isClosed)` — empty returns `PagingData.empty()`, non-empty returns `PagingData.from(getSprintsPagingResult)`, same pattern as `FakeProjectsRepository.fetchProjectsResult`; note `isClosed` is currently **not** respected by the fake, so a test seeding data for both open and closed sprints in one run would get the same output for both). `createSprint()` and `editSprint()` succeed silently unless their `…Throws` is set; the remaining `getSprint*` list methods are still `error("not used in this test")`
 
 ### Storage
 
@@ -496,7 +496,9 @@ If you add a ViewModel that calls another paging method at construction, impleme
 **To render a real item through a `LazyPagingItems`-backed Screen in a Compose UI test, the fake needs
 to return non-empty `PagingData` too** — `flowOf(PagingData.empty())` never presents anything to
 `collectAsLazyPagingItems()`. `FakeProjectsRepository.fetchProjects` is the worked example: set
-`fetchProjectsResult` to a non-empty list and it returns `PagingData.from(fetchProjectsResult)`
+`fetchProjectsResult` to a non-empty list and it returns `PagingData.from(fetchProjectsResult)`.
+`FakeSprintsRepository.getSprintsPaging` follows the same pattern via `getSprintsPagingResult`
+(added for the paging sweep, task 17 in `docs/testing/improvement-plan.md`).
 instead. `PagingData.from(list)` needs no `Pager`/`RemoteMediator` — it is a static, already-loaded
 page, which is all a "does this Screen shape render inside `runComposeUiTest`" test needs (see task
 14, `docs/testing/improvement-plan.md`). The other three paging fakes above still only support the

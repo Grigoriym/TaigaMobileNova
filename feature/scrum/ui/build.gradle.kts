@@ -1,9 +1,15 @@
+@file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+
 plugins {
     alias(libs.plugins.taigamobile.kmp.library)
     alias(libs.plugins.taigamobile.kmp.di)
     alias(libs.plugins.taigamobile.kmp.library.compose)
     alias(libs.plugins.taigamobile.kmp.serialization)
 }
+
+val composeUiTestDep = compose.dependencies.uiTest
+val composeDesktopUiTestJUnit4Dep = compose.dependencies.desktop.uiTestJUnit4
+val composeDesktopCurrentOsDep = compose.dependencies.desktop.currentOs
 
 kotlin {
     sourceSets {
@@ -26,6 +32,11 @@ kotlin {
 
             implementation(libs.androidx.paging.common)
             implementation(libs.androidx.paging.compose)
+        }
+        jvmTest.dependencies {
+            implementation(composeUiTestDep)
+            implementation(composeDesktopUiTestJUnit4Dep)
+            implementation(composeDesktopCurrentOsDep)
         }
     }
 }

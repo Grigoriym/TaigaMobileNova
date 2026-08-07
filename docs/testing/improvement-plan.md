@@ -80,8 +80,8 @@ than pushing through.
 | 14 | Compose UI test, paging-list Screen (`ProjectSelectorScreen`) | S | ✅ done — 2026-08-07 |
 | 15 | Compose UI test, dialog Screen (`TrustedCertificatesScreen`) | S | ✅ done — 2026-08-07 |
 | 16 | Compose UI test, multi-state-source Screen (`SettingsInterfaceScreen`) | S | ✅ done — 2026-08-07 |
-| 17 | Paging sweep — `ScrumClosedSprintsScreen` | S | ⬅ NEXT |
-| 18 | Paging sweep — `ScrumOpenSprintsScreen` | S | todo |
+| 17 | Paging sweep — `ScrumClosedSprintsScreen` | S | ✅ done — 2026-08-07 |
+| 18 | Paging sweep — `ScrumOpenSprintsScreen` | S | ⬅ NEXT |
 | 19 | Paging sweep — `ScrumBacklogScreen` | S | todo |
 | 20 | Paging sweep — `EpicsScreen` | S | todo |
 | 21 | Paging sweep — `IssuesScreen` | S | todo |
@@ -599,6 +599,36 @@ secondary check, not the point of this test).
 
 **Finalize focus:** low — this should "just work" per tasks 12–14's pattern holding with zero
 surprises so far. If it doesn't, that's the interesting finding.
+
+**Result (2026-08-07):** Worked with zero surprises, as predicted. `ScrumClosedSprintsScreenTest`
+(`feature/scrum/ui/src/jvmTest/.../closed/ScrumClosedSprintsScreenTest.kt`) passes via
+`./gradlew :feature:scrum:ui:jvmTest`, is picked up by the root `./gradlew jvmTest` (confirmed via the
+`TEST-...ScrumClosedSprintsScreenTest.xml` result file), and `ktlintCheck` is clean.
+
+- **Build wiring** was the same hoist-to-top-level-`val` pattern as tasks 10/12/14 — added
+  `@file:OptIn(ExperimentalComposeLibrary::class)` + the three `val`s + `jvmTest.dependencies` block to
+  `feature/scrum/ui/build.gradle.kts`. No new gotcha.
+- **`FakeSprintsRepository.getSprintsPaging`** got a `getSprintsPagingResult: ImmutableList<Sprint>`
+  field, same empty→`PagingData.empty()`/non-empty→`PagingData.from(...)` shape as
+  `FakeProjectsRepository.fetchProjectsResult`. **Confirmed the `isClosed`-ignored gap the task
+  flagged**: the fake doesn't branch on the `isClosed` parameter, so both `ScrumOpenSprintsViewModel`
+  and `ScrumClosedSprintsViewModel` would see the same `getSprintsPagingResult` if a test constructed
+  both in the same run. Not a problem here (only one VM under test) — flagged again for task 18 to
+  decide, per this task's own note. Fake inventory in `.claude/agents/testing.md` updated (both the
+  `FakeSprintsRepository` bullet and the paging-fakes table note).
+- **`MainDispatcherRule` was included even though this ViewModel has no `init` block** — its one line,
+  `sprintsRepository.getSprintsPaging(isClosed = true).cachedIn(viewModelScope)`, still launches a
+  coroutine on `viewModelScope` (which needs `Dispatchers.Main` set) via `cachedIn`. Without the rule
+  the constructor would likely throw a missing-Main-dispatcher error; didn't test the negative case
+  since task 14 already established this need for `cachedIn(viewModelScope)`.
+- One `jvmTest` full-root run turned up a `WikiPageViewModelTest` Turbine timeout failure —
+  A/B'd against a clean tree (`git stash -u`, `--rerun-tasks` on just that module) and it passed in
+  isolation, then passed again in a second full-root run with this task's changes restored. Pre-existing
+  flake, not caused by this change.
+
+**Next: task 18** (`ScrumOpenSprintsScreen`) — reuses this task's `feature/scrum/ui` build wiring and
+`FakeSprintsRepository` extension; its own scope note says to check whether the `isClosed` fake gap
+above needs closing now that both VMs are candidates for the same fake.
 
 ---
 

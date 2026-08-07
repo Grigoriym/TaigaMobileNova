@@ -18,8 +18,14 @@ class FakeSprintsRepository: SprintsRepository {
 
     override suspend fun getSprintData(sprintId: Long): Result<SprintData> = getSprintDataResult
 
+    var getSprintsPagingResult: ImmutableList<Sprint> = persistentListOf()
+
     override fun getSprintsPaging(isClosed: Boolean): Flow<PagingData<Sprint>> =
-        flowOf(PagingData.empty())
+        if (getSprintsPagingResult.isEmpty()) {
+            flowOf(PagingData.empty())
+        } else {
+            flowOf(PagingData.from(getSprintsPagingResult))
+        }
 
     var getSprintsResult: ImmutableList<Sprint> = persistentListOf()
     var getSprintsThrows: Throwable? = null
