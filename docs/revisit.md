@@ -498,6 +498,14 @@ editingItemIds`, which documents the current behaviour and will need inverting.
 **Why deferred:** found while writing that test (improvement-plan task 9a). Changing delegate
 behaviour used by four detail ViewModels is not a test task's business.
 
+**Resolved (2026-08-07):** guarded the `onCustomFieldEditToggle(item)` call in
+`WorkItemCustomFieldsDelegateImpl.handleCustomFieldSave`'s success arm with `if (item is
+EditableItem)`. Inverted the test that documented the leak — renamed to `handleCustomFieldSave -
+success - a non-editable item never enters editingItemIds` and it now asserts `editingItemIds` stays
+empty; the sibling `handleCustomFieldSave - success - closes the edit mode of an editable item` test
+already covers the `EditableItem` path and needed no change. `:feature:workitem:ui:jvmTest`, the full
+`./gradlew jvmTest` and `ktlintCheck` all green.
+
 ---
 
 ## 16. Every `logcat` message lambda is a permanently-uncovered line

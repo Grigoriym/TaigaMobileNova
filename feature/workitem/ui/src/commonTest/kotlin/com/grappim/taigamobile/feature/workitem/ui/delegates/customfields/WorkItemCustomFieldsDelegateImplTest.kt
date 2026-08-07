@@ -239,20 +239,14 @@ internal class WorkItemCustomFieldsDelegateImplTest {
         assertTrue(state().editingItemIds.isEmpty())
     }
 
-    /**
-     * Documents current behaviour rather than endorsing it: the success path calls
-     * `onCustomFieldEditToggle` unconditionally, so saving an item that was *not* in edit mode adds
-     * it to `editingItemIds` instead of removing it. Harmless in the UI — `CustomFieldsWidget` reads
-     * the set only for `EditableItem`s — but the set grows forever. See docs/revisit.md.
-     */
     @Test
-    fun `handleCustomFieldSave - success - adds a non-editing item to editingItemIds`() = runTest {
+    fun `handleCustomFieldSave - success - a non-editable item never enters editingItemIds`() = runTest {
         val item = textItem(1L, current = "edited")
         sut.setInitialCustomFields(persistentListOf(item), version = 1L)
 
         save(item)
 
-        assertEquals(setOf(1L), state().editingItemIds)
+        assertTrue(state().editingItemIds.isEmpty())
     }
 
     // --- handleCustomFieldSave: payload composition ---
