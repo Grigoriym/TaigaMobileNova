@@ -16,7 +16,6 @@ first, then work this list. Nothing here is urgent; nothing here is forgotten.
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 2 | Non-ViewModel beans may leak application-scoped coroutines | S to check | same |
 | 3 | Wiki mapper tests duplicate the new shared DTO factories | XS | improvement-plan task 3 |
-| 4 | Dead `koin-test` block in `:testing` `androidMain` | XS | improvement-plan task 2 |
 | 5 | `tools/seed` and `tools/utils` tests would not run in CI | XS | improvement-plan task 1 |
 | 6 | `GetKanbanDataUseCase` reads the current project three times | XS | improvement-plan task 5 |
 | 7 | Date formatters cache the locale for the process lifetime | S | improvement-plan task 6 |
@@ -24,7 +23,6 @@ first, then work this list. Nothing here is urgent; nothing here is forgotten.
 | 9 | `WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT | XS | improvement-plan task 9 |
 | 10 | The `Plugin`/`Module` exclusion patterns hide real logic in `core/api` | S | improvement-plan task 9a |
 | 11 | `TokenRefreshPlugin`'s `MAX_RETRIES` guard is unreachable | S | improvement-plan task 9a |
-| 12 | Two small dead spots in `core/api` | XS | improvement-plan task 9a |
 
 ---
 
@@ -106,6 +104,10 @@ slightly more than a find-and-replace.
 weight, not a bug.
 
 **Watch for:** confirm nothing in `androidApp` picks these up transitively before deleting.
+
+**Resolved (2026-08-07):** removed the whole `androidMain.dependencies { ... }` block from
+`testing/build.gradle.kts`. `composeApp`'s own `jvmTest` still declares `koin-test` directly for
+`KoinGraphTest`, confirmed unaffected — `./gradlew jvmTest` and `:koverVerify` both stayed green.
 
 ## 5. `tools/seed` and `tools/utils` tests would not run in CI
 
@@ -362,6 +364,13 @@ worth its own commit — fold them into the next change that touches these files
   `ErrorResponseParser`, which has its own. Removing it means touching both `KmpNetworkModule`
   install blocks.
 
+**Resolved (2026-08-07):** both fixed. `defaultTryCatch`'s `TimeoutCancellationException` clause is
+gone (its import too) — the existing `TryCatchExtensionsTest` test for it still passes unchanged,
+since `CancellationException`'s clause already rethrows the subtype. `ErrorMappingPlugin`'s `json`
+was dropped from the constructor and `Config`, and both `install(ErrorMappingPlugin) { this.json =
+httpJson; ... }` call sites in `KmpNetworkModule.kt` and the one in `ErrorMappingPluginTest.kt` had
+their `this.json = ...` line removed. `./gradlew jvmTest`, `ktlintCheck` and `:koverVerify` all green.
+
 ---
 
 ## 13. `urlDecode` in `utils/ui` is dead code with three actuals
@@ -383,6 +392,18 @@ Deleting production declarations is not a test task's business. Note that
 `JsonSerializableNavTypeTest` currently *calls* `urlDecode` to reverse `serializeAsValue`, so
 removing it means rewriting those two assertions (the honest replacement is a decoded-literal
 comparison, which would then be JVM-specific).
+
+**Resolved (2026-08-07):** removed the `expect`/`actual` declarations (`commonMain`, `androidMain`,
+`iosMain`, `jvmMain`) and the now-unused `decodeURLPart` imports on iOS/JVM. The two
+`JsonSerializableNavTypeTest` assertions that called `urlDecode` were replaced with a new
+`JsonSerializableNavTypeJvmTest` (`utils/ui/src/jvmTest/`) that decodes with
+`io.ktor.http.decodeURLPart` directly — the same function the removed JVM/iOS actual delegated to —
+proving the round trip still holds without reintroducing the dead production function. One gotcha:
+the new file's `private data class Payload` collided with `JsonSerializableNavTypeTest`'s own
+file-private `Payload` at JVM bytecode level (`jvmTest` compiles alongside `commonTest` for the same
+target, and Kotlin's file-`private` top-level classes aren't name-mangled the way private
+functions/properties are) — renamed to `JvmPayload` to fix it. `./gradlew jvmTest`, `ktlintCheck` and
+`:koverVerify` all green.
 
 ---
 
@@ -510,6 +531,21 @@ is true but beside the point: they should not exist.
 production files is not a test task's business, and the surgical-changes rule says to mention
 unrelated dead code rather than remove it.
 
+**Correction, partially resolved (2026-08-07):** the class-name grep above was the wrong evidence for
+`StringPreference` — it missed the actual call site because that call goes through the extension
+function built on top of the class, not the class name. `ServerStorageImpl.kt:21`
+(`core/storage/src/androidMain/.../server/ServerStorageImpl.kt`) does
+`sharedPreferences.string(key = SERVER_KEY, defaultValue = ...)`, where `.string(...)` is
+`StringPreference.kt`'s own extension function — `git blame` shows `ServerStorageImpl` predates this
+entry, so it was live the whole time and the original grep simply didn't search for it. Deleting the
+file broke `:core:storage:compileAndroidMain` (`Unresolved reference 'utils'` /
+`Unresolved reference 'string'`) the first time this was attempted; **restored** it via
+`git checkout HEAD -- .../StringPreference.kt`.
+`LongPreferences.kt` had no equivalent gap — `grep -rn "\.long(" --include=*.kt . | grep -v /build/`
+confirmed zero call sites for its `.long(...)` extension either — so **it alone was deleted**. Lesson
+for the next dead-code grep: search for a class's *extension functions*, not just its own name, when
+the class exists specifically to be used through one.
+
 ## 18. `currentUserStory` throws from `viewModelScope` when the initial load failed
 
 **Where:** `feature/userstories/ui/.../UserStoryDetailsViewModel.kt:198-199`
@@ -576,6 +612,13 @@ Deleting the arm — or the `Clear` variant itself, if it has no purpose — is 
 across four files, and the surgical-changes rule says to mention unrelated dead code rather than
 remove it. Check whether `Clear` is meant to be sent by something unimplemented before deleting.
 
+**Resolved (2026-08-07):** re-grepped first — still zero producers of `Clear` anywhere
+(`WorkItemEditStateRepository` only ever sends `Assignee`/`Assignees`/`Watchers`). Deleted the
+`data object Clear : TeamMemberUpdate` variant (`TeamMemberUpdate.kt:9`) and the four dead `when` arms
+in `TaskDetailsViewModel`, `UserStoryDetailsViewModel`, `EpicDetailsViewModel` and
+`IssueDetailsViewModel` — each `when` stays exhaustive over the remaining three variants with no `else`
+needed. `./gradlew jvmTest`, `ktlintCheck` and `:koverVerify` all green.
+
 ## 20. `mapResult` is dead code, and its "unreachable" state is reachable
 
 **Where:** `core/domain/src/commonMain/kotlin/com/grappim/taigamobile/core/domain/ResultExtension.kt:39-45`.
@@ -634,6 +677,12 @@ could plausibly be made to the wrong one.
 `feature/sprint/data`). Deleting it is a production change unrelated to that task's diff; the
 surgical-changes rule says to record it. Check `WorkItemPagingSource` and any other `*PagingSource`
 for the same condition when acting on this — task 9b (`WorkItemRemoteMediator`) is the natural moment.
+
+**Resolved (2026-08-07):** re-confirmed zero construction/DI sites, then deleted the file. It was a
+plain class, not `@Single`-annotated, so `SprintDataModule`'s `@ComponentScan` was never picking it up
+— no DI wiring to touch. `WorkItemPagingSource` was not checked against the same condition in this
+session; that check is still open if anyone wants it. `./gradlew jvmTest`, `ktlintCheck` and
+`:koverVerify` all green.
 
 ## 22. `EpicShortInfoDTO` is built by hand in three test files; no `:testing` factory exists
 

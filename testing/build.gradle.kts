@@ -6,12 +6,6 @@ plugins {
 
 kotlin {
     sourceSets {
-        androidMain.dependencies {
-            api(project.dependencies.platform(libs.koin.bom))
-            api(libs.koin.test)
-            api(libs.koin.test.junit4)
-            api(libs.junit4)
-        }
         commonMain.dependencies {
             implementation(libs.jetbrains.compose.ui)
 

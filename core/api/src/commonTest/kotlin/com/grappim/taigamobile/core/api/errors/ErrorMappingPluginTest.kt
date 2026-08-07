@@ -147,7 +147,6 @@ class ErrorMappingPluginTest {
     private fun createClient(handler: MockRequestHandleScope.() -> HttpResponseData): HttpClient =
         HttpClient(MockEngine { handler() }) {
             install(ErrorMappingPlugin) {
-                this.json = this@ErrorMappingPluginTest.json
                 this.errorMapper = networkErrorMapper
                 this.errorResponseParser = this@ErrorMappingPluginTest.errorResponseParser
             }

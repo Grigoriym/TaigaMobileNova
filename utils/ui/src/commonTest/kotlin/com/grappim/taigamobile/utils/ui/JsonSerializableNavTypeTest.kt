@@ -19,6 +19,11 @@ private data class Payload(val id: Long, val name: String)
  * `android.net.Uri.encode`, which escapes a different character set — those assertions are written
  * as round-trips through `parseValue` rather than against a literal wherever that difference could
  * show.
+ *
+ * `parseValue` itself never URL-decodes — Navigation has already decoded the argument by the time it
+ * reaches `parseValue`, so proving the full encode round trip needs an explicit decode step. That
+ * step is platform-specific (there's no `urlDecode` in production code, only `urlEncode`), so it
+ * lives in `JsonSerializableNavTypeJvmTest` instead of here.
  */
 class JsonSerializableNavTypeTest {
 
@@ -59,13 +64,6 @@ class JsonSerializableNavTypeTest {
         sut.put(bundle, "key", payload)
 
         assertEquals(payload, sut.get(bundle, "key"))
-    }
-
-    @Test
-    fun `parseValue reverses serializeAsValue`() {
-        val sut = JsonSerializableNavType(Payload.serializer())
-
-        assertEquals(payload, sut.parseValue(urlDecode(sut.serializeAsValue(payload))))
     }
 
     @Test
@@ -111,12 +109,5 @@ class JsonSerializableNavTypeTest {
         val sut = JsonSerializableNullableNavType<Payload>(Payload.serializer().nullable)
 
         assertNull(sut.parseValue("null"))
-    }
-
-    @Test
-    fun `nullable parseValue reverses serializeAsValue for a value`() {
-        val sut = JsonSerializableNullableNavType<Payload>(Payload.serializer().nullable)
-
-        assertEquals(payload, sut.parseValue(urlDecode(sut.serializeAsValue(payload))))
     }
 }

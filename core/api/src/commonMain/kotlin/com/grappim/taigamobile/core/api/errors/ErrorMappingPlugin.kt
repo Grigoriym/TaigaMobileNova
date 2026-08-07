@@ -11,15 +11,12 @@ import io.ktor.client.plugins.plugin
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.util.AttributeKey
-import kotlinx.serialization.json.Json
 
 class ErrorMappingPlugin(
-    private val json: Json,
     private val networkErrorMapper: NetworkErrorMapper,
     private val errorResponseParser: ErrorResponseParser
 ) {
     class Config {
-        lateinit var json: Json
         lateinit var errorMapper: NetworkErrorMapper
         lateinit var errorResponseParser: ErrorResponseParser
     }
@@ -31,7 +28,6 @@ class ErrorMappingPlugin(
         override fun prepare(block: Config.() -> Unit): ErrorMappingPlugin {
             val config = Config().apply(block)
             return ErrorMappingPlugin(
-                json = config.json,
                 networkErrorMapper = config.errorMapper,
                 errorResponseParser = config.errorResponseParser
             )
