@@ -1,0 +1,29 @@
+utils/ui/src/commonTest/kotlin/com/grappim/taigamobile/utils/ui/JsonSerializableNavTypeTest.kt
+  s_7d39d08a5f97e7::t_9e3bd358dc2c06 22-26
+utils/ui/src/jvmTest/kotlin/com/grappim/taigamobile/utils/ui/JsonSerializableNavTypeJvmTest.kt
+  s_7d39d08a5f97e7::t_18c2e130fb657c 10,20,24,33
+  s_7d39d08a5f97e7::t_3034c0dab1801f 1-9,11-19,21-23,25-32,34-39
+docs/revisit.md
+  s_7d39d08a5f97e7::t_17bd7b7993d5b4 108-111
+  s_7d39d08a5f97e7::t_d318167a2aa929 367-373
+  s_7d39d08a5f97e7::t_08ef1e6e2b0345 396-407
+  s_7d39d08a5f97e7::t_0c0e5b1dbba203 534-548
+  s_7d39d08a5f97e7::t_5caf6e1b603888 681-686
+  s_7d39d08a5f97e7::t_3b1951b85c71a5 615-621
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "f973a13128a8009c2bcb630374995fc115bdd842",
+  "prompts": {},
+  "sessions": {
+    "s_7d39d08a5f97e7": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "b8051ea3-6f46-4811-bc17-18b973008833",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
