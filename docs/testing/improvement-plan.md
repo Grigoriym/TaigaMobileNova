@@ -70,8 +70,8 @@ than pushing through.
 | 9e | `WikiPageViewModel` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
-| 11 | Compose UI test sweep, one uikit widget per session | S each | 🔁 in progress — `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07, `ExpandableMarkdownText` ✅ 2026-08-07 — ⬅ NEXT is `SectionTitle` |
-| 12 | Expand Compose UI tests to feature-level Screens (Composable + ViewModel + fakes) | ? | 🧭 future phase — not yet scoped, see note below task 11. Do not start until 11's candidate list is exhausted and this task has been sized properly first. |
+| 11 | Compose UI test sweep, one uikit widget per session | S each | ✅ done — 2026-08-07. `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07, `ExpandableMarkdownText` ✅ 2026-08-07, `SectionTitle` ✅ 2026-08-07. All four candidates closed — task complete. |
+| 12 | Expand Compose UI tests to feature-level Screens (Composable + ViewModel + fakes) | ? | 🧭 future phase — not yet scoped, see note below task 11. ⬅ NEXT — needs its own scoping/spike pass before it's runnable, see the task's own section. |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
@@ -261,6 +261,24 @@ on a layout callback (`onSizeChanged`, `onGloballyPositioned`, etc. — not just
 `remember { mutableStateOf(...) }` toggle): use `waitUntil { ... }` on the expected semantics rather
 than `waitForIdle()`.** `./gradlew :uikit:jvmTest`, `ktlintCheck`, `detekt` and the full
 `./gradlew jvmTest` are all green.
+
+**Result (2026-08-07):** `SectionTitle` done — the last candidate on the list, so task 11 is now
+closed. Wrote `SectionTitleTest.kt` (`uikit/src/jvmTest/kotlin/.../widgets/text/SectionTitleTest.kt`),
+covering both composables in the file: `SectionTitle`'s add button (click invokes `onAddClick`;
+`onAddClick = null` hides the button entirely) and `SectionTitleExpandable`'s click-through-text
+wiring (clicking the title text invokes `onExpandClick`, since the whole `Surface` is clickable and
+pointer dispatch hits it regardless of which child is under the tap point — no need to target the
+`Surface` itself). One `testTag` addition — `SECTION_TITLE_ADD_BUTTON_TEST_TAG` on the add button's
+`Box` — same reason as `DropdownSelector`'s row tag: the icon has `contentDescription = null` and no
+other unique semantics. The arrow-rotation animation on `SectionTitleExpandable` was deliberately left
+unasserted, per the task's own priority note ("only the click-callback wiring is worth asserting").
+`./gradlew :uikit:jvmTest`, `ktlintCheck`, `detekt` and the full `./gradlew jvmTest` are all green —
+`FiltersStorageImplTest` failed once inside the full suite and passed both alone and on a clean-tree
+re-run, confirmed pre-existing cross-module flakiness unrelated to this change (not a new one, and not
+investigated further here).
+
+**Task 11 is now fully done — all four candidates on the priority list are closed.** Task 12 is next,
+but it isn't runnable yet: it needs its own scoping/spike pass first, per its section below.
 
 ---
 
