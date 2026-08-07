@@ -1,0 +1,36 @@
+docs/revisit.md
+  s_2ade16726d29b6::t_db5bc332c75d77 429-443
+  s_2ade16726d29b6::t_eb5a1b6ffca8a1 737-772
+  s_2ade16726d29b6::t_62e8483a47973c 14-16,23-25
+  s_2ade16726d29b6::t_13e7d893776a42 205-242
+CLAUDE.md
+  s_2ade16726d29b6::t_b1020a236f1f50 309-312
+  s_2ade16726d29b6::t_84af8fd4cafac1 33
+  s_2ade16726d29b6::t_5897322fabb8a2 225-226,229-247,255-260,269-282
+docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md
+  s_2ade16726d29b6::t_724f23b07d4281 3
+  s_2ade16726d29b6::t_34cdc6f4c763ca 1-2,4-313
+  s_2ade16726d29b6::t_e3b0718c58600f 314-327
+  s_2ade16726d29b6::t_932aa7ea6f7f89 328-361
+docs/testing/kover-rank.py
+  s_2ade16726d29b6::t_332473b79f0d4b 52-56
+  s_2ade16726d29b6::t_930f5119175095 4-10,12-14
+build.gradle.kts
+  s_2ade16726d29b6::t_cf5d57b5e10e3e 92,95-103,107,113
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.15",
+  "base_commit_sha": "3d015d7fab8c887c4054a871c7c35a6681552b77",
+  "prompts": {},
+  "sessions": {
+    "s_2ade16726d29b6": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "a3e1fda7-7b1a-4e9b-b81b-b37e1d1ab629",
+        "model": "claude-opus-5"
+      },
+      "human_author": "g.mikhalchuk <grigoriy.mikhalchuk@deliveryhero.com>"
+    }
+  }
+}
