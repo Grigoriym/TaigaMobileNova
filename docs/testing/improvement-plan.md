@@ -70,7 +70,7 @@ than pushing through.
 | 9e | `WikiPageViewModel` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
-| 11 | Compose UI test sweep, one uikit widget per session | S each | todo — ⬅ NEXT |
+| 11 | Compose UI test sweep, one uikit widget per session | S each | 🔁 in progress — `DropdownSelector` ✅ 2026-08-07 — ⬅ NEXT is `ConfirmActionDialog` |
 | 12 | Expand Compose UI tests to feature-level Screens (Composable + ViewModel + fakes) | ? | 🧭 future phase — not yet scoped, see note below task 11. Do not start until 11's candidate list is exhausted and this task has been sized properly first. |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -162,9 +162,9 @@ prefer widgets that own real interactive state over ones that only forward an `o
 `Modifier.testTag(...)` (+ a public `const val ..._TEST_TAG`) wherever a widget's interactive element
 has no unique text/content-description semantics, same as `CreateCommentBar`'s send button.
 
-**Candidates, in priority order (scoped 2026-08-06, not yet taken):**
+**Candidates, in priority order (scoped 2026-08-06):**
 
-1. **`DropdownSelector`** (`uikit/src/commonMain/.../widgets/DropdownSelector.kt`) — generic `<T>`,
+1. **`DropdownSelector`** ✅ done — 2026-08-07 (see Result note below). (`uikit/src/commonMain/.../widgets/DropdownSelector.kt`) — generic `<T>`,
    owns real `isExpanded` state (`remember { mutableStateOf(false) }`). Test: click to open, click an
    item, assert `onItemSelect` fired with the right value and the menu closed. Needs a concrete `T`
    in the test (e.g. `String`) and `itemContent`/`selectedItemContent` lambdas that render
@@ -202,6 +202,17 @@ might).
 
 **Ungated** — per gregory's 2026-08-06 decision (see the scope note above), take the next candidate
 without asking.
+
+**Result (2026-08-07):** `DropdownSelector` done. Wrote `DropdownSelectorTest.kt`
+(`uikit/src/jvmTest/kotlin/.../widgets/DropdownSelectorTest.kt`), two tests: opening the menu via
+click and selecting an item invokes `onItemSelect` with the right value and closes the menu; and,
+since the click-to-open `Modifier.clickable` is only attached when `canModify && !isOffline`,
+`canModify = false` leaves the row inert and the menu never opens. Needed one `testTag` addition —
+`DROPDOWN_SELECTOR_ROW_TEST_TAG` on the header `Row` — because `selectedItemContent` is caller-supplied
+and has no fixed text/description to select on generically; items themselves didn't need tags since
+the test's own `itemContent = { Text(it) }` gives each a distinguishable string. No new gotchas beyond
+what task 10 already documented — `./gradlew :uikit:jvmTest`, `ktlintCheck`, `detekt`, and the full
+`./gradlew jvmTest` are all green.
 
 ---
 
