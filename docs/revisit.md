@@ -148,6 +148,18 @@ verifies it. The tests now in place make the change safe to do next.
 **Not a correctness bug**, just three DB reads per board load. The fix is a few lines: await the
 project once and read `myPermissions` off it.
 
+**Resolved (2026-08-07):** awaited `project` once into a `currentProject` local and read
+`currentProject.myPermissions.canAddUserStory()` / `.canModifyUserStory()` and
+`currentProject.defaultSwimlane` off it, replacing the two extra `projectsRepository.getPermissions()`
+calls and the third `project.await()`. `GetKanbanDataUseCaseTest`'s `getData maps permissions onto the
+add and modify flags` test set permissions via `FakeProjectsRepository.permissions`, a field
+independent of `getCurrentProjectSimpleResult` — that only worked because production code used to call
+`getPermissions()` separately. Updated the test to set `myPermissions` on
+`getCurrentProjectSimpleResult` instead, matching the real relationship (`getPermissions()` was always
+just `getCurrentProjectSimple().myPermissions`). `FakeProjectsRepository.permissions` is still used by
+thirteen other test files, so it was not removed. `:feature:kanban:domain:jvmTest`, the full
+`./gradlew jvmTest`, `ktlintCheck` and `:koverVerify` all green.
+
 ## 7. Date formatters cache the locale for the process lifetime
 
 **What:** all three actuals of `platformFormatMediumDate` hold their formatter in a **private

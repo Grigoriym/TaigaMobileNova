@@ -188,7 +188,10 @@ class GetKanbanDataUseCaseTest {
 
     @Test
     fun `getData maps permissions onto the add and modify flags`() = runTest {
-        projectsRepository.permissions = persistentListOf(TaigaPermission.ADD_US)
+        projectsRepository.getCurrentProjectSimpleResult = getProjectSimple().copy(
+            defaultSwimlane = null,
+            myPermissions = persistentListOf(TaigaPermission.ADD_US)
+        )
 
         val data = sut.getData(storageSwimlane = null).getOrThrow()
 
