@@ -300,6 +300,12 @@ import.
 whose scope was the convention plus `feature/workitem/data`. Editing an unrelated module's test file
 would have made that diff harder to review, and the tests are not currently wrong.
 
+**Resolved (2026-08-07):** swapped all seven `assertFailsWith<IllegalStateException> { … }` call
+sites for `assertFailsWithTestException { … }` and replaced the now-unused `kotlin.test.assertFailsWith`
+import with `com.grappim.taigamobile.testing.utils.assertFailsWithTestException`. Test-only change, no
+production code touched. `:feature:wiki:data:jvmTest`, the full `./gradlew jvmTest` and
+`ktlintCheck` all green.
+
 ---
 
 ## 10. The `Plugin` and `Module` exclusion patterns hide real logic in `core/api`

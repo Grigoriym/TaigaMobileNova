@@ -7,6 +7,7 @@ import com.grappim.taigamobile.testing.api.FakeWikiApi
 import com.grappim.taigamobile.testing.models.getWikiLinkDTO
 import com.grappim.taigamobile.testing.models.getWikiPageDTO
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.assertFailsWithTestException
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
@@ -14,7 +15,6 @@ import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
 import kotlin.test.assertTrue
 
 class WikiRepositoryImplTest {
@@ -67,7 +67,7 @@ class WikiRepositoryImplTest {
     fun `getProjectWikiPages should propagate api error`() = runTest {
         fakeWikiApi.errorToThrow = testException
 
-        assertFailsWith<IllegalStateException> { sut.getProjectWikiPages() }
+        assertFailsWithTestException { sut.getProjectWikiPages() }
     }
 
     @Test
@@ -90,7 +90,7 @@ class WikiRepositoryImplTest {
     fun `getProjectWikiPageBySlug should propagate api error`() = runTest {
         fakeWikiApi.errorToThrow = testException
 
-        assertFailsWith<IllegalStateException> { sut.getProjectWikiPageBySlug(getRandomString()) }
+        assertFailsWithTestException { sut.getProjectWikiPageBySlug(getRandomString()) }
     }
 
     @Test
@@ -106,7 +106,7 @@ class WikiRepositoryImplTest {
     fun `deleteWikiPage should propagate api error`() = runTest {
         fakeWikiApi.errorToThrow = testException
 
-        assertFailsWith<IllegalStateException> { sut.deleteWikiPage(getRandomLong()) }
+        assertFailsWithTestException { sut.deleteWikiPage(getRandomLong()) }
     }
 
     @Test
@@ -139,7 +139,7 @@ class WikiRepositoryImplTest {
     fun `getWikiLinks should propagate api error`() = runTest {
         fakeWikiApi.errorToThrow = testException
 
-        assertFailsWith<IllegalStateException> { sut.getWikiLinks() }
+        assertFailsWithTestException { sut.getWikiLinks() }
     }
 
     @Test
@@ -164,7 +164,7 @@ class WikiRepositoryImplTest {
     fun `createWikiLink should propagate api error`() = runTest {
         fakeWikiApi.errorToThrow = testException
 
-        assertFailsWith<IllegalStateException> { sut.createWikiLink(getRandomString()) }
+        assertFailsWithTestException { sut.createWikiLink(getRandomString()) }
     }
 
     @Test
@@ -180,7 +180,7 @@ class WikiRepositoryImplTest {
     fun `deleteWikiLink should propagate api error`() = runTest {
         fakeWikiApi.errorToThrow = testException
 
-        assertFailsWith<IllegalStateException> { sut.deleteWikiLink(getRandomLong()) }
+        assertFailsWithTestException { sut.deleteWikiLink(getRandomLong()) }
     }
 
     @Test
@@ -205,7 +205,7 @@ class WikiRepositoryImplTest {
     fun `createWikiPage should propagate api error`() = runTest {
         fakeWikiApi.errorToThrow = testException
 
-        assertFailsWith<IllegalStateException> {
+        assertFailsWithTestException {
             sut.createWikiPage(slug = getRandomString(), content = getRandomString())
         }
     }
