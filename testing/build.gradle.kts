@@ -30,6 +30,8 @@ kotlin {
 
             api(projects.core.domain)
             api(projects.core.storage)
+            api(projects.core.appinfoApi)
+            api(projects.core.crashApi)
 
             api(projects.feature.login.domain)
             api(projects.feature.login.data)

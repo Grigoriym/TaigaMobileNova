@@ -154,6 +154,8 @@ Key fields for commonly-used fakes:
 | `FakeNetworkMonitor` | `NetworkMonitor` |
 | `FakeDateTimeUtils` | `DateTimeUtils` |
 | `FakePatchDataGenerator` | `PatchDataGenerator` |
+| `FakeAppInfoProvider` | `AppInfoProvider` — `appInfoToReturn`/`isDebugToReturn`/`isFdroidBuildToReturn`/`versionNameToReturn`/`debugLocalHostToReturn`/`buildTypeToReturn` (the `getX()`-clash naming trap below applies to every field) |
+| `FakeCrashReporter` | `CrashReporter` — `isAvailable` (settable), `setCollectionEnabledCalls`/`recordExceptionCalls`/`logCalls` |
 
 ---
 

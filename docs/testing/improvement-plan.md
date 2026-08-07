@@ -71,7 +71,7 @@ than pushing through.
 | 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
 | 11 | Compose UI test sweep, one uikit widget per session | S each | ✅ done — 2026-08-07. `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07, `ExpandableMarkdownText` ✅ 2026-08-07, `SectionTitle` ✅ 2026-08-07. All four candidates closed — task complete. |
-| 12 | Compose UI test spike, feature-level Screen (`SettingsAboutScreen`) | S | 📋 scoped — 2026-08-07, not yet started. ⬅ NEXT — see the task's own section for the pilot and the two resolved unknowns. |
+| 12 | Compose UI test spike, feature-level Screen (`SettingsAboutScreen`) | S | ✅ done — 2026-08-07 |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
@@ -190,9 +190,49 @@ result (too much friction per Screen) is as valid an outcome as a positive one.
 `SavedStateHandle`-carrying Screens turn out to need a fundamentally different setup, say so explicitly
 rather than letting the next session assume this pilot's pattern generalizes.
 
-**Not yet started.** This section is the scoping pass task 10/11's own notes said this task needed
-before it becomes runnable — running it (writing the fakes, the build wiring, and the test) is the
-next session's work, not this one's.
+**Result (2026-08-07):** Works, same conclusion as task 10. `SettingsAboutScreenTest`
+(`feature/settings/ui/src/jvmTest/.../about/SettingsAboutScreenTest.kt`) passes via
+`./gradlew :feature:settings:ui:jvmTest` and is picked up by the root `./gradlew jvmTest` (confirmed
+by the `TEST-...SettingsAboutScreenTest.xml` result file appearing under
+`feature/settings/ui/build/test-results/jvmTest/` after a full-root run, same check task 10 used).
+`ktlintCheck` is clean too.
+
+- **Build wiring** was a direct copy of `uikit/build.gradle.kts`'s pattern — hoist
+  `compose.dependencies.uiTest` / `desktop.uiTestJUnit4` / `desktop.currentOs` to top-level `val`s
+  under `@file:OptIn(ExperimentalComposeLibrary::class)`, reference them in `jvmTest.dependencies`.
+  No new gotcha; the nested-`dependencies{}`-shadowing trap task 10 found doesn't recur once you know
+  to hoist.
+- **`FakeAppInfoProvider` and `FakeCrashReporter`** landed in `:testing` `commonMain` at the *root*
+  package level (next to `FakeNetworkMonitor`), not under `repo/`/`api/`/`usecases/` — neither
+  taxonomy fits a small platform-capability interface. `testing/build.gradle.kts` needed two new
+  `api(projects.core.appinfoApi)` / `api(projects.core.crashApi)` lines; both are tiny leaf modules,
+  not `core/api` itself, so the "fakes for `:core:api` types stay local to the module" exception
+  doesn't apply here. Fake inventory in `.claude/agents/testing.md` updated.
+- **No `MainDispatcherRule` needed.** `SettingsAboutScreenViewModel` builds its whole `_state` inline
+  in the constructor — no `init { viewModelScope.launch { ... } }` — so it's constructible directly
+  in the test with no dispatcher rule and no `runTest`, same as any ViewModel with a synchronous
+  constructor.
+- **No new `testTag` needed.** `VersionContent` renders `Text(state.appInfo)` directly, so
+  `onNodeWithText(appInfoProvider.appInfoToReturn)` addresses it with no widget change — task 11's
+  "testTag is the recurring tax" note doesn't apply to every Screen, only to widgets whose
+  interactive elements lack unique text/content-description semantics.
+- **The route-carrying-Screen gap turns out to be smaller than it looked when scoped.** This pilot's
+  `SettingsAboutScreenRouteNavDestination` is a bare `data object`, so it never touched
+  `SavedStateHandle`/`toRoute<T>()`. But since a Compose UI test constructs the ViewModel directly
+  (no Koin, confirmed by this task's own scoping pass) exactly like every existing `commonTest`
+  ViewModel test does, a route-carrying Screen's test would build its `SavedStateHandle` the identical
+  way those tests already do (`SavedStateHandle(mapOf("id" to id))`, see the `testing` agent's
+  ViewModel-test pattern) and pass the ViewModel into `setContent` — nothing about being inside
+  `runComposeUiTest` changes that construction path. Flagging this as **resolved by inference, not by
+  a test that actually exercises it** — no session has yet written a Compose UI test for a
+  route-carrying Screen, so treat this as a strong prediction, not a proven fact, until one is written.
+
+**Recommendation: worth sweeping to other feature Screens next**, same wiring-cost-paid-once
+reasoning as task 10 → 11. No task is scoped for the sweep yet (candidate Screen list and per-Screen
+sizing is its own small scoping pass, same as this task needed before task 12 was runnable) — pick it
+up as a new task the same way task 11 was added after task 10, rather than assuming this pilot's
+single data point generalizes to every `*Screen` shape (multi-state-source Screens, dialogs,
+paging lists) without a second worked example.
 
 ---
 

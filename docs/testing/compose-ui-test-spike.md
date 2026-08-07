@@ -93,6 +93,13 @@ but wasn't adopted here — it's a newer, less-proven surface and migrating is a
 independent change, not part of proving the wiring. Worth revisiting once v2 stabilizes or the v1
 deprecation becomes a build warning worth silencing.
 
+**Confirmed on a second, feature-level module (task 12, 2026-08-07):** the same build-script wiring
+(hoisted `compose.dependencies.uiTest`/`desktop.uiTestJUnit4`/`desktop.currentOs` vals, referenced in
+`jvmTest.dependencies`) applied unchanged to `feature/settings/ui/build.gradle.kts` and worked first
+try — no new gotcha. See [improvement-plan.md](improvement-plan.md) task 12's Result note for what a
+Screen with a real `ViewModel` needs beyond a bare uikit widget (constructing the ViewModel directly
+with `:testing` fakes, no Koin; `LocalTopBarConfig` needs an explicit `CompositionLocalProvider`).
+
 ## Recommendation
 
 Expanding is worth it, incrementally — the wiring cost (build-script accessor gotcha, source-set
