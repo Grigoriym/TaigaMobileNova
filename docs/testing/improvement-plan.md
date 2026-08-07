@@ -79,8 +79,8 @@ than pushing through.
 | 13 | Compose UI test, route-carrying + async-loading Screen (`ProjectValuesScreen`) | S | ✅ done — 2026-08-07 |
 | 14 | Compose UI test, paging-list Screen (`ProjectSelectorScreen`) | S | ✅ done — 2026-08-07 |
 | 15 | Compose UI test, dialog Screen (`TrustedCertificatesScreen`) | S | ✅ done — 2026-08-07 |
-| 16 | Compose UI test, multi-state-source Screen (`SettingsInterfaceScreen`) | S | ⬅ NEXT |
-| 17 | Paging sweep — `ScrumClosedSprintsScreen` | S | todo |
+| 16 | Compose UI test, multi-state-source Screen (`SettingsInterfaceScreen`) | S | ✅ done — 2026-08-07 |
+| 17 | Paging sweep — `ScrumClosedSprintsScreen` | S | ⬅ NEXT |
 | 18 | Paging sweep — `ScrumOpenSprintsScreen` | S | todo |
 | 19 | Paging sweep — `ScrumBacklogScreen` | S | todo |
 | 20 | Paging sweep — `EpicsScreen` | S | todo |
@@ -523,6 +523,47 @@ cover — testing them here would double-count, not add a data point) and over `
 first frame the same way task 13's two `viewModelScope.launch` calls did, or whether one races the
 other under `UnconfinedTestDispatcher` — this is a shape task 13 didn't test (sequential launches in
 one coroutine vs. two independently launched collectors).
+
+**Result (2026-08-07):** Works, and the two independent collectors race no more than task 13's
+sequential launches did — both `themeSettings.onEach{}.launchIn` and
+`crashReportingEnabled.onEach{}.launchIn` finish before `setContent`'s first frame under
+`UnconfinedTestDispatcher`, same reasoning as tasks 13/14, just with two separate `launchIn` calls
+instead of one coroutine doing two things sequentially. No polling, no `advanceUntilIdle`, no
+ordering issue between the two collectors — the test seeds both to non-default values
+(`ThemeSettings.Dark`, not the `System` default; `crashReportingEnabled = true`) and asserts both
+landed in one `setContent` call.
+
+`SettingsInterfaceScreenTest`
+(`feature/settings/ui/src/jvmTest/.../interfacescreen/SettingsInterfaceScreenTest.kt`) constructs
+`SettingsInterfaceViewModel` directly with a `FakeTaigaSessionStorage` seeded via two **new
+constructor parameters** — `themeSettings: ThemeSettings` and `crashReportingEnabled: Boolean` — and
+a `FakeCrashReporter` with `isAvailable = true` (needed to render the crash-reporting `Switch` at
+all; `PrivacySection` is conditionally composed on `state.isCrashReportingAvailable`). Both fields
+were previously hard-coded `flowOf(...)` in `FakeTaigaSessionStorage` with **no existing test
+touching either one** (grepped every call site before changing the constructor) — added as
+constructor parameters with defaults matching the old hard-coded values
+(`ThemeSettings.default()`, `true`) so every existing call site is unaffected. Fake inventory in
+`.claude/agents/testing.md` updated.
+
+Asserts the segmented-button theme selector via `onNodeWithText("Dark").assertIsSelected()` +
+`onNodeWithText("System").assertIsNotSelected()` (proving the seeded value, not the default, won) and
+the crash-reporting `Switch` via `onNode(isToggleable()).assertIsOn()` — the `Switch` has no unique
+text/content-description of its own, and `isToggleable()` (`androidx.compose.ui.test`) is a clean way
+to address the one `Switch` on screen without adding a `testTag`. `MainDispatcherRule` is needed
+(same reasoning as tasks 13–15): both `init` collectors are `viewModelScope`-scoped work.
+
+Passes via `./gradlew :feature:settings:ui:jvmTest`, confirmed picked up by the root
+`./gradlew jvmTest` (the `TEST-...SettingsInterfaceScreenTest.xml` file was deleted and reappeared
+after a full-root run, same check tasks 10/12/13/14/15 used). `ktlintCheck` is clean (one fix needed:
+`assertIsOn`/`assertIsSelected`/`assertIsNotSelected` import order). One intermittent failure was
+seen on one `jvmTest` run (`feature/wiki/ui:jvmTest`'s `WikiPageViewModelTest`) and not on a repeat
+run with identical code — this is gotcha 7's cross-module leaked-coroutine-exception hazard, already
+documented, not something this task introduced.
+
+**Recommendation:** both shapes named after task 12 — dialog (task 15) and multi-state-source (this
+task) — are now closed. Every Screen shape task 12 originally flagged as unproven (route-carrying,
+async-loading, paging list, dialog, multi-state-source) now has a worked example. Next up: **task
+17**, the first of the five-Screen paging sweep (`ScrumClosedSprintsScreen`).
 
 ---
 

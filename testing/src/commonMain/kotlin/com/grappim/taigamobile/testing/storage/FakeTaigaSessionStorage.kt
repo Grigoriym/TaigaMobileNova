@@ -13,15 +13,17 @@ import kotlinx.coroutines.flow.flowOf
 class FakeTaigaSessionStorage(
     var currentProjectId: Long = -1L,
     var currentUserId: Long? = null,
+    themeSettings: ThemeSettings = ThemeSettings.default(),
+    crashReportingEnabled: Boolean = true,
 ) : TaigaSessionStorage {
 
     override val kanbanDefaultSwimline: Flow<Long?> = flowOf(null)
     override val tagPresetColors: Flow<List<String>> = flowOf(emptyList())
-    override val themeSettings: Flow<ThemeSettings> = flowOf(ThemeSettings.default())
+    override val themeSettings: Flow<ThemeSettings> = flowOf(themeSettings)
     override val userId: Flow<Long?> = flowOf(currentUserId)
     private val _currentProjectIdFlow = MutableStateFlow(currentProjectId)
     override val currentProjectIdFlow: Flow<Long> = _currentProjectIdFlow.asStateFlow()
-    override val crashReportingEnabled: Flow<Boolean> = flowOf(true)
+    override val crashReportingEnabled: Flow<Boolean> = flowOf(crashReportingEnabled)
 
     var setKanbanDefaultSwimlineCalls: MutableList<Long> = mutableListOf()
     override suspend fun setKanbanDefaultSwimline(value: Long) {

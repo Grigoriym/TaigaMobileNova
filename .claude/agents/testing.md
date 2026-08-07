@@ -65,7 +65,7 @@ Key fields for commonly-used fakes:
 
 **`FakeWorkItemRepository`**: `itemsByType`, `error`, `calls`, `createWorkItemResult/Throws/Calls` (`CreateWorkItemCall` records), `patchDataResult/Throws/Calls`, `patchCustomAttributesResult/Throws/Calls`, `addAttachmentResult/Throws/Calls`, `deleteAttachmentThrows/Calls`, `patchWikiPageResult/Throws/Calls`, `promoteToUserStoryResult/Throws/Called`, `deleteWorkItemThrows/Called`, `getWorkItemAttachmentsResult/Throws`, `getCustomFieldsResult/Throws`
 
-**`FakeTaigaSessionStorage`**: `currentProjectId: Long`, `currentUserId: Long?`, `clearDataCalled: Boolean`, `presetColorsResult` (backs `getPresetColors()`), `tagPresetColorsResult` (backs `getPresetColorsAsColor()`)
+**`FakeTaigaSessionStorage`**: `currentProjectId: Long`, `currentUserId: Long?`, `clearDataCalled: Boolean`, `presetColorsResult` (backs `getPresetColors()`), `tagPresetColorsResult` (backs `getPresetColorsAsColor()`), constructor-only `themeSettings: ThemeSettings` (default `ThemeSettings.default()`) and `crashReportingEnabled: Boolean` (default `true`) seed the fixed `themeSettings`/`crashReportingEnabled` flows — not mutable after construction, only settable via the constructor
 
 **`FakeWikiRepository`**: `getProjectWikiPagesResult`, `getProjectWikiPageBySlugResult/Throws`, `getWikiLinksResult/Throws`, `deleteWikiPageThrows/Called/Id`, `deleteWikiLinkCalled/Id`
 

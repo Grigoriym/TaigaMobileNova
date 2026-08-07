@@ -125,6 +125,21 @@ ViewModel's own `viewModelScope.launch { }` — synchronously under the unconfin
 assertion right after `performClick()` already sees the settled state. See
 [improvement-plan.md](improvement-plan.md) task 15 for the worked example.
 
+**Two independently launched `onEach{}.launchIn(viewModelScope)` collectors in `init` both finish
+before the first frame under `MainDispatcherRule` (task 16, 2026-08-07), same as sequential
+`viewModelScope.launch` calls (task 13) — no ordering surprise from having two separate collectors
+instead of one coroutine doing two things.** `SettingsInterfaceScreenTest` seeds
+`FakeTaigaSessionStorage` with two new constructor parameters (`themeSettings`, `crashReportingEnabled`,
+both previously hard-coded `flowOf(...)` values with no existing test touching either) and asserts
+both landed in the same `setContent` call. Also: **`onNode(matcher)` is a member function on the
+`ComposeUiTest` receiver, not a top-level import** — `import androidx.compose.ui.test.onNode` fails
+with "unresolved reference" (same member-vs-import trap as `assertExists()`/`assertDoesNotExist()`
+above, just for `onNode` instead of the assertion). And: **a widget with no unique text or
+content-description (a bare `Switch`) can be addressed via `isToggleable()` +
+`onNode(isToggleable())` without adding a `testTag`**, when it's the only toggleable node on screen —
+a second, cheaper option alongside the `testTag` tax the Recommendation below describes, worth trying
+first when there's only one such widget in the tree.
+
 ## Recommendation
 
 Expanding is worth it, incrementally — the wiring cost (build-script accessor gotcha, source-set
