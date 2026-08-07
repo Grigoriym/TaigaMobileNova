@@ -56,6 +56,26 @@ interaction object, **not** importable top-level functions — importing them as
 `onNodeWith...()` result). `runComposeUiTest { setContent { ... } ... }` needs
 `@OptIn(ExperimentalTestApi::class)` on the test function.
 
+**`waitForIdle()` is not enough when the assertion depends on a layout callback** (`onSizeChanged`,
+`onGloballyPositioned`, etc.), discovered in task 11's `ExpandableMarkdownTextTest`:
+`ExpandableMarkdownText` decides whether to show its "Show more" button from a height captured in
+`onSizeChanged`, and that state update lands on a frame *after* the one `setContent` settles on. A
+single `waitForIdle()` right after `setContent` was order/timing-dependent — it failed consistently
+when a second test ran after a first one in the same class, and passed when run alone — the classic
+signature of a race, not a one-off flake. Fix: poll instead of waiting once —
+`waitUntil { onAllNodesWithText("Show more").fetchSemanticsNodes().isNotEmpty() }` — which advances
+frames until the semantics actually show the expected state, and passed deterministically across
+repeated reruns regardless of order. **Use `waitUntil { ... }` on the expected semantics, not
+`waitForIdle()`, for any widget whose visible state depends on a layout pass** rather than a plain
+`remember { mutableStateOf(...) }` toggle driven directly by a click handler.
+
+**`stringResource(RString.x)` resolves normally in this `jvmTest` environment** — confirmed in
+`ExpandableMarkdownTextTest` by asserting on the literal "Show more"/"Show less" strings. This means
+`ConfirmActionDialogTest`'s workaround (passing `NativeText.Simple(...)` instead of the widget's
+default `RString.yes`/`RString.no` to avoid a "`StringResource`-resolving test environment") was not
+a hard requirement of the test setup — it was a choice for that test, not something every widget test
+needs. Try plain `stringResource` first on future widgets before reaching for `NativeText.Simple`.
+
 **What the test asserts:** `CreateCommentBar` was picked as the target because it owns real internal
 state (`rememberSaveable { mutableStateOf("") }`) that changes through interaction, not because it's
 the simplest widget in the module. The test types text, asserts it appears, clicks send, asserts the

@@ -70,7 +70,7 @@ than pushing through.
 | 9e | `WikiPageViewModel` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
-| 11 | Compose UI test sweep, one uikit widget per session | S each | 🔁 in progress — `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07 — ⬅ NEXT is `ExpandableMarkdownText` |
+| 11 | Compose UI test sweep, one uikit widget per session | S each | 🔁 in progress — `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07, `ExpandableMarkdownText` ✅ 2026-08-07 — ⬅ NEXT is `SectionTitle` |
 | 12 | Expand Compose UI tests to feature-level Screens (Composable + ViewModel + fakes) | ? | 🧭 future phase — not yet scoped, see note below task 11. Do not start until 11's candidate list is exhausted and this task has been sized properly first. |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -235,6 +235,32 @@ Noticed in passing (not acted on): `runComposeUiTest` itself is deprecated in fa
 overload — written up in the note above the "Considered and deferred" section rather than here since
 it affects every widget test, not just this one. `./gradlew :uikit:jvmTest`, `ktlintCheck`, `detekt`
 and the full `./gradlew jvmTest` are all green.
+
+**Result (2026-08-07):** `ExpandableMarkdownText` done — the flagged layout risk was real but
+recoverable, not a blocker. Wrote `ExpandableMarkdownTextTest.kt`
+(`uikit/src/jvmTest/kotlin/.../widgets/text/ExpandableMarkdownTextTest.kt`), two tests: short text
+never shows the expand button, and long text (30 short paragraphs, `maxLinesCollapsed = 6`) shows
+"Show more", clicking it swaps to "Show less" and reveals the rest. No `testTag` needed — the button
+text (`stringResource(RString.show_more)`/`show_less`) resolves to real strings in this JVM test
+environment (unlike `ConfirmActionDialogTest`'s workaround, `stringResource` just worked here, so that
+workaround isn't a universal requirement — worth trying plain `stringResource` first on future
+widgets before reaching for `NativeText.Simple`).
+
+The real finding: `naturalHeight` (set via `onSizeChanged` on the actual desktop `runComposeUiTest`
+backend, confirming it *does* lay out to a real pixel size, resolving the risk flagged in this task's
+own scope note) updates on a **later frame** than the one `setContent` settles on, so a single
+`waitForIdle()` after `setContent` was not reliably enough to observe the button appearing — it failed
+consistently when this test ran second in the class (after `shortTextNeverShowsExpandButton`) and
+passed when run alone, i.e. genuinely order/timing-dependent, not a one-off flake. Diagnosed by
+temporarily inserting `onRoot().printToLog(...)` before the assertion, which incidentally made the
+test pass — a clue that *something* extra was needed, not that logging itself was the fix. Replaced
+with `waitUntil { onAllNodesWithText("Show more").fetchSemanticsNodes().isNotEmpty() }`, which polls
+across frames until the condition holds; that made it pass deterministically across repeated reruns
+and regardless of declaration/execution order. **Lesson for future widgets whose visible state depends
+on a layout callback (`onSizeChanged`, `onGloballyPositioned`, etc. — not just a plain
+`remember { mutableStateOf(...) }` toggle): use `waitUntil { ... }` on the expected semantics rather
+than `waitForIdle()`.** `./gradlew :uikit:jvmTest`, `ktlintCheck`, `detekt` and the full
+`./gradlew jvmTest` are all green.
 
 ---
 
