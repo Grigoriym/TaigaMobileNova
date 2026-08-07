@@ -70,7 +70,7 @@ than pushing through.
 | 9e | `WikiPageViewModel` (LINE-0 sleeper) | S | ✅ done — 2026-08-06 |
 | 9f | `AuthRepositoryImpl.getGithubClientId` + `TagsScreenViewModel.onSaveTag` | XS | ✅ done — 2026-08-06 |
 | 10 | Compose UI test spike (one uikit widget) | M | ✅ done — 2026-08-06 (started without asking — see the task's own Result note) |
-| 11 | Compose UI test sweep, one uikit widget per session | S each | 🔁 in progress — `DropdownSelector` ✅ 2026-08-07 — ⬅ NEXT is `ConfirmActionDialog` |
+| 11 | Compose UI test sweep, one uikit widget per session | S each | 🔁 in progress — `DropdownSelector` ✅ 2026-08-07, `ConfirmActionDialog` ✅ 2026-08-07 — ⬅ NEXT is `ExpandableMarkdownText` |
 | 12 | Expand Compose UI tests to feature-level Screens (Composable + ViewModel + fakes) | ? | 🧭 future phase — not yet scoped, see note below task 11. Do not start until 11's candidate list is exhausted and this task has been sized properly first. |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -91,6 +91,16 @@ wiring a ViewModel + Koin + navigation into a `runComposeUiTest`, so it needs it
 pass — written as its own task — before it can be picked up the way 11's candidates can.
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
+
+**`runComposeUiTest` is deprecated in favor of a `v2` overload (noticed 2026-08-07, task 11
+`ConfirmActionDialog`).** Compiling any test that calls it now prints
+`'fun runComposeUiTest(...)' is deprecated. Use 'androidx.compose.ui.test.v2.runComposeUiTest'
+instead. The v2 APIs use 'StandardTestDispatcher' by default...`. Not acted on yet — task 10 and the
+first two task 11 widgets all use the v1 API and it still works — but a future session migrating to
+v2 should expect the `StandardTestDispatcher` default to change timing-sensitive interactions
+(anything relying on immediate coroutine execution may need an explicit `advanceUntilIdle()` or
+similar). Worth a dedicated look once the warning starts actually blocking something, not a reason to
+touch the passing tests now.
 
 Tasks 0–2 are ordered deliberately: 0 makes the reference doc trustworthy, 1 guarantees that
 anything later tasks write actually runs in CI, 2 is the highest-value single test in the plan.
@@ -169,7 +179,7 @@ has no unique text/content-description semantics, same as `CreateCommentBar`'s s
    item, assert `onItemSelect` fired with the right value and the menu closed. Needs a concrete `T`
    in the test (e.g. `String`) and `itemContent`/`selectedItemContent` lambdas that render
    distinguishable text.
-2. **`ConfirmActionDialog`** (`uikit/src/commonMain/.../widgets/dialog/ConfirmActionDialog.kt`) — no
+2. **`ConfirmActionDialog`** ✅ done — 2026-08-07 (see Result note below). (`uikit/src/commonMain/.../widgets/dialog/ConfirmActionDialog.kt`) — no
    owned state, but real confirm/cancel button wiring worth verifying directly rather than trusting
    it by inspection. Check its actual parameter names before writing the test.
 3. **`ExpandableMarkdownText`** (`uikit/src/commonMain/.../widgets/text/ExpandableMarkdownText.kt`) —
@@ -213,6 +223,18 @@ and has no fixed text/description to select on generically; items themselves did
 the test's own `itemContent = { Text(it) }` gives each a distinguishable string. No new gotchas beyond
 what task 10 already documented — `./gradlew :uikit:jvmTest`, `ktlintCheck`, `detekt`, and the full
 `./gradlew jvmTest` are all green.
+
+**Result (2026-08-07):** `ConfirmActionDialog` done. Wrote `ConfirmActionDialogTest.kt`
+(`uikit/src/jvmTest/kotlin/.../widgets/dialog/ConfirmActionDialogTest.kt`), three tests: confirming
+invokes `onConfirm` and not `onDismiss`, dismissing invokes `onDismiss` and not `onConfirm`, and
+`isVisible = false` renders nothing (asserted via `onNodeWithText(title).assertDoesNotExist()`). No
+`testTag` needed — the confirm/dismiss buttons and title/description are plain `Text`, and the test
+passes `NativeText.Simple(...)` for the button text instead of the default `RString.yes`/`RString.no`
+resources to get a known string to assert on without a `StringResource`-resolving test environment.
+Noticed in passing (not acted on): `runComposeUiTest` itself is deprecated in favor of a `v2`
+overload — written up in the note above the "Considered and deferred" section rather than here since
+it affects every widget test, not just this one. `./gradlew :uikit:jvmTest`, `ktlintCheck`, `detekt`
+and the full `./gradlew jvmTest` are all green.
 
 ---
 
