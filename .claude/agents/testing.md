@@ -46,7 +46,7 @@ right subpackage before concluding a fake doesn't exist:
 |------|-----------|
 | `FakeWorkItemRepository` | `WorkItemRepository` |
 | `FakeProjectsRepository` | `ProjectsRepository` |
-| `FakeEpicsRepository` | `EpicsRepository` — `linkToEpic`/`unlinkFromEpic` record into `linkToEpicCalls`/`unlinkFromEpicCalls` (`EpicLinkCall(epicId, userStoryId)`) and have `…Throws` hooks |
+| `FakeEpicsRepository` | `EpicsRepository` — `linkToEpic`/`unlinkFromEpic` record into `linkToEpicCalls`/`unlinkFromEpicCalls` (`EpicLinkCall(epicId, userStoryId)`) and have `…Throws` hooks; `getEpicsPagingResult: ImmutableList<WorkItem>` (backs `getEpicsPaging(filters, query)` — empty returns `PagingData.empty()`, non-empty returns `PagingData.from(getEpicsPagingResult)`, same pattern as `FakeSprintsRepository.getSprintsPagingResult`; added for the paging sweep, task 20 in `docs/testing/improvement-plan.md`) |
 | `FakeUsersRepository` | `UsersRepository` |
 | `FakeHistoryRepository` | `HistoryRepository` |
 | `FakeSprintsRepository` | `SprintsRepository` |
@@ -497,13 +497,12 @@ to return non-empty `PagingData` too** — `flowOf(PagingData.empty())` never pr
 `collectAsLazyPagingItems()`. `FakeProjectsRepository.fetchProjects` is the worked example: set
 `fetchProjectsResult` to a non-empty list and it returns `PagingData.from(fetchProjectsResult)`.
 `FakeSprintsRepository.getSprintsPaging` follows the same pattern via `getSprintsPagingResult`
-(added for the paging sweep, task 17 in `docs/testing/improvement-plan.md`), and
+(added for the paging sweep, task 17 in `docs/testing/improvement-plan.md`),
 `FakeUserStoriesRepository.getUserStoriesPaging` follows it too via `getUserStoriesPagingResult`
-(task 19).
-instead. `PagingData.from(list)` needs no `Pager`/`RemoteMediator` — it is a static, already-loaded
+(task 19), and `FakeEpicsRepository.getEpicsPaging` follows it too via `getEpicsPagingResult`
+(task 20). `PagingData.from(list)` needs no `Pager`/`RemoteMediator` — it is a static, already-loaded
 page, which is all a "does this Screen shape render inside `runComposeUiTest`" test needs (see task
-14, `docs/testing/improvement-plan.md`). The other two paging fakes above still only support the
-empty case; extend them the same way if a test for one of their Screens needs a real item to render.
+14, `docs/testing/improvement-plan.md`).
 
 ### Driving a `RemoteMediator` directly
 

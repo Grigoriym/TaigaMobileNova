@@ -17,10 +17,16 @@ class FakeEpicsRepository : EpicsRepository {
     var getEpicResult: Epic? = null
     var getEpicThrows: Throwable? = null
 
+    var getEpicsPagingResult: ImmutableList<WorkItem> = persistentListOf()
+
     override fun getEpicsPaging(
         filters: FiltersData,
         query: String
-    ): Flow<PagingData<WorkItem>> = flowOf(PagingData.empty())
+    ): Flow<PagingData<WorkItem>> = if (getEpicsPagingResult.isEmpty()) {
+        flowOf(PagingData.empty())
+    } else {
+        flowOf(PagingData.from(getEpicsPagingResult))
+    }
 
     var getEpicsResult: ImmutableList<Epic> = persistentListOf()
     var getEpicsThrows: Throwable? = null

@@ -89,8 +89,8 @@ than pushing through.
 | 17 | Paging sweep — `ScrumClosedSprintsScreen` | S | ✅ done — 2026-08-07 |
 | 18 | Paging sweep — `ScrumOpenSprintsScreen` | S | ✅ done — 2026-08-07 |
 | 19 | Paging sweep — `ScrumBacklogScreen` | S | ✅ done — 2026-08-07 |
-| 20 | Paging sweep — `EpicsScreen` | S | ⬅ NEXT |
-| 21 | Paging sweep — `IssuesScreen` | S | todo |
+| 20 | Paging sweep — `EpicsScreen` | S | ✅ done — 2026-08-07 |
+| 21 | Paging sweep — `IssuesScreen` | S | ⬅ NEXT |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
 are in scope and should be worked straight through; 9a and 9b were added by task 9 as its own
@@ -796,6 +796,39 @@ filters/search.
 
 **Finalize focus:** low if task 19 already answered the `combine()` question — this should be close to
 mechanical. Worth noting only if something about this module differs from the scrum backlog case.
+
+**Result (2026-08-07):** Worked exactly as predicted — mechanical, zero surprises, first-run green.
+
+- **Build wiring** for `feature/epics/ui` had no `jvmTest`/`uiTest` wiring before this task — added
+  fresh with the same hoist-to-top-level-`val` pattern as tasks 10/12/14/17
+  (`@file:OptIn(ExperimentalComposeLibrary::class)` + three `val`s + `jvmTest.dependencies` block),
+  copied directly from `feature/scrum/ui/build.gradle.kts` (task 17).
+- **`FakeEpicsRepository.getEpicsPaging`** got a `getEpicsPagingResult: ImmutableList<WorkItem>` field,
+  identical empty→`PagingData.empty()`/non-empty→`PagingData.from(...)` shape as
+  `FakeSprintsRepository.getSprintsPagingResult` (task 17) /
+  `FakeUserStoriesRepository.getUserStoriesPagingResult` (task 19). Fake inventory in
+  `.claude/agents/testing.md` updated (the `FakeEpicsRepository` bullet and the paging-fakes
+  worked-example paragraph).
+- **`EpicsViewModel.epics` has the identical `combine()`+`flatMapLatest` shape as
+  `ScrumBacklogViewModel`** (task 19) — `session.epicsFilters` combined with a local `searchQuery`
+  `MutableStateFlow`, `flatMapLatest`'d into `epicsRepository.getEpicsPaging(...)`.
+  `MainDispatcherRule(UnconfinedTestDispatcher)` + plain `setContent` was sufficient with no extra
+  nudge, confirming task 19's hypothesis held for a second `combine()` shape.
+- **The `substring = true` text match task 19 flagged was needed and worked on the first try** —
+  `EpicsScreen` renders list items through the same `simpleTasksListWithTitle`/`CommonTaskItem` widget
+  as `ScrumBacklogScreen`, so `onNodeWithText(workItem.title, substring = true)` was written from the
+  start rather than rediscovered.
+- The "Add Epic" topbar action was **not** tested, same reasoning as tasks 18/19: it lives in
+  `TopBarConfig.actions`, rendered by an outer `Scaffold` this test doesn't compose.
+- `EpicsScreenTest` (`feature/epics/ui/src/jvmTest/.../list/EpicsScreenTest.kt`) passed
+  `./gradlew :feature:epics:ui:jvmTest` on the first run — no iteration needed. Confirmed picked up by
+  the full `./gradlew jvmTest` (`TEST-...EpicsScreenTest.xml` present) and by `:koverVerify` passing.
+  `./gradlew ktlintCheck` is clean — no `standard:function-signature` hit this time (no multi-parameter
+  helper function was needed, same as task 19).
+
+**Next: task 21** (`IssuesScreen`) — the last of the five-Screen paging sweep, and the one with a real
+pre-existing fake bug (`FakeIssuesRepository.getIssuesPaging` returns `emptyFlow()`, not
+`flowOf(PagingData.empty())`) to fix before extending it, per its own scope note.
 
 ---
 
