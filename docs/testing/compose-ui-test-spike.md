@@ -153,6 +153,25 @@ standard way Screens expose topbar actions — not something specific to
 will need to also compose whatever Scaffold consumes `LocalTopBarConfig.current`, not just the target
 Screen.
 
+**A ViewModel-level `combine()`+`flatMapLatest()` feeding a paging `Flow` needs nothing beyond the
+established `MainDispatcherRule`(`UnconfinedTestDispatcher`) + `setContent` pattern (task 19,
+2026-08-07).** `ScrumBacklogViewModel.userStories` is `combine(session.scrumFilters, searchQuery) {
+... }.flatMapLatest { userStoriesRepository.getUserStoriesPaging(...) }.cachedIn(viewModelScope)` —
+two source `StateFlow`s that already hold a value when the property initializer runs, so `combine()`
+emits synchronously on first collection and `flatMapLatest` switches into the (now non-empty, per
+`FakeUserStoriesRepository.getUserStoriesPagingResult`) paging flow before `collectAsLazyPagingItems()`'s
+first frame settles — indistinguishable in the test from the plain cold-flow shape tasks 14/17/18
+proved. No `waitUntil`, no extra collector nudge. **This carries forward to tasks 20/21
+(`EpicsViewModel`/`IssuesViewModel`), which share the identical `combine()`+`flatMapLatest()` shape.**
+
+The one real surprise in `ScrumBacklogScreenTest` was unrelated to `combine()`: `CommonTaskItem`
+renders a work item's title through `CommonTaskTitle`'s `"#ref title"` pattern, merged by Compose
+semantics into a single `Text` node together with the ref number and colored indicator dots. So
+`onNodeWithText(workItem.title)` (exact match, the default) never finds it —
+`onNodeWithText(workItem.title, substring = true)` is required. This will recur in tasks 20/21, since
+`EpicsScreen`/`IssuesScreen` render list items through the same `CommonTaskItem`/`simpleTasksListWithTitle`
+widget.
+
 ## Recommendation
 
 Expanding is worth it, incrementally — the wiring cost (build-script accessor gotcha, source-set

@@ -16,6 +16,12 @@ two tasks in your head at once.
    the table or in the "Scope decision" note above it (see the rule at the end of this list), so
    skipping the table is how a gated task gets started unasked — it happened to task 10
    (2026-08-06): a session read the section body via `tail`, never saw the table, and did the work.
+   **Before assuming the NEXT task is actually undone, run `git status`/`git diff`.** A session can
+   finish the code, the fake, and even the task's own Result note and "Next: task N+1" line, then get
+   cut off (e.g. a `/clear`) before steps 4–6 — the status table update, `finalize`, and commit. Task
+   19 (2026-08-07) was found exactly this way: fully implemented and written up, table still said
+   `⬅ NEXT`. Treat uncommitted changes touching the NEXT task's files as a finished task waiting on
+   verification + bookkeeping, not as a task to redo from scratch.
 2. Read only that task's section, plus [survey.md](survey.md) if you need the wider picture.
 3. Do it. Verify with the task's own `Done when` commands — not by eyeballing.
 4. **Update the status table**: set this task to `✅ done — <date>`, and move the `⬅ NEXT` marker
@@ -82,8 +88,8 @@ than pushing through.
 | 16 | Compose UI test, multi-state-source Screen (`SettingsInterfaceScreen`) | S | ✅ done — 2026-08-07 |
 | 17 | Paging sweep — `ScrumClosedSprintsScreen` | S | ✅ done — 2026-08-07 |
 | 18 | Paging sweep — `ScrumOpenSprintsScreen` | S | ✅ done — 2026-08-07 |
-| 19 | Paging sweep — `ScrumBacklogScreen` | S | ⬅ NEXT |
-| 20 | Paging sweep — `EpicsScreen` | S | todo |
+| 19 | Paging sweep — `ScrumBacklogScreen` | S | ✅ done — 2026-08-07 |
+| 20 | Paging sweep — `EpicsScreen` | S | ⬅ NEXT |
 | 21 | Paging sweep — `IssuesScreen` | S | todo |
 
 **Scope decision (2026-08-02, extended 2026-08-03):** tasks 0–9 — the unit / non-instrumented work —
@@ -728,6 +734,41 @@ That's this task's real unknown: task 14 never needed a `combine()`, only a clas
 shape shared by `EpicsViewModel`/`IssuesViewModel`. If it needs something beyond the established
 pattern (e.g. the default `searchQuery` flow needing a nudge before the paging flow emits), say so
 precisely — tasks 20/21 will follow whatever this one discovers.
+
+**Result (2026-08-07):** Worked with no `combine()`-specific surprise — the pattern from tasks 12–18
+holds: `MainDispatcherRule`(`UnconfinedTestDispatcher`) + `setContent` is enough, because both source
+`StateFlow`s (`session.scrumFilters`, the local `searchQuery`) already hold a value when
+`ScrumBacklogViewModel.userStories`'s property initializer runs, so `combine()` emits synchronously on
+first collection and `flatMapLatest` switches into the paging flow before
+`collectAsLazyPagingItems()`'s first frame settles. **Confirms the hypothesis for tasks 20/21**: no
+extra nudge, no `waitUntil`, no interaction between the two `StateFlow`s' collection and Compose's test
+frame clock.
+
+- **`FakeUserStoriesRepository.getUserStoriesPaging`**
+  (`testing/.../repo/FakeUserStoriesRepository.kt`) got a `getUserStoriesPagingResult:
+  ImmutableList<WorkItem>` field, same empty→`PagingData.empty()`/non-empty→`PagingData.from(...)`
+  shape as `FakeSprintsRepository.getSprintsPagingResult` (task 17) /
+  `FakeProjectsRepository.fetchProjectsResult` (task 14). Fake inventory in `.claude/agents/testing.md`
+  updated (the `FakeUserStoriesRepository` bullet, the paging-fakes table, and the worked-example
+  paragraph).
+- **The one genuine surprise was unrelated to `combine()`**: `onNodeWithText(workItem.title)` (exact
+  match) never found the rendered item. `CommonTaskItem` renders the title through
+  `CommonTaskTitle`'s `"#ref title"` pattern, which Compose semantics merges into a single `Text` node
+  together with the ref number and colored indicator dots — so the title is a *substring* of the
+  node's text, not the whole thing. Fix: `onNodeWithText(workItem.title, substring = true)`. This will
+  recur verbatim in tasks 20/21, since `EpicsScreen`/`IssuesScreen` render their list items through the
+  same `CommonTaskItem`/`simpleTasksListWithTitle` widget — pass `substring = true` from the start
+  rather than rediscovering this.
+- `ScrumBacklogScreenTest` (`feature/scrum/ui/src/jvmTest/.../backlog/ScrumBacklogScreenTest.kt`)
+  passes via `./gradlew :feature:scrum:ui:jvmTest`, is picked up by the root `./gradlew jvmTest`, and
+  `ktlintCheck` is clean (no `standard:function-signature` hits this time — no multi-parameter helper
+  function was needed). One `jvmTest` full-root run turned up an unrelated
+  `FiltersStorageImplTest.a stored value is decoded back into the filters it was saved from` Turbine
+  failure; passed both in isolation and on a second full-root re-run — pre-existing flake, not caused
+  by this change, same shape as task 17's `WikiPageViewModelTest` note.
+
+**Next: task 20** (`EpicsScreen`) — apply the `combine()` confirmation and the `substring = true` text
+match directly; expect this one to be close to mechanical.
 
 ---
 

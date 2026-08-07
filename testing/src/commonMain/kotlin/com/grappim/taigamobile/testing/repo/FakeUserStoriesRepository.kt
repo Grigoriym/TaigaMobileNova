@@ -17,10 +17,17 @@ class FakeUserStoriesRepository : UserStoriesRepository {
 
     var getEpicUserStoriesSimplifiedResult: ImmutableList<WorkItem> = persistentListOf()
 
+    var getUserStoriesPagingResult: ImmutableList<WorkItem> = persistentListOf()
+
     override fun getUserStoriesPaging(
         filters: FiltersData,
         query: String
-    ): Flow<PagingData<WorkItem>> = flowOf(PagingData.empty())
+    ): Flow<PagingData<WorkItem>> =
+        if (getUserStoriesPagingResult.isEmpty()) {
+            flowOf(PagingData.empty())
+        } else {
+            flowOf(PagingData.from(getUserStoriesPagingResult))
+        }
 
     override suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem> =
         getEpicUserStoriesSimplifiedResult

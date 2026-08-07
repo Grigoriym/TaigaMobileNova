@@ -75,7 +75,7 @@ Key fields for commonly-used fakes:
 
 **`FakeUsersRepository`**: `getUserResult/Throws`, `getMeResult/Throws/CallCount`, `getUsersListResult/Throws`, `isAnyAssignedToMeResult/Throws`, `getTeamMembersResult/Throws/CallCount/GenerateMemberStats`, `getUserStatsResult/Throws`
 
-**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getUserStoryResult/Throws`, `deleteUserStoryThrows/Called`, `getEpicUserStoriesSimplifiedResult`, `createUserStoryResult/Throws/Calls` (`CreateUserStoryCall` records), `bulkUpdateKanbanOrderThrows/Called`, plus one recorder per `bulkUpdateKanbanOrder` argument (`bulkUpdateKanbanOrderStatusId/StoryIds/SwimlaneId/AfterStoryId/BeforeStoryId`)
+**`FakeUserStoriesRepository`**: `getUserStoriesResult/Throws`, `getUserStoryResult/Throws`, `deleteUserStoryThrows/Called`, `getEpicUserStoriesSimplifiedResult`, `createUserStoryResult/Throws/Calls` (`CreateUserStoryCall` records), `bulkUpdateKanbanOrderThrows/Called`, plus one recorder per `bulkUpdateKanbanOrder` argument (`bulkUpdateKanbanOrderStatusId/StoryIds/SwimlaneId/AfterStoryId/BeforeStoryId`), `getUserStoriesPagingResult: ImmutableList<WorkItem>` (backs `getUserStoriesPaging(filters, query)` — empty returns `PagingData.empty()`, non-empty returns `PagingData.from(getUserStoriesPagingResult)`, same pattern as `FakeSprintsRepository.getSprintsPagingResult`; added for the paging sweep, task 19 in `docs/testing/improvement-plan.md`)
 
 **`FakeFiltersRepository`**: `statusesResult/Throws`, `filtersDataResult/Throws`, `getFiltersDataCallCount`
 
@@ -488,7 +488,6 @@ Fakes that return `flowOf(PagingData.empty())` for paging (safe to construct):
 |------|--------|
 | `FakeSprintsRepository` | `getSprintsPaging(isClosed)` |
 | `FakeEpicsRepository` | `getEpicsPaging(filters, query)` |
-| `FakeUserStoriesRepository` | `getUserStoriesPaging(filters, query)` |
 | `FakeProjectsRepository` | `fetchProjects(query)` |
 
 If you add a ViewModel that calls another paging method at construction, implement it in the corresponding fake with `flowOf(PagingData.empty())`.
@@ -498,10 +497,12 @@ to return non-empty `PagingData` too** — `flowOf(PagingData.empty())` never pr
 `collectAsLazyPagingItems()`. `FakeProjectsRepository.fetchProjects` is the worked example: set
 `fetchProjectsResult` to a non-empty list and it returns `PagingData.from(fetchProjectsResult)`.
 `FakeSprintsRepository.getSprintsPaging` follows the same pattern via `getSprintsPagingResult`
-(added for the paging sweep, task 17 in `docs/testing/improvement-plan.md`).
+(added for the paging sweep, task 17 in `docs/testing/improvement-plan.md`), and
+`FakeUserStoriesRepository.getUserStoriesPaging` follows it too via `getUserStoriesPagingResult`
+(task 19).
 instead. `PagingData.from(list)` needs no `Pager`/`RemoteMediator` — it is a static, already-loaded
 page, which is all a "does this Screen shape render inside `runComposeUiTest`" test needs (see task
-14, `docs/testing/improvement-plan.md`). The other three paging fakes above still only support the
+14, `docs/testing/improvement-plan.md`). The other two paging fakes above still only support the
 empty case; extend them the same way if a test for one of their Screens needs a real item to render.
 
 ### Driving a `RemoteMediator` directly
