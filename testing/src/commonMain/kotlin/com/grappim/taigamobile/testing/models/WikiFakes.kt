@@ -11,20 +11,23 @@ fun getWikiPageDTO(
     id: Long = getRandomLong(),
     projectId: Long = getRandomLong(),
     slug: String = getRandomString(),
-    content: String = getRandomString()
+    content: String = getRandomString(),
+    lastModifierId: Long? = getRandomLong(),
+    isWatcher: Boolean = getRandomBoolean(),
+    version: Long = getRandomLong()
 ): WikiPageDTO = WikiPageDTO(
     id = id,
     projectId = projectId,
     slug = slug,
     content = content,
     ownerId = getRandomLong(),
-    lastModifierId = getRandomLong(),
+    lastModifierId = lastModifierId,
     createdDate = nowLocalDateTime,
     modifiedDate = nowLocalDateTime,
     html = getRandomString(),
     editions = getRandomLong(),
-    version = getRandomLong(),
-    isWatcher = getRandomBoolean(),
+    version = version,
+    isWatcher = isWatcher,
     totalWatchers = getRandomLong()
 )
 

@@ -1,8 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.mapper
 
-import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiLinkDTO
-import com.grappim.taigamobile.testing.utils.getRandomLong
-import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.models.getWikiLinkDTO
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -20,7 +18,7 @@ class WikiLinkMapperTest {
 
     @Test
     fun `toDomain should map all fields correctly`() = runTest {
-        val dto = createWikiLinkDTO()
+        val dto = getWikiLinkDTO()
 
         val result = sut.toDomain(dto)
 
@@ -32,9 +30,9 @@ class WikiLinkMapperTest {
 
     @Test
     fun `toDomainList should map list of DTOs correctly`() = runTest {
-        val dto1 = createWikiLinkDTO()
-        val dto2 = createWikiLinkDTO()
-        val dto3 = createWikiLinkDTO()
+        val dto1 = getWikiLinkDTO()
+        val dto2 = getWikiLinkDTO()
+        val dto3 = getWikiLinkDTO()
         val dtos = listOf(dto1, dto2, dto3)
 
         val result = sut.toDomainList(dtos)
@@ -54,18 +52,4 @@ class WikiLinkMapperTest {
 
         assertTrue(result.isEmpty())
     }
-
-    private fun createWikiLinkDTO(
-        id: Long = getRandomLong(),
-        projectId: Long = getRandomLong(),
-        title: String = getRandomString(),
-        href: String = getRandomString(),
-        order: Long = getRandomLong()
-    ) = WikiLinkDTO(
-        id = id,
-        projectId = projectId,
-        title = title,
-        href = href,
-        order = order
-    )
 }

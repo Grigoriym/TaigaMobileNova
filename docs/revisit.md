@@ -94,6 +94,16 @@ them would have widened its diff for no functional gain.
 `ownerId`, `html`, `editions`, etc.). Adopting them means widening the factory signatures, so this is
 slightly more than a find-and-replace.
 
+**Resolved (2026-08-07):** widened `getWikiPageDTO()` in `:testing` `WikiFakes.kt` with the three
+params the private factories actually override (`lastModifierId`, `isWatcher`, `version`) — not the
+full private-factory parameter list, since nothing needed the rest (`ownerId`, `createdDate`,
+`modifiedDate`, `html`, `editions`, `totalWatchers` stay randomized, matching what every call site
+already relied on). `getWikiLinkDTO()` needed no changes — none of its callers ever overrode a
+param. Deleted all three private factories (`WikiPageMapperTest`, `WikiLinkMapperTest`, and a third
+one in `PatchedDataMapperTest` this entry hadn't originally counted) and switched their call sites to
+the shared ones. `:feature:workitem:mapper:jvmTest`, `:feature:wiki:data:jvmTest`, `:testing:jvmTest`
+and `ktlintCheck` all green.
+
 ## 4. Dead `koin-test` block in `:testing` `androidMain`
 
 **What:** `testing/build.gradle.kts` declares `koin-test`, `koin-test-junit4` and `junit4` in
