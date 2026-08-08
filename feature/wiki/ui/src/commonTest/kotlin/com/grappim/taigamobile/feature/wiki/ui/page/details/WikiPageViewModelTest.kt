@@ -2,17 +2,21 @@ package com.grappim.taigamobile.feature.wiki.ui.page.details
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.wiki.domain.WikiPageUseCase
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
+import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.repo.FakeWikiRepository
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
+import com.grappim.taigamobile.testing.utils.createTestPlatformFile
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDateTime
@@ -249,5 +253,113 @@ internal class WikiPageViewModelTest {
 
         assertFalse(sut.state.value.isLoading)
         assertTrue(sut.state.value.error !is NativeText.Empty)
+    }
+
+    // --- onAttachmentAdd ---
+    // These go through the real PlatformFile.readBytes(), which hops to Dispatchers.IO — a real
+    // dispatcher outside the test scheduler. Synchronize on attachmentsState via Turbine rather
+    // than asserting immediately after the fire-and-forget viewModelScope.launch call.
+
+    @Test
+    fun `onAttachmentAdd success adds attachment to attachmentsState`() = runTest {
+        val attachment = getAttachment()
+        workItemRepository.addAttachmentResult = attachment
+        createViewModel()
+
+        sut.attachmentsState.test {
+            awaitItem() // post-init state
+            sut.state.value.onAttachmentAdd(createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)))
+            awaitItem() // areAttachmentsLoading = true
+            val finalState = awaitItem()
+            assertTrue(finalState.attachments.contains(attachment))
+            assertFalse(finalState.areAttachmentsLoading)
+            cancelAndIgnoreRemainingEvents()
+        }
+        assertEquals(NativeText.Empty, sut.state.value.error)
+    }
+
+    @Test
+    fun `onAttachmentAdd failure updates state with error`() = runTest {
+        workItemRepository.addAttachmentThrows = testException
+        createViewModel()
+
+        sut.attachmentsState.test {
+            awaitItem() // post-init state
+            sut.state.value.onAttachmentAdd(createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)))
+            awaitItem() // areAttachmentsLoading = true
+            val finalState = awaitItem()
+            assertFalse(finalState.areAttachmentsLoading)
+            cancelAndIgnoreRemainingEvents()
+        }
+        assertTrue(sut.state.value.error !is NativeText.Empty)
+    }
+
+    // --- onAttachmentRemove ---
+
+    @Test
+    fun `onAttachmentRemove success removes attachment from attachmentsState`() = runTest {
+        val attachment = getAttachment()
+        workItemRepository.getWorkItemAttachmentsResult = persistentListOf(attachment)
+        createViewModel()
+        sut.setInitialAttachments(listOf(attachment))
+
+        sut.state.value.onAttachmentRemove(attachment)
+
+        assertFalse(sut.attachmentsState.value.attachments.contains(attachment))
+        assertEquals(NativeText.Empty, sut.state.value.error)
+    }
+
+    @Test
+    fun `onAttachmentRemove failure updates state with error`() {
+        val attachment = getAttachment()
+        workItemRepository.deleteAttachmentThrows = testException
+        createViewModel()
+        sut.setInitialAttachments(listOf(attachment))
+
+        sut.state.value.onAttachmentRemove(attachment)
+
+        assertTrue(sut.state.value.error !is NativeText.Empty)
+    }
+
+    // --- onNewDescriptionUpdate (via workItemEditStateRepository.updateDescription) ---
+
+    @Test
+    fun `description update success patches wiki page and updates currentPage`() = runTest {
+        val page = makeWikiPage(content = "original")
+        wikiRepository.getProjectWikiPageBySlugResult = page
+        val newVersion = getRandomLong()
+        workItemRepository.patchWikiPageResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        createViewModel()
+
+        workItemEditStateRepository.updateDescription(wikiId, TaskIdentifier.Wiki, "updated")
+
+        assertEquals("updated", sut.state.value.currentPage?.content)
+        assertEquals("updated", sut.state.value.originalPage?.content)
+        assertEquals(newVersion, sut.state.value.currentPage?.version)
+        assertEquals(NativeText.Empty, sut.state.value.error)
+    }
+
+    @Test
+    fun `description update failure updates state with error`() = runTest {
+        val page = makeWikiPage(content = "original")
+        wikiRepository.getProjectWikiPageBySlugResult = page
+        workItemRepository.patchWikiPageThrows = testException
+        createViewModel()
+
+        workItemEditStateRepository.updateDescription(wikiId, TaskIdentifier.Wiki, "updated")
+
+        assertTrue(sut.state.value.error !is NativeText.Empty)
+        assertEquals("original", sut.state.value.currentPage?.content)
+    }
+
+    @Test
+    fun `description update with unchanged content does not call patchWikiPage`() = runTest {
+        val page = makeWikiPage(content = "same")
+        wikiRepository.getProjectWikiPageBySlugResult = page
+        createViewModel()
+
+        workItemEditStateRepository.updateDescription(wikiId, TaskIdentifier.Wiki, "same")
+
+        assertTrue(workItemRepository.patchWikiPageCalls.isEmpty())
     }
 }

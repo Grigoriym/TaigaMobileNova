@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.workitem.mapper
 
 import com.grappim.taigamobile.feature.epics.dto.EpicShortInfoDTO
 import com.grappim.taigamobile.feature.userstories.dto.UserStoryShortInfoDTO
+import com.grappim.taigamobile.testing.models.getEpicShortInfoDTO
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.test.runTest
@@ -32,8 +33,8 @@ class UserStoryShortInfoMapperTest {
 
     @Test
     fun `toDomain should map epics correctly`() = runTest {
-        val epic1 = createEpicShortInfoDTO()
-        val epic2 = createEpicShortInfoDTO()
+        val epic1 = getEpicShortInfoDTO()
+        val epic2 = getEpicShortInfoDTO()
         val dto = createUserStoryShortInfoDTO(epics = listOf(epic1, epic2))
 
         val result = sut.toDomain(dto)
@@ -77,17 +78,5 @@ class UserStoryShortInfoMapperTest {
         ref = ref,
         title = title,
         epics = epics
-    )
-
-    private fun createEpicShortInfoDTO(
-        id: Long = getRandomLong(),
-        title: String = getRandomString(),
-        ref: Long = getRandomLong(),
-        color: String = "#${getRandomString().take(6)}"
-    ) = EpicShortInfoDTO(
-        id = id,
-        title = title,
-        ref = ref,
-        color = color
     )
 }

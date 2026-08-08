@@ -9,6 +9,7 @@ import com.grappim.taigamobile.feature.projects.dto.ProjectDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectDetailDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectExtraInfoDTO
 import com.grappim.taigamobile.feature.projects.dto.ProjectResponseDTO
+import com.grappim.taigamobile.feature.projects.dto.ProjectValueItemDTO
 import com.grappim.taigamobile.testing.utils.getRandomBoolean
 import com.grappim.taigamobile.testing.utils.getRandomInt
 import com.grappim.taigamobile.testing.utils.getRandomLong
@@ -102,6 +103,19 @@ fun getProjectEntity(): ProjectEntity = ProjectEntity(
     isOwner = getRandomBoolean(),
     description = getRandomString(),
     avatarUrl = getRandomString()
+)
+
+fun getProjectValueItemDTO(): ProjectValueItemDTO = ProjectValueItemDTO(
+    id = getRandomLong(),
+    name = getRandomString(),
+    color = getRandomString(),
+    order = getRandomInt(),
+    project = getRandomLong(),
+    isClosed = getRandomBoolean(),
+    isArchived = getRandomBoolean(),
+    value = null,
+    daysToDue = null,
+    byDefault = getRandomBoolean()
 )
 
 fun getProjectSimple(): ProjectSimple = ProjectSimple(

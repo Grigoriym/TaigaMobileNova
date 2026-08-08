@@ -8,10 +8,13 @@ import kotlinx.collections.immutable.persistentListOf
 
 class FakeHistoryRepository : HistoryRepository {
     var getCommentsResult: ImmutableList<Comment> = persistentListOf()
+    var getCommentsThrows: Throwable? = null
     var deleteCommentThrows: Throwable? = null
 
-    override suspend fun getComments(commonTaskId: Long, type: CommonTaskType): ImmutableList<Comment> =
-        getCommentsResult
+    override suspend fun getComments(commonTaskId: Long, type: CommonTaskType): ImmutableList<Comment> {
+        getCommentsThrows?.let { throw it }
+        return getCommentsResult
+    }
 
     override suspend fun deleteComment(commonTaskId: Long, commonTaskType: CommonTaskType, commentId: String) {
         deleteCommentThrows?.let { throw it }

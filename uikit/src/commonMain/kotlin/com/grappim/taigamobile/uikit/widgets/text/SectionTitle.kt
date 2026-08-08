@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -39,6 +40,8 @@ import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
 import org.jetbrains.compose.resources.painterResource
+
+const val SECTION_TITLE_ADD_BUTTON_TEST_TAG = "SECTION_TITLE_ADD_BUTTON_TEST_TAG"
 
 /**
  * Title with optional add button
@@ -80,6 +83,7 @@ fun SectionTitle(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = ripple(bounded = true)
                     )
+                    .testTag(SECTION_TITLE_ADD_BUTTON_TEST_TAG)
                     .padding(6.dp)
             ) {
                 Icon(

@@ -3,6 +3,9 @@
 Project documentation. Architecture notes and build knowledge live here; the day-to-day coding
 rules live in [`CLAUDE.md`](../CLAUDE.md).
 
+**[revisit.md](revisit.md)** — the running list of things noticed mid-task and deliberately deferred.
+Add to it instead of fixing out-of-scope problems inline.
+
 ## architecture/
 
 How parts of the app work, and why they work that way.
@@ -57,6 +60,16 @@ Plans and research for features in flight. One folder per feature.
 | [github-auth](features/github-auth/) | Loopback OAuth plan, sequence diagram, Taiga Docker setup |
 | [private-cert-trust](features/private-cert-trust/) | TOFU cert pinning — research, phased plan, QA server setup |
 | [settings-project](features/settings-project/) | Project-settings screens implementation plan |
+
+## testing/
+
+State of the test suite and the plan for improving it.
+
+| Doc | About |
+|-----|-------|
+| [survey.md](testing/survey.md) | What the suite contains today — types, layout, tooling, coverage, gaps |
+| [improvement-plan.md](testing/improvement-plan.md) | Sequenced tasks to improve it, one per session — active tasks only; tasks 0–9f and 10–11 are archived (see below) |
+| [compose-ui-test-spike.md](testing/compose-ui-test-spike.md) | How-to for wiring `runComposeUiTest` into a KMP module — read before writing the next Compose UI test |
 
 ## issues/
 

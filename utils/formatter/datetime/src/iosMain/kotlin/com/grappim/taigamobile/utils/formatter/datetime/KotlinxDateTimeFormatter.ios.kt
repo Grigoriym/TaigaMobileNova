@@ -9,13 +9,13 @@ import platform.Foundation.NSDateFormatter
 import platform.Foundation.NSDateFormatterMediumStyle
 import platform.Foundation.NSDateFormatterNoStyle
 
-private val mediumFormatter = NSDateFormatter().apply {
+private fun mediumFormatter(): NSDateFormatter = NSDateFormatter().apply {
     dateStyle = NSDateFormatterMediumStyle
     timeStyle = NSDateFormatterNoStyle
 }
 
 actual fun platformFormatMediumDate(date: LocalDate): String =
-    mediumFormatter.stringFromDate(date.atStartOfDayIn(TimeZone.currentSystemDefault()).toNSDate())
+    mediumFormatter().stringFromDate(date.atStartOfDayIn(TimeZone.currentSystemDefault()).toNSDate())
 
 actual fun platformFormatMediumDateTime(dateTime: LocalDateTime): String =
-    mediumFormatter.stringFromDate(dateTime.date.atStartOfDayIn(TimeZone.currentSystemDefault()).toNSDate())
+    mediumFormatter().stringFromDate(dateTime.date.atStartOfDayIn(TimeZone.currentSystemDefault()).toNSDate())

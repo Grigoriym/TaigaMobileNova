@@ -466,8 +466,6 @@ class IssueDetailsViewModel(
 
     private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
-            TeamMemberUpdate.Clear -> {}
-
             is TeamMemberUpdate.Assignees -> {}
 
             is TeamMemberUpdate.Assignee -> {

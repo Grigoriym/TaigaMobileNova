@@ -6,22 +6,26 @@ plugins {
 
 kotlin {
     sourceSets {
-        androidMain.dependencies {
-            api(project.dependencies.platform(libs.koin.bom))
-            api(libs.koin.test)
-            api(libs.koin.test.junit4)
-            api(libs.junit4)
-        }
         commonMain.dependencies {
             implementation(libs.jetbrains.compose.ui)
 
+            // this module *is* test support, so kotlin.test belongs in its main source set:
+            // shared assertion helpers (assertFailsWithTestException) are written against it.
+            api(kotlin("test"))
             api(libs.turbine)
             api(libs.kotlinx.coroutines.test)
 
             implementation(libs.androidx.paging.common)
 
+            // jsonHttpResponse() builds real HttpResponse objects for fakes of paging endpoints
+            implementation(libs.ktor.client.mock)
+            implementation(libs.ktor.contentNegotiation)
+            implementation(libs.ktor.serialization.json)
+
             api(projects.core.domain)
             api(projects.core.storage)
+            api(projects.core.appinfoApi)
+            api(projects.core.crashApi)
 
             api(projects.feature.login.domain)
             api(projects.feature.login.data)
@@ -76,6 +80,7 @@ kotlin {
             api(projects.feature.kanban.domain)
 
             api(projects.feature.wiki.domain)
+            api(projects.feature.wiki.data)
 
             api(projects.feature.dashboard.domain)
 

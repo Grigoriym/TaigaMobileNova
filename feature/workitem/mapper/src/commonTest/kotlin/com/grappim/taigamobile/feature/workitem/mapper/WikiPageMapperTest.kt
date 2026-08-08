@@ -1,12 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.mapper
 
-import com.grappim.taigamobile.feature.workitem.dto.wiki.WikiPageDTO
-import com.grappim.taigamobile.testing.utils.getRandomBoolean
-import com.grappim.taigamobile.testing.utils.getRandomLong
-import com.grappim.taigamobile.testing.utils.getRandomString
-import com.grappim.taigamobile.testing.utils.nowLocalDateTime
+import com.grappim.taigamobile.testing.models.getWikiPageDTO
 import kotlinx.coroutines.test.runTest
-import kotlinx.datetime.LocalDateTime
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -23,7 +18,7 @@ class WikiPageMapperTest {
 
     @Test
     fun `toDomain should map all fields correctly`() = runTest {
-        val dto = createWikiPageDTO()
+        val dto = getWikiPageDTO()
 
         val result = sut.toDomain(dto)
 
@@ -41,7 +36,7 @@ class WikiPageMapperTest {
 
     @Test
     fun `toDomain should handle null lastModifierId`() = runTest {
-        val dto = createWikiPageDTO(lastModifierId = null)
+        val dto = getWikiPageDTO(lastModifierId = null)
 
         val result = sut.toDomain(dto)
 
@@ -50,7 +45,7 @@ class WikiPageMapperTest {
 
     @Test
     fun `toDomain should map isWatcher true correctly`() = runTest {
-        val dto = createWikiPageDTO(isWatcher = true)
+        val dto = getWikiPageDTO(isWatcher = true)
 
         val result = sut.toDomain(dto)
 
@@ -59,7 +54,7 @@ class WikiPageMapperTest {
 
     @Test
     fun `toDomain should map isWatcher false correctly`() = runTest {
-        val dto = createWikiPageDTO(isWatcher = false)
+        val dto = getWikiPageDTO(isWatcher = false)
 
         val result = sut.toDomain(dto)
 
@@ -68,9 +63,9 @@ class WikiPageMapperTest {
 
     @Test
     fun `toDomainList should map list of DTOs correctly`() = runTest {
-        val dto1 = createWikiPageDTO()
-        val dto2 = createWikiPageDTO()
-        val dto3 = createWikiPageDTO()
+        val dto1 = getWikiPageDTO()
+        val dto2 = getWikiPageDTO()
+        val dto3 = getWikiPageDTO()
         val dtos = listOf(dto1, dto2, dto3)
 
         val result = sut.toDomainList(dtos)
@@ -90,34 +85,4 @@ class WikiPageMapperTest {
 
         assertTrue(result.isEmpty())
     }
-
-    private fun createWikiPageDTO(
-        id: Long = getRandomLong(),
-        projectId: Long = getRandomLong(),
-        slug: String = getRandomString(),
-        content: String = getRandomString(),
-        ownerId: Long? = getRandomLong(),
-        lastModifierId: Long? = getRandomLong(),
-        createdDate: LocalDateTime = nowLocalDateTime,
-        modifiedDate: LocalDateTime = nowLocalDateTime,
-        html: String = getRandomString(),
-        editions: Long = getRandomLong(),
-        version: Long = getRandomLong(),
-        isWatcher: Boolean = getRandomBoolean(),
-        totalWatchers: Long = getRandomLong()
-    ) = WikiPageDTO(
-        id = id,
-        projectId = projectId,
-        slug = slug,
-        content = content,
-        ownerId = ownerId,
-        lastModifierId = lastModifierId,
-        createdDate = createdDate,
-        modifiedDate = modifiedDate,
-        html = html,
-        editions = editions,
-        version = version,
-        isWatcher = isWatcher,
-        totalWatchers = totalWatchers
-    )
 }

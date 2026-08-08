@@ -25,13 +25,16 @@ import com.grappim.taigamobile.testing.dao.FakeWorkItemDao
 import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.models.getAttachmentDTO
 import com.grappim.taigamobile.testing.models.getUser
+import com.grappim.taigamobile.testing.models.getWorkItemEntity
 import com.grappim.taigamobile.testing.models.getWorkItemResponseDTO
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
+import com.grappim.taigamobile.testing.utils.assertFailsWithTestException
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDateTime
+import com.grappim.taigamobile.testing.utils.testException
 import io.ktor.utils.io.core.toByteArray
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
@@ -567,4 +570,308 @@ class WorkItemRepositoryImplTest {
         assertEquals("wiki", call.first)
         assertEquals(attachment.id, call.second)
     }
+
+    // region getWorkItems offline / cache fallback
+    //
+    // getWorkItems is the one method here that does not propagate an API failure: it logs and falls
+    // back to the Room cache. The tests below cover that branch and the ones it leads into.
+
+    @Test
+    fun `getWorkItems should fall back to cached items when the api throws`() = runTest {
+        val taskType = CommonTaskType.Task
+        val cached = getWorkItemEntity(taskType = taskType, projectId = projectId)
+        fakeWorkItemDao.workItemsByProjectIdAndType = listOf(cached)
+        fakeWorkItemApi.errorToThrow = testException
+
+        val result = sut.getWorkItems(commonTaskType = taskType, projectId = projectId)
+
+        assertEquals(1, fakeWorkItemApi.getWorkItemsCalls.size)
+        assertEquals(1, result.size)
+        assertEquals(cached.id, result.first().id)
+        assertEquals(listOf(projectId to taskType), fakeWorkItemDao.getByProjectIdAndTypeCalls)
+        assertTrue(fakeWorkItemDao.insertAllCalls.isEmpty())
+    }
+
+    @Test
+    fun `getWorkItems should not call the api when offline`() = runTest {
+        val taskType = CommonTaskType.Issue
+        val cached = getWorkItemEntity(taskType = taskType, projectId = projectId)
+        fakeWorkItemDao.workItemsByProjectIdAndType = listOf(cached)
+        fakeNetworkMonitor.setOnline(false)
+
+        val result = sut.getWorkItems(commonTaskType = taskType, projectId = projectId)
+
+        assertTrue(fakeWorkItemApi.getWorkItemsCalls.isEmpty())
+        assertEquals(1, result.size)
+        assertEquals(cached.id, result.first().id)
+    }
+
+    @Test
+    fun `getWorkItems should read the cache by sprint when milestoneId is set`() = runTest {
+        val taskType = CommonTaskType.UserStory
+        val milestoneId = getRandomLong()
+        val sprintCached = getWorkItemEntity(taskType = taskType, projectId = projectId, sprintId = milestoneId)
+        fakeWorkItemDao.workItemsByProjectIdAndSprint = listOf(sprintCached)
+        fakeWorkItemDao.workItemsByProjectIdAndType = listOf(getWorkItemEntity())
+        fakeNetworkMonitor.setOnline(false)
+
+        val result = sut.getWorkItems(
+            commonTaskType = taskType,
+            projectId = projectId,
+            params = GetWorkItemsParams(milestoneId = milestoneId)
+        )
+
+        assertEquals(listOf(projectId to milestoneId), fakeWorkItemDao.getByProjectIdAndSprintCalls)
+        assertTrue(fakeWorkItemDao.getByProjectIdAndTypeCalls.isEmpty())
+        assertEquals(1, result.size)
+        assertEquals(sprintCached.id, result.first().id)
+    }
+
+    @Test
+    fun `getWorkItems should filter cached items by isClosed`() = runTest {
+        val taskType = CommonTaskType.Task
+        val closed = getWorkItemEntity(taskType = taskType, projectId = projectId).copy(isClosed = true)
+        val open = getWorkItemEntity(taskType = taskType, projectId = projectId).copy(isClosed = false)
+        fakeWorkItemDao.workItemsByProjectIdAndType = listOf(closed, open)
+        fakeNetworkMonitor.setOnline(false)
+
+        val result = sut.getWorkItems(
+            commonTaskType = taskType,
+            projectId = projectId,
+            params = GetWorkItemsParams(isClosed = true)
+        )
+
+        assertEquals(1, result.size)
+        assertEquals(closed.id, result.first().id)
+    }
+
+    @Test
+    fun `getWorkItems should filter cached items by assignedId`() = runTest {
+        val taskType = CommonTaskType.Task
+        val assigneeId = getRandomLong()
+        val mine = getWorkItemEntity(taskType = taskType, projectId = projectId).copy(assigneeId = assigneeId)
+        val theirs = getWorkItemEntity(taskType = taskType, projectId = projectId).copy(assigneeId = assigneeId + 1)
+        fakeWorkItemDao.workItemsByProjectIdAndType = listOf(mine, theirs)
+        fakeNetworkMonitor.setOnline(false)
+
+        val result = sut.getWorkItems(
+            commonTaskType = taskType,
+            projectId = projectId,
+            params = GetWorkItemsParams(assignedId = assigneeId)
+        )
+
+        assertEquals(1, result.size)
+        assertEquals(mine.id, result.first().id)
+    }
+
+    @Test
+    fun `getWorkItems should cache the response of an unfiltered query`() = runTest {
+        val taskType = CommonTaskType.Task
+        val milestoneId = getRandomLong()
+        val dto = getWorkItemResponseDTO()
+        fakeWorkItemApi.workItemsResponse = listOf(dto)
+
+        sut.getWorkItems(
+            commonTaskType = taskType,
+            projectId = projectId,
+            params = GetWorkItemsParams(milestoneId = milestoneId)
+        )
+
+        assertEquals(1, fakeWorkItemDao.insertAllCalls.size)
+        val cached = fakeWorkItemDao.insertAllCalls.single().single()
+        assertEquals(dto.id, cached.id)
+        assertEquals(milestoneId, cached.sprintId)
+    }
+
+    @Test
+    fun `getWorkItems should not cache the response of a filtered query`() = runTest {
+        val taskType = CommonTaskType.Task
+        fakeWorkItemApi.workItemsResponse = listOf(getWorkItemResponseDTO())
+
+        listOf(
+            GetWorkItemsParams(assignedId = getRandomLong()),
+            GetWorkItemsParams(watcherId = getRandomLong()),
+            GetWorkItemsParams(isBlocked = true),
+            GetWorkItemsParams(modifiedDateGte = "2024-01-01"),
+            GetWorkItemsParams(finishDateGte = "2024-12-31")
+        ).forEach { params ->
+            sut.getWorkItems(commonTaskType = taskType, projectId = projectId, params = params)
+        }
+
+        assertTrue(fakeWorkItemDao.insertAllCalls.isEmpty())
+    }
+    // endregion
+
+    // region failure paths
+    //
+    // One per public method: the collaborator throws testException and the repository must let it
+    // out untouched. See CLAUDE.md > Testing for the convention.
+
+    @Test
+    fun `patchData should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.patchData(
+                version = getRandomLong(),
+                workItemId = getRandomLong(),
+                payload = persistentMapOf(),
+                commonTaskType = CommonTaskType.Task
+            )
+        }
+    }
+
+    @Test
+    fun `patchCustomAttributes should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.patchCustomAttributes(
+                customAttributesVersion = getRandomLong(),
+                workItemId = getRandomLong(),
+                payload = persistentMapOf(),
+                commonTaskType = CommonTaskType.UserStory
+            )
+        }
+    }
+
+    @Test
+    fun `addAttachment should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.addAttachment(
+                workItemId = getRandomLong(),
+                fileName = "test.png",
+                fileByteArray = "test content".toByteArray(),
+                projectId = projectId,
+                taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
+            )
+        }
+    }
+
+    @Test
+    fun `deleteAttachment should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.deleteAttachment(getAttachment(), TaskIdentifier.WorkItem(CommonTaskType.Task))
+        }
+    }
+
+    @Test
+    fun `watchWorkItem should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.watchWorkItem(getRandomLong(), CommonTaskType.Epic)
+        }
+    }
+
+    @Test
+    fun `unwatchWorkItem should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.unwatchWorkItem(getRandomLong(), CommonTaskType.Epic)
+        }
+    }
+
+    @Test
+    fun `getUpdateWorkItem should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.getUpdateWorkItem(getRandomLong(), CommonTaskType.UserStory)
+        }
+    }
+
+    @Test
+    fun `updateWatchersData should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.updateWatchersData(
+                version = getRandomLong(),
+                workItemId = getRandomLong(),
+                newWatchers = persistentListOf(1L),
+                commonTaskType = CommonTaskType.Task
+            )
+        }
+    }
+
+    @Test
+    fun `updateWatchersData should propagate users repository error`() = runTest {
+        fakeWorkItemApi.patchWorkItemResponse = getWorkItemResponseDTO()
+        fakeUsersRepository.getUsersListThrows = testException
+
+        assertFailsWithTestException {
+            sut.updateWatchersData(
+                version = getRandomLong(),
+                workItemId = getRandomLong(),
+                newWatchers = persistentListOf(1L),
+                commonTaskType = CommonTaskType.Task
+            )
+        }
+    }
+
+    @Test
+    fun `getCustomFields should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.getCustomFields(getRandomLong(), CommonTaskType.UserStory)
+        }
+    }
+
+    @Test
+    fun `getWorkItemAttachments should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.getWorkItemAttachments(getRandomLong(), TaskIdentifier.WorkItem(CommonTaskType.Epic))
+        }
+    }
+
+    @Test
+    fun `deleteWorkItem should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.deleteWorkItem(getRandomLong(), CommonTaskType.Task)
+        }
+    }
+
+    @Test
+    fun `patchWikiPage should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.patchWikiPage(getRandomLong(), getRandomLong(), persistentMapOf())
+        }
+    }
+
+    @Test
+    fun `createWorkItem should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.createWorkItem(
+                commonTaskType = CommonTaskType.Issue,
+                subject = getRandomString(),
+                description = getRandomString(),
+                status = null
+            )
+        }
+    }
+
+    @Test
+    fun `promoteToUserStory should propagate api error`() = runTest {
+        fakeWorkItemApi.errorToThrow = testException
+
+        assertFailsWithTestException {
+            sut.promoteToUserStory(getRandomLong(), CommonTaskType.Issue)
+        }
+    }
+    // endregion
 }

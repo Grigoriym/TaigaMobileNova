@@ -8,7 +8,13 @@ import kotlinx.coroutines.flow.flowOf
 
 class FakeSprintDao : SprintDao {
 
-    override suspend fun insertAll(sprints: List<SprintEntity>) = Unit
+    var insertedAll: List<SprintEntity>? = null
+    var insertAllThrows: Throwable? = null
+
+    override suspend fun insertAll(sprints: List<SprintEntity>) {
+        insertAllThrows?.let { throw it }
+        insertedAll = sprints
+    }
 
     override suspend fun insert(sprint: SprintEntity) = error("not used in this test")
 
@@ -25,6 +31,11 @@ class FakeSprintDao : SprintDao {
     override fun pagingSource(projectId: Long, isClosed: Boolean): PagingSource<Int, SprintEntity> =
         error("not used in this test")
 
-    override suspend fun deleteByProjectIdAndClosed(projectId: Long, isClosed: Boolean) =
-        error("not used in this test")
+    var deletedByProjectIdAndClosed: Pair<Long, Boolean>? = null
+    var deleteByProjectIdAndClosedThrows: Throwable? = null
+
+    override suspend fun deleteByProjectIdAndClosed(projectId: Long, isClosed: Boolean) {
+        deleteByProjectIdAndClosedThrows?.let { throw it }
+        deletedByProjectIdAndClosed = projectId to isClosed
+    }
 }
