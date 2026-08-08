@@ -17,11 +17,7 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 2 | Non-ViewModel beans may leak application-scoped coroutines | S to check | same |
-| 5 | `tools/seed` and `tools/utils` tests would not run in CI | XS | improvement-plan task 1 |
 | 16 | Every `logcat` message lambda is a permanently-uncovered line | S | improvement-plan task 9a |
-| 18 | `currentUserStory` throws from `viewModelScope` when the initial load failed | S–M | improvement-plan task 9a |
-| 23 | The coverage report counts Android-variant classes no test can reach | M | [kover issue](issues/2026-08-07-kover-excludes-and-report-mode-flip.md) |
 
 ---
 
@@ -79,6 +75,24 @@ a known bug.
 **How to check:** grep for `applicationScope` / injected `CoroutineScope` constructor params among
 `@Single` classes, and look for `launch` in their `init` blocks.
 
+**Resolved (2026-08-08):** the gap is empty. `grep -rl "@Single" | xargs grep -l "CoroutineScope"`
+across the repo returns exactly two classes:
+
+- `AuthStateManager` (`core/storage/.../auth/AuthStateManager.kt`) takes `@param:ApplicationScope
+  applicationScope: CoroutineScope` and calls `applicationScope.launch { logoutSuspend() }` — but only
+  from `logout()`, an explicit call site, never from `init` or a property initializer. Constructing it
+  does nothing.
+- `FiltersStorageImpl` (`core/storage/.../FiltersStorageImpl.kt:23`) builds its **own** scope
+  (`CoroutineScope(Dispatchers.Main + SupervisorJob())`, not the injected application one) and does
+  eagerly-shared `stateIn(scope, SharingStarted.Eagerly, ...)` on four `StateFlow`s at construction
+  time. This *is* the same shape — construction-time coroutine work — but it is not an unaudited gap:
+  `FiltersStorageImplTest` already exercises it and its own doc comment (`:20-23`) records the design
+  explicitly.
+
+Confirmed the same for the two nearby shapes the check didn't originally name: `grep -rn
+"GlobalScope"` and `grep -rn "MainScope()"` are both empty repo-wide, and `grep -rlz "init {"` piped
+into a check for `launch` returns zero non-ViewModel matches. Nothing to fix.
+
 ## 3. Wiki mapper tests duplicate the new shared DTO factories
 
 **What:** `WikiPageMapperTest` and `WikiLinkMapperTest` (in `feature/workitem/mapper/src/commonTest/`)
@@ -130,6 +144,9 @@ slow CI down for zero current benefit.
 
 **Trigger:** the moment anyone adds a test under `tools/`, add a `./gradlew :tools:seed:test` step to
 `.github/workflows/code_analysis.yml`. Worth doing pre-emptively if `tools/` grows.
+
+**Resolved, won't-fix (2026-08-08):** gregory's decision — `tools/` doesn't need tests. Closing
+without a CI change; if that ever changes, re-open with the trigger above.
 
 ## 6. `GetKanbanDataUseCase` reads the current project three times
 
@@ -625,6 +642,26 @@ So the branch is not merely untested — it is untestable until the code stops t
 Changing a null-handling policy across four ViewModels is a production change, not a test task's
 business.
 
+**Resolved, not a bug (2026-08-08):** gregory's design intent is that `null` means "we don't show any
+UI," so nothing should ever be able to reach `currentUserStory` while it's null — traced the four
+"external-trigger" call sites this entry flagged as the risky case, and the invariant holds. The only
+producers of `handleTeamMemberUpdate` / `onNewTagsUpdate` / `onNewDescriptionUpdate` / `onEpicsUpdate`'s
+input flows are `onEditTags()`, `onGoingToEditWatchers()`, `onGoingToEditAssignees()` and
+`onGoingToEditEpics()` (`UserStoryDetailsViewModel.kt:239-266`, `:823`) — all called from this same
+ViewModel's own UI, to hand data to an edit sub-screen. And `currentUserStory` is never reset back to
+`null` once set (`:298`, `:845`, `:907` are all `.copy(...)`, never null). So reaching any of the four
+"external" handlers requires having already navigated to an edit screen, which requires the initial
+load to have already succeeded — the write-back is causally downstream of the load. There is no path
+that reaches the getter while it's null.
+
+**What's actually left:** this is an *unenforced* invariant rather than a live bug — nothing in the
+type system stops a future navigation change, or a second entry point into the same
+`WorkItemEditStateRepository` flow, from breaking it into a crash instead of a graceful no-op. That's
+also why the branch can't get a test today (see "Consequence for tests" above) — there's no way to
+drive it without breaking the invariant by hand. Decision: leave the four getters as `requireNotNull`,
+don't change the null-handling policy. If this ever needs revisiting, it'll be because the navigation
+graph changed, not because of anything found here.
+
 ## 19. `TeamMemberUpdate.Clear` is a dead `when` arm in four ViewModels
 
 **Where:** `UserStoryDetailsViewModel.kt:708`, `TaskDetailsViewModel.kt:715`,
@@ -800,3 +837,42 @@ filters by *compilation* name (`JvmVariantArtifacts.kt:57-72`) and both targets'
 [#10](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi) complains about, and
 that tension is the real decision to make. Re-tune the floor in the same commit, and keep
 `docs/testing/kover-rank.py`'s lists in sync.
+
+**Resolved (2026-08-08):** added two `excludes` entries to root `build.gradle.kts` — `classes("**.*_androidKt", "**.*_androidKt$*")`
+and `packages(..., "com.grappim.taigamobile.core.storage.utils")` — and the matching `EXTRA_SUFFIXES`/`PACKAGES`
+entries in `docs/testing/kover-rank.py`.
+
+- **The Room `*_Impl`/`TaigaDB_Impl` half needed no new pattern.** Checked the compiled output directly
+  (`find . -name "*_Impl.class"` under both `classes/kotlin/android` and `classes/kotlin/jvm`) —
+  `TaigaDB_Impl`/`ProjectDao_Impl`/`SprintDao_Impl`/`WorkItemDao_Impl` all exist on disk for both
+  targets, but they're already inside the `core.storage.db`/`core.storage.db.dao` packages the
+  existing excludes cover (confirmed prefix-matching works, per [#8](#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify)).
+  Zero `*_Impl` classes appear in a `koverXmlReport` run.
+- **The `*_androidKt` half is real**: a clean `./gradlew clean jvmTest koverXmlReport` (761 classes,
+  0 leaks) showed exactly 8 classes matching `**.*_androidKt`, all at 0 % on every counter —
+  `PlatformNetworkErrorMapper_androidKt` (BRANCH 0/14, LINE 0/10 — CLAUDE.md's own worked example of
+  this exact shape), `GithubOAuthWebViewDialog_androidKt` (0/8, 0/15), `OpenByDefaultSettingsButton_androidKt`
+  (0/6, 0/13), and five smaller ones. `core.storage.utils` contributed `StringPreference`
+  (0/2, 0/10) and its `Kt` facade (0/0, 0/2) — the class [#17](#17-stringpreference-and-longpreferences-in-corestorage-are-dead-code)
+  restored as live-but-Android-only code.
+- **Verified in isolation with `kover-diff.py`** against the before/after pair: package-level, exactly
+  the 5 packages containing those classes had their denominators shrink (`core.domain`,
+  `feature.login.ui`, `feature.settings.ui.user`, `utils.formatter.datetime`,
+  `utils.formatter.decimal`) plus `core.storage.utils` dropping out of the key set entirely.
+  Class-level, exactly the 10 targeted classes left the key set and nothing else — no `covered` count
+  changed anywhere, confirming the change is a pure denominator trim.
+- **New reading, same invocation** (`:koverVerify` with both `minValue`s temporarily at 99, per
+  CLAUDE.md's method): **LINE 95.481400 %, BRANCH 81.386300 %**, up from the pre-#23 94.9199 %/80.2198 %
+  — a 0.56-point LINE rise and a 1.17-point BRANCH rise, matching the relative sizes of what was
+  removed (46 missed LINE / 28 missed BRANCH from the `_androidKt` classes vs. 12 missed LINE / 2
+  missed BRANCH from `core.storage.utils`). Raised the floor to **line 92 (unchanged — already ~3.5
+  points of margin) / branch 78 (+1, keeping the same ~3-point margin convention)** — not a full
+  ~3-points-under-95.48/81.39 reset, since the line side didn't move enough to justify a bump and the
+  point is a ratchet, not a re-target.
+- **What this does *not* close**: androidMain-only classes with unique names that don't end in
+  `_androidKt` — e.g. `AndroidDecimalFormatter` (`utils/formatter/decimal`, BRANCH 0/0, LINE 0/5) —
+  are still counted and still permanently 0 %. They're individually named rather than a
+  pattern-matchable shape, so denylisting them one at a time would be the same brittleness
+  [#10](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi) already warns about,
+  for a residual on the order of single-digit lines per class. Left alone; re-open only if the residual
+  grows enough to matter. `./gradlew jvmTest`, `ktlintCheck` and `:koverVerify` all green.

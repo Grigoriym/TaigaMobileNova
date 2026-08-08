@@ -359,7 +359,9 @@ tests, not a smaller bound. The traps when touching those numbers:
   BRANCH / 10/10 LINE (covered incidentally by `core/api`'s `NetworkErrorMapper` tests). The logic is
   not untested; it is counted twice and only one copy is executable. **Diff the actuals before
   scoping any `expect`/`actual` package** — a `*_androidKt` row is a reason to close the row, not to
-  write tests.
+  write tests. **Since [revisit #23](docs/revisit.md) (2026-08-08), `*_androidKt` classes are excluded
+  from the report entirely** (`**.*_androidKt` in the root `excludes` block) — this heuristic is kept
+  for how the finding was made, but a future sweep won't see these rows at all.
 - **Much of the branch denominator is unreachable**, in two distinct ways, and a package's
   missed-branch count distinguishes neither. *Generated:* `equals`/`hashCode`/`copy$default` on data
   classes and Room DAO impls — `feature/filters/domain/model` is 2/144 across nine files with no

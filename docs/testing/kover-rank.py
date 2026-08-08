@@ -36,7 +36,7 @@ SUFFIXES = [
     "ComposableSingletons",
     "ImmutableListSerializer", "BuildKonfig",
 ]
-EXTRA_SUFFIXES = ["ResultExtensionKt", "TryCatchExtensionsKt", "ApiConstants", "BuildConfig"]
+EXTRA_SUFFIXES = ["ResultExtensionKt", "TryCatchExtensionsKt", "ApiConstants", "BuildConfig", "_androidKt"]
 PACKAGES = [
     "com.grappim.taigamobile.strings.generated.resources",
     "com.grappim.taigamobile.core.storage.db",
@@ -45,6 +45,7 @@ PACKAGES = [
     "com.grappim.taigamobile.core.storage.di",
     "com.grappim.taigamobile.core.storage.network",
     "com.grappim.taigamobile.core.storage.cache",
+    "com.grappim.taigamobile.core.storage.utils",
 ]
 
 

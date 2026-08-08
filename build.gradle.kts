@@ -69,7 +69,14 @@ kover {
                     "**.*ApiConstants",
                     // Preferences — broad glob covers all generated variants
                     "**.*Preferences*",
-                    "**.*BuildConfig"
+                    "**.*BuildConfig",
+                    // The file-level `Foo_androidKt` facade of every `Foo.android.kt`. The root
+                    // aggregation locates both the `jvm` target and the KMP Android library
+                    // target as JVM origins (KotlinMultiPlatformLocator), so these are compiled
+                    // into the report even though CI runs jvmTest only — permanently 0 %. See
+                    // docs/revisit.md #23.
+                    "**.*_androidKt",
+                    "**.*_androidKt\$*"
                 )
 
                 // Compose Multiplatform generated string resources — large generated package
@@ -83,7 +90,11 @@ kover {
                     "com.grappim.taigamobile.core.storage.db.wrapper",
                     "com.grappim.taigamobile.core.storage.di",
                     "com.grappim.taigamobile.core.storage.network",
-                    "com.grappim.taigamobile.core.storage.cache"
+                    "com.grappim.taigamobile.core.storage.cache",
+                    // androidMain-only SharedPreferences delegates (StringPreference) — same
+                    // Android-variant-in-jvmTest-only-CI unreachability as the _androidKt facades
+                    // above. See docs/revisit.md #17 and #23.
+                    "com.grappim.taigamobile.core.storage.utils"
                 )
             }
         }
@@ -96,7 +107,9 @@ kover {
             // points under the line bound, and that gap is the untested error paths.
             //
             // Bounds are ~3 points under what koverVerify measured on 2026-08-08 (after
-            // docs/revisit.md #10 stopped excluding core/api's Ktor plugins): line 94.9199 %,
+            // docs/revisit.md #23 excluded Android-variant-only classes — the *_androidKt
+            // facades and core.storage.utils — that jvmTest-only CI can never cover): line
+            // 95.4814 %, branch 81.3863 %. Previous reading (before #23): line 94.9199 %,
             // branch 80.2198 %.
             //
             // koverXmlReport and koverVerify agree to six significant figures *within a single
@@ -114,7 +127,7 @@ kover {
                 }
                 rule("Branch coverage") {
                     bound {
-                        minValue = 77
+                        minValue = 78
                         coverageUnits = CoverageUnit.BRANCH
                     }
                 }
