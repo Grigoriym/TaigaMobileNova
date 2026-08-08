@@ -32,9 +32,10 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 | # | Task | Size | Status |
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
-| 2 | Shared login helper + read round-trip | S | ⬅ NEXT |
-| 3 | Write round-trip (create + clean up) | S–M | todo |
-| 4 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
+| 2 | Shared login helper + `ProjectsApi` read round-trip | S | ⬅ NEXT |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 12 remaining, see Task 3 |
+| 4 | Write round-trip pilot (create + clean up) | S–M | todo |
+| 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
 
@@ -81,37 +82,86 @@ login test and the new read test; without them set, both skip cleanly and `./gra
 (no env vars) stays green.
 
 **Finalize focus:** update `.claude/agents/testing.md`'s integration-test entry to mention the
-shared helper, so task 3 doesn't re-duplicate the login flow a third time.
+shared helper, so task 3's sweep doesn't re-duplicate the login flow on every module.
 
 ---
 
-## Task 3 — Write round-trip (create + clean up)
+## Task 3 — Read round-trip sweep, one `XApi` module per session
 
-**Why:** login and read prove auth and GET work; nothing yet proves a real POST round-trips
-correctly through the app's own request/response mapping.
+**Why:** this app has 14 `XApi` interfaces (CLAUDE.md: "Every `XApi` is an `interface XApi` +
+`@Single(binds = [XApi::class]) class XApiImpl` — no exceptions"). Login (task 1) covers `AuthApi`;
+task 2 covers `ProjectsApi`. The other 12 have never been exercised against a real server. Same
+repeatable-task shape as the closed improvement plan's task 9a (missed-branch sweep) and task 11
+(Compose UI widget sweep): pick the next module in the list, write one real read round-trip against
+it, land it, move to the next session.
+
+**Candidates (12, order not fixed — pick whichever has the most obvious real data in the local
+instance when you start)**:
+
+| Module | Leading call | Notes |
+|---|---|---|
+| `UsersApi` | get current user / profile | needs only the authenticated session, same as `ProjectsApi` |
+| `EpicsApi` | list epics for a project | needs a project with at least one epic |
+| `UserStoriesApi` | list user stories for a project | needs a project with at least one story |
+| `TasksApi` | list tasks for a project/story | needs a project with at least one task |
+| `IssuesApi` | list issues for a project | needs a project with at least one issue |
+| `SprintApi` | list sprints/milestones for a project | needs a project with at least one sprint |
+| `WikiApi` | list wiki pages for a project | needs a project with at least one wiki page |
+| `SwimlanesApi` | list swimlanes for a project | needs kanban enabled on a project |
+| `ProjectValuesApi` | list statuses/priorities/severities for a project | project-scoped config, likely present on any project |
+| `WorkItemApi` | a shared read used by several work-item types | check what this one actually covers before assuming a shape |
+| `HistoryApi` | history/activity for an entity | needs an entity with at least one historical event |
+| `FiltersApi` | list available filters for a project | project-scoped, likely present on any project |
+
+**Before each module's task: check what data actually exists in the local instance** (via
+`taiga-mcp`'s `taiga_request`, cheaper than guessing) rather than assuming a project/epic/story
+exists — the seeded instance's `docs/local-info.md` users don't guarantee any project data.
+
+**Existing pieces:** the shared login helper from task 2. Reuse it, don't re-derive the
+login/cert-trust flow per module.
+
+**Done when (per module):** with the three `TAIGA_INTEGRATION_*` env vars set, the new test for that
+module passes and asserts the call actually succeeded (parses / non-error status) rather than just
+"didn't throw"; without the env vars, it skips cleanly.
+
+**Finalize focus:** cross off the module in this table (or move it to a "done" list) so the next
+session knows which 11/10/9... remain — don't leave the reader to grep for existing test files to
+figure out what's left.
+
+**Result:** none yet — 12/12 remaining.
+
+---
+
+## Task 4 — Write round-trip pilot (create + clean up)
+
+**Why:** login and reads prove auth and GET work; nothing yet proves a real POST round-trips
+correctly through the app's own request/response mapping. Deliberately after task 3, not before —
+several of task 3's read candidates (e.g. `ProjectValuesApi`'s statuses) are exactly what a write
+pilot would need to already know exist on a real project.
 
 **Scope:** pick a write that has a natural, reliable **delete/cleanup counterpart** in the same API,
 so the test doesn't leave permanent junk in gregory's seeded instance on every run. `ProjectsApi`'s
 tag endpoints (`CreateTagRequestDTO` + `DeleteTagRequestDTO`) are the leading candidate — but this
-needs an existing project to attach a tag to, which the seeded local instance may or may not have by
-the time this task is picked up. **First step of this task: check what projects/data actually exist
-in the local instance right now** (via `taiga-mcp`'s `taiga_request`, or the read test from task 2)
-before committing to a specific write endpoint — do not assume task 2's candidate data still applies.
+needs an existing project to attach a tag to. **First step of this task: check what projects/data
+actually exist in the local instance right now** (via `taiga-mcp`'s `taiga_request`, or whatever
+task 3 already found) before committing to a specific write endpoint.
 
-**Existing pieces:** the shared login helper from task 2.
+**Existing pieces:** the shared login helper from task 2; whatever task 3 already learned about what
+data exists in the local instance.
 
 **Done when:** the write test passes, creates something, and the test itself deletes/reverts it
 before finishing (in a `finally` or equivalent) rather than relying on the next run to clean up.
 
 **Finalize focus:** note in the baseline doc whether cleanup-on-failure (the create succeeds but the
-test then fails before deleting) was handled or left as a known gap.
+test then fails before deleting) was handled or left as a known gap. If this pilot goes well, it's
+the template for a write-sweep counterpart to task 3 — scope that as a new task only once asked.
 
 ---
 
-## Task 4 — CI-hosted Taiga (investigation option B)
+## Task 5 — CI-hosted Taiga (investigation option B)
 
 ⛔ **Gated — do not start without asking (see status table).** This is materially bigger than tasks
-1–3: a `docker-compose.yml` this repo doesn't have today, a multi-container stack (`taiga-back`,
+1–4: a `docker-compose.yml` this repo doesn't have today, a multi-container stack (`taiga-back`,
 `taiga-front`, `taiga-events`, `taiga-protected`, RabbitMQ, PostgreSQL), a wait-for-healthy CI step,
 and slower CI on every PR if wired into the default workflow. See the baseline doc's "Option B" for
 the full tradeoff. Only take this task if explicitly asked to scope it — and scope it as its own
