@@ -487,19 +487,42 @@ just do not expect them in the report, and do not conclude coverage regressed.
 ### Integration test against a live server (real API, no fakes)
 
 Not the default — every other pattern in this file uses `Fake*`. This is for the rare case of
-testing the real network path end to end. `LoginIntegrationTest`
-(`composeApp/src/jvmTest/kotlin/com/grappim/taigamobile/di/`) is the only one and the worked
-example: builds the real Koin graph (`koinApplication<KoinApp> { printLogger(Level.NONE) }.koin`,
-same as `KoinGraphTest`), resolves the real `AuthRepository` + `TrustedCertStorage`, and calls
-`auth()` against gregory's local Taiga instance.
+testing the real network path end to end. All of these live in
+`composeApp/src/jvmTest/kotlin/com/grappim/taigamobile/di/`. `LoginIntegrationTest` was the first
+and remains the worked example for the login step itself: builds the real Koin graph
+(`koinApplication<KoinApp> { printLogger(Level.NONE) }.koin`, same as `KoinGraphTest`), resolves the
+real `AuthRepository` + `TrustedCertStorage`, and calls `auth()` against gregory's local Taiga
+instance.
 
+- **Use the shared `liveTaigaSessionOrSkip(): Koin?` helper (`LiveTaigaSession.kt`) — don't re-derive
+  the login/cert-trust flow per test.** It does the env-var gate (`TAIGA_INTEGRATION_URL`/
+  `_USERNAME`/`_PASSWORD`), builds the graph, logs in with the same trust-on-first-use retry, and
+  returns the ready `Koin` instance (or `null` if the env vars are unset — return immediately from
+  the `@Test` in that case). `ProjectsApiIntegrationTest` is the worked example of a caller: resolve
+  whatever `XApi`/repository the test needs from the returned `Koin`, call it inside `runBlocking`,
+  assert the result parses (not particular content — the seeded local instance's data isn't
+  something this repo controls or should assert on).
+- **The helper memoizes the graph+login behind `private val sharedSession: Lazy<Koin>` — every
+  integration test in one test JVM run shares the *same* authenticated `Koin` instance.** This is
+  load-bearing, not an optimization: the JVM `DataStore` backends (`StorageModule.jvm.kt`) read/write
+  fixed files under `java.io.tmpdir`, so a second `koinApplication<KoinApp>` built in the same
+  process throws `IllegalStateException: There are multiple DataStores active for the same file` the
+  moment it touches one. Do not build a fresh `koinApplication` per test in this package — call the
+  shared helper instead.
 - **Gate with a runtime env-var check, not a separate Gradle source set**: `System.getenv("X") ?:
-  return` at the top of the `@Test` function. The test is JVM-only regardless (see CLAUDE.md
-  Testing — Android and JVM/Desktop share the OkHttp engine), so a dedicated source set buys
-  nothing over a plain `jvmTest` class that no-ops without the env vars.
+  return` (already inside the helper). The test is JVM-only regardless (see CLAUDE.md Testing —
+  Android and JVM/Desktop share the OkHttp engine), so a dedicated source set buys nothing over a
+  plain `jvmTest` class that no-ops without the env vars.
 - **`--rerun` is required to actually re-execute** after only changing an env var — Gradle doesn't
   see that as a task-input change and reports stale `UP-TO-DATE` otherwise.
-- Full background: [docs/issues/2026-08-08-integration-tests-live-taiga.md](../../docs/issues/2026-08-08-integration-tests-live-taiga.md).
+- **Running this package with the env vars set adds ~2 tolerated "resolved dependencies but threw
+  while constructing" entries to `KoinGraphTest`'s own output** (`LoginViewModel`,
+  `SettingsUserScreenViewModel`) — its own separate `koinApplication` collides with the still-open
+  shared session's `DataStore` the same way two integration tests would. `KoinGraphTest` only fails
+  on `NoDefinitionFoundException`, so this is noise, not a regression; don't mistake it for one.
+- Full background: [docs/issues/2026-08-08-integration-tests-live-taiga.md](../../docs/issues/2026-08-08-integration-tests-live-taiga.md),
+  [docs/testing/integration-tests-plan.md](../../docs/testing/integration-tests-plan.md) (task list;
+  task 2's result note has the `DataStore` collision write-up in full).
 
 ---
 

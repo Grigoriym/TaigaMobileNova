@@ -32,8 +32,8 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 | # | Task | Size | Status |
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
-| 2 | Shared login helper + `ProjectsApi` read round-trip | S | ⬅ NEXT |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 12 remaining, see Task 3 |
+| 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 12 remaining, see Task 3 — ⬅ NEXT |
 | 4 | Write round-trip pilot (create + clean up) | S–M | todo |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
@@ -76,6 +76,32 @@ should be shared.
 **Existing pieces:** the login+cert-trust flow already written in `LoginIntegrationTest` (task 1);
 `ProjectsApi`/`ProjectsRepository` already real-vs-fake-swappable like every other `XApi`.
 
+**Result (2026-08-08):** done. Extracted the login+cert-trust flow into
+`liveTaigaSessionOrSkip(): Koin?` in a new `LiveTaigaSession.kt` (same `di` package).
+`LoginIntegrationTest` now just calls it and returns if `null`. Added
+`ProjectsApiIntegrationTest` — resolves `ProjectsApi` + `TaigaSessionStorage` from the returned
+`Koin`, calls `getProjects(memberId = sessionStorage.requireUserId())`, asserts the result is
+non-null (parsed) without asserting on content.
+
+**Deviation from the plan as written:** the helper does not build a fresh `koinApplication<KoinApp>`
+on every call. The JVM `DataStore` backends (`StorageModule.jvm.kt`) read/write fixed files under
+`java.io.tmpdir`, so a second `koinApplication` in the same test JVM throws "multiple DataStores
+active for the same file" the instant it touches one — hit this running `LoginIntegrationTest` and
+`ProjectsApiIntegrationTest` together. Fixed by memoizing the graph-build-and-login behind a
+`private val sharedSession: Lazy<Koin>`; `liveTaigaSessionOrSkip()` still does the env-var gate and
+env-var-per-call read, but the actual Koin graph and login happen once per test JVM and every
+integration test in the run shares that one authenticated session. This means task 3's per-module
+tests won't each pay their own login round-trip either — a side benefit, not just a workaround.
+
+**Side effect on `KoinGraphTest`:** when the three env vars are set, running the full `di` package
+(`--tests "com.grappim.taigamobile.di.*"`) makes `KoinGraphTest`'s *own* `koinApplication` collide
+with the still-open shared session's `DataStore`, adding 2 more "resolved dependencies but threw
+while constructing" entries (`LoginViewModel`, `SettingsUserScreenViewModel`) to its already-tolerated
+noise (see that test's doc comment — only `NoDefinitionFoundException` fails it). Test still passes;
+noted here so a future session doesn't mistake the printed noise for a regression. Confirmed
+`./gradlew jvmTest` with no env vars set stays green (both new tests skip cleanly) and `ktlintCheck`
+is clean.
+
 **Done when:** with the three `TAIGA_INTEGRATION_*` env vars set,
 `./gradlew :composeApp:jvmTest --tests "com.grappim.taigamobile.di.*" --rerun` passes both the
 login test and the new read test; without them set, both skip cleanly and `./gradlew jvmTest`
@@ -83,6 +109,8 @@ login test and the new read test; without them set, both skip cleanly and `./gra
 
 **Finalize focus:** update `.claude/agents/testing.md`'s integration-test entry to mention the
 shared helper, so task 3's sweep doesn't re-duplicate the login flow on every module.
+
+**Next: Task 3 — read round-trip sweep, one `XApi` module per session.**
 
 ---
 

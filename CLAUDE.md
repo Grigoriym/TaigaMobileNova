@@ -563,8 +563,19 @@ emulator involved. Gate it with a runtime check (`System.getenv("X") ?: return`)
 machine; the test is JVM-only either way, so a separate source set buys nothing.
 `LoginIntegrationTest` (`composeApp/src/jvmTest/.../di/`) is the worked example: builds the real
 Koin graph the same way `KoinGraphTest` does, resolves the real `AuthRepository`, and mirrors
-`LoginViewModel`'s own trust-on-first-use retry for a self-signed certificate. See
-[docs/issues/2026-08-08-integration-tests-live-taiga.md](docs/issues/2026-08-08-integration-tests-live-taiga.md).
+`LoginViewModel`'s own trust-on-first-use retry for a self-signed certificate. Every other
+integration test in that package calls the shared `liveTaigaSessionOrSkip(): Koin?` helper
+(`LiveTaigaSession.kt`, same directory) instead of repeating that flow — see the **testing** agent's
+"Integration test against a live server" entry. See
+[docs/issues/2026-08-08-integration-tests-live-taiga.md](docs/issues/2026-08-08-integration-tests-live-taiga.md)
+and [docs/testing/integration-tests-plan.md](docs/testing/integration-tests-plan.md) (task list).
+
+**Only one `koinApplication<KoinApp>` per test JVM process may touch the JVM `DataStore` files.**
+`StorageModule.jvm.kt`'s DataStores read/write fixed paths under `java.io.tmpdir`, so a second
+`koinApplication` built in the same process — e.g. two integration tests each building their own —
+throws `IllegalStateException: multiple DataStores active for the same file` the moment either
+touches storage. `liveTaigaSessionOrSkip()` works around this by memoizing the graph-build-and-login
+behind a `Lazy<Koin>`, so every integration test in one run shares the same authenticated instance.
 
 **Gradle does not track env vars as task inputs.** Re-running `./gradlew jvmTest` after only
 changing an env var (not source) reports `UP-TO-DATE` and silently skips re-execution — pass
