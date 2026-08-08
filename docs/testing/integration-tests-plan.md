@@ -33,7 +33,7 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 5 remaining, see Task 3 — ⬅ NEXT |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 4 remaining, see Task 3 — ⬅ NEXT |
 | 4 | Write round-trip pilot (create + clean up) | S–M | todo |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
@@ -141,14 +141,19 @@ task):**
 | `EpicsApi` | write-only: `linkToEpic`/`unlinkFromEpic` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "epics", project = ...)` |
 | `IssuesApi` | write-only: `createIssue` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "issues", project = ...)` |
 
-**Remaining candidates (5, order not fixed — pick whichever has the most obvious real data in the
+**Done (6/12):**
+
+| Module | Test | Notes |
+|---|---|---|
+| `WikiApi` | `WikiApiIntegrationTest` — `getProjectWikiPages(projectId = 5)` | 2026-08-08. Confirmed project 5 has 4 real wiki pages (home, getting-started, architecture, api-reference); asserts the list parses, not its content. |
+
+**Remaining candidates (4, order not fixed — pick whichever has the most obvious real data in the
 local instance when you start)**:
 
 | Module | Leading call | Notes |
 |---|---|---|
-| `WikiApi` | `getProjectWikiPages(5)` / `getWikiLink(5)` | wiki content in project 5 not yet confirmed |
 | `SwimlanesApi` | `getSwimlanes(project = 5)` | simplest single-method interface; confirmed 2026-08-08 project 5 has zero swimlanes configured — still a valid (empty) round-trip |
-| `ProjectValuesApi` | `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | statuses confirmed to exist on project 5 |
+| `ProjectValuesApi` | `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | statuses confirmed to exist on project 5 (6 statuses: New/Ready/In progress/Ready for test/Done/Archived) |
 | `WorkItemApi` | `getWorkItems(taskPath = "epics", project = 5)` (or `"issues"`) | this is where Epics/Issues reads actually live — see the correction above; project 5 has 10 confirmed epics |
 | `HistoryApi` | `getCommonTaskComments(singularTaskPath, id)` | needs a picked entity id (any of project 5's confirmed user stories) — otherwise no fixture needed |
 
@@ -238,6 +243,20 @@ it passed; not logged as a new revisit since `uikit`'s Compose UI test flakiness
 mechanism from the `:koverVerify`/DataStore issues already tracked and this session made no change
 in that module. A subsequent full `./gradlew jvmTest --rerun` came back green. `ktlintCheck` green.
 5/12 candidates remain — next session picks any row from the table above.
+
+**Result (2026-08-08, session 6):** `WikiApiIntegrationTest` added — `getProjectWikiPages(projectId
+= 5)`, asserts the returned list is non-null (parsed). Checked project 5's data via `taiga-mcp`
+first: confirmed 4 real wiki pages (home, getting-started, architecture, api-reference). Verified
+with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all eight integration tests (login, projects,
+users, user stories, tasks, sprints, filters, wiki) pass together. Full `./gradlew jvmTest --rerun`
+(no env vars) hit one failure on first run —
+[revisit #26](../revisit.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)'s
+already-logged `WikiPageViewModelTest.onAttachmentAdd failure updates state with error` flake,
+confirmed by the exact `TurbineAssertionError: No value produced in 3s` message matching that entry
+— not a new issue, and not caused by this session (no change touched `feature/wiki/ui`). A
+subsequent `./gradlew jvmTest --rerun` came back fully green. `ktlintCheck` green. 4/12 candidates
+remain — next session picks any row from the table above.
 
 ---
 
