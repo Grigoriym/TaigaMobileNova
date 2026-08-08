@@ -33,7 +33,7 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 9 remaining, see Task 3 — ⬅ NEXT |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 8 remaining, see Task 3 — ⬅ NEXT |
 | 4 | Write round-trip pilot (create + clean up) | S–M | todo |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
@@ -123,12 +123,13 @@ repeatable-task shape as the closed improvement plan's task 9a (missed-branch sw
 (Compose UI widget sweep): pick the next module in the list, write one real read round-trip against
 it, land it, move to the next session.
 
-**Done (2/12):**
+**Done (3/12):**
 
 | Module | Test | Notes |
 |---|---|---|
 | `UsersApi` | `UsersApiIntegrationTest` — `getMyProfile()` | 2026-08-08. Zero-fixture call, needs only the authenticated session. |
 | `UserStoriesApi` | `UserStoriesApiIntegrationTest` — `getUserStories(GetUserStoriesParams(project = 5))` | 2026-08-08. Project 5 confirmed to have ~19 user stories; asserts the list parses, not its content. |
+| `TasksApi` | `TasksApiIntegrationTest` — `getTasks(project = 5)` | 2026-08-08. Confirmed project 5 has real tasks (e.g. task id 1, ref 31, "Set up authentication middleware") via `taiga-mcp`; asserts the list parses, not its content. |
 
 **Corrected — these two have no read method at all (discovered 2026-08-08 while scoping this
 task):**
@@ -138,15 +139,14 @@ task):**
 | `EpicsApi` | write-only: `linkToEpic`/`unlinkFromEpic` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "epics", project = ...)` |
 | `IssuesApi` | write-only: `createIssue` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "issues", project = ...)` |
 
-**Remaining candidates (9, order not fixed — pick whichever has the most obvious real data in the
+**Remaining candidates (8, order not fixed — pick whichever has the most obvious real data in the
 local instance when you start)**:
 
 | Module | Leading call | Notes |
 |---|---|---|
-| `TasksApi` | `getTasks(project = 5)` | all params optional; existence of tasks in project 5 not yet confirmed, empty result is still a valid round-trip |
 | `SprintApi` | `getSprints(project = 5, isClosed = false)` or `getSprint(sprintId = 4)` | project 5 has sprints/milestones 4/5/6 ("Sprint 1/2/3") confirmed 2026-08-08 |
 | `WikiApi` | `getProjectWikiPages(5)` / `getWikiLink(5)` | wiki content in project 5 not yet confirmed |
-| `SwimlanesApi` | `getSwimlanes(project = 5)` | simplest single-method interface; swimlane config in project 5 not yet confirmed |
+| `SwimlanesApi` | `getSwimlanes(project = 5)` | simplest single-method interface; confirmed 2026-08-08 project 5 has zero swimlanes configured — still a valid (empty) round-trip |
 | `ProjectValuesApi` | `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | statuses confirmed to exist on project 5 |
 | `WorkItemApi` | `getWorkItems(taskPath = "epics", project = 5)` (or `"issues"`) | this is where Epics/Issues reads actually live — see the correction above; project 5 has 10 confirmed epics |
 | `HistoryApi` | `getCommonTaskComments(singularTaskPath, id)` | needs a picked entity id (any of project 5's confirmed user stories) — otherwise no fixture needed |
@@ -191,6 +191,19 @@ Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
 user stories) pass together. Also verified clean skip with no env vars set, full `./gradlew jvmTest`,
 and `ktlintCheck`, all green. No new shared helper needed — reused `liveTaigaSessionOrSkip()`
 unchanged. 9/12 candidates remain — next session picks any row from the table above.
+
+**Result (2026-08-08, session 3):** `TasksApiIntegrationTest` added — `getTasks(project = 5)`,
+asserts the returned list is non-null (parsed). Checked project 5's data via `taiga-mcp` first per
+the task's own guidance: confirmed real tasks exist (id 1, ref 31, "Set up authentication
+middleware") and swimlanes are empty (noted in the candidates table above for whoever picks that
+row next). Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all five integration tests (login, projects, users,
+user stories, tasks) pass together. `./gradlew jvmTest` (no env vars) failed twice on
+`FiltersStorageImplTest.resetFilters clears every section` — confirmed pre-existing and unrelated
+by reproducing it on a clean `git stash -u` tree at the last commit, and confirmed it passes in
+isolation; logged as [revisit #25](../revisit.md#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
+rather than investigated further here. `ktlintCheck` green. 8/12 candidates remain — next session
+picks any row from the table above.
 
 ---
 

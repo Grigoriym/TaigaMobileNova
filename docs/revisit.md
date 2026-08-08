@@ -929,3 +929,25 @@ an already-open graph) touches shared test infrastructure both files rely on. Re
 integration-test session hits it again, or when task 3's sweep is otherwise complete: run the full
 `com.grappim.taigamobile.di.*` pattern a few times in a row to see how often the unfavorable order
 actually occurs before deciding whether it is worth fixing.
+
+## 25. `FiltersStorageImplTest.resetFilters clears every section` is flaky under a full `jvmTest` run
+
+**Where:** `core/storage/src/jvmTest/kotlin/com/grappim/taigamobile/core/storage/FiltersStorageImplTest.kt:158`
+(the `resetFilters clears every section` test, line 165 is the `awaitItem()` that times out).
+
+**Symptom:** `app.cash.turbine.TurbineAssertionError: No value produced in 3s` — a Turbine
+`awaitItem()` on the filters flow times out waiting for the post-reset emission.
+
+**Reproduced 2026-08-08** while adding `TasksApiIntegrationTest` (task 3 of
+[docs/testing/integration-tests-plan.md](testing/integration-tests-plan.md)): `./gradlew jvmTest`
+failed on this test twice in a row, including on a clean `git stash -u` tree at the last committed
+commit (`e20a4119`) — so it is unrelated to the new test and pre-existing. Passes reliably when run
+in isolation (`./gradlew :core:storage:jvmTest --tests
+"com.grappim.taigamobile.core.storage.FiltersStorageImplTest"`), which points at timing/scheduling
+sensitivity specific to running inside the full multi-module `jvmTest` invocation rather than a bug
+in the test's assertions themselves.
+
+**Not fixed here** — out of scope for a read-round-trip integration test task. Revisit if it keeps
+recurring: worth checking whether `resetFilters` itself has a real race (e.g. writes the DataStore
+before the flow's collector is registered) versus the test's `runTest`/dispatcher setup being
+sensitive to whatever else is warming up the JVM in a full run.
