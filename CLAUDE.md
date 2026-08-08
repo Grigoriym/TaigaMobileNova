@@ -554,6 +554,23 @@ than mutating the global default** — and if you claim a test passes under a ch
 prove the change reached the forked test JVM. `TZ` does; `LANG`, `LC_ALL` and `JAVA_TOOL_OPTIONS`
 do not. The `testing` agent's gotcha 11 has the details.
 
+**Integration tests against a live external server** are the same "real actual" preference taken one
+step further: a `jvmTest` can exercise the real Ktor/OkHttp client against a real backend, not just
+a real platform API. Android and JVM/Desktop share the OkHttp engine
+(`KmpNetworkConventionPlugin`), so this is representative of Android's network behaviour with no
+emulator involved. Gate it with a runtime check (`System.getenv("X") ?: return`) inside a plain
+`jvmTest` class — not a separate Gradle source set — so it silently no-ops on CI and every other
+machine; the test is JVM-only either way, so a separate source set buys nothing.
+`LoginIntegrationTest` (`composeApp/src/jvmTest/.../di/`) is the worked example: builds the real
+Koin graph the same way `KoinGraphTest` does, resolves the real `AuthRepository`, and mirrors
+`LoginViewModel`'s own trust-on-first-use retry for a self-signed certificate. See
+[docs/issues/2026-08-08-integration-tests-live-taiga.md](docs/issues/2026-08-08-integration-tests-live-taiga.md).
+
+**Gradle does not track env vars as task inputs.** Re-running `./gradlew jvmTest` after only
+changing an env var (not source) reports `UP-TO-DATE` and silently skips re-execution — pass
+`--rerun` to force it, or what looks like a pass is a stale cached result from a previous run under
+different env vars.
+
 ## Skills & Agents
 
 `.claude/agents/` in this repo holds only the project-specific agents: **testing** and

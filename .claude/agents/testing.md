@@ -484,6 +484,25 @@ just do not expect them in the report, and do not conclude coverage regressed.
 
 ---
 
+### Integration test against a live server (real API, no fakes)
+
+Not the default — every other pattern in this file uses `Fake*`. This is for the rare case of
+testing the real network path end to end. `LoginIntegrationTest`
+(`composeApp/src/jvmTest/kotlin/com/grappim/taigamobile/di/`) is the only one and the worked
+example: builds the real Koin graph (`koinApplication<KoinApp> { printLogger(Level.NONE) }.koin`,
+same as `KoinGraphTest`), resolves the real `AuthRepository` + `TrustedCertStorage`, and calls
+`auth()` against gregory's local Taiga instance.
+
+- **Gate with a runtime env-var check, not a separate Gradle source set**: `System.getenv("X") ?:
+  return` at the top of the `@Test` function. The test is JVM-only regardless (see CLAUDE.md
+  Testing — Android and JVM/Desktop share the OkHttp engine), so a dedicated source set buys
+  nothing over a plain `jvmTest` class that no-ops without the env vars.
+- **`--rerun` is required to actually re-execute** after only changing an env var — Gradle doesn't
+  see that as a task-input change and reports stale `UP-TO-DATE` otherwise.
+- Full background: [docs/issues/2026-08-08-integration-tests-live-taiga.md](../../docs/issues/2026-08-08-integration-tests-live-taiga.md).
+
+---
+
 ## Paging Fakes (`Flow<PagingData<T>>`)
 
 Some ViewModels call paging methods **at construction time** (property initializers, not inside `init {}`). If the fake throws `TODO()` or `error()` for these, the ViewModel will crash before the test even starts.
