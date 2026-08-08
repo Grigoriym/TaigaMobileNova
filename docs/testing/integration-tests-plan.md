@@ -33,7 +33,7 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 10 remaining, see Task 3 — ⬅ NEXT |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 9 remaining, see Task 3 — ⬅ NEXT |
 | 4 | Write round-trip pilot (create + clean up) | S–M | todo |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
@@ -123,11 +123,12 @@ repeatable-task shape as the closed improvement plan's task 9a (missed-branch sw
 (Compose UI widget sweep): pick the next module in the list, write one real read round-trip against
 it, land it, move to the next session.
 
-**Done (1/12):**
+**Done (2/12):**
 
 | Module | Test | Notes |
 |---|---|---|
 | `UsersApi` | `UsersApiIntegrationTest` — `getMyProfile()` | 2026-08-08. Zero-fixture call, needs only the authenticated session. |
+| `UserStoriesApi` | `UserStoriesApiIntegrationTest` — `getUserStories(GetUserStoriesParams(project = 5))` | 2026-08-08. Project 5 confirmed to have ~19 user stories; asserts the list parses, not its content. |
 
 **Corrected — these two have no read method at all (discovered 2026-08-08 while scoping this
 task):**
@@ -137,12 +138,11 @@ task):**
 | `EpicsApi` | write-only: `linkToEpic`/`unlinkFromEpic` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "epics", project = ...)` |
 | `IssuesApi` | write-only: `createIssue` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "issues", project = ...)` |
 
-**Remaining candidates (10, order not fixed — pick whichever has the most obvious real data in the
+**Remaining candidates (9, order not fixed — pick whichever has the most obvious real data in the
 local instance when you start)**:
 
 | Module | Leading call | Notes |
 |---|---|---|
-| `UserStoriesApi` | `getUserStories(GetUserStoriesParams(project = 5))` | project 5 ("Main project") on the local instance has ~19 user stories confirmed 2026-08-08 |
 | `TasksApi` | `getTasks(project = 5)` | all params optional; existence of tasks in project 5 not yet confirmed, empty result is still a valid round-trip |
 | `SprintApi` | `getSprints(project = 5, isClosed = false)` or `getSprint(sprintId = 4)` | project 5 has sprints/milestones 4/5/6 ("Sprint 1/2/3") confirmed 2026-08-08 |
 | `WikiApi` | `getProjectWikiPages(5)` / `getWikiLink(5)` | wiki content in project 5 not yet confirmed |
@@ -183,6 +183,14 @@ by re-running with `--tests` scoped to just the three `*IntegrationTest` classes
 cleanly every time. Not fixed (shared test infra, out of scope for this task). `./gradlew jvmTest` and
 `ktlintCheck` both green with no env vars set. 10/12 candidates remain — next session picks any row
 from the table above.
+
+**Result (2026-08-08, session 2):** `UserStoriesApiIntegrationTest` added —
+`getUserStories(GetUserStoriesParams(project = 5))`, asserts the returned list is non-null (parsed).
+Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all four integration tests (login, projects, users,
+user stories) pass together. Also verified clean skip with no env vars set, full `./gradlew jvmTest`,
+and `ktlintCheck`, all green. No new shared helper needed — reused `liveTaigaSessionOrSkip()`
+unchanged. 9/12 candidates remain — next session picks any row from the table above.
 
 ---
 
