@@ -17,7 +17,6 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 16 | Every `logcat` message lambda is a permanently-uncovered line | S | improvement-plan task 9a |
 
 ---
 
@@ -61,6 +60,11 @@ but write down *why*, because the question will come back.
 
 **Blocked on nothing.** Best done after the testing plan, since those ViewModels will have tests by
 then and the tests are the safety net for changing them.
+
+**Investigated (2026-08-08):** the testing plan is done, so this was picked up. Full options writeup
+in [docs/issues/2026-08-08-viewmodel-init-io.md](issues/2026-08-08-viewmodel-init-io.md) — three
+options (status quo / explicit `onScreenStart()` trigger / lazy `stateIn(WhileSubscribed)`
+collection), recommending the explicit-trigger option. Not yet decided or implemented.
 
 ## 2. Non-ViewModel beans may leak application-scoped coroutines
 
@@ -563,6 +567,13 @@ into the covered `invokeSuspend` and cost nothing; that package finished at LINE
 `EditSprintViewModel`'s, in the same syntactic position, was split out at 0/1. So the 1-line-hole
 signature is still the right thing to stop at, but 100 % LINE is not out of reach a priori, and the
 "~96 lines reclaimable" figure is an upper bound rather than a count.
+
+**Resolved, won't-fix (2026-08-08):** gregory's decision — closing without installing a counting
+`TaigaLogger`. The entry's own numbers already say why: upper bound is ~96 lines against a >9700-line
+denominator (under 1 point), and the only real fix means installing a test-scope logger that changes
+`@Volatile` global state shared by every concurrently-running JVM test in the suite (CLAUDE.md,
+Testing) — infra risk for sub-1-point gain. If a future session wants `logcat` assertions in tests for
+some other reason, revisit then; don't chase this line count on its own.
 
 ---
 
