@@ -201,9 +201,16 @@ row next). Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
 user stories, tasks) pass together. `./gradlew jvmTest` (no env vars) failed twice on
 `FiltersStorageImplTest.resetFilters clears every section` — confirmed pre-existing and unrelated
 by reproducing it on a clean `git stash -u` tree at the last commit, and confirmed it passes in
-isolation; logged as [revisit #25](../revisit.md#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
-rather than investigated further here. `ktlintCheck` green. 8/12 candidates remain — next session
-picks any row from the table above.
+isolation; logged as revisit #25, then fixed in a follow-up (same session, on request): the test's
+`DataStore` was defaulting to a real `Dispatchers.IO`-backed scope instead of sharing
+`FiltersStorageImpl`'s own `Dispatchers.Main` test-dispatcher scope, so `awaitItem()` was
+real-wall-clock racing the real IO thread pool under a loaded multi-module run. See
+[revisit #25](../revisit.md#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
+for the full fix write-up. Verifying the fix surfaced a second, unrelated flake
+(`WikiPageViewModelTest`, different mechanism) — logged as
+[revisit #26](../revisit.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run),
+not fixed. `ktlintCheck` green. 8/12 candidates remain — next session picks any row from the table
+above.
 
 ---
 

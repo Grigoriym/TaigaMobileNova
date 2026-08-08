@@ -947,7 +947,50 @@ in isolation (`./gradlew :core:storage:jvmTest --tests
 sensitivity specific to running inside the full multi-module `jvmTest` invocation rather than a bug
 in the test's assertions themselves.
 
-**Not fixed here** — out of scope for a read-round-trip integration test task. Revisit if it keeps
-recurring: worth checking whether `resetFilters` itself has a real race (e.g. writes the DataStore
-before the flow's collector is registered) versus the test's `runTest`/dispatcher setup being
-sensitive to whatever else is warming up the JVM in a full run.
+**Resolved (2026-08-08):** root cause was a dispatcher mismatch, not a race in `resetFilters` itself.
+`FiltersStorageImpl`'s own `scope` is built from `Dispatchers.Main` (overridden to
+`MainDispatcherRule`'s `UnconfinedTestDispatcher` in tests), but the test's `DataStore` was built by
+`createTestDataStore` with no explicit scope — `PreferenceDataStoreFactory.createWithPath` then
+defaults to a real `Dispatchers.IO`-backed `CoroutineScope`. So the DataStore's internal actor (the
+coroutine that actually performs the file write and republishes `dataStore.data`) ran on the real IO
+thread pool, decoupled from the test dispatcher, and Turbine's `awaitItem()` had to real-wall-clock-wait
+for it — which occasionally exceeded 3s once a full `jvmTest` run had many modules' test JVMs
+contending for that thread pool. `TrustedCertStorageImplTest` never hit this despite also using a real
+DataStore, because `TrustedCertStorageImpl` has no such internal scope — every write is a plain
+`suspend fun` the test directly awaits, so however long the real I/O takes, the test just suspends for
+it with no separate timeout in the mix.
+
+Fix: `createTestDataStore` (`TestDataStore.kt`) now takes an optional `scope` parameter (default
+unchanged — a real `Dispatchers.IO`-backed scope, so the other three callers are unaffected).
+`FiltersStorageImplTest.setup()` passes `CoroutineScope(Dispatchers.Main + SupervisorJob())` — the
+same dispatcher instance `MainDispatcherRule` installs — so the whole write -> DataStore actor -> flow
+emission chain runs on one deterministic, eagerly-executing test dispatcher instead of spanning into
+the real thread pool. Verified with 8 consecutive full `./gradlew jvmTest --rerun` runs: zero failures
+in `FiltersStorageImplTest` across all 8 (one run failed on an unrelated, separately pre-existing flake
+in `feature/wiki/ui`'s `WikiPageViewModelTest`, logged separately as [#26](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)).
+`ktlintCheck` green.
+
+## 26. `WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky under a full `jvmTest` run
+
+**Where:** `feature/wiki/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/wiki/ui/page/details/WikiPageViewModelTest.kt:282-295`.
+
+**Symptom:** same shape as [#25](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
+was before its fix — `app.cash.turbine.TurbineAssertionError: No value produced in 3s` on one of the
+three sequential `awaitItem()` calls in the `sut.attachmentsState.test { ... }` block.
+
+**Different mechanism, though — not the same root cause as #25.** This test uses a fake
+`workItemRepository` (`addAttachmentThrows = testException`), no real `DataStore` or any other real
+I/O; every state change happens through the ViewModel's own `viewModelScope.launch` on
+`Dispatchers.Main` (already the test dispatcher via `MainDispatcherRule`), which should be fully
+virtual-time-deterministic already. Whatever is stealing real wall-clock time here has not been
+identified — noted while fixing #25, not investigated.
+
+**Reproduced 2026-08-08** as a single failure out of 8 consecutive full `./gradlew jvmTest --rerun`
+runs done to verify #25's fix; passes reliably in isolation
+(`./gradlew :feature:wiki:ui:jvmTest --tests "com.grappim.taigamobile.feature.wiki.ui.page.details.WikiPageViewModelTest"`),
+confirmed pre-existing (not caused by #25's change) via a `git stash -u` re-run on the same commit.
+
+**Not fixed here** — out of scope for the #25 task. Revisit if it recurs: since the fake repository
+rules out real I/O, the next step would be checking whether `WikiPageViewModel` (or something
+`ViewModel`-base-class-level, e.g. `viewModelScope`'s own dispatcher wiring) uses a scope not tied to
+`Dispatchers.Main`, unlike the DataStore-scope mismatch #25 turned out to be.
