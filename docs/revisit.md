@@ -972,28 +972,43 @@ in `feature/wiki/ui`'s `WikiPageViewModelTest`, logged separately as [#26](#26-w
 
 ## 26. `WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky under a full `jvmTest` run
 
-**Where:** `feature/wiki/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/wiki/ui/page/details/WikiPageViewModelTest.kt:282-295`.
+**RESOLVED 2026-08-08 — the flaky test was deleted, not fixed.** See below.
+
+**Where it was:** `feature/wiki/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/wiki/ui/page/details/WikiPageViewModelTest.kt:282-295`.
 
 **Symptom:** same shape as [#25](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
 was before its fix — `app.cash.turbine.TurbineAssertionError: No value produced in 3s` on one of the
 three sequential `awaitItem()` calls in the `sut.attachmentsState.test { ... }` block.
 
-**Different mechanism, though — not the same root cause as #25.** This test uses a fake
-`workItemRepository` (`addAttachmentThrows = testException`), no real `DataStore` or any other real
-I/O; every state change happens through the ViewModel's own `viewModelScope.launch` on
-`Dispatchers.Main` (already the test dispatcher via `MainDispatcherRule`), which should be fully
-virtual-time-deterministic already. Whatever is stealing real wall-clock time here has not been
-identified — noted while fixing #25, not investigated.
+**Root cause found 2026-08-08 (a session after the note below was written):** the earlier
+hypothesis ("no real I/O, whatever is stealing wall-clock time is unidentified") was wrong. The test
+calls `onAttachmentAdd(createTestPlatformFile(...))`, which goes through
+`WorkItemAttachmentsDelegateImpl.handleAddAttachment` → `file.readBytes()` —
+`io.github.vinceglb.filekit`'s JVM implementation, which is hardcoded to
+`withContext(Dispatchers.IO) { ... }` internally (confirmed by reading the library's own sources).
+That's a real background thread outside the `UnconfinedTestDispatcher` set up by
+`MainDispatcherRule`, racing Turbine's real-wall-clock timeout. Reproduced a failure even at a 15s
+Turbine timeout (5x the default) under a deliberately heavy 6-module-parallel local run, which ruled
+out "just raise the timeout" as a real fix — it only lowers the odds, it doesn't remove the race.
+The same shape exists in `UserStoryDetailsViewModelTest`, `TaskDetailsViewModelTest`,
+`EpicDetailsViewModelTest` and `IssueDetailsViewModelTest` (10 tests total across the 5 features that
+mix in `WorkItemAttachmentsDelegate`), though only the Wiki one had actually been observed flaking.
 
-**Reproduced 2026-08-08** as a single failure out of 8 consecutive full `./gradlew jvmTest --rerun`
-runs done to verify #25's fix; passes reliably in isolation
-(`./gradlew :feature:wiki:ui:jvmTest --tests "com.grappim.taigamobile.feature.wiki.ui.page.details.WikiPageViewModelTest"`),
-confirmed pre-existing (not caused by #25's change) via a `git stash -u` re-run on the same commit.
+**Fix considered and rejected:** threading a fakeable `readFileBytes` seam through
+`WorkItemAttachmentsDelegateImpl` and the 5 `@KoinViewModel` classes that construct it (verified safe
+with Koin via bytecode inspection — a defaulted, non-injectable constructor param is correctly
+skipped by the compiler plugin). Rejected on explicit direction: production code should not be
+shaped by test needs — if a path can't be tested deterministically without touching production code,
+remove the test rather than add a seam for it.
 
-**Not fixed here** — out of scope for the #25 task. Revisit if it recurs: since the fake repository
-rules out real I/O, the next step would be checking whether `WikiPageViewModel` (or something
-`ViewModel`-base-class-level, e.g. `viewModelScope`'s own dispatcher wiring) uses a scope not tied to
-`Dispatchers.Main`, unlike the DataStore-scope mismatch #25 turned out to be.
+**Resolution (2026-08-08):** deleted all 10 real-IO-racing tests (the two `onAttachmentAdd` tests in
+each of the 5 ViewModels' test files) along with their now-unused `createTestPlatformFile`/
+`getAttachment` imports. The behaviour they exercised — `handleAddAttachment`'s success/failure
+branches, including a real `file.readBytes()` call — remains covered deterministically by
+`WorkItemAttachmentsDelegateImplTest`, which calls the delegate directly under `runTest` with no
+`viewModelScope.launch` and no Turbine, so it never races real time. Each ViewModel still keeps its
+`onAttachmentAdd with a null file` test, which needs no real I/O. `:koverVerify` still passes after
+the removal (checked the same session). No production file was touched.
 
 ## 27. `ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky under a full `jvmTest` run
 
