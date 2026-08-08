@@ -900,7 +900,7 @@ Recorded so they are not silently forgotten, and not re-proposed without new inf
 | Idea | Why not now |
 |---|---|
 | ~~Run `commonTest` on a native target (`iosSimulatorArm64Test`)~~ | **Dropped (gregory, 2026-08-07)** — not just deferred, off the list. Real gap (no `expect/actual` divergence is caught by tests today), but CI is `ubuntu-latest` and this needs a macOS runner at roughly 10× the minutes. Worst value-per-cost on the list. |
-| Screenshot tests (Roborazzi / Paparazzi) | High maintenance for a solo-maintained app. Revisit only if visual regressions become a recurring, concrete problem — not preemptively. |
+| Screenshot tests (Roborazzi / Paparazzi) | **Investigated (2026-08-08)**, verdict unchanged: still high maintenance, but for a narrower reason than originally stated — see [docs/issues/2026-08-08-screenshot-testing.md](../issues/2026-08-08-screenshot-testing.md). Capture mechanics are now free (tasks 10–21's `captureToImage()` wiring), but cross-machine font-rendering determinism isn't solved by anything built since, and applies equally to Roborazzi's desktop artifact and a hand-rolled comparator. Revisit only if visual regressions become a recurring, concrete problem — not preemptively. |
 | Integration tests against a live Taiga instance | `tools/seed` and the local instance in `docs/local-info.md` make it feasible, but it would be a manually-triggered job, not part of PR CI. No pull for it yet. |
 | Adding a mocking framework | The hand-written-fake convention is working and is genuinely consistent. Do not introduce MockK to `commonTest`. |
 | Testing `dto` and pure-`domain` modules | Most of the 36 untested modules are serializable data holders or interfaces plus models. Correctly untested; leave them. |
