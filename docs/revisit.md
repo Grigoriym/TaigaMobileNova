@@ -19,7 +19,6 @@ its own section, kept for the reasoning rather than the outcome):
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 2 | Non-ViewModel beans may leak application-scoped coroutines | S to check | same |
 | 5 | `tools/seed` and `tools/utils` tests would not run in CI | XS | improvement-plan task 1 |
-| 10 | The `Plugin`/`Module` exclusion patterns hide real logic in `core/api` | S | improvement-plan task 9a |
 | 16 | Every `logcat` message lambda is a permanently-uncovered line | S | improvement-plan task 9a |
 | 18 | `currentUserStory` throws from `viewModelScope` when the initial load failed | S–M | improvement-plan task 9a |
 | 23 | The coverage report counts Android-variant classes no test can reach | M | [kover issue](issues/2026-08-07-kover-excludes-and-report-mode-flip.md) |
@@ -238,8 +237,9 @@ affected — it always measures a fresh checkout.
 **Consequences elsewhere:** the false comment at `build.gradle.kts:95-99` is gone, CLAUDE.md's
 Testing section lost the workarounds built on the false premise, and [#14](#14-the-kover-coverage-floor-is-far-below-actual) is
 resolved (the floor was raised to 92/77 against a same-invocation reading). [#10](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi)
-is untouched by all of this and still open — it is a question about whether five Ktor plugins
-*should* be excluded, not about whether exclusion works. The deferred half is now [#23](#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach).
+was untouched by all of this at the time — it was a question about whether five Ktor plugins
+*should* be excluded, not about whether exclusion works — and was resolved separately on 2026-08-08.
+The deferred half is now [#23](#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach).
 
 ---
 
@@ -298,6 +298,36 @@ not.
 excludes moves the whole project's reported coverage — see entry 8, which has to be resolved in the
 same breath. Doing both here would have made the test diff unreviewable. When fixed, the
 `:koverVerify` bounds must be re-tuned in the same commit.
+
+**Resolved (2026-08-08):** removed `"Plugin"` from the `variants(...)` suffix list in root
+`build.gradle.kts` (kept `"Module"` — every `grep`-able `*Module` class in the repo is a real Koin
+`@Module`, so that half of the pattern was never wrong). A repo-wide grep confirmed core/api's five
+Ktor plugins are the *only* `*Plugin`-suffixed classes that exist, so the pattern was catching
+nothing else — this was a pure win, not a tradeoff against some other boilerplate class it also
+needed to exclude. Kept `docs/testing/kover-rank.py`'s `SUFFIXES` list in sync (same one-line
+removal).
+
+Verified in isolation with `docs/testing/kover-diff.py` against a before/after pair: the only
+`<class>`-level entries that appeared were the five Plugin classes (and their `$Plugin`/`$Config`/
+`$install$1` nested classes) newly present in `core.api`/`core.api.errors`; the only `<package>`-level
+denominator changes were those same two packages growing (LINE `core.api` 63/74 → 173/186,
+`core.api.errors` 52/54 → 89/92; BRANCH `core.api` 28/50 → 54/76, `core.api.errors` 47/76 → 57/86).
+Some `core.storage.cache`/`core.storage.db` classes also dropped out of the class-universe between
+the two invocations — the already-documented [#23](#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach)
+Android-variant-class noise, confirmed unrelated because it shows up only as package-level movement
+in a package this change never touched, with zero class-level movement outside `core.api`/
+`core.api.errors`.
+
+A clean `./gradlew clean jvmTest koverXmlReport` (matching CI's fresh-checkout state) reproduced the
+same reading: LINE 94.9199 % (9361/9862), BRANCH 80.2198 % (1679/2093), 761 classes, 0 excluded-suffix
+leaks. Cross-checked against `:koverVerify` itself (temporarily set both `minValue`s to 99 in the same
+invocation, per CLAUDE.md's Testing section): it reported the identical 94.919900 % / 80.219800 %.
+That is *higher* than the previous 94.8723 %/79.8736 % reading the 92/77 floor was tuned from — the
+five newly-counted Plugin classes are well-tested (`core.api` LINE 93.0 %, BRANCH 71.1 %; `core.api.errors`
+LINE 96.7 %, BRANCH 66.3 %) from improvement-plan task 9a's 55 tests, so adding them raised the
+aggregate rather than lowering it. The 92/77 floor still has ~3 points of margin on both counters, so
+it was left unchanged; only the comment above it was updated with the new measurement and date.
+`./gradlew jvmTest`, `ktlintCheck` and `:koverVerify` all green.
 
 ---
 

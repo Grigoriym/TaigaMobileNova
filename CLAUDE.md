@@ -328,10 +328,13 @@ tests, not a smaller bound. The traps when touching those numbers:
   pre-change-figure check is the same evidence a fresh run would give, for free. Do this before
   writing any test, since the first test source you add is what makes the task out-of-date.
 - **A class excluded by name shows no movement however well you test it.** The `excludes` block
-  filters by suffix — `**.*Plugin`, `**.*Module`, `**.*Repository`, `**.*Api`, `**.*Screen` … — which
-  in `core/api` drops all five Ktor plugins, i.e. ~98 lines and 38 branches of real auth and
-  error-mapping logic. Check the exclusion list before ranking a package by its missed branches, and
-  before reading a flat delta as "the tests did nothing" ([revisit #10](docs/revisit.md)).
+  filters by suffix — `**.*Module`, `**.*Repository`, `**.*Api`, `**.*Screen` … — check it before
+  ranking a package by its missed branches, and before reading a flat delta as "the tests did
+  nothing." `**.*Plugin` used to be on that list and dropped all five of `core/api`'s Ktor plugins
+  (~98 lines and 38 branches of real auth and error-mapping logic) purely because their names ended
+  in "Plugin" — removed 2026-08-08, see [revisit #10](docs/revisit.md), since a repo-wide grep found
+  no other class the pattern was meant to catch. `**.*Module` stayed: every class it matches is a
+  real Koin `@Module`.
   The suffix match is exact, so the reverse also holds: `**.*Repository` does **not** match
   `…RepositoryImpl`, and every repository impl in the project is measured normally.
   `**.*Exception` is on that list too, which hides real logic in `core/domain`

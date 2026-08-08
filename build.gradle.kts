@@ -42,8 +42,11 @@ kover {
                     *variants(
                         // Data layer
                         "Api", "ApiImpl", "DTO", "Repository",
-                        // Architecture boilerplate
-                        "Delegate", "Plugin", "Module",
+                        // Architecture boilerplate. Deliberately *not* "Plugin" — the only
+                        // classes matching that suffix are core/api's five Ktor plugins
+                        // (TokenRefreshPlugin, ErrorMappingPlugin, ...), which are hand-written
+                        // auth/error-mapping logic, not boilerplate. See docs/revisit.md #10.
+                        "Delegate", "Module",
                         "TimberLogger", "PagingSource", "Exception",
                         // App entry points & platform glue
                         "App", "Desktop", "Activity",
@@ -92,8 +95,9 @@ kover {
             // make a build pass. The branch bound is the point of the exercise — it sits ~15
             // points under the line bound, and that gap is the untested error paths.
             //
-            // Bounds are ~3 points under what koverVerify measured on 2026-08-07:
-            // line 94.8723 %, branch 79.8736 %.
+            // Bounds are ~3 points under what koverVerify measured on 2026-08-08 (after
+            // docs/revisit.md #10 stopped excluding core/api's Ktor plugins): line 94.9199 %,
+            // branch 80.2198 %.
             //
             // koverXmlReport and koverVerify agree to six significant figures *within a single
             // invocation* — VariantReportsSet hands both tasks the same filters and the same

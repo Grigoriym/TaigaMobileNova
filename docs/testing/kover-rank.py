@@ -27,7 +27,7 @@ import xml.etree.ElementTree as ET
 
 SUFFIXES = [
     "Api", "ApiImpl", "DTO", "Repository",
-    "Delegate", "Plugin", "Module",
+    "Delegate", "Module",
     "TimberLogger", "PagingSource", "Exception",
     "App", "Desktop", "Activity",
     "DrawerDestination", "IconSource",
