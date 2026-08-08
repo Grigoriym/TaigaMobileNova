@@ -33,7 +33,7 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 12 remaining, see Task 3 — ⬅ NEXT |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 10 remaining, see Task 3 — ⬅ NEXT |
 | 4 | Write round-trip pilot (create + clean up) | S–M | todo |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
@@ -123,40 +123,66 @@ repeatable-task shape as the closed improvement plan's task 9a (missed-branch sw
 (Compose UI widget sweep): pick the next module in the list, write one real read round-trip against
 it, land it, move to the next session.
 
-**Candidates (12, order not fixed — pick whichever has the most obvious real data in the local
-instance when you start)**:
+**Done (1/12):**
+
+| Module | Test | Notes |
+|---|---|---|
+| `UsersApi` | `UsersApiIntegrationTest` — `getMyProfile()` | 2026-08-08. Zero-fixture call, needs only the authenticated session. |
+
+**Corrected — these two have no read method at all (discovered 2026-08-08 while scoping this
+task):**
+
+| Module | Why not | Where the read actually lives |
+|---|---|---|
+| `EpicsApi` | write-only: `linkToEpic`/`unlinkFromEpic` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "epics", project = ...)` |
+| `IssuesApi` | write-only: `createIssue` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "issues", project = ...)` |
+
+**Remaining candidates (10, order not fixed — pick whichever has the most obvious real data in the
+local instance when you start)**:
 
 | Module | Leading call | Notes |
 |---|---|---|
-| `UsersApi` | get current user / profile | needs only the authenticated session, same as `ProjectsApi` |
-| `EpicsApi` | list epics for a project | needs a project with at least one epic |
-| `UserStoriesApi` | list user stories for a project | needs a project with at least one story |
-| `TasksApi` | list tasks for a project/story | needs a project with at least one task |
-| `IssuesApi` | list issues for a project | needs a project with at least one issue |
-| `SprintApi` | list sprints/milestones for a project | needs a project with at least one sprint |
-| `WikiApi` | list wiki pages for a project | needs a project with at least one wiki page |
-| `SwimlanesApi` | list swimlanes for a project | needs kanban enabled on a project |
-| `ProjectValuesApi` | list statuses/priorities/severities for a project | project-scoped config, likely present on any project |
-| `WorkItemApi` | a shared read used by several work-item types | check what this one actually covers before assuming a shape |
-| `HistoryApi` | history/activity for an entity | needs an entity with at least one historical event |
-| `FiltersApi` | list available filters for a project | project-scoped, likely present on any project |
+| `UserStoriesApi` | `getUserStories(GetUserStoriesParams(project = 5))` | project 5 ("Main project") on the local instance has ~19 user stories confirmed 2026-08-08 |
+| `TasksApi` | `getTasks(project = 5)` | all params optional; existence of tasks in project 5 not yet confirmed, empty result is still a valid round-trip |
+| `SprintApi` | `getSprints(project = 5, isClosed = false)` or `getSprint(sprintId = 4)` | project 5 has sprints/milestones 4/5/6 ("Sprint 1/2/3") confirmed 2026-08-08 |
+| `WikiApi` | `getProjectWikiPages(5)` / `getWikiLink(5)` | wiki content in project 5 not yet confirmed |
+| `SwimlanesApi` | `getSwimlanes(project = 5)` | simplest single-method interface; swimlane config in project 5 not yet confirmed |
+| `ProjectValuesApi` | `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | statuses confirmed to exist on project 5 |
+| `WorkItemApi` | `getWorkItems(taskPath = "epics", project = 5)` (or `"issues"`) | this is where Epics/Issues reads actually live — see the correction above; project 5 has 10 confirmed epics |
+| `HistoryApi` | `getCommonTaskComments(singularTaskPath, id)` | needs a picked entity id (any of project 5's confirmed user stories) — otherwise no fixture needed |
+| `FiltersApi` | `getCommonTaskFiltersData(taskPath = "userstories", project = 5)` | single-method interface, no fixture id needed |
 
 **Before each module's task: check what data actually exists in the local instance** (via
 `taiga-mcp`'s `taiga_request`, cheaper than guessing) rather than assuming a project/epic/story
-exists — the seeded instance's `docs/local-info.md` users don't guarantee any project data.
+exists — the seeded instance's `docs/local-info.md` users don't guarantee any project data. Project 5
+("Main project") is confirmed (2026-08-08) to have epics, user stories, and sprints — see the table
+above for specifics already checked.
 
 **Existing pieces:** the shared login helper from task 2. Reuse it, don't re-derive the
 login/cert-trust flow per module.
 
 **Done when (per module):** with the three `TAIGA_INTEGRATION_*` env vars set, the new test for that
 module passes and asserts the call actually succeeded (parses / non-error status) rather than just
-"didn't throw"; without the env vars, it skips cleanly.
+"didn't throw"; without the env vars, it skips cleanly. **Verify with `--tests` scoped to the
+`*IntegrationTest` classes, not the `di.*` wildcard** — running the wildcard risks the pre-existing,
+order-dependent `KoinGraphTest` collision (see
+[revisit #24](../revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently)),
+which is not specific to any one module's test and shouldn't block landing it.
 
 **Finalize focus:** cross off the module in this table (or move it to a "done" list) so the next
-session knows which 11/10/9... remain — don't leave the reader to grep for existing test files to
+session knows which 9/8/7... remain — don't leave the reader to grep for existing test files to
 figure out what's left.
 
-**Result:** none yet — 12/12 remaining.
+**Result (2026-08-08):** `UsersApiIntegrationTest` added (`getMyProfile()`). While scoping the
+module list, discovered `EpicsApi` and `IssuesApi` are write-only — corrected the candidates table
+above so a future session doesn't waste time looking for a read that isn't there. Also discovered and
+logged [revisit #24](../revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently):
+running the full `com.grappim.taigamobile.di.*` wildcard with the env vars set can fail *every*
+live-Taiga test (not just the new one) if `KoinGraphTest` happens to run first in that JVM — verified
+by re-running with `--tests` scoped to just the three `*IntegrationTest` classes, which passed
+cleanly every time. Not fixed (shared test infra, out of scope for this task). `./gradlew jvmTest` and
+`ktlintCheck` both green with no env vars set. 10/12 candidates remain — next session picks any row
+from the table above.
 
 ---
 

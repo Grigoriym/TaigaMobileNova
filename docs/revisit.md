@@ -887,3 +887,45 @@ entries in `docs/testing/kover-rank.py`.
   [#10](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi) already warns about,
   for a residual on the order of single-digit lines per class. Left alone; re-open only if the residual
   grows enough to matter. `./gradlew jvmTest`, `ktlintCheck` and `:koverVerify` all green.
+
+## 24. `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently
+
+**Where:** `composeApp/src/jvmTest/kotlin/com/grappim/taigamobile/di/KoinGraphTest.kt` (line 95) and
+`LiveTaigaSession.kt` (line 43) — both call `koinApplication<KoinApp> { ... }.koin` in the same test
+JVM process, and neither closes the `Koin` instance it builds.
+
+**Mechanism:** `StorageModule.jvm.kt`'s DataStores read/write fixed paths under `java.io.tmpdir`
+(documented in CLAUDE.md's Testing section: "only one `koinApplication<KoinApp>` per test JVM process
+may touch the JVM `DataStore` files"). `LiveTaigaSession.kt`'s `sharedSession` works around this
+*among the live-Taiga tests themselves* by memoizing one shared graph behind a `Lazy`. It does not
+account for `KoinGraphTest`, which builds a *second*, never-closed `koinApplication` in the same
+process. Gradle runs all `di` package test classes in one JVM by default, and JUnit's execution order
+across classes is not alphabetical or otherwise guaranteed — so which of the two `koinApplication`
+calls happens first varies between runs.
+
+- **If a live-Taiga test builds its graph first:** `KoinGraphTest` resolves `LoginViewModel` and
+  `SettingsUserScreenViewModel` — both of which touch the storage DataStore during construction — and
+  their constructor exceptions land in `KoinGraphTest`'s tolerated `constructionFailures` bucket
+  (only `NoDefinitionFoundException` fails that test). This is the case Task 2 of
+  [docs/testing/integration-tests-plan.md](testing/integration-tests-plan.md) documented and
+  confirmed passing.
+- **If `KoinGraphTest` runs first:** the reverse was never checked. `KoinGraphTest`'s own
+  `koinApplication` touches the DataStore first and is never closed; when `LiveTaigaSession`'s
+  `sharedSession` then tries to build *its* `koinApplication`, the `IllegalStateException` (multiple
+  DataStores active for the same file) surfaces inside `liveTaigaSessionOrSkip()`'s own
+  `assertTrue(result.isSuccess, ...)` — which is not tolerated, so every live-Taiga test in the run
+  fails with "login failed: ... multiple DataStores active".
+
+**Reproduced 2026-08-08** while adding `UsersApiIntegrationTest` (task 3 of the integration-tests
+plan): `./gradlew :composeApp:jvmTest --tests "com.grappim.taigamobile.di.*" --rerun` with the three
+`TAIGA_INTEGRATION_*` env vars set failed all three live-Taiga tests (`KoinGraphTest` ran first and
+passed); the identical env vars with `--tests` limited to just the three `*IntegrationTest` classes
+(excluding `KoinGraphTest`) passed all three. Not caused by the new test specifically — any of the
+three live-Taiga tests fails the same way whenever `KoinGraphTest` happens to go first.
+
+**Not fixed here** — out of scope for a single-module read-test task, and the fix (closing
+`KoinGraphTest`'s `Koin` instance in an `@AfterTest`, or making `LiveTaigaSession` detect and reuse
+an already-open graph) touches shared test infrastructure both files rely on. Revisit if a future
+integration-test session hits it again, or when task 3's sweep is otherwise complete: run the full
+`com.grappim.taigamobile.di.*` pattern a few times in a row to see how often the unfavorable order
+actually occurs before deciding whether it is worth fixing.

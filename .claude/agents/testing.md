@@ -515,11 +515,19 @@ instance.
   plain `jvmTest` class that no-ops without the env vars.
 - **`--rerun` is required to actually re-execute** after only changing an env var — Gradle doesn't
   see that as a task-input change and reports stale `UP-TO-DATE` otherwise.
-- **Running this package with the env vars set adds ~2 tolerated "resolved dependencies but threw
-  while constructing" entries to `KoinGraphTest`'s own output** (`LoginViewModel`,
-  `SettingsUserScreenViewModel`) — its own separate `koinApplication` collides with the still-open
-  shared session's `DataStore` the same way two integration tests would. `KoinGraphTest` only fails
-  on `NoDefinitionFoundException`, so this is noise, not a regression; don't mistake it for one.
+- **Running this package with the env vars set collides with `KoinGraphTest`'s own separate
+  `koinApplication`, and which side breaks depends on execution order (neither test controls JUnit's
+  class order).** If a live-Taiga test's `sharedSession` builds its graph first, `KoinGraphTest`
+  merely gets ~2 extra tolerated "resolved dependencies but threw while constructing" entries
+  (`LoginViewModel`, `SettingsUserScreenViewModel`) — it only fails on `NoDefinitionFoundException`,
+  so that's noise. **If `KoinGraphTest` runs first instead, every live-Taiga test in the run fails**
+  with "login failed: ... multiple DataStores active" — `KoinGraphTest` never closes its `Koin`
+  instance, so the shared session's own `koinApplication` collides with it and `liveTaigaSessionOrSkip()`
+  does not tolerate that failure. Neither test closes its `Koin`, and nothing here fixes the
+  underlying collision — see [revisit #24](../../docs/revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently).
+  **If a live-Taiga test fails this way while writing/running a new one, re-run with `--tests`
+  scoped to just the `*IntegrationTest` classes (excluding `KoinGraphTest`) to confirm it isn't the
+  new test's own fault** before debugging further.
 - Full background: [docs/issues/2026-08-08-integration-tests-live-taiga.md](../../docs/issues/2026-08-08-integration-tests-live-taiga.md),
   [docs/testing/integration-tests-plan.md](../../docs/testing/integration-tests-plan.md) (task list;
   task 2's result note has the `DataStore` collision write-up in full).
