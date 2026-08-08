@@ -994,3 +994,26 @@ confirmed pre-existing (not caused by #25's change) via a `git stash -u` re-run 
 rules out real I/O, the next step would be checking whether `WikiPageViewModel` (or something
 `ViewModel`-base-class-level, e.g. `viewModelScope`'s own dispatcher wiring) uses a scope not tied to
 `Dispatchers.Main`, unlike the DataStore-scope mismatch #25 turned out to be.
+
+## 27. `ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky under a full `jvmTest` run
+
+**Where:** `uikit/src/jvmTest/kotlin/com/grappim/taigamobile/uikit/widgets/text/ExpandableMarkdownTextTest.kt:29-46`.
+
+**Symptom:** `androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after
+1000 ms` on the `waitUntil { onAllNodesWithText("Show more")... }` call at line 40, which the test's
+own comment already flags as timing-sensitive (`onSizeChanged`'s layout update landing a frame after
+initial composition).
+
+**Different mechanism from [#25](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
+and [#26](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)**
+— those are coroutine-dispatcher races in ViewModel tests; this is a Skiko `ComposeUiTest` real-clock
+wait racing the Compose layout pass under a loaded multi-module `jvmTest` run. `runComposeUiTest`'s
+`waitUntil` has a real (not virtual) 1000ms default timeout, which a busy CI/dev machine running many
+modules' tests concurrently can exceed even though the condition is eventually satisfied.
+
+**Observed 2026-08-08** as a single failure in one `./gradlew jvmTest --rerun` (composeApp's
+`FiltersApiIntegrationTest` session); passed reliably run alone
+(`./gradlew :uikit:jvmTest --tests "*ExpandableMarkdownTextTest*" --rerun`) and a subsequent full
+`./gradlew jvmTest --rerun` was green. Not investigated further, not fixed — noted in passing while
+verifying an unrelated change. If it recurs, the fix is likely a longer explicit timeout on that one
+`waitUntil` call, not a dispatcher change (there is no coroutine-test scope here to fix).

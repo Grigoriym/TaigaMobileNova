@@ -33,7 +33,7 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 7 remaining, see Task 3 — ⬅ NEXT |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 5 remaining, see Task 3 — ⬅ NEXT |
 | 4 | Write round-trip pilot (create + clean up) | S–M | todo |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
@@ -123,7 +123,7 @@ repeatable-task shape as the closed improvement plan's task 9a (missed-branch sw
 (Compose UI widget sweep): pick the next module in the list, write one real read round-trip against
 it, land it, move to the next session.
 
-**Done (3/12):**
+**Done (5/12):**
 
 | Module | Test | Notes |
 |---|---|---|
@@ -131,6 +131,7 @@ it, land it, move to the next session.
 | `UserStoriesApi` | `UserStoriesApiIntegrationTest` — `getUserStories(GetUserStoriesParams(project = 5))` | 2026-08-08. Project 5 confirmed to have ~19 user stories; asserts the list parses, not its content. |
 | `TasksApi` | `TasksApiIntegrationTest` — `getTasks(project = 5)` | 2026-08-08. Confirmed project 5 has real tasks (e.g. task id 1, ref 31, "Set up authentication middleware") via `taiga-mcp`; asserts the list parses, not its content. |
 | `SprintApi` | `SprintApiIntegrationTest` — `getSprints(project = 5, isClosed = false)` | 2026-08-08. Confirmed project 5 has real sprints/milestones (4/5/6, "Sprint 1/2/3"); asserts the list parses, not its content. |
+| `FiltersApi` | `FiltersApiIntegrationTest` — `getCommonTaskFiltersData(taskPath = "userstories", project = 5)` | 2026-08-08. Single-method interface, no fixture id needed beyond project 5; asserts the response parses, not its content. |
 
 **Corrected — these two have no read method at all (discovered 2026-08-08 while scoping this
 task):**
@@ -140,7 +141,7 @@ task):**
 | `EpicsApi` | write-only: `linkToEpic`/`unlinkFromEpic` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "epics", project = ...)` |
 | `IssuesApi` | write-only: `createIssue` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "issues", project = ...)` |
 
-**Remaining candidates (7, order not fixed — pick whichever has the most obvious real data in the
+**Remaining candidates (5, order not fixed — pick whichever has the most obvious real data in the
 local instance when you start)**:
 
 | Module | Leading call | Notes |
@@ -150,7 +151,6 @@ local instance when you start)**:
 | `ProjectValuesApi` | `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | statuses confirmed to exist on project 5 |
 | `WorkItemApi` | `getWorkItems(taskPath = "epics", project = 5)` (or `"issues"`) | this is where Epics/Issues reads actually live — see the correction above; project 5 has 10 confirmed epics |
 | `HistoryApi` | `getCommonTaskComments(singularTaskPath, id)` | needs a picked entity id (any of project 5's confirmed user stories) — otherwise no fixture needed |
-| `FiltersApi` | `getCommonTaskFiltersData(taskPath = "userstories", project = 5)` | single-method interface, no fixture id needed |
 
 **Before each module's task: check what data actually exists in the local instance** (via
 `taiga-mcp`'s `taiga_request`, cheaper than guessing) rather than assuming a project/epic/story
@@ -221,6 +221,23 @@ user stories, tasks, sprints) pass together. Also verified clean skip with no en
 `./gradlew jvmTest --rerun` green (no flakes reproduced this run), and `ktlintCheck` green. No new
 shared helper needed — reused `liveTaigaSessionOrSkip()` unchanged. 7/12 candidates remain — next
 session picks any row from the table above.
+
+**Result (2026-08-08, session 5):** `FiltersApiIntegrationTest` added —
+`getCommonTaskFiltersData(taskPath = "userstories", project = 5)`, asserts the returned DTO is
+non-null (parsed). Picked over `SwimlanesApi` because its return type isn't a `List<T>` — a
+non-collection return is a slightly stronger round-trip check. Login credentials for
+`TAIGA_INTEGRATION_USERNAME`/`_PASSWORD` (admin/admin, the seeded superuser from
+`docs/local-info.md`) confirmed with gregory since no prior session had recorded which seeded
+account to use. Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all seven integration tests (login, projects,
+users, user stories, tasks, sprints, filters) pass together. Full `./gradlew jvmTest --rerun` (no
+env vars) hit one failure unrelated to this change: `uikit:jvmTest`'s
+`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` (a `ComposeTimeoutException`
+waiting on a Skiko test clock) — confirmed flaky by re-running that single test in isolation, where
+it passed; not logged as a new revisit since `uikit`'s Compose UI test flakiness is a different
+mechanism from the `:koverVerify`/DataStore issues already tracked and this session made no change
+in that module. A subsequent full `./gradlew jvmTest --rerun` came back green. `ktlintCheck` green.
+5/12 candidates remain — next session picks any row from the table above.
 
 ---
 
