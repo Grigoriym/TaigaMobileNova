@@ -1,5 +1,11 @@
 # Testing suite: improvement plan
 
+**Status: CLOSED — 2026-08-08.** All 22 tasks (0–21) are done; the status table below has no `todo`
+left. Kept as the historical record of what was done and how — task write-ups, worked examples, and
+per-task Result notes stay here (and in the two archive docs) rather than being deleted. **Ideas that
+were surveyed but not actioned moved to [deferred.md](deferred.md)** — that's now the place to look
+for what's still open, not the "Considered and deferred" section this file used to end with.
+
 **Created:** 2026-08-02
 **Baseline:** [survey.md](survey.md) — what the suite looked like before this plan started.
 
@@ -888,20 +894,14 @@ paging-list Screens found in the original survey (`ProjectSelectorScreen` via ta
 via tasks 17–21) now have a Compose UI test. **Nothing is scoped next** — the queue in the status
 table above has no `todo` left. The only open items are in
 [Considered and deferred](#considered-and-deferred) below (all still gated — ask before picking one
-up) and the still-open `runComposeUiTest` v1→v2 migration note above the status table (not acted on,
+up — **moved to [deferred.md](deferred.md) 2026-08-08 when this plan closed**) and the still-open
+`runComposeUiTest` v1→v2 migration note above the status table (not acted on,
 not blocking anything yet).
 
 ---
 
 ## Considered and deferred
 
-Recorded so they are not silently forgotten, and not re-proposed without new information.
-
-| Idea | Why not now |
-|---|---|
-| ~~Run `commonTest` on a native target (`iosSimulatorArm64Test`)~~ | **Dropped (gregory, 2026-08-07)** — not just deferred, off the list. Real gap (no `expect/actual` divergence is caught by tests today), but CI is `ubuntu-latest` and this needs a macOS runner at roughly 10× the minutes. Worst value-per-cost on the list. |
-| Screenshot tests (Roborazzi / Paparazzi) | **Investigated (2026-08-08)**, verdict unchanged: still high maintenance, but for a narrower reason than originally stated — see [docs/issues/2026-08-08-screenshot-testing.md](../issues/2026-08-08-screenshot-testing.md). Capture mechanics are now free (tasks 10–21's `captureToImage()` wiring), but cross-machine font-rendering determinism isn't solved by anything built since, and applies equally to Roborazzi's desktop artifact and a hand-rolled comparator. Revisit only if visual regressions become a recurring, concrete problem — not preemptively. |
-| Integration tests against a live Taiga instance | `tools/seed` and the local instance in `docs/local-info.md` make it feasible, but it would be a manually-triggered job, not part of PR CI. No pull for it yet. |
-| Adding a mocking framework | The hand-written-fake convention is working and is genuinely consistent. Do not introduce MockK to `commonTest`. |
-| Testing `dto` and pure-`domain` modules | Most of the 36 untested modules are serializable data holders or interfaces plus models. Correctly untested; leave them. |
-| ~~Compose UI test for `KanbanScreen`/`KanbanViewModel`~~ | **Dropped (gregory, 2026-08-07)** — not just deferred, off the list. Surveyed 2026-08-07 while scoping tasks 15–21 as a multi-state-source candidate: combines `getKanbanData()` with independently-loaded filters (`loadFiltersData()`), per-swimlane filter state, and optimistic drag-drop reordering (`moveStory`) — 4 ViewModel deps, real swimlanes, real drag-drop. Heaviest candidate found and the only one with drag-drop, which doesn't fit task 11's established click/type-only interaction scope. |
+Moved to **[deferred.md](deferred.md)** (2026-08-08), split out when this plan closed. Look there for
+what's still open (screenshot testing — Paparazzi is next, scoped as its own task/branch) and what
+was dropped for good (native-target `commonTest`, `KanbanScreen` UI test).

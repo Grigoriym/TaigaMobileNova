@@ -207,8 +207,10 @@ For writing new KMP tests, creating fakes, or understanding test patterns, use t
   `:core:domain:commonMain` looks circular and Gradle resolves it fine — the test and main source
   sets are separate compilations. Verified for `core/domain` (2026-08-05); no build-file change was
   needed to add its first test.
-- `docs/testing/` — [survey.md](docs/testing/survey.md) (what exists) and
-  [improvement-plan.md](docs/testing/improvement-plan.md) (sequenced tasks, one per session)
+- `docs/testing/` — [survey.md](docs/testing/survey.md) (what exists),
+  [improvement-plan.md](docs/testing/improvement-plan.md) (closed 2026-08-08; historical record of
+  tasks 0–21) and [deferred.md](docs/testing/deferred.md) (ideas surveyed but not actioned — check
+  here before proposing a new testing task)
 
 **CI runs `./gradlew jvmTest`, then `koverXmlReport`, then `:koverVerify`.** The `jvmTest` step exists because
 `koverXmlReport` only runs tests for modules aggregated in the root `build.gradle.kts` `kover {}`
