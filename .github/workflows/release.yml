@@ -53,13 +53,16 @@ jobs:
               run: |
                   ./gradlew :androidApp:assembleGplayRelease :androidApp:bundleGplayRelease -PgplayBuild
 
-            - name: Install fakeroot
+            - name: Install fakeroot and rpm
               run: |
                   sudo apt-get update
-                  sudo apt-get install -y fakeroot
+                  sudo apt-get install -y fakeroot rpm
 
             - name: Package Linux deb
               run: ./gradlew :composeApp:packageDeb
+
+            - name: Package Linux rpm
+              run: ./gradlew :composeApp:packageRpm
 
             - name: Upload Release Build To Artifacts
               uses: actions/upload-artifact@v7
@@ -69,6 +72,7 @@ jobs:
                       androidApp/build/outputs/apk/*
                       androidApp/build/outputs/bundle/*
                       composeApp/build/compose/binaries/main/deb/*.deb
+                      composeApp/build/compose/binaries/main/rpm/*.rpm
 
             - name: Create GitHub release
               uses: softprops/action-gh-release@v3
@@ -84,3 +88,4 @@ jobs:
                       androidApp/build/outputs/apk/gplay/release/app-gplay-release.apk
                       androidApp/build/outputs/bundle/gplayRelease/androidApp-gplay-release.aab
                       composeApp/build/compose/binaries/main/deb/*.deb
+                      composeApp/build/compose/binaries/main/rpm/*.rpm

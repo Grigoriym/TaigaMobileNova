@@ -64,10 +64,13 @@ jobs:
       - name: Setup Android Environment
         uses: ./.github/actions/android-setup-composite-action
 
-      - name: Install fakeroot
+      - name: Install fakeroot and rpm
         run: |
             sudo apt-get update
-            sudo apt-get install -y fakeroot
+            sudo apt-get install -y fakeroot rpm
 
       - name: Package Linux deb
         run: ./gradlew :composeApp:packageDeb
+
+      - name: Package Linux rpm
+        run: ./gradlew :composeApp:packageRpm
