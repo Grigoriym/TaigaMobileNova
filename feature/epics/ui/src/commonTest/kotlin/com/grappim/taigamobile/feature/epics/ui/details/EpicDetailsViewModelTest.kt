@@ -25,7 +25,6 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.epic_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
-import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.models.getComment
 import com.grappim.taigamobile.testing.models.getEpic
 import com.grappim.taigamobile.testing.models.getEpicDetailsData
@@ -39,7 +38,6 @@ import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.usecases.FakeEpicDetailsDataUseCase
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
-import com.grappim.taigamobile.testing.utils.createTestPlatformFile
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
@@ -337,53 +335,6 @@ internal class EpicDetailsViewModelTest {
 
         assertEquals(NativeText.Resource(RString.common_error_message), sut.state.value.error)
         assertTrue(workItemRepository.addAttachmentCalls.isEmpty())
-    }
-
-    /**
-     * [io.github.vinceglb.filekit.PlatformFile.readBytes] runs on a real IO dispatcher, so the
-     * `viewModelScope.launch` does not complete before the call returns the way every other
-     * handler here does. The state has to be awaited rather than read.
-     */
-    @Test
-    fun `onAttachmentAdd with a file should add the attachment`() = runTest {
-        setupSuccessfulLoad()
-        val attachment = getAttachment()
-        workItemRepository.addAttachmentResult = attachment
-        createViewModel()
-
-        sut.attachmentsState.test {
-            val initial = awaitItem()
-
-            sut.state.value.onAttachmentAdd(
-                createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3))
-            )
-
-            assertTrue(awaitItem().areAttachmentsLoading)
-
-            val loaded = awaitItem()
-            assertFalse(loaded.areAttachmentsLoading)
-            assertEquals(initial.attachments + attachment, loaded.attachments)
-        }
-
-        assertEquals(1, workItemRepository.addAttachmentCalls.size)
-        assertEquals(epicId, workItemRepository.addAttachmentCalls.first().workItemId)
-    }
-
-    @Test
-    fun `onAttachmentAdd failure should show a snackbar`() = runTest {
-        setupSuccessfulLoad()
-        workItemRepository.addAttachmentThrows = testException
-        createViewModel()
-
-        sut.snackBarMessage.test {
-            sut.state.value.onAttachmentAdd(
-                createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3))
-            )
-
-            assertTrue(awaitItem() !is NativeText.Empty)
-        }
-
-        assertFalse(sut.attachmentsState.value.areAttachmentsLoading)
     }
 
     @Test

@@ -9,6 +9,9 @@ import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.StatusFilters
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
@@ -21,6 +24,14 @@ import kotlin.test.assertEquals
  * [FiltersStorageImpl] publishes its four sections as `StateFlow`s eagerly shared on a scope built
  * from `Dispatchers.Main`, and its `change*` methods are fire-and-forget `launch`es on that same
  * scope — so [MainDispatcherRule] is what makes the writes observable at all here.
+ *
+ * The test [dataStore] is built with that same `Dispatchers.Main` scope (see [createTestDataStore]),
+ * not the real `Dispatchers.IO` scope it would otherwise default to. Without this, the DataStore's
+ * internal actor runs on the real IO thread pool, decoupled from [mainDispatcherRule]'s dispatcher,
+ * and `awaitItem()` below has to real-wall-clock-wait for it — which was flaky under a full
+ * multi-module `jvmTest` run (docs/revisit.md #25). Sharing the dispatcher keeps the whole
+ * write -> DataStore actor -> flow emission chain on one deterministic, eagerly-executing test
+ * dispatcher instead.
  *
  * The filters written by these tests must differ from [FiltersData]'s own default, which is why
  * they are built locally instead of with `:testing`'s `getFiltersData()`: that factory returns a
@@ -37,7 +48,10 @@ class FiltersStorageImplTest {
     @BeforeTest
     fun setup() {
         mainDispatcherRule.setup()
-        dataStore = createTestDataStore("filters_storage_test")
+        dataStore = createTestDataStore(
+            "filters_storage_test",
+            scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+        )
     }
 
     @AfterTest

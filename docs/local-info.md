@@ -1,6 +1,9 @@
 This info for my local setup
 
-https://192.168.0.241:8443
+http://localhost:9000/
+
+The `taiga-mcp` MCP server (`taiga_login` / `taiga_request` / `taiga_auth_status`) is already
+configured to reach this instance — use it instead of curl for ad hoc API checks.
 
 setup:
     https://community.taiga.io/t/taiga-30min-setup/170/1

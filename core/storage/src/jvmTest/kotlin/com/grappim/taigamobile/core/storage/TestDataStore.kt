@@ -3,6 +3,9 @@ package com.grappim.taigamobile.core.storage
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import okio.Path.Companion.toPath
 import java.io.File
 
@@ -17,9 +20,18 @@ import java.io.File
  * that `PreferenceDataStoreFactory.createWithPath` needs a filesystem path, and a hand-written
  * in-memory `DataStore` would test the fake instead of the serialization/read-modify-write
  * behaviour these classes actually depend on.
+ *
+ * [scope] defaults to the same real `Dispatchers.IO`-backed scope `createWithPath` itself would
+ * use — override it (e.g. to `Dispatchers.Main` under [com.grappim.taigamobile.testing.MainDispatcherRule])
+ * when the storage class under test also shares a scope with its `StateFlow`s, so the DataStore's
+ * internal actor and the class's own writes run on the same deterministic dispatcher instead of
+ * racing against the real IO thread pool. See `FiltersStorageImplTest`.
  */
-internal fun createTestDataStore(name: String): DataStore<Preferences> {
+internal fun createTestDataStore(
+    name: String,
+    scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob())
+): DataStore<Preferences> {
     val file = File.createTempFile(name, ".preferences_pb")
     file.deleteOnExit()
-    return PreferenceDataStoreFactory.createWithPath(produceFile = { file.absolutePath.toPath() })
+    return PreferenceDataStoreFactory.createWithPath(scope = scope, produceFile = { file.absolutePath.toPath() })
 }

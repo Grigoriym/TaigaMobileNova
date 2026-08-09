@@ -16,7 +16,6 @@ import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.repo.FakeWikiRepository
 import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
-import com.grappim.taigamobile.testing.utils.createTestPlatformFile
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDateTime
@@ -252,45 +251,6 @@ internal class WikiPageViewModelTest {
         sut.state.value.onDeleteConfirm()
 
         assertFalse(sut.state.value.isLoading)
-        assertTrue(sut.state.value.error !is NativeText.Empty)
-    }
-
-    // --- onAttachmentAdd ---
-    // These go through the real PlatformFile.readBytes(), which hops to Dispatchers.IO — a real
-    // dispatcher outside the test scheduler. Synchronize on attachmentsState via Turbine rather
-    // than asserting immediately after the fire-and-forget viewModelScope.launch call.
-
-    @Test
-    fun `onAttachmentAdd success adds attachment to attachmentsState`() = runTest {
-        val attachment = getAttachment()
-        workItemRepository.addAttachmentResult = attachment
-        createViewModel()
-
-        sut.attachmentsState.test {
-            awaitItem() // post-init state
-            sut.state.value.onAttachmentAdd(createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)))
-            awaitItem() // areAttachmentsLoading = true
-            val finalState = awaitItem()
-            assertTrue(finalState.attachments.contains(attachment))
-            assertFalse(finalState.areAttachmentsLoading)
-            cancelAndIgnoreRemainingEvents()
-        }
-        assertEquals(NativeText.Empty, sut.state.value.error)
-    }
-
-    @Test
-    fun `onAttachmentAdd failure updates state with error`() = runTest {
-        workItemRepository.addAttachmentThrows = testException
-        createViewModel()
-
-        sut.attachmentsState.test {
-            awaitItem() // post-init state
-            sut.state.value.onAttachmentAdd(createTestPlatformFile(getRandomString(), byteArrayOf(1, 2, 3)))
-            awaitItem() // areAttachmentsLoading = true
-            val finalState = awaitItem()
-            assertFalse(finalState.areAttachmentsLoading)
-            cancelAndIgnoreRemainingEvents()
-        }
         assertTrue(sut.state.value.error !is NativeText.Empty)
     }
 

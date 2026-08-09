@@ -484,6 +484,66 @@ just do not expect them in the report, and do not conclude coverage regressed.
 
 ---
 
+### Integration test against a live server (real API, no fakes)
+
+Not the default — every other pattern in this file uses `Fake*`. This is for the rare case of
+testing the real network path end to end. All of these live in
+`composeApp/src/jvmTest/kotlin/com/grappim/taigamobile/di/`. `LoginIntegrationTest` was the first
+and remains the worked example for the login step itself: builds the real Koin graph
+(`koinApplication<KoinApp> { printLogger(Level.NONE) }.koin`, same as `KoinGraphTest`), resolves the
+real `AuthRepository` + `TrustedCertStorage`, and calls `auth()` against gregory's local Taiga
+instance.
+
+- **Use the shared `liveTaigaSessionOrSkip(): Koin?` helper (`LiveTaigaSession.kt`) — don't re-derive
+  the login/cert-trust flow per test.** It does the env-var gate (`TAIGA_INTEGRATION_URL`/
+  `_USERNAME`/`_PASSWORD`), builds the graph, logs in with the same trust-on-first-use retry, and
+  returns the ready `Koin` instance (or `null` if the env vars are unset — return immediately from
+  the `@Test` in that case). `ProjectsApiIntegrationTest` is the worked example of a caller: resolve
+  whatever `XApi`/repository the test needs from the returned `Koin`, call it inside `runBlocking`,
+  assert the result parses (not particular content — the seeded local instance's data isn't
+  something this repo controls or should assert on).
+- **The helper memoizes the graph+login behind `private val sharedSession: Lazy<Koin>` — every
+  integration test in one test JVM run shares the *same* authenticated `Koin` instance.** This is
+  load-bearing, not an optimization: the JVM `DataStore` backends (`StorageModule.jvm.kt`) read/write
+  fixed files under `java.io.tmpdir`, so a second `koinApplication<KoinApp>` built in the same
+  process throws `IllegalStateException: There are multiple DataStores active for the same file` the
+  moment it touches one. Do not build a fresh `koinApplication` per test in this package — call the
+  shared helper instead.
+- **Gate with a runtime env-var check, not a separate Gradle source set**: `System.getenv("X") ?:
+  return` (already inside the helper). The test is JVM-only regardless (see CLAUDE.md Testing —
+  Android and JVM/Desktop share the OkHttp engine), so a dedicated source set buys nothing over a
+  plain `jvmTest` class that no-ops without the env vars.
+- **`--rerun` is required to actually re-execute** after only changing an env var — Gradle doesn't
+  see that as a task-input change and reports stale `UP-TO-DATE` otherwise.
+- **Running this package with the env vars set collides with `KoinGraphTest`'s own separate
+  `koinApplication`, and which side breaks depends on execution order (neither test controls JUnit's
+  class order).** If a live-Taiga test's `sharedSession` builds its graph first, `KoinGraphTest`
+  merely gets ~2 extra tolerated "resolved dependencies but threw while constructing" entries
+  (`LoginViewModel`, `SettingsUserScreenViewModel`) — it only fails on `NoDefinitionFoundException`,
+  so that's noise. **If `KoinGraphTest` runs first instead, every live-Taiga test in the run fails**
+  with "login failed: ... multiple DataStores active" — `KoinGraphTest` never closes its `Koin`
+  instance, so the shared session's own `koinApplication` collides with it and `liveTaigaSessionOrSkip()`
+  does not tolerate that failure. Neither test closes its `Koin`, and nothing here fixes the
+  underlying collision — see [revisit #24](../../docs/revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently).
+  **If a live-Taiga test fails this way while writing/running a new one, re-run with `--tests`
+  scoped to just the `*IntegrationTest` classes (excluding `KoinGraphTest`) to confirm it isn't the
+  new test's own fault** before debugging further.
+- Full background: [docs/issues/2026-08-08-integration-tests-live-taiga.md](../../docs/issues/2026-08-08-integration-tests-live-taiga.md),
+  [docs/testing/integration-tests-plan.md](../../docs/testing/integration-tests-plan.md) (task list;
+  task 2's result note has the `DataStore` collision write-up in full).
+- **Write round-trip pattern (create + cleanup): `ProjectsApiTagIntegrationTest` is the worked
+  example.** Pick an endpoint pair with a natural delete counterpart, randomize the created value's
+  name (`getRandomString()` from `:testing`) so repeat runs can't collide with each other or with
+  real seeded data, and verify state through a read call rather than trusting "didn't throw" —
+  `getProjectTagsColors` before/after is what actually proves `createTag`/`deleteTag` round-tripped.
+  **Cleanup must survive a failed assertion, not just the happy path**: track success with a local
+  flag (e.g. `var created = false`, set `true` right after the create call returns) and delete in a
+  `finally` gated on that flag. Don't trust this without checking it — temporarily force the
+  post-create assertion to fail, rerun, and confirm via the live server (or `taiga-mcp`) that the
+  created value is gone anyway; then revert the forced failure before landing.
+
+---
+
 ## Paging Fakes (`Flow<PagingData<T>>`)
 
 Some ViewModels call paging methods **at construction time** (property initializers, not inside `init {}`). If the fake throws `TODO()` or `error()` for these, the ViewModel will crash before the test even starts.

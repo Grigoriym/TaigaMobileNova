@@ -17,6 +17,47 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
+| 24 | `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently | S–M | [testing agent, "Integration test against a live server"](../.claude/agents/testing.md) |
+| 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
+
+<details>
+<summary><strong>Full index (all 28 entries, resolved included)</strong> — this file is long because
+resolved entries stay for their reasoning, not their outcome (see above), and ~20 links elsewhere in
+the repo — including a frozen archive doc — point at specific entries by anchor, so they aren't
+moved out. Expand for a one-line-per-entry jump table instead of scrolling.</summary>
+
+| # | Item | Status |
+|---|---|---|
+| 1 | [ViewModels doing I/O in `init`](#1-viewmodels-doing-io-in-init) | 🟡 open |
+| 2 | [Non-ViewModel beans may leak application-scoped coroutines](#2-non-viewmodel-beans-may-leak-application-scoped-coroutines) | ✅ resolved 2026-08-08 |
+| 3 | [Wiki mapper tests duplicate the new shared DTO factories](#3-wiki-mapper-tests-duplicate-the-new-shared-dto-factories) | ✅ resolved 2026-08-07 |
+| 4 | [Dead `koin-test` block in `:testing` `androidMain`](#4-dead-koin-test-block-in-testing-androidmain) | ✅ resolved 2026-08-07 |
+| 5 | [`tools/seed` and `tools/utils` tests would not run in CI](#5-toolsseed-and-toolsutils-tests-would-not-run-in-ci) | ✅ resolved 2026-08-08 |
+| 6 | [`GetKanbanDataUseCase` reads the current project three times](#6-getkanbandatausecase-reads-the-current-project-three-times) | ✅ resolved 2026-08-07 |
+| 7 | [Date formatters cache the locale for the process lifetime](#7-date-formatters-cache-the-locale-for-the-process-lifetime) | ✅ resolved 2026-08-07 |
+| 8 | [Kover's excludes are applied partially, and differently by `koverXmlReport` and `koverVerify`](#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify) | ✅ resolved 2026-08-07 |
+| 9 | [`WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT](#9-wikirepositoryimpltests-failure-tests-can-pass-without-reaching-the-sut) | ✅ resolved 2026-08-07 |
+| 10 | [The `Plugin` and `Module` exclusion patterns hide real logic in `core/api`](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi) | ✅ resolved 2026-08-08 |
+| 11 | [`TokenRefreshPlugin`'s `MAX_RETRIES` guard is unreachable](#11-tokenrefreshplugins-max_retries-guard-is-unreachable) | ✅ resolved 2026-08-07 |
+| 12 | [Two small dead spots in `core/api`](#12-two-small-dead-spots-in-coreapi) | ✅ resolved 2026-08-07 |
+| 13 | [`urlDecode` in `utils/ui` is dead code with three actuals](#13-urldecode-in-utilsui-is-dead-code-with-three-actuals) | ✅ resolved 2026-08-07 |
+| 14 | [The Kover coverage floor is far below actual](#14-the-kover-coverage-floor-is-far-below-actual-1722-points-in-2026-08-03-2940-by-2026-08-05) | ✅ resolved 2026-08-07 |
+| 15 | [Saving a non-editable custom field leaks its id into `editingItemIds`](#15-saving-a-non-editable-custom-field-leaks-its-id-into-editingitemids) | ✅ resolved 2026-08-07 |
+| 16 | [Every `logcat` message lambda is a permanently-uncovered line](#16-every-logcat-message-lambda-is-a-permanently-uncovered-line) | ✅ resolved 2026-08-08 |
+| 17 | [`StringPreference` and `LongPreferences` in `core/storage` are dead code](#17-stringpreference-and-longpreferences-in-corestorage-are-dead-code) | ✅ resolved (partial) 2026-08-07 |
+| 18 | [`currentUserStory` throws from `viewModelScope` when the initial load failed](#18-currentuserstory-throws-from-viewmodelscope-when-the-initial-load-failed) | ✅ resolved 2026-08-08 |
+| 19 | [`TeamMemberUpdate.Clear` is a dead `when` arm in four ViewModels](#19-teammemberupdateclear-is-a-dead-when-arm-in-four-viewmodels) | ✅ resolved 2026-08-07 |
+| 20 | [`mapResult` is dead code, and its "unreachable" state is reachable](#20-mapresult-is-dead-code-and-its-unreachable-state-is-reachable) | ✅ resolved 2026-08-07 |
+| 21 | [`SprintPagingSource` is dead code, and it is invisible to Kover](#21-sprintpagingsource-is-dead-code-and-it-is-invisible-to-kover) | ✅ resolved 2026-08-07 |
+| 22 | [`EpicShortInfoDTO` is built by hand in three test files; no `:testing` factory exists](#22-epicshortinfodto-is-built-by-hand-in-three-test-files-no-testing-factory-exists) | ✅ resolved 2026-08-07 |
+| 23 | [The coverage report counts Android-variant classes no test can reach](#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach) | ✅ resolved 2026-08-08 |
+| 24 | [`KoinGraphTest`/live-Taiga integration tests collide on the JVM `DataStore` file](#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently) | 🟡 open |
+| 25 | [`FiltersStorageImplTest.resetFilters clears every section` is flaky](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
+| 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
+| 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
+| 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
+
+</details>
 
 ---
 
@@ -887,3 +928,209 @@ entries in `docs/testing/kover-rank.py`.
   [#10](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi) already warns about,
   for a residual on the order of single-digit lines per class. Left alone; re-open only if the residual
   grows enough to matter. `./gradlew jvmTest`, `ktlintCheck` and `:koverVerify` all green.
+
+## 24. `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently
+
+**Where:** `composeApp/src/jvmTest/kotlin/com/grappim/taigamobile/di/KoinGraphTest.kt` (line 95) and
+`LiveTaigaSession.kt` (line 43) — both call `koinApplication<KoinApp> { ... }.koin` in the same test
+JVM process, and neither closes the `Koin` instance it builds.
+
+**Mechanism:** `StorageModule.jvm.kt`'s DataStores read/write fixed paths under `java.io.tmpdir`
+(documented in CLAUDE.md's Testing section: "only one `koinApplication<KoinApp>` per test JVM process
+may touch the JVM `DataStore` files"). `LiveTaigaSession.kt`'s `sharedSession` works around this
+*among the live-Taiga tests themselves* by memoizing one shared graph behind a `Lazy`. It does not
+account for `KoinGraphTest`, which builds a *second*, never-closed `koinApplication` in the same
+process. Gradle runs all `di` package test classes in one JVM by default, and JUnit's execution order
+across classes is not alphabetical or otherwise guaranteed — so which of the two `koinApplication`
+calls happens first varies between runs.
+
+- **If a live-Taiga test builds its graph first:** `KoinGraphTest` resolves `LoginViewModel` and
+  `SettingsUserScreenViewModel` — both of which touch the storage DataStore during construction — and
+  their constructor exceptions land in `KoinGraphTest`'s tolerated `constructionFailures` bucket
+  (only `NoDefinitionFoundException` fails that test). This is the case Task 2 of
+  [docs/testing/integration-tests-plan.md](testing/integration-tests-plan.md) documented and
+  confirmed passing.
+- **If `KoinGraphTest` runs first:** the reverse was never checked. `KoinGraphTest`'s own
+  `koinApplication` touches the DataStore first and is never closed; when `LiveTaigaSession`'s
+  `sharedSession` then tries to build *its* `koinApplication`, the `IllegalStateException` (multiple
+  DataStores active for the same file) surfaces inside `liveTaigaSessionOrSkip()`'s own
+  `assertTrue(result.isSuccess, ...)` — which is not tolerated, so every live-Taiga test in the run
+  fails with "login failed: ... multiple DataStores active".
+
+**Reproduced 2026-08-08** while adding `UsersApiIntegrationTest` (task 3 of the integration-tests
+plan): `./gradlew :composeApp:jvmTest --tests "com.grappim.taigamobile.di.*" --rerun` with the three
+`TAIGA_INTEGRATION_*` env vars set failed all three live-Taiga tests (`KoinGraphTest` ran first and
+passed); the identical env vars with `--tests` limited to just the three `*IntegrationTest` classes
+(excluding `KoinGraphTest`) passed all three. Not caused by the new test specifically — any of the
+three live-Taiga tests fails the same way whenever `KoinGraphTest` happens to go first.
+
+**Not fixed here** — out of scope for a single-module read-test task, and the fix (closing
+`KoinGraphTest`'s `Koin` instance in an `@AfterTest`, or making `LiveTaigaSession` detect and reuse
+an already-open graph) touches shared test infrastructure both files rely on. Revisit if a future
+integration-test session hits it again, or when task 3's sweep is otherwise complete: run the full
+`com.grappim.taigamobile.di.*` pattern a few times in a row to see how often the unfavorable order
+actually occurs before deciding whether it is worth fixing.
+
+**Still not fixed (re-verified 2026-08-09):** neither `KoinGraphTest.kt` nor `LiveTaigaSession.kt` has
+changed since this was written — grepped both for `.close()`, found none. Re-ran
+`./gradlew :composeApp:jvmTest --tests "com.grappim.taigamobile.di.*" --rerun` against the live local
+instance three times in a row: all three reproduced the favorable-order case exactly as described
+(`LoginViewModel`/`SettingsUserScreenViewModel` throw the "multiple DataStores active" exception
+during `KoinGraphTest`'s construction sweep, tolerated, `KoinGraphTest` passes). The unfavorable case
+was not re-triggered — with the current class set, `FiltersApiIntegrationTest` and
+`HistoryApiIntegrationTest` both sort alphabetically before `KoinGraphTest`, and Gradle's test
+execution in this environment ran in alphabetical order all three times, so the shared session is
+always built first here. That is incidental to the current file names, not a fix — nothing prevents a
+future test class (or a different execution order) from landing before `KoinGraphTest` and
+triggering the unfavorable path described above. Mechanism confirmed live; still unfixed.
+
+## 25. `FiltersStorageImplTest.resetFilters clears every section` is flaky under a full `jvmTest` run
+
+**Where:** `core/storage/src/jvmTest/kotlin/com/grappim/taigamobile/core/storage/FiltersStorageImplTest.kt:158`
+(the `resetFilters clears every section` test, line 165 is the `awaitItem()` that times out).
+
+**Symptom:** `app.cash.turbine.TurbineAssertionError: No value produced in 3s` — a Turbine
+`awaitItem()` on the filters flow times out waiting for the post-reset emission.
+
+**Reproduced 2026-08-08** while adding `TasksApiIntegrationTest` (task 3 of
+[docs/testing/integration-tests-plan.md](testing/integration-tests-plan.md)): `./gradlew jvmTest`
+failed on this test twice in a row, including on a clean `git stash -u` tree at the last committed
+commit (`e20a4119`) — so it is unrelated to the new test and pre-existing. Passes reliably when run
+in isolation (`./gradlew :core:storage:jvmTest --tests
+"com.grappim.taigamobile.core.storage.FiltersStorageImplTest"`), which points at timing/scheduling
+sensitivity specific to running inside the full multi-module `jvmTest` invocation rather than a bug
+in the test's assertions themselves.
+
+**Resolved (2026-08-08):** root cause was a dispatcher mismatch, not a race in `resetFilters` itself.
+`FiltersStorageImpl`'s own `scope` is built from `Dispatchers.Main` (overridden to
+`MainDispatcherRule`'s `UnconfinedTestDispatcher` in tests), but the test's `DataStore` was built by
+`createTestDataStore` with no explicit scope — `PreferenceDataStoreFactory.createWithPath` then
+defaults to a real `Dispatchers.IO`-backed `CoroutineScope`. So the DataStore's internal actor (the
+coroutine that actually performs the file write and republishes `dataStore.data`) ran on the real IO
+thread pool, decoupled from the test dispatcher, and Turbine's `awaitItem()` had to real-wall-clock-wait
+for it — which occasionally exceeded 3s once a full `jvmTest` run had many modules' test JVMs
+contending for that thread pool. `TrustedCertStorageImplTest` never hit this despite also using a real
+DataStore, because `TrustedCertStorageImpl` has no such internal scope — every write is a plain
+`suspend fun` the test directly awaits, so however long the real I/O takes, the test just suspends for
+it with no separate timeout in the mix.
+
+Fix: `createTestDataStore` (`TestDataStore.kt`) now takes an optional `scope` parameter (default
+unchanged — a real `Dispatchers.IO`-backed scope, so the other three callers are unaffected).
+`FiltersStorageImplTest.setup()` passes `CoroutineScope(Dispatchers.Main + SupervisorJob())` — the
+same dispatcher instance `MainDispatcherRule` installs — so the whole write -> DataStore actor -> flow
+emission chain runs on one deterministic, eagerly-executing test dispatcher instead of spanning into
+the real thread pool. Verified with 8 consecutive full `./gradlew jvmTest --rerun` runs: zero failures
+in `FiltersStorageImplTest` across all 8 (one run failed on an unrelated, separately pre-existing flake
+in `feature/wiki/ui`'s `WikiPageViewModelTest`, logged separately as [#26](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)).
+`ktlintCheck` green.
+
+## 26. `WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky under a full `jvmTest` run
+
+**RESOLVED 2026-08-08 — the flaky test was deleted, not fixed.** See below.
+
+**Where it was:** `feature/wiki/ui/src/commonTest/kotlin/com/grappim/taigamobile/feature/wiki/ui/page/details/WikiPageViewModelTest.kt:282-295`.
+
+**Symptom:** same shape as [#25](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
+was before its fix — `app.cash.turbine.TurbineAssertionError: No value produced in 3s` on one of the
+three sequential `awaitItem()` calls in the `sut.attachmentsState.test { ... }` block.
+
+**Root cause found 2026-08-08 (a session after the note below was written):** the earlier
+hypothesis ("no real I/O, whatever is stealing wall-clock time is unidentified") was wrong. The test
+calls `onAttachmentAdd(createTestPlatformFile(...))`, which goes through
+`WorkItemAttachmentsDelegateImpl.handleAddAttachment` → `file.readBytes()` —
+`io.github.vinceglb.filekit`'s JVM implementation, which is hardcoded to
+`withContext(Dispatchers.IO) { ... }` internally (confirmed by reading the library's own sources).
+That's a real background thread outside the `UnconfinedTestDispatcher` set up by
+`MainDispatcherRule`, racing Turbine's real-wall-clock timeout. Reproduced a failure even at a 15s
+Turbine timeout (5x the default) under a deliberately heavy 6-module-parallel local run, which ruled
+out "just raise the timeout" as a real fix — it only lowers the odds, it doesn't remove the race.
+The same shape exists in `UserStoryDetailsViewModelTest`, `TaskDetailsViewModelTest`,
+`EpicDetailsViewModelTest` and `IssueDetailsViewModelTest` (10 tests total across the 5 features that
+mix in `WorkItemAttachmentsDelegate`), though only the Wiki one had actually been observed flaking.
+
+**Fix considered and rejected:** threading a fakeable `readFileBytes` seam through
+`WorkItemAttachmentsDelegateImpl` and the 5 `@KoinViewModel` classes that construct it (verified safe
+with Koin via bytecode inspection — a defaulted, non-injectable constructor param is correctly
+skipped by the compiler plugin). Rejected on explicit direction: production code should not be
+shaped by test needs — if a path can't be tested deterministically without touching production code,
+remove the test rather than add a seam for it.
+
+**Resolution (2026-08-08):** deleted all 10 real-IO-racing tests (the two `onAttachmentAdd` tests in
+each of the 5 ViewModels' test files) along with their now-unused `createTestPlatformFile`/
+`getAttachment` imports. The behaviour they exercised — `handleAddAttachment`'s success/failure
+branches, including a real `file.readBytes()` call — remains covered deterministically by
+`WorkItemAttachmentsDelegateImplTest`, which calls the delegate directly under `runTest` with no
+`viewModelScope.launch` and no Turbine, so it never races real time. Each ViewModel still keeps its
+`onAttachmentAdd with a null file` test, which needs no real I/O. `:koverVerify` still passes after
+the removal (checked the same session). No production file was touched.
+
+## 27. `ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky under a full `jvmTest` run
+
+**Where:** `uikit/src/jvmTest/kotlin/com/grappim/taigamobile/uikit/widgets/text/ExpandableMarkdownTextTest.kt:29-46`.
+
+**Symptom:** `androidx.compose.ui.test.ComposeTimeoutException: Condition still not satisfied after
+1000 ms` on the `waitUntil { onAllNodesWithText("Show more")... }` call at line 40, which the test's
+own comment already flags as timing-sensitive (`onSizeChanged`'s layout update landing a frame after
+initial composition).
+
+**Different mechanism from [#25](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
+and [#26](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)**
+— those are coroutine-dispatcher races in ViewModel tests; this is a Skiko `ComposeUiTest` real-clock
+wait racing the Compose layout pass under a loaded multi-module `jvmTest` run. `runComposeUiTest`'s
+`waitUntil` has a real (not virtual) 1000ms default timeout, which a busy CI/dev machine running many
+modules' tests concurrently can exceed even though the condition is eventually satisfied.
+
+**Observed 2026-08-08** as a single failure in one `./gradlew jvmTest --rerun` (composeApp's
+`FiltersApiIntegrationTest` session); passed reliably run alone
+(`./gradlew :uikit:jvmTest --tests "*ExpandableMarkdownTextTest*" --rerun`) and a subsequent full
+`./gradlew jvmTest --rerun` was green. Not investigated further, not fixed — noted in passing while
+verifying an unrelated change. If it recurs, the fix is likely a longer explicit timeout on that one
+`waitUntil` call, not a dispatcher change (there is no coroutine-test scope here to fix).
+
+## 28. `CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc
+
+**What:** `CLAUDE.md` is 717 lines (checked 2026-08-09). The `## Testing` section alone is lines
+197–584 — 387 lines, over half the file — and almost all of that is the accumulated
+missed-branch/missed-line ranking heuristics from the closed coverage-sweep work (the `mb`/`cb`
+signature catalogue, the `kover-rank.py`/`kover-diff.py` usage notes, the `*_androidKt`/`logcat`/
+`onCleared`/generated-code unreachability catalogue). That material is reference documentation for
+*running a future coverage sweep*, not a day-to-day coding convention — it's read rarely, and its
+bulk pushes the genuinely load-bearing conventions (the `XApi` interface/impl split, the
+failure-path testing convention, the integration-test pattern, the `jvmTest`-vs-`src/test`
+distinction) further down the file than they should be.
+
+**Not fixed now:** out of scope for the integration-testing session that noticed it; splitting a
+717-line file correctly (deciding what's a "convention CLAUDE.md should keep" vs. "sweep-specific
+reference material") deserves its own focused pass, not a rushed edit bundled into an unrelated
+diff.
+
+**Suggested shape for the split** (not binding — re-evaluate when actually doing this):
+- Move the Kover ranking/heuristics catalogue (roughly from "Qualify the task as `:koverVerify`"
+  through the end of the `## Testing` section, i.e. most of lines ~300–584) into a new doc, e.g.
+  `docs/testing/kover-coverage-heuristics.md`, and leave a one-line pointer in `CLAUDE.md`'s Testing
+  section ("For missed-branch/missed-line ranking heuristics when running a coverage sweep, see
+  [...]").
+- Keep in `CLAUDE.md` itself: the `jvmTest`/`src/test` rule, the coverage-floor-is-a-ratchet rule,
+  the `XApi` interface/impl convention, the failure-path testing convention, the `expect`/`actual`
+  and integration-test-against-a-live-server conventions, and the `Skills & Agents` pointer to the
+  **testing** subagent.
+- Re-check line counts after the move and confirm nothing in `docs/testing/survey.md` /
+  `improvement-plan.md` / `deferred.md` cross-references the moved content by its old location.
+
+**To do on:** `test/live-taiga-login-integration` (gregory, 2026-08-09) — do this as its own commit
+on the current branch, not bundled with an unrelated task's diff.
+
+**Resolved (2026-08-09):** followed the suggested shape almost exactly. Moved the whole traps/
+heuristics bullet list (old `CLAUDE.md:231-506`, the `koverXmlReport`-vs-`koverVerify` catalogue and
+the `mb`/`cb` signature guide) plus the adjoining "Qualify the task as `:koverVerify`" note
+(old `:508-509`) into a new [docs/testing/kover-coverage-heuristics.md](testing/kover-coverage-heuristics.md),
+279 lines, with a short header explaining what it's for and pointing back to `CLAUDE.md`. Left the
+ratchet rule itself (line/branch bounds, "raise it never lower it") in `CLAUDE.md` and replaced the
+bullet list with a one-line pointer to the new doc. Everything else in the `## Testing` section —
+the `jvmTest`/`src/test` rule, `ktlintCheck` gotcha, `XApi` convention, failure-path convention,
+`expect`/`actual` and integration-test conventions, `DataStore` single-instance rule, env-var
+caching — was untouched; verified with `diff` that the file is byte-identical before line 227 and
+after the removed span. `CLAUDE.md` is now 440 lines (was 717). Checked `docs/testing/survey.md`,
+`improvement-plan.md` and `deferred.md` for references to the moved content by line number or quoted
+anchor text — none exist, so no cross-reference updates were needed. Docs-only change; no build/test
+commands to run.
