@@ -1,7 +1,7 @@
 # MASVS register
 
 Profile: Android / iOS (JVM/desktop is outside MASVS — noted where relevant, not reviewed as a
-MASVS target) · self-hosted, user-supplied server · reviewed 2026-08-09, STORAGE and CRYPTO.
+MASVS target) · self-hosted, user-supplied server · reviewed 2026-08-09, STORAGE, CRYPTO and NETWORK.
 
 Out of scope: MASVS-RESILIENCE (defends a vendor's assets against the device owner; this is a
 self-hosted FOSS client where the device owner is the data owner and the source is public —
@@ -12,6 +12,9 @@ formal decision recorded in task 7 of `docs/security/masvs-review-plan.md`, not 
 | Control | What we do instead | Bound | Why |
 |---|---|---|---|
 | MASVS-STORAGE-2 | Cached server URL (`DataStoreServerStorage`, `core/storage/.../server/DataStoreServerStorage.kt`) stored in plaintext DataStore | Value is a bare base URL (e.g. `https://api.taiga.io` or a self-hosted host) — no userinfo/credential embedded in it, confirmed by reading the only write path (`defineServer`) and its default (`getServerDefaultValue`) | Reveals which Taiga instance the user talks to, not a credential; unencrypted storage is proportionate to that sensitivity |
+| MASVS-NETWORK-1 | Custom TOFU `X509TrustManager` on Android/JVM-desktop (`CompositeTrustManager`, `core/api/src/androidMain\|jvmMain/.../CompositeTrustManager.kt`) | Falls through to the platform default trust manager first — TOFU is only reached from the `catch (e: CertificateException)` arm after `defaultTrustManager.checkServerTrusted` has already rejected the chain (`:63-79`). Before offering trust it requires the presented leaf's SAN (or CN fallback) to match the connecting host (`hostMatchesCertificate`, `:95-111`) — a host/cert mismatch throws `CertificateHostnameMismatchException` instead of offering TOFU. The pin key is `(host, sha256Fingerprint)` (`TrustedCertStorageImpl.matches`, `core/storage/.../cert/TrustedCertStorage.kt:53-54`) — per-**certificate**, not per-host: a regenerated cert on an already-trusted host does not match the stored entry and re-triggers TOFU rather than being silently accepted. Backed by a dedicated unit test, `CompositeTrustManagerTest.\`pin for a host does not trust a different certificate presented by that same host\``. A pinned-but-expired cert still throws (`leaf.checkValidity()` at `:59`, also tested). Ships a user-facing revoke UI (`feature/settings/ui/.../trustedcerts/TrustedCertificatesScreen.kt`) | Self-hosted servers commonly run self-signed certs; this is a bounded TOFU implementation with an explicit per-certificate pin and a revoke path, not a naive trust-everything override |
+| MASVS-NETWORK-1 | `android:usesCleartextTraffic="true"` (`androidApp/src/main/AndroidManifest.xml:20`), no `android:networkSecurityConfig` scoping it | Applies to every host, not restricted to LAN/dev addresses — confirmed no `network_security_config.xml` exists anywhere in the repo. `AuthHeaderPlugin` (`core/api/.../AuthHeaderPlugin.kt:31-35`) attaches the bearer token to every request regardless of `URLProtocol`, so the token is sent in the clear if the user configures an `http://` server. No in-app warning today — tracked as a small follow-up, `docs/revisit.md` #32, not fixed in this review | Self-hosted LAN Taiga instances commonly run plain HTTP; scoping cleartext off entirely would break that use case |
+| MASVS-NETWORK-2 | No identity pinning for "endpoints under the developer's control" | N/A by construction — the server is user-supplied, not developer-operated (the same TOFU/pinning mechanism above exists, but for a different reason: user-approved trust, not developer-mandated pinning) | Per the control's own qualifier |
 
 ## Open
 
@@ -26,6 +29,7 @@ formal decision recorded in task 7 of `docs/security/masvs-review-plan.md`, not 
 | MASVS-STORAGE-2 | Whether the release APK's backup exclusions (`data_extraction_rules.xml` / `backup_rules.xml`, added task 0) actually keep the auth DataStore file out of a real `adb backup` / cloud backup / D2D transfer | Needs a built release APK and a device to run `adb backup` / trigger Android's backup agent and inspect the resulting archive |
 | MASVS-STORAGE-1 / MASVS-CRYPTO-2 | Whether `AndroidKeystoreTokenCipher`'s AES key is actually hardware-backed (TEE/StrongBox) as requested via `KeyGenParameterSpec`, not just requested | Needs a device — hardware enforcement isn't verifiable from source; also, there is no Android unit-test source set in this repo (CLAUDE.md, by design), so this class has no automated test at all, only the manual review below |
 | MASVS-CRYPTO-2 | Whether the plaintext→ciphertext migration (existing installs' unprefixed token gets re-encrypted on next `setAuthCredentials`) actually fires for real installed users, vs. some cohort staying on plaintext indefinitely | Needs telemetry or a real upgrade test from a pre-cipher build — the migration is exercised in `AuthStorageImplTest` (jvmTest, `NoopTokenCipher`/`FakeTokenCipher`) but that proves the code path, not real-world convergence time |
+| MASVS-NETWORK-1 | Whether `CompositeTrustManager`'s per-certificate pin actually holds at the TLS layer against a live regenerated leaf (regenerate the cert on an already-trusted host, restart, confirm the app objects and re-offers TOFU rather than connecting silently) | Source confirms the pin *key* is `(host, sha256Fingerprint)` and a unit test proves the storage-layer lookup rejects a fingerprint mismatch, but the full handshake-level behaviour — does OkHttp/JSSE actually re-invoke `checkServerTrusted` and surface `UntrustedCertificateException` correctly through to the UI on a live regenerated cert — needs a device or a throwaway TLS front for the server |
 
 ## Notes
 
@@ -70,3 +74,20 @@ formal decision recorded in task 7 of `docs/security/masvs-review-plan.md`, not 
   oversight. Verified: `./gradlew :core:storage:jvmTest`, `ktlintCheck`, `koverXmlReport`/`:koverVerify`
   all green; `AndroidKeystoreTokenCipher` itself has no automated coverage (no Android unit-test
   source set in this repo) and is listed in "Needs a device" above.
+- **iOS has no trust-manager equivalent at all — a functional gap, not a MASVS-NETWORK finding.**
+  `PlatformHttpClientEngine.ios.kt:7` is `Darwin.create()`, ignoring the `trustedCertStorage`
+  parameter it's handed — no `CompositeTrustManager` port, no Keychain-backed cert store wired in.
+  Consequence: an iOS user pointed at a self-signed/self-hosted server fails closed (`NSURLSession`'s
+  default TLS validation rejects the cert; no silent bypass) rather than being offered TOFU — this is
+  the *safe* direction, so it is not a security violation, and MASVS-NETWORK-2's pinning control is
+  already N/A here (user-supplied server). It is a real feature-parity gap: the TOFU-with-revoke flow
+  only exists on Android/JVM. A side effect worth naming plainly: `TrustedCertificatesScreen`
+  (`feature/settings/ui/.../trustedcerts/`) lives in `commonMain` and is reachable on iOS, but nothing
+  ever writes to `TrustedCertStorage` there, so the screen is permanently empty on that platform —
+  not misleading, just dead UI. Tracked as a follow-up (`docs/revisit.md` #33), not fixed in this
+  review.
+- **Cleartext token exposure has no in-app warning today.** `AuthHeaderPlugin` attaches the bearer
+  token to every request regardless of `URLProtocol`, and cleartext is permitted app-wide with no
+  `network_security_config.xml` scoping. Accepted as a deviation (self-hosted LAN instances speak
+  plain HTTP), but "no warning when the user picks `http://`" is a real, low-cost improvement,
+  tracked as a follow-up (`docs/revisit.md` #32) rather than fixed in this review.

@@ -22,6 +22,8 @@ its own section, kept for the reasoning rather than the outcome):
 | 29 | Login screen's server-URL regex rejects bare `localhost` (no dot in hostname) | XS | this file, #29 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
 | 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
+| 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
+| 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 
 <details>
 <summary><strong>Full index (all 28 entries, resolved included)</strong> — this file is long because
@@ -62,6 +64,8 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | 🟡 open |
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
+| 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
+| 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | 🟡 open |
 
 </details>
 
@@ -1235,3 +1239,69 @@ detection) — unrelated to that task's `core/storage` `jvmMain` scope, and dele
 **Fix, if wanted:** delete the file. Confirm first that Koin's `@ComponentScan` in `AndroidModule`
 (scans `com.grappim.taigamobile.data`) doesn't have some other reflective dependency on it existing —
 unlikely given zero references, but worth a `:androidApp:assembleGplayDebug` after removal to be sure.
+
+---
+
+## 32. No warning when the configured server URL is `http://` despite the bearer token being sent over it
+
+**Where:** `androidApp/src/main/AndroidManifest.xml:20` (`android:usesCleartextTraffic="true"`, no
+`android:networkSecurityConfig` scoping it to specific hosts) plus
+`core/api/src/commonMain/kotlin/com/grappim/taigamobile/core/api/AuthHeaderPlugin.kt:31-35`, which
+attaches the stored bearer token to every outgoing request via `request.headers[AUTHORIZATION] =
+generateBearerToken(token)` with no check of `request.url.protocol`.
+
+**What happens:** cleartext is permitted app-wide (no `network_security_config.xml` restricting it to
+particular domains), and the token-attaching plugin doesn't distinguish `http://` from `https://`. So
+a user who points the app at a plain-HTTP self-hosted Taiga instance sends the session bearer token
+over the wire in the clear on every request, with nothing in the app surfacing that fact.
+
+**Evidence:** found during the MASVS-NETWORK review (`docs/security/masvs-review-plan.md` task 2).
+`grep -n "networkSecurityConfig" androidApp/src/main/AndroidManifest.xml` returns nothing;
+`AuthHeaderPlugin.kt` has no `URLProtocol` check anywhere in its `HttpSend.intercept` block.
+
+**Consequence:** not a MASVS finding by itself — cleartext is an accepted deviation for self-hosted
+LAN instances (`docs/security/masvs.md`, MASVS-NETWORK-1) — but it's a real, low-cost UX/security
+improvement: warn the user (e.g. on the login/server-setup screen, or once per session) when the
+configured server URL uses `http://`, so the exposure is a choice rather than a silent default.
+
+**Why deferred:** the MASVS review task's scope is recording the register, not shipping UI changes;
+adding a warning dialog/snackbar to the server-setup flow is a small but distinct diff.
+
+**Fix, if wanted:** on saving/validating the server URL (wherever that validation already lives for
+the `localhost` regex issue in #29), branch on `URLProtocol` and show a one-time warning when it's
+`http`. Small, self-contained.
+
+---
+
+## 33. `TrustedCertificatesScreen` is reachable but permanently inert on iOS
+
+**Where:** `core/api/src/iosMain/kotlin/com/grappim/taigamobile/core/api/PlatformHttpClientEngine.kt:7`
+— `actual fun createPlatformHttpClientEngine(trustedCertStorage: TrustedCertStorage): HttpClientEngine
+= Darwin.create()` ignores the `trustedCertStorage` parameter entirely; there is no iOS equivalent of
+Android/JVM's `CompositeTrustManager`. The settings UI that lists/revokes trusted certificates
+(`feature/settings/ui/src/commonMain/kotlin/.../trustedcerts/TrustedCertificatesScreen.kt`) lives in
+`commonMain`, so it's reachable on iOS too.
+
+**What happens:** nothing on iOS ever writes to `TrustedCertStorage` (only `CompositeTrustManager`'s
+TOFU flow does that, and it doesn't exist on the Darwin engine), so `TrustedCertificatesScreen` on iOS
+is permanently empty and can never gain an entry — not misleading (empty is a safe, honest state), but
+dead UI a user could reach and wonder why it never does anything. Separately, an iOS user pointed at a
+self-signed/self-hosted server can't connect at all — `Darwin.create()` uses `NSURLSession`'s default
+TLS validation with no override, so the handshake simply fails closed. That's the safe direction (no
+silent bypass), but it's a real feature-parity gap: the TOFU-with-revoke-UI flow the app ships is
+Android/JVM-only.
+
+**Evidence:** found during the MASVS-NETWORK review (`docs/security/masvs-review-plan.md` task 2).
+`grep -rn "TrustedCertStorage" core/api/src/iosMain` shows the parameter is declared but never read;
+`docs/security/masvs.md`'s Network section records this as a Note, not an Open MASVS finding, since
+MASVS-NETWORK-2's pinning control is N/A for a user-supplied server and failing closed isn't a
+violation of anything.
+
+**Consequence:** no security bug — this is a UX/feature-completeness gap, not a MASVS control
+violation. Worth fixing either by porting the TOFU flow to iOS (Keychain-backed cert storage lookup
+wired into the Darwin engine, a bigger job) or by hiding `TrustedCertificatesScreen` from iOS
+navigation until that lands (small).
+
+**Why deferred:** out of the MASVS review task's scope (recording the register, not shipping a
+platform port or a UI-visibility change); porting TLS trust handling to a new platform is exactly the
+kind of change that needs its own task, not a rider on a documentation review.

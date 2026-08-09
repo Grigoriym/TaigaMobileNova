@@ -52,8 +52,8 @@ a separate, later effort, not a reason to block a task here.
 |---|---|---|---|
 | 0 | Storage — the server credential at rest | STORAGE | ✅ done — 2026-08-09 |
 | 1 | Cryptography — key management for whatever protects it | CRYPTO | ✅ done — 2026-08-09 |
-| 2 | Network — TLS, cleartext, the custom trust manager | NETWORK | todo — ⬅ NEXT |
-| 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | todo |
+| 2 | Network — TLS, cleartext, the custom trust manager | NETWORK | ✅ done — 2026-08-09 |
+| 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | todo — ⬅ NEXT |
 | 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | todo |
 | 5 | Code quality — minSdk, dependency scanning, input validation | CODE | todo |
 | 6 | Privacy — permissions, crash reporting, data clearing on logout | PRIVACY | todo |
@@ -245,6 +245,47 @@ applies verbatim.
 **Done when:** register has a Network section covering the trust manager per-platform (Android/JVM
 vs. iOS), the cleartext deviation with its bound, and states plainly which of the three TOFU
 questions were verified from source vs. still need a device.
+
+**Result (2026-08-09):** `docs/security/masvs.md` gained a Network section. `CompositeTrustManager`
+(identical on Android and JVM/desktop — same class, wired via `PlatformHttpClientEngine.android.kt`
+and `.jvm.kt`) recorded as an **Accepted deviation**, not a finding: all three of `kmp-checks.md`'s
+TOFU questions verified —
+
+1. **Falls through to the platform default first** — TOFU is only reached from the
+   `catch (e: CertificateException)` arm after `defaultTrustManager.checkServerTrusted` already
+   rejected the chain (`CompositeTrustManager.kt:63-79`). Verified from source.
+2. **Hostname-matched before offering trust** — `hostMatchesCertificate` (SAN, with a CN fallback for
+   SAN-less self-signed certs) runs before `UntrustedCertificateException` is thrown; a mismatch gets
+   `CertificateHostnameMismatchException` instead of a TOFU offer (`:69-78`, `:95-111`). Verified from
+   source.
+3. **Pin is per-certificate, not per-host** — the storage layer's `isTrusted`/`trust` key is
+   `(host, sha256Fingerprint)` (`TrustedCertStorageImpl.matches`), not host alone, so a regenerated
+   cert on an already-trusted host would not match and would re-trigger TOFU. Verified from source
+   *and* a dedicated unit test (`CompositeTrustManagerTest.\`pin for a host does not trust a different
+   certificate presented by that same host\``) — but the full handshake-level behaviour against a
+   real regenerated leaf still needs a device/live server, moved to "Needs a device."
+
+`android:usesCleartextTraffic="true"` recorded as an **Accepted deviation** with its actual bound:
+applies app-wide (no `network_security_config.xml` scoping it to specific hosts), and
+`AuthHeaderPlugin` attaches the bearer token regardless of scheme — so the token is sent in the clear
+if the user configures an `http://` server, with no in-app warning today. MASVS-NETWORK-2 recorded as
+N/A by construction (user-supplied server), per the control's own qualifier.
+
+**iOS confirmed to have no equivalent at all** — `Darwin.create()` ignores the `trustedCertStorage`
+parameter; no Keychain-backed trust store, no TOFU. This is the *safe* direction (fails closed rather
+than silently bypassing validation) so it is **not** a MASVS-NETWORK finding, but it is a real
+feature-parity gap: `TrustedCertificatesScreen` (`commonMain`) is reachable on iOS yet permanently
+empty there since nothing ever populates `TrustedCertStorage` on that platform. Recorded as a Note,
+not an Open row.
+
+Two small, real gaps found but not fixed inline (out of this task's scope — a documentation review,
+not a UI change) — written into `docs/revisit.md` with evidence: **#32** (no warning when the
+configured server URL is `http://`, despite the token being sent over it) and **#33**
+(`TrustedCertificatesScreen` inert on iOS, plus the missing TLS trust port).
+
+**Next: Task 3 — Authentication.** Register doesn't yet have an Auth section; task 3's job is to
+verify the `GithubOAuthWebViewDialog` WebView finding with its own file:line and resolve it (fix or
+documented bound), plus decide whether MASVS-AUTH-2/3 apply at all (likely N/A, no app-lock exists).
 
 ---
 
