@@ -1,5 +1,11 @@
 # Desktop Linux release: implementation plan
 
+**Status: CLOSED — 2026-08-09.** All 10 tasks (0–9) are done; the status table below has no `todo`
+left. Kept as the historical record of what was done and how — task write-ups and per-task Result
+notes stay here rather than being deleted. **Ideas that were surveyed but not actioned moved to
+[deferred.md](deferred.md)** — that's now the place to look for what's still open, not the
+"Considered and deferred" section this file used to end with.
+
 **Created:** 2026-08-09
 **Baseline:** [survey.md](survey.md) — what the desktop target looks like before this plan started.
 
@@ -44,7 +50,7 @@ file rather than pushing through.
 | 6 | Update README once Linux is actually distributed | XS | ✅ done — 2026-08-09 |
 | 7 | Logout doesn't clear the local DB on desktop | S | ✅ done — 2026-08-09 |
 | 8 | GitHub OAuth login is a dead button on desktop | S | ✅ done — 2026-08-09 |
-| 9 | Offline detection is a stub on desktop | S | todo (do last) ⬅ NEXT |
+| 9 | Offline detection is a stub on desktop | S | ✅ done — 2026-08-09 |
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
 
@@ -601,14 +607,43 @@ open design questions.
 strategy, then give `NetworkMonitorImpl.jvm.kt` a real implementation. iOS is explicitly out of scope
 for this Linux-release-scoped plan.
 
----
+**Result (2026-08-09):** Detection strategy was a genuine open question, so it was put to gregory
+before implementing rather than assumed: **TCP reachability poll**, not a `NetworkInterface`
+link-state check — chosen because it matches Android's actual "is there real internet" semantics
+(catches router-up-but-ISP-down, not just link-down) even though it costs a small periodic outbound
+connection while the app runs.
 
-## Considered and deferred
+**Implementation:** `NetworkMonitorImpl.jvm.kt` now polls a top-level `internal fun
+isHostReachable(host, port, timeoutMs): Boolean` (plain `java.net.Socket` connect, no new
+dependency) against `1.1.1.1:53` every 5s from a coroutine launched in `init` on `@ApplicationScope`
++ `@IoDispatcher` (same qualifier pattern as `AuthStateManager`/`DatabaseWrapperImpl`). `_isOnline`
+starts optimistic (`true`) and self-corrects on the first check, typically within one
+`CONNECT_TIMEOUT_MS` (2s) of startup — called out explicitly in the class's KDoc as a real deviation
+from Android's actual, which can query `ConnectivityManager` synchronously for an accurate initial
+value with no network round-trip. Transitions are logged (`logcat(LogPriority.INFO)`) only when
+`online` actually changes, not on every poll — logging every failed check while genuinely offline
+would spam the 5 MB-capped log file task 5 just built.
 
-| Idea | Why deferred |
-|---|---|
-| AppImage / Flatpak / Snap | Real additional infrastructure (signing keys, store manifests, Flathub/Snap Store review) — worth it only once the `.deb`-via-GitHub-Releases path (tasks 0–3) is proven to work end-to-end and there's a concrete reason `.deb`-only isn't enough. |
-| Apt repository (so users get updates via `apt upgrade` instead of re-downloading) | Needs a signing key and hosting; same "prove the simple path first" reasoning as above. |
-| Auto-update mechanism inside the app | Not attempted — no existing infra to build on (see survey); a reasonable follow-up once there's more than one release to update *to*. |
-| arm64 Linux build | jpackage packages for the runner's own architecture only; would need a second CI job on an arm64 runner. Not scoped — revisit if there's actual user demand. |
-| macOS/Windows CI + release wiring | Out of scope for this plan (titled Linux release deliberately) — `Dmg`/`Msi` target formats already exist in the Gradle config and build locally per the survey, but wiring them into CI/release is a separate plan, not folded in here to keep this one small. |
+**Testing:** added `NetworkMonitorImplJvmTest` exercising `isHostReachable` directly against real
+sockets (per CLAUDE.md's "prefer the platform whose actual is real" convention) — `1.1.1.1:53` for
+the true branch, `192.0.2.1` (RFC 5737 TEST-NET-1, guaranteed non-routable) for the false branch, so
+the failure path doesn't depend on any particular local network's error behavior. The class's own
+5-second polling loop was deliberately **not** given a test (would need real sleeps in the suite for
+low additional value once the pure function is covered) — same precedent as task 5's `FileLogger`,
+which also has no test. `./gradlew jvmTest` and `ktlintCheck` both green across the whole repo.
+
+**Verified end-to-end, not just compiled — but split between us this time.** I ran
+`:composeApp:run` and confirmed the online path live: login screen renders normally with no offline
+banner, and `taigamobile.log` stays clean (no spurious "Network connectivity changed" lines while
+genuinely online, confirming the transition-only logging works). For the offline path, actually
+cutting this machine's network would have disrupted whatever else was using it, so I asked first
+rather than doing it myself; gregory then disconnected the network directly against the running app
+and confirmed the offline banner appeared correctly — approved as "it works fine."
+
+**Dead code noticed, not touched:** `androidApp/src/main/kotlin/com/grappim/taigamobile/data/ConnectivityManagerNetworkMonitor.kt`
+is a second, unused `NetworkMonitor`-shaped class (not the one actually wired via DI) discovered
+while checking `@param:IoDispatcher` usage patterns — out of scope for this task, logged to
+[docs/revisit.md](../revisit.md#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp).
+
+This was the last task in the plan (0–9 all done). Queue is empty — no task is scoped next in this
+plan. Follow-ups that were surveyed but not actioned now live in [deferred.md](deferred.md).

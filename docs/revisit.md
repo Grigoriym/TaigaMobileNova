@@ -20,6 +20,8 @@ its own section, kept for the reasoning rather than the outcome):
 | 24 | `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently | S–M | [testing agent, "Integration test against a live server"](../.claude/agents/testing.md) |
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
 | 29 | Login screen's server-URL regex rejects bare `localhost` (no dot in hostname) | XS | this file, #29 |
+| 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
+| 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
 
 <details>
 <summary><strong>Full index (all 28 entries, resolved included)</strong> — this file is long because
@@ -58,6 +60,8 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
 | 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | 🟡 open |
+| 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
+| 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
 
 </details>
 
@@ -1202,3 +1206,32 @@ would ever run.
 **Why deferred:** out of scope for task 5, which is specifically about the `logcat`/`TaigaLogger`
 file-logging path, not crash reporting — confirmed via the call-site grep rather than left as a
 guess, then left alone per the task's own scope boundary.
+
+## 31. Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`
+
+**Where:** `androidApp/src/main/kotlin/com/grappim/taigamobile/data/ConnectivityManagerNetworkMonitor.kt`
+
+**What happens:** this is a second, `@Single`-annotated connectivity monitor, separate from the one
+actually wired to the app's `NetworkMonitor` interface
+(`core/storage/src/androidMain/.../network/NetworkMonitorImpl.kt`, bound via `@Single(binds =
+[NetworkMonitor::class])`). It duplicates the same `ConnectivityManager.NetworkCallback` logic —
+`isOnline: Boolean` (point-in-time check) plus `isOnlineFlow: Flow<Boolean>` (callback-based) — but
+implements neither the `NetworkMonitor` interface nor binds to it, so nothing in the app can obtain
+it as `NetworkMonitor` even though Koin still constructs it as its own concrete-type single.
+
+**Evidence:** `grep -rln "ConnectivityManagerNetworkMonitor" --include=*.kt .` returns only the one
+declaration file — no injection site, no reference anywhere else in the repo.
+
+**Consequence:** dead weight in the Android DI graph (one extra `@Single` Koin has to construct and
+register, one extra `ConnectivityManager.NetworkCallback` registration if it's ever actually
+resolved) and a trap for the next reader trying to find "the" network monitor — two candidates exist
+with overlapping responsibility and only one is real.
+
+**Why deferred:** found while checking `@param:IoDispatcher` usage patterns for
+[docs/desktop/linux-release-plan.md](desktop/linux-release-plan.md) task 9 (JVM connectivity
+detection) — unrelated to that task's `core/storage` `jvmMain` scope, and deleting an
+`androidApp`-only file is a separate, single-purpose diff.
+
+**Fix, if wanted:** delete the file. Confirm first that Koin's `@ComponentScan` in `AndroidModule`
+(scans `com.grappim.taigamobile.data`) doesn't have some other reflective dependency on it existing —
+unlikely given zero references, but worth a `:androidApp:assembleGplayDebug` after removal to be sure.
