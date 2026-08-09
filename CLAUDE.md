@@ -2,6 +2,22 @@
 
 TaigaMobileNova is an unofficial Kotlin Multiplatform client for Taiga.io targeting Android, iOS, and Desktop. Built with Kotlin, Compose Multiplatform, and follows a modular MVVM + Clean Architecture.
 
+## Keeping this file lean
+
+**A section that grows a worked-example catalogue instead of staying a stable convention has
+outgrown this file — split it into its own doc under `docs/` and leave a one-line pointer.** The
+Testing section's Kover coverage-sweep heuristics did exactly this over many sessions: the file
+reached 717 lines before the catalogue (missed-branch/line ranking heuristics, `mb`/`cb` report
+signatures, `kover-rank.py`/`kover-diff.py` usage) moved to
+[docs/testing/kover-coverage-heuristics.md](docs/testing/kover-coverage-heuristics.md) (2026-08-09,
+[docs/revisit.md](docs/revisit.md) #28). Watch for the same shape starting again elsewhere: a bullet
+accumulating dated, confirmed cases ("Confirmed for X (date)... And for Y (date)...") is reference
+material earned by a specific investigation, not a day-to-day rule every session needs to read.
+
+A rule that fits in a sentence or two, with at most one example, stays here. A rule that needs a
+worked example, a script snippet, or a running list of confirmed cases belongs in `docs/` — link it
+and stop.
+
 ## Build Commands
 
 ```bash
