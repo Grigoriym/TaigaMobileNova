@@ -41,8 +41,8 @@ file rather than pushing through.
 | 3 | Wire the `.deb` into the release workflow | M | ✅ done — 2026-08-09 |
 | 4 | Add `Rpm` as a second target format | XS | todo |
 | 5 | Install a real logger backend on desktop | S | todo |
-| 6 | Update README once Linux is actually distributed | XS | todo (do last, after 3 and 7) |
-| 7 | Logout doesn't clear the local DB on desktop | S | ⬅ NEXT |
+| 6 | Update README once Linux is actually distributed | XS | ⬅ NEXT |
+| 7 | Logout doesn't clear the local DB on desktop | S | ✅ done — 2026-08-09 |
 | 8 | GitHub OAuth login is a dead button on desktop | S | todo (do last) |
 | 9 | Offline detection is a stub on desktop | S | todo (do last) |
 
@@ -400,6 +400,45 @@ rows. `./gradlew jvmTest` must stay green.
 **Finalize focus:** low — small, mechanical fix once the actual is found; note if `TaigaDB`'s
 generated `clearAllTables()` needed anything beyond a direct call (e.g. running off the DB dispatcher)
 that Android's one-liner didn't make obvious was needed.
+
+**Result (2026-08-09):** The task's premise — "confirmed safe to copy verbatim... it's the same
+zero-arg Room method on every platform" — turned out to be **wrong**, discovered only by actually
+compiling. Room 2.8.4's KMP `RoomDatabase` actual has a *different* member surface per target:
+`clearAllTables()` is Android-only (verified via `javap` on the Android vs. JVM `room-runtime`
+artifacts — the JVM/native actual's `RoomDatabase` doesn't declare it at all). Copying Android's
+one-liner into `TaigaDBExt.jvm.kt` failed with "Unresolved reference 'clearAllTables'".
+
+**What was actually done instead:** added a no-arg `deleteAll()` `@Query` to each of the three DAOs
+(`ProjectDao`, `SprintDao`, `WorkItemDao` — same pattern as their existing `deleteByProjectId`/
+`deleteOlderThan` queries), and JVM's actual now calls all three:
+```kotlin
+actual suspend fun TaigaDB.clearAllTablesKmp() {
+    projectDao().deleteAll()
+    sprintDao().deleteAll()
+    workItemDao().deleteAll()
+}
+```
+This forced `expect fun TaigaDB.clearAllTablesKmp()` to become `suspend` (DAO deletes are suspend
+functions) — which in turn required adding the `suspend` keyword to the Android and iOS actuals too,
+purely to keep the expect/actual signatures matching. **iOS's stub body is still `= Unit`**, exactly
+as scoped — only its signature changed, not its behavior; the task's "leave iOS alone" instruction
+was honored. Also had to implement `deleteAll()` on the three `Fake*Dao` classes in `:testing`
+(`error("not used in this test")`, matching the existing convention for unexercised methods) since
+Kotlin's compiler enforces the interface change at every implementer, fakes included.
+
+**Verified end-to-end, not just compiled — same rigor as task 1, gregory approved driving the GUI
+with `xdotool` first.** Ran `:composeApp:run` against the local dev Taiga instance (`docs/local-info.md`),
+logged in as `admin`/`admin` (session already persisted from task 1's earlier run), navigated into a
+project's Open Sprints and a sprint's board to populate all three cache tables
+(`sqlite3 ~/.local/share/TaigaMobile/taigamobilenova.db` showed 1 project / 3 sprints / 6 work items),
+then logged out via the drawer's "Log out" → confirm dialog. Immediately re-queried the DB file: **all
+three tables were 0 rows** — the bug is fixed. Logged back in as a different account (`user1`/`user1`,
+which has its own distinct project, `main-2`/"Main project") to confirm normal operation resumes; the
+DB then showed exactly that new account's single project with no leftover admin-session rows.
+`./gradlew jvmTest` and `ktlintCheck` both green across the whole repo.
+
+Next: task 6, updating the README — it was gated on both task 3 (done earlier today) and this task,
+and both are now done.
 
 ---
 

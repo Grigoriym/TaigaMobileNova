@@ -34,4 +34,6 @@ class FakeProjectDao : ProjectDao {
         getProjectByIdFlowCalls += id
         return flowOf(*(projectFlowsById[id] ?: emptyList()).toTypedArray())
     }
+
+    override suspend fun deleteAll() = error("not used in this test")
 }
