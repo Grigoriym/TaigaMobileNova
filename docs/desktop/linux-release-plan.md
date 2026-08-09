@@ -39,7 +39,7 @@ file rather than pushing through.
 | 0 | Fix the broken icon path | XS | ✅ done — 2026-08-09 |
 | 1 | Move desktop storage off `java.io.tmpdir` | S | ✅ done — 2026-08-09 |
 | 2 | CI job: build the Linux package on PRs | S | ✅ done — 2026-08-09 |
-| 3 | Wire the `.deb` into the release workflow | M | ⬅ NEXT |
+| 3 | Wire the `.deb` into the release workflow | M | ✅ done — 2026-08-09 |
 | 4 | Add `Rpm` as a second target format | XS | deferred — ask first |
 | 5 | Install a real logger backend on desktop | S | deferred — ask first |
 | 6 | Update README once Linux is actually distributed | XS | todo (do last, after 3) |
@@ -274,7 +274,32 @@ downloaded file shows the right version/package name.
 GitHub Release asset naming collisions or `action-gh-release`'s glob behavior that wasn't obvious from
 the existing Android `files:` block.
 
----
+**Result (2026-08-09):** Extended the existing `release` job in `.github/workflows/release.yml`
+rather than adding a second job, exactly as scoped: a `Package Linux deb` step
+(`./gradlew :composeApp:packageDeb`) plus the same `fakeroot` install step task 2 settled on
+(confirmed already present on `ubuntu-latest`, so it's a no-op safety net there too), inserted after
+the Android build steps and before `Upload Release Build To Artifacts`. Added
+`composeApp/build/compose/binaries/main/deb/*.deb` to both the artifact-upload `path:` block and the
+`Create GitHub release` step's `files:` block, alongside the existing APK/AAB paths — no naming
+collisions, `action-gh-release`'s glob just picks up the single `.deb` the same way it picks up the
+Android outputs.
+
+**Open question resolved:** yes, the `.deb`'s version tracks `libs.versions.toml` correctly and needs
+no extra wiring. Ran `./gradlew :composeApp:packageDeb` locally and confirmed via `dpkg -I` — `Version:
+2.1.5`, matching `version-name` in `gradle/libs.versions.toml` and the current `v2.1.5` tag.
+
+**What was and wasn't verified:** the YAML was validated for syntax (parsed successfully with
+PyYAML) and the step ordering/names checked. `./gradlew :composeApp:packageDeb` was run locally, not
+in the `release.yml` context. **The actual `workflow_dispatch` run against the live release was
+deliberately not triggered** — it would have modified the real, public `v2.1.5` GitHub Release
+(adding an asset and, via `generate_release_notes: true`, potentially touching release notes users
+may already be looking at). Asked gregory first; the call was to skip the live run and rely on local
+verification plus the CI `desktop-package` job (task 2), which already proves `packageDeb` builds
+successfully in the same CI environment this job now uses. Full end-to-end confirmation (a real
+`workflow_dispatch` or tag-triggered run actually attaching a working `.deb` to a GitHub Release) is
+deferred to the next real release cut — flagged here rather than silently assumed.
+
+Next: task 6, updating the README now that task 3 has landed (tasks 4–5 stay gated on asking).
 
 ## Task 4 — Add `Rpm` as a second target format
 

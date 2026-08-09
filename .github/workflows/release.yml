@@ -53,6 +53,14 @@ jobs:
               run: |
                   ./gradlew :androidApp:assembleGplayRelease :androidApp:bundleGplayRelease -PgplayBuild
 
+            - name: Install fakeroot
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y fakeroot
+
+            - name: Package Linux deb
+              run: ./gradlew :composeApp:packageDeb
+
             - name: Upload Release Build To Artifacts
               uses: actions/upload-artifact@v7
               with:
@@ -60,6 +68,7 @@ jobs:
                   path: |
                       androidApp/build/outputs/apk/*
                       androidApp/build/outputs/bundle/*
+                      composeApp/build/compose/binaries/main/deb/*.deb
 
             - name: Create GitHub release
               uses: softprops/action-gh-release@v3
@@ -74,3 +83,4 @@ jobs:
                       androidApp/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
                       androidApp/build/outputs/apk/gplay/release/app-gplay-release.apk
                       androidApp/build/outputs/bundle/gplayRelease/androidApp-gplay-release.aab
+                      composeApp/build/compose/binaries/main/deb/*.deb
