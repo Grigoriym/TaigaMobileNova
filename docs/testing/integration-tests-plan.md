@@ -33,8 +33,8 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 1 remaining, see Task 3 — ⬅ NEXT |
-| 4 | Write round-trip pilot (create + clean up) | S–M | todo |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | ✅ done — 2026-08-09 |
+| 4 | Write round-trip pilot (create + clean up) | S–M | todo — ⬅ NEXT |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
@@ -160,11 +160,11 @@ task):**
 |---|---|---|
 | `HistoryApi` | `HistoryApiIntegrationTest` — `getCommonTaskComments(singularTaskPath = "userstory", id = 21)` | 2026-08-09. User story id 21 (ref 11, "As a user I want to log in with my credentials", project 5) confirmed via `taiga-mcp`; `total_comments` is 0 on every user story in project 5, but the call itself (and its response parsing) is what's under test, not comment count — asserts the list parses, not its content. |
 
-**Remaining candidates (1)**:
+**Done (10/12) — task complete, all candidates covered:**
 
-| Module | Leading call | Notes |
+| Module | Test | Notes |
 |---|---|---|
-| `SwimlanesApi` | `getSwimlanes(project = 5)` | simplest single-method interface; confirmed 2026-08-08 project 5 has zero swimlanes configured — still a valid (empty) round-trip |
+| `SwimlanesApi` | `SwimlanesApiIntegrationTest` — `getSwimlanes(project = 5)` | 2026-08-09. Project 5 confirmed to have zero swimlanes configured; asserts the call succeeds and parses an empty list — still a valid round-trip of the request/response path. |
 
 **Before each module's task: check what data actually exists in the local instance** (via
 `taiga-mcp`'s `taiga_request`, cheaper than guessing) rather than assuming a project/epic/story
@@ -305,6 +305,16 @@ users, user stories, tasks, sprints, filters, wiki, work items, project values, 
 together. Full `./gradlew jvmTest --rerun` (no env vars) green with no flakes this run.
 `ktlintCheck` green. 1/12 candidates remain — next session picks `SwimlanesApi`, the last row in
 the table above.
+
+**Result (2026-08-09, session 10):** `SwimlanesApiIntegrationTest` added —
+`getSwimlanes(project = 5)`, asserts the returned list is non-null (parsed). Last remaining
+candidate — task 3 is now complete, all 12 `XApi` modules covered (10 direct reads + the 2
+corrected write-only modules, `EpicsApi`/`IssuesApi`, whose reads live in `WorkItemApi`, already
+covered by session 7). Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all twelve integration tests (login, projects,
+users, user stories, tasks, sprints, filters, wiki, work items, project values, history,
+swimlanes) pass together. Full `./gradlew jvmTest --rerun` (no env vars) green with no flakes this
+run. `ktlintCheck` green. **Task 3 is done — next session picks task 4 (write round-trip pilot).**
 
 ---
 
