@@ -17,6 +17,47 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
+| 24 | `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently | S–M | [testing agent, "Integration test against a live server"](../.claude/agents/testing.md) |
+| 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
+
+<details>
+<summary><strong>Full index (all 28 entries, resolved included)</strong> — this file is long because
+resolved entries stay for their reasoning, not their outcome (see above), and ~20 links elsewhere in
+the repo — including a frozen archive doc — point at specific entries by anchor, so they aren't
+moved out. Expand for a one-line-per-entry jump table instead of scrolling.</summary>
+
+| # | Item | Status |
+|---|---|---|
+| 1 | [ViewModels doing I/O in `init`](#1-viewmodels-doing-io-in-init) | 🟡 open |
+| 2 | [Non-ViewModel beans may leak application-scoped coroutines](#2-non-viewmodel-beans-may-leak-application-scoped-coroutines) | ✅ resolved 2026-08-08 |
+| 3 | [Wiki mapper tests duplicate the new shared DTO factories](#3-wiki-mapper-tests-duplicate-the-new-shared-dto-factories) | ✅ resolved 2026-08-07 |
+| 4 | [Dead `koin-test` block in `:testing` `androidMain`](#4-dead-koin-test-block-in-testing-androidmain) | ✅ resolved 2026-08-07 |
+| 5 | [`tools/seed` and `tools/utils` tests would not run in CI](#5-toolsseed-and-toolsutils-tests-would-not-run-in-ci) | ✅ resolved 2026-08-08 |
+| 6 | [`GetKanbanDataUseCase` reads the current project three times](#6-getkanbandatausecase-reads-the-current-project-three-times) | ✅ resolved 2026-08-07 |
+| 7 | [Date formatters cache the locale for the process lifetime](#7-date-formatters-cache-the-locale-for-the-process-lifetime) | ✅ resolved 2026-08-07 |
+| 8 | [Kover's excludes are applied partially, and differently by `koverXmlReport` and `koverVerify`](#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify) | ✅ resolved 2026-08-07 |
+| 9 | [`WikiRepositoryImplTest`'s failure tests can pass without reaching the SUT](#9-wikirepositoryimpltests-failure-tests-can-pass-without-reaching-the-sut) | ✅ resolved 2026-08-07 |
+| 10 | [The `Plugin` and `Module` exclusion patterns hide real logic in `core/api`](#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi) | ✅ resolved 2026-08-08 |
+| 11 | [`TokenRefreshPlugin`'s `MAX_RETRIES` guard is unreachable](#11-tokenrefreshplugins-max_retries-guard-is-unreachable) | ✅ resolved 2026-08-07 |
+| 12 | [Two small dead spots in `core/api`](#12-two-small-dead-spots-in-coreapi) | ✅ resolved 2026-08-07 |
+| 13 | [`urlDecode` in `utils/ui` is dead code with three actuals](#13-urldecode-in-utilsui-is-dead-code-with-three-actuals) | ✅ resolved 2026-08-07 |
+| 14 | [The Kover coverage floor is far below actual](#14-the-kover-coverage-floor-is-far-below-actual-1722-points-in-2026-08-03-2940-by-2026-08-05) | ✅ resolved 2026-08-07 |
+| 15 | [Saving a non-editable custom field leaks its id into `editingItemIds`](#15-saving-a-non-editable-custom-field-leaks-its-id-into-editingitemids) | ✅ resolved 2026-08-07 |
+| 16 | [Every `logcat` message lambda is a permanently-uncovered line](#16-every-logcat-message-lambda-is-a-permanently-uncovered-line) | ✅ resolved 2026-08-08 |
+| 17 | [`StringPreference` and `LongPreferences` in `core/storage` are dead code](#17-stringpreference-and-longpreferences-in-corestorage-are-dead-code) | ✅ resolved (partial) 2026-08-07 |
+| 18 | [`currentUserStory` throws from `viewModelScope` when the initial load failed](#18-currentuserstory-throws-from-viewmodelscope-when-the-initial-load-failed) | ✅ resolved 2026-08-08 |
+| 19 | [`TeamMemberUpdate.Clear` is a dead `when` arm in four ViewModels](#19-teammemberupdateclear-is-a-dead-when-arm-in-four-viewmodels) | ✅ resolved 2026-08-07 |
+| 20 | [`mapResult` is dead code, and its "unreachable" state is reachable](#20-mapresult-is-dead-code-and-its-unreachable-state-is-reachable) | ✅ resolved 2026-08-07 |
+| 21 | [`SprintPagingSource` is dead code, and it is invisible to Kover](#21-sprintpagingsource-is-dead-code-and-it-is-invisible-to-kover) | ✅ resolved 2026-08-07 |
+| 22 | [`EpicShortInfoDTO` is built by hand in three test files; no `:testing` factory exists](#22-epicshortinfodto-is-built-by-hand-in-three-test-files-no-testing-factory-exists) | ✅ resolved 2026-08-07 |
+| 23 | [The coverage report counts Android-variant classes no test can reach](#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach) | ✅ resolved 2026-08-08 |
+| 24 | [`KoinGraphTest`/live-Taiga integration tests collide on the JVM `DataStore` file](#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently) | 🟡 open |
+| 25 | [`FiltersStorageImplTest.resetFilters clears every section` is flaky](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
+| 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
+| 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
+| 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
+
+</details>
 
 ---
 
