@@ -17,7 +17,6 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 28 | `CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc | S–M | this session, 2026-08-09 |
 
 ---
 
@@ -1066,3 +1065,18 @@ diff.
 
 **To do on:** `test/live-taiga-login-integration` (gregory, 2026-08-09) — do this as its own commit
 on the current branch, not bundled with an unrelated task's diff.
+
+**Resolved (2026-08-09):** followed the suggested shape almost exactly. Moved the whole traps/
+heuristics bullet list (old `CLAUDE.md:231-506`, the `koverXmlReport`-vs-`koverVerify` catalogue and
+the `mb`/`cb` signature guide) plus the adjoining "Qualify the task as `:koverVerify`" note
+(old `:508-509`) into a new [docs/testing/kover-coverage-heuristics.md](testing/kover-coverage-heuristics.md),
+279 lines, with a short header explaining what it's for and pointing back to `CLAUDE.md`. Left the
+ratchet rule itself (line/branch bounds, "raise it never lower it") in `CLAUDE.md` and replaced the
+bullet list with a one-line pointer to the new doc. Everything else in the `## Testing` section —
+the `jvmTest`/`src/test` rule, `ktlintCheck` gotcha, `XApi` convention, failure-path convention,
+`expect`/`actual` and integration-test conventions, `DataStore` single-instance rule, env-var
+caching — was untouched; verified with `diff` that the file is byte-identical before line 227 and
+after the removed span. `CLAUDE.md` is now 440 lines (was 717). Checked `docs/testing/survey.md`,
+`improvement-plan.md` and `deferred.md` for references to the moved content by line number or quoted
+anchor text — none exist, so no cross-reference updates were needed. Docs-only change; no build/test
+commands to run.
