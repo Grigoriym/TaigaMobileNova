@@ -43,8 +43,8 @@ file rather than pushing through.
 | 5 | Install a real logger backend on desktop | S | ✅ done — 2026-08-09 |
 | 6 | Update README once Linux is actually distributed | XS | ✅ done — 2026-08-09 |
 | 7 | Logout doesn't clear the local DB on desktop | S | ✅ done — 2026-08-09 |
-| 8 | GitHub OAuth login is a dead button on desktop | S | todo (do last) ⬅ NEXT |
-| 9 | Offline detection is a stub on desktop | S | todo (do last) |
+| 8 | GitHub OAuth login is a dead button on desktop | S | ✅ done — 2026-08-09 |
+| 9 | Offline detection is a stub on desktop | S | todo (do last) ⬅ NEXT |
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
 
@@ -548,6 +548,33 @@ login (username/password, presumably) works normally.
 `GithubOAuthWebViewDialog` is a no-op, rather than implementing the actual WebView flow for JVM/iOS
 (that would be a much bigger task and isn't what's being asked here — confirm scope again before
 starting, since "hide the button" and "implement OAuth for desktop" are very different sizes).
+
+**Result (2026-08-09):** Confirmed scope was still "hide the button", not "implement OAuth for
+JVM/iOS", before starting. Added `expect fun isGithubOAuthSupported(): Boolean` to
+`GithubOAuthWebViewDialog.kt` (commonMain), right next to the existing `expect fun
+GithubOAuthWebViewDialog(...)` it's paired with — `actual = true` on Android, `actual = false` on
+both JVM and iOS (their `GithubOAuthWebViewDialog` actuals are the identical no-op stub). In
+`LoginScreen.kt`, wrapped the "Continue with GitHub" `OutlinedButton` and its two helper `Text`s
+(`login_github_server_required`, `login_github_setup_guide`) in `if (isGithubOAuthSupported()) { ...
+}` — conditional wrapping, not an early return, per CLAUDE.md's Compose rule (the file already used
+the same `if/else` shape for `state.isLoading`). No ViewModel or `LoginState` change needed: this is
+a static per-platform capability, not runtime state, so a plain top-level expect/actual function was
+the right size — no new state field, no DI.
+
+**Verified on all three platforms, not just JVM:** `:feature:login:ui:compileKotlinJvm` +
+`:feature:login:ui:jvmTest` green, `:feature:login:ui:compileAndroidMain` green, and
+`:feature:login:ui:compileKotlinIosArm64` green (confirms Android keeps the button and iOS also gets
+it hidden, even though iOS packaging is out of this plan's scope — the fix lives in shared
+`feature/login/ui`, so both non-Android platforms had to compile). Full `./gradlew jvmTest
+ktlintCheck` across the whole repo green afterward.
+
+**Verified visually on desktop, not just compiled.** Ran `:composeApp:run`, logged out of the
+already-persisted session (gregory drove this part directly rather than continuing unreliable
+`xdotool` clicks — screenshotting the whole display instead of just the app window was making the
+click coordinates unreliable), and confirmed on the real login screen: only **Continue** and
+**Continue with LDAP** are present — the GitHub button and both of its helper lines are gone.
+
+Next: task 9, offline detection is a stub on desktop — the last task in this plan.
 
 ---
 
