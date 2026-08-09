@@ -10,8 +10,7 @@ two tasks in your head at once.
 ## How to run a task
 
 1. Read the status table below and take the task marked **NEXT**. (If none is marked, take the first
-   `todo`.) Never take a `deferred`/gated task without asking — check the table row and the task's own
-   heading for a gate before starting.
+   `todo`, respecting any explicit ordering note like "do last".)
    **Before assuming the NEXT task is actually undone, run `git status`/`git diff`.** A session can
    finish the code and even the task's own Result note, then get cut off before the status-table
    update, `finalize`, and commit — treat matching uncommitted changes as a finished task waiting on
@@ -40,22 +39,21 @@ file rather than pushing through.
 | 1 | Move desktop storage off `java.io.tmpdir` | S | ✅ done — 2026-08-09 |
 | 2 | CI job: build the Linux package on PRs | S | ✅ done — 2026-08-09 |
 | 3 | Wire the `.deb` into the release workflow | M | ✅ done — 2026-08-09 |
-| 4 | Add `Rpm` as a second target format | XS | deferred — ask first |
-| 5 | Install a real logger backend on desktop | S | deferred — ask first |
+| 4 | Add `Rpm` as a second target format | XS | todo |
+| 5 | Install a real logger backend on desktop | S | todo |
 | 6 | Update README once Linux is actually distributed | XS | todo (do last, after 3 and 7) |
 | 7 | Logout doesn't clear the local DB on desktop | S | ⬅ NEXT |
-| 8 | GitHub OAuth login is a dead button on desktop | S | deferred — ask first, do last |
-| 9 | Offline detection is a stub on desktop | S | deferred — ask first, do last |
+| 8 | GitHub OAuth login is a dead button on desktop | S | todo (do last) |
+| 9 | Offline detection is a stub on desktop | S | todo (do last) |
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
 
 **Scope decision (2026-08-09):** tasks 0–3, 6, and 7 are the straight-line path to "a Linux `.deb` a
 user can actually download and run correctly" and are in scope to work straight through. Tasks 4–5
-are real improvements but not required for a first release — **gated on asking first**, same
-convention `docs/testing/improvement-plan.md` uses for its own gated items. Task 6 depends on 3
-landing (no point documenting a distribution channel that doesn't exist yet) and now also on 7 (no
-point calling the release straight-line-done while a known data bug sits unfixed) but is otherwise
-trivial and does not need to wait for 4–5.
+are real improvements but not required for a first release. Task 6 depends on 3 landing (no point
+documenting a distribution channel that doesn't exist yet) and now also on 7 (no point calling the
+release straight-line-done while a known data bug sits unfixed) but is otherwise trivial and does not
+need to wait for 4–5.
 
 Task ordering rationale: 0 unblocks everything else (nothing downstream can be verified against a
 build that doesn't produce a package). 1 is the correctness bug that matters most to a real user and
@@ -68,9 +66,14 @@ on 0–2.
 gets the same short shrift as iOS) turned up three real JVM-actual gaps beyond the original three the
 survey found. Task 7 is in scope now because it's a plain data-correctness bug in the same family as
 task 1 (a JVM actual silently doing nothing where Android's does real work) and is cheap. Tasks 8 and
-9 are real but explicitly **deferred to last, per gregory (2026-08-09)** — both also affect iOS, not
-just desktop, which makes them bigger than a Linux-release-scoped fix, and neither blocks a user from
-successfully installing and using a first `.deb` release the way tasks 0–3 and 7 do.
+9 are real but ordered **last, per gregory (2026-08-09)** — both also affect iOS, not just desktop,
+which makes them bigger than a Linux-release-scoped fix, and neither blocks a user from successfully
+installing and using a first `.deb` release the way tasks 0–3 and 7 do.
+
+**No task in this plan is ask-first-gated anymore (removed 2026-08-09, per gregory)** — the earlier
+convention (borrowed from `docs/testing/improvement-plan.md`) required explicit approval before
+starting tasks 4, 5, 8, and 9. That requirement is gone; the tasks themselves, their scope, and their
+ordering (4–5 and 8–9 come after the straight-line path 0–3/6/7, 8–9 specifically last) are unchanged.
 
 ---
 
@@ -311,18 +314,17 @@ successfully in the same CI environment this job now uses. Full end-to-end confi
 `workflow_dispatch` or tag-triggered run actually attaching a working `.deb` to a GitHub Release) is
 deferred to the next real release cut — flagged here rather than silently assumed.
 
-Next: task 6, updating the README now that task 3 has landed (tasks 4–5 stay gated on asking).
+Next: task 6, updating the README now that task 3 has landed.
 
 ## Task 4 — Add `Rpm` as a second target format
 
-⛔ **Gated — do not start without asking (see status table).** Real value (Fedora/openSUSE users) but
-not required for a first release; asking first avoids scope creep on top of an already multi-task plan.
+Real value (Fedora/openSUSE users) but not required for a first release.
 
-**Why, if approved:** `targetFormats` currently only includes `Deb`. jpackage supports `Rpm` as a
+**Why:** `targetFormats` currently only includes `Deb`. jpackage supports `Rpm` as a
 sibling format with the same `nativeDistributions` config — no architecture beyond what task 0–3
 already built.
 
-**Scope, if approved:** add `TargetFormat.Rpm` to `targetFormats(...)` in
+**Scope:** add `TargetFormat.Rpm` to `targetFormats(...)` in
 `composeApp/build.gradle.kts`, confirm `rpmbuild` availability on the CI image (likely needs an
 explicit `apt-get install rpm` on an `ubuntu-latest` runner — verify, don't assume, same as task 2 did
 for `fakeroot`), extend the CI job from task 2 and the release wiring from task 3 to also build/upload
@@ -335,21 +337,21 @@ attached to the GitHub Release next to the `.deb`.
 
 ## Task 5 — Install a real logger backend on desktop
 
-⛔ **Gated — do not start without asking (see status table).** Genuinely useful for diagnosing
-user-reported bugs post-release, but not required to ship a first release, and the right design (file
-location, rotation, whether to also wire `CrashReporterImpl.jvm.kt` at the same time) deserves a scope
-discussion rather than being assumed here.
+Genuinely useful for diagnosing user-reported bugs post-release, but not required to ship a first
+release, and the right design (file location, rotation, whether to also wire
+`CrashReporterImpl.jvm.kt` at the same time) deserves a scope pass before starting rather than being
+assumed here.
 
-**Why, if approved:** `TaigaMobileDesktop.kt` never calls `TaigaLogger.install(...)`; Desktop/JVM
+**Why:** `TaigaMobileDesktop.kt` never calls `TaigaLogger.install(...)`; Desktop/JVM
 falls back to the no-op `NoLog` backend (per CLAUDE.md's Logging table and
 [survey.md](survey.md#diagnosability-on-desktop-existing-documented-gaps--not-new-findings)). Every
 `logcat {}` call site is silently dropped, so a Linux user's bug report comes with zero log context.
 
-**Scope, if approved:** a `core/logger` JVM backend that writes to a file (natural location: the same
+**Scope:** a `core/logger` JVM backend that writes to a file (natural location: the same
 per-user app-data directory task 1 introduces), installed from `TaigaMobileDesktop.kt`'s `main()`
 alongside the existing `FileKit.init(...)`/`startKoin(...)` calls. Rotation/size-capping policy and
 whether `CrashReporterImpl.jvm.kt` should also stop being a pure stub are open questions to resolve
-when this task is actually scoped, not decided here.
+when this task is actually started, not decided here.
 
 ---
 
@@ -403,9 +405,9 @@ that Android's one-liner didn't make obvious was needed.
 
 ## Task 8 — GitHub OAuth login is a dead button on desktop
 
-⛔ **Gated — do not start without asking (see status table). Deferred to last per gregory (2026-08-09).**
+**Ordered last, per gregory (2026-08-09)** (see status table).
 
-**Why, if approved:** `LoginScreen.kt` wires the "Continue with GitHub" button unconditionally on all
+**Why:** `LoginScreen.kt` wires the "Continue with GitHub" button unconditionally on all
 platforms. `LoginViewModel.startGithubOAuth()` succeeds (fetches the OAuth client ID) and fires an
 event that opens `GithubOAuthWebViewDialog` — a real in-app WebView flow on Android
 (`GithubOAuthWebViewDialog.android.kt`), but on JVM (`feature/login/ui/src/jvmMain/kotlin/com/grappim/taigamobile/feature/login/ui/GithubOAuthWebViewDialog.jvm.kt`)
@@ -420,7 +422,7 @@ stub), not silently swallow the click.
 plan; and it doesn't block a user from installing and using a first `.deb` release, since the rest of
 login (username/password, presumably) works normally.
 
-**Scope, if approved:** hide or disable the GitHub button on platforms where
+**Scope:** hide or disable the GitHub button on platforms where
 `GithubOAuthWebViewDialog` is a no-op, rather than implementing the actual WebView flow for JVM/iOS
 (that would be a much bigger task and isn't what's being asked here — confirm scope again before
 starting, since "hide the button" and "implement OAuth for desktop" are very different sizes).
@@ -429,9 +431,9 @@ starting, since "hide the button" and "implement OAuth for desktop" are very dif
 
 ## Task 9 — Offline detection is a stub on desktop
 
-⛔ **Gated — do not start without asking (see status table). Deferred to last per gregory (2026-08-09).**
+**Ordered last, per gregory (2026-08-09)** (see status table).
 
-**Why, if approved:** `LocalOfflineState` (`uikit`) is driven by `MainViewModel.isOffline`, which
+**Why:** `LocalOfflineState` (`uikit`) is driven by `MainViewModel.isOffline`, which
 reads `NetworkMonitor.isOnline`. `NetworkMonitorImpl` has three implementations, all in
 `core/storage/src/*/kotlin/com/grappim/taigamobile/core/storage/network/`: Android's
 (`androidMain/.../NetworkMonitorImpl.kt`) really registers a `ConnectivityManager.NetworkCallback`;
@@ -441,14 +443,14 @@ reported identical by the auditing pass, not independently re-verified here). De
 reports online: the offline banner never shows, and no write action is ever disabled for connectivity
 reasons on those two platforms, contrary to CLAUDE.md's documented offline-state convention.
 
-**Why deferred:** affects iOS too, not just desktop. Real connectivity monitoring on JVM needs an
+**Why last:** affects iOS too, not just desktop. Real connectivity monitoring on JVM needs an
 actual design decision (poll a socket? `InetAddress.isReachable`? watch `NetworkInterface` changes?)
-that's worth scoping deliberately rather than assuming here, same reasoning task 5 already uses for
-gating the logger backend.
+that's worth scoping deliberately rather than assuming here, same reasoning task 5 uses for its own
+open design questions.
 
-**Scope, if approved:** to be decided when this task is actually scoped — resolve the JVM detection
+**Scope:** to be decided when this task is actually started — resolve the JVM detection
 strategy, then give `NetworkMonitorImpl.jvm.kt` a real implementation. iOS is explicitly out of scope
-for this Linux-release-scoped plan even if approved.
+for this Linux-release-scoped plan.
 
 ---
 
