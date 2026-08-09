@@ -17,6 +17,7 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
+| 28 | `CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc | S–M | this session, 2026-08-09 |
 
 ---
 
@@ -1032,3 +1033,36 @@ modules' tests concurrently can exceed even though the condition is eventually s
 `./gradlew jvmTest --rerun` was green. Not investigated further, not fixed — noted in passing while
 verifying an unrelated change. If it recurs, the fix is likely a longer explicit timeout on that one
 `waitUntil` call, not a dispatcher change (there is no coroutine-test scope here to fix).
+
+## 28. `CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc
+
+**What:** `CLAUDE.md` is 717 lines (checked 2026-08-09). The `## Testing` section alone is lines
+197–584 — 387 lines, over half the file — and almost all of that is the accumulated
+missed-branch/missed-line ranking heuristics from the closed coverage-sweep work (the `mb`/`cb`
+signature catalogue, the `kover-rank.py`/`kover-diff.py` usage notes, the `*_androidKt`/`logcat`/
+`onCleared`/generated-code unreachability catalogue). That material is reference documentation for
+*running a future coverage sweep*, not a day-to-day coding convention — it's read rarely, and its
+bulk pushes the genuinely load-bearing conventions (the `XApi` interface/impl split, the
+failure-path testing convention, the integration-test pattern, the `jvmTest`-vs-`src/test`
+distinction) further down the file than they should be.
+
+**Not fixed now:** out of scope for the integration-testing session that noticed it; splitting a
+717-line file correctly (deciding what's a "convention CLAUDE.md should keep" vs. "sweep-specific
+reference material") deserves its own focused pass, not a rushed edit bundled into an unrelated
+diff.
+
+**Suggested shape for the split** (not binding — re-evaluate when actually doing this):
+- Move the Kover ranking/heuristics catalogue (roughly from "Qualify the task as `:koverVerify`"
+  through the end of the `## Testing` section, i.e. most of lines ~300–584) into a new doc, e.g.
+  `docs/testing/kover-coverage-heuristics.md`, and leave a one-line pointer in `CLAUDE.md`'s Testing
+  section ("For missed-branch/missed-line ranking heuristics when running a coverage sweep, see
+  [...]").
+- Keep in `CLAUDE.md` itself: the `jvmTest`/`src/test` rule, the coverage-floor-is-a-ratchet rule,
+  the `XApi` interface/impl convention, the failure-path testing convention, the `expect`/`actual`
+  and integration-test-against-a-live-server conventions, and the `Skills & Agents` pointer to the
+  **testing** subagent.
+- Re-check line counts after the move and confirm nothing in `docs/testing/survey.md` /
+  `improvement-plan.md` / `deferred.md` cross-references the moved content by its old location.
+
+**To do on:** `test/live-taiga-login-integration` (gregory, 2026-08-09) — do this as its own commit
+on the current branch, not bundled with an unrelated task's diff.
