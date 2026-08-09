@@ -79,7 +79,9 @@ and stop.
 - Navigation Compose (KMP) with type-safe routes
 - Kotlin Serialization for JSON
 - Coroutines, Coil 3.x for images (KMP-ready)
-- Room 2.8.4 + BundledSQLiteDriver (KMP-ready)
+- Room 2.8.4 + BundledSQLiteDriver (KMP-ready) — **`RoomDatabase.clearAllTables()` is Android-only**;
+  the JVM/native actual doesn't declare it at all (confirmed via `javap` on the `room-runtime`
+  artifacts). To clear all tables on JVM/iOS, add a no-arg `deleteAll()` `@Query` to each DAO instead.
 - `core/logger` — KMP logging facade (see Logging below); Timber backs it on Android only
 
 **Convention Plugins** (in `build-logic/`):
@@ -409,7 +411,7 @@ directly outside `core/logger`.
 |----------|------|--------------|
 | Android | `TimberLogger` → Timber (`DebugTree` on debug, `CrashlyticsTree` on gplay) | `androidApp/TaigaApp.kt` |
 | iOS | `NSLogLogger` → `NSLog`, chunked at 3000 chars to survive its ~4096-byte truncation | `main.ios.kt` |
-| Desktop/JVM | **none** — falls back to the `NoLog` no-op, so `logcat` output is silently dropped | — |
+| Desktop/JVM | `FileLogger` → appends to `taigamobile.log` in the per-user app-data dir (`core/storage`'s `appDataDir()`), rotating to `<name>.old` past 5 MB | `TaigaMobileDesktop.kt` |
 
 ## Error Handling
 

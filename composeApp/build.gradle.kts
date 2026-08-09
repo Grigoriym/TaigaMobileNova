@@ -55,7 +55,7 @@ compose.desktop {
         nativeDistributions {
             modules("jdk.unsupported")
 
-            targetFormats(TargetFormat.Deb, TargetFormat.Dmg, TargetFormat.Msi)
+            targetFormats(TargetFormat.Deb, TargetFormat.Rpm, TargetFormat.Dmg, TargetFormat.Msi)
             packageName = libs.versions.app.name.get()
             packageVersion = libs.versions.version.name.get()
             description = libs.versions.app.description.get()
@@ -63,7 +63,7 @@ compose.desktop {
             copyright = "Copyright 2026 ${libs.versions.app.vendor.get()}"
 
             linux {
-                iconFile.set(project.file("../info/art/taiga-mobile-logo.png"))
+                iconFile.set(project.file("../art/taiga-mobile-logo.png"))
 
                 debMaintainer = libs.versions.app.vendor.get()
                 debPackageVersion = libs.versions.version.name.get()
@@ -72,13 +72,13 @@ compose.desktop {
                 shortcut = true
             }
             windows {
-                iconFile.set(project.file("../info/art/taiga-mobile-logo.ico"))
+                iconFile.set(project.file("../art/taiga-mobile-logo.ico"))
 
                 menuGroup = libs.versions.app.menugroup.get()
                 shortcut = true
             }
             macOS {
-                iconFile.set(project.file("../info/art/taiga-mobile-logo.icns"))
+                iconFile.set(project.file("../art/taiga-mobile-logo.icns"))
             }
         }
     }

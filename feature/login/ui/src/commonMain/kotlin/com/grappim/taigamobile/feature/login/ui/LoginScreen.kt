@@ -247,37 +247,39 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
                 Text(stringResource(RString.login_ldap))
             }
 
-            Spacer(Modifier.height(8.dp))
+            if (isGithubOAuthSupported()) {
+                Spacer(Modifier.height(8.dp))
 
-            OutlinedButton(
-                onClick = { state.onGithubLoginClick() }
-            ) {
-                Text(stringResource(RString.login_github))
+                OutlinedButton(
+                    onClick = { state.onGithubLoginClick() }
+                ) {
+                    Text(stringResource(RString.login_github))
+                }
+
+                Spacer(Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(RString.login_github_server_required),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (state.isServerInputError) {
+                        MaterialTheme.colorScheme.error
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
+                    modifier = Modifier.padding(horizontal = 40.dp)
+                )
+
+                Text(
+                    text = stringResource(RString.login_github_setup_guide),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier
+                        .padding(top = 2.dp)
+                        .clickable {
+                            uriHandler.openUri(githubSetupGuideUrl)
+                        }
+                )
             }
-
-            Spacer(Modifier.height(4.dp))
-
-            Text(
-                text = stringResource(RString.login_github_server_required),
-                style = MaterialTheme.typography.bodySmall,
-                color = if (state.isServerInputError) {
-                    MaterialTheme.colorScheme.error
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier.padding(horizontal = 40.dp)
-            )
-
-            Text(
-                text = stringResource(RString.login_github_setup_guide),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.primary,
-                modifier = Modifier
-                    .padding(top = 2.dp)
-                    .clickable {
-                        uriHandler.openUri(githubSetupGuideUrl)
-                    }
-            )
         }
     }
 }

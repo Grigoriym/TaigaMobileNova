@@ -69,4 +69,6 @@ class FakeWorkItemDao : WorkItemDao {
         projectId: Long,
         taskType: CommonTaskType
     ): PagingSource<Int, WorkItemEntity> = error("not used in this test")
+
+    override suspend fun deleteAll() = error("not used in this test")
 }

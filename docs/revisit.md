@@ -19,6 +19,9 @@ its own section, kept for the reasoning rather than the outcome):
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 24 | `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently | S–M | [testing agent, "Integration test against a live server"](../.claude/agents/testing.md) |
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
+| 29 | Login screen's server-URL regex rejects bare `localhost` (no dot in hostname) | XS | this file, #29 |
+| 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
+| 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
 
 <details>
 <summary><strong>Full index (all 28 entries, resolved included)</strong> — this file is long because
@@ -56,6 +59,9 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
+| 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | 🟡 open |
+| 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
+| 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
 
 </details>
 
@@ -1134,3 +1140,98 @@ after the removed span. `CLAUDE.md` is now 440 lines (was 717). Checked `docs/te
 `improvement-plan.md` and `deferred.md` for references to the moved content by line number or quoted
 anchor text — none exist, so no cross-reference updates were needed. Docs-only change; no build/test
 commands to run.
+
+---
+
+## 29. Login screen's server-URL regex rejects bare `localhost`
+
+**Where:** `feature/login/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/login/ui/LoginViewModel.kt:33`
+
+```kotlin
+private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""
+```
+
+**What happens:** the `([\w\d-]+\.)+` group requires at least one dot-separated label before the
+final hostname segment, i.e. it demands a real FQDN (`api.taiga.io`, `example.com`). A single-label
+host like `http://localhost:9000` fails `.matches(SERVER_REGEX)`, so `LoginViewModel.login()`
+(`:109`) sets `isServerInputError = true` and the field renders red — the request is never sent, with
+no error message beyond the red outline.
+
+**Evidence:** found manually verifying [docs/desktop/linux-release-plan.md](desktop/linux-release-plan.md)
+task 1 (moving desktop storage off `java.io.tmpdir`) — driving the real desktop app's login screen
+against the local dev Taiga instance (`http://localhost:9000`, per this project's memory) via
+`xdotool`. Typing `http://localhost:9000` produced the red-outlined field; switching to
+`http://127.0.0.1:9000` (which does satisfy the regex — each dot-separated octet matches
+`([\w\d-]+\.)+`) passed validation and logged in successfully.
+
+**Consequence:** cosmetic/dev-workflow only, not a production bug — no real Taiga deployment is
+reachable at a bare single-label hostname. It only bites developers and self-hosters pointing the
+app at `http://localhost:<port>` (a Docker-hosted instance, a reverse-proxied instance without a
+registered domain, etc.), who have to remember to type `127.0.0.1` instead.
+
+**Fix, if wanted:** loosen `SERVER_REGEX`'s host group to `([\w\d-]+\.)*[\w\d-]+`, allowing a
+single-label host without a trailing dot. Widens what "valid" data can be sent to `login()` but
+doesn't change any *behavior* for currently-valid inputs — worth a quick check that no other code
+(e.g. cert-pinning, `HostSelectionPlugin`) assumes a dotted hostname.
+
+**Why deferred:** unrelated to the storage-path task in progress; a validation-regex change belongs
+in its own diff.
+
+## 30. `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform
+
+**Where:** `core/crash-api/src/commonMain/kotlin/com/grappim/taigamobile/core/crashapi/CrashReporter.kt`
+defines the interface; `composeApp/src/jvmMain/.../data/CrashReporterImpl.jvm.kt` and
+`composeApp/src/iosMain/.../data/CrashReporterImpl.ios.kt` are both pure no-op stubs.
+
+**What happens:** the only call site for `recordException()` anywhere in the codebase is
+`androidApp/src/main/kotlin/com/grappim/taigamobile/data/CrashlyticsTree.kt` — a Timber `Tree` that
+forwards `Timber.e(throwable)` calls to `crashReporter.recordException(t)`. Timber itself is
+Android-only (per CLAUDE.md's Logging table), so this `Tree` is never installed on JVM/iOS. Nothing
+else in the app calls `CrashReporter.recordException()` or `.log()` directly. Net effect: even if
+the JVM/iOS stubs were implemented for real, there is currently no code path that would ever invoke
+them — the interface is fully wired for Android only.
+
+**Evidence:** found while scoping [docs/desktop/linux-release-plan.md](desktop/linux-release-plan.md)
+task 5 (installing a real logger backend on desktop), which explicitly asked whether
+`CrashReporterImpl.jvm.kt` should stop being a stub in the same pass. `grep -rn
+"\.recordException("` across the repo returned exactly one non-test call site, confirming this
+rather than assuming it.
+
+**Consequence:** no observable bug today (nothing is silently dropped that was ever going to fire),
+but it means "wire up desktop crash reporting" is a bigger task than filling in the two stub
+methods — it also needs a JVM/iOS equivalent of the Timber-to-`CrashReporter` bridge (e.g. a global
+uncaught-exception handler, or a `logcat` call site added directly at error sites) before the stubs
+would ever run.
+
+**Why deferred:** out of scope for task 5, which is specifically about the `logcat`/`TaigaLogger`
+file-logging path, not crash reporting — confirmed via the call-site grep rather than left as a
+guess, then left alone per the task's own scope boundary.
+
+## 31. Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`
+
+**Where:** `androidApp/src/main/kotlin/com/grappim/taigamobile/data/ConnectivityManagerNetworkMonitor.kt`
+
+**What happens:** this is a second, `@Single`-annotated connectivity monitor, separate from the one
+actually wired to the app's `NetworkMonitor` interface
+(`core/storage/src/androidMain/.../network/NetworkMonitorImpl.kt`, bound via `@Single(binds =
+[NetworkMonitor::class])`). It duplicates the same `ConnectivityManager.NetworkCallback` logic —
+`isOnline: Boolean` (point-in-time check) plus `isOnlineFlow: Flow<Boolean>` (callback-based) — but
+implements neither the `NetworkMonitor` interface nor binds to it, so nothing in the app can obtain
+it as `NetworkMonitor` even though Koin still constructs it as its own concrete-type single.
+
+**Evidence:** `grep -rln "ConnectivityManagerNetworkMonitor" --include=*.kt .` returns only the one
+declaration file — no injection site, no reference anywhere else in the repo.
+
+**Consequence:** dead weight in the Android DI graph (one extra `@Single` Koin has to construct and
+register, one extra `ConnectivityManager.NetworkCallback` registration if it's ever actually
+resolved) and a trap for the next reader trying to find "the" network monitor — two candidates exist
+with overlapping responsibility and only one is real.
+
+**Why deferred:** found while checking `@param:IoDispatcher` usage patterns for
+[docs/desktop/linux-release-plan.md](desktop/linux-release-plan.md) task 9 (JVM connectivity
+detection) — unrelated to that task's `core/storage` `jvmMain` scope, and deleting an
+`androidApp`-only file is a separate, single-purpose diff.
+
+**Fix, if wanted:** delete the file. Confirm first that Koin's `@ComponentScan` in `AndroidModule`
+(scans `com.grappim.taigamobile.data`) doesn't have some other reflective dependency on it existing —
+unlikely given zero references, but worth a `:androidApp:assembleGplayDebug` after removal to be sure.

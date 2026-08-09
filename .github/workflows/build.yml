@@ -53,3 +53,24 @@ jobs:
 
       - name: Assemble gradle gplay project
         run: ./gradlew :androidApp:assembleGplayDebug -PgplayBuild
+
+  desktop-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v7
+
+      - name: Setup Android Environment
+        uses: ./.github/actions/android-setup-composite-action
+
+      - name: Install fakeroot and rpm
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y fakeroot rpm
+
+      - name: Package Linux deb
+        run: ./gradlew :composeApp:packageDeb
+
+      - name: Package Linux rpm
+        run: ./gradlew :composeApp:packageRpm

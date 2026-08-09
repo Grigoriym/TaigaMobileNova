@@ -42,3 +42,5 @@ actual fun GithubOAuthWebViewDialog(url: String, onCodeReceive: (String) -> Unit
         )
     }
 }
+
+actual fun isGithubOAuthSupported(): Boolean = true

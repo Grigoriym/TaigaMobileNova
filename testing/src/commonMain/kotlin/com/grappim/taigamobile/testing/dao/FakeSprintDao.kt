@@ -38,4 +38,6 @@ class FakeSprintDao : SprintDao {
         deleteByProjectIdAndClosedThrows?.let { throw it }
         deletedByProjectIdAndClosed = projectId to isClosed
     }
+
+    override suspend fun deleteAll() = error("not used in this test")
 }
