@@ -971,6 +971,19 @@ integration-test session hits it again, or when task 3's sweep is otherwise comp
 `com.grappim.taigamobile.di.*` pattern a few times in a row to see how often the unfavorable order
 actually occurs before deciding whether it is worth fixing.
 
+**Still not fixed (re-verified 2026-08-09):** neither `KoinGraphTest.kt` nor `LiveTaigaSession.kt` has
+changed since this was written — grepped both for `.close()`, found none. Re-ran
+`./gradlew :composeApp:jvmTest --tests "com.grappim.taigamobile.di.*" --rerun` against the live local
+instance three times in a row: all three reproduced the favorable-order case exactly as described
+(`LoginViewModel`/`SettingsUserScreenViewModel` throw the "multiple DataStores active" exception
+during `KoinGraphTest`'s construction sweep, tolerated, `KoinGraphTest` passes). The unfavorable case
+was not re-triggered — with the current class set, `FiltersApiIntegrationTest` and
+`HistoryApiIntegrationTest` both sort alphabetically before `KoinGraphTest`, and Gradle's test
+execution in this environment ran in alphabetical order all three times, so the shared session is
+always built first here. That is incidental to the current file names, not a fix — nothing prevents a
+future test class (or a different execution order) from landing before `KoinGraphTest` and
+triggering the unfavorable path described above. Mechanism confirmed live; still unfixed.
+
 ## 25. `FiltersStorageImplTest.resetFilters clears every section` is flaky under a full `jvmTest` run
 
 **Where:** `core/storage/src/jvmTest/kotlin/com/grappim/taigamobile/core/storage/FiltersStorageImplTest.kt:158`
