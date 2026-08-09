@@ -651,6 +651,20 @@ re-deriving anything.
 
 The test: Every changed line should trace directly to the user's request.
 
+### Don't Break Production in Favor of Tests
+
+**Production code must not be shaped by testing needs.** If a code path is flaky or
+can't be observed deterministically as written, fix or remove the *test* — don't add a
+seam, injectable parameter, or abstraction to production code purely so a test can
+control it. This holds even when the change is small, additive, and provably safe
+(e.g. a defaulted constructor parameter verified not to affect DI resolution) — the
+question is not "is this change safe," it's "does this belong in production code at
+all." Prefer, in order: (1) find or write a lower-level test that already covers the
+behavior deterministically without the racy synchronization; (2) simplify the test to
+avoid it; (3) delete the test and say so plainly, rather than leaving a known flake
+undocumented. Always ask before adding any production-code testability seam, even a
+well-verified one.
+
 ## Logging
 
 `core/logger` is a KMP logging facade — it is added to every KMP module's `commonMain` automatically
