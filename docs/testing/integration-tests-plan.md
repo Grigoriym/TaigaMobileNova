@@ -33,7 +33,7 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 2 remaining, see Task 3 — ⬅ NEXT |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 1 remaining, see Task 3 — ⬅ NEXT |
 | 4 | Write round-trip pilot (create + clean up) | S–M | todo |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
@@ -154,13 +154,17 @@ task):**
 |---|---|---|
 | `ProjectValuesApi` | `ProjectValuesApiIntegrationTest` — `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | 2026-08-09. Statuses confirmed to exist on project 5 (6 statuses: New/Ready/In progress/Ready for test/Done/Archived); asserts the list parses, not its content. |
 
-**Remaining candidates (2, order not fixed — pick whichever has the most obvious real data in the
-local instance when you start)**:
+**Done (9/12):**
+
+| Module | Test | Notes |
+|---|---|---|
+| `HistoryApi` | `HistoryApiIntegrationTest` — `getCommonTaskComments(singularTaskPath = "userstory", id = 21)` | 2026-08-09. User story id 21 (ref 11, "As a user I want to log in with my credentials", project 5) confirmed via `taiga-mcp`; `total_comments` is 0 on every user story in project 5, but the call itself (and its response parsing) is what's under test, not comment count — asserts the list parses, not its content. |
+
+**Remaining candidates (1)**:
 
 | Module | Leading call | Notes |
 |---|---|---|
 | `SwimlanesApi` | `getSwimlanes(project = 5)` | simplest single-method interface; confirmed 2026-08-08 project 5 has zero swimlanes configured — still a valid (empty) round-trip |
-| `HistoryApi` | `getCommonTaskComments(singularTaskPath, id)` | needs a picked entity id (any of project 5's confirmed user stories) — otherwise no fixture needed |
 
 **Before each module's task: check what data actually exists in the local instance** (via
 `taiga-mcp`'s `taiga_request`, cheaper than guessing) rather than assuming a project/epic/story
@@ -285,6 +289,22 @@ to `com.grappim.taigamobile.di.*IntegrationTest` — all ten integration tests (
 users, user stories, tasks, sprints, filters, wiki, work items, project values) pass together. Full
 `./gradlew jvmTest --rerun` (no env vars) green with no flakes this run. `ktlintCheck` green. 2/12
 candidates remain — next session picks either `SwimlanesApi` or `HistoryApi`.
+
+**Result (2026-08-09, session 9):** `HistoryApiIntegrationTest` added —
+`getCommonTaskComments(singularTaskPath = "userstory", id = 21)`, asserts the returned list is
+non-null (parsed). Picked over `SwimlanesApi` because its call needs a real entity id, which is a
+slightly stronger round-trip than `SwimlanesApi`'s already-confirmed-empty list. Resolved
+`singularTaskPath` from `CommonTaskType.getSingularPath()`
+(`feature/workitem/domain/.../WorkItemPath.kt`) — `"userstory"`, not `"userstories"`. Checked
+project 5's data via `taiga-mcp` first: reused user story id 21 (ref 11), already confirmed by an
+earlier session's `UserStoriesApiIntegrationTest` work; every user story in project 5 shows
+`total_comments: 0`, but that only affects the list's length, not whether the endpoint round-trips.
+Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all eleven integration tests (login, projects,
+users, user stories, tasks, sprints, filters, wiki, work items, project values, history) pass
+together. Full `./gradlew jvmTest --rerun` (no env vars) green with no flakes this run.
+`ktlintCheck` green. 1/12 candidates remain — next session picks `SwimlanesApi`, the last row in
+the table above.
 
 ---
 
