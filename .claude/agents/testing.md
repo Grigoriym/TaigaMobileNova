@@ -531,6 +531,16 @@ instance.
 - Full background: [docs/issues/2026-08-08-integration-tests-live-taiga.md](../../docs/issues/2026-08-08-integration-tests-live-taiga.md),
   [docs/testing/integration-tests-plan.md](../../docs/testing/integration-tests-plan.md) (task list;
   task 2's result note has the `DataStore` collision write-up in full).
+- **Write round-trip pattern (create + cleanup): `ProjectsApiTagIntegrationTest` is the worked
+  example.** Pick an endpoint pair with a natural delete counterpart, randomize the created value's
+  name (`getRandomString()` from `:testing`) so repeat runs can't collide with each other or with
+  real seeded data, and verify state through a read call rather than trusting "didn't throw" —
+  `getProjectTagsColors` before/after is what actually proves `createTag`/`deleteTag` round-tripped.
+  **Cleanup must survive a failed assertion, not just the happy path**: track success with a local
+  flag (e.g. `var created = false`, set `true` right after the create call returns) and delete in a
+  `finally` gated on that flag. Don't trust this without checking it — temporarily force the
+  post-create assertion to fail, rerun, and confirm via the live server (or `taiga-mcp`) that the
+  created value is gone anyway; then revert the forced failure before landing.
 
 ---
 

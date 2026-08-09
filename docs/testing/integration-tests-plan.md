@@ -34,7 +34,7 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
 | 3 | Read round-trip sweep, one `XApi` module per session | S each | ✅ done — 2026-08-09 |
-| 4 | Write round-trip pilot (create + clean up) | S–M | todo — ⬅ NEXT |
+| 4 | Write round-trip pilot (create + clean up) | S–M | ✅ done — 2026-08-09 |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
@@ -341,6 +341,27 @@ before finishing (in a `finally` or equivalent) rather than relying on the next 
 **Finalize focus:** note in the baseline doc whether cleanup-on-failure (the create succeeds but the
 test then fails before deleting) was handled or left as a known gap. If this pilot goes well, it's
 the template for a write-sweep counterpart to task 3 — scope that as a new task only once asked.
+
+**Result (2026-08-09):** `ProjectsApiTagIntegrationTest` added
+(`composeApp/src/jvmTest/.../di/ProjectsApiTagIntegrationTest.kt`) — `createTag`/`deleteTag` on
+project 5, the leading candidate named in this task's own scope. Checked project 5's existing tags
+via `taiga-mcp` first (9 tags: frontend, design, backend, mobile, ux, documentation, testing,
+performance, security, infrastructure) and used a randomized name
+(`"int-test-${getRandomString()}"`, `:testing` module) to avoid colliding with any of them.
+Verifies the round-trip through data, not just "didn't throw": asserts the tag appears in
+`getProjectTagsColors` after `createTag`, then asserts it's gone after `deleteTag`.
+**Cleanup-on-failure is handled**, not left as a gap: a `created` flag set only after `createTag`
+returns successfully drives a `finally` block that deletes the tag if the test fails any later
+assertion, so a failing run doesn't leave the tag behind in gregory's seeded instance — verified by
+temporarily forcing the post-create assertion to fail and confirming the `finally` still deleted it
+(re-checked via `taiga_request` and reverted before landing). Verified with the three
+`TAIGA_INTEGRATION_*` env vars set, scoped to `com.grappim.taigamobile.di.*IntegrationTest` — all
+thirteen integration tests pass together, and confirmed via `taiga_request` to
+`/api/v1/projects/5/tags_colors` that the created tag is actually gone afterward (the 9 original
+tags, nothing more). Also verified clean skip with no env vars set (scoped run) and green on both
+the full `./gradlew jvmTest --rerun` and `ktlintCheck`. **Task 4 is done.** Task 5 stays gated — no
+further task is queued until asked to scope one (e.g. a write-sweep counterpart to task 3, or task
+5 itself).
 
 ---
 
