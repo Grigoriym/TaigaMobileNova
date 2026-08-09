@@ -40,10 +40,10 @@ file rather than pushing through.
 | 2 | CI job: build the Linux package on PRs | S | ✅ done — 2026-08-09 |
 | 3 | Wire the `.deb` into the release workflow | M | ✅ done — 2026-08-09 |
 | 4 | Add `Rpm` as a second target format | XS | ✅ done — 2026-08-09 |
-| 5 | Install a real logger backend on desktop | S | todo ⬅ NEXT |
+| 5 | Install a real logger backend on desktop | S | ✅ done — 2026-08-09 |
 | 6 | Update README once Linux is actually distributed | XS | ✅ done — 2026-08-09 |
 | 7 | Logout doesn't clear the local DB on desktop | S | ✅ done — 2026-08-09 |
-| 8 | GitHub OAuth login is a dead button on desktop | S | todo (do last) |
+| 8 | GitHub OAuth login is a dead button on desktop | S | todo (do last) ⬅ NEXT |
 | 9 | Offline detection is a stub on desktop | S | todo (do last) |
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
@@ -387,6 +387,41 @@ per-user app-data directory task 1 introduces), installed from `TaigaMobileDeskt
 alongside the existing `FileKit.init(...)`/`startKoin(...)` calls. Rotation/size-capping policy and
 whether `CrashReporterImpl.jvm.kt` should also stop being a pure stub are open questions to resolve
 when this task is actually started, not decided here.
+
+**Result (2026-08-09):** Added `FileLogger` (`core/logger/src/jvmMain/.../FileLogger.kt`), a
+`TaigaLogger` implementation that appends formatted lines (timestamp, priority, tag, message,
+stack trace) to a file, synchronized for thread-safety, with a 5 MB size cap: once the target file
+exceeds that, it's renamed to `<name>.old` (overwriting any previous one) and a fresh file starts.
+Installed from `TaigaMobileDesktop.kt`'s `main()`, first thing before `FileKit.init(...)`, at
+`File(appDataDir(), "taigamobile.log")` — reusing task 1's `appDataDir()` helper
+(`core/storage/.../platform/AppDataDir.jvm.kt`), whose visibility was widened from `internal` to
+public for this cross-module use (`core/storage` doesn't depend on `core/logger` the other way, so
+no dependency cycle).
+
+**`CrashReporterImpl.jvm.kt` deliberately left untouched.** Checked call sites before deciding:
+`recordException()` is only ever invoked from `CrashlyticsTree.kt`, an Android-only Timber `Tree`
+integration (`androidApp/src/main/.../CrashlyticsTree.kt`) — nothing on desktop calls
+`crashReporter.recordException()` at all, since Timber itself is Android-only per CLAUDE.md's
+Logging table. Wiring the JVM stub to `logcat` would have been dead code with no caller, not a real
+fix, so it stayed a stub as scoped.
+
+**Verified end-to-end, not just compiled.** Ran `:composeApp:run` twice against the local dev Taiga
+instance (gregory approved driving the GUI with `xdotool`, same as tasks 1 and 7):
+1. First run: confirmed `~/.local/share/TaigaMobile/taigamobile.log` is created immediately and
+   fills with real content as the app runs — `MainViewModel` state lines and full Ktor
+   request/response logs (headers, bodies), not just a handful of boilerplate lines (595 lines after
+   one session touching a project/sprint). Closed the window, confirmed the process fully exited,
+   confirmed the file survives with its content intact (not truncated on close).
+2. Rotation check: manually `truncate -s 6M`'d the log file past the 5 MB cap, started the app
+   again, and confirmed on the very first write it renamed the 6 MB file to `taigamobile.log.old`
+   and started a fresh `taigamobile.log` — the cap is enforced on every write, not just at startup,
+   so a long-running session can't grow the file unbounded either. Cleaned up the synthetic 6 MB
+   `.old` file afterward; it was a test artifact, not real data.
+
+`./gradlew jvmTest` and `ktlintCheck` both green across the whole repo afterward.
+
+Next: task 8, hiding the dead GitHub OAuth button on desktop (and iOS) — the last two tasks (8, 9)
+are both explicitly ordered last per gregory; 8 is first in table order.
 
 ---
 

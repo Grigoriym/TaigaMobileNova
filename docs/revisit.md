@@ -1172,3 +1172,33 @@ doesn't change any *behavior* for currently-valid inputs — worth a quick check
 
 **Why deferred:** unrelated to the storage-path task in progress; a validation-regex change belongs
 in its own diff.
+
+## 30. `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform
+
+**Where:** `core/crash-api/src/commonMain/kotlin/com/grappim/taigamobile/core/crashapi/CrashReporter.kt`
+defines the interface; `composeApp/src/jvmMain/.../data/CrashReporterImpl.jvm.kt` and
+`composeApp/src/iosMain/.../data/CrashReporterImpl.ios.kt` are both pure no-op stubs.
+
+**What happens:** the only call site for `recordException()` anywhere in the codebase is
+`androidApp/src/main/kotlin/com/grappim/taigamobile/data/CrashlyticsTree.kt` — a Timber `Tree` that
+forwards `Timber.e(throwable)` calls to `crashReporter.recordException(t)`. Timber itself is
+Android-only (per CLAUDE.md's Logging table), so this `Tree` is never installed on JVM/iOS. Nothing
+else in the app calls `CrashReporter.recordException()` or `.log()` directly. Net effect: even if
+the JVM/iOS stubs were implemented for real, there is currently no code path that would ever invoke
+them — the interface is fully wired for Android only.
+
+**Evidence:** found while scoping [docs/desktop/linux-release-plan.md](desktop/linux-release-plan.md)
+task 5 (installing a real logger backend on desktop), which explicitly asked whether
+`CrashReporterImpl.jvm.kt` should stop being a stub in the same pass. `grep -rn
+"\.recordException("` across the repo returned exactly one non-test call site, confirming this
+rather than assuming it.
+
+**Consequence:** no observable bug today (nothing is silently dropped that was ever going to fire),
+but it means "wire up desktop crash reporting" is a bigger task than filling in the two stub
+methods — it also needs a JVM/iOS equivalent of the Timber-to-`CrashReporter` bridge (e.g. a global
+uncaught-exception handler, or a `logcat` call site added directly at error sites) before the stubs
+would ever run.
+
+**Why deferred:** out of scope for task 5, which is specifically about the `logcat`/`TaigaLogger`
+file-logging path, not crash reporting — confirmed via the call-site grep rather than left as a
+guess, then left alone per the task's own scope boundary.

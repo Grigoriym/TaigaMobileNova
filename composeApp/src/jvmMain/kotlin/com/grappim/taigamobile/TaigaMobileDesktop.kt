@@ -5,6 +5,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import com.grappim.taigamobile.core.logger.FileLogger
+import com.grappim.taigamobile.core.storage.platform.appDataDir
 import com.grappim.taigamobile.di.KoinApp
 import com.grappim.taigamobile.main.TaigaAppContent
 import com.grappim.taigamobile.strings.RString
@@ -14,8 +16,11 @@ import io.github.vinceglb.filekit.FileKit
 import org.jetbrains.compose.resources.decodeToImageBitmap
 import org.jetbrains.compose.resources.stringResource
 import org.koin.plugin.module.dsl.startKoin
+import java.io.File
 
 fun main() {
+    FileLogger.install(File(appDataDir(), "taigamobile.log"))
+
     FileKit.init(appId = "com.grappim.taigamobile")
 
     val screenReadySignalController = ScreenReadySignalController(true)
