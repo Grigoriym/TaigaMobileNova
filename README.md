@@ -12,7 +12,8 @@ The previous author archived the original project. This version has been complet
 |----------|--------|--------------|
 | Android  | Released | Google Play & F-Droid |
 | iOS      | Builds & runs | Distribution TBD |
-| Desktop (Linux / macOS / Windows) | Builds & runs | Distribution TBD |
+| Desktop (Linux) | Released | [GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases) (`.deb`) |
+| Desktop (macOS / Windows) | Builds & runs | Distribution TBD |
 
 ### Android
 
@@ -23,9 +24,13 @@ height="80">](https://play.google.com/store/apps/details?id=com.grappim.taigamob
 alt="Get it on F-Droid"
 height="80">](https://f-droid.org/en/packages/com.grappim.taigamobile.fdroid/)
 
-### iOS & Desktop
+### Desktop (Linux)
 
-iOS and Desktop builds are functional but distribution channels are not yet set up. If you want to try them, clone the repo and build locally — see [Build Commands](#build-commands) below.
+Download the latest `.deb` from [GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases).
+
+### iOS & Desktop (macOS / Windows)
+
+iOS and Desktop (macOS / Windows) builds are functional but distribution channels are not yet set up. If you want to try them, clone the repo and build locally — see [Build Commands](#build-commands) below.
 
 [Project board](https://tasks.gregstuff.click/project/taigamobilenova/kanban)
 

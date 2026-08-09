@@ -39,9 +39,9 @@ file rather than pushing through.
 | 1 | Move desktop storage off `java.io.tmpdir` | S | ✅ done — 2026-08-09 |
 | 2 | CI job: build the Linux package on PRs | S | ✅ done — 2026-08-09 |
 | 3 | Wire the `.deb` into the release workflow | M | ✅ done — 2026-08-09 |
-| 4 | Add `Rpm` as a second target format | XS | todo |
+| 4 | Add `Rpm` as a second target format | XS | todo ⬅ NEXT |
 | 5 | Install a real logger backend on desktop | S | todo |
-| 6 | Update README once Linux is actually distributed | XS | ⬅ NEXT |
+| 6 | Update README once Linux is actually distributed | XS | ✅ done — 2026-08-09 |
 | 7 | Logout doesn't clear the local DB on desktop | S | ✅ done — 2026-08-09 |
 | 8 | GitHub OAuth login is a dead button on desktop | S | todo (do last) |
 | 9 | Offline detection is a stub on desktop | S | todo (do last) |
@@ -368,6 +368,19 @@ and build locally, per the survey, but nothing in this plan wires them into CI o
 imply they're supported just because `Dmg`/`Msi` appear in the same Gradle block).
 
 **Finalize focus:** low.
+
+**Result (2026-08-09):** Updated `README.md`. Split the platform table's single "Desktop (Linux /
+macOS / Windows)" row into two: `Desktop (Linux)` now reads **Released**, distribution
+[GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases) (`.deb`); `Desktop (macOS /
+Windows)` keeps the old **Builds & runs** / Distribution TBD status, unchanged. Split the "iOS &
+Desktop" prose section the same way: a new "Desktop (Linux)" subsection points at the Releases page,
+while "iOS & Desktop (macOS / Windows)" keeps the original "distribution channels are not yet set up,
+build locally" wording for those three platforms untouched, per the task's explicit instruction not to
+overclaim macOS/Windows support. No other README section touched.
+
+Next: task 4, adding `Rpm` as a second target format — the straight-line release path (0–3, 6, 7) is
+now fully done; 4 is the first remaining `todo` per the status table (5, and the "do last" 8/9, follow
+it).
 
 ---
 
