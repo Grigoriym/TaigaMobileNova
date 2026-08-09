@@ -1,5 +1,12 @@
 # Integration tests against a live Taiga instance — plan
 
+**Status: local coverage done — 2026-08-09.** Tasks 1–4 are complete: login, all 12 `XApi` read
+round-trips, and one write round-trip (create+cleanup) — 13 integration tests total, all
+env-var-gated and manually triggered, none wired into PR CI. **Task 5 (CI-hosted Taiga) is the
+remaining item, and it is explicitly gated** — a materially bigger, separate piece of work (a
+`docker-compose.yml` this repo doesn't have, a multi-container stack, a wait-for-healthy CI step);
+see that task's own section before starting it, and do not start it without asking.
+
 **Created:** 2026-08-08
 **Baseline:** [docs/issues/2026-08-08-integration-tests-live-taiga.md](../issues/2026-08-08-integration-tests-live-taiga.md)
 — the investigation that settled the shape of this work: plain `jvmTest`, env-var gated, no
