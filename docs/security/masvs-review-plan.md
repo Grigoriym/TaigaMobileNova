@@ -51,8 +51,8 @@ a separate, later effort, not a reason to block a task here.
 | # | Task | MASVS category | Status |
 |---|---|---|---|
 | 0 | Storage — the server credential at rest | STORAGE | ✅ done — 2026-08-09 |
-| 1 | Cryptography — key management for whatever protects it | CRYPTO | todo — ⬅ NEXT |
-| 2 | Network — TLS, cleartext, the custom trust manager | NETWORK | todo |
+| 1 | Cryptography — key management for whatever protects it | CRYPTO | ✅ done — 2026-08-09 |
+| 2 | Network — TLS, cleartext, the custom trust manager | NETWORK | todo — ⬅ NEXT |
 | 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | todo |
 | 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | todo |
 | 5 | Code quality — minSdk, dependency scanning, input validation | CODE | todo |
@@ -172,6 +172,43 @@ code.
 **Done when:** register has a Cryptography section — either concrete findings tied to task 0's
 outcome (including the production-migration path if encryption is added), or an explicit "no
 application-level cryptography exists" note with the grep that backs it.
+
+**Result (2026-08-09):** Confirmed no application-level cryptography existed anywhere pre-task
+(`grep -rl 'Keystore\|SecretKey\|Cipher\.getInstance\|KeyGenParameterSpec'` and the Keychain
+equivalent both empty; no key material in source/build config/version catalogue). Rather than
+defaulting to "accept as bounded," the crypto decision was put to the user directly (three options:
+accept plaintext as bounded / implement Android+iOS now / Android only with iOS deferred) — chosen:
+**Android only, iOS deferred**.
+
+Implemented: a `TokenCipher` seam in `core/storage/.../auth/` (interface + `NoopTokenCipher`
+passthrough), threaded through `AuthStorageImpl` so every read/write of `token`/`refresh_token` goes
+through it. Android's actual, `AndroidKeystoreTokenCipher`, wraps the value in AES/GCM keyed by an
+`AndroidKeyStore`-resident key (`KeyGenParameterSpec`, `BLOCK_MODE_GCM`, no padding, fresh random IV
+per encryption, never reused) — ciphertext stored as `"v1:" + base64(iv + ciphertext)`. **Production
+migration**, since the app is live: any stored value without the `"v1:"` prefix is a pre-cipher
+plaintext token and is returned as-is by `decrypt()` rather than treated as an error — no forced
+logout on upgrade — then gets encrypted in place the next time `setAuthCredentials` runs (the next
+token refresh), a deliberately lazy migration chosen over a write-on-read side effect through the
+`tokenFlow`/`refreshTokenFlow` `Flow.map` collectors. A `"v1:"`-prefixed value that fails to decrypt
+(corruption, or a Keystore key invalidated by e.g. a biometric enrollment change) returns `""` —
+treated as logged out rather than sending a broken bearer token. JVM/desktop keeps `NoopTokenCipher`
+(outside MASVS scope by the skill's own Step 0); iOS also keeps `NoopTokenCipher` for now, recorded
+as an explicit Open finding (MASVS-STORAGE-1/CRYPTO-2) with the fix shape named (Keychain item,
+`kSecAttrAccessibleWhenUnlockedThisDeviceOnly`, same plaintext-fallback migration pattern) — not left
+implicit.
+
+Verified: `:core:storage:jvmTest` (new tests: cipher round-trip, legacy-plaintext passthrough,
+decrypt-failure → empty string, plus `NoopTokenCipherTest`), full `./gradlew jvmTest`, `ktlintCheck`
+(one auto-format needed on the changed class signature), `koverXmlReport`/`:koverVerify` — all green.
+Compiled on all three targets (`compileAndroidMain`, `compileKotlinIosArm64`,
+`compileKotlinIosSimulatorArm64`). `AndroidKeystoreTokenCipher` itself has **no automated test** — no
+Android unit-test source set exists in this repo by design (CLAUDE.md) — so its Keystore behavior is
+only reviewed by reading the code; hardware-backing enforcement is recorded in the register's "Needs
+a device" table, not claimed as verified.
+
+**Next: Task 2 — Network.** Register already scoped `CompositeTrustManager`'s TOFU flow and the iOS
+gap (no trust-manager equivalent there either) in this plan's own task 2 section — task 2's job is to
+actually run the skill's three TOFU questions against source and write the Network section.
 
 ---
 

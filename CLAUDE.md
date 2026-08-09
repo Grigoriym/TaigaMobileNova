@@ -262,6 +262,13 @@ fit* on one within the 120-char limit. It bit two consecutive sessions on the sa
 characters, which reads as over-long and is nonetheless required to be one line. Dropping argument
 names in the nested factory calls is what keeps it under the limit.
 
+**`standard:class-signature` is the same trap for a class header, and it auto-fixes.** Adding a
+second constructor param that pushes `class Foo(...) : SuperType {` past 120 chars — do not hand-wrap
+it as one param per line with the closing paren and `: SuperType {` on their own lines; ktlint instead
+wants every param kept on the constructor's own line and only the `: SuperType {` broken onto the
+next one. Don't guess the format: run `./gradlew :module:path:ktlintCommonMainSourceSetFormat` (or the
+matching task for the source set that failed) and let it rewrite the file.
+
 **Every `XApi` is an `interface XApi` + `@Single(binds = [XApi::class]) class XApiImpl`** — no
 exceptions, so any API can be faked in `:testing`. `WikiApi` was the last concrete one and was split
 in the course of testing it.
