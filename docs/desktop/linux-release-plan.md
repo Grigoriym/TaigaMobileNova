@@ -36,8 +36,8 @@ file rather than pushing through.
 
 | # | Task | Size | Status |
 |---|---|---|---|
-| 0 | Fix the broken icon path | XS | ⬅ NEXT |
-| 1 | Move desktop storage off `java.io.tmpdir` | S | todo |
+| 0 | Fix the broken icon path | XS | ✅ done — 2026-08-09 |
+| 1 | Move desktop storage off `java.io.tmpdir` | S | ⬅ NEXT |
 | 2 | CI job: build the Linux package on PRs | S | todo |
 | 3 | Wire the `.deb` into the release workflow | M | todo |
 | 4 | Add `Rpm` as a second target format | XS | deferred — ask first |
@@ -87,6 +87,14 @@ exact command the survey used to prove the bug; use it to prove the fix, don't j
 **Finalize focus:** low — this is a pure bug fix with an obvious verification command. Worth noting
 in the finalize pass only if the produced `.deb` has anything else visibly wrong (bad icon rendering,
 wrong menu category) since this task is the first time anyone has looked at the output at all.
+
+**Result (2026-08-09):** Three one-line edits applied exactly as scoped. Verified with
+`./gradlew :composeApp:packageDistributionForCurrentOS` — `packageDeb` succeeded, producing
+`composeApp/build/compose/binaries/main/deb/taigamobile_2.1.5_amd64.deb` (`packageDmg`/`packageMsi`
+skipped, as expected on Linux). `dpkg -I` confirms sane metadata (package `taigamobile`, version
+`2.1.5`, correct maintainer/deps). Extracted the `.deb` and confirmed the embedded icon
+(`opt/taigamobile/lib/TaigaMobile.png`) is a real 1024×1024 RGBA PNG, not empty/placeholder — nothing
+else visibly wrong. Next: task 1, moving desktop storage off `java.io.tmpdir`.
 
 ---
 
