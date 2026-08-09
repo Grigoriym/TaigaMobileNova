@@ -33,7 +33,7 @@ session discovers it exists instead of re-deriving the login/cert-trust flow fro
 |---|---|---|---|
 | 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
 | 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
-| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 3 remaining, see Task 3 — ⬅ NEXT |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | todo — 2 remaining, see Task 3 — ⬅ NEXT |
 | 4 | Write round-trip pilot (create + clean up) | S–M | todo |
 | 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
 
@@ -148,13 +148,18 @@ task):**
 | `WikiApi` | `WikiApiIntegrationTest` — `getProjectWikiPages(projectId = 5)` | 2026-08-08. Confirmed project 5 has 4 real wiki pages (home, getting-started, architecture, api-reference); asserts the list parses, not its content. |
 | `WorkItemApi` | `WorkItemApiIntegrationTest` — `getWorkItems(taskPath = "epics", project = 5)` | 2026-08-08. This is where the `EpicsApi`/`IssuesApi` reads actually live — see the correction above; project 5 has 10 confirmed epics; asserts the list parses, not its content. |
 
-**Remaining candidates (3, order not fixed — pick whichever has the most obvious real data in the
+**Done (8/12):**
+
+| Module | Test | Notes |
+|---|---|---|
+| `ProjectValuesApi` | `ProjectValuesApiIntegrationTest` — `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | 2026-08-09. Statuses confirmed to exist on project 5 (6 statuses: New/Ready/In progress/Ready for test/Done/Archived); asserts the list parses, not its content. |
+
+**Remaining candidates (2, order not fixed — pick whichever has the most obvious real data in the
 local instance when you start)**:
 
 | Module | Leading call | Notes |
 |---|---|---|
 | `SwimlanesApi` | `getSwimlanes(project = 5)` | simplest single-method interface; confirmed 2026-08-08 project 5 has zero swimlanes configured — still a valid (empty) round-trip |
-| `ProjectValuesApi` | `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | statuses confirmed to exist on project 5 (6 statuses: New/Ready/In progress/Ready for test/Done/Archived) |
 | `HistoryApi` | `getCommonTaskComments(singularTaskPath, id)` | needs a picked entity id (any of project 5's confirmed user stories) — otherwise no fixture needed |
 
 **Before each module's task: check what data actually exists in the local instance** (via
@@ -270,6 +275,16 @@ user stories, tasks, sprints, filters, wiki, work items) pass together. Full `./
 `WikiPageViewModelTest` flake, confirmed by a subsequent `--rerun` coming back fully green; not
 caused by this session (no change touched `feature/wiki/ui`). `ktlintCheck` green. 3/12 candidates
 remain — next session picks any row from the table above.
+
+**Result (2026-08-09, session 8):** `ProjectValuesApiIntegrationTest` added —
+`getProjectValues(endpoint = "userstory-statuses", projectId = 5)`, asserts the returned list is
+non-null (parsed). Picked over `SwimlanesApi`/`HistoryApi` because project 5's statuses were
+already confirmed to exist by an earlier session, and unlike `SwimlanesApi` (confirmed empty) this
+exercises a non-empty real read. Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped
+to `com.grappim.taigamobile.di.*IntegrationTest` — all ten integration tests (login, projects,
+users, user stories, tasks, sprints, filters, wiki, work items, project values) pass together. Full
+`./gradlew jvmTest --rerun` (no env vars) green with no flakes this run. `ktlintCheck` green. 2/12
+candidates remain — next session picks either `SwimlanesApi` or `HistoryApi`.
 
 ---
 
