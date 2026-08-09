@@ -50,8 +50,8 @@ a separate, later effort, not a reason to block a task here.
 
 | # | Task | MASVS category | Status |
 |---|---|---|---|
-| 0 | Storage — the server credential at rest | STORAGE | todo — ⬅ NEXT |
-| 1 | Cryptography — key management for whatever protects it | CRYPTO | todo |
+| 0 | Storage — the server credential at rest | STORAGE | ✅ done — 2026-08-09 |
+| 1 | Cryptography — key management for whatever protects it | CRYPTO | todo — ⬅ NEXT |
 | 2 | Network — TLS, cleartext, the custom trust manager | NETWORK | todo |
 | 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | todo |
 | 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | todo |
@@ -102,6 +102,45 @@ fix, or an Accepted deviation with a stated bound) — not left as unconfirmed l
 the skill itself that wasn't obvious (how the category gets passed, whether the register skeleton
 needed anything beyond the skill's own template).
 
+**Result (2026-08-09):** `docs/security/masvs.md` created. Both leads from the "Why" confirmed with
+source evidence, not just copied framing:
+
+- **Session token/refresh token plaintext in DataStore** confirmed on **all three platforms**
+  (Android `filesDir/datastore/auth_storage.preferences_pb`, JVM `appDataDir()/...`, iOS
+  `NSDocumentDirectory/...`) — no Keystore/Keychain wrapper anywhere (`grep -rl
+  'Keychain\|kSecAttr\|SecItem'` across all source sets returns nothing; same for
+  `Keystore\|SecretKey\|Cipher.getInstance\|KeyGenParameterSpec`). Recorded as an **Open** finding
+  for MASVS-STORAGE-1, explicitly handed to task 1 to decide how to key it, per this task's own
+  "Why" framing.
+- **`allowBackup` inversion confirmed exactly as scoped** — release manifest had no
+  `dataExtractionRules`/`fullBackupContent` at all (default: back up everything), debug had both
+  set to disable backup entirely. **Fixed in this task** (small, isolated — one manifest edit + two
+  new `res/xml` files) rather than deferred: release keeps `allowBackup="true"` but now excludes the
+  auth DataStore file (and its legacy `SharedPreferencesMigration` source) from cloud backup and
+  device transfer via `data_extraction_rules.xml` (API 31+) and `backup_rules.xml` (API 24-30,
+  matching `minSdk`). Verified against the merged release manifest output
+  (`processFdroidReleaseMainManifest`). Per the skill's own rule, a fixed finding doesn't stay in
+  the register — the register has a prose note explaining the fix instead of an Open row.
+- Cached server URL (`DataStoreServerStorage`) confirmed to hold only a bare base URL, no embedded
+  credential — recorded as an **Accepted deviation**, not a finding.
+- No log call site anywhere logs the token/password/secret — verified statically, noted in the
+  register.
+- Two register items moved to the "needs a device" bucket: whether the new backup exclusion
+  actually holds under a real `adb backup`/cloud backup, and (once task 1 lands a cipher) whether
+  Keystore/Keychain hardware-backing is actually enforced.
+
+**Running the skill itself:** no surprises — `docs/security/masvs.md` didn't exist, so this task
+created it from the skill's Step 4 template as-is (header, Accepted/Open/Needs-a-device tables). One
+addition beyond the template: a "Notes" section at the bottom for a fixed-finding explanation, since
+the skill says a fixed finding "leaves the register" but gives no guidance on where to briefly note
+*why* a row that a reader would expect (backup inversion, given how prominently task 0's "Why"
+names it) isn't there. Recommend keeping that "Notes" section as the register's per-category
+convention for that situation, rather than reinventing it each task.
+
+**Next: Task 1 — Cryptography.** Register already has the Open MASVS-STORAGE-1 finding pointing at
+it; task 1's job is to decide how (or whether) to key protection for the token/refresh_token, and
+separately confirm no other key material exists in source/build config/version catalogue.
+
 ---
 
 ## Task 1 — Cryptography
@@ -120,8 +159,19 @@ CRYPTO-2 check on its own.
 rule) — if none exists anywhere, MASVS-CRYPTO-1/2 are likely N/A by construction (nothing does
 application-level crypto), which is a real, recordable outcome, not a skipped task.
 
+**The app is live in production — if this task adds Keystore/Keychain-backed encryption over
+`token`/`refresh_token`, every already-installed user has a *plaintext* value sitting in
+`AuthStorage`'s DataStore file today.** A read path that assumes ciphertext breaks or silently logs
+out every existing user on upgrade unless this is handled explicitly. This is not a reason to skip
+adding encryption — it's a reason the task isn't done until the upgrade path is named: either a
+one-time migration (read plaintext if decryption fails / value isn't recognizably ciphertext,
+re-encrypt in place) or an accepted "next login re-establishes it, here's what that costs the user"
+tradeoff. Whichever is chosen, state it in the register next to the MASVS-CRYPTO-2 row, not just in
+code.
+
 **Done when:** register has a Cryptography section — either concrete findings tied to task 0's
-outcome, or an explicit "no application-level cryptography exists" note with the grep that backs it.
+outcome (including the production-migration path if encryption is added), or an explicit "no
+application-level cryptography exists" note with the grep that backs it.
 
 ---
 
