@@ -38,8 +38,8 @@ file rather than pushing through.
 |---|---|---|---|
 | 0 | Fix the broken icon path | XS | ✅ done — 2026-08-09 |
 | 1 | Move desktop storage off `java.io.tmpdir` | S | ✅ done — 2026-08-09 |
-| 2 | CI job: build the Linux package on PRs | S | ⬅ NEXT |
-| 3 | Wire the `.deb` into the release workflow | M | todo |
+| 2 | CI job: build the Linux package on PRs | S | ✅ done — 2026-08-09 |
+| 3 | Wire the `.deb` into the release workflow | M | ⬅ NEXT |
 | 4 | Add `Rpm` as a second target format | XS | deferred — ask first |
 | 5 | Install a real logger backend on desktop | S | deferred — ask first |
 | 6 | Update README once Linux is actually distributed | XS | todo (do last, after 3) |
@@ -214,6 +214,31 @@ caught that regression.
 
 **Finalize focus:** medium — note whether `fakeroot` needed the explicit install step or was already
 present, since that's exactly the kind of CI-environment fact that's expensive to rediscover later.
+
+**Result (2026-08-09):** Added a `desktop-package` job to `.github/workflows/build.yml`, alongside
+the existing `build` job — reuses `android-setup-composite-action` (Java 21 + Gradle cache; the
+Android SDK setup it also does goes unused here, but keeping one setup action was judged not worth
+avoiding per the task's own note), installs `fakeroot` explicitly, then runs
+`./gradlew :composeApp:packageDeb` only (not `packageDistributionForCurrentOS`, which would also
+attempt Dmg/Msi).
+
+**`fakeroot` confirmed present on `ubuntu-latest` already** — the CI log shows `fakeroot is already
+the newest version (1.33-1)`, so the explicit install step is a no-op safety net rather than filling
+a real gap. Kept it anyway per the task's scope (protects against the runner image changing).
+
+**Verified both `Done when` conditions, not just "job is green":**
+1. Pushed to the existing open PR #345 (this plan's own branch,
+   `docs/desktop-linux-release-plan` — tasks 0–1 already lived there unmerged) and watched the run
+   via `gh run watch`: `desktop-package` passed in 3m48s.
+2. Locally reverted task 0's icon-path fix (one line, `../art/...` → `../info/art/...` in
+   `composeApp/build.gradle.kts`, uncommitted) and re-ran the exact command the job runs
+   (`./gradlew :composeApp:packageDeb`) — it failed with the same `Input file does not exist` error
+   the original survey documented, confirming this job would have caught that regression. Reverted
+   the local-only change immediately after (`git checkout -- composeApp/build.gradle.kts`); nothing
+   from this check was committed.
+
+No artifact upload, no `packageRpm`/`packageDmg`/`packageMsi` — out of scope per the task. Next: task
+3, wiring the `.deb` into the release workflow.
 
 ---
 
