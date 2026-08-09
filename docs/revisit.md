@@ -19,6 +19,7 @@ its own section, kept for the reasoning rather than the outcome):
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 24 | `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently | S–M | [testing agent, "Integration test against a live server"](../.claude/agents/testing.md) |
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
+| 29 | Login screen's server-URL regex rejects bare `localhost` (no dot in hostname) | XS | this file, #29 |
 
 <details>
 <summary><strong>Full index (all 28 entries, resolved included)</strong> — this file is long because
@@ -56,6 +57,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
+| 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | 🟡 open |
 
 </details>
 
@@ -1134,3 +1136,39 @@ after the removed span. `CLAUDE.md` is now 440 lines (was 717). Checked `docs/te
 `improvement-plan.md` and `deferred.md` for references to the moved content by line number or quoted
 anchor text — none exist, so no cross-reference updates were needed. Docs-only change; no build/test
 commands to run.
+
+---
+
+## 29. Login screen's server-URL regex rejects bare `localhost`
+
+**Where:** `feature/login/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/login/ui/LoginViewModel.kt:33`
+
+```kotlin
+private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""
+```
+
+**What happens:** the `([\w\d-]+\.)+` group requires at least one dot-separated label before the
+final hostname segment, i.e. it demands a real FQDN (`api.taiga.io`, `example.com`). A single-label
+host like `http://localhost:9000` fails `.matches(SERVER_REGEX)`, so `LoginViewModel.login()`
+(`:109`) sets `isServerInputError = true` and the field renders red — the request is never sent, with
+no error message beyond the red outline.
+
+**Evidence:** found manually verifying [docs/desktop/linux-release-plan.md](desktop/linux-release-plan.md)
+task 1 (moving desktop storage off `java.io.tmpdir`) — driving the real desktop app's login screen
+against the local dev Taiga instance (`http://localhost:9000`, per this project's memory) via
+`xdotool`. Typing `http://localhost:9000` produced the red-outlined field; switching to
+`http://127.0.0.1:9000` (which does satisfy the regex — each dot-separated octet matches
+`([\w\d-]+\.)+`) passed validation and logged in successfully.
+
+**Consequence:** cosmetic/dev-workflow only, not a production bug — no real Taiga deployment is
+reachable at a bare single-label hostname. It only bites developers and self-hosters pointing the
+app at `http://localhost:<port>` (a Docker-hosted instance, a reverse-proxied instance without a
+registered domain, etc.), who have to remember to type `127.0.0.1` instead.
+
+**Fix, if wanted:** loosen `SERVER_REGEX`'s host group to `([\w\d-]+\.)*[\w\d-]+`, allowing a
+single-label host without a trailing dot. Widens what "valid" data can be sent to `login()` but
+doesn't change any *behavior* for currently-valid inputs — worth a quick check that no other code
+(e.g. cert-pinning, `HostSelectionPlugin`) assumes a dotted hostname.
+
+**Why deferred:** unrelated to the storage-path task in progress; a validation-regex change belongs
+in its own diff.

@@ -37,8 +37,8 @@ file rather than pushing through.
 | # | Task | Size | Status |
 |---|---|---|---|
 | 0 | Fix the broken icon path | XS | ✅ done — 2026-08-09 |
-| 1 | Move desktop storage off `java.io.tmpdir` | S | ⬅ NEXT |
-| 2 | CI job: build the Linux package on PRs | S | todo |
+| 1 | Move desktop storage off `java.io.tmpdir` | S | ✅ done — 2026-08-09 |
+| 2 | CI job: build the Linux package on PRs | S | ⬅ NEXT |
 | 3 | Wire the `.deb` into the release workflow | M | todo |
 | 4 | Add `Rpm` as a second target format | XS | deferred — ask first |
 | 5 | Install a real logger backend on desktop | S | deferred — ask first |
@@ -149,6 +149,36 @@ different helpers.
 nobody has thought about yet (e.g. does `PreferenceDataStoreFactory.createWithPath`'s underlying
 implementation handle a directory that doesn't exist yet, or does `mkdirs()` need to happen before
 each `create*DataStore` call, not just once at startup). Say plainly what was and wasn't verified.
+
+**Result (2026-08-09):** Implemented exactly as scoped — one new internal helper,
+`appDataDir(): File` in `core/storage/src/jvmMain/.../platform/AppDataDir.jvm.kt`, picking
+`$XDG_DATA_HOME/TaigaMobile` (falling back to `~/.local/share/TaigaMobile`) on Linux, with
+same-shape best-effort branches for macOS (`~/Library/Application Support/TaigaMobile`) and Windows
+(`%APPDATA%\TaigaMobile`) as the task allowed. All six `File(System.getProperty("java.io.tmpdir"),
+...)` call sites in `DBModule.jvm.kt`, `StorageModule.jvm.kt` (four `create*DataStore` functions) and
+`ServerStorageImpl.jvm.kt` now go through `appDataDir()`; file name constants untouched.
+`mkdirs()` happens once inside `appDataDir()` itself (every caller invokes it fresh), so the
+"does `mkdirs()` need to happen before each call" question the task flagged doesn't arise — it always
+does.
+
+**Verified end-to-end, not just compiled.** With no `xdotool`/`ydotool` available initially, gregory
+installed `xdotool` and gave the go-ahead to drive the real GUI. Ran `:composeApp:run` against
+gregory's local dev Taiga instance, logged in via simulated keyboard/mouse input
+(`docs/local-info.md` / project memory: `admin`/`admin`) and confirmed all six files land under
+`~/.local/share/TaigaMobile/` (`taigamobilenova.db(+.lck/-wal/-shm)`, `auth_storage.preferences_pb`,
+`taiga_session_storage.preferences_pb`, `taiga_server_storage_name.preferences_pb`). Selected a
+project to reach the Dashboard, closed the window, confirmed the process fully exited, then launched
+a **second, independent** `:composeApp:run` process — it opened directly on the Dashboard with no
+re-login prompt, confirming the session persists exactly as the bug fix intends. Only the Linux
+branch was exercised at runtime; macOS/Windows branches are unverified best-effort, as scoped.
+`./gradlew jvmTest` and `ktlintCheck` both green across the whole repo afterward.
+
+**Found and deliberately not fixed:** the login screen's server-URL validation regex rejects a bare
+`localhost` hostname (requires a dotted FQDN), so testing needed `http://127.0.0.1:9000` instead of
+`http://localhost:9000` — pre-existing, unrelated to this task's diff. Logged as
+[docs/revisit.md #29](../revisit.md#29-login-screens-server-url-regex-rejects-bare-localhost).
+
+Next: task 2, the CI job that builds the Linux package on PRs.
 
 ---
 
