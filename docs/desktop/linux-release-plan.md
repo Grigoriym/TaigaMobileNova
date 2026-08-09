@@ -39,8 +39,8 @@ file rather than pushing through.
 | 1 | Move desktop storage off `java.io.tmpdir` | S | ✅ done — 2026-08-09 |
 | 2 | CI job: build the Linux package on PRs | S | ✅ done — 2026-08-09 |
 | 3 | Wire the `.deb` into the release workflow | M | ✅ done — 2026-08-09 |
-| 4 | Add `Rpm` as a second target format | XS | todo ⬅ NEXT |
-| 5 | Install a real logger backend on desktop | S | todo |
+| 4 | Add `Rpm` as a second target format | XS | ✅ done — 2026-08-09 |
+| 5 | Install a real logger backend on desktop | S | todo ⬅ NEXT |
 | 6 | Update README once Linux is actually distributed | XS | ✅ done — 2026-08-09 |
 | 7 | Logout doesn't clear the local DB on desktop | S | ✅ done — 2026-08-09 |
 | 8 | GitHub OAuth login is a dead button on desktop | S | todo (do last) |
@@ -332,6 +332,41 @@ for `fakeroot`), extend the CI job from task 2 and the release wiring from task 
 
 **Done when:** `./gradlew :composeApp:packageRpm` succeeds locally and in CI, and the `.rpm` is
 attached to the GitHub Release next to the `.deb`.
+
+**Result (2026-08-09):** Added `TargetFormat.Rpm` to `targetFormats(...)` in
+`composeApp/build.gradle.kts` — one line, no other `nativeDistributions` config touched. Checked the
+Compose Multiplatform plugin's own source (`PlatformSettings.kt`/`packageVersions.kt`, available
+locally at `~/proj/kmp/compose-multiplatform`) before assuming version wiring needed extra work:
+`rpmPackageVersion` exists as a format-specific override but falls back to the shared
+`packageVersion` (already set from `libs.versions.version.name`) when unset, exactly like
+`debPackageVersion` already does for Deb — so no version wiring was needed beyond the one-line format
+addition.
+
+**`rpmbuild` was not present locally or (unconfirmed until this task) on `ubuntu-latest`** — unlike
+`fakeroot` (task 2 found already installed), the `rpm` package genuinely needed the explicit
+`apt-get install`. Gregory installed it locally (sudo declined for the assistant, installed by
+gregory directly) so `./gradlew :composeApp:packageRpm` could be run and verified locally first:
+succeeded, producing `taigamobile-2.1.5-1.x86_64.rpm`; `rpm -qip` confirmed sane metadata (name,
+version `2.1.5` matching `libs.versions.toml`, summary/description). Extended both
+`.github/workflows/build.yml`'s `desktop-package` job and `.github/workflows/release.yml`'s `release`
+job: `Install fakeroot` steps became `Install fakeroot and rpm` (added `rpm` to the same apt-get
+call), and a `Package Linux rpm` step (`./gradlew :composeApp:packageRpm`) was added right after the
+existing `Package Linux deb` step in both files. `release.yml`'s artifact-upload `path:` and the
+`Create GitHub release` `files:` block both got `composeApp/build/compose/binaries/main/rpm/*.rpm`
+alongside the existing `*.deb` entry.
+
+**Verified both `Done when` conditions, not just "looks right":** local `packageRpm` run (above), plus
+pushed to the already-open PR #345 and watched the `desktop-package` job via `gh run watch` — both
+`Package Linux deb` and `Package Linux rpm` steps passed on the real `ubuntu-latest` image, confirming
+the explicit `rpm` install step is load-bearing there too (not a no-op safety net like `fakeroot`
+turned out to be in task 2). **Not verified**: an actual `workflow_dispatch`/tag-triggered run of
+`release.yml` attaching the `.rpm` to a real GitHub Release — same deliberate deferral task 3 made for
+the `.deb`, for the same reason (avoids touching the live `v2.1.5` release); relies on the CI job
+above proving `packageRpm` builds in the same environment `release.yml` now uses. `./gradlew
+jvmTest` and `ktlintCheck` both green across the whole repo (Gradle-script-only change; no Kotlin
+source touched).
+
+Next: task 5, installing a real logger backend on desktop.
 
 ---
 
