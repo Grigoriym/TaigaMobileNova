@@ -248,11 +248,10 @@ when running a coverage sweep — see
 [docs/testing/kover-coverage-heuristics.md](docs/testing/kover-coverage-heuristics.md).
 
 **Verify with the full `./gradlew jvmTest`, not just the module's own task.** All modules' JVM tests
-share a process, and `kotlinx-coroutines-test` registers a `ServiceLoader`-global
-`CoroutineExceptionHandler` — so an exception escaping a coroutine in *any* test is reported against
-whichever `runTest` happens to be live, in a different module. `:feature:x:jvmTest` passing proves
-your test works; only the full run proves it did not break someone else's. When a failure appears
-alongside your change, A/B it against a clean tree (`git stash -u`) before assuming you caused it.
+share one process, so a coroutine that escapes a test in one module can fail an unrelated test in
+another (mechanism: **testing** subagent, gotcha 7). `:feature:x:jvmTest` passing proves your test
+works; only the full run proves it did not break someone else's. When a failure appears alongside
+your change, A/B it against a clean tree (`git stash -u`) before assuming you caused it.
 
 **Run `ktlintCheck` too — a green `jvmTest` says nothing about it.** The rule that catches new test
 code is `standard:function-signature`: a signature written across multiple lines fails if it *would
@@ -265,19 +264,13 @@ names in the nested factory calls is what keeps it under the limit.
 exceptions, so any API can be faked in `:testing`. `WikiApi` was the last concrete one and was split
 in the course of testing it.
 
-**Failure-path convention: every public method of a repository impl, use case or ViewModel gets a
-test where a collaborator throws `testException`.** This is what closes the ~20-point line-vs-branch
-coverage gap — happy-path-only tests walk through a function without ever taking its `catch`, its
-`?:` or its `if`. Assert with `assertFailsWithTestException { }` (`:testing`, `TestUtils.kt`), not a
-bare `assertFailsWith<IllegalStateException>`: `testException` *is* an `IllegalStateException`, and
-so is a fake's own `error("… not set")` guard, so a bare type check passes when the test never
-reached the code it claims to cover. It also matches by message rather than identity, which a throw
-from inside an `async` child requires. Any fake the test touches needs a `…Throws` hook; add one
-while you are in the file even if this test doesn't use it.
-
-A method that *swallows* failures is the same convention pointed the other way: assert the fallback.
-`WorkItemRepositoryImpl.getWorkItems` catches API errors and reads the Room cache, so its
-failure-path test asserts the cache was read, not that anything was thrown.
+**Failure-path convention (required): every public method of a repository impl, use case or
+ViewModel gets a test where a collaborator throws `testException`, asserted with
+`assertFailsWithTestException { }`** (`:testing`, `TestUtils.kt`) — not a bare
+`assertFailsWith<IllegalStateException>`, which also matches a fake's own `error("… not set")` guard
+and can pass without the test ever reaching the code it claims to cover. This is what closes the
+line-vs-branch coverage gap. Full convention — swallowing methods, the `…Throws` fake hook,
+`Result`-returning methods — in the **testing** subagent's "Failure-path convention" section.
 
 **Testing `expect`/`actual` code: prefer the platform whose actual is real over stubbing one out.**
 JVM is a fully supported target here — desktop runs the app for real — so `jvmTest` can exercise
@@ -294,27 +287,14 @@ prove the change reached the forked test JVM. `TZ` does; `LANG`, `LC_ALL` and `J
 do not. The `testing` agent's gotcha 11 has the details.
 
 **Integration tests against a live external server** are the same "real actual" preference taken one
-step further: a `jvmTest` can exercise the real Ktor/OkHttp client against a real backend, not just
-a real platform API. Android and JVM/Desktop share the OkHttp engine
-(`KmpNetworkConventionPlugin`), so this is representative of Android's network behaviour with no
-emulator involved. Gate it with a runtime check (`System.getenv("X") ?: return`) inside a plain
-`jvmTest` class — not a separate Gradle source set — so it silently no-ops on CI and every other
-machine; the test is JVM-only either way, so a separate source set buys nothing.
-`LoginIntegrationTest` (`composeApp/src/jvmTest/.../di/`) is the worked example: builds the real
-Koin graph the same way `KoinGraphTest` does, resolves the real `AuthRepository`, and mirrors
-`LoginViewModel`'s own trust-on-first-use retry for a self-signed certificate. Every other
-integration test in that package calls the shared `liveTaigaSessionOrSkip(): Koin?` helper
-(`LiveTaigaSession.kt`, same directory) instead of repeating that flow — see the **testing** agent's
-"Integration test against a live server" entry. See
-[docs/issues/2026-08-08-integration-tests-live-taiga.md](docs/issues/2026-08-08-integration-tests-live-taiga.md)
-and [docs/testing/integration-tests-plan.md](docs/testing/integration-tests-plan.md) (task list).
-
-**Only one `koinApplication<KoinApp>` per test JVM process may touch the JVM `DataStore` files.**
-`StorageModule.jvm.kt`'s DataStores read/write fixed paths under `java.io.tmpdir`, so a second
-`koinApplication` built in the same process — e.g. two integration tests each building their own —
-throws `IllegalStateException: multiple DataStores active for the same file` the moment either
-touches storage. `liveTaigaSessionOrSkip()` works around this by memoizing the graph-build-and-login
-behind a `Lazy<Koin>`, so every integration test in one run shares the same authenticated instance.
+step further: a plain `jvmTest` class, gated on `System.getenv("X") ?: return` (not a separate
+Gradle source set), can exercise the real Ktor/OkHttp client against a real backend —
+`LoginIntegrationTest` (`composeApp/src/jvmTest/.../di/`) was the first. **Always call the shared
+`liveTaigaSessionOrSkip(): Koin?` helper (`LiveTaigaSession.kt`) rather than building a fresh
+`koinApplication` per test** — the JVM `DataStore` backends tolerate only one open
+`koinApplication` per process. Full pattern, the `DataStore`-collision mechanism, and the
+write-round-trip convention are in the **testing** subagent's "Integration test against a live
+server" section.
 
 **Gradle does not track env vars as task inputs.** Re-running `./gradlew jvmTest` after only
 changing an env var (not source) reports `UP-TO-DATE` and silently skips re-execution — pass
