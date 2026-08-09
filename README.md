@@ -12,7 +12,7 @@ The previous author archived the original project. This version has been complet
 |----------|--------|--------------|
 | Android  | Released | Google Play & F-Droid |
 | iOS      | Builds & runs | Distribution TBD |
-| Desktop (Linux) | Released | [GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases) (`.deb`) |
+| Desktop (Linux) | Released | [GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases) (`.deb` / `.rpm`) |
 | Desktop (macOS / Windows) | Builds & runs | Distribution TBD |
 
 ### Android
@@ -26,7 +26,7 @@ height="80">](https://f-droid.org/en/packages/com.grappim.taigamobile.fdroid/)
 
 ### Desktop (Linux)
 
-Download the latest `.deb` from [GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases).
+Download the latest `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/openSUSE) from [GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases).
 
 ### iOS & Desktop (macOS / Windows)
 
