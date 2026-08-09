@@ -42,16 +42,20 @@ file rather than pushing through.
 | 3 | Wire the `.deb` into the release workflow | M | ✅ done — 2026-08-09 |
 | 4 | Add `Rpm` as a second target format | XS | deferred — ask first |
 | 5 | Install a real logger backend on desktop | S | deferred — ask first |
-| 6 | Update README once Linux is actually distributed | XS | todo (do last, after 3) |
+| 6 | Update README once Linux is actually distributed | XS | todo (do last, after 3 and 7) |
+| 7 | Logout doesn't clear the local DB on desktop | S | ⬅ NEXT |
+| 8 | GitHub OAuth login is a dead button on desktop | S | deferred — ask first, do last |
+| 9 | Offline detection is a stub on desktop | S | deferred — ask first, do last |
 
 Sizes: XS = minutes, S = under an hour, M = a focused session.
 
-**Scope decision (2026-08-09):** tasks 0–3 and 6 are the straight-line path to "a Linux `.deb` a
+**Scope decision (2026-08-09):** tasks 0–3, 6, and 7 are the straight-line path to "a Linux `.deb` a
 user can actually download and run correctly" and are in scope to work straight through. Tasks 4–5
 are real improvements but not required for a first release — **gated on asking first**, same
 convention `docs/testing/improvement-plan.md` uses for its own gated items. Task 6 depends on 3
-landing (no point documenting a distribution channel that doesn't exist yet) but is otherwise trivial
-and does not need to wait for 4–5.
+landing (no point documenting a distribution channel that doesn't exist yet) and now also on 7 (no
+point calling the release straight-line-done while a known data bug sits unfixed) but is otherwise
+trivial and does not need to wait for 4–5.
 
 Task ordering rationale: 0 unblocks everything else (nothing downstream can be verified against a
 build that doesn't produce a package). 1 is the correctness bug that matters most to a real user and
@@ -59,6 +63,14 @@ has no dependency on 0 having landed, but is listed second because it's less urg
 packages at all*. 2 depends on 0 (the CI job would fail on the same icon bug) and should land before
 3 (proving the package builds in CI before wiring it into a release is cheaper to debug). 3 depends
 on 0–2.
+
+**Tasks 7–9 added 2026-08-09**, after a post-task-3 audit (prompted by gregory suspecting desktop
+gets the same short shrift as iOS) turned up three real JVM-actual gaps beyond the original three the
+survey found. Task 7 is in scope now because it's a plain data-correctness bug in the same family as
+task 1 (a JVM actual silently doing nothing where Android's does real work) and is cheap. Tasks 8 and
+9 are real but explicitly **deferred to last, per gregory (2026-08-09)** — both also affect iOS, not
+just desktop, which makes them bigger than a Linux-release-scoped fix, and neither blocks a user from
+successfully installing and using a first `.deb` release the way tasks 0–3 and 7 do.
 
 ---
 
@@ -354,6 +366,89 @@ and build locally, per the survey, but nothing in this plan wires them into CI o
 imply they're supported just because `Dmg`/`Msi` appear in the same Gradle block).
 
 **Finalize focus:** low.
+
+---
+
+## Task 7 — Logout doesn't clear the local DB on desktop
+
+**Why:** `AuthStateManager.logoutSuspend()` (`core/storage/src/commonMain/kotlin/com/grappim/taigamobile/core/storage/auth/AuthStateManager.kt`)
+clears session/auth storage and calls `databaseWrapper.clearAllTablesKmp()` to wipe the local Room
+cache. The `expect fun TaigaDB.clearAllTablesKmp()` actuals live in `core/storage/src/*/kotlin/com/grappim/taigamobile/core/storage/db/TaigaDBExt.*.kt`:
+Android's really calls `clearAllTables()`; **JVM's and iOS's are both `actual fun TaigaDB.clearAllTablesKmp() = Unit`** — a
+silent no-op. Verified by reading all three files directly. On desktop, logging out and logging back
+in as a different Taiga account (or a different server) leaves the previous account's cached
+projects/sprints/tasks/wiki rows sitting in the local DB — a real data-correctness bug, same family as
+task 1's storage-path bug (a JVM actual quietly doing nothing where Android's does real work).
+
+**Scope:** implement `TaigaDBExt.jvm.kt`'s actual identically to Android's —
+`actual fun TaigaDB.clearAllTablesKmp() = clearAllTables()`. Confirmed safe to copy verbatim:
+`TaigaDB` (`core/storage/src/commonMain/.../db/TaigaDB.kt:35`) extends the KMP-shared `RoomDatabase()`,
+so `clearAllTables()` isn't Android-specific — it's the same zero-arg Room method on every platform.
+The IO-dispatcher hop already happens one level up in `DatabaseWrapperImpl.clearAllTables()`, so the
+actual itself needs no dispatcher handling of its own. **iOS's identical stub is out of scope for this
+task** — this plan is Linux-desktop-scoped, and there's no way to exercise the iOS actual here to
+verify the same one-liner is correct there too. Leave iOS alone; don't fix it as a drive-by.
+
+**Done when:** on desktop, log in as one Taiga account, load some data (visit a project so it's
+cached), log out, log in as a different account (or point at a different server), and confirm the
+first account's cached rows are gone — not just that the UI shows the new account's data (which could
+be cache-first-then-refetch masking the bug), but that the local DB file itself no longer has the old
+rows. `./gradlew jvmTest` must stay green.
+
+**Finalize focus:** low — small, mechanical fix once the actual is found; note if `TaigaDB`'s
+generated `clearAllTables()` needed anything beyond a direct call (e.g. running off the DB dispatcher)
+that Android's one-liner didn't make obvious was needed.
+
+---
+
+## Task 8 — GitHub OAuth login is a dead button on desktop
+
+⛔ **Gated — do not start without asking (see status table). Deferred to last per gregory (2026-08-09).**
+
+**Why, if approved:** `LoginScreen.kt` wires the "Continue with GitHub" button unconditionally on all
+platforms. `LoginViewModel.startGithubOAuth()` succeeds (fetches the OAuth client ID) and fires an
+event that opens `GithubOAuthWebViewDialog` — a real in-app WebView flow on Android
+(`GithubOAuthWebViewDialog.android.kt`), but on JVM (`feature/login/ui/src/jvmMain/kotlin/com/grappim/taigamobile/feature/login/ui/GithubOAuthWebViewDialog.jvm.kt`)
+it's `actual fun GithubOAuthWebViewDialog(...) = Unit` — verified by reading the file directly. A
+desktop user clicks the button, sees a brief loading state, then nothing happens, with no error or
+explanation. `docs/features/github-auth/plan.md` already lists "iOS / Desktop OAuth" as out of scope,
+so the missing *implementation* is a known, intentional deferral — what's not intentional is that the
+button doesn't reflect that: it should be hidden or disabled on JVM (and iOS, which has the identical
+stub), not silently swallow the click.
+
+**Why deferred:** affects iOS too, not just desktop, so it's bigger than this Linux-release-scoped
+plan; and it doesn't block a user from installing and using a first `.deb` release, since the rest of
+login (username/password, presumably) works normally.
+
+**Scope, if approved:** hide or disable the GitHub button on platforms where
+`GithubOAuthWebViewDialog` is a no-op, rather than implementing the actual WebView flow for JVM/iOS
+(that would be a much bigger task and isn't what's being asked here — confirm scope again before
+starting, since "hide the button" and "implement OAuth for desktop" are very different sizes).
+
+---
+
+## Task 9 — Offline detection is a stub on desktop
+
+⛔ **Gated — do not start without asking (see status table). Deferred to last per gregory (2026-08-09).**
+
+**Why, if approved:** `LocalOfflineState` (`uikit`) is driven by `MainViewModel.isOffline`, which
+reads `NetworkMonitor.isOnline`. `NetworkMonitorImpl` has three implementations, all in
+`core/storage/src/*/kotlin/com/grappim/taigamobile/core/storage/network/`: Android's
+(`androidMain/.../NetworkMonitorImpl.kt`) really registers a `ConnectivityManager.NetworkCallback`;
+**JVM's and iOS's (`jvmMain`/`iosMain`, both named `NetworkMonitorImpl.jvm.kt`/`.ios.kt`) hardcode
+`MutableStateFlow(true)` and never update it** — verified by reading the JVM file directly (iOS
+reported identical by the auditing pass, not independently re-verified here). Desktop (and iOS) always
+reports online: the offline banner never shows, and no write action is ever disabled for connectivity
+reasons on those two platforms, contrary to CLAUDE.md's documented offline-state convention.
+
+**Why deferred:** affects iOS too, not just desktop. Real connectivity monitoring on JVM needs an
+actual design decision (poll a socket? `InetAddress.isReachable`? watch `NetworkInterface` changes?)
+that's worth scoping deliberately rather than assuming here, same reasoning task 5 already uses for
+gating the logger backend.
+
+**Scope, if approved:** to be decided when this task is actually scoped — resolve the JVM detection
+strategy, then give `NetworkMonitorImpl.jvm.kt` a real implementation. iOS is explicitly out of scope
+for this Linux-release-scoped plan even if approved.
 
 ---
 
