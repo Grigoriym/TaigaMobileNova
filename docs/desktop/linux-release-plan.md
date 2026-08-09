@@ -632,6 +632,15 @@ the failure path doesn't depend on any particular local network's error behavior
 low additional value once the pure function is covered) — same precedent as task 5's `FileLogger`,
 which also has no test. `./gradlew jvmTest` and `ktlintCheck` both green across the whole repo.
 
+**CI caught something local verification missed: `detekt` was never run locally before the first
+push, and it failed** — `SwallowedException` on `catch (e: IOException) { false }`, since `e` is
+never read. Fixed by renaming the caught variable to `expected`, which the project's own
+`config/detekt/detekt.yml` (`SwallowedException.allowedExceptionNameRegex: '_|(ignore|expected).*'`)
+already treats as "yes, this is deliberate" rather than needing a `@Suppress`. `./gradlew detekt`
+(root, matching the CI step exactly) and `jvmTest` both green after the fix. Lesson for next time:
+run `./gradlew detekt` locally alongside `jvmTest`/`ktlintCheck` before pushing, not just after CI
+flags it.
+
 **Verified end-to-end, not just compiled — but split between us this time.** I ran
 `:composeApp:run` and confirmed the online path live: login screen renders normally with no offline
 banner, and `taigamobile.log` stays clean (no spurious "Network connectivity changed" lines while

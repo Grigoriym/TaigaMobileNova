@@ -54,6 +54,6 @@ class NetworkMonitorImpl(
 internal fun isHostReachable(host: String, port: Int, timeoutMs: Int): Boolean = try {
     Socket().use { socket -> socket.connect(InetSocketAddress(host, port), timeoutMs) }
     true
-} catch (e: IOException) {
+} catch (expected: IOException) {
     false
 }
