@@ -1469,6 +1469,14 @@ updated: `docs/security/masvs.md`.
 
 ## 37. iOS logout doesn't clear the local Room cache
 
+**Resolved (2026-08-10):** replaced the `= Unit` stub with the same three DAO `deleteAll()` calls
+(`projectDao()`, `sprintDao()`, `workItemDao()`) as the JVM actual
+(`core/storage/src/jvmMain/.../db/TaigaDBExt.jvm.kt:3-7`) — a direct port, no new abstraction needed.
+Verified `:core:storage:compileKotlinIosSimulatorArm64`, `ktlintCheck`, and the full
+`jvmTest`/`koverXmlReport`/`:koverVerify` all green. No automated test added for the iOS actual itself
+(no iOS test infra in this repo, same as every other iOS-only class, and the JVM equivalent has none
+either — it's pure DAO wiring). Register updated: `docs/security/masvs.md`.
+
 **Where:** `core/storage/src/iosMain/kotlin/com/grappim/taigamobile/core/storage/db/TaigaDBExt.ios.kt:3`
 — `actual suspend fun TaigaDB.clearAllTablesKmp() = Unit`, a no-op stub.
 
