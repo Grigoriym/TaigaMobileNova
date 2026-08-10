@@ -1398,3 +1398,45 @@ absent, not that a real screenshot actually captures the revealed password).
 **Why deferred:** the app-wide vs. per-screen tradeoff is a product decision (does the team want to
 give up in-app screenshot capability everywhere to close a local-access-only gap on one screen), not
 something to default silently inline during a documentation review task.
+
+---
+
+## 36. `LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist
+
+**Where:** `feature/workitem/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/workitem/ui/widgets/customfields/CustomFieldsWidget.kt`'s
+`CustomFieldUrlItemWidget` was fixed in the MASVS-CODE review (task 5,
+`docs/security/masvs-review-plan.md`) — it now refuses anything that isn't `http://`/`https://` before
+calling `uriHandler.openUri()`. Two more call sites on the same untrusted-input class were found but
+**not** fixed in that task, out of scope for a small isolated diff:
+
+- `feature/workitem/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/workitem/ui/widgets/AttachmentsWidget.kt:160`
+  — `uriHandler.openUri(attachment.url)`. Lower risk than the custom field (the URL is server/API-
+  constructed, not free text a project collaborator types), but not scheme-checked either.
+- Link clicks inside markdown rendered via `com.mikepenz:multiplatform-markdown-renderer`
+  (`uikit/.../MarkdownTextWidget.kt`, used for task descriptions, comments and wiki pages). This
+  library's link-click handling was **not confirmed** in the MASVS-CODE task — only its compiled
+  classes were inspected (no `LinkClickListener`/override class found), which is consistent with, but
+  does not prove, it delegating to Compose's default `LinkAnnotation.Url` click behaviour
+  (`LocalUriHandler.openUri`, no scheme check). This is the highest-exposure instance of the three:
+  markdown content reaches every task description/comment/wiki page, authored by any project
+  collaborator with edit permission, not just the one custom-field type.
+
+**What happens:** on Android, `LocalUriHandler.openUri` launches an implicit `ACTION_VIEW` intent with
+the string as-is (`Intent(Intent.ACTION_VIEW, Uri.parse(uri))`). A crafted `intent://…` or other
+non-http(s) scheme, tapped by a teammate viewing the task/comment/wiki page, can deep-link into another
+installed app — a real escalation path beyond what a plain browser hyperlink allows. The attacker here
+is a malicious or compromised **project collaborator** with edit rights on a shared self-hosted
+instance, not the server operator.
+
+**Consequence:** MASVS-CODE-4, same severity class as the fixed `CustomFieldsWidget.kt` instance
+(Low-Medium — needs a malicious/compromised collaborator plus one user tap). Recorded as an Open
+finding in `docs/security/masvs.md`.
+
+**Why deferred:** the correct fix is architectural, not three scattered patches — wrap
+`LocalUriHandler` once (e.g. at the app's theme/root composition) with a scheme-validating decorator
+so every call site (markdown links, `AttachmentsWidget`, any future one) gets the same allowlist for
+free, rather than repeating the `startsWith("http")` check per call site as new ones are added. That's
+a cross-cutting change bigger than one review task's isolated diff. Confirming the markdown renderer's
+actual link-click wiring (decompile the library, or a device test tapping a markdown link) is also
+needed before writing the fix, since patching a click path that turns out not to exist would be wasted
+work.

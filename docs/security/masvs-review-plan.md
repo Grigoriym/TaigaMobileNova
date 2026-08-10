@@ -55,8 +55,8 @@ a separate, later effort, not a reason to block a task here.
 | 2 | Network — TLS, cleartext, the custom trust manager | NETWORK | ✅ done — 2026-08-09 |
 | 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | ✅ done — 2026-08-10 |
 | 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | ✅ done — 2026-08-10 |
-| 5 | Code quality — minSdk, dependency scanning, input validation | CODE | todo — ⬅ NEXT |
-| 6 | Privacy — permissions, crash reporting, data clearing on logout | PRIVACY | todo |
+| 5 | Code quality — minSdk, dependency scanning, input validation | CODE | ✅ done — 2026-08-10 |
+| 6 | Privacy — permissions, crash reporting, data clearing on logout | PRIVACY | todo — ⬅ NEXT |
 | 7 | Resilience — scope decision only, no code review | RESILIENCE | todo |
 
 **Order rationale:** Storage first — the stored server credential is the asset the skill's own
@@ -428,6 +428,50 @@ avatar URLs) is escaped or sandboxed before being rendered or followed.
 **Done when:** register has a Code section; the dependabot gap either has a fix landed in this task
 (a small, self-contained `.github/dependabot.yml` addition) or is deferred to `docs/revisit.md` with
 a stated reason for not doing it now.
+
+**Result (2026-08-10):** `docs/security/masvs.md` gained a Code section (Accepted + Open +
+Needs-a-device rows, plus Notes). Findings:
+
+- **MASVS-CODE-1 (`minSdk = 24`)** recorded as an Accepted deviation — confirmed deliberate by
+  stability (`git log --follow` shows it has never changed since the project's current form,
+  2025-06-09) but **no documented rationale exists anywhere** (no README/docs line); stated plainly
+  rather than inventing one.
+- **MASVS-CODE-2** recorded as an Accepted deviation, both flavours checked rather than assumed N/A:
+  Gplay uses a Play In-App Update **flexible** (dismissible) flow (`AppUpdateCheckerImpl.kt`,
+  `androidApp/src/gplay/...`), never `IMMEDIATE`; F-Droid has no update-check mechanism at all.
+- **MASVS-CODE-3 — this task's framing was stale, corrected before fixing anything.** The plan assumed
+  no dependency-vulnerability tooling existed and proposed `.github/dependabot.yml`. Scoping found
+  `renovate.json` already exists and Renovate is actively running (missed by the plan's own scoping
+  grep, which didn't check for `renovate`). Adding Dependabot version-update config alongside an
+  active Renovate would have created duplicate, conflicting PRs. **Fixed instead**: added
+  `"osvVulnerabilityAlerts": true` to `renovate.json` — Renovate now checks the catalogue against
+  OSV.dev advisories directly, independent of GitHub's own alerts. Also checked (not part of the
+  fix): GitHub's native Dependabot vulnerability alerts are confirmed **off** at the repo-settings
+  level (`gh api .../vulnerability-alerts` → 404), a separate optional lever left to the user.
+- **MASVS-CODE-4** recorded as an Accepted deviation for the deserialization/rendering baseline
+  (`KmpNetworkModule.kt`'s Ktor `Json` already tolerates unknown/null fields on the app's real client,
+  not just `tools/seed`'s; markdown content renders through a Compose-native renderer, no WebView/HTML
+  sink). But scoping past that baseline found a real, previously unrecorded gap: **server/collaborator-
+  supplied text passed to `LocalUriHandler.openUri()` with no scheme allowlist** — an implicit Android
+  intent launch. **Fixed this task** for the one directly-owned call site,
+  `CustomFieldUrlItemWidget` in `CustomFieldsWidget.kt` (a "URL"-type custom field's open action);
+  verified via `:feature:workitem:ui:compileKotlinJvm`, `ktlintCommonMainSourceSetCheck`, full
+  `./gradlew jvmTest`, `koverXmlReport`/`:koverVerify` — all green (no Compose UI test infra exists in
+  this repo to unit-test the Composable itself). Two more instances of the same risk class found but
+  **not** fixed — `AttachmentsWidget.kt:160` (lower risk, server-constructed URL) and markdown-embedded
+  links in task descriptions/comments/wiki (higher risk, unconfirmed whether the third-party markdown
+  renderer's link-click path even reaches `LocalUriHandler` — class-name inspection only, no
+  decompile) — recorded as an Open finding and written up in `docs/revisit.md` #36, since the correct
+  fix is one app-wide `LocalUriHandler` wrapper, not three scattered patches.
+- One item moved to "Needs a device"/"can't verify from source": whether the OSV alert actually fires
+  on a real vulnerable dependency, and whether the markdown renderer's link click truly goes through
+  `LocalUriHandler` unguarded.
+
+**Next: Task 6 — Privacy.** Two concrete leads already named in this plan's task 6 section: both
+flavours' crash-reporting posture (Crashlytics on gplay, real no-op on fdroid) needs stating
+explicitly, and logout's data-clearing behaviour needs confirming per platform (Android's actual
+looks already correct per the desktop plan's task 7 note; iOS likely still has the `= Unit` stub gap
+that task deliberately left alone — confirm, don't assume).
 
 ---
 
