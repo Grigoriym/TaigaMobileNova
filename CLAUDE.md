@@ -22,7 +22,12 @@ and stop.
 
 ```bash
 # Android - build debug APK
-./gradlew :androidApp:assembleGplayDebug
+# -PgplayBuild is required for Gplay builds: it's what gates the google-services
+# and firebase-crashlytics plugins on (androidApp/build.gradle.kts). Omit it and the
+# flavor still compiles, but Firebase never initializes — CrashReporterImpl then
+# throws "Default FirebaseApp is not initialized" at app startup, release or debug.
+./gradlew :androidApp:assembleGplayDebug -PgplayBuild
+./gradlew :androidApp:assembleGplayRelease -PgplayBuild
 ./gradlew :androidApp:assembleFdroidDebug
 
 # Desktop - run or package
