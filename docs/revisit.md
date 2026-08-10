@@ -1253,7 +1253,13 @@ generateBearerToken(token)` with no check of `request.url.protocol`.
 **What happens:** cleartext is permitted app-wide (no `network_security_config.xml` restricting it to
 particular domains), and the token-attaching plugin doesn't distinguish `http://` from `https://`. So
 a user who points the app at a plain-HTTP self-hosted Taiga instance sends the session bearer token
-over the wire in the clear on every request, with nothing in the app surfacing that fact.
+over the wire in the clear on every request. `LoginViewModel` does show a one-time "Unencrypted
+connection" confirmation (`login_alert_title`/`login_alert_text`) before the *first* credential
+submission when `server.startsWith(ApiConstants.HTTP_SCHEME)`
+(`feature/login/ui/src/commonMain/kotlin/.../LoginViewModel.kt:122-127,135-140`) — found during the
+MASVS-AUTH review (task 3) — so the password send is a choice, not silent. Every request *after* that
+one dialog (including every subsequent bearer-token-bearing request via `AuthHeaderPlugin`, and every
+silent background token refresh) still has no equivalent warning, which is the gap this entry tracks.
 
 **Evidence:** found during the MASVS-NETWORK review (`docs/security/masvs-review-plan.md` task 2).
 `grep -n "networkSecurityConfig" androidApp/src/main/AndroidManifest.xml` returns nothing;
@@ -1261,8 +1267,8 @@ over the wire in the clear on every request, with nothing in the app surfacing t
 
 **Consequence:** not a MASVS finding by itself — cleartext is an accepted deviation for self-hosted
 LAN instances (`docs/security/masvs.md`, MASVS-NETWORK-1) — but it's a real, low-cost UX/security
-improvement: warn the user (e.g. on the login/server-setup screen, or once per session) when the
-configured server URL uses `http://`, so the exposure is a choice rather than a silent default.
+improvement: warn the user once per session (not just once at login) that ongoing traffic, including
+the bearer token, is unencrypted.
 
 **Why deferred:** the MASVS review task's scope is recording the register, not shipping UI changes;
 adding a warning dialog/snackbar to the server-setup flow is a small but distinct diff.
@@ -1305,3 +1311,54 @@ navigation until that lands (small).
 **Why deferred:** out of the MASVS review task's scope (recording the register, not shipping a
 platform port or a UI-visibility change); porting TLS trust handling to a new platform is exactly the
 kind of change that needs its own task, not a rider on a documentation review.
+
+---
+
+## 34. GitHub OAuth WebView doesn't restrict navigation to GitHub's own host
+
+**Where:**
+`feature/login/ui/src/androidMain/kotlin/com/grappim/taigamobile/feature/login/ui/GithubOAuthWebViewDialog.android.kt:22-38`.
+`settings.javaScriptEnabled = true` and `settings.domStorageEnabled = true` (`:23-24`), and
+`shouldOverrideUrlLoading` (`:26-37`) only inspects the navigated URL for a `code` or `error` query
+param — any other URL falls through to `return false`, i.e. the `WebView` loads it. Nothing checks
+`request.url.host` against `github.com` (or the eventual OAuth-callback host) before allowing
+navigation.
+
+**What happens:** the app hosts GitHub's real login form inside a `WebView` it fully controls (full
+JS execution, DOM storage, no address bar) — this is the RFC 8252 "embedded user-agent" anti-pattern
+`kmp-checks.md` names, and it fails regardless of configuration. This specific instance has one real
+bound already: no `addJavascriptInterface` call anywhere (`grep -rn addJavascriptInterface` across all
+source sets is empty), so there's no JS-to-native bridge for a malicious page to call into. But nothing
+stops the `WebView` from following a redirect to an arbitrary host during the flow — the interception
+logic only reacts to the `code`/`error` params, not the host, so a redirect chain that doesn't yet
+carry those params is followed unconditionally.
+
+**Why it's a `WebView` at all, not Custom Tabs:** this was already tried and reverted in the same PR
+that shipped GitHub login (commit `4236a2ef`, "feat: tg-108 replace loopback with WebView for GitHub
+OAuth"). The first cut used a loopback redirect (`http://127.0.0.1:PORT/callback`) opened in a Chrome
+Custom Tab — the standard RFC 8252-compliant pattern, documented in
+`docs/features/github-auth/plan.md` (now stale/superseded, marked as such this task). It was reverted
+because **GitHub OAuth Apps support exactly one registered callback URL**, and that URL is already the
+Taiga web app's. A mobile-specific loopback redirect would either break the web login (if the callback
+is repointed at `127.0.0.1`) or require a second GitHub OAuth App with its own `client_id` — a
+server-admin config change outside this codebase's control and outside "zero admin changes" the
+current design promises. The `WebView` approach reuses whatever callback URL is already registered
+(Taiga's `connector.py` doesn't validate `redirect_uri` server-side either, per the plan doc), which is
+why it was chosen instead.
+
+**Consequence:** this is a real, if partial, hardening gap, not a full fix waiting to happen — Custom
+Tabs is blocked by the external OAuth App constraint above unless that constraint changes server-side.
+What *is* available without touching the OAuth architecture: restrict `shouldOverrideUrlLoading` to an
+allowlist of hosts the flow actually needs (`github.com` and its auth/SSO subdomains, plus the
+configured Taiga server's host for the final callback), denying/dismissing on anything else. That
+narrows the WebView's blast radius without solving the underlying RFC 8252 problem, which needs the
+external constraint resolved first.
+
+**Evidence:** found during the MASVS-AUTH review (`docs/security/masvs-review-plan.md` task 3);
+recorded as an Open finding, MASVS-AUTH-1, in `docs/security/masvs.md`.
+
+**Why deferred:** correctly scoping a host allowlist (GitHub's SSO/2FA flow can involve more than the
+bare `github.com` host) risks silently breaking the OAuth login for some orgs if done from a source
+read alone, and this repo has no Android unit-test source set (CLAUDE.md, by design) to verify a
+`WebViewClient` change automatically — it would need manual device verification. Not a rider on a
+documentation review task.

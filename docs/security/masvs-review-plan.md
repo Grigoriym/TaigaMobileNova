@@ -53,8 +53,8 @@ a separate, later effort, not a reason to block a task here.
 | 0 | Storage — the server credential at rest | STORAGE | ✅ done — 2026-08-09 |
 | 1 | Cryptography — key management for whatever protects it | CRYPTO | ✅ done — 2026-08-09 |
 | 2 | Network — TLS, cleartext, the custom trust manager | NETWORK | ✅ done — 2026-08-09 |
-| 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | todo — ⬅ NEXT |
-| 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | todo |
+| 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | ✅ done — 2026-08-10 |
+| 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | todo — ⬅ NEXT |
 | 5 | Code quality — minSdk, dependency scanning, input validation | CODE | todo |
 | 6 | Privacy — permissions, crash reporting, data clearing on logout | PRIVACY | todo |
 | 7 | Resilience — scope decision only, no code review | RESILIENCE | todo |
@@ -314,6 +314,45 @@ gate anywhere in the codebase per prior sessions' knowledge, so likely N/A; conf
 **Done when:** register has an Auth section; the WebView finding is resolved (Open finding with a
 proposed fix, or Accepted deviation with a stated bound) rather than left hanging for task 4 to
 pick up by default.
+
+**Result (2026-08-10):** `docs/security/masvs.md` gained an Auth section (Accepted + Open + Needs a
+device rows, plus Notes). Findings:
+
+- **GitHub OAuth WebView confirmed** at `GithubOAuthWebViewDialog.android.kt:22-38` — `javaScriptEnabled
+  = true`, `domStorageEnabled = true`, hosting GitHub's real login form, the RFC 8252 anti-pattern.
+  **Not an oversight**: `git log` on the file turned up that a Custom Tabs + loopback-redirect version
+  was built and then *reverted in the same original PR* (commit `4236a2ef`) — GitHub OAuth Apps allow
+  only one registered callback URL, already used by Taiga's web app, so a mobile-specific loopback
+  redirect would either break the web login or need a second, separately-registered OAuth App (a
+  server-admin change outside this codebase). Recorded as an **Open** finding, not Accepted, because two
+  gaps go beyond that documented tradeoff: navigation isn't host-restricted (any URL without `code`/
+  `error` loads unconditionally) and the WebView's cookies are never cleared on dismiss (GitHub's
+  session persists in the app's shared `CookieManager` store, untied to app logout). Near-term fix
+  (host allowlist + cookie clearing) written to `docs/revisit.md` #34 rather than implemented — a
+  correct allowlist isn't safely derivable from source alone (GitHub's SSO/2FA redirect chain isn't
+  enumerable without a device), and this repo has no Android unit-test source set to verify a
+  `WebViewClient` change automatically. The stale plan doc for the reverted Custom Tabs approach,
+  `docs/features/github-auth/plan.md`, was marked **Superseded** this task so it stops reading as the
+  current design.
+- **Primary username/password + LDAP login** confirmed to go through the same Ktor channel MASVS-NETWORK
+  already characterized (`AuthRepositoryImpl.auth` → `AuthApiImpl.auth`, plain `POST auth`) — recorded
+  as an Accepted deviation cross-referencing NETWORK rather than a new finding. One correction made
+  along the way: both the NETWORK section's existing row and `docs/revisit.md` #32 claimed cleartext
+  bearer-token exposure had "no in-app warning" — false. `LoginViewModel` shows a real "Unencrypted
+  connection" confirmation dialog before the *first* credential submission when the server is
+  `http://` (`LoginViewModel.kt:122-127,135-140`). Both were corrected in place (no breadcrumb) to say
+  precisely what's true: the login-time warning exists, but nothing warns again for the ongoing
+  bearer-token traffic that follows — that narrower gap is what #32 now tracks.
+- **MASVS-AUTH-2/AUTH-3 confirmed N/A**, not assumed: `grep -rln
+  'biometric\|Biometric\|BiometricPrompt\|androidx.biometric'` across all source sets and the version
+  catalogue returns nothing — no app lock, no step-up auth anywhere.
+- One item moved to "Needs a device": whether a live GitHub OAuth flow (org SSO/2FA) ever navigates
+  outside `github.com` before the `code`/`error` param appears, which is what a correct host allowlist
+  for #34 depends on.
+
+**Next: Task 4 — Platform.** Picks up the WebView-*mechanics* half of this task's finding
+(MASVS-PLATFORM-2) — cross-reference this task's Open row rather than restating it — plus the IPC
+surface and `FLAG_SECURE`/recents-thumbnail check the plan's task 4 section already scoped.
 
 ---
 
