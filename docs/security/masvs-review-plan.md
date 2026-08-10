@@ -56,8 +56,8 @@ a separate, later effort, not a reason to block a task here.
 | 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | ✅ done — 2026-08-10 |
 | 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | ✅ done — 2026-08-10 |
 | 5 | Code quality — minSdk, dependency scanning, input validation | CODE | ✅ done — 2026-08-10 |
-| 6 | Privacy — permissions, crash reporting, data clearing on logout | PRIVACY | todo — ⬅ NEXT |
-| 7 | Resilience — scope decision only, no code review | RESILIENCE | todo |
+| 6 | Privacy — permissions, crash reporting, data clearing on logout | PRIVACY | ✅ done — 2026-08-10 |
+| 7 | Resilience — scope decision only, no code review | RESILIENCE | todo — ⬅ NEXT |
 
 **Order rationale:** Storage first — the stored server credential is the asset the skill's own
 framing centers on, and a scoping pass already found exactly where it lives. Crypto follows
@@ -496,6 +496,42 @@ obviously used) vs. actual use is a quick diff, unlikely to turn up anything.
 **Done when:** register has a Privacy section covering both flavours' crash-reporting posture and
 states, per platform, whether logout actually clears cached data — cross-referencing the desktop
 plan's task 7 rather than re-investigating what it already proved for JVM.
+
+**Result (2026-08-10):** `docs/security/masvs.md` gained a Privacy section (four Accepted rows, one
+Open row, plus Notes). Findings:
+
+- **MASVS-PRIVACY-3 (crash reporting) confirmed per flavour, recorded as Accepted.** Gplay uses real
+  Firebase Crashlytics; F-Droid, JVM/desktop, and iOS all use an identical no-op `CrashReporterImpl`
+  (`isAvailable = false`, every method `= Unit`) — read all four files directly. One thing beyond the
+  task's framing: collection defaults to **on**, not off (`TaigaSessionStorage.crashReportingEnabled`
+  defaults to `true` when the DataStore key is unset) — opt-out, not opt-in, with no first-run consent
+  prompt. Not treated as a finding because it's disclosed by name in `PRIVACY_POLICY_GPLAY.md`
+  (what's collected, what's excluded — no tokens/credentials/project content — and the exact opt-out
+  location), and the in-app toggle (Settings → Interface → Privacy) is confirmed wired to
+  `Crashlytics.isCrashlyticsCollectionEnabled` for real, not cosmetic.
+- **MASVS-PRIVACY-4 (logout data clearing) confirmed per platform — Android and JVM correct, iOS still
+  broken, recorded as an Open finding.** Android's actual (`clearAllTables()`) was already correct
+  before any task touched it. JVM/desktop's identical bug was found and fixed by
+  `docs/desktop/linux-release-plan.md` task 7 (three DAO `deleteAll()` calls) — cross-referenced, not
+  re-investigated. **iOS's actual is still the `= Unit` stub**, exactly as that task's own Result note
+  said it would be (signature changed to `suspend`, body deliberately left alone) — confirmed by
+  reading the file, not assumed from the desktop task's framing. Effect: iOS logout clears the token
+  and preferences but leaves the Room cache (projects/sprints/work items) fully populated for the next
+  account on a shared device. Fix is a proven three-line port of the JVM version (same three DAOs
+  already exist) — not implemented inline (documentation-review task, no iOS-executable test in this
+  repo to verify beyond a `compileKotlinIosArm64` compile), written up in `docs/revisit.md` #37.
+- **MASVS-PRIVACY-1/2 both confirmed, not assumed trivial.** Permissions: `INTERNET` and
+  `ACCESS_NETWORK_STATE` are the only two declared and both have a real call site (Ktor client;
+  `ConnectivityManagerNetworkMonitor`/`NetworkMonitorImpl.jvm.kt`). Identification: grepped for
+  advertising-ID/analytics-SDK/fingerprinting call sites across all source sets and the version
+  catalogue — none exist. Both recorded as Accepted.
+- Nothing moved to "Needs a device" this task — every check here (crash-reporter wiring, the default
+  value, the logout call chain, the permission-usage diff) was fully answerable from source.
+
+**Next: Task 7 — Resilience.** A scope decision only, per the plan's own framing — confirm the
+"self-hosted FOSS client, device owner is the data owner" reasoning holds and record the
+MASVS-RESILIENCE exclusion in the register's header (already stated provisionally there, pointing at
+this task as "not yet run" — task 7's job is to make that formal and close the plan).
 
 ---
 

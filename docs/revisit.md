@@ -1440,3 +1440,33 @@ a cross-cutting change bigger than one review task's isolated diff. Confirming t
 actual link-click wiring (decompile the library, or a device test tapping a markdown link) is also
 needed before writing the fix, since patching a click path that turns out not to exist would be wasted
 work.
+
+## 37. iOS logout doesn't clear the local Room cache
+
+**Where:** `core/storage/src/iosMain/kotlin/com/grappim/taigamobile/core/storage/db/TaigaDBExt.ios.kt:3`
+— `actual suspend fun TaigaDB.clearAllTablesKmp() = Unit`, a no-op stub.
+
+**What happens:** `AuthStateManager.logoutSuspend()`
+(`core/storage/src/commonMain/kotlin/com/grappim/taigamobile/core/storage/auth/AuthStateManager.kt:26-32`)
+clears `FiltersStorage`, `TaigaSessionStorage`, and `AuthStorage` correctly on every platform, then
+calls `databaseWrapper.clearAllTables()` → `TaigaDB.clearAllTablesKmp()`. On iOS that call does
+nothing, so the Room cache (projects, sprints, work items) survives logout untouched. The next account
+that logs in on the same device sees the previous account's cached project data rendered until each
+screen's own fetch overwrites it.
+
+**Consequence:** MASVS-PRIVACY-4 ("can the user clear their data"), recorded as an Open finding in
+`docs/security/masvs.md` (task 6, `docs/security/masvs-review-plan.md`). Medium severity — needs a
+shared/multi-account device, and no credential is exposed (that part of logout is correct), but cached
+task titles/comments/assignee names from another account can leak to whoever logs in next.
+
+**Why deferred:** `docs/desktop/linux-release-plan.md` task 7 already found and fixed the identical bug
+for JVM/desktop (Android's actual, `= clearAllTables()`, was already correct beforehand) but
+deliberately scoped iOS out of that fix. The correct fix is already proven and is a straight port: add
+the same three `deleteAll()` `@Query` calls the JVM actual makes
+(`core/storage/src/jvmMain/kotlin/com/grappim/taigamobile/core/storage/db/TaigaDBExt.jvm.kt:3-7`) to the
+iOS actual — `projectDao().deleteAll()`, `sprintDao().deleteAll()`, `workItemDao().deleteAll()` — no new
+DAO methods needed, they already exist. Not fixed inline in the MASVS-PRIVACY review task because that
+task is a documentation review, not a code-change task, and this repo has no iOS-executable test to
+verify a Room-backed iOS actual beyond `compileKotlinIosArm64`/`compileKotlinIosSimulatorArm64`
+compiling — the desktop plan's task 7 verified its fix by running the app and inspecting the SQLite
+file directly, which isn't practical for iOS from this environment.
