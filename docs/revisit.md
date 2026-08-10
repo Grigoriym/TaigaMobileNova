@@ -26,7 +26,6 @@ its own section, kept for the reasoning rather than the outcome):
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 35 | No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot | XS | this file, #35 |
-| 37 | iOS logout doesn't clear the local Room cache | S | this file, #37 |
 
 <details>
 <summary><strong>Full index (all 37 entries, resolved included)</strong> — this file is long because
@@ -72,7 +71,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
 | 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | 🟡 open |
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
-| 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | 🟡 open |
+| 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
 
 </details>
 
