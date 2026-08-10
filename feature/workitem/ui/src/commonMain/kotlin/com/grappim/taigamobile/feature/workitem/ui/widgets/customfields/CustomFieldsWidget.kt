@@ -33,7 +33,6 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.logger.LogPriority
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
 import com.grappim.taigamobile.strings.RString
@@ -455,20 +454,11 @@ private fun CustomFieldUrlItemWidget(
                 IconButton(
                     enabled = isEnabled,
                     onClick = {
-                        val url = item.currentValue
-                        if (url.startsWith("http://", ignoreCase = true) ||
-                            url.startsWith("https://", ignoreCase = true)
-                        ) {
-                            try {
-                                uriHandler.openUri(url)
-                            } catch (e: IllegalArgumentException) {
-                                logcat(throwable = e) {
-                                    "Can't open url"
-                                }
-                            }
-                        } else {
-                            logcat(LogPriority.WARN) {
-                                "Refused to open custom field URL with a non-http(s) scheme"
+                        try {
+                            uriHandler.openUri(item.currentValue)
+                        } catch (e: IllegalArgumentException) {
+                            logcat(throwable = e) {
+                                "Can't open url"
                             }
                         }
                     }

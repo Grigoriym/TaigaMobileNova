@@ -24,9 +24,12 @@ its own section, kept for the reasoning rather than the outcome):
 | 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
 | 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
+| 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
+| 35 | No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot | XS | this file, #35 |
+| 37 | iOS logout doesn't clear the local Room cache | S | this file, #37 |
 
 <details>
-<summary><strong>Full index (all 28 entries, resolved included)</strong> — this file is long because
+<summary><strong>Full index (all 37 entries, resolved included)</strong> — this file is long because
 resolved entries stay for their reasoning, not their outcome (see above), and ~20 links elsewhere in
 the repo — including a frozen archive doc — point at specific entries by anchor, so they aren't
 moved out. Expand for a one-line-per-entry jump table instead of scrolling.</summary>
@@ -66,6 +69,10 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
 | 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
 | 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | 🟡 open |
+| 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
+| 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | 🟡 open |
+| 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
+| 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | 🟡 open |
 
 </details>
 
@@ -1440,6 +1447,25 @@ a cross-cutting change bigger than one review task's isolated diff. Confirming t
 actual link-click wiring (decompile the library, or a device test tapping a markdown link) is also
 needed before writing the fix, since patching a click path that turns out not to exist would be wasted
 work.
+
+**Resolved (2026-08-10):** confirmed the markdown renderer's link-click wiring from its published
+sources jar (`com.mikepenz:multiplatform-markdown-renderer:0.43.0`,
+`annotator/AnnotatorSettings.kt`'s `annotatorSettings()`) rather than decompiling — its default
+`linkInteractionListener` does exactly what was suspected: `uriHandler.openUri(foundReference)` with
+`uriHandler` defaulted to `LocalUriHandler.current` and no scheme check of its own. That confirmed a
+single fix point covers all three call sites. Added `SafeUriHandler`
+(`uikit/src/commonMain/.../utils/SafeUriHandler.kt`), a `UriHandler` decorator that allowlists
+`http://`/`https://` and logs+refuses (does not delegate) anything else, and provided it once via
+`CompositionLocalProvider(LocalUriHandler provides SafeUriHandler(LocalUriHandler.current))` inside
+`TaigaMobileTheme` (`uikit/.../theme/Theme.kt`) — the app's single composition root
+(`composeApp/.../TaigaAppContent.kt:25`), also picked up by `TaigaMobilePreviewTheme`. This covers
+markdown links, `AttachmentsWidget.kt:160` and `CustomFieldsWidget.kt`'s URL custom field with no
+per-call-site code. Removed the now-redundant `startsWith("http")` check (and the now-unused
+`LogPriority` import) from `CustomFieldUrlItemWidget` in `CustomFieldsWidget.kt`, since the wrapper
+does the same check centrally. Added `SafeUriHandlerTest` (`uikit` `commonTest`) covering an allowed
+`http(s)` URI (delegated) and two disallowed schemes (`intent://`, `javascript:`, both refused without
+delegating). `./gradlew jvmTest`, `ktlintCheck` and `koverXmlReport`/`:koverVerify` all green. Register
+updated: `docs/security/masvs.md`.
 
 ## 37. iOS logout doesn't clear the local Room cache
 
