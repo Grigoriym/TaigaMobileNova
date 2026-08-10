@@ -1362,3 +1362,39 @@ bare `github.com` host) risks silently breaking the OAuth login for some orgs if
 read alone, and this repo has no Android unit-test source set (CLAUDE.md, by design) to verify a
 `WebViewClient` change automatically — it would need manual device verification. Not a rider on a
 documentation review task.
+
+---
+
+## 35. No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot
+
+**Where:** `androidApp/src/main/kotlin/com/grappim/taigamobile/MainActivity.kt` never calls
+`window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, ...)` — confirmed by `grep -rn 'FLAG_SECURE'
+--include=*.kt .` returning nothing anywhere in the repo. The concrete screen this matters for:
+`feature/login/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/login/ui/LoginScreen.kt:190-219`,
+whose password field has a show/hide toggle (`state.isPasswordVisible` driving
+`VisualTransformation.None` vs. `PasswordVisualTransformation()`).
+
+**What happens:** this is a single-`Activity` app (`MainActivity` hosts every Compose screen), so the
+absence of `FLAG_SECURE` applies app-wide, not just to login. The concrete exposure: a user taps "show
+password" on the login screen, then backgrounds the app (app switcher, incoming call, notification
+shade) while the field is still in `VisualTransformation.None` state — Android's recents-list snapshot
+captures whatever was on screen at that moment, so the plaintext password lands in the thumbnail. The
+thumbnail is local to the device (not synced or uploaded anywhere), so exploiting it needs local/
+physical access to an unlocked device — same class of exposure as an unlocked phone left unattended,
+not a remote one.
+
+**Consequence:** low-to-medium severity, MASVS-PLATFORM-3. Fixing it is a one-line change
+(`window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)` in
+`MainActivity.onCreate`), but because it's a single-Activity app the flag would apply globally —
+blocking screenshots and screen recording on every screen, not just login, which is a real UX
+tradeoff (e.g. no user-initiated bug-report screenshots from inside the app) that deserves a
+deliberate choice rather than a silent default flip.
+
+**Evidence:** found during the MASVS-PLATFORM review (`docs/security/masvs-review-plan.md` task 4);
+recorded as an Open finding, MASVS-PLATFORM-3, in `docs/security/masvs.md`, with the live-device
+verification itself moved to that register's "Needs a device" table (source can confirm the flag is
+absent, not that a real screenshot actually captures the revealed password).
+
+**Why deferred:** the app-wide vs. per-screen tradeoff is a product decision (does the team want to
+give up in-app screenshot capability everywhere to close a local-access-only gap on one screen), not
+something to default silently inline during a documentation review task.

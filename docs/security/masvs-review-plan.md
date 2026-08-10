@@ -54,8 +54,8 @@ a separate, later effort, not a reason to block a task here.
 | 1 | Cryptography — key management for whatever protects it | CRYPTO | ✅ done — 2026-08-09 |
 | 2 | Network — TLS, cleartext, the custom trust manager | NETWORK | ✅ done — 2026-08-09 |
 | 3 | Authentication — login flow, GitHub OAuth WebView | AUTH | ✅ done — 2026-08-10 |
-| 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | todo — ⬅ NEXT |
-| 5 | Code quality — minSdk, dependency scanning, input validation | CODE | todo |
+| 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | ✅ done — 2026-08-10 |
+| 5 | Code quality — minSdk, dependency scanning, input validation | CODE | todo — ⬅ NEXT |
 | 6 | Privacy — permissions, crash reporting, data clearing on logout | PRIVACY | todo |
 | 7 | Resilience — scope decision only, no code review | RESILIENCE | todo |
 
@@ -373,6 +373,42 @@ login screen (credential visible in a screenshot) and any future "reveal API key
 rather than restating it; `FLAG_SECURE`/recents exposure is recorded as either a finding or an
 accepted deviation with a stated reason (e.g. "no screen currently shows a raw credential" — verify
 that's actually true of the login screen before writing it down).
+
+**Result (2026-08-10):** `docs/security/masvs.md` gained a Platform section (Accepted + Open +
+Needs-a-device rows, plus Notes). Findings:
+
+- **IPC surface confirmed minimal, recorded as an Accepted deviation (MASVS-PLATFORM-1).** Every
+  `AndroidManifest.xml` in the repo (`androidApp`, `composeApp`, `core/logger`) was grepped for
+  `exported`/`intent-filter`/`<provider>`/`<service>`/`<receiver>` — only `androidApp`'s has any.
+  `MainActivity` remains the sole `exported="true"` component with only the plain `MAIN`/`LAUNCHER`
+  intent-filter, no deep-link scheme, and `MainActivity.kt` never reads `intent.extras`/`intent.data`.
+  One thing scoping missed: the manifest also declares a `FileProvider`
+  (`androidApp/src/main/AndroidManifest.xml:34-40`, `exported="false"`, `grantUriPermissions="true"`,
+  paths covering the whole app-private directory) — not IPC-reachable without an explicit granted URI,
+  and `grep -rln 'FileProvider\|getUriForFile'` across all Kotlin source found it's never actually
+  invoked anywhere. Noted in the register's Notes as dead config, not a security finding.
+- **MASVS-PLATFORM-2 (WebView) cross-referenced, not restated** — same code as task 3's Open
+  MASVS-AUTH-1 row (`GithubOAuthWebViewDialog.android.kt:22-38`), reviewed here as its own control;
+  no new gap found beyond what AUTH-1 already names.
+- **MASVS-PLATFORM-3: new Open finding.** `grep -rn 'FLAG_SECURE'` across all Kotlin source returns
+  nothing, and `MainActivity.kt` never sets it — confirmed, not assumed. The concrete instance the
+  task's "Why" flagged as mattering most is real: `LoginScreen.kt:190-219`'s password field has a
+  show/hide toggle: revealing it and then backgrounding the app captures the plaintext password in the
+  recents-list thumbnail. No other credential-reveal UI exists to worry about (`grep -rln
+  'PasswordVisualTransformation'` finds only `LoginScreen.kt`). Not fixed inline — the one-line fix
+  (`window.setFlags(FLAG_SECURE, ...)`) applies app-wide since this is a single-`Activity` app,
+  trading away in-app screenshot/recording capability everywhere to close a local-access-only gap on
+  one screen; that's a product tradeoff, not a default to flip silently. Written up in
+  `docs/revisit.md` #35.
+- One item moved to "Needs a device": whether the revealed password actually shows up in a live
+  recents-list screenshot when the app is backgrounded mid-reveal — source only confirms the flag is
+  absent, not the resulting screenshot content.
+
+**Next: Task 5 — Code quality.** `minSdk = 24` (MASVS-CODE-1) and the missing `dependabot.yml`
+(MASVS-CODE-3, confirmed absent by prior scoping) are the two concrete leads; MASVS-CODE-4 needs
+checking whether the app's own Ktor/serialization DTOs tolerate unknown/null server fields the same
+way `tools/seed`'s do, and whether server-supplied HTML/URLs (task descriptions, wiki content, avatar
+URLs) are escaped or sandboxed before rendering.
 
 ---
 
