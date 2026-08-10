@@ -10,6 +10,7 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
+import com.grappim.taigamobile.core.storage.auth.NoopTokenCipher
 import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.core.storage.cert.TrustedCertStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
@@ -30,7 +31,7 @@ actual class PlatformStorageModule
 class AuthDataStoreModule {
 
     @Single
-    fun provideAuthStorage(): AuthStorage = AuthStorageImpl(createAuthDataStore())
+    fun provideAuthStorage(): AuthStorage = AuthStorageImpl(createAuthDataStore(), NoopTokenCipher())
 
     @Single
     fun provideSessionStorage(colorMapper: ColorMapper): TaigaSessionStorage =

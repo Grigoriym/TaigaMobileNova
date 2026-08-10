@@ -22,9 +22,13 @@ its own section, kept for the reasoning rather than the outcome):
 | 29 | Login screen's server-URL regex rejects bare `localhost` (no dot in hostname) | XS | this file, #29 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
 | 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
+| 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
+| 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
+| 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
+| 35 | No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot | XS | this file, #35 |
 
 <details>
-<summary><strong>Full index (all 28 entries, resolved included)</strong> — this file is long because
+<summary><strong>Full index (all 37 entries, resolved included)</strong> — this file is long because
 resolved entries stay for their reasoning, not their outcome (see above), and ~20 links elsewhere in
 the repo — including a frozen archive doc — point at specific entries by anchor, so they aren't
 moved out. Expand for a one-line-per-entry jump table instead of scrolling.</summary>
@@ -62,6 +66,12 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | 🟡 open |
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
+| 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
+| 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | 🟡 open |
+| 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
+| 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | 🟡 open |
+| 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
+| 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
 
 </details>
 
@@ -1235,3 +1245,267 @@ detection) — unrelated to that task's `core/storage` `jvmMain` scope, and dele
 **Fix, if wanted:** delete the file. Confirm first that Koin's `@ComponentScan` in `AndroidModule`
 (scans `com.grappim.taigamobile.data`) doesn't have some other reflective dependency on it existing —
 unlikely given zero references, but worth a `:androidApp:assembleGplayDebug` after removal to be sure.
+
+---
+
+## 32. No warning when the configured server URL is `http://` despite the bearer token being sent over it
+
+**Where:** `androidApp/src/main/AndroidManifest.xml:20` (`android:usesCleartextTraffic="true"`, no
+`android:networkSecurityConfig` scoping it to specific hosts) plus
+`core/api/src/commonMain/kotlin/com/grappim/taigamobile/core/api/AuthHeaderPlugin.kt:31-35`, which
+attaches the stored bearer token to every outgoing request via `request.headers[AUTHORIZATION] =
+generateBearerToken(token)` with no check of `request.url.protocol`.
+
+**What happens:** cleartext is permitted app-wide (no `network_security_config.xml` restricting it to
+particular domains), and the token-attaching plugin doesn't distinguish `http://` from `https://`. So
+a user who points the app at a plain-HTTP self-hosted Taiga instance sends the session bearer token
+over the wire in the clear on every request. `LoginViewModel` does show a one-time "Unencrypted
+connection" confirmation (`login_alert_title`/`login_alert_text`) before the *first* credential
+submission when `server.startsWith(ApiConstants.HTTP_SCHEME)`
+(`feature/login/ui/src/commonMain/kotlin/.../LoginViewModel.kt:122-127,135-140`) — found during the
+MASVS-AUTH review (task 3) — so the password send is a choice, not silent. Every request *after* that
+one dialog (including every subsequent bearer-token-bearing request via `AuthHeaderPlugin`, and every
+silent background token refresh) still has no equivalent warning, which is the gap this entry tracks.
+
+**Evidence:** found during the MASVS-NETWORK review (`docs/security/masvs-review-plan.md` task 2).
+`grep -n "networkSecurityConfig" androidApp/src/main/AndroidManifest.xml` returns nothing;
+`AuthHeaderPlugin.kt` has no `URLProtocol` check anywhere in its `HttpSend.intercept` block.
+
+**Consequence:** not a MASVS finding by itself — cleartext is an accepted deviation for self-hosted
+LAN instances (`docs/security/masvs.md`, MASVS-NETWORK-1) — but it's a real, low-cost UX/security
+improvement: warn the user once per session (not just once at login) that ongoing traffic, including
+the bearer token, is unencrypted.
+
+**Why deferred:** the MASVS review task's scope is recording the register, not shipping UI changes;
+adding a warning dialog/snackbar to the server-setup flow is a small but distinct diff.
+
+**Fix, if wanted:** on saving/validating the server URL (wherever that validation already lives for
+the `localhost` regex issue in #29), branch on `URLProtocol` and show a one-time warning when it's
+`http`. Small, self-contained.
+
+---
+
+## 33. `TrustedCertificatesScreen` is reachable but permanently inert on iOS
+
+**Where:** `core/api/src/iosMain/kotlin/com/grappim/taigamobile/core/api/PlatformHttpClientEngine.kt:7`
+— `actual fun createPlatformHttpClientEngine(trustedCertStorage: TrustedCertStorage): HttpClientEngine
+= Darwin.create()` ignores the `trustedCertStorage` parameter entirely; there is no iOS equivalent of
+Android/JVM's `CompositeTrustManager`. The settings UI that lists/revokes trusted certificates
+(`feature/settings/ui/src/commonMain/kotlin/.../trustedcerts/TrustedCertificatesScreen.kt`) lives in
+`commonMain`, so it's reachable on iOS too.
+
+**What happens:** nothing on iOS ever writes to `TrustedCertStorage` (only `CompositeTrustManager`'s
+TOFU flow does that, and it doesn't exist on the Darwin engine), so `TrustedCertificatesScreen` on iOS
+is permanently empty and can never gain an entry — not misleading (empty is a safe, honest state), but
+dead UI a user could reach and wonder why it never does anything. Separately, an iOS user pointed at a
+self-signed/self-hosted server can't connect at all — `Darwin.create()` uses `NSURLSession`'s default
+TLS validation with no override, so the handshake simply fails closed. That's the safe direction (no
+silent bypass), but it's a real feature-parity gap: the TOFU-with-revoke-UI flow the app ships is
+Android/JVM-only.
+
+**Evidence:** found during the MASVS-NETWORK review (`docs/security/masvs-review-plan.md` task 2).
+`grep -rn "TrustedCertStorage" core/api/src/iosMain` shows the parameter is declared but never read;
+`docs/security/masvs.md`'s Network section records this as a Note, not an Open MASVS finding, since
+MASVS-NETWORK-2's pinning control is N/A for a user-supplied server and failing closed isn't a
+violation of anything.
+
+**Consequence:** no security bug — this is a UX/feature-completeness gap, not a MASVS control
+violation. Worth fixing either by porting the TOFU flow to iOS (Keychain-backed cert storage lookup
+wired into the Darwin engine, a bigger job) or by hiding `TrustedCertificatesScreen` from iOS
+navigation until that lands (small).
+
+**Why deferred:** out of the MASVS review task's scope (recording the register, not shipping a
+platform port or a UI-visibility change); porting TLS trust handling to a new platform is exactly the
+kind of change that needs its own task, not a rider on a documentation review.
+
+---
+
+## 34. GitHub OAuth WebView doesn't restrict navigation to GitHub's own host
+
+**Where:**
+`feature/login/ui/src/androidMain/kotlin/com/grappim/taigamobile/feature/login/ui/GithubOAuthWebViewDialog.android.kt:22-38`.
+`settings.javaScriptEnabled = true` and `settings.domStorageEnabled = true` (`:23-24`), and
+`shouldOverrideUrlLoading` (`:26-37`) only inspects the navigated URL for a `code` or `error` query
+param — any other URL falls through to `return false`, i.e. the `WebView` loads it. Nothing checks
+`request.url.host` against `github.com` (or the eventual OAuth-callback host) before allowing
+navigation.
+
+**What happens:** the app hosts GitHub's real login form inside a `WebView` it fully controls (full
+JS execution, DOM storage, no address bar) — this is the RFC 8252 "embedded user-agent" anti-pattern
+`kmp-checks.md` names, and it fails regardless of configuration. This specific instance has one real
+bound already: no `addJavascriptInterface` call anywhere (`grep -rn addJavascriptInterface` across all
+source sets is empty), so there's no JS-to-native bridge for a malicious page to call into. But nothing
+stops the `WebView` from following a redirect to an arbitrary host during the flow — the interception
+logic only reacts to the `code`/`error` params, not the host, so a redirect chain that doesn't yet
+carry those params is followed unconditionally.
+
+**Why it's a `WebView` at all, not Custom Tabs:** this was already tried and reverted in the same PR
+that shipped GitHub login (commit `4236a2ef`, "feat: tg-108 replace loopback with WebView for GitHub
+OAuth"). The first cut used a loopback redirect (`http://127.0.0.1:PORT/callback`) opened in a Chrome
+Custom Tab — the standard RFC 8252-compliant pattern, documented in
+`docs/features/github-auth/plan.md` (now stale/superseded, marked as such this task). It was reverted
+because **GitHub OAuth Apps support exactly one registered callback URL**, and that URL is already the
+Taiga web app's. A mobile-specific loopback redirect would either break the web login (if the callback
+is repointed at `127.0.0.1`) or require a second GitHub OAuth App with its own `client_id` — a
+server-admin config change outside this codebase's control and outside "zero admin changes" the
+current design promises. The `WebView` approach reuses whatever callback URL is already registered
+(Taiga's `connector.py` doesn't validate `redirect_uri` server-side either, per the plan doc), which is
+why it was chosen instead.
+
+**Consequence:** this is a real, if partial, hardening gap, not a full fix waiting to happen — Custom
+Tabs is blocked by the external OAuth App constraint above unless that constraint changes server-side.
+What *is* available without touching the OAuth architecture: restrict `shouldOverrideUrlLoading` to an
+allowlist of hosts the flow actually needs (`github.com` and its auth/SSO subdomains, plus the
+configured Taiga server's host for the final callback), denying/dismissing on anything else. That
+narrows the WebView's blast radius without solving the underlying RFC 8252 problem, which needs the
+external constraint resolved first.
+
+**Evidence:** found during the MASVS-AUTH review (`docs/security/masvs-review-plan.md` task 3);
+recorded as an Open finding, MASVS-AUTH-1, in `docs/security/masvs.md`.
+
+**Why deferred:** correctly scoping a host allowlist (GitHub's SSO/2FA flow can involve more than the
+bare `github.com` host) risks silently breaking the OAuth login for some orgs if done from a source
+read alone, and this repo has no Android unit-test source set (CLAUDE.md, by design) to verify a
+`WebViewClient` change automatically — it would need manual device verification. Not a rider on a
+documentation review task.
+
+---
+
+## 35. No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot
+
+**Closed 2026-08-10 — deliberate won't-fix, not left open.** The maintainer, weighing the tradeoff as
+a user of the app themselves, decided against setting `FLAG_SECURE`: it would block screenshots and
+screen-recording app-wide (single-`Activity` app) to close a Low-Medium, local-access-only gap. Not a
+default accepted silently — recorded as an Accepted deviation in `docs/security/masvs.md` (moved out
+of the Open table) with the reasoning on record.
+
+**Where:** `androidApp/src/main/kotlin/com/grappim/taigamobile/MainActivity.kt` never calls
+`window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, ...)` — confirmed by `grep -rn 'FLAG_SECURE'
+--include=*.kt .` returning nothing anywhere in the repo. The concrete screen this matters for:
+`feature/login/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/login/ui/LoginScreen.kt:190-219`,
+whose password field has a show/hide toggle (`state.isPasswordVisible` driving
+`VisualTransformation.None` vs. `PasswordVisualTransformation()`).
+
+**What happens:** this is a single-`Activity` app (`MainActivity` hosts every Compose screen), so the
+absence of `FLAG_SECURE` applies app-wide, not just to login. The concrete exposure: a user taps "show
+password" on the login screen, then backgrounds the app (app switcher, incoming call, notification
+shade) while the field is still in `VisualTransformation.None` state — Android's recents-list snapshot
+captures whatever was on screen at that moment, so the plaintext password lands in the thumbnail. The
+thumbnail is local to the device (not synced or uploaded anywhere), so exploiting it needs local/
+physical access to an unlocked device — same class of exposure as an unlocked phone left unattended,
+not a remote one.
+
+**Consequence:** low-to-medium severity, MASVS-PLATFORM-3. Fixing it is a one-line change
+(`window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)` in
+`MainActivity.onCreate`), but because it's a single-Activity app the flag would apply globally —
+blocking screenshots and screen recording on every screen, not just login, which is a real UX
+tradeoff (e.g. no user-initiated bug-report screenshots from inside the app) that deserves a
+deliberate choice rather than a silent default flip.
+
+**Evidence:** found during the MASVS-PLATFORM review (`docs/security/masvs-review-plan.md` task 4);
+recorded as an Open finding, MASVS-PLATFORM-3, in `docs/security/masvs.md`, with the live-device
+verification itself moved to that register's "Needs a device" table (source can confirm the flag is
+absent, not that a real screenshot actually captures the revealed password).
+
+**Why deferred:** the app-wide vs. per-screen tradeoff is a product decision (does the team want to
+give up in-app screenshot capability everywhere to close a local-access-only gap on one screen), not
+something to default silently inline during a documentation review task.
+
+---
+
+## 36. `LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist
+
+**Where:** `feature/workitem/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/workitem/ui/widgets/customfields/CustomFieldsWidget.kt`'s
+`CustomFieldUrlItemWidget` was fixed in the MASVS-CODE review (task 5,
+`docs/security/masvs-review-plan.md`) — it now refuses anything that isn't `http://`/`https://` before
+calling `uriHandler.openUri()`. Two more call sites on the same untrusted-input class were found but
+**not** fixed in that task, out of scope for a small isolated diff:
+
+- `feature/workitem/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/workitem/ui/widgets/AttachmentsWidget.kt:160`
+  — `uriHandler.openUri(attachment.url)`. Lower risk than the custom field (the URL is server/API-
+  constructed, not free text a project collaborator types), but not scheme-checked either.
+- Link clicks inside markdown rendered via `com.mikepenz:multiplatform-markdown-renderer`
+  (`uikit/.../MarkdownTextWidget.kt`, used for task descriptions, comments and wiki pages). This
+  library's link-click handling was **not confirmed** in the MASVS-CODE task — only its compiled
+  classes were inspected (no `LinkClickListener`/override class found), which is consistent with, but
+  does not prove, it delegating to Compose's default `LinkAnnotation.Url` click behaviour
+  (`LocalUriHandler.openUri`, no scheme check). This is the highest-exposure instance of the three:
+  markdown content reaches every task description/comment/wiki page, authored by any project
+  collaborator with edit permission, not just the one custom-field type.
+
+**What happens:** on Android, `LocalUriHandler.openUri` launches an implicit `ACTION_VIEW` intent with
+the string as-is (`Intent(Intent.ACTION_VIEW, Uri.parse(uri))`). A crafted `intent://…` or other
+non-http(s) scheme, tapped by a teammate viewing the task/comment/wiki page, can deep-link into another
+installed app — a real escalation path beyond what a plain browser hyperlink allows. The attacker here
+is a malicious or compromised **project collaborator** with edit rights on a shared self-hosted
+instance, not the server operator.
+
+**Consequence:** MASVS-CODE-4, same severity class as the fixed `CustomFieldsWidget.kt` instance
+(Low-Medium — needs a malicious/compromised collaborator plus one user tap). Recorded as an Open
+finding in `docs/security/masvs.md`.
+
+**Why deferred:** the correct fix is architectural, not three scattered patches — wrap
+`LocalUriHandler` once (e.g. at the app's theme/root composition) with a scheme-validating decorator
+so every call site (markdown links, `AttachmentsWidget`, any future one) gets the same allowlist for
+free, rather than repeating the `startsWith("http")` check per call site as new ones are added. That's
+a cross-cutting change bigger than one review task's isolated diff. Confirming the markdown renderer's
+actual link-click wiring (decompile the library, or a device test tapping a markdown link) is also
+needed before writing the fix, since patching a click path that turns out not to exist would be wasted
+work.
+
+**Resolved (2026-08-10):** confirmed the markdown renderer's link-click wiring from its published
+sources jar (`com.mikepenz:multiplatform-markdown-renderer:0.43.0`,
+`annotator/AnnotatorSettings.kt`'s `annotatorSettings()`) rather than decompiling — its default
+`linkInteractionListener` does exactly what was suspected: `uriHandler.openUri(foundReference)` with
+`uriHandler` defaulted to `LocalUriHandler.current` and no scheme check of its own. That confirmed a
+single fix point covers all three call sites. Added `SafeUriHandler`
+(`uikit/src/commonMain/.../utils/SafeUriHandler.kt`), a `UriHandler` decorator that allowlists
+`http://`/`https://` and logs+refuses (does not delegate) anything else, and provided it once via
+`CompositionLocalProvider(LocalUriHandler provides SafeUriHandler(LocalUriHandler.current))` inside
+`TaigaMobileTheme` (`uikit/.../theme/Theme.kt`) — the app's single composition root
+(`composeApp/.../TaigaAppContent.kt:25`), also picked up by `TaigaMobilePreviewTheme`. This covers
+markdown links, `AttachmentsWidget.kt:160` and `CustomFieldsWidget.kt`'s URL custom field with no
+per-call-site code. Removed the now-redundant `startsWith("http")` check (and the now-unused
+`LogPriority` import) from `CustomFieldUrlItemWidget` in `CustomFieldsWidget.kt`, since the wrapper
+does the same check centrally. Added `SafeUriHandlerTest` (`uikit` `commonTest`) covering an allowed
+`http(s)` URI (delegated) and two disallowed schemes (`intent://`, `javascript:`, both refused without
+delegating). `./gradlew jvmTest`, `ktlintCheck` and `koverXmlReport`/`:koverVerify` all green. Register
+updated: `docs/security/masvs.md`.
+
+## 37. iOS logout doesn't clear the local Room cache
+
+**Resolved (2026-08-10):** replaced the `= Unit` stub with the same three DAO `deleteAll()` calls
+(`projectDao()`, `sprintDao()`, `workItemDao()`) as the JVM actual
+(`core/storage/src/jvmMain/.../db/TaigaDBExt.jvm.kt:3-7`) — a direct port, no new abstraction needed.
+Verified `:core:storage:compileKotlinIosSimulatorArm64`, `ktlintCheck`, and the full
+`jvmTest`/`koverXmlReport`/`:koverVerify` all green. No automated test added for the iOS actual itself
+(no iOS test infra in this repo, same as every other iOS-only class, and the JVM equivalent has none
+either — it's pure DAO wiring). Register updated: `docs/security/masvs.md`.
+
+**Where:** `core/storage/src/iosMain/kotlin/com/grappim/taigamobile/core/storage/db/TaigaDBExt.ios.kt:3`
+— `actual suspend fun TaigaDB.clearAllTablesKmp() = Unit`, a no-op stub.
+
+**What happens:** `AuthStateManager.logoutSuspend()`
+(`core/storage/src/commonMain/kotlin/com/grappim/taigamobile/core/storage/auth/AuthStateManager.kt:26-32`)
+clears `FiltersStorage`, `TaigaSessionStorage`, and `AuthStorage` correctly on every platform, then
+calls `databaseWrapper.clearAllTables()` → `TaigaDB.clearAllTablesKmp()`. On iOS that call does
+nothing, so the Room cache (projects, sprints, work items) survives logout untouched. The next account
+that logs in on the same device sees the previous account's cached project data rendered until each
+screen's own fetch overwrites it.
+
+**Consequence:** MASVS-PRIVACY-4 ("can the user clear their data"), recorded as an Open finding in
+`docs/security/masvs.md` (task 6, `docs/security/masvs-review-plan.md`). Medium severity — needs a
+shared/multi-account device, and no credential is exposed (that part of logout is correct), but cached
+task titles/comments/assignee names from another account can leak to whoever logs in next.
+
+**Why deferred:** `docs/desktop/linux-release-plan.md` task 7 already found and fixed the identical bug
+for JVM/desktop (Android's actual, `= clearAllTables()`, was already correct beforehand) but
+deliberately scoped iOS out of that fix. The correct fix is already proven and is a straight port: add
+the same three `deleteAll()` `@Query` calls the JVM actual makes
+(`core/storage/src/jvmMain/kotlin/com/grappim/taigamobile/core/storage/db/TaigaDBExt.jvm.kt:3-7`) to the
+iOS actual — `projectDao().deleteAll()`, `sprintDao().deleteAll()`, `workItemDao().deleteAll()` — no new
+DAO methods needed, they already exist. Not fixed inline in the MASVS-PRIVACY review task because that
+task is a documentation review, not a code-change task, and this repo has no iOS-executable test to
+verify a Room-backed iOS actual beyond `compileKotlinIosArm64`/`compileKotlinIosSimulatorArm64`
+compiling — the desktop plan's task 7 verified its fix by running the app and inspecting the SQLite
+file directly, which isn't practical for iOS from this environment.

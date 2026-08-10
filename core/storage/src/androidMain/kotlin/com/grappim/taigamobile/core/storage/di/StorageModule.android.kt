@@ -10,6 +10,7 @@ import com.grappim.taigamobile.core.storage.FiltersStorage
 import com.grappim.taigamobile.core.storage.FiltersStorageImpl
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
+import com.grappim.taigamobile.core.storage.auth.AndroidKeystoreTokenCipher
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
 import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
@@ -29,7 +30,8 @@ actual class PlatformStorageModule
 class AuthDataStoreModule {
 
     @Single
-    fun provideAuthStorage(context: Context): AuthStorage = AuthStorageImpl(createAuthDataStore(context))
+    fun provideAuthStorage(context: Context): AuthStorage =
+        AuthStorageImpl(createAuthDataStore(context), AndroidKeystoreTokenCipher())
 
     @Single
     fun provideSessionStorage(context: Context, colorMapper: ColorMapper): TaigaSessionStorage =

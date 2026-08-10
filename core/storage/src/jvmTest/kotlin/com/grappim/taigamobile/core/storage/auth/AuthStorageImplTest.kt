@@ -1,6 +1,11 @@
 package com.grappim.taigamobile.core.storage.auth
 
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import com.grappim.taigamobile.core.storage.createTestDataStore
+import com.grappim.taigamobile.testing.storage.FakeTokenCipher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
@@ -10,7 +15,15 @@ import kotlin.test.assertTrue
 
 class AuthStorageImplTest {
 
-    private fun createSut() = AuthStorageImpl(createTestDataStore("auth_storage_test"))
+    private fun createSut(tokenCipher: TokenCipher = NoopTokenCipher()) =
+        AuthStorageImpl(createTestDataStore("auth_storage_test"), tokenCipher)
+
+    private fun createDataStoreAndSut(
+        tokenCipher: TokenCipher = NoopTokenCipher()
+    ): Pair<DataStore<Preferences>, AuthStorageImpl> {
+        val dataStore = createTestDataStore("auth_storage_test")
+        return dataStore to AuthStorageImpl(dataStore, tokenCipher)
+    }
 
     @Test
     fun `getToken returns an empty string when nothing was ever stored`() = runTest {
@@ -101,5 +114,33 @@ class AuthStorageImplTest {
 
         assertEquals("", sut.getToken())
         assertFalse(sut.isLoggedIn.first())
+    }
+
+    @Test
+    fun `setAuthCredentials stores tokens through the cipher, not as plaintext`() = runTest {
+        val (dataStore, sut) = createDataStoreAndSut(tokenCipher = FakeTokenCipher())
+
+        sut.setAuthCredentials(token = "access", refreshToken = "refresh")
+
+        val storedToken = dataStore.data.first()[stringPreferencesKey("token")]
+        assertEquals("ENC:access", storedToken)
+        assertEquals("access", sut.getToken())
+    }
+
+    @Test
+    fun `getToken passes through a legacy plaintext value written before the cipher existed`() = runTest {
+        val (dataStore, sut) = createDataStoreAndSut(tokenCipher = FakeTokenCipher())
+        dataStore.edit { it[stringPreferencesKey("token")] = "legacy-plaintext-access" }
+
+        assertEquals("legacy-plaintext-access", sut.getToken())
+    }
+
+    @Test
+    fun `getToken returns an empty string when the cipher cannot decrypt the stored value`() = runTest {
+        val cipher = FakeTokenCipher().apply { decryptResult = { "" } }
+        val sut = createSut(tokenCipher = cipher)
+        sut.setAuthCredentials(token = "access", refreshToken = "refresh")
+
+        assertEquals("", sut.getToken())
     }
 }

@@ -17,14 +17,15 @@ interface AuthStorage {
     suspend fun clear()
 }
 
-class AuthStorageImpl(private val dataStore: DataStore<Preferences>) : AuthStorage {
+class AuthStorageImpl(private val dataStore: DataStore<Preferences>, private val tokenCipher: TokenCipher) :
+    AuthStorage {
 
     private val tokenFlow = dataStore.data.map { prefs ->
-        prefs[TOKEN_KEY].orEmpty()
+        prefs[TOKEN_KEY]?.let(tokenCipher::decrypt).orEmpty()
     }
 
     private val refreshTokenFlow = dataStore.data.map { prefs ->
-        prefs[REFRESH_TOKEN_KEY].orEmpty()
+        prefs[REFRESH_TOKEN_KEY]?.let(tokenCipher::decrypt).orEmpty()
     }
 
     override suspend fun getToken(): String = tokenFlow.first()
@@ -36,8 +37,8 @@ class AuthStorageImpl(private val dataStore: DataStore<Preferences>) : AuthStora
 
     override suspend fun setAuthCredentials(token: String, refreshToken: String) {
         dataStore.edit { prefs ->
-            prefs[TOKEN_KEY] = token
-            prefs[REFRESH_TOKEN_KEY] = refreshToken
+            prefs[TOKEN_KEY] = tokenCipher.encrypt(token)
+            prefs[REFRESH_TOKEN_KEY] = tokenCipher.encrypt(refreshToken)
         }
     }
 

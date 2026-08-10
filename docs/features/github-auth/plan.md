@@ -1,5 +1,15 @@
 # GitHub OAuth — Loopback Implementation Plan
 
+**Status: SUPERSEDED.** Implemented and then reverted in the same PR that shipped GitHub login
+(commit `4236a2ef`, "feat: tg-108 replace loopback with WebView for GitHub OAuth") — GitHub OAuth
+Apps support exactly one registered callback URL, and that URL is already the Taiga web app's; the
+loopback redirect this doc describes would either break the web login or need a second, separately
+registered OAuth App (a server-admin change outside this codebase's control). The shipped
+implementation is the `WebView`-based one in `GithubOAuthWebViewDialog.android.kt` instead. Kept here
+as a historical record of why the loopback approach doesn't work for this app; see the MASVS-AUTH
+section of `docs/security/masvs.md` and `docs/revisit.md` #34 for the current security review of the
+`WebView` approach.
+
 ## Overview
 
 Replace the current custom-scheme deep-link approach (`taigamobile://oauth/callback`) with an

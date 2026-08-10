@@ -22,7 +22,12 @@ and stop.
 
 ```bash
 # Android - build debug APK
-./gradlew :androidApp:assembleGplayDebug
+# -PgplayBuild is required for Gplay builds: it's what gates the google-services
+# and firebase-crashlytics plugins on (androidApp/build.gradle.kts). Omit it and the
+# flavor still compiles, but Firebase never initializes — CrashReporterImpl then
+# throws "Default FirebaseApp is not initialized" at app startup, release or debug.
+./gradlew :androidApp:assembleGplayDebug -PgplayBuild
+./gradlew :androidApp:assembleGplayRelease -PgplayBuild
 ./gradlew :androidApp:assembleFdroidDebug
 
 # Desktop - run or package
@@ -262,6 +267,13 @@ fit* on one within the 120-char limit. It bit two consecutive sessions on the sa
 characters, which reads as over-long and is nonetheless required to be one line. Dropping argument
 names in the nested factory calls is what keeps it under the limit.
 
+**`standard:class-signature` is the same trap for a class header, and it auto-fixes.** Adding a
+second constructor param that pushes `class Foo(...) : SuperType {` past 120 chars — do not hand-wrap
+it as one param per line with the closing paren and `: SuperType {` on their own lines; ktlint instead
+wants every param kept on the constructor's own line and only the `: SuperType {` broken onto the
+next one. Don't guess the format: run `./gradlew :module:path:ktlintCommonMainSourceSetFormat` (or the
+matching task for the source set that failed) and let it rewrite the file.
+
 **Every `XApi` is an `interface XApi` + `@Single(binds = [XApi::class]) class XApiImpl`** — no
 exceptions, so any API can be faked in `:testing`. `WikiApi` was the last concrete one and was split
 in the course of testing it.
@@ -412,6 +424,15 @@ directly outside `core/logger`.
 | Android | `TimberLogger` → Timber (`DebugTree` on debug, `CrashlyticsTree` on gplay) | `androidApp/TaigaApp.kt` |
 | iOS | `NSLogLogger` → `NSLog`, chunked at 3000 chars to survive its ~4096-byte truncation | `main.ios.kt` |
 | Desktop/JVM | `FileLogger` → appends to `taigamobile.log` in the per-user app-data dir (`core/storage`'s `appDataDir()`), rotating to `<name>.old` past 5 MB | `TaigaMobileDesktop.kt` |
+
+## Security
+
+`docs/security/masvs.md` is the living MASVS v2 register — Accepted deviations (deliberate, bounded
+tradeoffs like TOFU cert trust and cleartext-for-self-hosted-LAN), Open findings, and what still
+needs a device/APK to verify. Check it before reporting a new security finding; a control already
+reviewed there has a bound recorded, not a re-raise. Maintained by the **masvs-review** skill.
+`docs/security/masvs-review-plan.md` is closed (all 8 categories done, 2026-08-10) and kept only as
+historical record of how the register was built — `masvs.md` itself is the current source of truth.
 
 ## Error Handling
 
