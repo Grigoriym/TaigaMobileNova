@@ -1374,6 +1374,12 @@ documentation review task.
 
 ## 35. No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot
 
+**Closed 2026-08-10 — deliberate won't-fix, not left open.** The maintainer, weighing the tradeoff as
+a user of the app themselves, decided against setting `FLAG_SECURE`: it would block screenshots and
+screen-recording app-wide (single-`Activity` app) to close a Low-Medium, local-access-only gap. Not a
+default accepted silently — recorded as an Accepted deviation in `docs/security/masvs.md` (moved out
+of the Open table) with the reasoning on record.
+
 **Where:** `androidApp/src/main/kotlin/com/grappim/taigamobile/MainActivity.kt` never calls
 `window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, ...)` — confirmed by `grep -rn 'FLAG_SECURE'
 --include=*.kt .` returning nothing anywhere in the repo. The concrete screen this matters for:
