@@ -2,11 +2,20 @@
 
 Profile: Android / iOS (JVM/desktop is outside MASVS — noted where relevant, not reviewed as a
 MASVS target) · self-hosted, user-supplied server · reviewed 2026-08-09/2026-08-10, STORAGE, CRYPTO,
-NETWORK, AUTH, PLATFORM, CODE and PRIVACY.
+NETWORK, AUTH, PLATFORM, CODE, PRIVACY and RESILIENCE (scope decision only).
 
-Out of scope: MASVS-RESILIENCE (defends a vendor's assets against the device owner; this is a
-self-hosted FOSS client where the device owner is the data owner and the source is public —
-formal decision recorded in task 7 of `docs/security/masvs-review-plan.md`, not yet run).
+Out of scope: **MASVS-RESILIENCE.** Anti-tamper/anti-reverse-engineering controls defend a
+vendor's asset against the device's own owner; this app has none. Confirmed, not assumed, for
+this specific app: it embeds no secret worth protecting from reverse engineering — the GitHub
+OAuth `client_id` is fetched at runtime from the server's `taiga-conf.json` (not bundled in the
+binary, and a `client_id` isn't sensitive regardless), the OAuth `code`→token exchange (the step
+that needs a `client_secret`) happens server-side, not in the app, and no other API key/secret is
+embedded anywhere (`grep -rln 'client_secret\|CLIENT_SECRET\|clientSecret'` across the repo,
+outside `build/`, is empty). Server credentials belong to the user pointing the app at their own
+Taiga instance, and the source is public, so there is no vendor asset for tamper-detection or
+obfuscation to defend. Reproducible builds — the thing that would actually matter for a FOSS
+client in this space — are outside what MASVS covers. Formal decision, task 7 of
+`docs/security/masvs-review-plan.md`.
 
 ## Accepted deviations
 

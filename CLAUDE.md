@@ -420,6 +420,15 @@ directly outside `core/logger`.
 | iOS | `NSLogLogger` → `NSLog`, chunked at 3000 chars to survive its ~4096-byte truncation | `main.ios.kt` |
 | Desktop/JVM | `FileLogger` → appends to `taigamobile.log` in the per-user app-data dir (`core/storage`'s `appDataDir()`), rotating to `<name>.old` past 5 MB | `TaigaMobileDesktop.kt` |
 
+## Security
+
+`docs/security/masvs.md` is the living MASVS v2 register — Accepted deviations (deliberate, bounded
+tradeoffs like TOFU cert trust and cleartext-for-self-hosted-LAN), Open findings, and what still
+needs a device/APK to verify. Check it before reporting a new security finding; a control already
+reviewed there has a bound recorded, not a re-raise. Maintained by the **masvs-review** skill.
+`docs/security/masvs-review-plan.md` is closed (all 8 categories done, 2026-08-10) and kept only as
+historical record of how the register was built — `masvs.md` itself is the current source of truth.
+
 ## Error Handling
 
 - Never swallow exceptions silently. Every `catch` block must at least log the exception:

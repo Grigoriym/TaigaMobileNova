@@ -1,6 +1,8 @@
 # MASVS security review: implementation plan
 
-**Status: OPEN.** Created 2026-08-09. No task started yet.
+**Status: CLOSED.** Created 2026-08-09, closed 2026-08-10. All 8 tasks done. Kept as historical
+record — see `docs/security/masvs.md` for the live register (that file, not this plan, is what a
+future review should read first).
 
 **Baseline:** two reference studies already in `docs/security/` —
 [Aegis — Security & Crypto Practice Study](Aegis%20-%20SECURITY_CRYPTO_STUDY.md) and
@@ -57,7 +59,7 @@ a separate, later effort, not a reason to block a task here.
 | 4 | Platform — WebView, IPC surface, screenshot leakage | PLATFORM | ✅ done — 2026-08-10 |
 | 5 | Code quality — minSdk, dependency scanning, input validation | CODE | ✅ done — 2026-08-10 |
 | 6 | Privacy — permissions, crash reporting, data clearing on logout | PRIVACY | ✅ done — 2026-08-10 |
-| 7 | Resilience — scope decision only, no code review | RESILIENCE | todo — ⬅ NEXT |
+| 7 | Resilience — scope decision only, no code review | RESILIENCE | ✅ done — 2026-08-10 |
 
 **Order rationale:** Storage first — the stored server credential is the asset the skill's own
 framing centers on, and a scoping pass already found exactly where it lives. Crypto follows
@@ -554,3 +556,18 @@ is the last task in the plan — once done, close the plan doc the same way
 banner, note what's kept).
 
 **Finalize focus:** low.
+
+**Result (2026-08-10):** Reasoning confirmed to hold for this specific app, not just asserted from
+the skill's default. Checked whether the app embeds anything a vendor would need tamper/reverse-
+engineering protection for: the GitHub OAuth `client_id` is fetched at runtime from the server's
+`taiga-conf.json` (`AuthRepositoryImpl`/`AuthApiImpl`, confirmed via `feature/login/*` and its
+tests) rather than bundled in the binary, and isn't sensitive even if it were; the `code`→token
+exchange (the step that would need a `client_secret`) happens server-side, never in the app —
+`GithubAuthRequest` sends only `code`/`type`, no secret. `grep -rln
+'client_secret\|CLIENT_SECRET\|clientSecret'` across the repo (outside `build/`) is empty — no
+API key or secret embedded anywhere. Combined with the server being user-supplied (not
+vendor-operated) and the source being public, there is no vendor asset MASVS-RESILIENCE controls
+would protect against the app's own user. Register header formalized (`docs/security/masvs.md`) —
+states the decision plainly with this task's evidence, replacing the "not yet run" placeholder.
+No code changes. **Plan closed** — all 8 tasks (0-7) done; `docs/security/masvs.md` is now the
+living register for any future MASVS work, this plan doc is historical record only.
