@@ -30,7 +30,7 @@ ktlint = "14.2.0"
 # https://github.com/Kotlin/kotlinx-kover/releases
 kover = "0.9.9"
 # https://github.com/mrmans0n/compose-rules/releases
-composeRules = "0.6.3"
+composeRules = "0.6.4"
 
 # https://developer.android.com/reference/tools/gradle-api
 agp = "9.3.1"
