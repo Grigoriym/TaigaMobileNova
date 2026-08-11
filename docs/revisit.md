@@ -26,9 +26,10 @@ its own section, kept for the reasoning rather than the outcome):
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 35 | No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot | XS | this file, #35 |
+| 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
 
 <details>
-<summary><strong>Full index (all 37 entries, resolved included)</strong> — this file is long because
+<summary><strong>Full index (all 38 entries, resolved included)</strong> — this file is long because
 resolved entries stay for their reasoning, not their outcome (see above), and ~20 links elsewhere in
 the repo — including a frozen archive doc — point at specific entries by anchor, so they aren't
 moved out. Expand for a one-line-per-entry jump table instead of scrolling.</summary>
@@ -72,6 +73,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | 🟡 open |
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
+| 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
 
 </details>
 
@@ -1509,3 +1511,30 @@ task is a documentation review, not a code-change task, and this repo has no iOS
 verify a Room-backed iOS actual beyond `compileKotlinIosArm64`/`compileKotlinIosSimulatorArm64`
 compiling — the desktop plan's task 7 verified its fix by running the app and inspecting the SQLite
 file directly, which isn't practical for iOS from this environment.
+
+## 38. `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change
+
+**Where:** `build-logic/convention/src/main/kotlin/com/grappim/taigamobile.buildlogic/AndroidOutputNaming.kt`
+— `RenameApkTask`.
+
+**What happens:** `./gradlew :build-logic:convention:build` fails at the `validatePlugins` task
+(registered by `JavaGradlePluginPlugin`) with "Type
+`com.grappim.taigamobile.buildlogic.RenameApkTask` must be annotated either with `@CacheableTask` or
+with `@DisableCachingByDefault`". This is unrelated to any specific source change — it reproduces on
+a clean `dev` checkout with no edits to `build-logic` at all.
+
+**Consequence:** none functionally (the convention plugins still compile and apply fine — confirmed
+via `:build-logic:convention:compileKotlin`). The cost is that
+[docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md)'s "Researched facts"
+section recommends `./gradlew :build-logic:convention:build` as the build-logic check in place of
+`ktlintCheck` (`build-logic` is an included build, so root `ktlintCheck` doesn't reach it) — that
+recommendation predates this finding and no longer holds; `:build-logic:convention:compileKotlin` is
+the check that actually passes on a clean tree.
+
+**Why deferred:** found incidentally while verifying
+[docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md) task 1 — out of scope
+for that task, which only touched `AndroidApplicationConventionPlugin.kt`,
+`KmpLibraryComposeConventionPlugin.kt`, and a new file, none of which reference `RenameApkTask`. Fix
+is a one-line `@DisableCachingByDefault(because = "...")` (or `@CacheableTask`) annotation on
+`RenameApkTask`, but choosing which one and the right `because` message deserves its own small task
+rather than riding along on an unrelated diff.
