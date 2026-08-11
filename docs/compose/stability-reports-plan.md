@@ -21,8 +21,8 @@ cost to a normal build, the same way `-PgplayBuild` gates Firebase.
 
 | # | Task | Size | Status |
 |---|------|------|--------|
-| 1 | Gradle wiring: opt-in stability reports | S | ⬅ NEXT |
-| 2 | Aggregator script + first repo-wide audit + doc | M | Not started |
+| 1 | Gradle wiring: opt-in stability reports | S | Done (2026-08-11) |
+| 2 | Aggregator script + first repo-wide audit + doc | M | ⬅ NEXT |
 
 ## Researched facts (so task 1 doesn't have to re-derive them)
 
@@ -43,17 +43,30 @@ cost to a normal build, the same way `-PgplayBuild` gates Firebase.
     get instrumented at all.
 - **KMP modules compile shared `commonMain` composables once per target** (android, iosArm64,
   iosSimulatorArm64, jvm), so with no `targetKotlinPlatforms` restriction, every UI module would emit
-  4 near-duplicate report sets for the same commonMain code. Restrict to `jvm` only — it's the
-  cheapest target to compile (no iOS toolchain, no Gplay/Fdroid flavor split) and commonMain stability
-  is target-agnostic. **Known gap this leaves**: any composable declared only in an `androidMain`
-  source set (Android-specific screens/dialogs, if any exist) won't be scanned. Acceptable for a
-  periodic audit tool; call it out in the doc rather than solving it now.
+  4 near-duplicate report sets for the same commonMain code. **Do not use `targetKotlinPlatforms` to
+  restrict this to `jvm`** — task 1 tried exactly that and it broke `androidApp`'s build. Reading
+  `ComposeCompilerGradleSubplugin.isApplicable()` (decompiled/sourced from
+  `compose-compiler-gradle-plugin-2.4.10-sources.jar`) shows `targetKotlinPlatforms` is not just a
+  report-output filter — it's what the subplugin uses to decide whether the Compose compiler plugin
+  applies to a compilation *at all*. Setting it to `[jvm]` silently disabled Compose's bytecode
+  transformation for the Android target in every KMP UI module (`utils:ui`, `uikit`, every
+  `feature/*/ui`, `composeApp`), and `androidApp:compileFdroidDebugKotlin -PcomposeStabilityReport`
+  failed with `Internal compiler error... couldn't find inline method
+  Landroidx/compose/runtime/CompositionLocal;.getCurrent()` — a real build break, not just a scanning
+  gap. The shipped `configureComposeStabilityReports()` sets no `targetKotlinPlatforms` at all and
+  applies identically to both convention-plugin call sites. **Duplicate per-target reports are instead
+  avoided operationally**: task 2 must only invoke the `jvm`-target compile task per module (e.g.
+  `:composeApp:compileKotlinJvm`), never a task that also builds Android/iOS. Known gap this still
+  leaves: any composable declared only in an `androidMain` source set won't be scanned by a
+  jvm-only run — same caveat as before, just no longer achieved via a build-breaking property.
 - `androidApp` is not KMP (single `androidJvm` target) — no `targetKotlinPlatforms` restriction
   needed there.
 - `build-logic` is an **included build** (`settings.gradle.kts`: `includeBuild("build-logic")`), not
   a subproject — the root's `alias(libs.plugins.ktlint)` does not reach it, so build-logic changes
-  need `./gradlew :build-logic:convention:build` (or just any normal build, which compiles it first)
-  as their check, not `ktlintCheck`.
+  need a compile check instead of `ktlintCheck`. Use `./gradlew :build-logic:convention:compileKotlin`,
+  **not** `:build-logic:convention:build`: task 1 found `:build-logic:convention:build` fails on a
+  pre-existing, unrelated `validatePlugins` error (`RenameApkTask` missing a caching annotation) even
+  on a clean tree — see [docs/revisit.md #38](../revisit.md#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change).
 
 ## Task 1 — Gradle wiring: opt-in stability reports
 
@@ -73,21 +86,20 @@ unaffected — same pattern as `-PgplayBuild`.
 
    // Opt-in Compose Compiler stability audit — see docs/compose/stability-reports.md.
    // Off by default: -PcomposeStabilityReport to generate *_classes.txt / *_composables.txt.
-   fun Project.configureComposeStabilityReports(restrictToJvm: Boolean = false) {
+   fun Project.configureComposeStabilityReports() {
        if (!project.hasProperty("composeStabilityReport")) return
        extensions.configure<ComposeCompilerGradlePluginExtension> {
            metricsDestination.set(layout.buildDirectory.dir("compose_reports"))
            reportsDestination.set(layout.buildDirectory.dir("compose_reports"))
-           if (restrictToJvm) {
-               targetKotlinPlatforms.set(setOf(KotlinPlatformType.jvm))
-           }
        }
    }
    ```
-   (Confirm the exact `ComposeCompilerGradlePluginExtension` import path and `targetKotlinPlatforms`
-   setter compile cleanly — decompiled signature above, not yet compiled.)
-2. Call it from both convention plugins, right after `apply("org.jetbrains.kotlin.plugin.compose")`:
-   - `KmpLibraryComposeConventionPlugin.kt`: `configureComposeStabilityReports(restrictToJvm = true)`
+   As shipped, this takes **no** `restrictToJvm` parameter and sets no `targetKotlinPlatforms` — see
+   the "Researched facts" entry above for why that parameter was tried and reverted (it broke
+   `androidApp`'s build, not just report scope).
+2. Call it identically from both convention plugins, right after
+   `apply("org.jetbrains.kotlin.plugin.compose")`:
+   - `KmpLibraryComposeConventionPlugin.kt`: `configureComposeStabilityReports()`
    - `AndroidApplicationConventionPlugin.kt`: `configureComposeStabilityReports()`
 3. Do **not** add a `stabilityConfigurationFile` yet — nothing has shown a false positive to suppress.
    (See "Considered and deferred" below.)
@@ -116,7 +128,34 @@ ls androidApp/build/compose_reports
 signature (API drift between Kotlin releases), record the real signature here — this section is
 exactly the kind of "confirm via reading the actual jar" step future sessions shouldn't have to redo.
 
-**Result:** _(fill in after running)_
+**Result:** Implemented as planned except one deviation, caught by running the `Done when` steps
+literally rather than trusting the plan: the original design used
+`targetKotlinPlatforms.set(setOf(KotlinPlatformType.jvm))` (passed as `restrictToJvm = true` from
+`KmpLibraryComposeConventionPlugin`) to avoid 4x duplicate reports per KMP UI module. That broke
+`androidApp:compileFdroidDebugKotlin -PcomposeStabilityReport` — the exact command in this task's own
+"Done when" — with `Internal compiler error... couldn't find inline method
+Landroidx/compose/runtime/CompositionLocal;.getCurrent()`. Root cause (confirmed by reading
+`ComposeCompilerGradleSubplugin.isApplicable()` in the plugin's sources jar): `targetKotlinPlatforms`
+doesn't just filter report output, it's what the subplugin uses to decide whether the Compose
+compiler plugin applies to a compilation *at all* — restricting to `jvm` silently disabled Compose's
+bytecode transformation for the Android target of `utils:ui`, `uikit`, every `feature/*/ui`, and
+`composeApp`. Fix: dropped `targetKotlinPlatforms`/`restrictToJvm` entirely;
+`configureComposeStabilityReports()` now takes no parameter and both convention-plugin call sites are
+identical. Duplicate reports across targets are deferred to task 2 to solve operationally (only
+invoke the `jvm`-target compile task per module). Full "Researched facts" bullet above has the
+details for a future session that might otherwise reach for `targetKotlinPlatforms` again.
+
+All `Done when` commands passed after the fix:
+`:composeApp:compileKotlinJvm -PcomposeStabilityReport` produced `*_classes.txt`/`*_composables.txt`
+under `composeApp/build/compose_reports/`; the same command without the flag produced no such
+directory; `:androidApp:compileFdroidDebugKotlin -PcomposeStabilityReport` succeeded and produced
+`androidApp/build/compose_reports/`, and the same command without the flag left no such directory;
+`./gradlew jvmTest` passed clean. `build-logic` has no `ktlintCheck` task (per CLAUDE.md) —
+`:build-logic:convention:compileKotlin` was used as the compile-clean check instead
+(`:build-logic:convention:build` fails on a pre-existing, unrelated `validatePlugins` issue with
+`RenameApkTask` not being cacheable-annotated — not touched by this task).
+
+**Next: task 2** — Aggregator script + first repo-wide audit + doc. Not started.
 
 ## Task 2 — Aggregator script + first repo-wide audit + doc
 
