@@ -18,7 +18,6 @@ its own section, kept for the reasoning rather than the outcome):
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
-| 29 | Login screen's server-URL regex rejects bare `localhost` (no dot in hostname) | XS | this file, #29 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
 | 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
 | 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
@@ -63,7 +62,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
-| 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | 🟡 open |
+| 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | ✅ resolved 2026-08-12 |
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
 | 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
@@ -1210,6 +1209,16 @@ doesn't change any *behavior* for currently-valid inputs — worth a quick check
 
 **Why deferred:** unrelated to the storage-path task in progress; a validation-regex change belongs
 in its own diff.
+
+**Resolved (2026-08-12):** applied exactly the fix above —
+`LoginViewModel.kt:33`'s `SERVER_REGEX` host group changed from `([\w\d-]+\.)+[\w\d-]+` to
+`([\w\d-]+\.)*[\w\d-]+`. Checked `HostSelectionPlugin.kt` (the only other place a server URL flows
+through): it builds a Ktor `Url(baseUrl)` and copies `.host`/`.port`/`.protocol` onto the outgoing
+request — no dotted-hostname assumption, so widening the regex changes nothing there. Added
+`LoginViewModelTest.\`on validateAuthData with bare localhost server should not set server error\``
+(`https://localhost:9000`) alongside the existing `10.0.2.2`-style cases.
+`:feature:login:ui:jvmTest`, `:feature:login:ui:ktlintCheck` and the full `./gradlew jvmTest` all
+green.
 
 ## 30. `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform
 
