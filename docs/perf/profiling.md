@@ -295,3 +295,40 @@ so a cleaner frame-duration signal wouldn't change the conclusion.
 - Two separate cold-start launches were captured (one for gfxinfo, one for Perfetto) rather than one
   launch feeding both tools — the frame counts and worst-frame numbers between the two sections are
   not from the same run, though both are cold starts of the same journey.
+
+## Real hardware: what changes, what breaks (2026-08-12)
+
+First real-device pass, Samsung SM-A920F (Android 10, API 29, Adreno 512 — genuinely
+GPU-accelerated). Two techniques above behave differently than on the AVD; know this before reaching
+for either on real, unrooted hardware.
+
+**`dumpsys gfxinfo` ("Quick look") works exactly as documented, and the numbers are clean.** Cold
+start to Select Project: 28 frames, 95th percentile 85ms, 99th percentile 150ms — no
+histogram-overflow artifacts, no suspiciously-round `9Xth gpu percentile` bucket boundary (both
+signatures of the AVD's software renderer). This is the technique to reach for on real hardware.
+
+**Perfetto ("Deep look") loses most of its value on a real, unrooted device — for two independent
+reasons:**
+
+1. `actual_frame_timeline_slice` (what the worst-frame jank query is built on) is **empty** on
+   Android 10/API 29 — it requires the SurfaceFlinger frame-timeline API added in API 31. Check
+   `select count(*) from actual_frame_timeline_slice` before treating an empty result as "no jank,"
+   not "wrong API version for this table."
+2. App-level slices (`Choreographer#doFrame`, `traversal`, `VerifyClass`, Compose composition) are
+   **completely absent**, confirmed for both the release and the debug build. Root cause: this device
+   is `ro.build.type=user` (production, non-rooted) — `adb shell ls /sys/kernel/debug/tracing/`
+   returns `Permission denied` on nearly every entry, and in-process `android.os.Trace.beginSection`
+   calls (what powers every named app-level slice) need that access regardless of whether the *app*
+   itself is debuggable. Only `binder transaction async` slices (a separately-permitted tracepoint)
+   come through.
+
+**Practical upshot:** the slice-level "why is it slow" analysis only works on the AVD (userdebug/eng
+system image) or a rooted device. On real unrooted hardware — which is exactly where you most want
+the "why" — only `dumpsys gfxinfo`'s per-frame timestamps are available. There is no known workaround
+short of rooting the test device.
+
+**Baseline Profile coverage is narrower than it looks.** `BaselineProfileGenerator`'s one journey
+(`coldStart()`) only reaches "Select Project" — nothing past login is covered. A real jank finding on
+the very next screen (project Dashboard, `docs/revisit.md` #41) is plausibly un-amortized by the
+profile for exactly this reason. See #41 for the full writeup and what a proper before/after
+re-capture for a second journey would need.

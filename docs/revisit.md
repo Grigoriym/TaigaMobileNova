@@ -26,6 +26,7 @@ its own section, kept for the reasoning rather than the outcome):
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
+| 41 | Dashboard scroll shows real, hardware-confirmed jank; Baseline Profile covers only the cold-start→Select-Project journey | M | this file, #41 |
 
 <details>
 <summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
@@ -75,6 +76,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
 | 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
 | 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | ✅ resolved 2026-08-12 |
+| 41 | [Dashboard scroll shows real, hardware-confirmed jank](#41-dashboard-scroll-shows-real-hardware-confirmed-jank-baseline-profile-covers-only-the-cold-startselect-project-journey) | 🟡 open |
 
 </details>
 
@@ -1717,3 +1719,91 @@ because there wasn't a `VerifyClass` cost on the release build to begin with), a
 same-renderer A/B on frame duration alone isn't going to be conclusive without a real device or many
 more samples than a single-session recapture budget covers. Full commands and raw numbers in
 `docs/perf/profiling.md`'s Baseline Profile section.
+
+## 41. Dashboard scroll shows real, hardware-confirmed jank; Baseline Profile covers only the cold-start→Select-Project journey
+
+**What:** with real hardware available for the first time (Samsung SM-A920F, Android 10/API 29,
+Adreno 512 GPU — genuinely GPU-accelerated, not the AVD's `swiftshader_indirect` software renderer),
+scrolling a project's **Dashboard** screen (the screen every user lands on immediately after Select
+Project) shows real, reproducible jank via `dumpsys gfxinfo`, even with all four sections
+(`WATCHING`/`MY WORK`/`RECENT ACTIVITY`/`COMPLETED`) collapsed — i.e. on a screen with only 6 simple
+`LazyColumn` items (info banner + 4 section-header cards + spacer), no expanded item lists in play.
+Three repeated scroll captures on the `fdroidRelease` build, same process (no reinstall/relaunch
+between them):
+
+| | run 1 | run 2 | run 3 (same process, "warm") |
+|---|---|---|---|
+| 90th percentile | 150ms | 61ms | 38ms |
+| 95th percentile | 200ms | 150ms | 61ms |
+| 99th percentile | 650ms | 300ms | 200ms |
+| High input latency | 53/72 frames | 38/46 frames | 53/62 frames |
+
+Frame timings improve run-over-run but never settle to a clean sub-16ms budget, and outlier frames
+(200–650ms) persist even on the third pass.
+
+**Two candidate causes, not fully disambiguated this session:**
+
+1. **Baseline Profile has zero coverage of Dashboard.** `benchmark/.../BaselineProfileGenerator.kt`
+   (`docs/perf/profiling-plan.md` task 3) has exactly one journey — `coldStart()`, which only reaches
+   "Select Project" and never navigates into a project. Every class/method Dashboard's ViewModel and
+   Composables touch is therefore *not* in `baseline-prof.txt`, so ART pays first-time
+   verification/JIT cost for Dashboard-specific code the first time any user opens it — the same
+   mechanism `docs/revisit.md` #40 characterized for cold start, just not amortized here because the
+   profile's one journey never visits this screen. The run-over-run improvement above is consistent
+   with this (later runs re-execute already-JITted code), but a genuine before/after A/B (adding a
+   `coldStartToDashboard()` journey to the generator, matching #40's methodology) hasn't been done —
+   this is the concrete next step, not a conclusion.
+2. **Possible synthetic-input measurement artifact.** `Number High input latency` was flagged on the
+   large majority of frames in all three runs (53/72, 38/46, 53/62) — high enough, and persistent
+   enough even on the "warm" run, to suspect `adb shell input swipe`'s linear-interpolated synthetic
+   touch events don't match the timestamp cadence Android's frame-metrics latency tracking expects
+   from a real finger, inflating this specific counter independent of real app performance. The
+   percentile numbers (which don't depend on the input-latency classifier) are the more trustworthy
+   signal of the two.
+
+**Independent, real code smell found while investigating (not yet confirmed as the jank's cause,
+since it wasn't exercised — sections were collapsed during the test):**
+`DashboardSectionCard` (`feature/dashboard/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/dashboard/ui/DashboardScreen.kt:301-319`)
+renders each *expanded* section's item list with a plain `Column` + `sectionState.items.forEach { }`
+— not `LazyColumn`/`items(items, key = ...)` — nested inside a single item slot of the screen's outer
+`LazyColumn`, wrapped in `AnimatedVisibility { expandVertically() / shrinkVertically() }`. This means:
+opening a section eagerly composes every item in it with no virtualization and no stable keys, and
+the divider logic (`if (item != sectionState.items.last())`, line 315) is an O(n) list scan per item.
+For the seeded local instance's `WATCHING (11)` section this is small, but it's a real anti-pattern
+that would matter more with a larger backlog, and it's an easy, well-scoped fix on its own (convert to
+`LazyColumn` + `items(sectionState.items, key = { it.id })`, drop the `.last()` scan for an index-based
+check) independent of the Baseline Profile question above.
+
+**Why deferred:** this needs a dedicated task, not an inline fix — cause 1 needs a real before/after
+re-capture (mirroring #40's corrected methodology: never force `cmd package compile -m verify`, let a
+fresh install's `reason=install` state be the genuine "before") with a `coldStartToDashboard()` journey
+added to the Baseline Profile generator; cause 2 needs either a real-finger capture (not available
+from this environment) or cross-checking against a scroll driven by `MotionEvent` batching closer to
+real hardware to rule the artifact in or out; and the `DashboardSectionCard` fix is a small, clean,
+independently-testable change that shouldn't ride along with either investigation.
+
+**New technique limitations found on real hardware, worth recording for future perf work:**
+
+- **`actual_frame_timeline_slice` is empty on this device** — it requires the SurfaceFlinger
+  frame-timeline API, added in Android 12 (API 31). This device is Android 10 (API 29). The "Deep
+  look: Perfetto" jank query in `docs/perf/profiling.md` (built around this table) returns zero rows
+  here, not because there's no jank, but because the table doesn't exist for this OS version — always
+  check `select count(*) from actual_frame_timeline_slice` before trusting an empty result as "no
+  jank found."
+- **App-level Perfetto/atrace slices (`Choreographer#doFrame`, `traversal`, `VerifyClass`, Compose
+  composition) are completely absent, for both the release and the debug build.** Root cause
+  confirmed directly: `adb shell ls /sys/kernel/debug/tracing/` returns `Permission denied` on nearly
+  every entry, and `cat .../trace_marker` does too — this is a real, non-rooted, `ro.build.type=user`
+  production device, and ftrace/debugfs access (which is what in-process `android.os.Trace.beginSection`
+  calls need to reach the kernel ring buffer) is locked down to root regardless of whether the *app*
+  itself is debuggable. Only `binder transaction async` slices (a separate, permitted tracepoint) show
+  up. **Practical consequence: the "why is it slow" Perfetto slice-level technique in
+  `docs/perf/profiling.md` only works on the AVD (userdebug/eng system image) or a rooted device — on
+  real unrooted hardware, `dumpsys gfxinfo`'s per-frame timestamps (the "Quick look" technique) is the
+  only signal available.** This is a meaningful gap: real hardware is exactly where you'd want the
+  deeper "why," and it's the one place this repo's current tooling can't provide it.
+- **`dumpsys gfxinfo` numbers on real hardware are clean** — no histogram-overflow artifacts, no
+  `9Xth gpu percentile` landing suspiciously on a round bucket boundary (both signatures of the AVD's
+  `swiftshader_indirect` software renderer, per `docs/perf/profiling.md`'s existing Caveats section).
+  This is the first same-technique comparison between AVD and real hardware this project has done, and
+  it supports treating prior AVD absolute numbers with the caution the docs already recommend.
