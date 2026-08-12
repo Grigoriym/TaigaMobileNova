@@ -20,7 +20,6 @@ its own section, kept for the reasoning rather than the outcome):
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
 | 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
-| 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
 
@@ -64,7 +63,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | ✅ resolved 2026-08-12 |
 | 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
-| 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | 🟡 open |
+| 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | ✅ resolved 2026-08-12 |
 | 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
 | 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | ✅ resolved 2026-08-10 |
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
@@ -1352,6 +1351,25 @@ navigation until that lands (small).
 **Why deferred:** out of the MASVS review task's scope (recording the register, not shipping a
 platform port or a UI-visibility change); porting TLS trust handling to a new platform is exactly the
 kind of change that needs its own task, not a rider on a documentation review.
+
+**Resolved (2026-08-12) — took the small option, not the port.** Added
+`expect val supportsCertificateTrustManagement: Boolean` (`core/api/src/commonMain/.../CertificateTrustSupport.kt`),
+actual `true` on Android/JVM, `false` on iOS — mirrors exactly where `createPlatformHttpClientEngine`
+does or doesn't wire a `TrustedCertStorage`-backed trust manager. `SettingsState` gained
+`canSeeTrustedCertificates: Boolean = supportsCertificateTrustManagement` (defaulted from the platform
+capability directly, no async fetch needed since it isn't project-dependent, unlike `canSeeAttributes`).
+`SettingsScreen.kt`'s "Trusted Certificates" `ListItem` (`:187-201`) is now wrapped in
+`if (state.canSeeTrustedCertificates) { ... }`, same pattern as the existing `canSeeAttributes` gate.
+The nav destination itself (`SettingsNavGraph.kt`) was left registered — cheap to keep, and reaching
+it now requires a deep link or back-stack manipulation a normal user can't do from the UI. Added
+`SettingsScreenContentTest` (`feature/settings/ui/src/jvmTest/`) covering both visibility states via
+`onNodeWithContentDescription("Trusted Certificates Screen")`. Full `./gradlew jvmTest`, `ktlintCheck`
+(which also exercises `compileKotlinIosArm64`/`IosSimulatorArm64` for the new iOS actual) and
+`:koverVerify` all green; `:core:api:compileKotlinIosArm64`/`IosSimulatorArm64` and
+`:androidApp:compileFdroidDebugKotlin` checked directly too.
+
+The port itself (Keychain-backed TOFU flow wired into the Darwin engine) is still open — this only
+stops the UI from being reachable-but-inert.
 
 ---
 

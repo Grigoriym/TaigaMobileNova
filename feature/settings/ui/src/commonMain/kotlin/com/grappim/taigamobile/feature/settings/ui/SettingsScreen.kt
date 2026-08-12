@@ -184,21 +184,23 @@ fun SettingsScreenContent(
                 }
             )
 
-            ListItem(
-                modifier = Modifier
-                    .clickable {
-                        goToTrustedCertificatesScreen()
+            if (state.canSeeTrustedCertificates) {
+                ListItem(
+                    modifier = Modifier
+                        .clickable {
+                            goToTrustedCertificatesScreen()
+                        },
+                    headlineContent = {
+                        Text(text = stringResource(RString.settings_trusted_certificates))
                     },
-                headlineContent = {
-                    Text(text = stringResource(RString.settings_trusted_certificates))
-                },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Trusted Certificates Screen"
-                    )
-                }
-            )
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Trusted Certificates Screen"
+                        )
+                    }
+                )
+            }
 
             ListItem(
                 modifier = Modifier
