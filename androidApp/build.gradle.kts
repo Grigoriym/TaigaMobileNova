@@ -70,6 +70,11 @@ dependencies {
     implementation(libs.filekit.dialogs)
     implementation(libs.material)
 
+    // Applies a generated Baseline Profile (docs/perf/profiling-plan.md, task 3) at first launch
+    // after install — required regardless of Play Store distribution, a plain `adb install` or
+    // F-Droid-style install path does not apply the profile without it.
+    implementation(libs.androidx.profileinstaller)
+
     // Crashlytics ships in the gplay flavor only — the fdroid flavor never pulls in
     // this proprietary dependency, only a no-op CrashReporter implementation.
     gplayImplementation(project.dependencies.platform(libs.firebase.bom))
