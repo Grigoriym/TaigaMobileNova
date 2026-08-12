@@ -22,7 +22,7 @@ cost to a normal build, the same way `-PgplayBuild` gates Firebase.
 | # | Task | Size | Status |
 |---|------|------|--------|
 | 1 | Gradle wiring: opt-in stability reports | S | Done (2026-08-11) |
-| 2 | Aggregator script + first repo-wide audit + doc | M | ⬅ NEXT |
+| 2 | Aggregator script + first repo-wide audit + doc | M | Done (2026-08-12) |
 
 ## Researched facts (so task 1 doesn't have to re-derive them)
 
@@ -155,7 +155,7 @@ directory; `:androidApp:compileFdroidDebugKotlin -PcomposeStabilityReport` succe
 (`:build-logic:convention:build` fails on a pre-existing, unrelated `validatePlugins` issue with
 `RenameApkTask` not being cacheable-annotated — not touched by this task).
 
-**Next: task 2** — Aggregator script + first repo-wide audit + doc. Not started.
+**Next: task 2** — Aggregator script + first repo-wide audit + doc. Done, see below.
 
 ## Task 2 — Aggregator script + first repo-wide audit + doc
 
@@ -195,7 +195,51 @@ python3 docs/compose/stability-scan.py   # prints a summary (possibly empty) acr
 **Finalize focus:** update `docs/compose/stability-reports.md` if the actual report file format
 differs from what's assumed above (formats confirmed only by running task 1, not yet inspected).
 
-**Result:** _(fill in after running)_
+**Result:** Ran the flag across all 24 Compose UI modules + `androidApp` at the `jvm` target (exact
+command in [docs/compose/stability-reports.md](stability-reports.md#running-the-audit)). First attempt
+without `--rerun-tasks` produced zero reports — every `compileKotlinJvm` task was `UP-TO-DATE` from an
+earlier run without the flag, and Gradle doesn't track `-P` project properties as task inputs, so it
+skipped re-execution silently (same gotcha CLAUDE.md's Testing section already documents for env
+vars). `--rerun-tasks` fixed it.
+
+Wrote `docs/compose/stability-scan.py` per the plan, but the real report filenames turned out to be
+`<module>-classes.txt`/`<module>-composables.txt` (hyphen), not the `_classes.txt`/`_composables.txt`
+the plan assumed — script globs and this doc's description use the real names.
+
+Triage of the scan's output (121 unstable-class findings, 60 unstable-composable-parameter findings):
+
+- **Zero plain-`List<T>` state-class fields** — confirms the plan's earlier spot-check. One real
+  violation the flat `: List<` grep initially missed because it was nested, not top-level:
+  `SprintState.storiesWithTasks: ImmutableMap<WorkItem, List<WorkItem>>` — fixed to
+  `ImmutableMap<WorkItem, ImmutableList<WorkItem>>` (`feature/sprint/ui/.../SprintState.kt:18`).
+  `:feature:sprint:ui:compileKotlinJvm` verified green after the change; re-running the report showed
+  the field is *still* flagged unstable afterward — expected, since its remaining instability is
+  `WorkItem`'s (the next finding), not this one; the nested-`List` shape itself is gone.
+- **The dominant finding, by far**: domain model classes (`WorkItem`, `User`, `Project`, `Sprint`,
+  `FiltersData`, and a dozen more) are structurally stable — verified `WorkItem` by reading its source,
+  fully `val`, its one collection field already `ImmutableList<Tag>` — yet report unstable in every
+  consuming module, because they're defined in `*/domain` modules that never apply the Compose compiler
+  plugin, so no stability marker gets embedded for downstream Compose modules to trust. This explains
+  the large majority of both counts (a container's unstable-ness propagates from its stable/unstable
+  type arguments, so `ImmutableList<WorkItem>` reports unstable too). Deferred, not fixed inline — the
+  fix is a repo-wide policy decision (apply Compose compiler to ~15 domain modules, or maintain a
+  `stabilityConfigurationFiles` list) that doesn't belong riding along on a scan-triage task. Full
+  mechanism, evidence, and the fix options considered:
+  [docs/revisit.md #39](../revisit.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin).
+- **Expected, not actionable without a policy call**: `NavController`/`NavHostController` and
+  `LazyPagingItems<T>` (third-party types, same "no marker" cause but not our code to fix), and
+  `Any`-typed parameters in `uikit`'s drag-and-drop (inherently unstable by design). `kotlinx.datetime`
+  `LocalDate`/`LocalDateTime` hit the identical mechanism as the domain-model finding but for a
+  third-party library — same `stabilityConfigurationFiles` fix shape, left for the same reason (no
+  second data point yet to justify a standing config file).
+
+Wrote `docs/compose/stability-reports.md` (how to run the audit, the two report formats, the JVM-only/
+androidMain-blind-spot caveat, how to read the script's output, and this audit's findings). Added a
+one-line CLAUDE.md pointer next to the `ImmutableList` convention bullet.
+
+`./gradlew jvmTest` passed clean after the `SprintState` fix; `ktlintCheck` not separately re-run
+since the only production edit was a type-parameter widening on an existing line, no formatting
+change.
 
 ## Considered and deferred
 

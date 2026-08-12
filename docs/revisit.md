@@ -27,9 +27,10 @@ its own section, kept for the reasoning rather than the outcome):
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 35 | No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot | XS | this file, #35 |
 | 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
+| 39 | Domain-model classes read as Compose-unstable across every feature, because `*/domain` modules don't apply the Compose compiler plugin | M | this file, #39 |
 
 <details>
-<summary><strong>Full index (all 38 entries, resolved included)</strong> — this file is long because
+<summary><strong>Full index (all 39 entries, resolved included)</strong> — this file is long because
 resolved entries stay for their reasoning, not their outcome (see above), and ~20 links elsewhere in
 the repo — including a frozen archive doc — point at specific entries by anchor, so they aren't
 moved out. Expand for a one-line-per-entry jump table instead of scrolling.</summary>
@@ -74,6 +75,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
 | 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
+| 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | 🟡 open |
 
 </details>
 
@@ -1538,3 +1540,67 @@ for that task, which only touched `AndroidApplicationConventionPlugin.kt`,
 is a one-line `@DisableCachingByDefault(because = "...")` (or `@CacheableTask`) annotation on
 `RenameApkTask`, but choosing which one and the right `because` message deserves its own small task
 rather than riding along on an unrelated diff.
+
+## 39. Domain-model classes read as Compose-unstable across every feature, because `*/domain` modules don't apply the Compose compiler plugin
+
+**Where:** every `feature/*/domain` module (e.g. `feature/workitem/domain/build.gradle.kts`,
+`feature/users/domain/build.gradle.kts`) applies only `taigamobile.kmp.library`, never
+`taigamobile.kmp.library.compose`. The consuming `*/ui` modules apply the Compose variant. Evidence
+gathered via [docs/compose/stability-scan.py](compose/stability-scan.py) run across all 24 Compose UI
+modules + `androidApp` per
+[docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md) task 2 — full raw output
+kept in that task's Result note.
+
+**What happens:** `WorkItem` (`feature/workitem/domain/.../WorkItem.kt`) is a textbook-correct data
+class — every field a `val`, the one collection field already `ImmutableList<Tag>` per this repo's own
+convention — yet the Compose Compiler's stability report marks it `unstable` in every consuming module
+(`uikit`, `feature/dashboard/ui`, `feature/sprint/ui`, `feature/scrum/ui`, and more). Same story for
+`User`, `Project`, `Sprint`, `Epic`, `TeamMember`, `Attachment`, `Comment`, `FiltersData`, `Swimlane`,
+`KanbanUserStory`, `UserStoryEpic`, `PromotedUserStoryInfo`, `ProjectValueItem`, `PendingCertTrust` —
+every one of them defined in a `*/domain` module and structurally stable by inspection. Root cause
+(confirmed by reading how the Compose Compiler infers stability for dependency classes): the compiler
+embeds a stability marker in a class's compiled metadata only when *it itself* compiled that class.
+Downstream modules trust that marker rather than re-deriving stability from bytecode. A class compiled
+by a module that never applied `org.jetbrains.kotlin.plugin.compose` carries no such marker, so every
+downstream Compose module treats it as unstable by default — regardless of how simple the class
+actually is. This cascades: any `ImmutableList<WorkItem>`, `PersistentList<User>`, or
+`ImmutableMap<WorkItem, ImmutableList<WorkItem>>` field is *also* reported unstable, because Compose
+propagates a container's stability from its type arguments. 121 unstable-class findings and 60
+composables-with-unstable-parameters findings came out of the task 2 audit; the large majority trace
+back to this one mechanism rather than to 121 independent bugs. The one genuine, unrelated convention
+violation the audit did find (`SprintState.storiesWithTasks` declared as
+`ImmutableMap<WorkItem, List<WorkItem>>` — a plain `List` nested inside the map value, despite the
+domain-layer `SprintData` it's assigned from already being fully `ImmutableList`-typed) was fixed
+inline as part of task 2, not deferred here.
+
+Separately and independently unstable, not part of this mechanism and not actionable the same way:
+`NavController`/`NavHostController` (Navigation Compose's own type, no marker regardless of our code),
+`LazyPagingItems<T>` (Paging Compose's own type, same reason), and `Any`-typed parameters
+(`columnId`/`itemKey`/`avatarUrl` in `uikit`'s drag-and-drop and list widgets — `Any` is inherently
+unstable by design, narrowing the type is the only fix and weakens the API). `kotlinx.datetime.LocalDate`
+/`LocalDateTime` fields are a fourth, different mechanism: they're immutable value types from a
+third-party library that itself doesn't apply the Compose compiler plugin, so they hit the same
+"foreign, unmarked" default — fixable via a `stabilityConfigurationFiles` entry without touching any
+of our own code, but that's a build-wide policy decision, not something to add speculatively without a
+second data point beyond this one library.
+
+**Consequence:** the `ImmutableList` convention documented in CLAUDE.md's Compose/Platform Rules is
+correctly followed everywhere it was checked, but is being defeated by module boundaries: any
+composable receiving a domain model directly (`DashboardWorkItemCard(item: WorkItem)`,
+`ProjectCardWidget(project: Project)`, `TeamMemberItem(teamMember: TeamMember)`, dozens more per the
+task 2 scan output) recomposes on referential inequality instead of `.equals()`, even when the
+underlying data hasn't changed — the exact SSM failure mode the stability-reports tooling
+([docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md)) was built to catch. No
+measured perf impact yet; this is a correctness-of-classification finding, not a profiled regression.
+
+**Why deferred:** fixing it means picking one of two repo-wide approaches — (a) apply
+`taigamobile.kmp.library.compose` (or a narrower Compose-compiler-only variant) to every `*/domain`
+module that defines a type consumed by a composable, which is a build-topology change across ~15
+modules, or (b) list every affected domain type's FQN (or a package wildcard) in a
+`stabilityConfigurationFiles` config, which is a blunt trust decision the [Considered and
+deferred](compose/stability-reports-plan.md#considered-and-deferred) table in the stability-reports
+plan explicitly flagged as "add only in response to a concrete finding, not preemptively" — this entry
+*is* that concrete finding, but choosing between (a) and (b) (and, for (a), deciding whether pulling in
+Compose Compiler for pure-Kotlin domain modules with zero `@Composable` functions is worth the build-time
+cost) is a judgment call for a dedicated task, not something to decide inline while triaging a scan's
+output.

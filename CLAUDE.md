@@ -310,10 +310,13 @@ Gradle source set), can exercise the real Ktor/OkHttp client against a real back
 write-round-trip convention are in the **testing** subagent's "Integration test against a live
 server" section.
 
-**Gradle does not track env vars as task inputs.** Re-running `./gradlew jvmTest` after only
-changing an env var (not source) reports `UP-TO-DATE` and silently skips re-execution — pass
-`--rerun` to force it, or what looks like a pass is a stale cached result from a previous run under
-different env vars.
+**Gradle does not track env vars — or `-P` project properties — as task inputs.** Re-running
+`./gradlew jvmTest` after only changing an env var (not source) reports `UP-TO-DATE` and silently
+skips re-execution — pass `--rerun` to force it, or what looks like a pass is a stale cached result
+from a previous run under different env vars. Confirmed the same trap for `-P` flags too: toggling
+`-PcomposeStabilityReport` on a module whose compile task was already `UP-TO-DATE` produced no
+reports at all until `--rerun-tasks` forced re-execution (see
+[docs/compose/stability-reports.md](docs/compose/stability-reports.md)).
 
 ## Skills & Agents
 
@@ -443,7 +446,7 @@ historical record of how the register was built — `masvs.md` itself is the cur
 
 - Do not use early returns in Composable functions — use conditional wrapping
 - Lambda parameters: present tense (`onClick` not `onClicked`)
-- Prefer `kotlinx-collections-immutable` (`ImmutableList`, `persistentListOf()`) over `List`/`MutableList` in state classes and Composable parameters for stable recomposition
+- Prefer `kotlinx-collections-immutable` (`ImmutableList`, `persistentListOf()`) over `List`/`MutableList` in state classes and Composable parameters for stable recomposition — verify with the opt-in Compose Compiler stability reports, see [docs/compose/stability-reports.md](docs/compose/stability-reports.md)
 - For Composable Previews, use `@PreviewTaigaDarkLight` annotation and wrap content with `TaigaMobilePreviewTheme` (both from `uikit`):
 
 ```kotlin
