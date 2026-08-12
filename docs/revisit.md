@@ -17,7 +17,6 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 24 | `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently | S–M | [testing agent, "Integration test against a live server"](../.claude/agents/testing.md) |
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
 | 29 | Login screen's server-URL regex rejects bare `localhost` (no dot in hostname) | XS | this file, #29 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
@@ -26,7 +25,7 @@ its own section, kept for the reasoning rather than the outcome):
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
-| 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | this file, #41 |
+| 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
 
 <details>
 <summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
@@ -59,7 +58,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 21 | [`SprintPagingSource` is dead code, and it is invisible to Kover](#21-sprintpagingsource-is-dead-code-and-it-is-invisible-to-kover) | ✅ resolved 2026-08-07 |
 | 22 | [`EpicShortInfoDTO` is built by hand in three test files; no `:testing` factory exists](#22-epicshortinfodto-is-built-by-hand-in-three-test-files-no-testing-factory-exists) | ✅ resolved 2026-08-07 |
 | 23 | [The coverage report counts Android-variant classes no test can reach](#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach) | ✅ resolved 2026-08-08 |
-| 24 | [`KoinGraphTest`/live-Taiga integration tests collide on the JVM `DataStore` file](#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently) | 🟡 open |
+| 24 | [`KoinGraphTest`/live-Taiga integration tests collide on the JVM `DataStore` file](#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently) | ✅ resolved 2026-08-12 |
 | 25 | [`FiltersStorageImplTest.resetFilters clears every section` is flaky](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
@@ -76,7 +75,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
 | 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
 | 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | ✅ resolved 2026-08-12 |
-| 41 | [Dashboard scroll shows real, hardware-confirmed jank](#41-dashboard-scroll-shows-real-hardware-confirmed-jank-baseline-profile-covers-only-the-cold-startselect-project-journey) | 🟡 open |
+| 41 | [Dashboard scroll shows real, hardware-confirmed jank](#41-dashboard-scroll-shows-real-hardware-confirmed-jank-baseline-profile-covers-only-the-cold-startselect-project-journey) | ✅ resolved 2026-08-12 |
 
 </details>
 
@@ -1005,6 +1004,26 @@ always built first here. That is incidental to the current file names, not a fix
 future test class (or a different execution order) from landing before `KoinGraphTest` and
 triggering the unfavorable path described above. Mechanism confirmed live; still unfixed.
 
+**Resolved (2026-08-12):** first attempt — closing `KoinGraphTest`'s `Koin` instance in an
+`@AfterTest` — was tried and **did not work**: `Koin.close()` tears down the instance registry but
+never cancels the `CoroutineScope` `PreferenceDataStoreFactory.createWithPath` builds internally
+(`StorageModule.kt:36`, no `scope` param passed), and it is that scope's liveness the JVM DataStore's
+"multiple active files" guard actually tracks — confirmed by forcing `KoinGraphTest` to run before
+`LoginIntegrationTest` (`--tests` limited to just those two) five times in a row with the close-based
+fix in place: `LoginIntegrationTest` still failed 3/5 times with the identical "multiple DataStores
+active" error.
+
+**Actual fix:** stopped building two graphs. Added `SharedTestKoinGraph.kt`
+(`composeApp/src/jvmTest/.../di/`) exposing one `internal val sharedTestKoinGraph: Koin by lazy { ... }`;
+both `KoinGraphTest` and `LiveTaigaSession.kt`'s `sharedSession` now resolve the graph through it
+instead of each calling `koinApplication<KoinApp>` directly. With only one graph ever built per test
+JVM, there is nothing left to collide regardless of which test class Gradle happens to run first.
+Verified by running `--tests "com.grappim.taigamobile.di.KoinGraphTest" --tests
+"com.grappim.taigamobile.di.LoginIntegrationTest" --rerun` six times in a row (all passed, `KoinGraphTest`
+went first every time in this environment) and the full `com.grappim.taigamobile.di.*` pattern three
+times (all fourteen tests green each time) against the local Taiga instance. Full `./gradlew jvmTest`
+and `ktlintJvmTestSourceSetCheck` both green (no live env vars needed for the non-integration suite).
+
 ## 25. `FiltersStorageImplTest.resetFilters clears every section` is flaky under a full `jvmTest` run
 
 **Where:** `core/storage/src/jvmTest/kotlin/com/grappim/taigamobile/core/storage/FiltersStorageImplTest.kt:158`
@@ -1855,3 +1874,14 @@ evidence rather than needing the previously-proposed `coldStartToDashboard()` Ba
 work. That journey may still be worth adding for the coverage-hygiene reason (any uncovered screen pays
 some avoidable cost), but it's a separate, lower-urgency task now that it's not explaining an observed
 650ms-frame regression.
+
+**Resolved (2026-08-12, same session):** the last open item, the `DashboardSectionCard` non-lazy list,
+is fixed. `DashboardScreen.kt:301-320` — a nested `LazyColumn` isn't viable here (it's inside
+`AnimatedVisibility { expandVertically()/shrinkVertically() }` itself nested inside the outer
+`LazyColumn`'s single item, and a `LazyColumn` throws on the unbounded height that animation needs to
+measure), so instead: `forEach` → `forEachIndexed`, replacing the O(n) `item != sectionState.items.last()`
+scan with an O(1) `index != sectionState.items.lastIndex` check, and each `DashboardWorkItemCard` call
+wrapped in `key(item.id)` for stable composable identity across recomposition. Verified on a real
+Galaxy S21 Ultra (Android 15): expanded `MY WORK (6)` against the live `tasks.gregstuff.click` instance
+— all 6 items rendered with a divider between each pair and none trailing after the last item, and the
+collapse animation was unaffected.

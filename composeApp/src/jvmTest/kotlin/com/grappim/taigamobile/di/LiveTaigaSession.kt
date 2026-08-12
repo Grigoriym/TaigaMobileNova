@@ -7,8 +7,6 @@ import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import kotlinx.coroutines.runBlocking
 import org.koin.core.Koin
-import org.koin.core.logger.Level
-import org.koin.plugin.module.dsl.koinApplication
 import kotlin.test.assertTrue
 
 /**
@@ -25,7 +23,8 @@ import kotlin.test.assertTrue
  * backends (`StorageModule.jvm.kt`) read/write fixed files under `java.io.tmpdir`, so a second
  * `koinApplication<KoinApp>` in the same process throws "multiple DataStores active for the same
  * file" the moment it touches one. All integration tests in this test run share the one logged-in
- * [Koin] instance below instead.
+ * [Koin] instance below instead — built from [sharedTestKoinGraph], the same graph `KoinGraphTest`
+ * uses, so the two never race to build their own (docs/revisit.md #24).
  */
 internal fun liveTaigaSessionOrSkip(): Koin? {
     val server = System.getenv("TAIGA_INTEGRATION_URL") ?: return null
@@ -40,7 +39,7 @@ private val sharedSession: Lazy<Koin> = lazy {
     val username = requireNotNull(System.getenv("TAIGA_INTEGRATION_USERNAME"))
     val password = requireNotNull(System.getenv("TAIGA_INTEGRATION_PASSWORD"))
 
-    val koin = koinApplication<KoinApp> { printLogger(Level.NONE) }.koin
+    val koin = sharedTestKoinGraph
     val authRepository = koin.get<AuthRepository>()
     val trustedCertStorage = koin.get<TrustedCertStorage>()
 
