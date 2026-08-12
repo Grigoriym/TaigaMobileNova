@@ -26,9 +26,10 @@ its own section, kept for the reasoning rather than the outcome):
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
+| 40 | Cold-start worst frame dominated by ART `VerifyClass` overhead — Baseline Profile candidate | S | this file, #40 |
 
 <details>
-<summary><strong>Full index (all 39 entries, resolved included)</strong> — this file is long because
+<summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
 resolved entries stay for their reasoning, not their outcome (see above), and ~20 links elsewhere in
 the repo — including a frozen archive doc — point at specific entries by anchor, so they aren't
 moved out. Expand for a one-line-per-entry jump table instead of scrolling.</summary>
@@ -74,6 +75,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
 | 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
 | 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
+| 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | 🟡 open |
 
 </details>
 
@@ -1636,3 +1638,32 @@ compiler had been propagating `WorkItem`'s instability into the wrapper the same
 `./gradlew jvmTest` and `ktlintCheck` green across the whole repo; all 11 affected domain modules
 verified to compile clean on `jvm`, `androidMain`, and `iosArm64` targets (not just `jvm`, since the
 new `compileOnly` dependency applies to every target these modules build for).
+
+## 40. Cold-start worst frame dominated by ART `VerifyClass` overhead — Baseline Profile candidate
+
+**What:** a real Perfetto capture of the fdroid debug build's cold start (`force-stop` → `am start` →
+land on "Select Project", `Medium_Phone_API_36.1` AVD, 2026-08-12, see `docs/perf/profiling.md`)
+showed the worst single frame taking 288.8ms, with `jank_type = 'Prediction Error, App Deadline
+Missed'`. Querying the app's own main thread for slices inside that frame's window found a 289ms
+`Choreographer#doFrame` containing a 281ms `traversal`, and a long run of ART `VerifyClass` slices —
+`androidx.compose.ui.platform.ViewLayer`, `androidx.compose.foundation.lazy.LazyListMeasureKt`,
+`androidx.compose.ui.text.android.TextAndroidCanvas`,
+`androidx.compose.ui.graphics.ColorSpaceVerificationHelper`, and this app's own
+`com.grappim.taigamobile.uikit.widgets.topbar.ComposableSingletons$TaigaTopAppBarKt` — each costing
+tens of microseconds to ~270μs, the classic signature of first-time class verification on a cold JIT.
+Of 55 frames the app rendered in that capture, all 55 were tagged janky by
+`actual_frame_timeline_slice`, though `Buffer Stuffing` dominates the jank-type breakdown (32/55) and
+is plausibly an artifact of the AVD's `swiftshader_indirect` software renderer rather than a real
+finding — the `VerifyClass` evidence for the worst frame is the part not explained by the renderer.
+
+**Why deferred:** this is exactly what `docs/perf/profiling-plan.md` task 3 (Baseline Profile
+generator) exists to amortize — a `coldStart()` macrobenchmark journey through
+`BaselineProfileRule` records which classes/methods get touched during startup so ART can
+AOT-compile them ahead of time instead of verifying them on first launch. Not a code fix on its own;
+task 3 is the mechanism, and this entry is the concrete before-evidence to compare a post-task-3
+capture against. Re-run the same Perfetto capture after task 3 lands and check whether the
+`VerifyClass` run in the worst frame's window shrinks or disappears.
+
+**Consequence:** not a correctness bug, and the emulator/software-renderer caveat means the specific
+percentages shouldn't be quoted as real-device numbers without a second capture on hardware — but the
+`VerifyClass` finding itself doesn't depend on the renderer and is real, actionable startup cost.

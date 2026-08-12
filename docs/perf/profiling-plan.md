@@ -22,8 +22,8 @@ describe (task 2).
 | # | Task | Size | Status |
 |---|------|------|--------|
 | 1 | Gradle wiring: `:benchmark` module + `profileinstaller` | S | Done (2026-08-12) |
-| 2 | `docs/perf/profiling.md` — gfxinfo/Perfetto technique + one real capture | M | ⬅ NEXT |
-| 3 | Baseline Profile generator + verify it's actually applied | M | Not started |
+| 2 | `docs/perf/profiling.md` — gfxinfo/Perfetto technique + one real capture | M | Done (2026-08-12) |
+| 3 | Baseline Profile generator + verify it's actually applied | M | ⬅ NEXT |
 
 ## Researched facts (so later tasks don't re-derive them)
 
@@ -146,6 +146,23 @@ trace queryable via `TraceProcessor`).
 **Finalize focus:** if the capture surfaced a real, concrete jank finding, log it in `docs/revisit.md`
 with the evidence (not fixed inline, not left only in this doc) rather than folding a fix into this
 plan.
+
+**Result:** the kanban-board candidate named in Researched Facts above was dropped in favor of the
+app's own cold start — login turned out to be genuinely mandatory (no anonymous path), and the
+session was confirmed to persist across a full `am force-stop`, making `force-stop` → `am start` →
+land on "Select Project" a clean, repeatable journey without extra in-app navigation to set up. Both
+tools were run for real against the fdroid debug build on `Medium_Phone_API_36.1`:
+`dumpsys gfxinfo` gave 73 frames / 9 janky (12.33%) / 50th percentile 29ms, and reproduced the
+stale-trailing-row ring-buffer gotcha (`FrameCompleted=0` with a populated `SwapBuffersCompleted` on
+the same row) plus a new one not in the original WallosMobile notes — a `4950ms` GPU percentile that
+was a histogram-overflow-bucket artifact, not a real duration (this AVD runs
+`-gpu swiftshader_indirect`, a software renderer). Perfetto captured a 10.25MB trace and, queried via
+`TraceProcessor` (venv + `pip install perfetto`, no network-fetch or pandas issues hit), reproduced
+the main-thread `comm`-truncation gotcha (`tid`'s name showed as `le.fdroid.debug`, not `main`) and
+surfaced a real finding: the worst frame (288.8ms) was dominated by ART `VerifyClass` slices for
+Compose/androidx and one app class, logged as `docs/revisit.md` #38 as concrete before-evidence for
+task 3. Full detail and real command output in `docs/perf/profiling.md`, published this session.
+`docs/EMULATOR_TESTING.md` was created as a side effect (didn't exist before). **Next: task 3.**
 
 ## Task 3 — Baseline Profile generator + verify it's applied
 
