@@ -1,5 +1,8 @@
 # Perf profiling (Android) — plan
 
+**Status: closed (2026-08-12)** — all 3 tasks done. `docs/perf/profiling.md` is the current
+"run it again" reference; this file is kept only as historical record of how it was built.
+
 WallosMobile (a sibling project, `~/proj/grappim/wallosmobile/docs/PERF_PROFILING.md`) has a working
 perf-profiling setup: `dumpsys gfxinfo`/Perfetto for finding and diagnosing jank, plus a `:benchmark`
 Baseline Profile module + `androidx.profileinstaller` so cold-navigation JIT warm-up findings can
@@ -23,7 +26,7 @@ describe (task 2).
 |---|------|------|--------|
 | 1 | Gradle wiring: `:benchmark` module + `profileinstaller` | S | Done (2026-08-12) |
 | 2 | `docs/perf/profiling.md` — gfxinfo/Perfetto technique + one real capture | M | Done (2026-08-12) |
-| 3 | Baseline Profile generator + verify it's actually applied | M | ⬅ NEXT |
+| 3 | Baseline Profile generator + verify it's actually applied | M | Done (2026-08-12) |
 
 ## Researched facts (so later tasks don't re-derive them)
 
@@ -193,3 +196,45 @@ confirmed, verified fresh here rather than assumed to carry over.
 existing `docs/compose/stability-reports.md` pointer under Compose/Platform Rules) once this doc pair
 is real. Close this plan doc (status banner + Considered/deferred split if anything was deferred)
 once the table above is all Done.
+
+**Result:** both parts of "What" and "Done when" confirmed for real, commands and output logged in
+`docs/perf/profiling.md`'s new "Baseline Profile" section:
+
+- **Generator:** `benchmark/.../BaselineProfileGenerator.kt` has one `coldStart()` test only — task
+  2's `VerifyClass` finding (`docs/revisit.md` #38) was startup-wide, not tied to a specific
+  post-login screen, so there was no concrete second journey to add per the "What" section's own
+  condition for one.
+- **Gap found and fixed:** task 1 wired `:benchmark` (the producer) but never applied the
+  `androidx.baselineprofile` *consumer* plugin to `androidApp`, so `generate<Variant>BaselineProfile`
+  didn't exist there and nothing would have consumed the generated profile. Added
+  `alias(libs.plugins.androidx.baselineprofile)` + `baselineProfile(projects.benchmark)` to
+  `androidApp/build.gradle.kts` — confirmed via `:androidApp:tasks` that this is what exposes
+  `generateFdroidReleaseBaselineProfile`/`installFdroidNonMinifiedRelease` (as `:androidApp` tasks,
+  not `:benchmark` ones, despite the `@Test` living in `:benchmark`).
+- **AVD storage gotcha (new, not in WallosMobile's notes):** `./gradlew
+  :androidApp:generateFdroidReleaseBaselineProfile` is a real `connectedAndroidTest` run and failed
+  once with `IOException: Requested internal only, but not enough space` — the AVD's default 6G data
+  partition hit 93% just from debug + release + nonMinifiedRelease + test APKs coexisting. Fixed by
+  killing the emulator and relaunching with `-wipe-data -partition-size 12288`; editing
+  `disk.dataPartition.size` in `config.ini` alone does not resize an already-created
+  `userdata-qemu.img` without a wipe. Re-ran clean afterward: `androidApp/src/fdroidRelease/generated/
+  baselineProfiles/baseline-prof.txt` landed with 31,501 real class/method entries.
+- **Verify it's applied — all four checks run for real** against the `fdroidRelease` build
+  (2026-08-12), matching the mechanism WallosMobile's own investigation found necessary: a plain `adb
+  install` read `[status=verify] [reason=install]`; a first launch logged `ProfileInstaller:
+  Installing profile for com.grappim.taigamobile.fdroid` (confirming `ProfileInstallerInitializer`
+  fired via `androidx.startup`); forcing the real system mechanism (`adb shell cmd package
+  bg-dexopt-job`, not a synthetic override) flipped it to `[status=speed-profile]
+  [reason=bg-dexopt]`.
+- **Left open:** `docs/revisit.md` #38 asked for a re-capture to see whether the `VerifyClass` run in
+  the worst cold-start frame shrinks post-profile. A same-APK A/B (`adb shell cmd package compile -m
+  verify -f` vs `-m speed-profile -f`) was started this session but the "before" capture landed on
+  the Login screen instead of Select Project — reinstalling over the `nonMinifiedRelease` build (a
+  different build type/signing) during setup silently dropped the persisted session, and a 4-frame
+  capture on the Login screen isn't a fair comparison against task 2's 73-frame Select-Project
+  capture. Not repeated this session (time-boxed); `docs/revisit.md` #38 updated with this note and
+  the exact commands to redo it properly (re-login before capturing "before").
+
+All Gradle-side "Done when" commands were also re-verified after the plugin-wiring fix: `:benchmark:
+ktlintCheck`/`:benchmark:detekt` still pass (no findings), and `:androidApp:tasks` cleanly lists the
+new baseline-profile tasks with no configuration errors.

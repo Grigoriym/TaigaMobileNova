@@ -460,3 +460,10 @@ private fun MyWidgetPreview() {
 ```
 
 - Settings screens with fixed items use `Column` instead of `LazyColumn` — lazy loading unnecessary when item count is known and small
+
+## Performance
+
+Android frame-timing technique (`dumpsys gfxinfo`, Perfetto) and the `:benchmark` module's
+Baseline Profile generator live in [docs/perf/profiling.md](docs/perf/profiling.md) — read it before
+profiling a jank report or touching `benchmark/src/main/kotlin/.../BaselineProfileGenerator.kt`.
+`docs/perf/profiling-plan.md` is closed (all 3 tasks done) and kept only as historical record.

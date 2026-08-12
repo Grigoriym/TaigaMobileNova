@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.taigamobile.android.application)
+    alias(libs.plugins.androidx.baselineprofile)
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.firebase.crashlytics) apply false
 }
@@ -40,6 +41,8 @@ android {
 }
 
 dependencies {
+    baselineProfile(projects.benchmark)
+
     implementation(projects.composeApp)
     implementation(projects.feature.login.domain)
     implementation(projects.uikit)

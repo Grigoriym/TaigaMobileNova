@@ -1667,3 +1667,16 @@ capture against. Re-run the same Perfetto capture after task 3 lands and check w
 **Consequence:** not a correctness bug, and the emulator/software-renderer caveat means the specific
 percentages shouldn't be quoted as real-device numbers without a second capture on hardware — but the
 `VerifyClass` finding itself doesn't depend on the renderer and is real, actionable startup cost.
+
+**Update (2026-08-12):** `docs/perf/profiling-plan.md` task 3 landed — the `:benchmark` generator
+exists and was confirmed to actually apply (`[status=speed-profile] [reason=bg-dexopt]` after a
+plain `adb install` + `bg-dexopt-job`, full detail in `docs/perf/profiling.md`). The re-capture this
+entry asked for (does the `VerifyClass` run shrink post-profile) is still open — a same-APK A/B via
+`adb shell cmd package compile -m verify -f com.grappim.taigamobile.fdroid` (before) vs `-m
+speed-profile -f` (after) was started but not completed: reinstalling the plain `release` build over
+the `nonMinifiedRelease` build used for login setup dropped the persisted session, landing the
+"before" gfxinfo capture on the Login screen (4 frames) rather than Select Project, which isn't
+comparable to task 2's 73-frame Select-Project capture. To redo: install the target build once,
+re-login by hand, *then* run the verify/speed-profile compile-mode toggle above without reinstalling
+in between (reinstalling is what breaks the session), capturing `dumpsys gfxinfo`/Perfetto after each
+`cmd package compile` call.
