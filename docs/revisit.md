@@ -22,7 +22,6 @@ its own section, kept for the reasoning rather than the outcome):
 | 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
-| 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
 | 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
 
 <details>
@@ -70,7 +69,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | ✅ resolved 2026-08-10 |
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
-| 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
+| 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | ✅ resolved 2026-08-12 |
 | 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
 | 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | ✅ resolved 2026-08-12 |
 | 41 | [Dashboard scroll shows real, hardware-confirmed jank](#41-dashboard-scroll-shows-real-hardware-confirmed-jank-baseline-profile-covers-only-the-cold-startselect-project-journey) | ✅ resolved 2026-08-12 |
@@ -1572,6 +1571,13 @@ for that task, which only touched `AndroidApplicationConventionPlugin.kt`,
 is a one-line `@DisableCachingByDefault(because = "...")` (or `@CacheableTask`) annotation on
 `RenameApkTask`, but choosing which one and the right `because` message deserves its own small task
 rather than riding along on an unrelated diff.
+
+**Resolved (2026-08-12):** annotated `RenameApkTask` with `@CacheableTask` — its inputs
+(`inputDir`, `baseName`) and output (`outputDir`) are already fully declared and the copy action is
+deterministic, so it's a genuine cache candidate rather than one that needed opting out.
+`./gradlew :build-logic:convention:build` now passes `validatePlugins` and completes green.
+Confirmed the rename still works: `androidApp/build/outputs/apk/gplay/debug/app-gplay-debug.apk` is
+present and correctly named after `:androidApp:assembleGplayDebug -PgplayBuild`.
 
 ## 39. Domain-model classes read as Compose-unstable across every feature, because `*/domain` modules don't apply the Compose compiler plugin
 
