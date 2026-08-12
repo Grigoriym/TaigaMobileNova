@@ -298,37 +298,49 @@ so a cleaner frame-duration signal wouldn't change the conclusion.
 
 ## Real hardware: what changes, what breaks (2026-08-12)
 
-First real-device pass, Samsung SM-A920F (Android 10, API 29, Adreno 512 — genuinely
-GPU-accelerated). Two techniques above behave differently than on the AVD; know this before reaching
-for either on real, unrooted hardware.
+Two real devices this session — a Samsung SM-A920F (Android 10, API 29, Adreno 512, 2018 mid-range)
+and a Samsung SM-G998B (Android 15, API 35, 2021 flagship). Both changed what's actually achievable
+compared to the AVD, and comparing the two against each other was as informative as either alone.
 
-**`dumpsys gfxinfo` ("Quick look") works exactly as documented, and the numbers are clean.** Cold
-start to Select Project: 28 frames, 95th percentile 85ms, 99th percentile 150ms — no
-histogram-overflow artifacts, no suspiciously-round `9Xth gpu percentile` bucket boundary (both
-signatures of the AVD's software renderer). This is the technique to reach for on real hardware.
+**`dumpsys gfxinfo` ("Quick look") works exactly as documented on both devices, and the numbers are
+clean.** SM-A920F cold start to Select Project: 28 frames, 95th percentile 85ms, 99th percentile
+150ms — no histogram-overflow artifacts, no suspiciously-round `9Xth gpu percentile` bucket boundary
+(both signatures of the AVD's software renderer). This is the technique to reach for first on any real
+device.
 
-**Perfetto ("Deep look") loses most of its value on a real, unrooted device — for two independent
-reasons:**
+**One `dumpsys gfxinfo` counter is unreliable when driven by `adb shell input swipe`: `Number High
+input latency`.** On the SM-G998B, real frame timing during a Dashboard scroll was excellent (90th
+percentile 8-10ms, 95th 11-17ms, 61-81 frames captured) — yet `Number High input latency` still fired
+on the large majority of frames (134/81, 110/61), just as it did on the SM-A920F's genuinely janky
+captures. Confirmed via a real Perfetto capture on the same run: the actual worst frame was 10.2ms, not
+remotely "high latency." Synthetic touch injection doesn't match the timestamp cadence this counter
+expects from a real finger — **don't use it as a jank signal from this harness; the percentile/
+histogram frame-duration numbers are the trustworthy part of a `gfxinfo` capture.**
 
-1. `actual_frame_timeline_slice` (what the worst-frame jank query is built on) is **empty** on
-   Android 10/API 29 — it requires the SurfaceFlinger frame-timeline API added in API 31. Check
-   `select count(*) from actual_frame_timeline_slice` before treating an empty result as "no jank,"
-   not "wrong API version for this table."
-2. App-level slices (`Choreographer#doFrame`, `traversal`, `VerifyClass`, Compose composition) are
-   **completely absent**, confirmed for both the release and the debug build. Root cause: this device
-   is `ro.build.type=user` (production, non-rooted) — `adb shell ls /sys/kernel/debug/tracing/`
-   returns `Permission denied` on nearly every entry, and in-process `android.os.Trace.beginSection`
-   calls (what powers every named app-level slice) need that access regardless of whether the *app*
-   itself is debuggable. Only `binder transaction async` slices (a separately-permitted tracepoint)
-   come through.
+**Perfetto ("Deep look") depends entirely on the specific device's SELinux/ftrace policy — it is not a
+blanket "works on AVD only" or "unrooted `user`-build = broken" rule.** The SM-A920F (`user` build,
+non-rooted) denies it completely: `adb shell ls /sys/kernel/debug/tracing/` returns `Permission denied`
+on nearly every entry, and app-level slices (`Choreographer#doFrame`, `traversal`, `VerifyClass`,
+Compose composition) are totally absent for both the release and debug build — only `binder
+transaction async` (a separately-permitted tracepoint) comes through. The SM-G998B (also `user` build,
+also non-rooted) works fully: `adb shell id` shows the shell user in the `readtracefs` group, a test
+`echo test > /sys/kernel/tracing/trace_marker` succeeds, and a real capture produced 1823 main-thread
+slices including real `Choreographer#doFrame`/`VerifyClass` names and 39 populated
+`actual_frame_timeline_slice` rows. **Check `adb shell id | grep readtracefs` on any new real device
+before assuming the deep-Perfetto technique is or isn't available** — it's a per-device OEM policy
+question, not something `ro.build.type`/`ro.debuggable` alone predict.
 
-**Practical upshot:** the slice-level "why is it slow" analysis only works on the AVD (userdebug/eng
-system image) or a rooted device. On real unrooted hardware — which is exactly where you most want
-the "why" — only `dumpsys gfxinfo`'s per-frame timestamps are available. There is no known workaround
-short of rooting the test device.
+**`actual_frame_timeline_slice` additionally needs API 31+ regardless of the above** — it requires the
+SurfaceFlinger frame-timeline API added in Android 12. Empty on the SM-A920F (API 29) for this reason
+independent of the ftrace-permission question; populated on the SM-G998B (API 35). Check
+`select count(*) from actual_frame_timeline_slice` before treating an empty result as "no jank found"
+rather than "wrong API version, or wrong device, for this table."
 
-**Baseline Profile coverage is narrower than it looks.** `BaselineProfileGenerator`'s one journey
-(`coldStart()`) only reaches "Select Project" — nothing past login is covered. A real jank finding on
-the very next screen (project Dashboard, `docs/revisit.md` #41) is plausibly un-amortized by the
-profile for exactly this reason. See #41 for the full writeup and what a proper before/after
-re-capture for a second journey would need.
+**Baseline Profile coverage is narrower than it looks, but don't assume it explains every real-device
+finding without checking on more than one device first.** `BaselineProfileGenerator`'s one journey
+(`coldStart()`) only reaches "Select Project" — nothing past login is covered, so any other screen
+pays some avoidable first-run verification cost in principle. But a severe Dashboard-scroll jank found
+on the SM-A920F (worst frame 650ms) did **not** reproduce on the SM-G998B (same APK, same journey,
+same lack of Dashboard profile coverage, worst frame 10.2ms, zero `VerifyClass` slices) — the
+SM-A920F's age/weak GPU was the dominant factor, not the missing profile coverage. Full writeup and
+the corrected before/after picture in `docs/revisit.md` #41.

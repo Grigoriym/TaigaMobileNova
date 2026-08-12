@@ -26,7 +26,7 @@ its own section, kept for the reasoning rather than the outcome):
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
-| 41 | Dashboard scroll shows real, hardware-confirmed jank; Baseline Profile covers only the cold-start→Select-Project journey | M | this file, #41 |
+| 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | this file, #41 |
 
 <details>
 <summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
@@ -1807,3 +1807,51 @@ independently-testable change that shouldn't ride along with either investigatio
   `swiftshader_indirect` software renderer, per `docs/perf/profiling.md`'s existing Caveats section).
   This is the first same-technique comparison between AVD and real hardware this project has done, and
   it supports treating prior AVD absolute numbers with the caution the docs already recommend.
+
+**Update (2026-08-12, same session, second real device):** a Samsung SM-G998B (Galaxy S21 Ultra,
+Android 15/API 35) became available and both resolves the "why deferred" items above and corrects the
+"App-level Perfetto slices" limitation from device-specific to per-device, not universal.
+
+**The ftrace/atrace restriction is per-device, not a blanket "unrooted `user`-build" rule.** Unlike the
+SM-A920F, `adb shell id` on this device shows the shell user *is* in the `readtracefs` group
+(`groups=...,3012(readtracefs)`), and `echo test > /sys/kernel/tracing/trace_marker` succeeds. A real
+capture confirmed it: 39 `actual_frame_timeline_slice` rows and 1823 main-thread slices (vs. 0 and ~35
+on the SM-A920F), including real `Choreographer#doFrame`/`VerifyClass`/Compose slices. **Check
+`adb shell id | grep readtracefs` on any new real device before assuming the deep-Perfetto technique
+is unavailable** — it depends on that specific device/OEM's SELinux policy, not on Android version or
+`ro.build.type` alone (this device is `user`/non-debuggable too, same as the SM-A920F).
+
+**The severe Dashboard jank does not reproduce on this device — worst frame 10.2ms vs. the SM-A920F's
+650ms, same APK, same journey, same lack of Dashboard Baseline Profile coverage.** Full Perfetto
+capture confirms: `actual_frame_timeline_slice`'s worst frame was 10.2ms (`App Deadline Missed`, not
+`Prediction Error`), and `VerifyClass` slices were zero for both the worst-frame window and the whole
+10s capture. This resolves candidate cause 1 above in the negative as the *dominant* factor: if
+missing Baseline Profile coverage for Dashboard were the main driver, this device — cold-starting into
+Dashboard for the first time this process, same as the SM-A920F was — should have shown at least some
+elevated cost too, and it didn't. The far more likely explanation is that the SM-A920F (2018 mid-range
+Snapdragon 660-class, Adreno 512) is simply weak enough hardware to make this screen's real (if modest)
+Compose work visible, while a 2021 flagship shrugs it off entirely. The Baseline Profile coverage gap
+described in cause 1 is still real and still worth fixing on its own merits (any screen it doesn't
+cover pays some avoidable first-run cost) — it's just not established as the explanation for the
+severity originally observed.
+
+**Candidate cause 2 (synthetic-input artifact) is confirmed, at least for the `Number High input
+latency` counter specifically.** On this device, real frame timing is excellent (90th percentile
+8-10ms, 95th 11-17ms, only one 105ms outlier in 81 frames) — yet `Number High input latency` is still
+huge (134/81, 110/61 across two captures), just as it was on the janky SM-A920F captures. A counter
+that fires on the large majority of frames regardless of whether those frames were actually slow is
+not measuring real input latency when driven by `adb shell input swipe` — **don't use `Number High
+input latency` from this harness as a jank signal; use the percentile/histogram frame-duration numbers
+instead**, which do track real performance (confirmed by matching the Perfetto worst-frame evidence on
+both devices).
+
+**Still open, unchanged by this update:** the `DashboardSectionCard` non-lazy `forEach` code smell
+(`DashboardScreen.kt:301-319`) — real, independent of the above, not yet exercised by any capture
+since sections stayed collapsed in every test on both devices. Worth its own small fix regardless of
+whether it's ever proven to cause user-visible jank.
+
+**No further re-capture planned** — the original two-way ambiguity is resolved with real cross-device
+evidence rather than needing the previously-proposed `coldStartToDashboard()` Baseline Profile journey
+work. That journey may still be worth adding for the coverage-hygiene reason (any uncovered screen pays
+some avoidable cost), but it's a separate, lower-urgency task now that it's not explaining an observed
+650ms-frame regression.
