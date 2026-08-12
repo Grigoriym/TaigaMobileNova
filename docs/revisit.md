@@ -19,7 +19,6 @@ its own section, kept for the reasoning rather than the outcome):
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
-| 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
 | 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
@@ -64,7 +63,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
 | 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | ✅ resolved 2026-08-12 |
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
-| 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
+| 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | ✅ resolved 2026-08-12 |
 | 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
 | 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | 🟡 open |
 | 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
@@ -1278,6 +1277,10 @@ detection) — unrelated to that task's `core/storage` `jvmMain` scope, and dele
 **Fix, if wanted:** delete the file. Confirm first that Koin's `@ComponentScan` in `AndroidModule`
 (scans `com.grappim.taigamobile.data`) doesn't have some other reflective dependency on it existing —
 unlikely given zero references, but worth a `:androidApp:assembleGplayDebug` after removal to be sure.
+
+**Resolved (2026-08-12):** deleted the file. `grep -rln "ConnectivityManagerNetworkMonitor"` confirmed
+zero remaining references before removal. `./gradlew :androidApp:assembleGplayDebug -PgplayBuild`
+green, so `AndroidModule`'s `@ComponentScan` had no other dependency on it.
 
 ---
 
