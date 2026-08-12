@@ -30,6 +30,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -305,14 +306,16 @@ private fun DashboardSectionCard(
         ) {
             Column {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-                sectionState.items.forEach { item ->
-                    DashboardWorkItemCard(
-                        item = item,
-                        onClick = { navigateToTask(item) },
-                        showTimestamp = showTimestamp,
-                        showCheckmark = showCheckmark
-                    )
-                    if (item != sectionState.items.last()) {
+                sectionState.items.forEachIndexed { index, item ->
+                    key(item.id) {
+                        DashboardWorkItemCard(
+                            item = item,
+                            onClick = { navigateToTask(item) },
+                            showTimestamp = showTimestamp,
+                            showCheckmark = showCheckmark
+                        )
+                    }
+                    if (index != sectionState.items.lastIndex) {
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                     }
                 }
