@@ -17,18 +17,17 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 24 | `KoinGraphTest` and the live-Taiga integration tests collide on the JVM `DataStore` file, order-dependently | S–M | [testing agent, "Integration test against a live server"](../.claude/agents/testing.md) |
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
-| 29 | Login screen's server-URL regex rejects bare `localhost` (no dot in hostname) | XS | this file, #29 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
 | 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
 | 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
-| 35 | No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot | XS | this file, #35 |
+| 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
+| 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
 
 <details>
-<summary><strong>Full index (all 37 entries, resolved included)</strong> — this file is long because
+<summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
 resolved entries stay for their reasoning, not their outcome (see above), and ~20 links elsewhere in
 the repo — including a frozen archive doc — point at specific entries by anchor, so they aren't
 moved out. Expand for a one-line-per-entry jump table instead of scrolling.</summary>
@@ -58,20 +57,24 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 21 | [`SprintPagingSource` is dead code, and it is invisible to Kover](#21-sprintpagingsource-is-dead-code-and-it-is-invisible-to-kover) | ✅ resolved 2026-08-07 |
 | 22 | [`EpicShortInfoDTO` is built by hand in three test files; no `:testing` factory exists](#22-epicshortinfodto-is-built-by-hand-in-three-test-files-no-testing-factory-exists) | ✅ resolved 2026-08-07 |
 | 23 | [The coverage report counts Android-variant classes no test can reach](#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach) | ✅ resolved 2026-08-08 |
-| 24 | [`KoinGraphTest`/live-Taiga integration tests collide on the JVM `DataStore` file](#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently) | 🟡 open |
+| 24 | [`KoinGraphTest`/live-Taiga integration tests collide on the JVM `DataStore` file](#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently) | ✅ resolved 2026-08-12 |
 | 25 | [`FiltersStorageImplTest.resetFilters clears every section` is flaky](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
-| 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | 🟡 open |
+| 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | ✅ resolved 2026-08-12 |
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
 | 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
 | 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | 🟡 open |
 | 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
-| 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | 🟡 open |
+| 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | ✅ resolved 2026-08-10 |
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
+| 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
+| 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
+| 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | ✅ resolved 2026-08-12 |
+| 41 | [Dashboard scroll shows real, hardware-confirmed jank](#41-dashboard-scroll-shows-real-hardware-confirmed-jank-baseline-profile-covers-only-the-cold-startselect-project-journey) | ✅ resolved 2026-08-12 |
 
 </details>
 
@@ -1000,6 +1003,26 @@ always built first here. That is incidental to the current file names, not a fix
 future test class (or a different execution order) from landing before `KoinGraphTest` and
 triggering the unfavorable path described above. Mechanism confirmed live; still unfixed.
 
+**Resolved (2026-08-12):** first attempt — closing `KoinGraphTest`'s `Koin` instance in an
+`@AfterTest` — was tried and **did not work**: `Koin.close()` tears down the instance registry but
+never cancels the `CoroutineScope` `PreferenceDataStoreFactory.createWithPath` builds internally
+(`StorageModule.kt:36`, no `scope` param passed), and it is that scope's liveness the JVM DataStore's
+"multiple active files" guard actually tracks — confirmed by forcing `KoinGraphTest` to run before
+`LoginIntegrationTest` (`--tests` limited to just those two) five times in a row with the close-based
+fix in place: `LoginIntegrationTest` still failed 3/5 times with the identical "multiple DataStores
+active" error.
+
+**Actual fix:** stopped building two graphs. Added `SharedTestKoinGraph.kt`
+(`composeApp/src/jvmTest/.../di/`) exposing one `internal val sharedTestKoinGraph: Koin by lazy { ... }`;
+both `KoinGraphTest` and `LiveTaigaSession.kt`'s `sharedSession` now resolve the graph through it
+instead of each calling `koinApplication<KoinApp>` directly. With only one graph ever built per test
+JVM, there is nothing left to collide regardless of which test class Gradle happens to run first.
+Verified by running `--tests "com.grappim.taigamobile.di.KoinGraphTest" --tests
+"com.grappim.taigamobile.di.LoginIntegrationTest" --rerun` six times in a row (all passed, `KoinGraphTest`
+went first every time in this environment) and the full `com.grappim.taigamobile.di.*` pattern three
+times (all fourteen tests green each time) against the local Taiga instance. Full `./gradlew jvmTest`
+and `ktlintJvmTestSourceSetCheck` both green (no live env vars needed for the non-integration suite).
+
 ## 25. `FiltersStorageImplTest.resetFilters clears every section` is flaky under a full `jvmTest` run
 
 **Where:** `core/storage/src/jvmTest/kotlin/com/grappim/taigamobile/core/storage/FiltersStorageImplTest.kt:158`
@@ -1186,6 +1209,16 @@ doesn't change any *behavior* for currently-valid inputs — worth a quick check
 
 **Why deferred:** unrelated to the storage-path task in progress; a validation-regex change belongs
 in its own diff.
+
+**Resolved (2026-08-12):** applied exactly the fix above —
+`LoginViewModel.kt:33`'s `SERVER_REGEX` host group changed from `([\w\d-]+\.)+[\w\d-]+` to
+`([\w\d-]+\.)*[\w\d-]+`. Checked `HostSelectionPlugin.kt` (the only other place a server URL flows
+through): it builds a Ktor `Url(baseUrl)` and copies `.host`/`.port`/`.protocol` onto the outgoing
+request — no dotted-hostname assumption, so widening the regex changes nothing there. Added
+`LoginViewModelTest.\`on validateAuthData with bare localhost server should not set server error\``
+(`https://localhost:9000`) alongside the existing `10.0.2.2`-style cases.
+`:feature:login:ui:jvmTest`, `:feature:login:ui:ktlintCheck` and the full `./gradlew jvmTest` all
+green.
 
 ## 30. `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform
 
@@ -1509,3 +1542,355 @@ task is a documentation review, not a code-change task, and this repo has no iOS
 verify a Room-backed iOS actual beyond `compileKotlinIosArm64`/`compileKotlinIosSimulatorArm64`
 compiling — the desktop plan's task 7 verified its fix by running the app and inspecting the SQLite
 file directly, which isn't practical for iOS from this environment.
+
+## 38. `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change
+
+**Where:** `build-logic/convention/src/main/kotlin/com/grappim/taigamobile.buildlogic/AndroidOutputNaming.kt`
+— `RenameApkTask`.
+
+**What happens:** `./gradlew :build-logic:convention:build` fails at the `validatePlugins` task
+(registered by `JavaGradlePluginPlugin`) with "Type
+`com.grappim.taigamobile.buildlogic.RenameApkTask` must be annotated either with `@CacheableTask` or
+with `@DisableCachingByDefault`". This is unrelated to any specific source change — it reproduces on
+a clean `dev` checkout with no edits to `build-logic` at all.
+
+**Consequence:** none functionally (the convention plugins still compile and apply fine — confirmed
+via `:build-logic:convention:compileKotlin`). The cost is that
+[docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md)'s "Researched facts"
+section recommends `./gradlew :build-logic:convention:build` as the build-logic check in place of
+`ktlintCheck` (`build-logic` is an included build, so root `ktlintCheck` doesn't reach it) — that
+recommendation predates this finding and no longer holds; `:build-logic:convention:compileKotlin` is
+the check that actually passes on a clean tree.
+
+**Why deferred:** found incidentally while verifying
+[docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md) task 1 — out of scope
+for that task, which only touched `AndroidApplicationConventionPlugin.kt`,
+`KmpLibraryComposeConventionPlugin.kt`, and a new file, none of which reference `RenameApkTask`. Fix
+is a one-line `@DisableCachingByDefault(because = "...")` (or `@CacheableTask`) annotation on
+`RenameApkTask`, but choosing which one and the right `because` message deserves its own small task
+rather than riding along on an unrelated diff.
+
+## 39. Domain-model classes read as Compose-unstable across every feature, because `*/domain` modules don't apply the Compose compiler plugin
+
+**Where:** every `feature/*/domain` module (e.g. `feature/workitem/domain/build.gradle.kts`,
+`feature/users/domain/build.gradle.kts`) applies only `taigamobile.kmp.library`, never
+`taigamobile.kmp.library.compose`. The consuming `*/ui` modules apply the Compose variant. Evidence
+gathered via [docs/compose/stability-scan.py](compose/stability-scan.py) run across all 24 Compose UI
+modules + `androidApp` per
+[docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md) task 2 — full raw output
+kept in that task's Result note.
+
+**What happens:** `WorkItem` (`feature/workitem/domain/.../WorkItem.kt`) is a textbook-correct data
+class — every field a `val`, the one collection field already `ImmutableList<Tag>` per this repo's own
+convention — yet the Compose Compiler's stability report marks it `unstable` in every consuming module
+(`uikit`, `feature/dashboard/ui`, `feature/sprint/ui`, `feature/scrum/ui`, and more). Same story for
+`User`, `Project`, `Sprint`, `Epic`, `TeamMember`, `Attachment`, `Comment`, `FiltersData`, `Swimlane`,
+`KanbanUserStory`, `UserStoryEpic`, `PromotedUserStoryInfo`, `ProjectValueItem`, `PendingCertTrust` —
+every one of them defined in a `*/domain` module and structurally stable by inspection. Root cause
+(confirmed by reading how the Compose Compiler infers stability for dependency classes): the compiler
+embeds a stability marker in a class's compiled metadata only when *it itself* compiled that class.
+Downstream modules trust that marker rather than re-deriving stability from bytecode. A class compiled
+by a module that never applied `org.jetbrains.kotlin.plugin.compose` carries no such marker, so every
+downstream Compose module treats it as unstable by default — regardless of how simple the class
+actually is. This cascades: any `ImmutableList<WorkItem>`, `PersistentList<User>`, or
+`ImmutableMap<WorkItem, ImmutableList<WorkItem>>` field is *also* reported unstable, because Compose
+propagates a container's stability from its type arguments. 121 unstable-class findings and 60
+composables-with-unstable-parameters findings came out of the task 2 audit; the large majority trace
+back to this one mechanism rather than to 121 independent bugs. The one genuine, unrelated convention
+violation the audit did find (`SprintState.storiesWithTasks` declared as
+`ImmutableMap<WorkItem, List<WorkItem>>` — a plain `List` nested inside the map value, despite the
+domain-layer `SprintData` it's assigned from already being fully `ImmutableList`-typed) was fixed
+inline as part of task 2, not deferred here.
+
+Separately and independently unstable, not part of this mechanism and not actionable the same way:
+`NavController`/`NavHostController` (Navigation Compose's own type, no marker regardless of our code),
+`LazyPagingItems<T>` (Paging Compose's own type, same reason), and `Any`-typed parameters
+(`columnId`/`itemKey`/`avatarUrl` in `uikit`'s drag-and-drop and list widgets — `Any` is inherently
+unstable by design, narrowing the type is the only fix and weakens the API). `kotlinx.datetime.LocalDate`
+/`LocalDateTime` fields are a fourth, different mechanism: they're immutable value types from a
+third-party library that itself doesn't apply the Compose compiler plugin, so they hit the same
+"foreign, unmarked" default — fixable via a `stabilityConfigurationFiles` entry without touching any
+of our own code, but that's a build-wide policy decision, not something to add speculatively without a
+second data point beyond this one library.
+
+**Consequence:** the `ImmutableList` convention documented in CLAUDE.md's Compose/Platform Rules is
+correctly followed everywhere it was checked, but is being defeated by module boundaries: any
+composable receiving a domain model directly (`DashboardWorkItemCard(item: WorkItem)`,
+`ProjectCardWidget(project: Project)`, `TeamMemberItem(teamMember: TeamMember)`, dozens more per the
+task 2 scan output) recomposes on referential inequality instead of `.equals()`, even when the
+underlying data hasn't changed — the exact SSM failure mode the stability-reports tooling
+([docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md)) was built to catch. No
+measured perf impact yet; this is a correctness-of-classification finding, not a profiled regression.
+
+**Why deferred:** fixing it means picking one of two repo-wide approaches — (a) apply
+`taigamobile.kmp.library.compose` (or a narrower Compose-compiler-only variant) to every `*/domain`
+module that defines a type consumed by a composable, which is a build-topology change across ~15
+modules, or (b) list every affected domain type's FQN (or a package wildcard) in a
+`stabilityConfigurationFiles` config, which is a blunt trust decision the [Considered and
+deferred](compose/stability-reports-plan.md#considered-and-deferred) table in the stability-reports
+plan explicitly flagged as "add only in response to a concrete finding, not preemptively" — this entry
+*is* that concrete finding, but choosing between (a) and (b) (and, for (a), deciding whether pulling in
+Compose Compiler for pure-Kotlin domain modules with zero `@Composable` functions is worth the build-time
+cost) is a judgment call for a dedicated task, not something to decide inline while triaging a scan's
+output.
+
+**Resolved (2026-08-12):** went with a narrower version of option (a) —
+[docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md) task 3. A new convention
+plugin, `taigamobile.kmp.library.stability`
+(`build-logic/convention/src/main/kotlin/KmpLibraryStabilityConventionPlugin.kt`), applies only
+`org.jetbrains.kotlin.plugin.compose` (the compiler subplugin, not `org.jetbrains.compose`) plus a
+`compileOnly` `compose-runtime` dependency
+(`ComposeStabilityMarker.kt`'s `configureComposeStabilityMarker()`) — no Foundation/Material3/
+Navigation/ViewModel-Compose reaches the domain layer. Applied alongside `taigamobile.kmp.library` on
+the 11 `*/domain` modules whose types are consumed as Composable parameters: `core/domain`,
+`feature/epics/domain`, `feature/filters/domain`, `feature/kanban/domain`, `feature/projects/domain`,
+`feature/sprint/domain`, `feature/swimlanes/domain`, `feature/tasks/domain`,
+`feature/userstories/domain`, `feature/users/domain`, `feature/workitem/domain` (the list grew from
+the 10 first derived by tracing field types by hand to 11 after the empirical re-scan caught
+`feature/tasks/domain`'s `Task` still unstable — see the task's Result note for why the static trace
+missed it).
+
+Re-running the task 2 audit after the fix: unstable-composable-parameter findings dropped from 60 to
+11, and the 11 remaining are now **entirely** the three independently-unstable buckets already
+identified as out of scope (`NavController`/`NavHostController`, `kotlinx.datetime`
+`LocalDate`/`LocalDateTime`, `Any`-typed params) — zero remaining findings trace to a domain model
+type. `WorkItem`, `User`, `Project`, `Sprint`, `Epic`, `TeamMember`, `Attachment`, `Comment`,
+`FiltersData`, `Swimlane`, `KanbanUserStory`, `UserStoryEpic`, `PromotedUserStoryInfo`,
+`ProjectValueItem`, `PendingCertTrust`, `Task` — all clear now, except for the one or two of them that
+independently carry a `kotlinx.datetime` field (e.g. `WorkItem.createdDate`), which is the separate,
+still-open third-party-library mechanism this entry always distinguished from the domain-module one.
+A bonus, unpredicted effect: `LazyPagingItems<WorkItem>` findings (Paging Compose, itself `@Stable`)
+disappeared entirely once `WorkItem`'s own stability propagated through the generic — apparently the
+compiler had been propagating `WorkItem`'s instability into the wrapper the same way it does for
+`ImmutableList<WorkItem>`.
+
+`./gradlew jvmTest` and `ktlintCheck` green across the whole repo; all 11 affected domain modules
+verified to compile clean on `jvm`, `androidMain`, and `iosArm64` targets (not just `jvm`, since the
+new `compileOnly` dependency applies to every target these modules build for).
+
+## 40. Cold-start worst frame dominated by ART `VerifyClass` overhead — Baseline Profile candidate
+
+**What:** a real Perfetto capture of the fdroid debug build's cold start (`force-stop` → `am start` →
+land on "Select Project", `Medium_Phone_API_36.1` AVD, 2026-08-12, see `docs/perf/profiling.md`)
+showed the worst single frame taking 288.8ms, with `jank_type = 'Prediction Error, App Deadline
+Missed'`. Querying the app's own main thread for slices inside that frame's window found a 289ms
+`Choreographer#doFrame` containing a 281ms `traversal`, and a long run of ART `VerifyClass` slices —
+`androidx.compose.ui.platform.ViewLayer`, `androidx.compose.foundation.lazy.LazyListMeasureKt`,
+`androidx.compose.ui.text.android.TextAndroidCanvas`,
+`androidx.compose.ui.graphics.ColorSpaceVerificationHelper`, and this app's own
+`com.grappim.taigamobile.uikit.widgets.topbar.ComposableSingletons$TaigaTopAppBarKt` — each costing
+tens of microseconds to ~270μs, the classic signature of first-time class verification on a cold JIT.
+Of 55 frames the app rendered in that capture, all 55 were tagged janky by
+`actual_frame_timeline_slice`, though `Buffer Stuffing` dominates the jank-type breakdown (32/55) and
+is plausibly an artifact of the AVD's `swiftshader_indirect` software renderer rather than a real
+finding — the `VerifyClass` evidence for the worst frame is the part not explained by the renderer.
+
+**Why deferred:** this is exactly what `docs/perf/profiling-plan.md` task 3 (Baseline Profile
+generator) exists to amortize — a `coldStart()` macrobenchmark journey through
+`BaselineProfileRule` records which classes/methods get touched during startup so ART can
+AOT-compile them ahead of time instead of verifying them on first launch. Not a code fix on its own;
+task 3 is the mechanism, and this entry is the concrete before-evidence to compare a post-task-3
+capture against. Re-run the same Perfetto capture after task 3 lands and check whether the
+`VerifyClass` run in the worst frame's window shrinks or disappears.
+
+**Consequence:** not a correctness bug, and the emulator/software-renderer caveat means the specific
+percentages shouldn't be quoted as real-device numbers without a second capture on hardware — but the
+`VerifyClass` finding itself doesn't depend on the renderer and is real, actionable startup cost.
+
+**Update (2026-08-12):** `docs/perf/profiling-plan.md` task 3 landed — the `:benchmark` generator
+exists and was confirmed to actually apply (`[status=speed-profile] [reason=bg-dexopt]` after a
+plain `adb install` + `bg-dexopt-job`, full detail in `docs/perf/profiling.md`). The re-capture this
+entry asked for (does the `VerifyClass` run shrink post-profile) is still open — a same-APK A/B via
+`adb shell cmd package compile -m verify -f com.grappim.taigamobile.fdroid` (before) vs `-m
+speed-profile -f` (after) was started but not completed: reinstalling the plain `release` build over
+the `nonMinifiedRelease` build used for login setup dropped the persisted session, landing the
+"before" gfxinfo capture on the Login screen (4 frames) rather than Select Project, which isn't
+comparable to task 2's 73-frame Select-Project capture. To redo: install the target build once,
+re-login by hand, *then* run the verify/speed-profile compile-mode toggle above without reinstalling
+in between (reinstalling is what breaks the session), capturing `dumpsys gfxinfo`/Perfetto after each
+`cmd package compile` call.
+
+**Resolved (2026-08-12, same session):** redone properly on the `fdroidRelease` build, and it
+surfaces a bigger correction than the shrink/no-shrink question this entry originally asked. First
+attempt repeated the same mistake the note above describes fixing, in a new form: forcing
+`cmd package compile -m verify -f` before the "before" capture doesn't reproduce a plain `adb
+install`'s lazy runtime verification — it makes `dex2oat` verify every class **ahead of time** into
+the vdex, so the "before" capture already had nothing left to verify at runtime (2 `VerifyClass`
+slices, 0.1ms total, across the whole 10s trace). Redone a second time with the actual fix: uninstall,
+fresh `adb install` (confirmed `[status=verify] [reason=install]` via `dumpsys package`, never
+touching `cmd package compile` until after the "before" capture), re-login, then `force-stop`/`am
+start` for the real lazy-verification "before" state.
+
+That correctly-isolated "before" state **still** showed almost no `VerifyClass` cost (2 slices, 0.1ms
+across the capture) — matching the contaminated first attempt, not task 2's original debug-build
+finding (5+ named classes, tens-to-hundreds of μs each, inside one frame). The `-m speed-profile -f`
+"after" state was the same: 1 slice, 0.055ms. **The likely explanation is debug vs. release, not
+verify vs. speed-profile**: task 2's original evidence was captured on the fdroid **debug** build
+(`com.grappim.taigamobile.fdroid.debug`, no R8, no baseline profile eligible); this redo used the
+fdroid **release** build (`com.grappim.taigamobile.fdroid`, R8-minified — the variant
+`docs/perf/profiling-plan.md` task 3 actually targets, since only release variants get a baseline
+profile at all). R8 shrinking on release plausibly removes most of the unused/unreached class graph
+that cost `VerifyClass` time on the unshrunk debug build, independent of whether a profile is
+installed — so the original finding doesn't transfer to what ships, and there wasn't a meaningful
+`VerifyClass` cost on release left for the Baseline Profile to amortize in the first place.
+
+Worst-frame duration itself (the other candidate signal) was inconclusive on this pass: 292.7ms
+"before" vs. 333.1ms "after", i.e. slightly *worse* with the profile applied — but total rendered-frame
+count dropped (47 → 33) and the sum of all frame durations dropped slightly too (1572ms → 1438ms), so
+this doesn't read as a real regression, just single-run noise on the `swiftshader_indirect` software
+renderer already flagged as unreliable for absolute numbers (`docs/perf/profiling.md`'s Caveats
+section). Not repeated for a second sample — the `VerifyClass` result above is the conclusive part of
+this re-capture; the frame-duration number was always the secondary signal.
+
+No further action: the `VerifyClass`-shrinks-post-profile question this entry asked is answered (no,
+because there wasn't a `VerifyClass` cost on the release build to begin with), and a same-build,
+same-renderer A/B on frame duration alone isn't going to be conclusive without a real device or many
+more samples than a single-session recapture budget covers. Full commands and raw numbers in
+`docs/perf/profiling.md`'s Baseline Profile section.
+
+## 41. Dashboard scroll shows real, hardware-confirmed jank; Baseline Profile covers only the cold-start→Select-Project journey
+
+**What:** with real hardware available for the first time (Samsung SM-A920F, Android 10/API 29,
+Adreno 512 GPU — genuinely GPU-accelerated, not the AVD's `swiftshader_indirect` software renderer),
+scrolling a project's **Dashboard** screen (the screen every user lands on immediately after Select
+Project) shows real, reproducible jank via `dumpsys gfxinfo`, even with all four sections
+(`WATCHING`/`MY WORK`/`RECENT ACTIVITY`/`COMPLETED`) collapsed — i.e. on a screen with only 6 simple
+`LazyColumn` items (info banner + 4 section-header cards + spacer), no expanded item lists in play.
+Three repeated scroll captures on the `fdroidRelease` build, same process (no reinstall/relaunch
+between them):
+
+| | run 1 | run 2 | run 3 (same process, "warm") |
+|---|---|---|---|
+| 90th percentile | 150ms | 61ms | 38ms |
+| 95th percentile | 200ms | 150ms | 61ms |
+| 99th percentile | 650ms | 300ms | 200ms |
+| High input latency | 53/72 frames | 38/46 frames | 53/62 frames |
+
+Frame timings improve run-over-run but never settle to a clean sub-16ms budget, and outlier frames
+(200–650ms) persist even on the third pass.
+
+**Two candidate causes, not fully disambiguated this session:**
+
+1. **Baseline Profile has zero coverage of Dashboard.** `benchmark/.../BaselineProfileGenerator.kt`
+   (`docs/perf/profiling-plan.md` task 3) has exactly one journey — `coldStart()`, which only reaches
+   "Select Project" and never navigates into a project. Every class/method Dashboard's ViewModel and
+   Composables touch is therefore *not* in `baseline-prof.txt`, so ART pays first-time
+   verification/JIT cost for Dashboard-specific code the first time any user opens it — the same
+   mechanism `docs/revisit.md` #40 characterized for cold start, just not amortized here because the
+   profile's one journey never visits this screen. The run-over-run improvement above is consistent
+   with this (later runs re-execute already-JITted code), but a genuine before/after A/B (adding a
+   `coldStartToDashboard()` journey to the generator, matching #40's methodology) hasn't been done —
+   this is the concrete next step, not a conclusion.
+2. **Possible synthetic-input measurement artifact.** `Number High input latency` was flagged on the
+   large majority of frames in all three runs (53/72, 38/46, 53/62) — high enough, and persistent
+   enough even on the "warm" run, to suspect `adb shell input swipe`'s linear-interpolated synthetic
+   touch events don't match the timestamp cadence Android's frame-metrics latency tracking expects
+   from a real finger, inflating this specific counter independent of real app performance. The
+   percentile numbers (which don't depend on the input-latency classifier) are the more trustworthy
+   signal of the two.
+
+**Independent, real code smell found while investigating (not yet confirmed as the jank's cause,
+since it wasn't exercised — sections were collapsed during the test):**
+`DashboardSectionCard` (`feature/dashboard/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/dashboard/ui/DashboardScreen.kt:301-319`)
+renders each *expanded* section's item list with a plain `Column` + `sectionState.items.forEach { }`
+— not `LazyColumn`/`items(items, key = ...)` — nested inside a single item slot of the screen's outer
+`LazyColumn`, wrapped in `AnimatedVisibility { expandVertically() / shrinkVertically() }`. This means:
+opening a section eagerly composes every item in it with no virtualization and no stable keys, and
+the divider logic (`if (item != sectionState.items.last())`, line 315) is an O(n) list scan per item.
+For the seeded local instance's `WATCHING (11)` section this is small, but it's a real anti-pattern
+that would matter more with a larger backlog, and it's an easy, well-scoped fix on its own (convert to
+`LazyColumn` + `items(sectionState.items, key = { it.id })`, drop the `.last()` scan for an index-based
+check) independent of the Baseline Profile question above.
+
+**Why deferred:** this needs a dedicated task, not an inline fix — cause 1 needs a real before/after
+re-capture (mirroring #40's corrected methodology: never force `cmd package compile -m verify`, let a
+fresh install's `reason=install` state be the genuine "before") with a `coldStartToDashboard()` journey
+added to the Baseline Profile generator; cause 2 needs either a real-finger capture (not available
+from this environment) or cross-checking against a scroll driven by `MotionEvent` batching closer to
+real hardware to rule the artifact in or out; and the `DashboardSectionCard` fix is a small, clean,
+independently-testable change that shouldn't ride along with either investigation.
+
+**New technique limitations found on real hardware, worth recording for future perf work:**
+
+- **`actual_frame_timeline_slice` is empty on this device** — it requires the SurfaceFlinger
+  frame-timeline API, added in Android 12 (API 31). This device is Android 10 (API 29). The "Deep
+  look: Perfetto" jank query in `docs/perf/profiling.md` (built around this table) returns zero rows
+  here, not because there's no jank, but because the table doesn't exist for this OS version — always
+  check `select count(*) from actual_frame_timeline_slice` before trusting an empty result as "no
+  jank found."
+- **App-level Perfetto/atrace slices (`Choreographer#doFrame`, `traversal`, `VerifyClass`, Compose
+  composition) are completely absent, for both the release and the debug build.** Root cause
+  confirmed directly: `adb shell ls /sys/kernel/debug/tracing/` returns `Permission denied` on nearly
+  every entry, and `cat .../trace_marker` does too — this is a real, non-rooted, `ro.build.type=user`
+  production device, and ftrace/debugfs access (which is what in-process `android.os.Trace.beginSection`
+  calls need to reach the kernel ring buffer) is locked down to root regardless of whether the *app*
+  itself is debuggable. Only `binder transaction async` slices (a separate, permitted tracepoint) show
+  up. **Practical consequence: the "why is it slow" Perfetto slice-level technique in
+  `docs/perf/profiling.md` only works on the AVD (userdebug/eng system image) or a rooted device — on
+  real unrooted hardware, `dumpsys gfxinfo`'s per-frame timestamps (the "Quick look" technique) is the
+  only signal available.** This is a meaningful gap: real hardware is exactly where you'd want the
+  deeper "why," and it's the one place this repo's current tooling can't provide it.
+- **`dumpsys gfxinfo` numbers on real hardware are clean** — no histogram-overflow artifacts, no
+  `9Xth gpu percentile` landing suspiciously on a round bucket boundary (both signatures of the AVD's
+  `swiftshader_indirect` software renderer, per `docs/perf/profiling.md`'s existing Caveats section).
+  This is the first same-technique comparison between AVD and real hardware this project has done, and
+  it supports treating prior AVD absolute numbers with the caution the docs already recommend.
+
+**Update (2026-08-12, same session, second real device):** a Samsung SM-G998B (Galaxy S21 Ultra,
+Android 15/API 35) became available and both resolves the "why deferred" items above and corrects the
+"App-level Perfetto slices" limitation from device-specific to per-device, not universal.
+
+**The ftrace/atrace restriction is per-device, not a blanket "unrooted `user`-build" rule.** Unlike the
+SM-A920F, `adb shell id` on this device shows the shell user *is* in the `readtracefs` group
+(`groups=...,3012(readtracefs)`), and `echo test > /sys/kernel/tracing/trace_marker` succeeds. A real
+capture confirmed it: 39 `actual_frame_timeline_slice` rows and 1823 main-thread slices (vs. 0 and ~35
+on the SM-A920F), including real `Choreographer#doFrame`/`VerifyClass`/Compose slices. **Check
+`adb shell id | grep readtracefs` on any new real device before assuming the deep-Perfetto technique
+is unavailable** — it depends on that specific device/OEM's SELinux policy, not on Android version or
+`ro.build.type` alone (this device is `user`/non-debuggable too, same as the SM-A920F).
+
+**The severe Dashboard jank does not reproduce on this device — worst frame 10.2ms vs. the SM-A920F's
+650ms, same APK, same journey, same lack of Dashboard Baseline Profile coverage.** Full Perfetto
+capture confirms: `actual_frame_timeline_slice`'s worst frame was 10.2ms (`App Deadline Missed`, not
+`Prediction Error`), and `VerifyClass` slices were zero for both the worst-frame window and the whole
+10s capture. This resolves candidate cause 1 above in the negative as the *dominant* factor: if
+missing Baseline Profile coverage for Dashboard were the main driver, this device — cold-starting into
+Dashboard for the first time this process, same as the SM-A920F was — should have shown at least some
+elevated cost too, and it didn't. The far more likely explanation is that the SM-A920F (2018 mid-range
+Snapdragon 660-class, Adreno 512) is simply weak enough hardware to make this screen's real (if modest)
+Compose work visible, while a 2021 flagship shrugs it off entirely. The Baseline Profile coverage gap
+described in cause 1 is still real and still worth fixing on its own merits (any screen it doesn't
+cover pays some avoidable first-run cost) — it's just not established as the explanation for the
+severity originally observed.
+
+**Candidate cause 2 (synthetic-input artifact) is confirmed, at least for the `Number High input
+latency` counter specifically.** On this device, real frame timing is excellent (90th percentile
+8-10ms, 95th 11-17ms, only one 105ms outlier in 81 frames) — yet `Number High input latency` is still
+huge (134/81, 110/61 across two captures), just as it was on the janky SM-A920F captures. A counter
+that fires on the large majority of frames regardless of whether those frames were actually slow is
+not measuring real input latency when driven by `adb shell input swipe` — **don't use `Number High
+input latency` from this harness as a jank signal; use the percentile/histogram frame-duration numbers
+instead**, which do track real performance (confirmed by matching the Perfetto worst-frame evidence on
+both devices).
+
+**Still open, unchanged by this update:** the `DashboardSectionCard` non-lazy `forEach` code smell
+(`DashboardScreen.kt:301-319`) — real, independent of the above, not yet exercised by any capture
+since sections stayed collapsed in every test on both devices. Worth its own small fix regardless of
+whether it's ever proven to cause user-visible jank.
+
+**No further re-capture planned** — the original two-way ambiguity is resolved with real cross-device
+evidence rather than needing the previously-proposed `coldStartToDashboard()` Baseline Profile journey
+work. That journey may still be worth adding for the coverage-hygiene reason (any uncovered screen pays
+some avoidable cost), but it's a separate, lower-urgency task now that it's not explaining an observed
+650ms-frame regression.
+
+**Resolved (2026-08-12, same session):** the last open item, the `DashboardSectionCard` non-lazy list,
+is fixed. `DashboardScreen.kt:301-320` — a nested `LazyColumn` isn't viable here (it's inside
+`AnimatedVisibility { expandVertically()/shrinkVertically() }` itself nested inside the outer
+`LazyColumn`'s single item, and a `LazyColumn` throws on the unbounded height that animation needs to
+measure), so instead: `forEach` → `forEachIndexed`, replacing the O(n) `item != sectionState.items.last()`
+scan with an O(1) `index != sectionState.items.lastIndex` check, and each `DashboardWorkItemCard` call
+wrapped in `key(item.id)` for stable composable identity across recomposition. Verified on a real
+Galaxy S21 Ultra (Android 15): expanded `MY WORK (6)` against the live `tasks.gregstuff.click` instance
+— all 6 items rendered with a divider between each pair and none trailing after the last item, and the
+collapse animation was unaffected.

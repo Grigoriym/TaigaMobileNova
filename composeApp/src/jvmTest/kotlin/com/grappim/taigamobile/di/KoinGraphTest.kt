@@ -6,9 +6,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import org.koin.core.annotation.KoinInternalApi
 import org.koin.core.definition.BeanDefinition
 import org.koin.core.error.NoDefinitionFoundException
-import org.koin.core.logger.Level
 import org.koin.dsl.module
-import org.koin.plugin.module.dsl.koinApplication
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -92,7 +90,7 @@ internal class KoinGraphTest {
 
     @Test
     fun `every definition in the graph resolves its dependencies`() {
-        val koin = koinApplication<KoinApp> { printLogger(Level.NONE) }.koin
+        val koin = sharedTestKoinGraph
         val root = koin.scopeRegistry.rootScope
 
         // Snapshot the real graph before adding anything test-only, so the count below measures the

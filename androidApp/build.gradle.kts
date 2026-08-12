@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.taigamobile.android.application)
+    alias(libs.plugins.androidx.baselineprofile)
     alias(libs.plugins.google.services) apply false
     alias(libs.plugins.firebase.crashlytics) apply false
 }
@@ -40,6 +41,8 @@ android {
 }
 
 dependencies {
+    baselineProfile(projects.benchmark)
+
     implementation(projects.composeApp)
     implementation(projects.feature.login.domain)
     implementation(projects.uikit)
@@ -69,6 +72,11 @@ dependencies {
     implementation(libs.timber)
     implementation(libs.filekit.dialogs)
     implementation(libs.material)
+
+    // Applies a generated Baseline Profile (docs/perf/profiling-plan.md, task 3) at first launch
+    // after install — required regardless of Play Store distribution, a plain `adb install` or
+    // F-Droid-style install path does not apply the profile without it.
+    implementation(libs.androidx.profileinstaller)
 
     // Crashlytics ships in the gplay flavor only — the fdroid flavor never pulls in
     // this proprietary dependency, only a no-op CrashReporter implementation.
