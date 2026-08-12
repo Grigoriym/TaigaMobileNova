@@ -13,6 +13,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 internal class SettingsUserScreenViewModelTest {
 
@@ -91,5 +92,25 @@ internal class SettingsUserScreenViewModelTest {
         createViewModel()
 
         assertEquals("https://taiga.internal.example", sut.state.value.serverUrl)
+    }
+
+    @Test
+    fun `on init - http server - isUnencryptedConnection is true`() = runTest {
+        usersRepository.getMeResult = getUser()
+        serverStorage.server = "http://taiga.internal.example"
+
+        createViewModel()
+
+        assertTrue(sut.state.value.isUnencryptedConnection)
+    }
+
+    @Test
+    fun `on init - https server - isUnencryptedConnection is false`() = runTest {
+        usersRepository.getMeResult = getUser()
+        serverStorage.server = "https://taiga.internal.example"
+
+        createViewModel()
+
+        assertFalse(sut.state.value.isUnencryptedConnection)
     }
 }

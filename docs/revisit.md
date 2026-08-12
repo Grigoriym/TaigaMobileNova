@@ -19,7 +19,6 @@ its own section, kept for the reasoning rather than the outcome):
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
-| 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
 
@@ -62,7 +61,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | ✅ resolved 2026-08-12 |
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | ✅ resolved 2026-08-12 |
-| 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
+| 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | ✅ resolved 2026-08-12 |
 | 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | ✅ resolved 2026-08-12 |
 | 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
 | 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | ✅ resolved 2026-08-10 |
@@ -1316,6 +1315,24 @@ adding a warning dialog/snackbar to the server-setup flow is a small but distinc
 **Fix, if wanted:** on saving/validating the server URL (wherever that validation already lives for
 the `localhost` regex issue in #29), branch on `URLProtocol` and show a one-time warning when it's
 `http`. Small, self-contained.
+
+**Resolved (2026-08-12) — took a different fix than the one sketched above.** The suggested fix
+would have been a no-op: the server URL is only ever set in one place (`LoginViewModel`), which
+already has this exact one-time dialog, so there was nowhere else to add it. The actual gap is that
+the warning is a single blink-and-you-missed-it moment with no ongoing indicator for the rest of a
+long-lived session (including every silent background token refresh through `AuthHeaderPlugin`).
+Added a persistent indicator instead: `Settings → User` already renders the plain-text server URL
+(`SettingsUserScreen.kt`, sourced from `ServerStorage.server`), so it gained a small warning row
+(`Icons.Default.Warning` + `settings_unencrypted_connection_warning` string, both tinted
+`MaterialTheme.colorScheme.error`) shown whenever `serverUrl.startsWith(ApiConstants.HTTP_SCHEME)`.
+`SettingsUserScreenState` gained `isUnencryptedConnection: Boolean`, computed once in
+`SettingsUserScreenViewModel`'s constructor-time state (not async — it's derived from the same
+`ServerStorage.server` already read synchronously for `serverUrl`, unlike `canSeeAttributes` which
+needs a network round trip). Added two `SettingsUserScreenViewModelTest` cases (http → true, https →
+false) and a new `SettingsUserScreenTest` (Compose UI test, `feature/settings/ui/src/jvmTest/`)
+asserting the row's visibility via a `testTag` — the icon itself stays `contentDescription = null`
+since the adjacent text already carries the meaning for accessibility. Full `./gradlew jvmTest`,
+`ktlintCheck` and `:koverVerify` all green; `:androidApp:assembleGplayDebug -PgplayBuild` too.
 
 ---
 
