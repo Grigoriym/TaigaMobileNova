@@ -220,6 +220,73 @@ adb shell dumpsys package $PKG | grep -A2 "x86_64:"
 All four steps were run for real against this project's `fdroidRelease` build (2026-08-12) and
 produced exactly the output shown above.
 
+## Before/after re-capture: does `VerifyClass` shrink post-profile? (`docs/revisit.md` #40)
+
+Real A/B against the `fdroidRelease` build, same journey as above, no reinstall between the two
+compile-mode captures (2026-08-12):
+
+```bash
+PKG=com.grappim.taigamobile.fdroid
+adb uninstall $PKG               # start from a genuinely untouched install, not a forced compile
+adb install androidApp/build/outputs/apk/fdroid/release/app-fdroid-release.apk
+adb shell dumpsys package $PKG | grep -A2 "x86_64:"
+# → [status=verify] [reason=install] — confirm no prior `cmd package compile` call touched this APK
+
+# re-login by hand (10.0.2.2:9000 / admin/admin), land on Select Project
+
+# "before": capture WITHOUT ever calling `cmd package compile` — see pitfall below for why
+adb shell am force-stop $PKG
+adb shell perfetto -o /data/misc/perfetto-traces/before.perfetto-trace -t 10s \
+  sched freq idle am wm gfx view input dalvik hal res memory binder_driver &
+sleep 1.5 && adb shell am start -n $PKG/com.grappim.taigamobile.MainActivity && sleep 9
+adb pull /data/misc/perfetto-traces/before.perfetto-trace
+
+# "after": force the real speed-profile compile, no reinstall (keeps the session)
+adb shell cmd package compile -m speed-profile -f $PKG
+adb shell am force-stop $PKG
+adb shell perfetto -o /data/misc/perfetto-traces/after.perfetto-trace -t 10s \
+  sched freq idle am wm gfx view input dalvik hal res memory binder_driver &
+sleep 1.5 && adb shell am start -n $PKG/com.grappim.taigamobile.MainActivity && sleep 9
+adb pull /data/misc/perfetto-traces/after.perfetto-trace
+```
+
+**Confirmed pitfall — `cmd package compile -m verify -f` is not a neutral "before" state.** The first
+attempt at this A/B forced `-m verify -f` before the "before" capture, intending a same-APK
+verify-vs-speed-profile comparison. That's wrong: `-m verify -f` runs `dex2oat`'s verification pass
+**ahead of time** and writes the result into the vdex, which is exactly the cost a plain `adb install`
+leaves for ART to pay lazily, in-memory, on every cold start until something re-verifies it. Forcing
+`-m verify -f` first eliminates the very `VerifyClass` cost the A/B exists to measure — that capture
+showed near-zero `VerifyClass` in *both* states, which was the forcing artifact, not a real result.
+The redo above never calls `cmd package compile` for "before" — the only touch is the fresh install
+itself (`[status=verify] [reason=install]`), so ART verifies lazily at runtime exactly like a real
+sideload.
+
+**Real result, correctly isolated: `VerifyClass` cost is already near-zero on the release build, in
+both states.**
+
+| | before (`reason=install`, untouched) | after (`speed-profile`) |
+|---|---|---|
+| Frames captured | 47 | 33 |
+| Worst frame | 292.7ms (`Prediction Error, App Deadline Missed`) | 333.1ms (`Prediction Error, App Deadline Missed`) |
+| Sum of all frame durations | 1572.1ms | 1437.8ms |
+| `VerifyClass` slices (whole 10s capture) | 2 (0.10ms total) | 1 (0.06ms total) |
+
+Task 2's original 288.8ms-worst-frame, `VerifyClass`-dominated finding was captured on the fdroid
+**debug** build (`com.grappim.taigamobile.fdroid.debug`) — unshrunk, no R8, not a variant that gets a
+baseline profile at all. This redo is the fdroid **release** build (R8-minified — the only variant
+task 3's Baseline Profile actually targets). The likely explanation for the gap: R8 shrinking on
+release already strips most of the class graph that cost `VerifyClass` time on the unshrunk debug
+build, independent of whether a profile is installed. **The original finding doesn't transfer to what
+ships** — there wasn't a meaningful `VerifyClass` cost on the release build left for the Baseline
+Profile to amortize.
+
+The worst-frame-duration column above is the other candidate signal and reads as noise, not a
+regression: it got *nominally worse* post-profile (293ms → 333ms) while total frame count and total
+frame-duration sum both dropped — inconsistent with a real slowdown, consistent with single-run
+variance on the `swiftshader_indirect` software renderer (see Caveats below). Not worth a second
+sample: the `VerifyClass` result above is conclusive on its own terms (there's nothing left to shrink),
+so a cleaner frame-duration signal wouldn't change the conclusion.
+
 ## Caveats on this pass
 
 - Captured on the AVD with `-gpu swiftshader_indirect` (software rendering) — the jank percentages

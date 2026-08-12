@@ -26,7 +26,6 @@ its own section, kept for the reasoning rather than the outcome):
 | 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
-| 40 | Cold-start worst frame dominated by ART `VerifyClass` overhead — Baseline Profile candidate | S | this file, #40 |
 
 <details>
 <summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
@@ -75,7 +74,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
 | 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
 | 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
-| 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | 🟡 open |
+| 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | ✅ resolved 2026-08-12 |
 
 </details>
 
@@ -1680,3 +1679,41 @@ comparable to task 2's 73-frame Select-Project capture. To redo: install the tar
 re-login by hand, *then* run the verify/speed-profile compile-mode toggle above without reinstalling
 in between (reinstalling is what breaks the session), capturing `dumpsys gfxinfo`/Perfetto after each
 `cmd package compile` call.
+
+**Resolved (2026-08-12, same session):** redone properly on the `fdroidRelease` build, and it
+surfaces a bigger correction than the shrink/no-shrink question this entry originally asked. First
+attempt repeated the same mistake the note above describes fixing, in a new form: forcing
+`cmd package compile -m verify -f` before the "before" capture doesn't reproduce a plain `adb
+install`'s lazy runtime verification — it makes `dex2oat` verify every class **ahead of time** into
+the vdex, so the "before" capture already had nothing left to verify at runtime (2 `VerifyClass`
+slices, 0.1ms total, across the whole 10s trace). Redone a second time with the actual fix: uninstall,
+fresh `adb install` (confirmed `[status=verify] [reason=install]` via `dumpsys package`, never
+touching `cmd package compile` until after the "before" capture), re-login, then `force-stop`/`am
+start` for the real lazy-verification "before" state.
+
+That correctly-isolated "before" state **still** showed almost no `VerifyClass` cost (2 slices, 0.1ms
+across the capture) — matching the contaminated first attempt, not task 2's original debug-build
+finding (5+ named classes, tens-to-hundreds of μs each, inside one frame). The `-m speed-profile -f`
+"after" state was the same: 1 slice, 0.055ms. **The likely explanation is debug vs. release, not
+verify vs. speed-profile**: task 2's original evidence was captured on the fdroid **debug** build
+(`com.grappim.taigamobile.fdroid.debug`, no R8, no baseline profile eligible); this redo used the
+fdroid **release** build (`com.grappim.taigamobile.fdroid`, R8-minified — the variant
+`docs/perf/profiling-plan.md` task 3 actually targets, since only release variants get a baseline
+profile at all). R8 shrinking on release plausibly removes most of the unused/unreached class graph
+that cost `VerifyClass` time on the unshrunk debug build, independent of whether a profile is
+installed — so the original finding doesn't transfer to what ships, and there wasn't a meaningful
+`VerifyClass` cost on release left for the Baseline Profile to amortize in the first place.
+
+Worst-frame duration itself (the other candidate signal) was inconclusive on this pass: 292.7ms
+"before" vs. 333.1ms "after", i.e. slightly *worse* with the profile applied — but total rendered-frame
+count dropped (47 → 33) and the sum of all frame durations dropped slightly too (1572ms → 1438ms), so
+this doesn't read as a real regression, just single-run noise on the `swiftshader_indirect` software
+renderer already flagged as unreliable for absolute numbers (`docs/perf/profiling.md`'s Caveats
+section). Not repeated for a second sample — the `VerifyClass` result above is the conclusive part of
+this re-capture; the frame-duration number was always the secondary signal.
+
+No further action: the `VerifyClass`-shrinks-post-profile question this entry asked is answered (no,
+because there wasn't a `VerifyClass` cost on the release build to begin with), and a same-build,
+same-renderer A/B on frame duration alone isn't going to be conclusive without a real device or many
+more samples than a single-session recapture budget covers. Full commands and raw numbers in
+`docs/perf/profiling.md`'s Baseline Profile section.
