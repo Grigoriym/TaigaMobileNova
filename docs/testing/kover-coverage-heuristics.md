@@ -17,7 +17,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   was the claim that individual `excludes` entries silently no-op — `packages("a.b")` becomes the
   pattern `a.b.*` and Kover's `*` matches dots, so a listed package covers its subpackages and the
   `db.dao`/`db.wrapper` entries are merely redundant. Full write-up:
-  [docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md](docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md).
+  [docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md](../issues/2026-08-07-kover-excludes-and-report-mode-flip.md).
   Never set a bound from the Codecov dashboard.
 - **What varies between runs is the denominator, not the filtering.** Kover's report task ends its
   file collection in `.existing()` (`AbstractKoverReportTask.kt:85`) and the root aggregates each
@@ -28,7 +28,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   which is why it has never been wrong. Locally: take before and after from runs with the same
   compilation state, or simply re-run — the count is not sticky within a session, and one re-run is
   cheaper than reasoning about a mismatched pair. Every Android-variant class it adds is permanently
-  0 % under `jvmTest`; that half is [revisit #23](docs/revisit.md), still open.
+  0 % under `jvmTest`; that half is [revisit #23](../revisit.md), still open.
 - **To read `:koverVerify`'s own percentages, temporarily set both `minValue`s to 99** in the root
   `build.gradle.kts` and run it: it names each violated rule and prints the actual figure. There is no
   other way to get the number the gate is actually comparing against. `git checkout build.gradle.kts`
@@ -57,7 +57,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   as-is: re-run, and if it persists, note it on the issue doc's open question 1 (it has never been
   reproduced deliberately).
 - **`kover-rank.py` re-applies the excludes to whatever report you have** —
-  [docs/testing/kover-rank.py](docs/testing/kover-rank.py). It filters by the same suffix/package
+  [docs/testing/kover-rank.py](kover-rank.py). It filters by the same suffix/package
   rules as the root `build.gradle.kts`, prints the kept class count and the filtered totals, and ranks
   packages by missed branches, so a report carrying stray Android-variant classes still gives a usable
   ranking. Its package matching was equality-based until 2026-08-07 and therefore kept
@@ -68,7 +68,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   measurement.** The package you care about usually has an *identical* denominator in both, which
   makes a before/after table valid anyway — this is how the `feature/projects/data` and
   `feature/kanban/ui` tables in
-  [the archived task 9a write-up](docs/archive/testing-improvement-plan-tasks-0-9f.md) survived
+  [the archived task 9a write-up](../archive/testing-improvement-plan-tasks-0-9f.md) survived
   742-vs-854 and 744-vs-854 pairs. To confirm a delta is caused by the change rather than by build
   staleness, `git stash -u` and re-run: a clean-tree re-run that reproduces the baseline to the digit
   settles it.
@@ -81,7 +81,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   provably so, and simultaneously catches side effects in packages you would never have thought to
   look at (the `feature/userstories/ui` session moved two `feature/workitem/ui` rows). It costs one
   command and subsumes the per-package check above. **Use
-  [docs/testing/kover-diff.py](docs/testing/kover-diff.py)** (`python3 docs/testing/kover-diff.py
+  [docs/testing/kover-diff.py](kover-diff.py)** (`python3 docs/testing/kover-diff.py
   before.xml after.xml`) rather than retyping this snippet — added 2026-08-06 after writing it out
   ad hoc often enough that it was worth saving next to `kover-rank.py`.
   **It is also what rescues a *straddled* pair, so run it before discarding one.** In
@@ -116,7 +116,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   ranking a package by its missed branches, and before reading a flat delta as "the tests did
   nothing." `**.*Plugin` used to be on that list and dropped all five of `core/api`'s Ktor plugins
   (~98 lines and 38 branches of real auth and error-mapping logic) purely because their names ended
-  in "Plugin" — removed 2026-08-08, see [revisit #10](docs/revisit.md), since a repo-wide grep found
+  in "Plugin" — removed 2026-08-08, see [revisit #10](../revisit.md), since a repo-wide grep found
   no other class the pattern was meant to catch. `**.*Module` stayed: every class it matches is a
   real Koin `@Module`.
   The suffix match is exact, so the reverse also holds: `**.*Repository` does **not** match
@@ -132,7 +132,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   **An excluded class is absent from the report entirely — not listed at 0 % — so a class that is
   both excluded *and* dead is invisible to every coverage-driven ranking.** `SprintPagingSource`
   (`**.*PagingSource`) has zero references repo-wide and no report row of any kind; nothing in a
-  missed-branch sweep could ever have surfaced it ([revisit #21](docs/revisit.md)). When a sweep
+  missed-branch sweep could ever have surfaced it ([revisit #21](../revisit.md)). When a sweep
   closes a package, `ls` its source directory against the class names in the report before calling
   the package done — the difference is the excluded set, and it is worth a look.
 - **A `*_androidKt` / `*_iosKt` class in the report is dead weight, and it can dominate a sweep row.**
@@ -143,7 +143,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   BRANCH / 10/10 LINE (covered incidentally by `core/api`'s `NetworkErrorMapper` tests). The logic is
   not untested; it is counted twice and only one copy is executable. **Diff the actuals before
   scoping any `expect`/`actual` package** — a `*_androidKt` row is a reason to close the row, not to
-  write tests. **Since [revisit #23](docs/revisit.md) (2026-08-08), `*_androidKt` classes are excluded
+  write tests. **Since [revisit #23](../revisit.md) (2026-08-08), `*_androidKt` classes are excluded
   from the report entirely** (`**.*_androidKt` in the root `excludes` block) — this heuristic is kept
   for how the finding was made, but a future sweep won't see these rows at all.
 - **Much of the branch denominator is unreachable**, in two distinct ways, and a package's
@@ -182,7 +182,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   1-line hole in an otherwise 100 % method.** Stop there rather than hunting for the test that would
   reach it. Also unreachable in the same way: the default value of a state class's callback parameter
   (`onSaveClick: (String, Color) -> Unit = { _, _ -> }`), which the ViewModel always overrides.
-  [revisit #16](docs/revisit.md) has the fix if it is ever judged worth the ~96 lines.
+  [revisit #16](../revisit.md) has the fix if it is ever judged worth the ~96 lines.
   **This is not a ceiling on LINE, though** — whether the lambda becomes its own synthetic method
   varies. `EditSprintViewModel`'s `logcat` inside a `viewModelScope.launch` was split out at 0/1, and
   `ModulesViewModel`'s two were folded into the covered `invokeSuspend`, taking that package to LINE
@@ -214,7 +214,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   row is generated `equals`/`hashCode`, a `@Serializable` serializer, `@Composable`-blocked, or dead
   `*_androidKt` weight. Rank what is left by **missed lines on never-executed classes** instead; the
   query and the resulting backlog are in the archived task 9a write-up,
-  [improvement-plan-tasks-0-9f.md](docs/archive/testing-improvement-plan-tasks-0-9f.md#where-9a-stands-2026-08-05).
+  [improvement-plan-tasks-0-9f.md](../archive/testing-improvement-plan-tasks-0-9f.md#where-9a-stands-2026-08-05).
   Don't re-derive the exhausted ranking — that table names what each misleading row actually is.
 - **Get the per-class breakdown before scoping a session around a package**, and the per-**method**
   one before concluding a leftover is real — Kover's XML carries `<counter>` elements on
@@ -223,14 +223,14 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   That is how `WorkItemCustomFieldsDelegateImpl`'s residual 2/30 was pinned to the `?.` null-checks in
   `valueToUse?.toString()?.toLongOrNull()`, unreachable because `NumberItemState`'s values are
   non-null. The worked snippet is in the archive,
-  [improvement-plan-tasks-0-9f.md](docs/archive/testing-improvement-plan-tasks-0-9f.md), under
+  [improvement-plan-tasks-0-9f.md](../archive/testing-improvement-plan-tasks-0-9f.md), under
   `…delegates/customfields`.
 - **When the per-method breakdown is still too coarse, go to the `<sourcefile>` element** — its
   `<line>` children carry `nr`, `mb` (missed branches) and `cb` (covered), which names the *source
   line*. A whole coroutine body is one `invokeSuspend` method, so "`invokeSuspend` 10/12" is as much
   as the per-method view can say; the per-line view says "line 59 `mb=1 cb=3`" and the question is
   answered without reading Kotlin. The snippet is in the archive,
-  [improvement-plan-tasks-0-9f.md](docs/archive/testing-improvement-plan-tasks-0-9f.md), under
+  [improvement-plan-tasks-0-9f.md](../archive/testing-improvement-plan-tasks-0-9f.md), under
   `…settings/ui/modules`.
   **Run it at scoping time, not only to explain a leftover.** Dumping every `mb>0` line for the
   target class *before writing any test* turns a large ViewModel from an exploration into a

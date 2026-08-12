@@ -51,7 +51,7 @@ and stop.
 # Generate coverage report (Kover — runs jvmTest on all aggregated modules)
 ./gradlew koverXmlReport    # XML → build/reports/kover/report.xml (uploaded to Codecov)
 ./gradlew koverHtmlReport   # HTML → build/reports/kover/html/index.html
-./gradlew :koverVerify      # coverage floor (line ≥ 92 %, branch ≥ 77 %) — must be qualified
+./gradlew :koverVerify      # coverage floor (line ≥ 92 %, branch ≥ 78 %) — must be qualified
 
 # Force Koin compiler to re-run (skipped on UP-TO-DATE, which causes "no definition found" crashes)
 # Run this before launching from Xcode whenever DI definitions may have changed
@@ -77,7 +77,7 @@ and stop.
 
 **Tech Stack:**
 
-- Kotlin 2.3.x, JDK 21
+- Kotlin 2.4.x, JDK 21
 - Compose Multiplatform with Material Design 3
 - Koin (with `io.insert-koin.compiler.plugin` IR/FIR plugin) for DI
 - Ktor for networking (OkHttp on Android/JVM, Darwin on iOS)
@@ -248,7 +248,7 @@ would have been silently skipped forever. Two consequences:
   in CI would execute one.
 
 **The coverage floor is a ratchet: raise it, never lower it.** `:koverVerify` enforces line ≥ 92 %
-and branch ≥ 77 % (root `build.gradle.kts`, `total { verify { } }`). A PR that breaches it needs
+and branch ≥ 78 % (root `build.gradle.kts`, `total { verify { } }`). A PR that breaches it needs
 tests, not a smaller bound. For the missed-branch/missed-line ranking heuristics, the
 `koverXmlReport`-vs-`koverVerify` traps, and the `kover-rank.py`/`kover-diff.py` usage notes — read
 when running a coverage sweep — see

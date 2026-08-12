@@ -30,6 +30,25 @@ Gradle, AGP, packaging, release.
 | [release.md](build/release.md) | The release workflow, start to finish |
 | [fdroid-reproducibility.md](build/fdroid-reproducibility.md) | F-Droid build/reproducibility failure and its cause |
 
+## compose/
+
+Compose Compiler stability reports — how to run the audit and what it found.
+
+| Doc | About |
+|-----|-------|
+| [stability-reports.md](compose/stability-reports.md) | How to run a stability audit and read its output |
+| [stability-reports-plan.md](compose/stability-reports-plan.md) | Background and the Gradle wiring decisions behind the audit |
+
+## desktop/
+
+Desktop (Linux) release readiness: survey, plan, deferred items.
+
+| Doc | About |
+|-----|-------|
+| [survey.md](desktop/survey.md) | What exists today for the desktop build |
+| [linux-release-plan.md](desktop/linux-release-plan.md) | Implementation plan for a Linux release |
+| [deferred.md](desktop/deferred.md) | Items surveyed but not actioned |
+
 ## koin/
 
 DI wiring. For everyday Koin questions use the **koin-expert** agent first — these are the long-form
@@ -61,6 +80,26 @@ Plans and research for features in flight. One folder per feature.
 | [private-cert-trust](features/private-cert-trust/) | TOFU cert pinning — research, phased plan, QA server setup |
 | [settings-project](features/settings-project/) | Project-settings screens implementation plan |
 
+## perf/
+
+Android performance profiling and the Baseline Profile plan.
+
+| Doc | About |
+|-----|-------|
+| [profiling.md](perf/profiling.md) | Frame-timing technique (`dumpsys gfxinfo`, Perfetto) and the Baseline Profile generator |
+| [profiling-plan.md](perf/profiling-plan.md) | Implementation plan; closed, kept as historical record |
+
+## security/
+
+MASVS v2 compliance register and reference crypto-architecture studies of other apps.
+
+| Doc | About |
+|-----|-------|
+| [masvs.md](security/masvs.md) | The living MASVS v2 register — accepted deviations, open findings; current source of truth |
+| [masvs-review-plan.md](security/masvs-review-plan.md) | Implementation plan; closed, kept as historical record |
+| [Aegis - SECURITY_CRYPTO_STUDY.md](security/Aegis%20-%20SECURITY_CRYPTO_STUDY.md) | Reference study of Aegis' envelope-encryption / LUKS-style key slots |
+| [KeePassDX - CRYPTO_ARCHITECTURE.md](security/KeePassDX%20-%20CRYPTO_ARCHITECTURE.md) | Reference study of KeePassDX's module topology and key hierarchy |
+
 ## testing/
 
 State of the test suite and the plan for improving it.
@@ -70,6 +109,9 @@ State of the test suite and the plan for improving it.
 | [survey.md](testing/survey.md) | What the suite contains today — types, layout, tooling, coverage, gaps |
 | [improvement-plan.md](testing/improvement-plan.md) | Sequenced tasks to improve it, one per session — active tasks only; tasks 0–9f and 10–11 are archived (see below) |
 | [compose-ui-test-spike.md](testing/compose-ui-test-spike.md) | How-to for wiring `runComposeUiTest` into a KMP module — read before writing the next Compose UI test |
+| [integration-tests-plan.md](testing/integration-tests-plan.md) | Live-Taiga integration test plan |
+| [kover-coverage-heuristics.md](testing/kover-coverage-heuristics.md) | Missed-branch/line ranking heuristics for a coverage sweep |
+| [deferred.md](testing/deferred.md) | Ideas surveyed but not actioned |
 
 ## issues/
 
@@ -82,3 +124,7 @@ Finished plans kept for their reasoning. Not current.
 ## local-info.md
 
 Connection details for the local self-hosted Taiga instance used for manual testing.
+
+## EMULATOR_TESTING.md
+
+Device facts and app-specific gotchas for driving the Android emulator via adb. See the `emulator-testing` skill.

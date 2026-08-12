@@ -11,7 +11,7 @@ task input, so a task that's already `UP-TO-DATE` from a prior build will not re
 pass `--rerun-tasks` (or delete the module's `build/compose_reports/` first) to force it.
 
 Only the `jvm`-target compile task per Compose UI module, never a task that also builds
-Android/iOS — see [stability-reports-plan.md](stability-reports-plan.md#researched-facts) for why
+Android/iOS — see [stability-reports-plan.md](stability-reports-plan.md#researched-facts-so-task-1-doesnt-have-to-re-derive-them) for why
 `targetKotlinPlatforms` can't be used to restrict this instead (it disables Compose's bytecode
 transformation entirely, not just report scope).
 
