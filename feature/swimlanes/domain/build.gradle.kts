@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.taigamobile.kmp.library)
+    alias(libs.plugins.taigamobile.kmp.library.stability)
 }
 
 kotlin {

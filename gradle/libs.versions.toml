@@ -258,4 +258,5 @@ taigamobile-kmp-di = { id = "taigamobile.kmp.di" }
 taigamobile-kmp-network = { id = "taigamobile.kmp.network" }
 taigamobile-kmp-library = { id = "taigamobile.kmp.library" }
 taigamobile-kmp-library-compose = { id = "taigamobile.kmp.library.compose" }
+taigamobile-kmp-library-stability = { id = "taigamobile.kmp.library.stability" }
 taigamobile-android-application = { id = "taigamobile.android.application" }

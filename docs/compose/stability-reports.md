@@ -92,30 +92,59 @@ year). It prints two sections:
   one line per parameter: `module | fun FQN | param: Type`. Triage from this section first per the
   note above.
 
-## What the first repo-wide audit (2026-08-12) found
+## Domain modules need `taigamobile.kmp.library.stability` too
 
-Zero plain-`List<T>` fields in state classes — the `ImmutableList`/`persistentListOf()` convention
-(CLAUDE.md's Compose/Platform Rules) is followed correctly everywhere. One real violation the flat
-grep for `: List<` missed because it was a *nested* type argument, not a top-level field:
-`SprintState.storiesWithTasks` was declared `ImmutableMap<WorkItem, List<WorkItem>>` (plain `List`
-nested inside the map value) despite the domain-layer `SprintData` it's populated from already being
-fully `ImmutableList`-typed — fixed by widening the declared type to
-`ImmutableMap<WorkItem, ImmutableList<WorkItem>>`.
+A `*/domain` module that defines a type consumed as a Composable parameter anywhere in the app must
+also apply `alias(libs.plugins.taigamobile.kmp.library.stability)` alongside its usual
+`taigamobile.kmp.library`. Without it, the Compose compiler in every downstream UI module has no
+stability marker to trust for that type and defaults it to `Unstable`, no matter how simple the class
+actually is — see [docs/revisit.md #39](../revisit.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin)
+for the mechanism and the fix chosen (a convention plugin applying only the Compose Kotlin compiler
+subplugin + a `compileOnly compose-runtime` dependency — no UI toolkit reaches the domain layer).
 
-The great majority of the 121 unstable-class / 60 unstable-parameter findings are **not** independent
-bugs — they trace back to one systemic cause: domain model classes (`WorkItem`, `User`, `Project`,
-`Sprint`, `FiltersData`, and more) are defined in `*/domain` modules that don't apply the Compose
-compiler plugin, so the plugin never embeds a stability marker for them, and every downstream Compose
-module treats them as unstable by default regardless of how simple they actually are (`WorkItem` is
-a fully `val`, fully `ImmutableList`-using data class and still reads unstable). Full writeup, the
-mechanism, and the fix options considered: [docs/revisit.md #39](../revisit.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin).
+Modules that already have it: `core/domain`, `feature/epics/domain`, `feature/filters/domain`,
+`feature/kanban/domain`, `feature/projects/domain`, `feature/sprint/domain`,
+`feature/swimlanes/domain`, `feature/tasks/domain`, `feature/userstories/domain`,
+`feature/users/domain`, `feature/workitem/domain`.
 
-A handful of findings are expected and not actionable without a `stabilityConfigurationFiles` policy
-decision: `NavController`/`NavHostController` and `LazyPagingItems<T>` (third-party types, no marker
-regardless of our code) and `Any`-typed parameters (`columnId`/`itemKey` in `uikit`'s drag-and-drop —
-inherently unstable by design). `kotlinx.datetime.LocalDate`/`LocalDateTime` hit the same "foreign,
-unmarked" default as the domain-model issue above, but for a third-party library instead of our own
-code — same fix shape (`stabilityConfigurationFiles`), not applied here for the same reason: one
-data point isn't enough to justify a standing config file yet.
+**When adding a new domain module (or a new type to an existing one) that a Composable will take as a
+parameter**, add the plugin up front rather than waiting for an audit to catch it — re-running the
+scan (below) after the fact is how the gap gets *found*, but there's no need to wait for that when the
+module is new and the need is already known.
+
+## What the audits found
+
+**First audit (2026-08-12, task 2):** zero plain-`List<T>` fields in state classes — the
+`ImmutableList`/`persistentListOf()` convention (CLAUDE.md's Compose/Platform Rules) is followed
+correctly everywhere. One real violation the flat grep for `: List<` missed because it was a *nested*
+type argument, not a top-level field: `SprintState.storiesWithTasks` was declared
+`ImmutableMap<WorkItem, List<WorkItem>>` (plain `List` nested inside the map value) despite the
+domain-layer `SprintData` it's populated from already being fully `ImmutableList`-typed — fixed by
+widening the declared type to `ImmutableMap<WorkItem, ImmutableList<WorkItem>>`.
+
+The great majority of that audit's 121 unstable-class / 60 unstable-parameter findings were **not**
+independent bugs — they traced back to one systemic cause: domain model classes (`WorkItem`, `User`,
+`Project`, `Sprint`, `FiltersData`, and more) were defined in `*/domain` modules that didn't apply the
+Compose compiler plugin, so no stability marker got embedded for them, and every downstream Compose
+module treated them as unstable by default regardless of how simple they actually were (`WorkItem` was
+a fully `val`, fully `ImmutableList`-using data class and still read unstable).
+
+**Fix (2026-08-12, task 3):** applied `taigamobile.kmp.library.stability` (see above) to the 11 domain
+modules whose types are used as Composable parameters. Re-running the audit afterward:
+unstable-composable-parameter findings dropped from 60 to 11, and all 11 remaining are exactly the
+"expected, not actionable" buckets described below — zero remaining findings trace to a domain model
+type. Unpredicted bonus: `LazyPagingItems<WorkItem>` findings (Paging Compose, itself `@Stable`)
+disappeared too — the compiler had apparently been propagating `WorkItem`'s instability into that
+generic wrapper the same way it does for `ImmutableList<WorkItem>`. Full writeup:
+[docs/revisit.md #39](../revisit.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin).
+
+**Expected, not actionable without a `stabilityConfigurationFiles` policy decision** (still true after
+the fix above — these are independent mechanisms): `NavController`/`NavHostController` (third-party
+type, no marker regardless of our code) and `Any`-typed parameters (`columnId`/`itemKey` in `uikit`'s
+drag-and-drop — inherently unstable by design, narrowing the type is the only fix and weakens the
+API). `kotlinx.datetime.LocalDate`/`LocalDateTime` hit the same "foreign, unmarked" default as the
+domain-model issue did, but for a third-party library instead of our own code — same
+`stabilityConfigurationFiles` fix shape as a domain type would need, not applied because one data
+point isn't enough to justify a standing config file yet.
 
 CLAUDE.md's Compose/Platform Rules links here next to the `ImmutableList` convention bullet.

@@ -23,6 +23,7 @@ cost to a normal build, the same way `-PgplayBuild` gates Firebase.
 |---|------|------|--------|
 | 1 | Gradle wiring: opt-in stability reports | S | Done (2026-08-11) |
 | 2 | Aggregator script + first repo-wide audit + doc | M | Done (2026-08-12) |
+| 3 | Fix domain-model stability gap (`docs/revisit.md` #39) | M | Done (2026-08-12) |
 
 ## Researched facts (so task 1 doesn't have to re-derive them)
 
@@ -241,11 +242,98 @@ one-line CLAUDE.md pointer next to the `ImmutableList` convention bullet.
 since the only production edit was a type-parameter widening on an existing line, no formatting
 change.
 
+**Next: task 3** — Fix the domain-model stability gap (`docs/revisit.md` #39). Done, see below.
+
+## Task 3 — Fix domain-model stability gap (`docs/revisit.md` #39)
+
+**Size:** M
+
+**What:** four options were laid out for the dominant task 2 finding (domain model classes reading as
+Compose-unstable everywhere because their `*/domain` modules never apply the Compose compiler plugin):
+apply the full `taigamobile.kmp.library.compose` convention to domain modules (rejected — drags
+Foundation/Material3/Navigation into a layer with zero `@Composable`s), a `stabilityConfigurationFiles`
+trust-list (rejected — blind trust, no compiler verification if a class later gains a mutable field),
+expanding the existing-but-inconsistent `*UI` model + mapper pattern to fully insulate every composable
+from domain types (rejected for this task — architecturally the cleanest long-term answer, but a
+multi-session refactor touching composable signatures across ~15 features, not this task's size), and a
+new minimal convention plugin applying only the Compose Kotlin compiler subplugin (chosen). User picked
+the minimal-convention option directly.
+
+1. New convention plugin `taigamobile.kmp.library.stability`
+   (`build-logic/convention/src/main/kotlin/KmpLibraryStabilityConventionPlugin.kt`), applying:
+   - `org.jetbrains.kotlin.plugin.compose` (the compiler subplugin only — **not**
+     `org.jetbrains.compose`, which is what pulls in the UI toolkit).
+   - A `compileOnly` dependency on `compose-runtime`
+     (`ComposeStabilityMarker.kt`'s `configureComposeStabilityMarker()`) — needed only so the compiler
+     can reference the `@StabilityInferred` annotation type at compile time; consuming UI modules
+     already carry `compose-runtime` themselves, so nothing needs it at runtime from here.
+   - Also calls the existing `configureComposeStabilityReports()`, so these modules produce their own
+     opt-in reports too, for direct verification (`WorkItem`'s own `-classes.txt` now says `stable`,
+     not just downstream consumers looking less unstable).
+2. Registered in `gradle/libs.versions.toml` (`taigamobile-kmp-library-stability`) and
+   `build-logic/convention/build.gradle.kts` (`kmpLibraryStability` → `KmpLibraryStabilityConventionPlugin`),
+   following the exact pattern of `kmpLibraryCompose`.
+3. Applied `alias(libs.plugins.taigamobile.kmp.library.stability)` alongside the existing
+   `alias(libs.plugins.taigamobile.kmp.library)` in every `*/domain` module whose types are consumed as
+   Composable parameters.
+
+**Done when:**
+```bash
+./gradlew :build-logic:convention:compileKotlin
+./gradlew :feature:workitem:domain:compileKotlinJvm :feature:workitem:domain:compileKotlinIosArm64 \
+  :feature:workitem:domain:compileAndroidMain   # and the same three tasks for every other affected domain module
+# re-run the task 2 audit (docs/compose/stability-reports.md#running-the-audit) and confirm the
+# unstable-composable-parameter count drops to just the independently-unstable buckets
+./gradlew jvmTest && ./gradlew ktlintCheck
+```
+
+**Result:** Started from the 10 modules derived by tracing field types by hand from the task 2 scan
+output (`WorkItem`, `User`, `TeamMember`, `Project`, `ProjectValueItem`, `Sprint`, `FiltersData`,
+`PendingCertTrust`, `Swimlane`, `KanbanUserStory`, `Epic`, `UserStoryEpic`, and their transitive field
+types — `Status`, `Tag`, `Statuses`, `ProjectExtraInfo`, `UserStory`, `DueDateStatus` — all resolved
+back to the same 10 modules): `core/domain`, `feature/epics/domain`, `feature/filters/domain`,
+`feature/kanban/domain`, `feature/projects/domain`, `feature/sprint/domain`, `feature/swimlanes/domain`,
+`feature/userstories/domain`, `feature/users/domain`, `feature/workitem/domain`. All 10 compiled clean
+on `jvm`, `iosArm64`, and `androidMain` after adding the plugin.
+
+**The hand-traced list was incomplete — the empirical re-scan caught it, hand-tracing wouldn't have.**
+Re-running the task 2 audit showed `feature/tasks/ui`'s `TaskDetailsState.currentTask`/`originalTask`
+(type `Task`, from `feature/tasks/domain`) still unstable. `feature/tasks/domain` was missed because
+the original derivation started from the *composables.txt "unstable parameter"* list and the *classes.txt*
+entries checked by hand, not systematically from the full 121-line classes.txt output — `Task` only
+ever showed up as a `TaskDetailsState` field, a class-list entry, which wasn't part of the trace.
+Added `feature/tasks/domain` as an 11th module, verified it compiles on all three targets, and
+re-ran the audit again: the gap fully closed on this pass. **Lesson for next time something similar
+comes up: derive the module list from a fresh full re-scan after the "obvious" set is fixed, not from
+extending the original hand-trace** — the empirical loop (fix → re-scan → check for stragglers) is
+cheap and caught what static tracing missed.
+
+Final re-scan: unstable-composable-parameter findings dropped from 60 (task 2 baseline) to 11, and
+all 11 remaining are exactly the three buckets already flagged as independently out of scope —
+`NavController`/`NavHostController` (3), `kotlinx.datetime` `LocalDate`/`LocalDateTime` (5),
+`Any`-typed parameters (3). Zero remaining findings trace to a domain model type. Unpredicted bonus:
+`LazyPagingItems<WorkItem>` findings (Paging Compose, itself `@Stable`) disappeared entirely — the
+compiler had apparently been propagating `WorkItem`'s instability into that generic wrapper the same
+way it does for `ImmutableList<WorkItem>`, so fixing `WorkItem` fixed both.
+
+`./gradlew jvmTest` and `ktlintCheck` green across the whole repo. `docs/revisit.md` #39 updated with
+a Resolved note carrying this same evidence.
+
+**Finalize focus:** none — this task's own Result note is the full record; nothing here depends on a
+future session re-deriving anything.
+
+**Queue is empty.** No task 4 scoped. The remaining "expected, not actionable without a policy call"
+findings (`NavController`, `LazyPagingItems`, `Any`-typed params, `kotlinx.datetime`) are documented in
+`docs/compose/stability-reports.md` and not tracked as open work — revisit only if a future audit finds
+a second `kotlinx.datetime`-shaped case elsewhere, per the plan's original "add
+`stabilityConfigurationFiles` only in response to a concrete finding" reasoning.
+
 ## Considered and deferred
 
 | Idea | Why deferred |
 |------|--------------|
 | Always-on reports (no `-P` gate) | Pure I/O/build-time cost for a diagnostic that's useful a few times a year, not every build — same reasoning as `-PgplayBuild` being opt-in. |
 | CI gate failing the build on new unstable classes | No baseline yet. Revisit only if task 2's audit turns up a real, recurring problem worth enforcing — premature before a single data point exists. |
-| `stabilityConfigurationFiles` (mark external types stable) | Nothing has shown a false positive needing suppression. Add only in response to a concrete finding, not preemptively. |
+| `stabilityConfigurationFiles` (mark external types stable) | Task 2's audit *did* turn up a concrete finding (every domain model), but task 3 chose the compiler-marker convention plugin over a trust-list — see task 3's write-up for why. Still not applied for the separate `kotlinx.datetime` case: one data point (`LocalDate`/`LocalDateTime`) isn't enough to justify a standing config file yet. |
 | `@NonSkippableComposable` sweep for "skipping isn't free" cases | The article's own edge case, and needs profiling evidence (a lightweight composable eating cycles on `.equals()` over a huge stable graph) to be worth anything — no such evidence exists here. |
+| Expand the `*UI` model + mapper pattern to every feature | Architecturally the cleanest long-term fix for the domain-model gap task 3 addressed — a UI model can never leak an unmapped domain type. Rejected for task 3's size: touches composable signatures and adds mapper code across ~15 features, a multi-session refactor, not a build-config change. Revisit only as its own deliberately-scoped project. |

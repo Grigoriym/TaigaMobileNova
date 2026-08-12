@@ -27,7 +27,6 @@ its own section, kept for the reasoning rather than the outcome):
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 35 | No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot | XS | this file, #35 |
 | 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
-| 39 | Domain-model classes read as Compose-unstable across every feature, because `*/domain` modules don't apply the Compose compiler plugin | M | this file, #39 |
 
 <details>
 <summary><strong>Full index (all 39 entries, resolved included)</strong> — this file is long because
@@ -75,7 +74,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
 | 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
-| 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | 🟡 open |
+| 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
 
 </details>
 
@@ -1604,3 +1603,37 @@ plan explicitly flagged as "add only in response to a concrete finding, not pree
 Compose Compiler for pure-Kotlin domain modules with zero `@Composable` functions is worth the build-time
 cost) is a judgment call for a dedicated task, not something to decide inline while triaging a scan's
 output.
+
+**Resolved (2026-08-12):** went with a narrower version of option (a) —
+[docs/compose/stability-reports-plan.md](compose/stability-reports-plan.md) task 3. A new convention
+plugin, `taigamobile.kmp.library.stability`
+(`build-logic/convention/src/main/kotlin/KmpLibraryStabilityConventionPlugin.kt`), applies only
+`org.jetbrains.kotlin.plugin.compose` (the compiler subplugin, not `org.jetbrains.compose`) plus a
+`compileOnly` `compose-runtime` dependency
+(`ComposeStabilityMarker.kt`'s `configureComposeStabilityMarker()`) — no Foundation/Material3/
+Navigation/ViewModel-Compose reaches the domain layer. Applied alongside `taigamobile.kmp.library` on
+the 11 `*/domain` modules whose types are consumed as Composable parameters: `core/domain`,
+`feature/epics/domain`, `feature/filters/domain`, `feature/kanban/domain`, `feature/projects/domain`,
+`feature/sprint/domain`, `feature/swimlanes/domain`, `feature/tasks/domain`,
+`feature/userstories/domain`, `feature/users/domain`, `feature/workitem/domain` (the list grew from
+the 10 first derived by tracing field types by hand to 11 after the empirical re-scan caught
+`feature/tasks/domain`'s `Task` still unstable — see the task's Result note for why the static trace
+missed it).
+
+Re-running the task 2 audit after the fix: unstable-composable-parameter findings dropped from 60 to
+11, and the 11 remaining are now **entirely** the three independently-unstable buckets already
+identified as out of scope (`NavController`/`NavHostController`, `kotlinx.datetime`
+`LocalDate`/`LocalDateTime`, `Any`-typed params) — zero remaining findings trace to a domain model
+type. `WorkItem`, `User`, `Project`, `Sprint`, `Epic`, `TeamMember`, `Attachment`, `Comment`,
+`FiltersData`, `Swimlane`, `KanbanUserStory`, `UserStoryEpic`, `PromotedUserStoryInfo`,
+`ProjectValueItem`, `PendingCertTrust`, `Task` — all clear now, except for the one or two of them that
+independently carry a `kotlinx.datetime` field (e.g. `WorkItem.createdDate`), which is the separate,
+still-open third-party-library mechanism this entry always distinguished from the domain-module one.
+A bonus, unpredicted effect: `LazyPagingItems<WorkItem>` findings (Paging Compose, itself `@Stable`)
+disappeared entirely once `WorkItem`'s own stability propagated through the generic — apparently the
+compiler had been propagating `WorkItem`'s instability into the wrapper the same way it does for
+`ImmutableList<WorkItem>`.
+
+`./gradlew jvmTest` and `ktlintCheck` green across the whole repo; all 11 affected domain modules
+verified to compile clean on `jvm`, `androidMain`, and `iosArm64` targets (not just `jvm`, since the
+new `compileOnly` dependency applies to every target these modules build for).
