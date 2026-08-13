@@ -1,10 +1,12 @@
 package com.grappim.taigamobile.feature.login.ui
 
+import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
@@ -12,6 +14,11 @@ import androidx.compose.ui.window.DialogProperties
 
 @Composable
 actual fun GithubOAuthWebViewDialog(url: String, onCodeReceive: (String) -> Unit, onDismiss: () -> Unit) {
+    DisposableEffect(Unit) {
+        onDispose {
+            CookieManager.getInstance().removeAllCookies(null)
+        }
+    }
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false)
