@@ -192,6 +192,20 @@ client in this space — are outside what MASVS covers. Formal decision, task 7 
   `Crashlytics.isCrashlyticsCollectionEnabled` for real, not just a UI toggle with no backing effect.
   Recorded as an Accepted deviation, not a finding — default-on-but-disclosed-and-revocable is a
   documented bound, not silence.
+  **2026-08-13:** the "credentials/tokens/project content excluded" disclosure had a real gap, now
+  fixed. `CrashlyticsTree` (`androidApp/.../CrashlyticsTree.kt:7-13`) forwards any
+  `logcat(priority = ERROR, throwable = ...)` call straight to `Firebase.crashlytics.recordException()`,
+  and three `core/api` call sites passed a *raw*, unmapped exception on that path:
+  `ErrorMappingPlugin.kt` and `TokenRefreshPlugin.kt` (OkHttp/Ktor exceptions — `UnknownHostException`,
+  `ConnectException`, `SSLHandshakeException` — embed the target hostname in `.message`) and
+  `ErrorResponseParser.kt` (kotlinx.serialization's decode-failure exception embeds the raw JSON
+  input — the server's response body — confirmed by planting a marker string,
+  `ErrorResponseParserTest.kt`). Fixed with `Throwable.sanitizedForCrashReporting()`
+  (`core/api/.../ExceptionSanitization.kt`) at all three sites; the original exception is still used
+  unchanged for control flow (rethrow/mapping/logout). The two remaining `LogPriority.ERROR` +
+  throwable sites in the repo, `AndroidKeystoreTokenCipher.kt:48,51` (GCM tag-mismatch and
+  Base64-decode failures), were checked with a probe test against the real JDK exception types rather
+  than assumed safe — confirmed neither leaks the plaintext token. PR #354.
 - **MASVS-PRIVACY-1/2 both confirmed, not assumed trivial.** Permissions: `INTERNET` and
   `ACCESS_NETWORK_STATE` are the only two declared, and both have a real call site (grep-confirmed, see
   Accepted table). Identification: grepped for advertising-ID/analytics-SDK/fingerprinting call sites
