@@ -29,7 +29,11 @@ TRIPWIRE_PATHS=(
 
 failed=0
 
-for sha in $(git rev-list --reverse "$RANGE"); do
+# --no-merges: on a pull_request run, actions/checkout defaults to the synthetic
+# refs/pull/N/merge commit, which carries the PR's whole diff under an auto-generated
+# message that can never carry a Gate-change: trailer. Skipping merges means only the
+# real, author-written commits — which can carry the trailer — are checked.
+for sha in $(git rev-list --reverse --no-merges "$RANGE"); do
   base="$(git rev-parse --verify --quiet "${sha}^" || echo "$EMPTY_TREE")"
   subject="$(git log -1 --format=%s "$sha")"
   reasons=()
