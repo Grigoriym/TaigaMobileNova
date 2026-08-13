@@ -318,6 +318,20 @@ from a previous run under different env vars. Confirmed the same trap for `-P` f
 reports at all until `--rerun-tasks` forced re-execution (see
 [docs/compose/stability-reports.md](docs/compose/stability-reports.md)).
 
+## CI Guardrails
+
+`.github/workflows/guardrails.yml` (+ `.github/scripts/check-guardrails.sh`) fails a commit that
+touches `.github/`, `build-logic/`, `config/detekt/`, `.editorconfig` or `gradle/libs.versions.toml`,
+or that adds a new `@Ignore`/`@Suppress`, unless the commit message carries a line:
+
+```
+Gate-change: what was widened, and why
+```
+
+This doesn't prevent widening a gate — it makes doing so silently impossible. It runs with no
+`paths-ignore`, unlike `build.yml`/`code_analysis.yml`, so a CLAUDE.md-only commit is still checked.
+Run it locally before committing: `.github/scripts/check-guardrails.sh HEAD~1..HEAD`.
+
 ## Skills & Agents
 
 `.claude/agents/` in this repo holds only the project-specific agents: **testing** and
