@@ -36,8 +36,10 @@ class ExpandableMarkdownTextTest {
         }
 
         // onSizeChanged's naturalHeight update lands on a later frame than the initial
-        // composition; a single waitForIdle() is not reliably enough to observe it.
-        waitUntil { onAllNodesWithText("Show more").fetchSemanticsNodes().isNotEmpty() }
+        // composition; a single waitForIdle() is not reliably enough to observe it. The default
+        // 1000ms wall-clock timeout is tight enough to flake under a full, multi-module jvmTest
+        // run on a loaded machine (docs/revisit.md #27), so it's widened here.
+        waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("Show more").fetchSemanticsNodes().isNotEmpty() }
 
         onNodeWithText("Show more").performClick()
 

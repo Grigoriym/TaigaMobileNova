@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.settings.ui.user
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.server.ServerStorage
@@ -20,7 +21,8 @@ class SettingsUserScreenViewModel(private val usersRepository: UsersRepository, 
 
     private val _state = MutableStateFlow(
         SettingsUserScreenState(
-            serverUrl = serverStorage.server
+            serverUrl = serverStorage.server,
+            isUnencryptedConnection = serverStorage.server.startsWith(ApiConstants.HTTP_SCHEME)
         )
     )
     val state = _state.asStateFlow()

@@ -17,13 +17,8 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
-| 31 | Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp` | XS | this file, #31 |
-| 32 | No warning when the configured server URL is `http://` despite the bearer token being sent over it | S | this file, #32 |
-| 33 | `TrustedCertificatesScreen` is reachable but permanently inert on iOS | S | this file, #33 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
-| 38 | `:build-logic:convention:build` fails on a pre-existing `validatePlugins` error, unrelated to any specific change | XS | this file, #38 |
 | 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
 
 <details>
@@ -60,18 +55,18 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 24 | [`KoinGraphTest`/live-Taiga integration tests collide on the JVM `DataStore` file](#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently) | ✅ resolved 2026-08-12 |
 | 25 | [`FiltersStorageImplTest.resetFilters clears every section` is flaky](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
-| 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
+| 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-13 |
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
 | 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | ✅ resolved 2026-08-12 |
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
-| 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | 🟡 open |
-| 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | 🟡 open |
-| 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | 🟡 open |
+| 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | ✅ resolved 2026-08-12 |
+| 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | ✅ resolved 2026-08-12 |
+| 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | ✅ resolved 2026-08-12 |
 | 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
 | 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | ✅ resolved 2026-08-10 |
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
-| 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | 🟡 open |
+| 38 | [`:build-logic:convention:build` fails on a pre-existing `validatePlugins` error](#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change) | ✅ resolved 2026-08-12 |
 | 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
 | 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | ✅ resolved 2026-08-12 |
 | 41 | [Dashboard scroll shows real, hardware-confirmed jank](#41-dashboard-scroll-shows-real-hardware-confirmed-jank-baseline-profile-covers-only-the-cold-startselect-project-journey) | ✅ resolved 2026-08-12 |
@@ -1126,6 +1121,13 @@ modules' tests concurrently can exceed even though the condition is eventually s
 verifying an unrelated change. If it recurs, the fix is likely a longer explicit timeout on that one
 `waitUntil` call, not a dispatcher change (there is no coroutine-test scope here to fix).
 
+**Resolved (2026-08-13):** applied exactly the fix sketched above — widened the flaky call from the
+implicit 1000ms default to `waitUntil(timeoutMillis = 5_000) { ... }`
+(`ExpandableMarkdownTextTest.kt:40`), with a comment pointing at this entry. No dispatcher/production
+change; this is a wall-clock timeout on a real-clock Skiko wait, not a coroutine race, so widening it
+is the correct fix rather than a band-aid. `:uikit:jvmTest --tests "*ExpandableMarkdownTextTest*"`,
+`:uikit:ktlintCheck` and the full `./gradlew jvmTest` all green.
+
 ## 28. `CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc
 
 **What:** `CLAUDE.md` is 717 lines (checked 2026-08-09). The `## Testing` section alone is lines
@@ -1279,6 +1281,10 @@ detection) — unrelated to that task's `core/storage` `jvmMain` scope, and dele
 (scans `com.grappim.taigamobile.data`) doesn't have some other reflective dependency on it existing —
 unlikely given zero references, but worth a `:androidApp:assembleGplayDebug` after removal to be sure.
 
+**Resolved (2026-08-12):** deleted the file. `grep -rln "ConnectivityManagerNetworkMonitor"` confirmed
+zero remaining references before removal. `./gradlew :androidApp:assembleGplayDebug -PgplayBuild`
+green, so `AndroidModule`'s `@ComponentScan` had no other dependency on it.
+
 ---
 
 ## 32. No warning when the configured server URL is `http://` despite the bearer token being sent over it
@@ -1316,6 +1322,24 @@ adding a warning dialog/snackbar to the server-setup flow is a small but distinc
 the `localhost` regex issue in #29), branch on `URLProtocol` and show a one-time warning when it's
 `http`. Small, self-contained.
 
+**Resolved (2026-08-12) — took a different fix than the one sketched above.** The suggested fix
+would have been a no-op: the server URL is only ever set in one place (`LoginViewModel`), which
+already has this exact one-time dialog, so there was nowhere else to add it. The actual gap is that
+the warning is a single blink-and-you-missed-it moment with no ongoing indicator for the rest of a
+long-lived session (including every silent background token refresh through `AuthHeaderPlugin`).
+Added a persistent indicator instead: `Settings → User` already renders the plain-text server URL
+(`SettingsUserScreen.kt`, sourced from `ServerStorage.server`), so it gained a small warning row
+(`Icons.Default.Warning` + `settings_unencrypted_connection_warning` string, both tinted
+`MaterialTheme.colorScheme.error`) shown whenever `serverUrl.startsWith(ApiConstants.HTTP_SCHEME)`.
+`SettingsUserScreenState` gained `isUnencryptedConnection: Boolean`, computed once in
+`SettingsUserScreenViewModel`'s constructor-time state (not async — it's derived from the same
+`ServerStorage.server` already read synchronously for `serverUrl`, unlike `canSeeAttributes` which
+needs a network round trip). Added two `SettingsUserScreenViewModelTest` cases (http → true, https →
+false) and a new `SettingsUserScreenTest` (Compose UI test, `feature/settings/ui/src/jvmTest/`)
+asserting the row's visibility via a `testTag` — the icon itself stays `contentDescription = null`
+since the adjacent text already carries the meaning for accessibility. Full `./gradlew jvmTest`,
+`ktlintCheck` and `:koverVerify` all green; `:androidApp:assembleGplayDebug -PgplayBuild` too.
+
 ---
 
 ## 33. `TrustedCertificatesScreen` is reachable but permanently inert on iOS
@@ -1350,6 +1374,25 @@ navigation until that lands (small).
 **Why deferred:** out of the MASVS review task's scope (recording the register, not shipping a
 platform port or a UI-visibility change); porting TLS trust handling to a new platform is exactly the
 kind of change that needs its own task, not a rider on a documentation review.
+
+**Resolved (2026-08-12) — took the small option, not the port.** Added
+`expect val supportsCertificateTrustManagement: Boolean` (`core/api/src/commonMain/.../CertificateTrustSupport.kt`),
+actual `true` on Android/JVM, `false` on iOS — mirrors exactly where `createPlatformHttpClientEngine`
+does or doesn't wire a `TrustedCertStorage`-backed trust manager. `SettingsState` gained
+`canSeeTrustedCertificates: Boolean = supportsCertificateTrustManagement` (defaulted from the platform
+capability directly, no async fetch needed since it isn't project-dependent, unlike `canSeeAttributes`).
+`SettingsScreen.kt`'s "Trusted Certificates" `ListItem` (`:187-201`) is now wrapped in
+`if (state.canSeeTrustedCertificates) { ... }`, same pattern as the existing `canSeeAttributes` gate.
+The nav destination itself (`SettingsNavGraph.kt`) was left registered — cheap to keep, and reaching
+it now requires a deep link or back-stack manipulation a normal user can't do from the UI. Added
+`SettingsScreenContentTest` (`feature/settings/ui/src/jvmTest/`) covering both visibility states via
+`onNodeWithContentDescription("Trusted Certificates Screen")`. Full `./gradlew jvmTest`, `ktlintCheck`
+(which also exercises `compileKotlinIosArm64`/`IosSimulatorArm64` for the new iOS actual) and
+`:koverVerify` all green; `:core:api:compileKotlinIosArm64`/`IosSimulatorArm64` and
+`:androidApp:compileFdroidDebugKotlin` checked directly too.
+
+The port itself (Keychain-backed TOFU flow wired into the Darwin engine) is still open — this only
+stops the UI from being reachable-but-inert.
 
 ---
 
@@ -1569,6 +1612,13 @@ for that task, which only touched `AndroidApplicationConventionPlugin.kt`,
 is a one-line `@DisableCachingByDefault(because = "...")` (or `@CacheableTask`) annotation on
 `RenameApkTask`, but choosing which one and the right `because` message deserves its own small task
 rather than riding along on an unrelated diff.
+
+**Resolved (2026-08-12):** annotated `RenameApkTask` with `@CacheableTask` — its inputs
+(`inputDir`, `baseName`) and output (`outputDir`) are already fully declared and the copy action is
+deterministic, so it's a genuine cache candidate rather than one that needed opting out.
+`./gradlew :build-logic:convention:build` now passes `validatePlugins` and completes green.
+Confirmed the rename still works: `androidApp/build/outputs/apk/gplay/debug/app-gplay-debug.apk` is
+present and correctly named after `:androidApp:assembleGplayDebug -PgplayBuild`.
 
 ## 39. Domain-model classes read as Compose-unstable across every feature, because `*/domain` modules don't apply the Compose compiler plugin
 
