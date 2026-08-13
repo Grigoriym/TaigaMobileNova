@@ -103,7 +103,7 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
                         logcat(
                             priority = LogPriority.ERROR,
                             tag = "TokenRefreshPlugin",
-                            throwable = e
+                            throwable = e.sanitizedForCrashReporting()
                         ) { "Token refresh failed" }
                         plugin.tokenRefresher.logout()
                         return@withLock response
