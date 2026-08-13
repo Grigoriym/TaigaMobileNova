@@ -17,7 +17,6 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 27 | `ExpandableMarkdownTextTest` is flaky under a full `jvmTest` run (Skiko real-clock `waitUntil`) | S | this file, #27 |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
 | 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
@@ -56,7 +55,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 24 | [`KoinGraphTest`/live-Taiga integration tests collide on the JVM `DataStore` file](#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently) | ✅ resolved 2026-08-12 |
 | 25 | [`FiltersStorageImplTest.resetFilters clears every section` is flaky](#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
 | 26 | [`WikiPageViewModelTest.onAttachmentAdd failure updates state with error` is flaky](#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-08 |
-| 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | 🟡 open |
+| 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-13 |
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
 | 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | ✅ resolved 2026-08-12 |
 | 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
@@ -1121,6 +1120,13 @@ modules' tests concurrently can exceed even though the condition is eventually s
 `./gradlew jvmTest --rerun` was green. Not investigated further, not fixed — noted in passing while
 verifying an unrelated change. If it recurs, the fix is likely a longer explicit timeout on that one
 `waitUntil` call, not a dispatcher change (there is no coroutine-test scope here to fix).
+
+**Resolved (2026-08-13):** applied exactly the fix sketched above — widened the flaky call from the
+implicit 1000ms default to `waitUntil(timeoutMillis = 5_000) { ... }`
+(`ExpandableMarkdownTextTest.kt:40`), with a comment pointing at this entry. No dispatcher/production
+change; this is a wall-clock timeout on a real-clock Skiko wait, not a coroutine race, so widening it
+is the correct fix rather than a band-aid. `:uikit:jvmTest --tests "*ExpandableMarkdownTextTest*"`,
+`:uikit:ktlintCheck` and the full `./gradlew jvmTest` all green.
 
 ## 28. `CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc
 
