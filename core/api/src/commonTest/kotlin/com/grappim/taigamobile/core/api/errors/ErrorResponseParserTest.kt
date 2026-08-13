@@ -5,7 +5,9 @@ import kotlinx.serialization.json.Json
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFails
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class ErrorResponseParserTest {
 
@@ -96,6 +98,17 @@ class ErrorResponseParserTest {
         val result = sut.parseErrorResponse(body, 500, null)
 
         assertNull(result)
+    }
+
+    @Test
+    fun `decoding a malformed error body echoes the raw body in the exception message`() {
+        // kotlinx.serialization embeds the raw input in JsonDecodingException — that's the server's response body.
+        val marker = "s3nsitive-marker-value"
+        val malformedBody = """{"_error_message":"$marker"""
+
+        val exception = assertFails { json.decodeFromString<TaigaErrorResponse>(malformedBody) }
+
+        assertTrue(exception.message.orEmpty().contains(marker))
     }
 
     @Test
