@@ -8,8 +8,8 @@ keep going. Do not fix it inline (it makes the diff unreviewable) and do not dro
 needs enough evidence that a cold session can pick it up without re-deriving anything — a `file:line`
 or a doc link, not just a description.
 
-**Current agreement (2026-08-02):** finish the [testing improvement plan](testing/improvement-plan.md)
-first, then work this list. Nothing here is urgent; nothing here is forgotten.
+The [testing improvement plan](testing/improvement-plan.md) that used to gate this list closed
+2026-08-08. This list is unblocked; nothing here is urgent, nothing here is forgotten.
 
 **Still open** (the table only lists these; every other entry below carries a **Resolved** note in
 its own section, kept for the reasoning rather than the outcome):
@@ -18,7 +18,6 @@ its own section, kept for the reasoning rather than the outcome):
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
-| 34 | GitHub OAuth WebView doesn't restrict navigation to GitHub's own host | M | this file, #34 |
 | 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
 
 <details>
@@ -62,7 +61,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | ✅ resolved 2026-08-12 |
 | 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | ✅ resolved 2026-08-12 |
 | 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | ✅ resolved 2026-08-12 |
-| 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | 🟡 open |
+| 34 | [GitHub OAuth WebView doesn't restrict navigation to GitHub's own host](#34-github-oauth-webview-doesnt-restrict-navigation-to-githubs-own-host) | ✅ resolved (partial) 2026-08-13 |
 | 35 | [No `FLAG_SECURE` — revealed login password can land in the recents-list screenshot](#35-no-flag_secure--revealed-login-password-can-land-in-the-recents-list-screenshot) | ✅ resolved 2026-08-10 |
 | 36 | [`LocalUriHandler.openUri()` calls on server/collaborator-supplied text have no scheme allowlist](#36-localurihandleropenuri-calls-on-servercollaborator-supplied-text-have-no-scheme-allowlist) | ✅ resolved 2026-08-10 |
 | 37 | [iOS logout doesn't clear the local Room cache](#37-ios-logout-doesnt-clear-the-local-room-cache) | ✅ resolved 2026-08-10 |
@@ -1444,6 +1443,24 @@ bare `github.com` host) risks silently breaking the OAuth login for some orgs if
 read alone, and this repo has no Android unit-test source set (CLAUDE.md, by design) to verify a
 `WebViewClient` change automatically — it would need manual device verification. Not a rider on a
 documentation review task.
+
+**Resolved (partial), 2026-08-13:** gregory's decision — take the cookie-clearing fix, leave the
+host-allowlist alone. Cookie-clearing was the unambiguous half of the gap (no SSO-breakage risk), so
+`GithubOAuthWebViewDialog.android.kt` now wraps a `DisposableEffect(Unit)` around the `Dialog` whose
+`onDispose` calls `CookieManager.getInstance().removeAllCookies(null)` — fires whenever the dialog
+leaves composition, i.e. on both the success path (code received) and explicit dismiss, since
+`LoginScreen.kt` conditionally composes the dialog off a nullable `githubWebViewUrl` state var.
+`removeAllCookies` (not a scoped per-domain clear) is safe here because this is the app's only
+`WebView` instance (`grep -rln "WebView(" --include=*.kt` across the repo returns exactly this one
+file), so there is no other WebView session it could disturb.
+
+**Host-allowlisting navigation is explicitly won't-fix, not merely still open** — same reasoning as
+above: GitHub org SSO/SAML can redirect off `github.com` to a third-party IdP, that chain isn't
+enumerable from source, and this repo can't verify a `WebViewClient` allowlist change against a real
+org SSO login. Revisit only if this app needs to support org-SSO GitHub logins in practice and a
+device is available to scope the allowlist correctly. `docs/security/masvs.md`'s MASVS-AUTH-1 /
+MASVS-PLATFORM-2 rows still list navigation-restriction as the outstanding half of that finding —
+update them in the same session as any future fix.
 
 ---
 
