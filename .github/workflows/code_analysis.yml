@@ -59,6 +59,9 @@ jobs:
       - name: Run Ktlint
         run: ./gradlew ktlintCheck
 
+      - name: Run Android/Compose lint
+        run: ./gradlew :androidApp:lintFdroidDebug :androidApp:lintGplayDebug -PgplayBuild
+
       # koverXmlReport only runs jvmTest for the modules aggregated in the root
       # build.gradle.kts kover {} block, so a test in a non-aggregated module
       # (:testing, :uikit, :tools:*) would never execute. This step runs every
