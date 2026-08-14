@@ -6,6 +6,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.grappim.taigamobile.core.logger.FileLogger
+import com.grappim.taigamobile.core.logger.LogPriority
+import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.platform.appDataDir
 import com.grappim.taigamobile.di.KoinApp
 import com.grappim.taigamobile.main.TaigaAppContent
@@ -20,6 +22,10 @@ import java.io.File
 
 fun main() {
     FileLogger.install(File(appDataDir(), "taigamobile.log"))
+
+    Thread.setDefaultUncaughtExceptionHandler { _, throwable ->
+        logcat(LogPriority.ERROR, tag = "UncaughtException", throwable = throwable) { "Uncaught exception" }
+    }
 
     FileKit.init(appId = "com.grappim.taigamobile")
 
