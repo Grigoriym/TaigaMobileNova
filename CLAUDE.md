@@ -321,8 +321,11 @@ reports at all until `--rerun-tasks` forced re-execution (see
 ## CI Guardrails
 
 `.github/workflows/guardrails.yml` (+ `.github/scripts/check-guardrails.sh`) fails a commit that
-touches `.github/`, `build-logic/`, `config/detekt/`, `.editorconfig` or `gradle/libs.versions.toml`,
-or that adds a new `@Ignore`/`@Suppress`, unless the commit message carries a line:
+touches `.github/`, `build-logic/`, `config/detekt/`, or `.editorconfig`; that touches
+`gradle/libs.versions.toml`'s `detekt`, `ktlint`, `composeRules`, `agp` or `kover` version keys
+specifically (a plain dependency bump — Renovate's usual PR — doesn't trip it, narrowed 2026-08-14
+after Renovate's own commits, which can never carry a `Gate-change:` line, failed guardrails on
+every PR); or that adds a new `@Ignore`/`@Suppress`, unless the commit message carries a line:
 
 ```
 Gate-change: what was widened, and why
