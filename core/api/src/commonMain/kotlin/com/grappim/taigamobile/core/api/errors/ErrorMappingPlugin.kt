@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.core.api.errors
 
+import com.grappim.taigamobile.core.api.sanitizedForCrashReporting
 import com.grappim.taigamobile.core.domain.NetworkException
 import com.grappim.taigamobile.core.domain.ProjectLimitInfo
 import com.grappim.taigamobile.core.logger.LogPriority
@@ -62,7 +63,11 @@ class ErrorMappingPlugin(
                 } catch (e: NetworkException) {
                     throw e
                 } catch (e: Exception) {
-                    logcat(priority = LogPriority.ERROR, tag = "ErrorMappingPlugin", throwable = e) {
+                    logcat(
+                        priority = LogPriority.ERROR,
+                        tag = "ErrorMappingPlugin",
+                        throwable = e.sanitizedForCrashReporting()
+                    ) {
                         "Request failed"
                     }
                     throw plugin.networkErrorMapper.mapToNetworkException(e)

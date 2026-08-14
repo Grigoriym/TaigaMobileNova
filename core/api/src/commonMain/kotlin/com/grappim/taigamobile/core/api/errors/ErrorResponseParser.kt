@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.core.api.errors
 
 import com.grappim.taigamobile.core.api.HttpJson
+import com.grappim.taigamobile.core.api.sanitizedForCrashReporting
 import com.grappim.taigamobile.core.domain.ProjectLimitInfo
 import com.grappim.taigamobile.core.domain.TaigaErrorDetails
 import com.grappim.taigamobile.core.logger.LogPriority
@@ -28,7 +29,7 @@ class ErrorResponseParser(@param:HttpJson private val json: Json) {
             parseValidationError(errorBody, statusCode)
         }
     } catch (e: Exception) {
-        logcat(priority = LogPriority.ERROR, tag = "ErrorMappingPlugin", throwable = e) {
+        logcat(priority = LogPriority.ERROR, tag = "ErrorMappingPlugin", throwable = e.sanitizedForCrashReporting()) {
             "Failed to parse error response"
         }
         parseValidationError(errorBody, statusCode)

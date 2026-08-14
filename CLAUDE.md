@@ -455,6 +455,12 @@ historical record of how the register was built — `masvs.md` itself is the cur
 
 - Never swallow exceptions silently. Every `catch` block must at least log the exception:
   `logcat(LogPriority.ERROR, throwable = e) { "what failed" }`.
+- `CrashlyticsTree` forwards every `logcat(priority = ERROR, throwable = ...)` call verbatim to
+  Firebase, including the throwable's raw `.message`. Before logging a *raw* (unmapped) exception
+  from a network/parsing/IO boundary at that priority, check whether its message can carry
+  sensitive data (a hostname, a response body) — see `core/api/.../ExceptionSanitization.kt` and
+  `docs/security/masvs.md`'s MASVS-PRIVACY-3 note for the pattern and the audit
+  (`grep -rn "LogPriority.ERROR"` + `throwable =` is the full surface).
 
 ## Compose / Platform Rules
 
