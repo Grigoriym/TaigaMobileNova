@@ -34,4 +34,22 @@ class SettingsAboutScreenTest {
 
         onNodeWithText(appInfoProvider.appInfoToReturn).assertExists()
     }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun rendersIssueSuggestionButton() = runComposeUiTest {
+        val appInfoProvider = FakeAppInfoProvider().apply { appInfoToReturn = getRandomString() }
+        val crashReporter = FakeCrashReporter()
+        val viewModel = SettingsAboutScreenViewModel(appInfoProvider, crashReporter)
+
+        setContent {
+            CompositionLocalProvider(LocalTopBarConfig provides TopBarController()) {
+                TaigaMobilePreviewTheme {
+                    SettingsAboutScreen(viewModel = viewModel)
+                }
+            }
+        }
+
+        onNodeWithText("Issue / Suggestion").assertExists()
+    }
 }
