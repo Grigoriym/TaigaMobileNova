@@ -349,6 +349,12 @@ there; changing them affects every project on this machine.
 | `investigate-issue` | Root-cause a reported bug and write it up under `docs/issues/` before fixing |
 | `update-gradle-wrapper` | Bump the Gradle wrapper with a real checksum from Gradle's server |
 
+**Run `finalize` automatically at the end of every task — don't offer it, don't wait to be asked.**
+A task is only done once the work is verified *and* whatever it taught has been written down;
+finalize is part of finishing, not a follow-up step. Applies to any unit of work that produced
+non-obvious knowledge (a bug fix, a feature, a refactor, an investigation) — trivial one-line asks
+don't need it.
+
 **Android skills** come from the `android-skills` plugin, invoked as `android-skills:<name>`.
 Relevant ones here: `navigation-3`, `edge-to-edge`, `adaptive`, `agp-9-upgrade` (note: that one
 does not cover KMP — see `docs/build/agp9-kmp.md`), `r8-analyzer`, `perfetto-trace-analysis`.
