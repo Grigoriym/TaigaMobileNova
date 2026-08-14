@@ -17,8 +17,6 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 30 | `CrashReporter.recordException`/`.log` are unreachable on every non-Android platform | M | [desktop plan](desktop/linux-release-plan.md), this file #30 |
-| 41 | `DashboardSectionCard` renders expanded items with non-lazy `Column`+`forEach`, no keys | S | ✅ fixed, this file #41 |
 
 <details>
 <summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
@@ -57,7 +55,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 27 | [`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` is flaky](#27-expandablemarkdowntexttestlongtextshowsexpandbuttonandtogglesonclick-is-flaky-under-a-full-jvmtest-run) | ✅ resolved 2026-08-13 |
 | 28 | [`CLAUDE.md` has grown too big; split the Kover ranking heuristics out into their own doc](#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) | ✅ resolved 2026-08-09 |
 | 29 | [Login screen's server-URL regex rejects bare `localhost`](#29-login-screens-server-url-regex-rejects-bare-localhost) | ✅ resolved 2026-08-12 |
-| 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | 🟡 open |
+| 30 | [`CrashReporter.recordException`/`.log` are unreachable on every non-Android platform](#30-crashreporterrecordexceptionlog-are-unreachable-on-every-non-android-platform) | ✅ resolved 2026-08-14 |
 | 31 | [Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`](#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp) | ✅ resolved 2026-08-12 |
 | 32 | [No warning when the configured server URL is `http://`](#32-no-warning-when-the-configured-server-url-is-http-despite-the-bearer-token-being-sent-over-it) | ✅ resolved 2026-08-12 |
 | 33 | [`TrustedCertificatesScreen` is reachable but permanently inert on iOS](#33-trustedcertificatesscreen-is-reachable-but-permanently-inert-on-ios) | ✅ resolved 2026-08-12 |
@@ -1250,6 +1248,26 @@ would ever run.
 **Why deferred:** out of scope for task 5, which is specifically about the `logcat`/`TaigaLogger`
 file-logging path, not crash reporting — confirmed via the call-site grep rather than left as a
 guess, then left alone per the task's own scope boundary.
+
+**Resolved (2026-08-14):** scoped down deliberately rather than building a fake crash-reporting
+backend — there is no Crashlytics-equivalent service on JVM/iOS to report to, and inventing one
+(e.g. wiring in Sentry) is a product decision, not something to do unilaterally while closing a
+revisit item. `CrashReporterImpl.jvm.kt`/`.ios.kt` stay no-op stubs; each now carries a one-line
+comment explaining why, so this doesn't get re-flagged as dead code.
+
+The actual bug fixed: neither platform's entry point installed a global uncaught-exception handler,
+so an exception escaping to the top level was invisible in `taigamobile.log`/`NSLog` — it just
+printed to stderr (JVM) or crashed silently (iOS) with nothing captured. Added:
+- JVM: `Thread.setDefaultUncaughtExceptionHandler { }` in `TaigaMobileDesktop.kt`'s `main()`,
+  right after `FileLogger.install(...)`, logging via `logcat(LogPriority.ERROR, throwable = e)`.
+- iOS: `kotlin.native.setUnhandledExceptionHook` (`@ExperimentalNativeApi`, confirmed present in
+  the 2.4.10 Kotlin/Native stdlib via `strings` on the cached `.knm` klib — `package_kotlin.native`)
+  in `main.ios.kt`, right after `NSLogLogger.install()`.
+
+Verified: `:composeApp:jvmTest` and `:composeApp:ktlintCheck` green; `:composeApp:jvmTest` also runs
+`KoinGraphTest` clean (no DI wiring broken by the new imports).
+`:composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks` compiles clean, confirming
+`setUnhandledExceptionHook` resolves and the opt-in is correctly annotated.
 
 ## 31. Unused duplicate `ConnectivityManagerNetworkMonitor` in `androidApp`
 
