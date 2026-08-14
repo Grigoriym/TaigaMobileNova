@@ -439,6 +439,16 @@ it — ambiguous input, a plan, a choice between options.
 Turn a task into a verifiable goal — "fix the bug" becomes "write a failing test, then make it
 pass." For multi-step work, state the steps with a check each, then loop until they pass.
 
+### Verification
+
+**A UI-visible change isn't done until it's been driven on the emulator, not just proven by a
+test.** A `jvmTest`/Compose-UI test proves the code path in isolation; only booting the emulator
+(or a connected device) and exercising the actual screen proves it renders and behaves correctly
+in the running app. Use the **emulator-testing** skill — `docs/EMULATOR_TESTING.md` holds this
+project's device facts (AVD name, package ids, app-specific gotchas) — before calling a UI change
+complete. Don't stop at a green test suite; a passing test and a rendered screen are different
+claims.
+
 ### Friction Goes in Writing Too
 
 The rule above (in Surgical Changes) is for problems in the *code* — write those to
