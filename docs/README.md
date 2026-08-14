@@ -6,6 +6,9 @@ rules live in [`CLAUDE.md`](../CLAUDE.md).
 **[revisit.md](revisit.md)** — the running list of things noticed mid-task and deliberately deferred.
 Add to it instead of fixing out-of-scope problems inline.
 
+**[frictions.md](frictions.md)** — tooling friction hit during work (a guessed flag that failed, a
+check that lied). Add a one-line entry instead of routing around it silently.
+
 ## architecture/
 
 How parts of the app work, and why they work that way.

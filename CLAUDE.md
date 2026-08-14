@@ -349,6 +349,14 @@ there; changing them affects every project on this machine.
 | `investigate-issue` | Root-cause a reported bug and write it up under `docs/issues/` before fixing |
 | `update-gradle-wrapper` | Bump the Gradle wrapper with a real checksum from Gradle's server |
 
+**Run `finalize` automatically at the end of every task — don't offer it, don't wait to be asked.**
+A task is only done once the work is verified *and* whatever it taught has been written down;
+finalize is part of finishing, not a follow-up step. Applies to any unit of work that produced
+non-obvious knowledge (a bug fix, a feature, a refactor, an investigation) — trivial one-line asks
+don't need it. Also **check the docs for claims the work just made false** — grep for what changed
+rather than trusting a read-through; a stale present-tense statement left behind is actively
+misleading, and the next session will cite it as current.
+
 **Android skills** come from the `android-skills` plugin, invoked as `android-skills:<name>`.
 Relevant ones here: `navigation-3`, `edge-to-edge`, `adaptive`, `agp-9-upgrade` (note: that one
 does not cover KMP — see `docs/build/agp9-kmp.md`), `r8-analyzer`, `perfetto-trace-analysis`.
@@ -414,6 +422,40 @@ behavior deterministically without the racy synchronization; (2) simplify the te
 avoid it; (3) delete the test and say so plainly, rather than leaving a known flake
 undocumented. Always ask before adding any production-code testability seam, even a
 well-verified one.
+
+### Determinism Over Process
+
+If a task has one correct, computable answer, use a tool for it rather than following a fixed
+procedure by hand — a script or a hook can't skip a step or get one wrong the way a prose checklist
+can. `.github/scripts/check-guardrails.sh` is this project's own example: the gate rules are a
+script, not a mental checklist to re-derive each session. Reserve judgment for what actually needs
+it — ambiguous input, a plan, a choice between options.
+
+### Goal-Driven Execution
+
+Turn a task into a verifiable goal — "fix the bug" becomes "write a failing test, then make it
+pass." For multi-step work, state the steps with a check each, then loop until they pass.
+
+### Friction Goes in Writing Too
+
+The rule above (in Surgical Changes) is for problems in the *code* — write those to
+`docs/revisit.md`. This one is for friction in the *tooling*, the kind that silently never gets
+reported: a guessed flag that failed, a command that needed different quoting, a check that
+confidently returned the wrong answer. The reflex is to route around it and say nothing.
+
+Add a one-line, past-tense entry to `docs/frictions.md` before moving on — create the file if it
+isn't there. At the end of a session, read the file back and report what was added, with a count,
+even when the count is zero. The same friction three times is a fix, not a fourth line — raise it
+in `finalize`.
+
+## Settled Decisions
+
+Weighed and declined — don't re-propose these.
+
+| Not used | Instead | Why |
+|---|---|---|
+| Mocking libraries (MockK, Mockito) | Hand-written fakes in `:testing` | `kotlin.test` + fakes keep `commonTest` portable across all KMP targets; a mocking library would tie tests to the JVM. See Testing above. |
+| KSP for DI | `io.insert-koin.compiler.plugin` (IR/FIR) | This project uses the Koin compiler plugin exclusively — see Koin DI above. |
 
 ## Logging
 
