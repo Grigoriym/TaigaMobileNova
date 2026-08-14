@@ -335,6 +335,14 @@ This doesn't prevent widening a gate — it makes doing so silently impossible. 
 `paths-ignore`, unlike `build.yml`/`code_analysis.yml`, so a CLAUDE.md-only commit is still checked.
 Run it locally before committing: `.github/scripts/check-guardrails.sh HEAD~1..HEAD`.
 
+## Git Workflow
+
+**Default to a feature branch + PR into `dev`.** Push straight to `dev` only when gregory says so
+explicitly for that change — a general "commit and push" without naming `dev` means branch + PR,
+not a direct push. `dev` has a GitHub branch-protection rule requiring PRs; a direct push still
+goes through (bypassed via admin permissions), so nothing technically stops it — this is a process
+discipline to follow regardless, not something the repo enforces on its own.
+
 ## Skills & Agents
 
 `.claude/agents/` in this repo holds only the project-specific agents: **testing** and
