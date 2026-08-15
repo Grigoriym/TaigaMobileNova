@@ -335,6 +335,55 @@ This doesn't prevent widening a gate — it makes doing so silently impossible. 
 `paths-ignore`, unlike `build.yml`/`code_analysis.yml`, so a CLAUDE.md-only commit is still checked.
 Run it locally before committing: `.github/scripts/check-guardrails.sh HEAD~1..HEAD`.
 
+## Multi-Session Work
+
+For any initiative that spans multiple sessions — a feature investigation, a redesign, a
+migration; not a single bug fix — split it into its own directory under `docs/` with two files:
+
+- **`CHECKLIST.md`** — the executable plan: numbered, tickable steps, each sized to fit a single
+  clean context. A `Progress` / `Current step` header at the top is the only record of how far
+  the initiative has got — don't duplicate that anywhere else. Once a step is ticked, move its
+  entry out into a sibling **`CHECKLIST-DONE.md`** so the live checklist stays short enough to
+  read cold at the start of a session — `CHECKLIST-DONE.md` is precedent for a step cited by
+  number, not a place to look for open work.
+- **`IMPLEMENTATION_PLAN.md`** — the reference: architecture, rationale, options weighed and
+  their tradeoffs. Updated with what each step actually taught, so it stays the canonical answer
+  for the next session instead of the checklist's own step text going stale.
+
+`docs/testing/{survey.md, improvement-plan.md, deferred.md}` already used this split informally,
+before it had a name — read that as the worked example if a fresh one doesn't clarify something.
+
+**"Do step N" means:** read `CHECKLIST.md`, do *exactly* that step, run its `Verify:` line, tick
+it and move it to `CHECKLIST-DONE.md`, add a one-line `Note:` if anything deviated from the
+description, and update the `Progress` header. Don't start a step whose dependencies aren't
+ticked, and don't expand scope beyond it. **End the archived step's `Note:` by naming what comes
+next** — the following step's number, or "queue is empty" if none is scoped — in prose, not just
+via the `Progress` header: gregory reads the note to tell whether there's more to do without
+re-reading the whole checklist, so the answer has to be stated, not implied.
+
+**Answering a question a not-yet-started step will ask is not the same as asking for that step to
+run.** If gregory states a preference or decision a later step needs, record it in
+`IMPLEMENTATION_PLAN.md` for when that step starts — don't treat it as the "do step N" trigger and
+launch the step immediately.
+
+**Close a step out every time, without being asked:**
+
+1. Run the `finalize` skill — a step almost always teaches something the plan didn't know; this
+   is where it gets written down instead of dying with the context.
+2. Fold anything structural out of the step's `Note:` into `IMPLEMENTATION_PLAN.md`.
+3. Check the docs for claims the step just made false (grep for what changed — see the `finalize`
+   entry under Skills & Agents below).
+4. Commit, following Git Workflow below — branch + PR into `dev` unless told otherwise. One
+   commit per step; the PR is a checkpoint before it lands, not a batching mechanism.
+
+**Decomposing a new phase of an initiative into checklist steps is its own commit**, made the
+moment it happens — not left for whoever picks up step 1 to discover via `git status`.
+
+A step that's gated on a decision nobody has made yet (gregory needs to pick between options, a
+prerequisite step isn't done) carries `⛔ **Gated — do not start without asking.**` as the first
+line under its own heading, not only a note in the status table — two places to look beats one,
+for when the table gets skipped anyway.
+
 ## Git Workflow
 
 **Default to a feature branch + PR into `dev`.** Push straight to `dev` only when gregory says so
