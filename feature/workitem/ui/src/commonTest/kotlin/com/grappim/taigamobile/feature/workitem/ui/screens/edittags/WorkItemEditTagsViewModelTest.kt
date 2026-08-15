@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.edittags
 
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -21,7 +20,6 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -35,7 +33,6 @@ internal class WorkItemEditTagsViewModelTest {
 
     private val workItemId = getRandomLong()
     private val taskIdentifier: TaskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
-    private val taskIdentifierJson = Json.encodeToString(taskIdentifier)
 
     private val bugTag = Tag(color = "#FF0000", name = "bug")
     private val featureTag = Tag(color = "#00FF00", name = "feature")
@@ -46,12 +43,7 @@ internal class WorkItemEditTagsViewModelTest {
     private val sessionStorage = FakeTaigaSessionStorage()
     private val mainDispatcherRule = MainDispatcherRule()
 
-    private val savedStateHandle = SavedStateHandle(
-        mapOf(
-            "workItemId" to workItemId,
-            "taskIdentifier" to taskIdentifierJson
-        )
-    )
+    private val route = WorkItemEditTagsNavDestination(workItemId = workItemId, taskIdentifier = taskIdentifier)
 
     private lateinit var sut: WorkItemEditTagsViewModel
 
@@ -72,7 +64,7 @@ internal class WorkItemEditTagsViewModelTest {
             workItemEditStateRepository = workItemEditStateRepository,
             projectsRepository = projectsRepository,
             taigaSessionStorage = sessionStorage,
-            savedStateHandle = savedStateHandle
+            route = route
         )
     }
 

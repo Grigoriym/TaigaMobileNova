@@ -46,15 +46,17 @@ import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun SprintScreen(
+    route: SprintNavDestination,
     showSnackbar: (NativeText) -> Unit,
     goBack: () -> Unit,
     goToTaskScreen: (Long, CommonTaskType, Long) -> Unit,
     goToCreateTask: (CommonTaskType, Long?, Long) -> Unit,
     updateData: Boolean = false,
-    viewModel: SprintViewModel = koinViewModel()
+    viewModel: SprintViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()

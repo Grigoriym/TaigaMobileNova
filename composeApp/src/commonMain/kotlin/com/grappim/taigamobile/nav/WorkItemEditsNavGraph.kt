@@ -3,6 +3,7 @@ package com.grappim.taigamobile.nav
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionNavDestination
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionScreen
@@ -25,8 +26,9 @@ fun NavGraphBuilder.workItemEditsNavGraph(showSnackbar: (NativeText) -> Unit, na
                 typeOf<TaskIdentifier>()
             )
         )
-    ) {
+    ) { backStackEntry ->
         WorkItemEditDescriptionScreen(
+            route = backStackEntry.toRoute(),
             goBack = {
                 navController.popBackStack()
             }
@@ -36,8 +38,9 @@ fun NavGraphBuilder.workItemEditsNavGraph(showSnackbar: (NativeText) -> Unit, na
         typeMap = typeMapOf(
             listOf(typeOf<TaskIdentifier>())
         )
-    ) {
+    ) { backStackEntry ->
         WorkItemEditSprintScreen(
+            route = backStackEntry.toRoute(),
             goBack = {
                 navController.popBackStack()
             }
@@ -48,8 +51,9 @@ fun NavGraphBuilder.workItemEditsNavGraph(showSnackbar: (NativeText) -> Unit, na
         typeMap = typeMapOf(
             listOf(typeOf<TaskIdentifier>())
         )
-    ) {
+    ) { backStackEntry ->
         WorkItemEditTagsScreen(
+            route = backStackEntry.toRoute(),
             showSnackbar = showSnackbar,
             goBack = {
                 navController.popBackStack()
@@ -61,8 +65,9 @@ fun NavGraphBuilder.workItemEditsNavGraph(showSnackbar: (NativeText) -> Unit, na
         typeMap = typeMapOf(
             listOf(typeOf<TaskIdentifier>())
         )
-    ) {
+    ) { backStackEntry ->
         WorkItemEditTeamMemberScreen(
+            route = backStackEntry.toRoute(),
             goBack = {
                 navController.popBackStack()
             }
@@ -73,8 +78,9 @@ fun NavGraphBuilder.workItemEditsNavGraph(showSnackbar: (NativeText) -> Unit, na
         typeMap = typeMapOf(
             listOf(typeOf<TaskIdentifier>())
         )
-    ) {
+    ) { backStackEntry ->
         WorkItemEditEpicScreen(
+            route = backStackEntry.toRoute(),
             goBack = {
                 navController.popBackStack()
             }

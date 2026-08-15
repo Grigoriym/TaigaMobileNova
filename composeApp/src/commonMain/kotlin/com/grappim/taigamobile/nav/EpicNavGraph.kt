@@ -3,6 +3,7 @@ package com.grappim.taigamobile.nav
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.createtask.navigateToCreateTask
@@ -43,6 +44,7 @@ fun NavGraphBuilder.epicNavGraph(showSnackbar: (NativeText) -> Unit, navControll
         val updateData: Boolean =
             navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
         EpicDetailsScreen(
+            route = navBackStackEntry.toRoute(),
             showSnackbar = showSnackbar,
             updateData = updateData,
             goToProfile = { creatorId ->

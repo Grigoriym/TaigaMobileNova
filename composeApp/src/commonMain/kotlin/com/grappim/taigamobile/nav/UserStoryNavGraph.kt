@@ -3,6 +3,7 @@ package com.grappim.taigamobile.nav
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.epics.ui.details.navigateToEpicDetails
@@ -17,8 +18,9 @@ import com.grappim.taigamobile.main.setUpdateDataOnBack
 import com.grappim.taigamobile.utils.ui.NativeText
 
 fun NavGraphBuilder.userStoryNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
-    composable<UserStoryDetailsNavDestination> {
+    composable<UserStoryDetailsNavDestination> { backStackEntry ->
         UserStoryDetailsScreen(
+            route = backStackEntry.toRoute(),
             showSnackbar = showSnackbar,
             goBack = {
                 navController.setUpdateDataOnBack()

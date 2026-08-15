@@ -3,6 +3,7 @@ package com.grappim.taigamobile.nav
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.wiki.ui.bookmark.create.WikiCreateBookmarkScreen
@@ -44,8 +45,9 @@ fun NavGraphBuilder.wikiNavGraph(showSnackbar: (NativeText) -> Unit, navControll
         )
     }
 
-    composable<WikiPageNavDestination> {
+    composable<WikiPageNavDestination> { backStackEntry ->
         WikiPageScreen(
+            route = backStackEntry.toRoute(),
             showSnackbar = showSnackbar,
             goToProfile = { userId ->
                 navController.navigateToProfileScreen(userId)

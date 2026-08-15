@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.editdescription
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -11,7 +10,6 @@ import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -42,14 +40,12 @@ internal class EditDescriptionViewModelTest {
 
     private fun createViewModel(taskIdentifier: TaskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)) {
         sut = EditDescriptionViewModel(
-            workItemEditStateRepository = workItemEditStateRepository,
-            savedStateHandle = SavedStateHandle(
-                mapOf(
-                    "description" to description,
-                    "workItemId" to workItemId,
-                    "taskIdentifier" to Json.encodeToString(taskIdentifier)
-                )
-            )
+            route = WorkItemEditDescriptionNavDestination(
+                description = description,
+                workItemId = workItemId,
+                taskIdentifier = taskIdentifier
+            ),
+            workItemEditStateRepository = workItemEditStateRepository
         )
     }
 

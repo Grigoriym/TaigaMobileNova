@@ -10,6 +10,7 @@ import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
@@ -132,7 +133,7 @@ fun MainNavHost(
             )
         }
 
-        composable<ProjectSelectorNavDestination> {
+        composable<ProjectSelectorNavDestination> { backStackEntry ->
             val screenReadySignal = LocalScreenReadySignal.current
             LaunchedEffect(initialNavState.isReady) {
                 if (initialNavState.isReady && initialNavState.startDestination is ProjectSelectorNavDestination) {
@@ -140,6 +141,7 @@ fun MainNavHost(
                 }
             }
             ProjectSelectorScreen(
+                route = backStackEntry.toRoute(),
                 goBack = {
                     navController.popBackStack()
                 },
@@ -195,6 +197,7 @@ fun MainNavHost(
             val updateData: Boolean =
                 navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
             SprintScreen(
+                route = navBackStackEntry.toRoute(),
                 updateData = updateData,
                 showSnackbar = showSnackbar,
                 goBack = {
@@ -214,16 +217,18 @@ fun MainNavHost(
             )
         }
 
-        composable<ProfileNavDestination> {
+        composable<ProfileNavDestination> { backStackEntry ->
             ProfileScreen(
+                route = backStackEntry.toRoute(),
                 showSnackbar = showSnackbar
             )
         }
 
         composable<CreateTaskNavDestination>(
             typeMap = typeMapOf(listOf(typeOf<CommonTaskType>()))
-        ) {
+        ) { backStackEntry ->
             CreateTaskScreen(
+                route = backStackEntry.toRoute(),
                 showSnackbar = showSnackbar,
                 navigateOnTaskCreated = { id, type, ref ->
                     navController.popBackStack()

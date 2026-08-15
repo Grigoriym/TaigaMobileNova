@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.teammembers
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -16,7 +15,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -31,19 +29,13 @@ internal class EditTeamMemberViewModelTest {
 
     private val workItemId = getRandomLong()
     private val taskIdentifier: TaskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
-    private val taskIdentifierJson = Json.encodeToString(taskIdentifier)
 
     private val usersRepository = FakeUsersRepository()
     private val teamMemberUIMapper = TeamMemberUIMapper()
     private val workItemEditStateRepository = WorkItemEditStateRepository()
     private val mainDispatcherRule = MainDispatcherRule()
 
-    private val savedStateHandle = SavedStateHandle(
-        mapOf(
-            "workItemId" to workItemId,
-            "taskIdentifier" to taskIdentifierJson
-        )
-    )
+    private val route = WorkItemEditTeamMemberNavDestination(workItemId = workItemId, taskIdentifier = taskIdentifier)
 
     private lateinit var sut: EditTeamMemberViewModel
 
@@ -62,7 +54,7 @@ internal class EditTeamMemberViewModelTest {
             usersRepository = usersRepository,
             teamMemberUIMapper = teamMemberUIMapper,
             workItemEditStateRepository = workItemEditStateRepository,
-            savedStateHandle = savedStateHandle
+            route = route
         )
     }
 

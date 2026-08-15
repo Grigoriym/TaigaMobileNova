@@ -251,3 +251,41 @@ insertions, a second after adding `navSavedStateConfiguration`'s `SavedStateConf
 
 **Next:** step 8 — port the 15 affected ViewModels off `savedStateHandle.toRoute<T>()` to
 constructor-parameter injection via Koin `@InjectedParam` + `parametersOf(route)`.
+
+## Step 8: Port ViewModels off `savedStateHandle.toRoute<T>()` — ✅ done 2026-08-15
+
+All 15 ViewModels moved from `SavedStateHandle.toRoute<T>()` to `@InjectedParam private val route:
+XNavDestination` — the whole route object as a single injected param, not wallosmobile's per-field
+`@InjectedParam`s (deliberate simplification, matches the step text's own `parametersOf(route)`
+wording; full rationale in IMPLEMENTATION_PLAN.md's "Step 8 notes"). Each affected Screen composable
+gained a `route: T` parameter and `koinViewModel { parametersOf(route) }`; each NavGraph's
+`composable<T> { }` call gained a `backStackEntry ->` parameter and `route =
+backStackEntry.toRoute()`. Touched all 15 ViewModel files, their Screens, and 8 NavGraph files
+(`MainNavHost.kt` + 7 `composeApp/.../nav/*.kt` graphs — `WorkItemEditsNavGraph.kt` alone covers 5
+routes). Also updated the 15 `*ViewModelTest.kt` files, 2 `*ScreenTest.kt` Compose-UI-test pilots,
+and `KoinGraphTest.kt` (removed its now-dead `single { SavedStateHandle() }` registration and stale
+doc comment) to match.
+
+**Note (deviation caught during verify, not scoped in the original step text):**
+`NavBackStackEntry.toRoute<T>()` has no `typeMap` parameter — unlike
+`SavedStateHandle.toRoute<T>(typeMap = ...)`, which the old ViewModel code used for routes with a
+non-primitive field (`CreateTaskNavDestination`'s `CommonTaskType`, the 5
+`WorkItemEdit*NavDestination`'s `TaskIdentifier`). First-pass NavGraph edits copied the old
+`typeMap = ...` call shape and failed to compile across 6 call sites; fixed by reading
+`navigation-common-desktop-2.9.2-sources.jar` directly — the entry-level `toRoute` already reads the
+typeMap off `destination.arguments`, populated by the enclosing `composable<T>(typeMap = ...)`, so a
+bare `backStackEntry.toRoute()` is correct. Full detail in IMPLEMENTATION_PLAN.md's "Step 8 notes".
+
+**Verify:** `./gradlew jvmTest` (full repo run, green — no test changes needed for `KoinGraphTest`
+itself; it already tolerates the 15 ViewModels' new `DefinitionParameterException` the same way it
+tolerated their old `toRoute()` failures, confirmed by running it unchanged before touching it) and
+`ktlintCheck` green (one `standard:function-expression-body` violation auto-fixed via
+`ktlintCommonTestSourceSetFormat` in `ProjectSelectorViewModelTest.kt`). Four-target compile matrix
+(`:composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks`, `:composeApp:compileKotlinIosArm64
+--rerun-tasks`, `:androidApp:compileFdroidDebugKotlin --rerun-tasks`, `:composeApp:compileKotlinJvm`)
+all green. `KoinGraphTest` run explicitly — confirms the `@InjectedParam` wiring resolves (all 147
+definitions checked, the 15 route-taking ViewModels report the expected tolerated
+`DefinitionParameterException`, none report `NoDefinitionFoundException`).
+
+**Next:** step 9 — port `UPDATE_DATA_ON_BACK` result-passing to the Nav3 event-bus recipe. The one
+genuinely non-mechanical piece of the migration.

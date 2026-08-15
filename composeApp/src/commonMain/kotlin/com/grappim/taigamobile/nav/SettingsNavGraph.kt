@@ -3,6 +3,7 @@ package com.grappim.taigamobile.nav
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.settings.ui.about.SettingsAboutScreen
@@ -113,8 +114,8 @@ fun NavGraphBuilder.settingsNavGraph(navController: NavHostController, showSnack
         )
     }
 
-    composable<ProjectValuesNavDestination> {
-        ProjectValuesScreen(showSnackbar = showSnackbar)
+    composable<ProjectValuesNavDestination> { backStackEntry ->
+        ProjectValuesScreen(route = backStackEntry.toRoute(), showSnackbar = showSnackbar)
     }
 
     composable<TrustedCertificatesNavDestination> {

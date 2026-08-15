@@ -59,12 +59,14 @@ import com.grappim.taigamobile.utils.ui.isNotLoading
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ProjectSelectorScreen(
+    route: ProjectSelectorNavDestination,
     goBack: () -> Unit,
     onProjectSelect: () -> Unit,
-    viewModel: ProjectSelectorViewModel = koinViewModel()
+    viewModel: ProjectSelectorViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()

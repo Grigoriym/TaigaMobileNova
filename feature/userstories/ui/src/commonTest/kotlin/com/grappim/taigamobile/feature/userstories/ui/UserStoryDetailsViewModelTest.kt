@@ -2,7 +2,6 @@
 
 package com.grappim.taigamobile.feature.userstories.ui
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -65,9 +64,7 @@ internal class UserStoryDetailsViewModelTest {
 
     private val type = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
 
-    private val savedStateHandle = SavedStateHandle(
-        mapOf("userStoryId" to userStoryId, "ref" to ref)
-    )
+    private val route = UserStoryDetailsNavDestination(userStoryId = userStoryId, ref = ref)
 
     private val mainDispatcherRule = MainDispatcherRule()
 
@@ -102,7 +99,7 @@ internal class UserStoryDetailsViewModelTest {
 
     private fun createViewModel() {
         sut = UserStoryDetailsViewModel(
-            savedStateHandle = savedStateHandle,
+            route = route,
             userStoryDetailsDataUseCase = userStoryDetailsDataUseCase,
             workItemsGenerator = workItemsGenerator,
             workItemEditStateRepository = workItemEditStateRepository,

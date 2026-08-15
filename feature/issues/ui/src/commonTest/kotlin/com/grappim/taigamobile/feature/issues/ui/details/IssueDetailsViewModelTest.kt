@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.issues.ui.details
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -60,9 +59,7 @@ internal class IssueDetailsViewModelTest {
 
     private val type = TaskIdentifier.WorkItem(CommonTaskType.Issue)
 
-    private val savedStateHandle = SavedStateHandle(
-        mapOf("issueId" to issueId, "ref" to ref)
-    )
+    private val route = IssueDetailsNavDestination(issueId = issueId, ref = ref)
 
     private val mainDispatcherRule = MainDispatcherRule()
 
@@ -100,7 +97,7 @@ internal class IssueDetailsViewModelTest {
 
     private fun createViewModel() {
         sut = IssueDetailsViewModel(
-            savedStateHandle = savedStateHandle,
+            route = route,
             issueDetailsDataUseCase = issueDetailsDataUseCase,
             customFieldsUIMapper = customFieldsUIMapper,
             workItemsGenerator = workItemsGenerator,

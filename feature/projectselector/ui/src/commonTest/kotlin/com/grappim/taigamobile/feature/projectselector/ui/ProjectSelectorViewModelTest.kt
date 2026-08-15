@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.projectselector.ui
 
-import androidx.lifecycle.SavedStateHandle
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.cleaner.FakeDataCleaner
 import com.grappim.taigamobile.testing.models.getProject
@@ -27,16 +26,13 @@ internal class ProjectSelectorViewModelTest {
 
     private lateinit var sut: ProjectSelectorViewModel
 
-    private fun createViewModel(isFromLogin: Boolean = false): ProjectSelectorViewModel {
-        val savedStateHandle = SavedStateHandle(mapOf("isFromLogin" to isFromLogin))
-        return ProjectSelectorViewModel(
-            projectsRepository = projectsRepository,
-            session = filtersStorage,
-            taigaSessionStorage = taigaSessionStorage,
-            dataCleaner = dataCleaner,
-            savedStateHandle = savedStateHandle
-        )
-    }
+    private fun createViewModel(isFromLogin: Boolean = false): ProjectSelectorViewModel = ProjectSelectorViewModel(
+        projectsRepository = projectsRepository,
+        session = filtersStorage,
+        taigaSessionStorage = taigaSessionStorage,
+        dataCleaner = dataCleaner,
+        route = ProjectSelectorNavDestination(isFromLogin = isFromLogin)
+    )
 
     @BeforeTest
     fun setup() {
@@ -65,13 +61,12 @@ internal class ProjectSelectorViewModelTest {
     fun `initial state reflects current project id from session storage`() {
         val projectId = getRandomLong()
         val sessionStorage = FakeTaigaSessionStorage(currentProjectId = projectId)
-        val savedStateHandle = SavedStateHandle(mapOf("isFromLogin" to false))
         val vm = ProjectSelectorViewModel(
             projectsRepository = projectsRepository,
             session = filtersStorage,
             taigaSessionStorage = sessionStorage,
             dataCleaner = dataCleaner,
-            savedStateHandle = savedStateHandle
+            route = ProjectSelectorNavDestination(isFromLogin = false)
         )
 
         assertEquals(projectId, vm.state.value.currentProjectId)

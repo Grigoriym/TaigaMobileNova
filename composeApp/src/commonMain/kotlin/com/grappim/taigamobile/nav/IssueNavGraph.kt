@@ -3,6 +3,7 @@ package com.grappim.taigamobile.nav
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
+import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.createtask.navigateToCreateIssue
@@ -44,6 +45,7 @@ fun NavGraphBuilder.issueNavGraph(showSnackbar: (NativeText) -> Unit, navControl
         val updateData: Boolean =
             navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
         IssueDetailsScreen(
+            route = navBackStackEntry.toRoute(),
             showSnackbar = showSnackbar,
             updateData = updateData,
             goToProfile = { creatorId ->

@@ -406,3 +406,53 @@ which already imports every route class for `MainNavHost.kt`. **Any future file 
 reference every route class app-wide belongs in `composeApp`, not `core:navigation`** — this
 applies directly to step 10's `NavDisplay`/`entry<T>` cutover and step 12's `ListDetailSceneStrategy`
 wiring, both of which also need the full route set.
+
+## Step 8 notes (2026-08-15) — one `@InjectedParam route: T`, not wallosmobile's per-field params
+
+**Deviation from wallosmobile's own pattern, chosen deliberately.** wallosmobile's ViewModels take
+each route field as its own `@InjectedParam` (`SubscriptionDetailViewModel(@InjectedParam private
+val subscriptionId: Int, ...)`, `koinViewModel { parametersOf(subscriptionId) }` at the call site) —
+confirmed by reading `SubscriptionDetailViewModel.kt`/`SubscriptionDetailScreen.kt` and four other
+editor ViewModels there, all following the same per-field shape, some with `parametersOf(id, name,
+email)`-style multi-arg calls. This repo instead injects the **whole route object** as a single
+`@InjectedParam route: XNavDestination`, `koinViewModel { parametersOf(route) }` — matching the
+checklist step 8 text's own `parametersOf(route)` wording. Simpler at this repo's scale (some routes
+carry 2–5 fields, e.g. `CreateTaskNavDestination`) since it's one param per ViewModel regardless of
+route field count, and every route class is already a plain data class — no serialization concern
+for an in-memory constructor call. `route.field` reads inside the ViewModel body are otherwise
+identical to the old `savedStateHandle.toRoute<T>().field` pattern, so callers changed less than the
+per-field approach would have required.
+
+**The three-file shape per ViewModel:** the ViewModel takes `@InjectedParam private val route: T`
+(replacing `savedStateHandle: SavedStateHandle` + `private val route = savedStateHandle.toRoute<T>()`
+inside the body); the Screen composable gains a `route: T` parameter and changes `koinViewModel()`
+to `koinViewModel { parametersOf(route) }`; the NavGraph's `composable<T> { }` lambda gains a
+`backStackEntry ->` parameter and passes `route = backStackEntry.toRoute()` into the Screen call.
+15 ViewModels, but the NavGraph edits concentrate into 8 files (`MainNavHost.kt` plus 7
+`composeApp/.../nav/*.kt` graphs) since several routes share a graph file (`WorkItemEditsNavGraph.kt`
+alone covers 5).
+
+**`NavBackStackEntry.toRoute<T>()` takes no `typeMap` parameter — do not carry over the
+`SavedStateHandle.toRoute<T>(typeMap = ...)` call shape.** Confirmed by reading
+`navigation-common-desktop-2.9.2-sources.jar`'s `NavBackStackEntry.kt`: the entry-level `toRoute`
+reads `destination.arguments.mapValues { it.value.type }` — the typeMap the enclosing
+`composable<T>(typeMap = ...)` call already registered on the destination — so a bare
+`backStackEntry.toRoute()` is correct even for routes with non-primitive fields
+(`CreateTaskNavDestination`'s `CommonTaskType`, the 5 `WorkItemEdit*NavDestination`'s
+`TaskIdentifier`). Passing `typeMap` explicitly at the call site doesn't compile — no such overload
+exists on `NavBackStackEntry`, only on `SavedStateHandle`. This cost a first-pass compile failure
+across 6 call sites before the sources-jar read caught it.
+
+**Existing tests needed the same mechanical update, and it simplified them.** All 15
+`*ViewModelTest.kt` files (plus 2 `*ScreenTest.kt` Compose-UI-test pilots and `KoinGraphTest.kt`)
+built a `SavedStateHandle(mapOf(...))` by hand, several JSON-encoding a `TaskIdentifier`/`CommonTaskType`
+field (`Json.encodeToString(...)`) to match the Bundle-string shape `SavedStateHandle.toRoute<T>()`
+expects. Constructing the route data class directly and passing it as `route = ...` needs no
+encoding step — the object goes in as-is. `KoinGraphTest.kt`'s `single { SavedStateHandle() }`
+registration (added so the 15 ViewModels' old `savedStateHandle: SavedStateHandle` constructor
+param would resolve) is now dead code, since `@InjectedParam` isn't a graph-resolved dependency —
+removed, along with the stale doc comment describing the old failure mode. The test now reports
+`DefinitionParameterException` for those 15 (no `parametersOf(route)` supplied to a whole-graph
+resolution pass) instead of the old `toRoute()` "no SavedStateHandle entry" failure — same
+tolerated-non-`NoDefinitionFoundException` category, confirmed by running the test unchanged before
+touching it.

@@ -1,7 +1,7 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 7/12 done. **Current step:** 8 — port ViewModels off
-`savedStateHandle.toRoute<T>()` (not started).
+**Progress:** 8/12 done. **Current step:** 9 — port `UPDATE_DATA_ON_BACK` result-passing to the
+Nav3 event-bus recipe (not started).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -10,19 +10,6 @@ IMPLEMENTATION_PLAN.md's "Navigation 3 migration investigation" section). Option
 fully implemented. Steps 6–11 are the migration itself (mechanical, no open decisions blocking
 them); step 12 (the actual list-detail pane layout, option 3's real payoff) is gated — see its
 entry below. Done steps move to [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
-
-## Step 8: Port ViewModels off `savedStateHandle.toRoute<T>()`
-
-Move all 15 affected ViewModels from `SavedStateHandle.toRoute<T>()` extraction to
-constructor-parameter injection via Koin `@InjectedParam` + `parametersOf(route)`, matching
-wallosmobile's pattern (Nav3 hands the route object straight to the screen, not through
-`SavedStateHandle`). Mechanical per-ViewModel but not risk-free — if this proves too large for one
-context, split it into multiple sessions by feature module rather than doing it as one giant diff.
-
-**Verify:** `./gradlew jvmTest` (full repo run) and `ktlintCheck` green. `koin-expert` agent should
-confirm the `@InjectedParam` wiring resolves — run `KoinGraphTest`
-(`composeApp/src/jvmTest/`) explicitly, since a `@InjectedParam` mismatch is exactly the kind of
-DI wiring gap that test exists to catch.
 
 ## Step 9: Port `UPDATE_DATA_ON_BACK` result-passing to the Nav3 event-bus recipe
 

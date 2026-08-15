@@ -22,3 +22,10 @@ deleted — see `finalize`.
   `~/.claude/plugins/marketplaces/android-skills/navigation/navigation-3/SKILL.md` and its
   `references/` files directly instead. Not re-tried from a non-fork session, so unclear if it's a
   fork-specific plugin-loading gap or broader.
+- 2026-08-15: assumed `NavBackStackEntry.toRoute<T>(typeMap = ...)` existed, copying
+  `SavedStateHandle.toRoute<T>(typeMap = ...)`'s call shape into 6 NavGraph call sites (step 8) —
+  compiler rejected all 6 ("No parameter with name 'typeMap' found"). `NavBackStackEntry.toRoute()`
+  takes no typeMap arg at all; it reads the typeMap the enclosing `composable<T>(typeMap = ...)`
+  already registered on the destination. Confirmed by reading
+  `navigation-common-desktop-2.9.2-sources.jar` directly rather than guessing from the sibling
+  `SavedStateHandle` overload's signature.
