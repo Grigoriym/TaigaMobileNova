@@ -1,7 +1,7 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 5/12 done. **Current step:** 6 — add Nav3 dependencies + `NavKey` serializers
-(not started).
+**Progress:** 6/12 done. **Current step:** 7 — implement `NavKey` + `NavKey` serializers + build
+the `Navigator`/`NavigationState` shell (not started).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -11,30 +11,21 @@ fully implemented. Steps 6–11 are the migration itself (mechanical, no open de
 them); step 12 (the actual list-detail pane layout, option 3's real payoff) is gated — see its
 entry below. Done steps move to [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
 
-## Step 6: Add Nav3 dependencies + `NavKey` serializers
+## Step 7: Implement `NavKey` + `NavKey` serializers + build the `Navigator`/`NavigationState` shell
 
-Add the Nav3 artifacts (`org.jetbrains.androidx.navigation3:navigation3-ui` and
-`org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3`, matching wallosmobile's
-`jetbrainsNav3` version) to `gradle/libs.versions.toml` and `composeApp/build.gradle.kts`. Add a
-KMP `SerializersModule`/`SavedStateConfiguration` registering all ~31 existing route classes as
-polymorphic `NavKey` subtypes, following wallosmobile's `NavKeySerializers.kt` pattern (non-JVM
-targets need this explicitly — no reflection-based serialization on iOS). This step only adds
-code that compiles alongside the existing Nav2 `NavHost` — no behavior change, nothing wired in
-yet.
-
-**Verify:** `./gradlew :composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks`,
-`:composeApp:compileKotlinIosArm64 --rerun-tasks`, `:androidApp:compileFdroidDebugKotlin
---rerun-tasks`, `:composeApp:compileKotlinJvm` — all green, app behavior unchanged (nothing to
-emulator-test yet).
-
-## Step 7: Convert routes to `NavKey` + build the `Navigator`/`NavigationState` shell
-
-Make each of the ~31 `@Serializable` route classes implement `NavKey` (mechanical, one line per
-file). Build a `Navigator`/`NavigationState`-equivalent (wallosmobile's `core/navigation/` pattern
-— dual back-stack-of-stacks, one per drawer section) either as a new `core:navigation` module or a
-`composeApp`-local file; decide which by how much of wallosmobile's module is reusable as-is vs.
-needs adapting to this repo's route set. Still not wired into the running app — `MainNavHost.kt`
-keeps using classic `NavHost` until step 10.
+Make each of the 39 `@Serializable` route classes (see CHECKLIST-DONE.md step 6's Note for the
+exact list) implement `androidx.navigation3.runtime.NavKey` (mechanical, one line per file) — this
+requires adding the `libs.jetbrains.navigation3.ui` dependency (or a slimmer one that transitively
+pulls in `NavKey`, if one exists) to every feature module that owns a route class, not just
+`composeApp`. Then add a KMP `SerializersModule`/`SavedStateConfiguration` registering all 39
+routes as polymorphic `NavKey` subtypes, following wallosmobile's `NavKeySerializers.kt` pattern
+(non-JVM targets need this explicitly — no reflection-based serialization on iOS); this can only be
+written once every route implements `NavKey`, which is why it moved here from step 6 — see
+CHECKLIST-DONE.md's step 6 Note. Build a `Navigator`/`NavigationState`-equivalent (wallosmobile's
+`core/navigation/` pattern — dual back-stack-of-stacks, one per drawer section) either as a new
+`core:navigation` module or a `composeApp`-local file; decide which by how much of wallosmobile's
+module is reusable as-is vs. needs adapting to this repo's route set. Still not wired into the
+running app — `MainNavHost.kt` keeps using classic `NavHost` until step 10.
 
 **Verify:** same four-target compile matrix as step 6, plus `./gradlew jvmTest` covering any new
 `Navigator`/`NavigationState` unit tests (follow the failure-path convention in CLAUDE.md's

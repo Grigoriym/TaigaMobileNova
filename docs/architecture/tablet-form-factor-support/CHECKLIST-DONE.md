@@ -137,3 +137,57 @@ list-detail pane-layout design that follows it, are gated on gregory reviewing t
 questions" (KMP `ListDetailSceneStrategy` API parity unconfirmed; which screens get list-detail;
 whether the migration ships as one contiguous initiative or with review points between steps).
 Decomposing is its own commit once gregory answers those, not automatic follow-on work here.
+
+## Step 6: Add Nav3 dependencies — ✅ done 2026-08-15
+
+Added `jetbrainsNav3 = "1.1.1"` plus `jetbrains-navigation3-ui`
+(`org.jetbrains.androidx.navigation3:navigation3-ui`) and `jetbrains-lifecycle-viewmodel-navigation3`
+(`org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3`, reusing the already-pinned
+`jetbrainsAndroidxLifecycle = "2.11.0"`) to `gradle/libs.versions.toml`. Wired all three
+(`jetbrains.navigation3.ui`, `jetbrains.lifecycle.viewmodel.navigation3`, and the
+already-catalogued-but-previously-unused `jetbrains.androidx.savedstate`) into
+`composeApp/build.gradle.kts`'s `commonMain` dependencies, next to the other `jetbrains.compose.*`
+lines, with a comment repeating wallosmobile's warning: never the plain `androidx.navigation3:*`
+coordinates for `navigation3-ui` — same package names, Android-only build.
+
+**Note (scope correction from the original step text):** the step as originally decomposed also
+called for writing `NavKeySerializers.kt` — a `SerializersModule` registering all route classes as
+`polymorphic(NavKey::class) { subclass(RouteClass::class) }`. That does **not** compile yet:
+kotlinx.serialization's `PolymorphicModuleBuilder<Base>.subclass<T : Base>` requires `T` to be a
+compile-time subtype of `Base` (`NavKey`), and confirmed by decompiling
+`androidx.navigation3.runtime.NavKey` from the now-fetched jar
+(`navigation3-runtime-desktop-1.1.1.jar`) that it's a bare marker interface with no members — so
+every route class must `implement NavKey` *before* the serializers file can be written. Route
+classes live across ~15 different feature modules, not just `composeApp`, so making them implement
+`NavKey` means adding the Nav3 dependency to each of those modules too — that's real work
+(step 7's "mechanical, one line per file" already describes it), not something that belongs in a
+dependencies-only step. **Moved the whole `NavKeySerializers.kt` deliverable into step 7**, which
+already owned "make routes implement `NavKey`" — see CHECKLIST.md's updated step 7. Also counted
+the actual route classes while investigating: 39, not the ~31 estimated in the original
+investigation (step 5) — grepped every `composable<T>` in `composeApp/src/commonMain` plus
+`WikiNavDestination` (used only as a `DrawerDestination` marker, never itself a `composable<T>`,
+per `DrawerDestination.kt:30`) and the 3 `Scrum*Destination` objects (named `*Destination`, not
+`*NavDestination`, so they didn't match the investigation's naming-based estimate). Full list for
+step 7 to consume: `AttributesScreenNavDestination`, `CreateTaskNavDestination`,
+`DashboardNavDestination`, `EpicDetailsNavDestination`, `EpicsNavDestination`,
+`IssueDetailsNavDestination`, `IssuesNavDestination`, `KanbanNavDestination`, `LoginNavDestination`,
+`ModulesNavDestination`, `ProfileNavDestination`, `ProjectDetailsNavDestination`,
+`ProjectSelectorNavDestination`, `ProjectValuesMenuNavDestination`, `ProjectValuesNavDestination`,
+`ScrumBacklogDestination`, `ScrumClosedSprintsDestination`, `ScrumOpenSprintsDestination`,
+`SettingsAboutScreenRouteNavDestination`, `SettingsInterfaceScreenNavDestination`,
+`SettingsNavDestination`, `SettingsUserScreenNavDestination`, `SprintNavDestination`,
+`TagsScreenRouteNavDestination`, `TaskDetailsNavDestination`, `TeamNavDestination`,
+`TrustedCertificatesNavDestination`, `UserStoryDetailsNavDestination`,
+`WikiCreateLinkNavDestination`, `WikiCreatePageNavDestination`, `WikiLinksNavDestination`,
+`WikiNavDestination`, `WikiPageNavDestination`, `WikiPagesNavDestination`,
+`WorkItemEditDescriptionNavDestination`, `WorkItemEditEpicNavDestination`,
+`WorkItemEditSprintNavDestination`, `WorkItemEditTagsNavDestination`,
+`WorkItemEditTeamMemberNavDestination`.
+
+**Verify:** `./gradlew :composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks`,
+`:composeApp:compileKotlinIosArm64 --rerun-tasks`, `:androidApp:compileFdroidDebugKotlin
+--rerun-tasks`, `:composeApp:compileKotlinJvm` — all four green; the new dependencies resolve and
+sit unused, so nothing else could have broken.
+
+**Next:** step 7 — implement `NavKey` on the 39 route classes above, write
+`NavKeySerializers.kt`, and build the `Navigator`/`NavigationState` shell.

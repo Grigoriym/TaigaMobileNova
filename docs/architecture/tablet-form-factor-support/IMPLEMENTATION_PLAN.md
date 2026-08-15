@@ -275,7 +275,9 @@ Android Nav3 uses reflection-based polymorphic serialization for `NavKey`, which
 iOS/other non-JVM targets. The multiplatform build requires an explicit `SerializersModule` passed
 via `SavedStateConfiguration` to `rememberNavBackStack` — exactly the pattern wallosmobile's
 `NavKeySerializers.kt` already implements. This repo would need the equivalent: one file listing
-all ~31 `NavDestination` route classes as `polymorphic(NavKey::class) { subclass(...) }`.
+all 39 route classes as `polymorphic(NavKey::class) { subclass(...) }` — this can only be written
+once every route implements `NavKey`, since `subclass<T : Base>` requires that compile-time bound;
+see CHECKLIST-DONE.md's step 6 Note for why that pushed the file itself into step 7.
 
 ### Gap analysis: sizing the migration in this repo
 
@@ -286,8 +288,9 @@ all ~31 `NavDestination` route classes as `polymorphic(NavKey::class) { subclass
   `workItemEditsNavGraph`) totaling 30 `composable<T>` destinations, plus 8 more defined directly
   in `MainNavHost.kt` (`LoginNavDestination`, `ProjectSelectorNavDestination`,
   `DashboardNavDestination`, `TeamNavDestination`, `KanbanNavDestination`, `SprintNavDestination`,
-  `ProfileNavDestination`, `CreateTaskNavDestination`) — **~38 destinations, ~31 distinct
-  `NavDestination` route classes** total across the repo.
+  `ProfileNavDestination`, `CreateTaskNavDestination`) — **38 distinct route classes reachable via
+  `composable<T>`, 39 total** counting `WikiNavDestination` (a `DrawerDestination` marker never
+  itself registered as a `composable<T>`) — full list in CHECKLIST-DONE.md's step 6 Note.
 - **15 ViewModels** use `savedStateHandle.toRoute<T>()` (per CLAUDE.md's Navigation Pattern
   section) — every one of these needs to move to a constructor-parameter pattern
   (`@InjectedParam` + `parametersOf`, wallosmobile's approach) since Nav3 entries hand the route
@@ -333,7 +336,7 @@ non-conflicting, but wiring changes:**
 ### Recommended path forward
 
 **Migrate all at once, not incrementally** — this matches the migration guide's own stated
-assumption (no supported Nav2/Nav3 coexistence path), and this repo's scope (~31 route classes, 15
+assumption (no supported Nav2/Nav3 coexistence path), and this repo's scope (39 route classes, 15
 ViewModels, one non-mechanical result-passing rewrite) is smaller than wallosmobile's own from-
 scratch build, not larger — there's no phase boundary inside "swap NavHost for NavDisplay" that
 would leave the app in a working state halfway through.

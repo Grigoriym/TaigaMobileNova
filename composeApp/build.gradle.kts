@@ -112,6 +112,13 @@ kotlin {
                 implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
                 implementation(libs.jetbrains.compose.material3.adaptive)
 
+                // Navigation 3 (not wired in yet, see step 6 of the tablet-form-factor-support
+                // checklist). Never the `androidx.navigation3:*` artifacts for navigation3-ui —
+                // they publish the same package names but are Android-only.
+                implementation(libs.jetbrains.navigation3.ui)
+                implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)
+                implementation(libs.jetbrains.androidx.savedstate)
+
                 implementation(projects.utils.ui)
                 implementation(projects.utils.formatter.decimal)
                 implementation(projects.utils.formatter.datetime)
