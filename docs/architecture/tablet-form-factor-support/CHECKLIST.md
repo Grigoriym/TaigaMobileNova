@@ -1,46 +1,25 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 2/2 done. **Current step:** 3 — design the `DrawerItem` →
-`NavigationSuiteScope` item mapping (gated, not started).
+**Progress:** 3/3 done. **Current step:** 4 — wire `NavigationSuiteScaffold` into
+`MainScreen.kt` / `TaigaDrawerWidget.kt` (not started).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next. Done steps move to
 [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
 
-## Step 3: Design the `DrawerItem` → `NavigationSuiteScope` item mapping
-
-⛔ **Gated — do not start without asking.** `NavigationSuiteScaffold`'s `navigationSuiteItems`
-lambda only supports flat items (icon/label/selected/onClick) — no header, group-label, or divider
-slot (confirmed 2026-08-15, see IMPLEMENTATION_PLAN.md). The current `TaigaDrawerWidget` has an
-app-name header, `DrawerItem.Group` sections with labels, `DrawerItem.Divider`s, and a Logout
-entry, none of which maps 1:1. This step is design-only — no code changes — and produces a written
-decision in IMPLEMENTATION_PLAN.md for step 4 to implement. Candidate compromises to weigh (not
-exhaustive):
-
-- Flatten all groups into one item list for the rail/permanent-drawer layout, dropping group
-  labels; keep the full grouped `ModalNavigationDrawer` only at compact width (phone/narrow).
-- Keep group labels by rendering multiple adjacent `NavigationSuiteScaffold` "sections" if the API
-  allows composing more than one, or by accepting a plain divider-less flat list with no headers
-  at all.
-- Something gregory prefers after seeing the tradeoff — this needs their input, not a unilateral
-  pick.
-
-**Verify:** IMPLEMENTATION_PLAN.md records the chosen mapping and why; no build/test verification
-applies to a design-only step.
-
 ## Step 4: Wire `NavigationSuiteScaffold` into `MainScreen.kt` / `TaigaDrawerWidget.kt`
 
-⛔ **Gated — do not start without asking.** Depends on step 3's decision (not yet made) and step 2
-(not yet done).
-
-Implement the mapping step 3 chose. Replace `TaigaDrawerWidget`'s unconditional
-`ModalNavigationDrawer` wrap in `MainScreen.kt` with `NavigationSuiteScaffold`, so
-`NavigationSuiteType` (derived from `currentWindowAdaptiveInfo()`) picks bottom bar / rail /
-permanent drawer automatically. Preserve existing behavior: `currentTopLevelDestination` selection
-highlighting, `onDrawerItemClick` navigation (including the Logout confirmation dialog path), and
-`gesturesEnabled`/back-handler behavior for whichever layout still uses a real `DrawerState`
-(permanent drawer/rail don't need swipe-to-open or a back handler the same way modal does — recheck
-`NavigationBackHandler` in `MainScreen.kt:193` still applies once the modal-only path is gone).
+Implement the mapping step 3 chose (see CHECKLIST-DONE.md and IMPLEMENTATION_PLAN.md's "Step 3
+decision"): at compact width keep `TaigaDrawerWidget`'s `ModalNavigationDrawer` exactly as today;
+at medium/expanded width, render `NavigationSuiteScaffold` with a flattened item list (groups
+unwrapped to their `Destination`s, divider and app-name header dropped). Replace `MainScreen.kt`'s
+unconditional wrap in `TaigaDrawerWidget` with a width check (`currentWindowAdaptiveInfo()` →
+`NavigationSuiteType`) selecting between the two rendering paths. Preserve existing behavior:
+`currentTopLevelDestination` selection highlighting, `onDrawerItemClick` navigation (including the
+Logout confirmation dialog path), and `gesturesEnabled`/back-handler behavior for whichever layout
+still uses a real `DrawerState` (permanent drawer/rail don't need swipe-to-open or a back handler
+the same way modal does — recheck `NavigationBackHandler` in `MainScreen.kt:193` still applies once
+the modal-only path is gone).
 
 **Verify:** `./gradlew jvmTest`, `ktlintCheck`, then emulator-testing skill — drive the app on a
 phone-sized emulator (confirms bottom bar / modal still works) and a tablet/large-screen emulator

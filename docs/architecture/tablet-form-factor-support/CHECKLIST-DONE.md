@@ -30,5 +30,22 @@ Added `jetbrains-compose-material3-adaptive-navigation-suite` (module
 --rerun-tasks`, `:composeApp:compileKotlinJvm` — all four green, no `Note:`, nothing deviated
 from the step's description.
 
-**Next:** queue is empty — step 3 is gated on gregory choosing the `DrawerItem` →
-`NavigationSuiteScope` mapping (see CHECKLIST.md and IMPLEMENTATION_PLAN.md).
+**Next:** step 3 is gated on gregory choosing the `DrawerItem` → `NavigationSuiteScope` mapping
+(see CHECKLIST.md and IMPLEMENTATION_PLAN.md).
+
+## Step 3: Design the `DrawerItem` → `NavigationSuiteScope` item mapping — ✅ done 2026-08-15
+
+Decision: dual-path, width-gated. Compact width keeps `TaigaDrawerWidget`'s `ModalNavigationDrawer`
+unchanged (app-name header, group labels, divider, full grouped experience). Medium/expanded width
+uses `NavigationSuiteScaffold` with a flattened item list — `DrawerItem.Group` unwrapped to its
+`Destination`s with no group-label text, `DrawerItem.Divider` dropped, no app-name header — since
+the `navigationSuiteItems` API has no slot for any of the three. gregory chose this over flattening
+uniformly at all widths or investigating a multi-section API; full option list and rationale in
+IMPLEMENTATION_PLAN.md's "Step 3 decision" section. No code changes — design-only step, as scoped.
+
+**Verify:** IMPLEMENTATION_PLAN.md records the chosen mapping and why — done. No build/test
+verification applies to a design-only step.
+
+**Next:** step 4 — wire `NavigationSuiteScaffold` into `MainScreen.kt` / `TaigaDrawerWidget.kt`
+using this mapping. It's a substantial code + emulator-verification task on its own; confirm with
+gregory before starting it rather than continuing straight into it.

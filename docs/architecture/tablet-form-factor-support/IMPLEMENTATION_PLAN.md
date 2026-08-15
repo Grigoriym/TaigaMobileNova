@@ -103,5 +103,26 @@ the same architecture as this one but already migrated to Nav3 (`jetbrainsNav3` 
 scoped yet — noted here for when option 3 gets decomposed, not a trigger to start it now. Option 4
 remains undecided and isn't blocking anything.
 
-Option 2 is decomposed into CHECKLIST.md steps 2–4. Step 3 is a design step gated on picking a
-compromise for the header/group-label/divider gap noted above — see CHECKLIST.md.
+Option 2 is decomposed into CHECKLIST.md steps 2–4.
+
+## Step 3 decision (2026-08-15)
+
+**Chosen mapping: dual-path, width-gated.**
+
+- **Compact width** (phone, narrow multi-window): unchanged. `TaigaDrawerWidget`'s current
+  `ModalNavigationDrawer` keeps rendering `DrawerItem` exactly as today — app-name header,
+  `DrawerItem.Group` labels, `DrawerItem.Divider`, the full grouped experience.
+- **Medium/expanded width** (tablet, wide multi-window, desktop): `NavigationSuiteScaffold`
+  renders a *flattened* item list built from the same `ImmutableList<DrawerItem>` —
+  `DrawerItem.Group` is unwrapped to its inner `Destination`s with no group-label text,
+  `DrawerItem.Divider` is dropped, and there's no app-name header (the `navigationSuiteItems`
+  API has no slot for any of the three). Item order is otherwise preserved.
+- gregory picked this over flattening uniformly at all widths (rejected: changes the phone
+  drawer's current grouped look, which is used far more than tablet/desktop today) and over
+  investigating a multi-section API (rejected: the 2026-08-15 investigation already found no
+  header/group-label/divider slot in the flat `item()` API — likely a dead end not worth a
+  session).
+- Step 4 implements this as two rendering paths sharing one `DrawerItemsBuilder` output — likely
+  a `flattenForNavigationSuite(items: ImmutableList<DrawerItem>): List<DrawerItem.Destination>`
+  helper (unit-testable in `commonTest`) plus a width check (`currentWindowAdaptiveInfo()` →
+  `NavigationSuiteType`) choosing which of the two widgets renders.
