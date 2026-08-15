@@ -6,6 +6,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.navigation.LocalResultBus
+import com.grappim.taigamobile.core.navigation.sendResult
 import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.tasks.ui.TaskDetailsNavDestination
 import com.grappim.taigamobile.feature.tasks.ui.TaskDetailsScreen
@@ -13,16 +15,17 @@ import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navigateToWorkItemEditDescription
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditTeamMember
-import com.grappim.taigamobile.main.setUpdateDataOnBack
+import com.grappim.taigamobile.main.UpdateDataOnBack
 import com.grappim.taigamobile.utils.ui.NativeText
 
 fun NavGraphBuilder.taskNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
     composable<TaskDetailsNavDestination> { backStackEntry ->
+        val resultBus = LocalResultBus.current
         TaskDetailsScreen(
             route = backStackEntry.toRoute(),
             showSnackbar = showSnackbar,
             goBack = {
-                navController.setUpdateDataOnBack()
+                resultBus.sendResult(UpdateDataOnBack)
                 navController.popBackStack()
             },
             goToEditDescription = { description: String, id: Long ->

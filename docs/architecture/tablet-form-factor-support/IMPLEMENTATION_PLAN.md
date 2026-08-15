@@ -456,3 +456,58 @@ removed, along with the stale doc comment describing the old failure mode. The t
 resolution pass) instead of the old `toRoute()` "no SavedStateHandle entry" failure — same
 tolerated-non-`NoDefinitionFoundException` category, confirmed by running the test unchanged before
 touching it.
+
+## Step 9 notes (2026-08-15) — the real `ResultEventBus` doesn't exist at this project's pinned Nav3 version
+
+**The gap analysis above (line 302-304) named the real recipe; it turned out to be unreachable.**
+Pulled the actual jars: `androidx.navigation3:navigation3-runtime`'s `result` package (
+`ResultEventBus`/`LocalResultEventBus`/`ResultEffect`/`rememberResultEventBusNavEntryDecorator`)
+first appears at `1.2.0-alpha04` — `1.1.1` through `1.1.6` (the whole stable line) have nothing
+under that package at all. This project pins `jetbrainsNav3 = "1.1.1"` (step 6). The JetBrains
+KMP-published `navigation3-ui` — the artifact this project actually depends on for iOS/desktop,
+since plain `androidx.navigation3:navigation3-ui` is Android-only (step 6's note) — only reaches
+`1.2.0-alpha02` on Maven Central, and its own POM pulls `navigation3-runtime:1.2.0-alpha04`. So
+reaching the real recipe means adopting an alpha release across the whole Nav3 stack, not a minor
+bump. Both documented recipes (`recipes/results-event.md` and `recipes/results-state.md`) depend on
+the same missing classes — there's no stable-version variant of either to fall back to.
+
+**Asked gregory rather than picking an approach silently** (three options: hand-roll a stand-in,
+adopt the alpha dependency, or defer the actual port to step 10). Chose hand-roll — stays on the
+stable dependency line, and this project already has precedent for hand-porting Nav3 infrastructure
+verbatim rather than depending on it prematurely (step 7's `Navigator`/`NavigationState`, ported
+from wallosmobile rather than waiting on an upstream API).
+
+**`ResultBus` (`core/navigation/.../ResultBus.kt`) mirrors the upstream `ResultEventBus`'s shape
+exactly** — method names, buffered-`Channel`-per-key semantics — read directly from the real
+implementation (`navigation3-runtime-1.2.0-alpha07-sources.jar`, `ResultEventBus.kt`/
+`ResultEffect.kt`) so the port is a faithful copy of the mechanism, not a reinvention. Left out the
+`conflateAsState` state-variant half of the upstream API (`recipes/results-state.md`'s approach) —
+only the event-based half (`recipes/results-event.md`) is needed for `UPDATE_DATA_ON_BACK`'s
+one-shot "refresh happened" signal, and CLAUDE.md's Simplicity First guidance argues against porting
+the unused half speculatively. `LocalResultBus` is a plain top-level
+`val = staticCompositionLocalOf<ResultBus> { error(...) }`, matching this repo's own
+`LocalScreenReadySignal`/`LocalOfflineState` convention (`uikit`) rather than androidx's own
+nested-object wrapper (`object LocalResultEventBus { ... }`) — ktlint's `compose:compositionlocal-*`
+rules flagged the nested-object shape (naming + allowlist) before this was caught; the flat-`val`
+form needed only an `.editorconfig` allowlist addition (`compose_allowed_composition_locals`,
+gated by `guardrails.yml`, `Gate-change:` line in the commit).
+
+**Wired in ahead of the NavDisplay cutover, on purpose.** `CompositionLocalProvider` is a plain
+Compose primitive, not something `NavHost` or `NavDisplay` owns — so `MainNavHost.kt` can provide
+`LocalResultBus` around its still-Nav2 `NavHost { }` call today, and every `composable<T>` under it
+already sees `LocalResultBus.current`. This means step 9's call-site porting (all 4+ `goBack`
+senders, all 9 list/board-screen consumers) is complete now, not deferred to step 10 — step 10 only
+has to carry the same `CompositionLocalProvider` wrap over to `NavDisplay`, not build the result
+mechanism from scratch.
+
+**One shared marker (`UpdateDataOnBack`, a `data object`) replaces one shared string constant
+(`UPDATE_DATA_ON_BACK`) — deliberately not per-destination-typed signals.** The old convention was
+already a single global key used by every detail screen and every list screen; `ResultBus`'s channel
+is keyed globally by type too, so a single marker is a faithful port, not a simplification that
+changes behavior. This is safe under Nav2's current `NavHost` specifically because only the
+currently-visible destination's `composable<T>` body is ever actively composed — any `ResultEffect`
+listening for `UpdateDataOnBack` that isn't the one screen currently on top simply isn't running, so
+there's no cross-screen collision despite the shared key. **This assumption needs re-checking at
+step 10** if `NavDisplay`'s scene strategy ever keeps more than one entry actively composed at once
+(list-detail two-pane, step 12's eventual payoff, is exactly that shape) — worth a note in step 12's
+own scoping when it starts.

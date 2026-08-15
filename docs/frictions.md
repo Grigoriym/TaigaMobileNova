@@ -21,7 +21,11 @@ deleted — see `finalize`.
   a forked subagent, even though CLAUDE.md documents it as available — worked around by reading
   `~/.claude/plugins/marketplaces/android-skills/navigation/navigation-3/SKILL.md` and its
   `references/` files directly instead. Not re-tried from a non-fork session, so unclear if it's a
-  fork-specific plugin-loading gap or broader.
+  fork-specific plugin-loading gap or broader. **Reproduced again 2026-08-15 (step 9) from a plain,
+  non-fork session** — same "Unknown skill" error, same workaround (read the `SKILL.md` file
+  directly). Not fork-specific; the skill name from CLAUDE.md's table just doesn't resolve via the
+  `Skill` tool at all, in any session type. Second occurrence — one more and this needs an actual
+  fix, not another line here.
 - 2026-08-15: assumed `NavBackStackEntry.toRoute<T>(typeMap = ...)` existed, copying
   `SavedStateHandle.toRoute<T>(typeMap = ...)`'s call shape into 6 NavGraph call sites (step 8) —
   compiler rejected all 6 ("No parameter with name 'typeMap' found"). `NavBackStackEntry.toRoute()`
@@ -29,3 +33,11 @@ deleted — see `finalize`.
   already registered on the destination. Confirmed by reading
   `navigation-common-desktop-2.9.2-sources.jar` directly rather than guessing from the sibling
   `SavedStateHandle` overload's signature.
+- 2026-08-15: a hand-rolled `CompositionLocal` shaped like androidx's own `LocalResultEventBus`
+  (an `object` wrapping a private `compositionLocalOf`) failed `ktlintCheck` twice over
+  (`compose:compositionlocal-naming`, `compose:compositionlocal-allowlist`) before switching to a
+  plain top-level `val = staticCompositionLocalOf<T> { error(...) }` — this repo's own
+  `LocalScreenReadySignal`/`LocalOfflineState` shape — which only needed one `.editorconfig`
+  allowlist addition (`compose_allowed_composition_locals`) to pass. Mirroring an upstream API's own
+  internal shape is not the same as matching this repo's convention for the same concept; check
+  `.editorconfig` for a `compose_*` allowlist before assuming a rule needs disabling.

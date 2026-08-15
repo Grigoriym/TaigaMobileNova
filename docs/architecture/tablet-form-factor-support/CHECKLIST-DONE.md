@@ -289,3 +289,75 @@ definitions checked, the 15 route-taking ViewModels report the expected tolerate
 
 **Next:** step 9 — port `UPDATE_DATA_ON_BACK` result-passing to the Nav3 event-bus recipe. The one
 genuinely non-mechanical piece of the migration.
+
+## Step 9: Port `UPDATE_DATA_ON_BACK` result-passing to the Nav3 event-bus recipe — ✅ done 2026-08-15
+
+**Blocker discovered mid-step, resolved by asking gregory rather than picking silently:** the real
+Nav3 event-bus recipe (`ResultEventBus`/`LocalResultEventBus`/`ResultEffect`/
+`rememberResultEventBusNavEntryDecorator`, `androidx.navigation3.runtime.result`) does not exist in
+`androidx.navigation3:navigation3-runtime` until `1.2.0-alpha04` — confirmed by pulling the actual
+jars, `1.1.1` through `1.1.6` have no `result` package at all. This project is pinned to the stable
+`1.1.1` line (`jetbrainsNav3` in `gradle/libs.versions.toml`, step 6), and the JetBrains
+KMP-published `navigation3-ui` (needed for iOS/desktop) only reaches `1.2.0-alpha02`, which itself
+pulls `navigation3-runtime:1.2.0-alpha04` — so the official recipe is unreachable without adopting
+an alpha dependency across the whole Nav3 stack. Both documented recipes (event-based and
+state-based) depend on the same missing classes; there is no stable-version fallback. Presented
+three options (hand-roll, bump to alpha, defer to step 10); gregory chose hand-roll.
+
+**`ResultBus`** (`core/navigation/src/commonMain/.../ResultBus.kt`) is a from-scratch class that
+mirrors the upstream `ResultEventBus`'s shape exactly — same method names (`sendResult`,
+`getResultFlow`), same buffered-`Channel`-per-key semantics (`Channel.BUFFERED` +
+`BufferOverflow.SUSPEND`, one channel per result key, created lazily) — so call sites read the same
+as the real recipe and swapping to it later, once this project's Nav3 pin moves off 1.1.x, is a
+search-and-replace. `LocalResultBus` (`staticCompositionLocalOf<ResultBus>`, top-level `val`, not
+nested in an object — matches this repo's existing `LocalScreenReadySignal`/`LocalOfflineState`
+convention, not androidx's own nested-object pattern) and `ResultEffect` (both the
+`resultKey: String` and `reified T` overloads) round out the API. `ResultBus`'s own logic
+(`sendResult`/`getResultFlow`) is unit-tested in `ResultBusTest.kt`, following `NavigatorTest.kt`'s
+precedent of testing only the non-`@Composable` core — the `@Composable` wrappers are exercised via
+emulator instead, same split as `NavigationState.kt`.
+
+**Wiring**: `MainNavHost.kt` wraps its `NavHost { }` call in
+`CompositionLocalProvider(LocalResultBus provides rememberResultBus())`, so every `composable<T>`
+destination underneath can read `LocalResultBus.current` — this works today, before Nav3's
+`NavDisplay` exists, because `CompositionLocalProvider` is a plain Compose primitive with no
+dependency on which navigation library owns the tree. A single shared marker object,
+`UpdateDataOnBack` (`MainNavHost.kt`, replacing the old `UPDATE_DATA_ON_BACK` string constant),
+is sent by every detail screen's `goBack` (`IssueDetailsNavDestination`, `EpicDetailsNavDestination`,
+`TaskDetailsNavDestination`, `UserStoryDetailsNavDestination`, `SprintNavDestination`) and consumed
+by every list/board screen via `ResultEffect<UpdateDataOnBack> { updateData = true }` writing into a
+local `var updateData by remember { mutableStateOf(false) }` — preserving each Screen's existing
+`updateData: Boolean` parameter unchanged, so no feature-module code needed touching, only the 6
+nav-graph files (`MainNavHost.kt`, `IssueNavGraph.kt`, `EpicNavGraph.kt`, `ScrumNavGraph.kt`,
+`TaskNavGraph.kt`, `UserStoryNavGraph.kt`) plus the new `core:navigation` file. One shared signal
+type is a faithful port of the old convention (`UPDATE_DATA_ON_BACK` was itself one global string
+key for every screen) and is safe under Nav2's current NavHost because only the top (currently
+visible) destination's `composable<T>` body is actively composed at a time — no cross-screen
+collision is possible even though the channel key is global.
+
+**Note (ktlint traps hit while wiring this in, not scoped in the original step text):** adding
+`LocalResultBus` tripped `compose:compositionlocal-allowlist` — this repo's ktlint compose-rules
+config allowlists `CompositionLocal`s by name via `.editorconfig`'s
+`compose_allowed_composition_locals` (`LocalTopBarConfig, LocalFilePicker, LocalScreenReadySignal,
+LocalOfflineState`), not detekt's own `CompositionLocalAllowlist` (which is `active: false` and
+irrelevant here). Added `LocalResultBus` to that list — `.editorconfig` is one of the files
+`.github/workflows/guardrails.yml` gates, so the commit carries a `Gate-change:` line. Separately,
+`var updateData by mutableStateOf(false)` without `remember` tripped `compose:remember-missing-check`
+across all 4 files that use the pattern — CLAUDE.md's Testing section already documents
+`standard:function-signature`'s "would fit on one line" trap for test code; this is the same shape
+of trap for production Composable code, worth remembering for future `mutableStateOf` usage inside
+a `composable<T> { }` body.
+
+**Verify:** `./gradlew jvmTest` (full repo run, green, including the 3 new `ResultBusTest` cases)
+and `ktlintCheck` (green after the `.editorconfig` allowlist addition and `ktlintCommonMainSourceSetFormat`
+auto-fixes). Four-target compile matrix
+(`:composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks`, `:composeApp:compileKotlinIosArm64
+--rerun-tasks`, `:androidApp:compileFdroidDebugKotlin --rerun-tasks`, `:composeApp:compileKotlinJvm`)
+all green. Emulator verification on `Medium_Phone_API_36.1` (`emulator-testing` skill): changed user
+story #11's status from Kanban, backed out, confirmed the "NEW" column count dropped 4→3 with the
+card gone (not stale); changed task #31's status from Sprint 1's taskboard, backed out, confirmed
+the "NEW" column lost that card too. No crash either time (`adb logcat` checked for
+`FATAL EXCEPTION`/`AndroidRuntime`, none found).
+
+**Next:** step 10 — replace `NavHost`/`composable<T>` with `NavDisplay`/`entry<T>`. Gated — confirm
+with gregory before starting given the blast radius (no supported Nav2/Nav3 coexistence path).

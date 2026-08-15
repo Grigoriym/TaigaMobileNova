@@ -1,7 +1,7 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 8/12 done. **Current step:** 9 — port `UPDATE_DATA_ON_BACK` result-passing to the
-Nav3 event-bus recipe (not started).
+**Progress:** 9/12 done. **Current step:** 10 — replace `NavHost`/`composable<T>` with
+`NavDisplay`/`entry<T>` (gated, not started).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -10,18 +10,6 @@ IMPLEMENTATION_PLAN.md's "Navigation 3 migration investigation" section). Option
 fully implemented. Steps 6–11 are the migration itself (mechanical, no open decisions blocking
 them); step 12 (the actual list-detail pane layout, option 3's real payoff) is gated — see its
 entry below. Done steps move to [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
-
-## Step 9: Port `UPDATE_DATA_ON_BACK` result-passing to the Nav3 event-bus recipe
-
-Replace the current `UPDATE_DATA_ON_BACK` savedStateHandle-based result-passing convention with
-Nav3's event-bus recipe (see the `android-skills:navigation-3` skill and/or wallosmobile if it has
-an equivalent). This is the one genuinely non-mechanical piece of the migration — call out any
-screen where the "did the board change, should I refresh" signal doesn't map cleanly, rather than
-forcing a fit.
-
-**Verify:** `./gradlew jvmTest`, `ktlintCheck`, plus emulator-testing skill — specifically drive a
-kanban/sprint board round-trip (edit a task, back out, confirm the board refreshes) since that's
-the concrete user-visible behavior this convention protects.
 
 ## Step 10: Replace `NavHost`/`composable<T>` with `NavDisplay`/`entry<T>` — the cutover
 
@@ -59,6 +47,11 @@ investigation" section that gregory hasn't answered yet:
 - Which screens get list-detail treatment — Kanban/Sprint board + task detail is the obvious
   candidate but not decided; this is a design decision (see step 3's precedent), not an
   engineering one.
+- Step 9's hand-rolled `ResultBus` (`core/navigation/.../ResultBus.kt`) assumes only one
+  destination is ever actively composed at a time — true under Nav2's `NavHost`, but list-detail
+  two-pane is exactly the shape that keeps two entries composed simultaneously. Re-check whether
+  the shared `UpdateDataOnBack` signal still lands on the right pane before relying on it here; see
+  IMPLEMENTATION_PLAN.md's "Step 9 notes".
 
 This is option 3's actual payoff — everything in steps 6–11 is infrastructure with no user-visible
 change.

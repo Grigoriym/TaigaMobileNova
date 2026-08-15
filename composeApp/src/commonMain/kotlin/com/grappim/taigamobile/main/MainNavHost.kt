@@ -4,7 +4,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
@@ -12,6 +17,10 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.navigation.LocalResultBus
+import com.grappim.taigamobile.core.navigation.ResultEffect
+import com.grappim.taigamobile.core.navigation.rememberResultBus
+import com.grappim.taigamobile.core.navigation.sendResult
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
 import com.grappim.taigamobile.createtask.navigateToCreateTask
@@ -68,173 +77,176 @@ fun MainNavHost(
         }
     }
 
-    NavHost(
-        modifier = modifier,
-        navController = navController,
-        startDestination = LoginNavDestination,
-        enterTransition = {
-            fadeIn(animationSpec = tween(150))
-        },
-        exitTransition = {
-            fadeOut(animationSpec = tween(150))
-        }
-    ) {
-        issueNavGraph(
-            showSnackbar = showSnackbar,
-            navController = navController
-        )
-
-        userStoryNavGraph(
-            showSnackbar = showSnackbar,
-            navController = navController
-        )
-
-        taskNavGraph(
-            showSnackbar = showSnackbar,
-            navController = navController
-        )
-
-        workItemEditsNavGraph(
-            showSnackbar = showSnackbar,
-            navController = navController
-        )
-
-        epicNavGraph(
-            showSnackbar = showSnackbar,
-            navController = navController
-        )
-
-        wikiNavGraph(
-            showSnackbar = showSnackbar,
-            navController = navController
-        )
-
-        scrumNavGraph(
-            navController = navController
-        )
-
-        settingsNavGraph(
+    CompositionLocalProvider(LocalResultBus provides rememberResultBus()) {
+        NavHost(
+            modifier = modifier,
             navController = navController,
-            showSnackbar = showSnackbar
-        )
-
-        composable<LoginNavDestination> {
-            val screenReadySignal = LocalScreenReadySignal.current
-            LaunchedEffect(initialNavState.isReady) {
-                if (initialNavState.isReady && initialNavState.startDestination is LoginNavDestination) {
-                    screenReadySignal.signalReady()
-                }
+            startDestination = LoginNavDestination,
+            enterTransition = {
+                fadeIn(animationSpec = tween(150))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(150))
             }
-            LoginScreen(
-                onShowSnackbar = showSnackbar,
-                onLoginSuccess = {
-                    navController.navigateToProjectSelector(isFromLogin = true)
-                }
-            )
-        }
-
-        composable<ProjectSelectorNavDestination> { backStackEntry ->
-            val screenReadySignal = LocalScreenReadySignal.current
-            LaunchedEffect(initialNavState.isReady) {
-                if (initialNavState.isReady && initialNavState.startDestination is ProjectSelectorNavDestination) {
-                    screenReadySignal.signalReady()
-                }
-            }
-            ProjectSelectorScreen(
-                route = backStackEntry.toRoute(),
-                goBack = {
-                    navController.popBackStack()
-                },
-                onProjectSelect = {
-                    navController.navigateToDashboardAsTopDestination()
-                }
-            )
-        }
-
-        composable<DashboardNavDestination> {
-            val screenReadySignal = LocalScreenReadySignal.current
-            LaunchedEffect(initialNavState.isReady) {
-                if (initialNavState.isReady && initialNavState.startDestination is DashboardNavDestination) {
-                    screenReadySignal.signalReady()
-                }
-            }
-            DashboardScreen(
-                navigateToTaskScreen = { id, type, ref ->
-                    navController.navigate(id, type, ref)
-                }
-            )
-        }
-
-        composable<TeamNavDestination> {
-            TeamScreen(
+        ) {
+            issueNavGraph(
                 showSnackbar = showSnackbar,
-                goToProfile = { userId ->
-                    navController.navigateToProfileScreen(userId)
-                }
+                navController = navController
             )
-        }
 
-        composable<KanbanNavDestination> { navBackStackEntry ->
-            val updateData: Boolean =
-                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            KanbanScreen(
-                updateData = updateData,
+            userStoryNavGraph(
                 showSnackbar = showSnackbar,
-                goToTask = { id, type, ref ->
-                    navController.navigate(id, type, ref)
-                },
-                goToCreateTask = { task, statusId, swimlaneId ->
-                    navController.navigateToCreateTask(
-                        type = task,
-                        statusId = statusId,
-                        swimlaneId = swimlaneId
-                    )
-                }
+                navController = navController
             )
-        }
 
-        composable<SprintNavDestination> { navBackStackEntry ->
-            val updateData: Boolean =
-                navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
-            SprintScreen(
-                route = navBackStackEntry.toRoute(),
-                updateData = updateData,
+            taskNavGraph(
                 showSnackbar = showSnackbar,
-                goBack = {
-                    navController.setUpdateDataOnBack()
-                    navController.popBackStack()
-                },
-                goToTaskScreen = { id, type, ref ->
-                    navController.navigate(id, type, ref)
-                },
-                goToCreateTask = { type, parentId, sprintId ->
-                    navController.navigateToCreateTask(
-                        type = type,
-                        parentId = parentId,
-                        sprintId = sprintId
-                    )
-                }
+                navController = navController
             )
-        }
 
-        composable<ProfileNavDestination> { backStackEntry ->
-            ProfileScreen(
-                route = backStackEntry.toRoute(),
+            workItemEditsNavGraph(
+                showSnackbar = showSnackbar,
+                navController = navController
+            )
+
+            epicNavGraph(
+                showSnackbar = showSnackbar,
+                navController = navController
+            )
+
+            wikiNavGraph(
+                showSnackbar = showSnackbar,
+                navController = navController
+            )
+
+            scrumNavGraph(
+                navController = navController
+            )
+
+            settingsNavGraph(
+                navController = navController,
                 showSnackbar = showSnackbar
             )
-        }
 
-        composable<CreateTaskNavDestination>(
-            typeMap = typeMapOf(listOf(typeOf<CommonTaskType>()))
-        ) { backStackEntry ->
-            CreateTaskScreen(
-                route = backStackEntry.toRoute(),
-                showSnackbar = showSnackbar,
-                navigateOnTaskCreated = { id, type, ref ->
-                    navController.popBackStack()
-                    navController.navigate(id, type, ref)
+            composable<LoginNavDestination> {
+                val screenReadySignal = LocalScreenReadySignal.current
+                LaunchedEffect(initialNavState.isReady) {
+                    if (initialNavState.isReady && initialNavState.startDestination is LoginNavDestination) {
+                        screenReadySignal.signalReady()
+                    }
                 }
-            )
+                LoginScreen(
+                    onShowSnackbar = showSnackbar,
+                    onLoginSuccess = {
+                        navController.navigateToProjectSelector(isFromLogin = true)
+                    }
+                )
+            }
+
+            composable<ProjectSelectorNavDestination> { backStackEntry ->
+                val screenReadySignal = LocalScreenReadySignal.current
+                LaunchedEffect(initialNavState.isReady) {
+                    if (initialNavState.isReady && initialNavState.startDestination is ProjectSelectorNavDestination) {
+                        screenReadySignal.signalReady()
+                    }
+                }
+                ProjectSelectorScreen(
+                    route = backStackEntry.toRoute(),
+                    goBack = {
+                        navController.popBackStack()
+                    },
+                    onProjectSelect = {
+                        navController.navigateToDashboardAsTopDestination()
+                    }
+                )
+            }
+
+            composable<DashboardNavDestination> {
+                val screenReadySignal = LocalScreenReadySignal.current
+                LaunchedEffect(initialNavState.isReady) {
+                    if (initialNavState.isReady && initialNavState.startDestination is DashboardNavDestination) {
+                        screenReadySignal.signalReady()
+                    }
+                }
+                DashboardScreen(
+                    navigateToTaskScreen = { id, type, ref ->
+                        navController.navigate(id, type, ref)
+                    }
+                )
+            }
+
+            composable<TeamNavDestination> {
+                TeamScreen(
+                    showSnackbar = showSnackbar,
+                    goToProfile = { userId ->
+                        navController.navigateToProfileScreen(userId)
+                    }
+                )
+            }
+
+            composable<KanbanNavDestination> {
+                var updateData by remember { mutableStateOf(false) }
+                ResultEffect<UpdateDataOnBack> { updateData = true }
+                KanbanScreen(
+                    updateData = updateData,
+                    showSnackbar = showSnackbar,
+                    goToTask = { id, type, ref ->
+                        navController.navigate(id, type, ref)
+                    },
+                    goToCreateTask = { task, statusId, swimlaneId ->
+                        navController.navigateToCreateTask(
+                            type = task,
+                            statusId = statusId,
+                            swimlaneId = swimlaneId
+                        )
+                    }
+                )
+            }
+
+            composable<SprintNavDestination> { navBackStackEntry ->
+                var updateData by remember { mutableStateOf(false) }
+                ResultEffect<UpdateDataOnBack> { updateData = true }
+                val resultBus = LocalResultBus.current
+                SprintScreen(
+                    route = navBackStackEntry.toRoute(),
+                    updateData = updateData,
+                    showSnackbar = showSnackbar,
+                    goBack = {
+                        resultBus.sendResult(UpdateDataOnBack)
+                        navController.popBackStack()
+                    },
+                    goToTaskScreen = { id, type, ref ->
+                        navController.navigate(id, type, ref)
+                    },
+                    goToCreateTask = { type, parentId, sprintId ->
+                        navController.navigateToCreateTask(
+                            type = type,
+                            parentId = parentId,
+                            sprintId = sprintId
+                        )
+                    }
+                )
+            }
+
+            composable<ProfileNavDestination> { backStackEntry ->
+                ProfileScreen(
+                    route = backStackEntry.toRoute(),
+                    showSnackbar = showSnackbar
+                )
+            }
+
+            composable<CreateTaskNavDestination>(
+                typeMap = typeMapOf(listOf(typeOf<CommonTaskType>()))
+            ) { backStackEntry ->
+                CreateTaskScreen(
+                    route = backStackEntry.toRoute(),
+                    showSnackbar = showSnackbar,
+                    navigateOnTaskCreated = { id, type, ref ->
+                        navController.popBackStack()
+                        navController.navigate(id, type, ref)
+                    }
+                )
+            }
         }
     }
 }
@@ -263,10 +275,11 @@ private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Long) {
     }
 }
 
-const val UPDATE_DATA_ON_BACK = "UpdateDataOnBack"
-
-fun NavController.setUpdateDataOnBack() {
-    previousBackStackEntry
-        ?.savedStateHandle
-        ?.set(UPDATE_DATA_ON_BACK, true)
-}
+/**
+ * The result-bus signal that a screen we're returning to should refresh its data. Replaces the
+ * old Nav2 `previousBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK]` convention — see
+ * [com.grappim.taigamobile.core.navigation.ResultBus]'s doc for why this is hand-rolled instead
+ * of the real Nav3 `ResultEventBus`. One shared signal for every screen, same as the constant key
+ * the old convention used.
+ */
+data object UpdateDataOnBack

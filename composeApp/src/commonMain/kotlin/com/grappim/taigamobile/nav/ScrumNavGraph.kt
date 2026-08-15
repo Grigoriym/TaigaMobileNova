@@ -1,9 +1,14 @@
 package com.grappim.taigamobile.nav
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.navigation.ResultEffect
 import com.grappim.taigamobile.createtask.navigateToCreateTask
 import com.grappim.taigamobile.feature.scrum.ui.ScrumBacklogDestination
 import com.grappim.taigamobile.feature.scrum.ui.ScrumClosedSprintsDestination
@@ -13,12 +18,12 @@ import com.grappim.taigamobile.feature.scrum.ui.closed.ScrumClosedSprintsScreen
 import com.grappim.taigamobile.feature.scrum.ui.open.ScrumOpenSprintsScreen
 import com.grappim.taigamobile.feature.sprint.ui.navigateToSprintScreen
 import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
-import com.grappim.taigamobile.main.UPDATE_DATA_ON_BACK
+import com.grappim.taigamobile.main.UpdateDataOnBack
 
 fun NavGraphBuilder.scrumNavGraph(navController: NavHostController) {
-    composable<ScrumBacklogDestination> { navBackStackEntry ->
-        val updateData: Boolean =
-            navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
+    composable<ScrumBacklogDestination> {
+        var updateData by remember { mutableStateOf(false) }
+        ResultEffect<UpdateDataOnBack> { updateData = true }
         ScrumBacklogScreen(
             updateData = updateData,
             goToCreateUserStory = {
@@ -33,9 +38,9 @@ fun NavGraphBuilder.scrumNavGraph(navController: NavHostController) {
         )
     }
 
-    composable<ScrumOpenSprintsDestination> { navBackStackEntry ->
-        val updateData: Boolean =
-            navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
+    composable<ScrumOpenSprintsDestination> {
+        var updateData by remember { mutableStateOf(false) }
+        ResultEffect<UpdateDataOnBack> { updateData = true }
         ScrumOpenSprintsScreen(
             updateData = updateData,
             goToSprint = { sprint ->
@@ -44,9 +49,9 @@ fun NavGraphBuilder.scrumNavGraph(navController: NavHostController) {
         )
     }
 
-    composable<ScrumClosedSprintsDestination> { navBackStackEntry ->
-        val updateData: Boolean =
-            navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
+    composable<ScrumClosedSprintsDestination> {
+        var updateData by remember { mutableStateOf(false) }
+        ResultEffect<UpdateDataOnBack> { updateData = true }
         ScrumClosedSprintsScreen(
             updateData = updateData,
             goToSprint = { sprint ->
