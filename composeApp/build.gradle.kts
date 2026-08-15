@@ -109,6 +109,7 @@ kotlin {
                 implementation(libs.filekit.dialogs.compose)
 
                 implementation(libs.jetbrains.compose.icons.extended)
+                implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
 
                 implementation(projects.utils.ui)
                 implementation(projects.utils.formatter.decimal)

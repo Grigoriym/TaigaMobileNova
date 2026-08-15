@@ -14,5 +14,21 @@ a no-op below 840dp. Preview added with `@PreviewTaigaDarkLight` + `TaigaMobileP
 **Verify:** `./gradlew :uikit:compileKotlinJvm :uikit:ktlintCheck` — both green, no `Note:`,
 nothing deviated from the step's description.
 
-**Next:** queue is empty — steps 2+ are gated on gregory choosing a scope option (see
-CHECKLIST.md and IMPLEMENTATION_PLAN.md's "Decision status").
+**Next:** step 2 (unblocked — no scope decision needed to add a dependency).
+
+## Step 2: Add the `material3-adaptive-navigation-suite` dependency — ✅ done 2026-08-15
+
+Added `jetbrains-compose-material3-adaptive-navigation-suite` (module
+`org.jetbrains.compose.material3:material3-adaptive-navigation-suite`, pinned to
+`jetbrainsComposeMaterial3` = `1.10.0-alpha05`) to `gradle/libs.versions.toml`, and
+`implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)` to
+`composeApp/build.gradle.kts`'s `commonMain` dependencies, next to the existing
+`jetbrains.compose.icons.extended` line. No UI code changes, as scoped.
+
+**Verify:** `./gradlew :composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks`,
+`:composeApp:compileKotlinIosArm64 --rerun-tasks`, `:androidApp:compileFdroidDebugKotlin
+--rerun-tasks`, `:composeApp:compileKotlinJvm` — all four green, no `Note:`, nothing deviated
+from the step's description.
+
+**Next:** queue is empty — step 3 is gated on gregory choosing the `DrawerItem` →
+`NavigationSuiteScope` mapping (see CHECKLIST.md and IMPLEMENTATION_PLAN.md).

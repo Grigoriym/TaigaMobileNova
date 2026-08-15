@@ -1,24 +1,11 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 1/1 done. **Current step:** 2 — add the `material3-adaptive-navigation-suite`
-dependency (not started).
+**Progress:** 2/2 done. **Current step:** 3 — design the `DrawerItem` →
+`NavigationSuiteScope` item mapping (gated, not started).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next. Done steps move to
 [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
-
-## Step 2: Add the `material3-adaptive-navigation-suite` dependency
-
-Add `org.jetbrains.compose.material3:material3-adaptive-navigation-suite`, pinned to the same
-version as this repo's `jetbrainsComposeMaterial3` (currently `1.10.0-alpha05` — confirmed
-KMP-published for Android/Desktop/iOS at that version, see IMPLEMENTATION_PLAN.md), to
-`gradle/libs.versions.toml` and `composeApp/build.gradle.kts`'s `commonMain` dependencies only —
-not the shared `KmpCompose.kt` convention plugin, since no other module needs it. No UI code
-changes in this step.
-
-**Verify:** `./gradlew :composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks`,
-`:composeApp:compileKotlinIosArm64 --rerun-tasks`, `:androidApp:compileFdroidDebugKotlin
---rerun-tasks`, and `:composeApp:compileKotlinJvm` all green.
 
 ## Step 3: Design the `DrawerItem` → `NavigationSuiteScope` item mapping
 
