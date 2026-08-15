@@ -13,6 +13,9 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.navigationsuite.ExperimentalMaterial3AdaptiveNavigationSuiteApi
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -28,8 +31,10 @@ import androidx.navigation.NavController
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.window.core.layout.WindowSizeClass
 import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.TaigaDrawerWidget
+import com.grappim.taigamobile.TaigaNavigationSuiteWidget
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
@@ -74,6 +79,7 @@ fun MainContent(viewModel: MainViewModel) {
     }
 }
 
+@OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class)
 @Composable
 private fun MainScreenContent(
     viewModel: MainViewModel,
@@ -115,26 +121,20 @@ private fun MainScreenContent(
         isVisible = state.isLogoutConfirmationVisible
     )
 
-    TaigaDrawerWidget(
-        drawerItems = drawerItems,
-        currentTopLevelDestination = appState.currentTopLevelDestination,
-        drawerState = drawerState,
-        onDrawerItemClick = { item: DrawerDestination ->
-            scope.launch {
-                drawerState.close()
-            }
-            if (item == DrawerDestination.Logout) {
-                state.setIsLogoutConfirmationVisible(true)
-            } else {
-                appState.navigateToTopLevelDestination(item)
-            }
-        },
-        gesturesEnabled = appState.areDrawerGesturesEnabled &&
-            initialNavState.isReady &&
-            initialNavState.isProjectSelected
-    ) {
-        val snackbarActionLabel = stringResource(RString.close)
+    val snackbarActionLabel = stringResource(RString.close)
 
+    val onDrawerItemClick: (DrawerDestination) -> Unit = { item ->
+        scope.launch {
+            drawerState.close()
+        }
+        if (item == DrawerDestination.Logout) {
+            state.setIsLogoutConfirmationVisible(true)
+        } else {
+            appState.navigateToTopLevelDestination(item)
+        }
+    }
+
+    val mainContent: @Composable () -> Unit = {
         Scaffold(
             modifier = Modifier.imePadding(),
             topBar = {
@@ -179,28 +179,58 @@ private fun MainScreenContent(
                         }
                     )
                 }
-
-                /**
-                 * It is required to place it below MainNavHost because as per documentation
-                 * "If multiple BackHandler are present in the composition,
-                 * the one that is composed last among all enabled handlers will be invoked."
-                 * And with that this one will be called, otherwise on clicking back
-                 * we will go back in navigation but drawer will stay opened
-                 *
-                 * The second condition drawerState.isAnimationRunning is needed to fix an issue
-                 * when the drawer is visibly fully opened but is not opened actually
-                 */
-                NavigationBackHandler(
-                    state = rememberNavigationEventState(NavigationEventInfo.None),
-                    isBackEnabled = drawerState.isOpen || drawerState.isAnimationRunning,
-                    onBackCompleted = {
-                        scope.launch {
-                            drawerState.close()
-                        }
-                    }
-                )
             }
         )
+    }
+
+    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+    val isCompactWidth = !windowAdaptiveInfo.windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+
+    if (isCompactWidth) {
+        TaigaDrawerWidget(
+            drawerItems = drawerItems,
+            currentTopLevelDestination = appState.currentTopLevelDestination,
+            drawerState = drawerState,
+            onDrawerItemClick = onDrawerItemClick,
+            gesturesEnabled = appState.areDrawerGesturesEnabled &&
+                initialNavState.isReady &&
+                initialNavState.isProjectSelected
+        ) {
+            mainContent()
+
+            /**
+             * It is required to place it below MainNavHost because as per documentation
+             * "If multiple BackHandler are present in the composition,
+             * the one that is composed last among all enabled handlers will be invoked."
+             * And with that this one will be called, otherwise on clicking back
+             * we will go back in navigation but drawer will stay opened
+             *
+             * The second condition drawerState.isAnimationRunning is needed to fix an issue
+             * when the drawer is visibly fully opened but is not opened actually
+             *
+             * Only needed for the modal drawer above: a rail/permanent drawer has no open/close
+             * animation state for back to intercept.
+             */
+            NavigationBackHandler(
+                state = rememberNavigationEventState(NavigationEventInfo.None),
+                isBackEnabled = drawerState.isOpen || drawerState.isAnimationRunning,
+                onBackCompleted = {
+                    scope.launch {
+                        drawerState.close()
+                    }
+                }
+            )
+        }
+    } else {
+        TaigaNavigationSuiteWidget(
+            drawerItems = drawerItems,
+            currentTopLevelDestination = appState.currentTopLevelDestination,
+            onDrawerItemClick = onDrawerItemClick,
+            layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
+        ) {
+            mainContent()
+        }
     }
 }
 

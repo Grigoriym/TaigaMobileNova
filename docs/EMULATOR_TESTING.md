@@ -6,7 +6,9 @@ technique lives in the skill itself, not here — this file is only what's true 
 
 ## Device facts
 
-- AVD: `Medium_Phone_API_36.1`
+- AVD: `Medium_Phone_API_36.1` (phone, compact width) and `Medium_Tablet` (tablet, confirmed
+  1280dp-wide landscape — expanded width; used for adaptive-navigation-suite verification,
+  see `docs/architecture/tablet-form-factor-support/`)
 - Package id(s): `com.grappim.taigamobile.fdroid.debug` (fdroid debug build — the
   `debug` build type adds its own `.debug` suffix on top of the `fdroid` flavor's
   `.fdroid` suffix, so the id is not just `com.grappim.taigamobile.fdroid`). Release
@@ -48,3 +50,11 @@ technique lives in the skill itself, not here — this file is only what's true 
 - Post-login landing screen is **"Select Project"** (`Search projects` field + an
   `Owner`-grouped list) — this is the seeded local instance's three projects: `empty
   (empty)`, `additional (main-3)`, `Main project (main-2)`.
+- **On `Medium_Tablet`, `NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo` resolves to
+  `NavigationRail` (narrow icon-over-label column), not `NavigationDrawer`**, even though the
+  AVD's landscape width is ~1280dp — comfortably past the 840dp expanded-width breakpoint.
+  Confirmed 2026-08-15 verifying tablet checklist step 4. Don't assume EXPANDED width alone
+  guarantees a permanent drawer in this API; a rail is a legitimate result too and both count as
+  the "medium/expanded" `NavigationSuiteScaffold` path.
+- **A fresh `Medium_Tablet` boot pre-fills the login server-URL field with a stale LAN IP**, same
+  as the phone AVD gotcha above — clear it the same way before typing `http://10.0.2.2:9000`.

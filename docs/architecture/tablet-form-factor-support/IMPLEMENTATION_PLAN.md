@@ -5,8 +5,15 @@ Reference doc for this initiative: architecture, rationale, tradeoffs. See
 
 ## Current state (evidence, gathered 2026-08-15)
 
-The app has **no form-factor adaptation at all** — it is built single-pane, phone-shaped, on
-every platform:
+This is the pre-initiative baseline — the survey that motivated the scope options below. Option 2
+(steps 2–4) has since shipped a width-gated `NavigationSuiteScaffold`/`ModalNavigationDrawer`
+split, so the "drawer is always modal" and "no window-size-class awareness" bullets no longer hold;
+see [CHECKLIST-DONE.md](CHECKLIST-DONE.md) steps 2–4 for what changed. The rest of this section
+(single-pane `NavHost`, unconstrained desktop window, no content width cap beyond step 1's
+unwired `TaigaAdaptiveContent`, no iOS device-family check) is still accurate.
+
+The app originally had **no form-factor adaptation at all** — it was built single-pane,
+phone-shaped, on every platform:
 
 - **Navigation is single-pane only.** `MainNavHost` (`composeApp/.../main/MainNavHost.kt`) is one
   `NavHost` with a linear back stack — no list-detail or two-pane split anywhere in the codebase.
@@ -126,3 +133,35 @@ Option 2 is decomposed into CHECKLIST.md steps 2–4.
   a `flattenForNavigationSuite(items: ImmutableList<DrawerItem>): List<DrawerItem.Destination>`
   helper (unit-testable in `commonTest`) plus a width check (`currentWindowAdaptiveInfo()` →
   `NavigationSuiteType`) choosing which of the two widgets renders.
+
+## Step 4 notes (2026-08-15) — implementation and a dependency gap the earlier steps missed
+
+Implemented as described above. Two things worth recording for future adaptive-navigation work in
+this repo:
+
+**`material3-adaptive-navigation-suite` alone is not enough to call `NavigationSuiteScaffold` with
+its own default `layoutType`.** Its `NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(...)`
+and the `currentWindowAdaptiveInfo()`/`WindowAdaptiveInfo` types it needs live in a **separate**
+artifact, `org.jetbrains.compose.material3.adaptive:adaptive` — own release train (`1.3.0-beta02`
+at time of writing), unrelated to `jetbrainsComposeMaterial3`'s `1.10.0-alpha05`. Step 2's `.module`
+inspection (see the scope-options entry above) checked the navigation-suite artifact's own platform
+variants but not its dependency graph, so this didn't surface until step 4 tried to compile against
+`currentWindowAdaptiveInfo()`. Added as `jetbrainsComposeMaterial3Adaptive` /
+`jetbrains-compose-material3-adaptive` in `gradle/libs.versions.toml`. If a future adaptive-API
+addition in this repo hits an unresolved reference from a `androidx.compose.material3.adaptive.*`
+type, check whether it's actually two JetBrains artifacts before assuming a version mismatch.
+
+**Use the V2/breakpoint APIs, not the ones the M3 docs lead with.** `currentWindowAdaptiveInfo()`
+(no suffix) and `WindowSizeClass.windowWidthSizeClass`/`WindowWidthSizeClass` are all deprecated in
+favor of `currentWindowAdaptiveInfoV2()` and `WindowSizeClass.isWidthAtLeastBreakpoint(dp)` /
+`isAtLeastBreakpoint(w, h)` — the compiler flags all three with a deprecation warning, but the code
+still compiles, so it's easy to ship the deprecated path unnoticed. `MainScreen.kt` uses
+`currentWindowAdaptiveInfoV2()` + `windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.
+WIDTH_DP_MEDIUM_LOWER_BOUND)` for the compact/non-compact split.
+
+**`calculateFromAdaptiveInfo` does not guarantee a permanent drawer at expanded width.** Verified
+on `Medium_Tablet` (2026-08-15): a genuinely EXPANDED-width AVD (landscape, ~1280dp — well past the
+840dp expanded breakpoint) still resolved to `NavigationSuiteType.NavigationRail`, not
+`NavigationDrawer`. Don't assume "expanded width" in a future design doc or bug report implies a
+permanent drawer actually rendered — check the resolved `NavigationSuiteType`, or just treat "rail
+or drawer" as one outcome the way step 3's design decision already does.

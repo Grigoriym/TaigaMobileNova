@@ -49,3 +49,57 @@ verification applies to a design-only step.
 **Next:** step 4 — wire `NavigationSuiteScaffold` into `MainScreen.kt` / `TaigaDrawerWidget.kt`
 using this mapping. It's a substantial code + emulator-verification task on its own; confirm with
 gregory before starting it rather than continuing straight into it.
+
+## Step 4: Wire `NavigationSuiteScaffold` into `MainScreen.kt` / `TaigaDrawerWidget.kt` — ✅ done 2026-08-15
+
+Implemented the step 3 mapping. `flattenForNavigationSuite()` (new, `DrawerItem.kt`) unwraps
+`DrawerItem.Group` to its inner `Destination`s and drops `DrawerItem.Divider`. New
+`TaigaNavigationSuiteWidget` composable (`TaigaDrawerWidget.kt`) renders `NavigationSuiteScaffold`
+over the flattened list. `MainScreen.kt`'s `MainScreenContent` now branches on
+`currentWindowAdaptiveInfoV2().windowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)`:
+compact renders `TaigaDrawerWidget` (unchanged, `NavigationBackHandler` included — modal-only,
+since a rail/permanent drawer has no open/close animation state to intercept); medium/expanded
+renders `TaigaNavigationSuiteWidget` with `layoutType =
+NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)` (no back-handler).
+Both share one `mainContent` composable lambda (the `Scaffold` + top bar + `MainNavHost`) so the
+duplication is only the outer chrome, not the screen content.
+
+**Deviation from the step's description — new dependency, not anticipated in CHECKLIST.md/
+IMPLEMENTATION_PLAN.md:** `currentWindowAdaptiveInfo()`/`WindowAdaptiveInfo`/
+`NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo` are **not** exported by the
+`material3-adaptive-navigation-suite` artifact step 2 added — they live in a separate
+`org.jetbrains.compose.material3.adaptive:adaptive` artifact (own release train, unrelated to
+`jetbrainsComposeMaterial3`'s version). Confirmed via `.module`/jar inspection, not docs (this
+library's docs don't spell out the artifact split). Added `jetbrainsComposeMaterial3Adaptive =
+"1.3.0-beta02"` (verified latest via `adaptive-desktop`'s `maven-metadata.xml`, per
+[[verify-dependency-versions-via-maven-metadata]]) and
+`jetbrains-compose-material3-adaptive` to `gradle/libs.versions.toml`, and
+`implementation(libs.jetbrains.compose.material3.adaptive)` next to the navigation-suite line in
+`composeApp/build.gradle.kts`. Full detail in IMPLEMENTATION_PLAN.md's "Step 4 notes" section.
+
+Also used the non-deprecated width check: `currentWindowAdaptiveInfoV2()` +
+`WindowSizeClass.isWidthAtLeastBreakpoint(WIDTH_DP_MEDIUM_LOWER_BOUND)` (from the transitive
+`androidx.window:window-core`), not `currentWindowAdaptiveInfo()` +
+`.windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT` as the step's own text
+suggested — the latter compiles but the compiler flags all three symbols deprecated.
+
+Added `composeApp/src/commonTest/kotlin/com/grappim/taigamobile/FlattenForNavigationSuiteTest.kt`
+(3 cases: destinations pass through, group unwraps, divider drops) per the Failure-path/test
+convention for new public functions — pure-function coverage, no Compose needed.
+
+**Verify:** `./gradlew jvmTest` (full repo run, green) and `ktlintCheck` (green, one
+`standard:function-signature` violation auto-fixed via `ktlintCommonMainSourceSetFormat`) both
+passed. Compiled all three targets (`:composeApp:compileKotlinJvm`,
+`:composeApp:compileAndroidMain`, `:composeApp:compileKotlinIosSimulatorArm64`) — all green.
+Emulator-verified on both `Medium_Phone_API_36.1` (compact — modal drawer unchanged: header, group
+labels, divider all present, hamburger opens/closes it) and `Medium_Tablet` (medium/expanded —
+`NavigationSuiteScaffold` rendered a `NavigationRail`, not a permanent drawer, at ~1280dp width;
+flattened list confirmed no header/group-labels/divider; tapping "Epics" navigated correctly and
+updated selection highlighting). See `docs/EMULATOR_TESTING.md` for the `Medium_Tablet` AVD facts
+and the rail-vs-drawer gotcha recorded there.
+
+**Next:** queue is empty. Option 2 (adaptive navigation chrome) is now fully implemented — steps
+2–4 done. Option 3 (list-detail two-pane, blocked on a Navigation 3 migration informed by
+`wallosmobile`) remains unscoped per IMPLEMENTATION_PLAN.md's "Decision status" — decomposing it
+into checklist steps is its own commit when gregory is ready to start it, not automatic follow-on
+work here.

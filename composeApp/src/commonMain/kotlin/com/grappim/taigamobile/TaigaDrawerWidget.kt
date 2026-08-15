@@ -15,6 +15,9 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Text
+import androidx.compose.material3.adaptive.navigationsuite.ExperimentalMaterial3AdaptiveNavigationSuiteApi
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -129,6 +132,51 @@ fun TaigaDrawerWidget(
                         }
                     }
                 }
+            }
+        },
+        content = content
+    )
+}
+
+/**
+ * Medium/expanded-width counterpart to [TaigaDrawerWidget] — renders a rail or permanent drawer via
+ * [NavigationSuiteScaffold] using a flattened item list (see [flattenForNavigationSuite]).
+ */
+@OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class)
+@Composable
+fun TaigaNavigationSuiteWidget(
+    drawerItems: ImmutableList<DrawerItem>,
+    currentTopLevelDestination: DrawerDestination?,
+    onDrawerItemClick: (DrawerDestination) -> Unit,
+    layoutType: NavigationSuiteType,
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    val destinations = flattenForNavigationSuite(drawerItems)
+
+    NavigationSuiteScaffold(
+        modifier = modifier,
+        layoutType = layoutType,
+        navigationSuiteItems = {
+            destinations.forEach { destination ->
+                item(
+                    selected = currentTopLevelDestination == destination.destination,
+                    onClick = { onDrawerItemClick(destination.destination) },
+                    icon = {
+                        when (val iconSource = destination.icon) {
+                            is IconSource.Vector -> Icon(
+                                imageVector = iconSource.imageVector,
+                                contentDescription = stringResource(destination.label)
+                            )
+
+                            is IconSource.Resource -> Icon(
+                                painter = painterResource(iconSource.resourceId),
+                                contentDescription = stringResource(destination.label)
+                            )
+                        }
+                    },
+                    label = { Text(stringResource(destination.label)) }
+                )
             }
         },
         content = content

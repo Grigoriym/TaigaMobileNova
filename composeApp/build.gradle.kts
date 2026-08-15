@@ -110,6 +110,7 @@ kotlin {
 
                 implementation(libs.jetbrains.compose.icons.extended)
                 implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
+                implementation(libs.jetbrains.compose.material3.adaptive)
 
                 implementation(projects.utils.ui)
                 implementation(projects.utils.formatter.decimal)
