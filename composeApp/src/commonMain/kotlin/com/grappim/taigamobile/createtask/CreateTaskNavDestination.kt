@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.createtask
 
 import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import kotlinx.serialization.Serializable
 
@@ -11,7 +12,7 @@ data class CreateTaskNavDestination(
     val sprintId: Long?,
     val statusId: Long?,
     val swimlaneId: Long?
-)
+) : NavKey
 
 fun NavController.navigateToCreateIssue() {
     navigateToCreateTask(CommonTaskType.Issue)

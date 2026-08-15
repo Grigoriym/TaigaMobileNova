@@ -383,3 +383,26 @@ decomposition commit per this repo's process):
 - **Scope of the migration itself**: is gregory's intent step 1–6 above as one contiguous initiative
   before any list-detail work starts, or does gregory want it broken up with review points between
   each (given the guide's "atomic migration" assumption limits how much can ship independently)?
+
+## Step 7 notes (2026-08-15) — where the Nav3 shell pieces actually live in this repo's module graph
+
+wallosmobile's flat-ish module layout doesn't map 1:1 onto this repo's ~15 separate `feature/*/ui`
+modules; two placement decisions from step 7 matter for steps 8–11 too:
+
+**`core:navigation` (pre-existing, previously Nav2-only) is now the home for `NavKey` visibility
+and the `Navigator`/`NavigationState` shell.** It already sat in the dependency graph between
+`core:domain` and every feature `*/ui` module (added there originally for Nav2's
+`NavigationExtensions.kt`), so declaring `libs.jetbrains.navigation3.ui` as `api` on it — rather
+than adding the dependency to all 15 feature modules individually, as the original step 7 text
+assumed — makes `NavKey` visible everywhere a route class lives, for free. `Navigator.kt`/
+`NavigationState.kt` also live here since they're fully generic over `NavKey` (no concrete route
+imports) — wallosmobile's versions ported with only a package rename.
+
+**`NavKeySerializers.kt` cannot live in `core:navigation`** — it must reference all 39 concrete
+route classes, and those classes live in modules that depend on `core:navigation`, so the reverse
+edge would be a real cycle (not the apparent `:testing` one CLAUDE.md's Testing section describes,
+where separate test/main compilations make it a non-issue). It lives in `composeApp` instead,
+which already imports every route class for `MainNavHost.kt`. **Any future file needing to
+reference every route class app-wide belongs in `composeApp`, not `core:navigation`** — this
+applies directly to step 10's `NavDisplay`/`entry<T>` cutover and step 12's `ListDetailSceneStrategy`
+wiring, both of which also need the full route set.

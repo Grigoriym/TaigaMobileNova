@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues
 
 import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.project_values_epic_statuses
@@ -18,7 +19,7 @@ import kotlinx.serialization.Serializable
 import org.jetbrains.compose.resources.StringResource
 
 @Serializable
-data class ProjectValuesNavDestination(val typeName: String)
+data class ProjectValuesNavDestination(val typeName: String) : NavKey
 
 fun NavController.navigateToProjectValues(type: ProjectValueType) {
     navigate(route = ProjectValuesNavDestination(typeName = type.name))

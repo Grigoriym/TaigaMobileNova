@@ -1,11 +1,12 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.sprint
 
 import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class WorkItemEditSprintNavDestination(val workItemId: Long, val taskIdentifier: TaskIdentifier)
+data class WorkItemEditSprintNavDestination(val workItemId: Long, val taskIdentifier: TaskIdentifier) : NavKey
 
 fun NavController.navigateToWorkItemEditSprint(workItemId: Long, taskIdentifier: TaskIdentifier) {
     navigate(

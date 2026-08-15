@@ -258,7 +258,7 @@ through rather than deleted so the baseline stays readable.
 | ~~`utils/formatter/datetime`~~ | ~~`DateTimeUtilsImpl`, `KotlinxDateTimeFormatter`~~ — closed by plan task 6; the iOS actual stays uncovered |
 | `utils/formatter/decimal` | platform actuals |
 | ~~`feature/teams/ui`~~ | ~~`TeamViewModel`~~ — closed by plan task 7. **The "last untested ViewModel" claim was wrong** — see below |
-| `core/navigation` | — |
+| ~~`core/navigation`~~ | ~~—~~ — gained `NavigatorTest.kt` incidentally, via tablet-form-factor-support step 7 (Nav3 shell), not this plan |
 | `uikit` | excluded from Kover aggregation entirely |
 
 **Twelve ViewModels were untested when this was found** (2026-08-03, while closing task 7, which the

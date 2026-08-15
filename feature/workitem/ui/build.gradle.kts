@@ -17,6 +17,7 @@ kotlin {
             implementation(projects.core.domain)
             implementation(projects.core.storage)
             implementation(projects.core.asyncKmp)
+            implementation(projects.core.navigation)
             implementation(projects.utils.ui)
             implementation(projects.utils.formatter.decimal)
             implementation(projects.utils.formatter.datetime)

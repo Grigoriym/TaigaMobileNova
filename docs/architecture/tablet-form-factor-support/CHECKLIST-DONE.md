@@ -191,3 +191,63 @@ sit unused, so nothing else could have broken.
 
 **Next:** step 7 — implement `NavKey` on the 39 route classes above, write
 `NavKeySerializers.kt`, and build the `Navigator`/`NavigationState` shell.
+
+## Step 7: Implement `NavKey` + `NavKey` serializers + build the `Navigator`/`NavigationState` shell — ✅ done 2026-08-15
+
+All 39 route classes (CHECKLIST-DONE.md step 6's Note) now `implement NavKey` — one line per file,
+mechanical per the step's own description; the two plain `object` routes (`ModulesNavDestination`,
+`ProjectDetailsNavDestination`, as opposed to `data object`) needed the same treatment, missed by
+an initial grep pass keyed on `data object`/`data class` only.
+
+**Dependency wiring — reused `core:navigation` instead of touching 15 build files individually.**
+`core:navigation` already existed (Nav2 extension functions, `NavigationExtensions.kt`) and was
+already an `implementation` dependency of every feature `*/ui` module owning a route class except
+one (`feature/workitem/ui`, fixed here). Rather than adding `libs.jetbrains.navigation3.ui`
+per-module as the step's text suggested, it went on `core:navigation`'s own `build.gradle.kts` as
+`api(libs.jetbrains.navigation3.ui)` (plus `api(libs.jetbrains.androidx.savedstate)` for
+`SavedStateConfiguration`, part of `rememberNavigationState`'s public signature, and
+`implementation(libs.jetbrains.lifecycle.viewmodel.navigation3)` for the internal-only
+`rememberViewModelStoreNavEntryDecorator`) — `api` because `NavKey` needs to be visible to every
+module that has `implementation(projects.core.navigation)`, not just to `core:navigation` itself.
+Confirmed by the full four-target compile matrix passing with `NavKey` resolved in all 15 feature
+modules. This is the "slimmer dependency that transitively pulls in `NavKey`" the step's own text
+flagged as worth looking for — it turned out to already exist as this repo's module graph, not as
+a smaller Maven artifact.
+
+**`Navigator`/`NavigationState` — ported verbatim into `core:navigation`, no dependency cycle.**
+wallosmobile's `Navigator.kt`/`NavigationState.kt` (read directly from
+`~/proj/grappim/wallosmobile/core/navigation/`) are already fully generic over `NavKey` — no
+concrete route imports, `topLevelKeys`/`configuration` passed in by the caller — so they ported
+with only the package rename, no adaptation needed. Included `NavigatorTest.kt` (wallosmobile's,
+same rename), 10 cases, all passing.
+
+**`NavKeySerializers.kt` — put in `composeApp`, not `core:navigation`, despite the step's text
+suggesting the latter as one option.** It has to reference all 39 concrete route classes across 15
+feature modules, and those modules depend on `core:navigation` — putting the serializers file
+there would be a real dependency cycle (Gradle would reject it), not just an apparent one like the
+`:testing`-module case in CLAUDE.md's Testing section (that one works because test/main source
+sets are separate compilations; this one is a real `commonMain`-to-`commonMain` edge). `composeApp`
+already imports every route class (`MainNavHost.kt`/`nav/*.kt`), so it's the only module that can
+host this file without restructuring the dependency graph. Followed wallosmobile's
+`NavKeySerializers.kt` shape exactly: `navKeySerializersModule` (the `SerializersModule`) plus
+`navSavedStateConfiguration` (the `SavedStateConfiguration` wrapping it, for step 10's
+`rememberNavBackStack` calls). Added `NavKeySerializersTest.kt` (`composeApp/src/commonTest/`) —
+adapted from wallosmobile's version, which checks against its `DrawerDestination` enum (no
+equivalent exists in this repo yet); here it asserts all 39 fully-qualified class names resolve via
+`navKeySerializersModule.getPolymorphic(NavKey::class, serializedClassName)` instead.
+
+Neither `Navigator`/`NavigationState` nor `NavKeySerializers.kt` is wired into the running app yet
+— `MainNavHost.kt` is untouched, still on classic `NavHost`, as scoped.
+
+**Verify:** four-target compile matrix (`:composeApp:compileKotlinIosSimulatorArm64
+--rerun-tasks`, `:composeApp:compileKotlinIosArm64 --rerun-tasks`,
+`:androidApp:compileFdroidDebugKotlin --rerun-tasks`, `:composeApp:compileKotlinJvm`) all green.
+`./gradlew jvmTest` (full repo run) green, including the 10 new `NavigatorTest` cases and the new
+`NavKeySerializersTest` case. `./gradlew ktlintCheck` green — two rounds of
+`ktlintCommonMainSourceSetFormat` needed (one for the composeApp/feature-module `NavKey` import
+insertions, a second after adding `navSavedStateConfiguration`'s `SavedStateConfiguration` import to
+`NavKeySerializers.kt`), both auto-fixed import ordering only, per CLAUDE.md's
+`standard:import-ordering` note.
+
+**Next:** step 8 — port the 15 affected ViewModels off `savedStateHandle.toRoute<T>()` to
+constructor-parameter injection via Koin `@InjectedParam` + `parametersOf(route)`.
