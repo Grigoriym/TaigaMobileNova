@@ -51,8 +51,21 @@ and risk rise steeply from top to bottom:
    `NavigationSuiteScaffold` so wide screens (tablet landscape, Android large-screen multi-window,
    desktop) get a permanent rail/drawer instead of a modal overlay. Medium: touches
    `MainScreen.kt`, `TaigaDrawerWidget.kt`, adds a new dependency
-   (`material3-adaptive-navigation-suite`) whose current KMP/multiplatform target coverage needs
-   verifying before committing to it — not confirmed yet.
+   (`material3-adaptive-navigation-suite`). **KMP target coverage confirmed 2026-08-15**: the
+   artifact was *not* multiplatform originally (`JetBrains/compose-multiplatform#4952`), fixed via
+   `compose-multiplatform-core#1539` and published since `1.7.0-beta02`; at `1.10.0-alpha05`
+   (matching this repo's pinned `jetbrainsComposeMaterial3`), its `.module` metadata lists Android
+   (embedded debug/release variants), Desktop/JVM (`-desktop`), and iOS (`-uikitarm64`,
+   `-uikitsimarm64` — CMP's internal names for `iosArm64`/`iosSimulatorArm64`) variants, covering
+   all three of this project's targets.
+
+   **Open design gap found the same day, not yet resolved:** `NavigationSuiteScaffold`'s
+   `navigationSuiteItems: NavigationSuiteScope.() -> Unit` only supports flat `item()` calls
+   (icon/label/selected/onClick) — there is no header, group-label, or divider slot. The current
+   `TaigaDrawerWidget` (`composeApp/.../TaigaDrawerWidget.kt`) renders an app-name header, grouped
+   sections via `DrawerItem.Group` with a label per group, `DrawerItem.Divider`s, and a Logout
+   entry — none of which has a direct equivalent in the rail/permanent-drawer item model. Porting
+   this 1:1 isn't possible; a compromise has to be picked. See CHECKLIST.md step 3.
 
 3. **List-detail two-pane layouts.** E.g. Kanban/Sprint board shown side-by-side with task detail
    on wide screens. Large — and structurally blocked today: the `android-skills:adaptive` skill's
@@ -82,7 +95,13 @@ and risk rise steeply from top to bottom:
 
 ## Decision status
 
-**Not yet decided which of options 2–4 (if any) to pursue.** Option 1 is a safe, useful common
-prefix regardless of which later option gets picked, so it's the only one decomposed into a
-checklist step so far — see [CHECKLIST.md](CHECKLIST.md). Steps for 2/3/4 are gated on gregory
-choosing a target scope; don't decompose or start them without asking first.
+**Decided 2026-08-15: pursue option 2 (adaptive navigation chrome) next.** gregory expects option 3
+(list-detail two-pane) to follow eventually, and specifically wants the Navigation 3 migration it's
+blocked on informed by `wallosmobile` (`~/proj/grappim/wallosmobile/`) — a sibling project built on
+the same architecture as this one but already migrated to Nav3 (`jetbrainsNav3` /
+`org.jetbrains.androidx.navigation3:navigation3-ui` in its version catalog). That's not started or
+scoped yet — noted here for when option 3 gets decomposed, not a trigger to start it now. Option 4
+remains undecided and isn't blocking anything.
+
+Option 2 is decomposed into CHECKLIST.md steps 2–4. Step 3 is a design step gated on picking a
+compromise for the header/group-label/divider gap noted above — see CHECKLIST.md.
