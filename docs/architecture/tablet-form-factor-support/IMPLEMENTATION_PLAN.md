@@ -105,10 +105,11 @@ and risk rise steeply from top to bottom:
 **Decided 2026-08-15: pursue option 2 (adaptive navigation chrome) next.** gregory expects option 3
 (list-detail two-pane) to follow eventually, and specifically wants the Navigation 3 migration it's
 blocked on informed by `wallosmobile` (`~/proj/grappim/wallosmobile/`) — a sibling project built on
-the same architecture as this one but already migrated to Nav3 (`jetbrainsNav3` /
-`org.jetbrains.androidx.navigation3:navigation3-ui` in its version catalog). That's not started or
-scoped yet — noted here for when option 3 gets decomposed, not a trigger to start it now. Option 4
-remains undecided and isn't blocking anything.
+the same architecture as this one but already built on Nav3 from inception (`jetbrainsNav3` /
+`org.jetbrains.androidx.navigation3:navigation3-ui` in its version catalog). **Started 2026-08-15**
+as option 3's step 5, the Nav3 migration investigation — see "Navigation 3 migration investigation"
+below for findings, sizing, and the proposed (not yet decomposed) step breakdown. Option 4 remains
+undecided and isn't blocking anything.
 
 Option 2 is decomposed into CHECKLIST.md steps 2–4.
 
@@ -165,3 +166,217 @@ on `Medium_Tablet` (2026-08-15): a genuinely EXPANDED-width AVD (landscape, ~128
 `NavigationDrawer`. Don't assume "expanded width" in a future design doc or bug report implies a
 permanent drawer actually rendered — check the resolved `NavigationSuiteType`, or just treat "rail
 or drawer" as one outcome the way step 3's design decision already does.
+
+## Navigation 3 migration investigation (step 5, 2026-08-15)
+
+gregory confirmed starting option 3, gated on this investigation. No code changed — findings only.
+
+### What wallosmobile actually does
+
+wallosmobile was built on Nav3 **from inception**, not migrated (`core:navigation` is its very
+first navigation commit, "1.7 — core:navigation" — there is no pre-Nav3 history to compare
+against). It does **not** use `ListDetailSceneStrategy` anywhere (confirmed by grep — zero hits for
+`SceneStrategy`/`ListDetail` in the repo); its Nav3 usage is single-pane `NavDisplay` only. So it's
+useful for the *shell/state* pattern below, but tells us nothing about the pane-splitting piece
+option 3 actually needs — that came from the Android skill (next section).
+
+**Artifacts** (`gradle/libs.versions.toml`): `jetbrainsNav3 = "1.1.1"` →
+`org.jetbrains.androidx.navigation3:navigation3-ui`, plus
+`org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3`.
+
+**Dual back-stack shell**, `core/navigation/` (`Navigator.kt`, `NavigationState.kt`):
+- `NavigationState` holds one `topLevelStack: NavBackStack<NavKey>` (which drawer section is
+  active, itself a stack so re-entering a section restores its position) and a
+  `subStacks: Map<NavKey, NavBackStack<NavKey>>` — one independent back stack per top-level
+  section (`Dashboard`, `Subscriptions`, `Settings`, ... — `DrawerDestination.kt`). Switching
+  sections doesn't lose either section's history.
+- `Navigator.navigate(key)` (`Navigator.kt:14`) branches three ways: re-tapping the active section
+  resets it to root, tapping another top-level section switches to it, anything else pushes onto
+  the active section's sub-stack.
+- `NavigationState.toEntries()` (`NavigationState.kt:69`) decorates every sub-stack on every
+  composition (`rememberSaveableStateHolderNavEntryDecorator` +
+  `rememberViewModelStoreNavEntryDecorator`) and flattens only the *active* stacks into the list
+  `NavDisplay` renders.
+- **Route args are not read via `SavedStateHandle` at all.** `MainNavHost.kt`'s `entry<T> { route ->
+  ... }` lambda hands the route object straight to the screen (`SubscriptionsEntryProvider.kt:24`,
+  passing `route.subscriptionId`), and the ViewModel receives it as a plain constructor parameter
+  via Koin `@InjectedParam` + `parametersOf` (`SubscriptionDetailViewModel.kt:39` and, further up
+  the call chain, `koinViewModel<T> { parametersOf(key) }`) — there is no `toRoute<T>()` step at
+  all. **This is the biggest single change this migration would force on every ViewModel in this
+  repo's Navigation Pattern section** (currently `savedStateHandle.toRoute<T>()`).
+- **KMP-required workaround, not optional**: `NavKeySerializers.kt` builds a `SerializersModule`
+  registering every route as a `polymorphic(NavKey::class) { subclass(...) }`, passed to
+  `rememberNavBackStack` via a `SavedStateConfiguration`. This isn't a wallosmobile design choice —
+  it's required on every non-JVM target (see the KMP doc findings below); a route missing from this
+  list is a silent failure that only breaks back-stack restore after process death.
+- `RouteConfig.kt`/`RouteConfigProvider` is a `when (route)` returning per-route chrome settings
+  (drawer-gestures-enabled, FAB) — the same shape this repo would need for width-gated chrome to
+  keep working per-route (see coexistence, below).
+- No nested navigation graphs anywhere — every `*EntryProvider.kt` is a flat
+  `EntryProviderScope<NavKey>` extension function, same shape as this repo's `NavGraphBuilder`
+  extensions (`epicNavGraph`, `issueNavGraph`, etc., see gap analysis below).
+
+### What the `android-skills:navigation-3` skill says
+
+Read directly from `~/.claude/plugins/marketplaces/android-skills/navigation/navigation-3/` (the
+`Skill` tool didn't resolve `android-skills:navigation-3` from a fork's context — worth a
+`docs/frictions.md` line if a future session hits the same thing; read the `SKILL.md` +
+`migration-guide.md` + recipe files directly as a fallback).
+
+**Migration guide's own stated assumptions/scope** (`migration-guide.md`) — checked against this
+repo:
+- Assumes one atomic migration, not incremental Nav2/Nav3 coexistence. ✅ matches how this repo
+  would need to do it (no partial state).
+- Assumes one or several top-level routes, each with its own back stack, state retained across
+  switches — this is exactly wallosmobile's dual-stack shape and is also what this repo's
+  drawer-based navigation already conceptually is (top-level sections: Dashboard, Kanban/Sprint,
+  Team, Epics, Wiki, Settings, ...), it's just not modeled as a stack-of-stacks today — `MainNavHost`
+  is one flat `NavHost`/back stack for everything.
+- **Unsupported: "more than one level of nested navigation."** Checked — this repo has **none**.
+  Every `nav/*NavGraph.kt` file (`EpicNavGraph.kt`, `IssueNavGraph.kt`, `TaskNavGraph.kt`,
+  `UserStoryNavGraph.kt`, `ScrumNavGraph.kt`, `SettingsNavGraph.kt`, `WikiNavGraph.kt`,
+  `WorkItemEditsNavGraph.kt`) is a flat `NavGraphBuilder` extension adding `composable<T>` calls
+  directly — no `navigation<T> { }` nesting anywhere. This maps 1:1 onto the guide's own recommended
+  refactor (`NavGraphBuilder` extension → `EntryProviderScope<NavKey>` extension, same file
+  structure, same per-feature split this repo already has).
+- **Unsupported: deep links, custom destination types.** Grepped — this repo has neither (no
+  `navDeepLink`, no custom `NavType`). Not a blocker.
+- Dialogs: guide has a `dialog<T>(metadata = DialogSceneStrategy.dialog())` recipe. This repo has
+  **no** `dialog<T>` navigation destinations (grepped — the "BottomSheet" hits found are all
+  `ModalBottomSheet`/`rememberModalBottomSheetState`, in-place Compose state, not nav destinations).
+  Not a blocker, nothing to migrate here.
+
+**`ListDetailSceneStrategy`** (`recipes/material-listdetail.md`) — this is the actual target for
+option 3: `rememberListDetailSceneStrategy<NavKey>()` passed to `NavDisplay`'s `sceneStrategies`;
+each destination tagged via `entry<T>(metadata = ListDetailSceneStrategy.listPane(...) /
+.detailPane() / .extraPane())`. The strategy watches the back stack and decides 1/2/3-pane layout
+from `calculatePaneScaffoldDirective(currentWindowAdaptiveInfoV2())` — same `V2` width-breakpoint
+API step 4 already uses for `NavigationSuiteScaffold`, not the deprecated one. **Navigation to open
+the detail pane is unchanged** — pushing `ConversationDetail` onto the back stack as normal; the
+scene strategy decides whether that renders as a full-screen replace (compact) or a second pane
+(expanded) without the screen code knowing which.
+
+The recipe's own artifact is `androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy`
+— **Android-only in the doc example**. Confirmed separately (WebFetch,
+`kotlinlang.org/docs/multiplatform/compose-navigation-3.html`, the official JetBrains KMP doc) that
+a KMP-published equivalent exists: `org.jetbrains.compose.material3.adaptive:adaptive-navigation3`,
+pinned in that doc at `1.3.0-beta02` (matching this repo's already-pinned
+`jetbrainsComposeMaterial3Adaptive`), and per that same doc, "starting with Compose Multiplatform
+1.10, Navigation 3 is supported for all supported platforms" (Android/iOS/Desktop/Web). **Not yet
+verified**: whether `adaptive-navigation3`'s KMP build actually exports `ListDetailSceneStrategy`
+with the same API as the Android-only recipe — the JetBrains KMP doc doesn't show a
+`ListDetailSceneStrategy` example at all, only says the artifact exists. Step 4's dependency-graph
+lesson applies directly here: check the `.module` metadata / decompile the jar before assuming API
+parity, the way step 4 had to when `NavigationSuiteScaffoldDefaults` turned out to live in a
+separate artifact than expected.
+
+**KMP-specific requirement, confirmed by the same JetBrains doc, independent of wallosmobile**:
+Android Nav3 uses reflection-based polymorphic serialization for `NavKey`, which doesn't exist on
+iOS/other non-JVM targets. The multiplatform build requires an explicit `SerializersModule` passed
+via `SavedStateConfiguration` to `rememberNavBackStack` — exactly the pattern wallosmobile's
+`NavKeySerializers.kt` already implements. This repo would need the equivalent: one file listing
+all ~31 `NavDestination` route classes as `polymorphic(NavKey::class) { subclass(...) }`.
+
+### Gap analysis: sizing the migration in this repo
+
+**Current shape** (`MainNavHost.kt`, `composeApp/.../nav/*.kt`):
+- One flat `NavHost` (`androidx.navigation.compose`), `composable<T>` destinations, no nesting.
+- 8 `*NavGraph.kt` `NavGraphBuilder` extensions (`epicNavGraph`, `issueNavGraph`, `taskNavGraph`,
+  `userStoryNavGraph`, `scrumNavGraph`, `settingsNavGraph`, `wikiNavGraph`,
+  `workItemEditsNavGraph`) totaling 30 `composable<T>` destinations, plus 8 more defined directly
+  in `MainNavHost.kt` (`LoginNavDestination`, `ProjectSelectorNavDestination`,
+  `DashboardNavDestination`, `TeamNavDestination`, `KanbanNavDestination`, `SprintNavDestination`,
+  `ProfileNavDestination`, `CreateTaskNavDestination`) — **~38 destinations, ~31 distinct
+  `NavDestination` route classes** total across the repo.
+- **15 ViewModels** use `savedStateHandle.toRoute<T>()` (per CLAUDE.md's Navigation Pattern
+  section) — every one of these needs to move to a constructor-parameter pattern
+  (`@InjectedParam` + `parametersOf`, wallosmobile's approach) since Nav3 entries hand the route
+  object to the screen directly, not through a `SavedStateHandle`.
+- **`UPDATE_DATA_ON_BACK` result-passing** (`MainNavHost.kt:261`, used by
+  `KanbanNavDestination`/`SprintNavDestination`/`EpicDetailsNavDestination` and others via
+  `navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK]` / `setUpdateDataOnBack()`) is Nav2's
+  `previousBackStackEntry.savedStateHandle` result-passing idiom. Nav3 has no back-stack-entry
+  `SavedStateHandle` at all; the guide's own replacement is the event-bus recipe
+  (`ResultEventBus`/`rememberResultEventBusNavEntryDecorator`/`ResultEffect`,
+  `recipes/results-event.md`) or a `CompositionLocal`-based state variant
+  (`recipes/results-state.md`). This is a real, non-mechanical porting task — 4+ call sites use the
+  current mechanism.
+- `CreateTaskNavDestination`'s `typeMap = typeMapOf(listOf(typeOf<CommonTaskType>()))`
+  (`MainNavHost.kt:223`) exists only because Nav2's type-safe routes need a `NavType` for
+  non-primitive serializable fields stored in a `Bundle`. Nav3 entries are plain in-memory objects
+  handed straight to the screen — this typeMap machinery has no Nav3 equivalent and would simply be
+  deleted, a net simplification, not a porting cost.
+- No deep links, no nested `navigation<T>` graphs, no `dialog<T>` destinations — the three biggest
+  items on the migration guide's own "unsupported" list are all non-issues here.
+
+**Coexistence with steps 2–4's `NavigationSuiteScaffold`/width-gated chrome — confirmed
+non-conflicting, but wiring changes:**
+- Nav3 replaces the back-stack/`NavController` plumbing, not the width-based chrome decision in
+  `MainScreen.kt` (`currentWindowAdaptiveInfoV2()` → compact vs. medium/expanded) — that check is
+  orthogonal to which navigation library owns the back stack, so step 4's rail/drawer split
+  survives unchanged in shape.
+- What *does* change: `TaigaDrawerWidget.kt`'s `selected = currentTopLevelDestination ==
+  destination.destination` (`TaigaDrawerWidget.kt:81,106,163`) and `MainScreen.kt`'s
+  `appState.currentTopLevelDestination` (`MainScreen.kt:193,228`) currently derive from
+  `NavController`'s back stack; under Nav3 these become
+  `navigationState.currentTopLevelKey`-driven instead (wallosmobile's
+  `MainAppState.currentDrawerDestination`, `MainAppState.kt:64`, is the direct precedent for this
+  rewrite) — same shell-level file, different data source, no chrome-visible behavior change if
+  done correctly. This repo doesn't currently have a `RouteConfig`-style per-route drawer-gestures
+  setting; if that's wanted post-migration, wallosmobile's `RouteConfig.kt`/`RouteConfigProvider` is
+  the pattern, but nothing today requires it — the modal drawer's own gesture handling is unaffected
+  by this migration either way.
+- `NavigationBackHandler` (compact-only, noted in step 4's CHECKLIST-DONE entry) intercepts the
+  drawer's open/close state, not back-stack navigation — orthogonal to Nav3's own `onBack` wiring on
+  `NavDisplay`, no conflict expected, not verified against real code.
+
+### Recommended path forward
+
+**Migrate all at once, not incrementally** — this matches the migration guide's own stated
+assumption (no supported Nav2/Nav3 coexistence path), and this repo's scope (~31 route classes, 15
+ViewModels, one non-mechanical result-passing rewrite) is smaller than wallosmobile's own from-
+scratch build, not larger — there's no phase boundary inside "swap NavHost for NavDisplay" that
+would leave the app in a working state halfway through.
+
+**Proposed breakdown for a future CHECKLIST.md decomposition** (proposed only, not added — a future
+decomposition commit per this repo's process):
+
+1. Add Nav3 dependencies + the KMP `NavKeySerializers`-equivalent (all ~31 routes registered) —
+   compiles alongside existing Nav2 code, no behavior change yet. Small, mechanical, low-risk —
+   same shape as step 2.
+2. Convert `NavDestination` route classes to implement `NavKey` (mechanical, one-line-per-file) and
+   build the `Navigator`/`NavigationState` shell (`core:navigation`-equivalent module or a
+   `composeApp`-local file, wallosmobile's exact pattern) — no wiring into the running app yet.
+3. Port ViewModels off `savedStateHandle.toRoute<T>()` to constructor-parameter injection —
+   15 ViewModels, mechanical but not risk-free (Koin `@InjectedParam` + `parametersOf`
+   wiring per ViewModel); could split further if this proves too large for one context.
+4. Port the `UPDATE_DATA_ON_BACK` result-passing call sites to the event-bus recipe — the one
+   genuinely novel piece, worth its own step and its own emulator verification (kanban/sprint
+   "did the board change" refresh behavior is user-visible).
+5. Replace `NavHost`/`composable<T>`/`NavGraphBuilder` extensions with
+   `NavDisplay`/`entry<T>`/`EntryProviderScope<NavKey>` extensions across all 8 nav-graph files +
+   `MainNavHost.kt`, delete Nav2 dependencies. This is the "big bang" cutover step — everything
+   from steps 1–4 lands together here, since the guide's migration model doesn't support partial
+   coexistence. Needs full emulator verification across every top-level section, not just a sample.
+6. Rewire `TaigaDrawerWidget.kt`/`MainScreen.kt`'s `currentTopLevelDestination` to
+   `navigationState.currentTopLevelKey`, confirm rail/drawer selection highlighting still works
+   (step 4's emulator scenarios, re-run).
+7. *(Separate, later phase — not part of the migration itself)* Add `ListDetailSceneStrategy` for
+   the actual list-detail two-pane layouts option 3 was chasing — this is deliberately last, since
+   everything above is pure infrastructure migration with no user-visible change, and this step is
+   where option 3's real payoff (and its own design decisions — which screens get list-detail, what
+   the placeholder pane shows) starts.
+
+### Open questions for gregory (gate any future decomposition on these)
+
+- **Confirm the KMP `ListDetailSceneStrategy` API parity** before committing to step 7 above — this
+  investigation found the artifact exists for KMP but did not confirm the class itself is exported
+  with the same shape as the Android-only recipe. Worth a short spike (add the dependency, try to
+  reference the type on all three targets) before scoping step 7 in detail.
+- **Which screens actually get list-detail treatment?** Not decided — Kanban/Sprint board +
+  task detail is the obvious candidate (named in the original scope-options survey), but confirming
+  the actual pane split (list = board, detail = task? or something else) is a design decision, not
+  an engineering one, and belongs in a future step similar to this initiative's step 3.
+- **Scope of the migration itself**: is gregory's intent step 1–6 above as one contiguous initiative
+  before any list-detail work starts, or does gregory want it broken up with review points between
+  each (given the guide's "atomic migration" assumption limits how much can ship independently)?

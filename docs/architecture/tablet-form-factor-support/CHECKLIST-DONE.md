@@ -103,3 +103,37 @@ and the rail-vs-drawer gotcha recorded there.
 `wallosmobile`) remains unscoped per IMPLEMENTATION_PLAN.md's "Decision status" — decomposing it
 into checklist steps is its own commit when gregory is ready to start it, not automatic follow-on
 work here.
+
+## Step 5: Investigate the Navigation 3 migration path, informed by wallosmobile — ✅ done 2026-08-15
+
+Design/investigation-only, as scoped — no code changes. Researched `wallosmobile`'s Nav3 shell
+(`core/navigation/Navigator.kt`/`NavigationState.kt`, dual back-stack-of-stacks; built on Nav3 from
+inception, not migrated — its `core:navigation` commit is the first navigation commit in its
+history), the `android-skills:navigation-3` skill (read directly from
+`~/.claude/plugins/marketplaces/android-skills/navigation/navigation-3/` after the `Skill` tool
+failed to resolve the plugin name from a fork — see `docs/frictions.md`), and this repo's own
+`MainNavHost.kt`/`nav/*.kt`. Findings written to IMPLEMENTATION_PLAN.md's new "Navigation 3
+migration investigation" section: this repo has none of the migration guide's "unsupported"
+blockers (no nested nav graphs, no deep links, no `dialog<T>` destinations); the real porting cost
+is 15 ViewModels moving off `savedStateHandle.toRoute<T>()` to constructor-parameter injection, and
+the `UPDATE_DATA_ON_BACK` result-passing convention needing the event-bus recipe — both mechanical
+but not zero-risk. Confirmed via JetBrains' own KMP Nav3 doc (WebFetch,
+`kotlinlang.org/docs/multiplatform/compose-navigation-3.html`) that Nav3 fully supports this
+project's three targets since Compose Multiplatform 1.10, and that non-JVM targets require an
+explicit `SerializersModule`/`SavedStateConfiguration` for `NavKey` (wallosmobile's
+`NavKeySerializers.kt` already implements this pattern) since Android's reflection-based
+serialization isn't available on iOS. Confirmed the KMP `adaptive-navigation3` artifact
+(`org.jetbrains.compose.material3.adaptive:adaptive-navigation3`, `1.3.0-beta02`) exists, but did
+**not** confirm it exports `ListDetailSceneStrategy` with the same API as the Android-only recipe —
+flagged as an open question, same shape as step 4's artifact-split surprise.
+
+**Verify:** IMPLEMENTATION_PLAN.md records the findings, the recommended all-at-once migration
+approach, and a proposed (not yet decomposed) 7-step breakdown — done. No build/test verification
+applies to a design-only step.
+
+**Next:** queue is empty again. The proposed 7-step Nav3 migration breakdown in
+IMPLEMENTATION_PLAN.md is **not yet decomposed into CHECKLIST.md** — that decomposition, and the
+list-detail pane-layout design that follows it, are gated on gregory reviewing that section's "Open
+questions" (KMP `ListDetailSceneStrategy` API parity unconfirmed; which screens get list-detail;
+whether the migration ships as one contiguous initiative or with review points between steps).
+Decomposing is its own commit once gregory answers those, not automatic follow-on work here.

@@ -17,3 +17,8 @@ deleted — see `finalize`.
   even though both are deprecated in favor of `currentWindowAdaptiveInfoV2()` /
   `isWidthAtLeastBreakpoint()` — first pass used the deprecated pair and only caught it by reading
   compiler warning output, not from any red/failing signal.
+- 2026-08-15: `Skill({skill: "android-skills:navigation-3"})` returned "Unknown skill" from inside
+  a forked subagent, even though CLAUDE.md documents it as available — worked around by reading
+  `~/.claude/plugins/marketplaces/android-skills/navigation/navigation-3/SKILL.md` and its
+  `references/` files directly instead. Not re-tried from a non-fork session, so unclear if it's a
+  fork-specific plugin-loading gap or broader.
