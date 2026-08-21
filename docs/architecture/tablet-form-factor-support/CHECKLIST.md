@@ -14,12 +14,14 @@ migration (steps 2–11) are fully implemented; step 12 (the actual list-detail 
 ## Step 12: Add `ListDetailSceneStrategy` for list-detail two-pane layouts
 
 ⛔ **Gated — do not start without asking.** Depends on steps 6–11 (full Nav3 migration) being
-done, and on two open questions from IMPLEMENTATION_PLAN.md's "Navigation 3 migration
-investigation" section that gregory hasn't answered yet:
+done, and on open questions from IMPLEMENTATION_PLAN.md's "Navigation 3 migration
+investigation" section:
 
-- Whether the KMP `adaptive-navigation3` artifact (`1.3.0-beta02`) actually exports
-  `ListDetailSceneStrategy` with API parity to the Android-only recipe — unconfirmed, worth a short
-  spike before scoping this step in detail.
+- ~~Whether the KMP `adaptive-navigation3` artifact (`1.3.0-beta02`) actually exports
+  `ListDetailSceneStrategy` with API parity to the Android-only recipe~~ — **resolved 2026-08-21,
+  confirmed yes** (decompiled the jar; full API parity, real per-target variants for Android/JVM/
+  iosArm64/iosSimulatorArm64, `navigation3-ui` version compatible). See IMPLEMENTATION_PLAN.md's
+  "Navigation 3 migration investigation" section for the verification detail.
 - Which screens get list-detail treatment — Kanban/Sprint board + task detail is the obvious
   candidate but not decided; this is a design decision (see step 3's precedent), not an
   engineering one.

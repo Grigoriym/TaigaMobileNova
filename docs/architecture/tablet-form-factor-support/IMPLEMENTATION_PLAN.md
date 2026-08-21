@@ -262,13 +262,30 @@ The recipe's own artifact is `androidx.compose.material3.adaptive.navigation3.Li
 a KMP-published equivalent exists: `org.jetbrains.compose.material3.adaptive:adaptive-navigation3`,
 pinned in that doc at `1.3.0-beta02` (matching this repo's already-pinned
 `jetbrainsComposeMaterial3Adaptive`), and per that same doc, "starting with Compose Multiplatform
-1.10, Navigation 3 is supported for all supported platforms" (Android/iOS/Desktop/Web). **Not yet
-verified**: whether `adaptive-navigation3`'s KMP build actually exports `ListDetailSceneStrategy`
-with the same API as the Android-only recipe — the JetBrains KMP doc doesn't show a
-`ListDetailSceneStrategy` example at all, only says the artifact exists. Step 4's dependency-graph
-lesson applies directly here: check the `.module` metadata / decompile the jar before assuming API
-parity, the way step 4 had to when `NavigationSuiteScaffoldDefaults` turned out to live in a
-separate artifact than expected.
+1.10, Navigation 3 is supported for all supported platforms" (Android/iOS/Desktop/Web).
+
+**Verified 2026-08-21 (question 1 of step 12's gate, resolved — API parity confirmed):** pulled
+`adaptive-navigation3-desktop-1.3.0-beta02.jar` from Maven Central and decompiled it directly
+(`javap`) rather than trusting the doc. Findings:
+- The jar contains the full `androidx.compose.material3.adaptive.navigation3` package —
+  `ListDetailSceneStrategy`, `ListDetailSceneStrategy.Companion` (`listPane`/`detailPane`/`extraPane`
+  metadata tags), `rememberListDetailSceneStrategy`, plus `SupportingPaneSceneStrategy` — same shape
+  as the Android-only recipe, not a stub.
+- `ListDetailSceneStrategy<T> implements androidx.navigation3.scene.SceneStrategy<T>`, i.e. it's
+  built directly on the real `androidx.navigation3.runtime`/`androidx.navigation3.scene` types this
+  repo already depends on (`core/navigation`'s `NavigationState.kt` imports `NavKey`/`NavEntry`/
+  `NavBackStack` from there) — not a separate parallel type hierarchy.
+- Its POM depends on `org.jetbrains.androidx.navigation3:navigation3-ui-desktop:1.1.0`; this repo
+  pins `jetbrainsNav3 = "1.1.1"` (`gradle/libs.versions.toml:88`) — a compatible patch bump, and
+  `SceneStrategy`/`SceneStrategyScope`/`Scene` all confirmed present in the 1.1.1 jar this repo
+  actually resolves.
+- The Gradle Module Metadata (`.module` file) lists real (non-stub) variants for every target this
+  repo builds: `androidApiElements-published`, `desktopApiElements-published`,
+  `iosArm64ApiElements-published`, `iosSimulatorArm64ApiElements-published` — not metadata-only
+  placeholders.
+
+No blocker found on this axis. Step 4's dependency-graph lesson (verify via `.module`
+metadata/decompiled jar, don't trust a doc's prose) is exactly what resolved this.
 
 **KMP-specific requirement, confirmed by the same JetBrains doc, independent of wallosmobile**:
 Android Nav3 uses reflection-based polymorphic serialization for `NavKey`, which doesn't exist on
