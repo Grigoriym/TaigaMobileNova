@@ -461,3 +461,35 @@ no row dividers on desktop; the desktop build has no non-touch equivalent for pu
 
 **Next:** step 12b — wire `ListDetailSceneStrategy` for Issues list-detail. Still gated — do not
 start without asking.
+
+## Step 12b: Wire `ListDetailSceneStrategy` for Issues list-detail — ✅ done 2026-08-21
+
+Added `jetbrains-compose-material3-adaptive-navigation3` (module
+`org.jetbrains.compose.material3.adaptive:adaptive-navigation3`, same `jetbrainsComposeMaterial3Adaptive`
+= `1.3.0-beta02` version already pinned for the sibling `adaptive` artifact) to
+`gradle/libs.versions.toml` and `composeApp/build.gradle.kts`'s `commonMain` dependencies — it
+wasn't declared yet, only `adaptive`/`adaptive-navigation-suite` were. `MainNavHost.kt` now builds
+`rememberListDetailSceneStrategy<NavKey>()` and passes it via `NavDisplay`'s `sceneStrategies =
+listOf(...)` parameter. `IssueNavGraph.kt` tags `IssuesNavDestination`'s `entry<T>` with
+`ListDetailSceneStrategy.listPane()` and `IssueDetailsNavDestination`'s with
+`ListDetailSceneStrategy.detailPane()`. No other nav-graph file touched, as scoped.
+
+**Note:** `ListDetailSceneStrategy` (and its `listPane`/`detailPane` companion functions) carry the
+class-level `@ExperimentalMaterial3AdaptiveApi` marker, so both `MainNavHost.kt`'s composable and
+`issueNavGraph()` needed `@OptIn(ExperimentalMaterial3AdaptiveApi::class)` — same opt-in already
+used in `MainScreen.kt` for `ExperimentalMaterial3AdaptiveNavigationSuiteApi`, just a different
+marker. The exact DSL signature (`entry<T>(metadata: Map<String, Any> = emptyMap(), content = ...)`
+on `EntryProviderScope`) and the `NavDisplay(entries = ..., sceneStrategies: List<SceneStrategy<T>>
+= listOf(SinglePaneSceneStrategy()), ...)` overload this repo's call site resolves to were both
+confirmed by pulling the `-sources.jar` for `navigation3-runtime`/`navigation3-ui`/
+`adaptive-navigation3` straight from Maven Central (`repo1.maven.org/maven2/...`) rather than
+guessing from the KMP doc — same "verify via decompiled jar" discipline step 4 and step 12a
+(API-parity question) already established for this initiative.
+
+**Verify:** `./gradlew jvmTest` and `ktlintCheck` both green. `:androidApp:assembleFdroidDebug`
+succeeded. `:composeApp:run` launched the desktop app cleanly (no crash/stack trace in the log
+before the process was stopped) — a full manual click-through of the two-pane layout is step 12c's
+job, not this step's; wiring is compile-and-boot verified only here.
+
+**Next:** step 12c — emulator-verify the Issues two-pane layout on a tablet AVD. Still gated — do
+not start without asking.

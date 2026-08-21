@@ -4,6 +4,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -12,6 +14,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import com.grappim.taigamobile.core.domain.CommonTaskType
@@ -59,6 +62,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 
 private const val TRANSITION_DURATION_MS = 150
 
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun MainNavHost(
     initialNavState: InitialNavState,
@@ -238,9 +242,12 @@ fun MainNavHost(
         }
     }
 
+    val listDetailSceneStrategy = rememberListDetailSceneStrategy<NavKey>()
+
     CompositionLocalProvider(LocalResultBus provides rememberResultBus()) {
         NavDisplay(
             modifier = modifier,
+            sceneStrategies = listOf(listDetailSceneStrategy),
             transitionSpec = {
                 fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) togetherWith
                     fadeOut(animationSpec = tween(TRANSITION_DURATION_MS))

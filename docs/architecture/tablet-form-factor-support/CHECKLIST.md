@@ -1,7 +1,7 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 11/12 done (12a of step 12's three sub-steps also done). **Current step:** 12b —
-wire `ListDetailSceneStrategy` for Issues list-detail (gated, not started).
+**Progress:** 11/12 done (12a and 12b of step 12's three sub-steps also done). **Current step:**
+12c — emulator-verify the Issues two-pane layout on a tablet AVD (gated, not started).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -37,20 +37,6 @@ decisions changed, only the step boundaries.
 
 This is option 3's actual payoff — everything in steps 6–11 is infrastructure with no user-visible
 change.
-
-## Step 12b: Wire `ListDetailSceneStrategy` for Issues list-detail
-
-⛔ **Gated — do not start without asking.** Depends on 12a being done (otherwise the pairing this
-step makes concurrently-composed is exactly the one with the collision).
-
-Add `rememberListDetailSceneStrategy<NavKey>()` to `NavDisplay`'s `sceneStrategies` in
-`MainNavHost.kt`. Tag `IssuesNavDestination`'s `entry<T>` as
-`ListDetailSceneStrategy.listPane(...)` and `IssueDetailsNavDestination`'s as
-`ListDetailSceneStrategy.detailPane(...)` via each entry's `metadata` parameter, per the recipe in
-IMPLEMENTATION_PLAN.md's `ListDetailSceneStrategy` notes. No other nav-graph file changes.
-
-**Verify:** `jvmTest` + `ktlintCheck`; confirm Android and Desktop targets compile
-(`:androidApp:assembleFdroidDebug`, `:composeApp:run`).
 
 ## Step 12c: Emulator-verify the Issues two-pane layout on a tablet AVD
 
