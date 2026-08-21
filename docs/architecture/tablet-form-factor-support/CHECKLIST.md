@@ -25,11 +25,15 @@ investigation" section:
 - Which screens get list-detail treatment — Kanban/Sprint board + task detail is the obvious
   candidate but not decided; this is a design decision (see step 3's precedent), not an
   engineering one.
-- Step 9's hand-rolled `ResultBus` (`core/navigation/.../ResultBus.kt`) assumes only one
-  destination is ever actively composed at a time — true under Nav2's `NavHost`, but list-detail
-  two-pane is exactly the shape that keeps two entries composed simultaneously. Re-check whether
-  the shared `UpdateDataOnBack` signal still lands on the right pane before relying on it here; see
-  IMPLEMENTATION_PLAN.md's "Step 9 notes".
+- ~~Step 9's hand-rolled `ResultBus` (`core/navigation/.../ResultBus.kt`) assumes only one
+  destination is ever actively composed at a time~~ — **confirmed 2026-08-21: it breaks.**
+  `ListDetailSceneStrategy` keeps the list pane's `ResultEffect<UpdateDataOnBack>` continuously
+  alive alongside the detail pane, so a signal sent from two levels deep in the detail column
+  (e.g. Kanban[list] → Issue[detail] → UserStory → back) races between two listeners on the same
+  global key instead of reaching the one it was meant for. Fix is a call-site change (per-pairing
+  result keys instead of one shared marker), not a `ResultBus` rewrite — not yet implemented. See
+  IMPLEMENTATION_PLAN.md's "Step 12 pre-scoping: the `ResultBus` collision, investigated
+  (2026-08-21)".
 
 This is option 3's actual payoff — everything in steps 6–11 is infrastructure with no user-visible
 change.

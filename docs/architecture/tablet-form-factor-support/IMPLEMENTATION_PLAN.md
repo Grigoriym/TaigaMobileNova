@@ -625,3 +625,55 @@ logout landed cleanly on Login with back exiting to the launcher. `Medium_Tablet
 step 11's own scenario): `NavigationRail` renders with every section, Board highlighted on launch,
 tapping Epics switched the rail highlight and the content correctly. No crashes in logcat across
 either AVD.
+
+## Step 12 pre-scoping: the `ResultBus` collision, investigated (2026-08-21)
+
+**Confirmed the risk step 9's notes flagged: `ListDetailSceneStrategy` breaks `ResultBus`'s
+single-active-listener assumption, concretely, not just in theory.**
+
+`ResultBus` keys a buffered `Channel` per `resultKey` string, and every call site
+(`MainNavHost.kt`, `ScrumNavGraph.kt`, `IssueNavGraph.kt`, `EpicNavGraph.kt`,
+`UserStoryNavGraph.kt`, `TaskNavGraph.kt`) shares one marker, `UpdateDataOnBack`. A Kotlin
+`Channel` delivers each value to exactly one waiting receiver (`receiveAsFlow()` loops
+`receive()`) — it does not broadcast. This is safe today only because Nav2/single-pane
+`NavDisplay` composes one entry at a time, so at most one `ResultEffect<UpdateDataOnBack>` is
+ever collecting at once; the shared key behaves as if it were per-entry-addressed purely because
+composition itself enforces mutual exclusion. This is actually a regression in addressing
+granularity versus what it replaced: Nav2's old `previousBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK]`
+convention used the same literal string key, but each `NavBackStackEntry` had its own
+`SavedStateHandle` — so Nav2 was per-entry-scoped underneath a shared-looking key name.
+`ResultBus`'s port kept the upstream shape faithfully but is truly global, and that's the gap.
+
+**Where it concretely breaks:** Kanban (`MainNavHost.kt:180`) and Scrum's open-sprints list
+(`ScrumNavGraph.kt:43`) each register their own `ResultEffect<UpdateDataOnBack>` (list-screen
+"refresh when I come back" case). Issue and Epic detail screens *also* register their own
+`ResultEffect<UpdateDataOnBack>` (`IssueNavGraph.kt:51`, `EpicNavGraph.kt:50`) so they refresh
+themselves after e.g. `goToUserStory` pushes `UserStoryDetailsNavDestination` and that screen's
+`goBack` sends `UpdateDataOnBack` back down. Today this is safe because the list screen
+(Kanban/Sprint) gets disposed the moment you're two levels deep in the stack (Kanban → Issue →
+UserStory) — only the UserStoryDetails sender and IssueDetails' own listener are ever
+concurrently alive. `ListDetailSceneStrategy`'s entire point is to keep the list pane composed
+*continuously* alongside the detail pane, so once adopted, Kanban's `ResultEffect` stays live for
+the whole two-pane session. Two levels deep in the detail column (Kanban[list] → Issue[detail] →
+UserStory[pushed in the detail column]), a `sendResult(UpdateDataOnBack)` from UserStoryDetails'
+`goBack` now races between **two** simultaneously-active listeners (Kanban's and Issue's) instead
+of one — non-deterministic which wins. Either Issue silently fails to refresh (stale linked-story
+data) while Kanban does a pointless refetch, or it works by luck. This isn't a rare edge case: it
+reproduces on every "go two-deep-in-detail-column, then back" flow, for exactly the
+Kanban/Sprint-list + Issue/Epic-detail pairing step 12 is scoped around.
+
+**Fix is a call-site change, not a `ResultBus` rewrite.** `sendResult`/`ResultEffect` already
+take a `resultKey: String` (the reified overload just defaults it to `T::class.toString()`) —
+the primitive already supports per-audience keys; the bug is that every call site opted into the
+same one. Options, in order of how much churn they cost:
+1. Give each list+detail pairing (or each screen) its own marker type instead of the one shared
+   `UpdateDataOnBack` object — turns the global broadcast into N independent channels, restoring
+   exclusivity without touching `ResultBus.kt` at all. Favored: cheap, local diff to the six
+   nav-graph files above, no core-mechanism change.
+2. Key by the sender's identity or explicit target (closer to Nav2's per-entry scoping) — more
+   general, more plumbing.
+3. Leave the mechanism as-is and constrain which entries register a listener at all so only one
+   is ever active per pairing — fragile, breaks the moment a third pane variant is added.
+
+Not implemented yet — this was a pre-scoping investigation, done ahead of (and independent of)
+the screen-pairing decision that step 12 itself is still gated on.
