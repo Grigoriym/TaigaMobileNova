@@ -4,13 +4,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.navigation.LocalResultBus
+import com.grappim.taigamobile.core.navigation.Navigator
 import com.grappim.taigamobile.core.navigation.ResultEffect
 import com.grappim.taigamobile.core.navigation.sendResult
 import com.grappim.taigamobile.createtask.navigateToCreateIssue
@@ -28,18 +27,18 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateT
 import com.grappim.taigamobile.main.UpdateDataOnBack
 import com.grappim.taigamobile.utils.ui.NativeText
 
-fun NavGraphBuilder.issueNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
-    composable<IssuesNavDestination> {
+fun EntryProviderScope<NavKey>.issueNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
+    entry<IssuesNavDestination> {
         var updateData by remember { mutableStateOf(false) }
         ResultEffect<UpdateDataOnBack> { updateData = true }
         IssuesScreen(
             showSnackbar = showSnackbar,
             goToCreateIssue = {
-                navController.navigateToCreateIssue()
+                navigator.navigateToCreateIssue()
             },
             updateData = updateData,
             goToIssue = { id, ref ->
-                navController.navigateToIssueDetails(
+                navigator.navigateToIssueDetails(
                     issueId = id,
                     ref = ref
                 )
@@ -47,54 +46,54 @@ fun NavGraphBuilder.issueNavGraph(showSnackbar: (NativeText) -> Unit, navControl
         )
     }
 
-    composable<IssueDetailsNavDestination> { navBackStackEntry ->
+    entry<IssueDetailsNavDestination> { route ->
         var updateData by remember { mutableStateOf(false) }
         ResultEffect<UpdateDataOnBack> { updateData = true }
         val resultBus = LocalResultBus.current
         IssueDetailsScreen(
-            route = navBackStackEntry.toRoute(),
+            route = route,
             showSnackbar = showSnackbar,
             updateData = updateData,
             goToProfile = { creatorId ->
-                navController.navigateToProfileScreen(creatorId)
+                navigator.navigateToProfileScreen(creatorId)
             },
             goToEditDescription = { description: String, id: Long ->
-                navController.navigateToWorkItemEditDescription(
+                navigator.navigateToWorkItemEditDescription(
                     description = description,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue),
                     workItemId = id
                 )
             },
             goToEditTags = { issueId: Long ->
-                navController.navigateToWorkItemEditTags(
+                navigator.navigateToWorkItemEditTags(
                     workItemId = issueId,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
                 )
             },
             goBack = {
                 resultBus.sendResult(UpdateDataOnBack)
-                navController.popBackStack()
+                navigator.goBack()
             },
             goToEditAssignee = { issueId: Long ->
-                navController.navigateToWorkItemEditTeamMember(
+                navigator.navigateToWorkItemEditTeamMember(
                     workItemId = issueId,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
                 )
             },
             goToEditWatchers = { issueId: Long ->
-                navController.navigateToWorkItemEditTeamMember(
+                navigator.navigateToWorkItemEditTeamMember(
                     workItemId = issueId,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
                 )
             },
             goToSprints = { issueId: Long ->
-                navController.navigateToWorkItemEditSprint(
+                navigator.navigateToWorkItemEditSprint(
                     workItemId = issueId,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
                 )
             },
             goToUserStory = { userStoryId, ref ->
-                navController.navigateToUserStory(userStoryId = userStoryId, ref = ref)
+                navigator.navigateToUserStory(userStoryId = userStoryId, ref = ref)
             }
         )
     }

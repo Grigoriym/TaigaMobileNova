@@ -1,39 +1,15 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 9/12 done. **Current step:** 10 — replace `NavHost`/`composable<T>` with
-`NavDisplay`/`entry<T>` (gated, not started).
+**Progress:** 11/12 done. **Current step:** 12 — add `ListDetailSceneStrategy` (gated, not
+started).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
 Navigation 3 migration (steps 6–12, decomposed 2026-08-15 from the "Recommended path forward" in
-IMPLEMENTATION_PLAN.md's "Navigation 3 migration investigation" section). Option 2 (steps 2–4) is
-fully implemented. Steps 6–11 are the migration itself (mechanical, no open decisions blocking
-them); step 12 (the actual list-detail pane layout, option 3's real payoff) is gated — see its
-entry below. Done steps move to [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
-
-## Step 10: Replace `NavHost`/`composable<T>` with `NavDisplay`/`entry<T>` — the cutover
-
-⛔ **Gated — do not start without asking.** Depends on steps 6–9 all being done first, and this is
-the "big bang" step where everything lands together (the migration guide has no supported
-Nav2/Nav3 coexistence path) — confirm with gregory before starting given the blast radius.
-
-Replace `NavHost`/`composable<T>`/`NavGraphBuilder` extensions with
-`NavDisplay`/`entry<T>`/`EntryProviderScope<NavKey>` extensions across all 8 nav-graph files plus
-`MainNavHost.kt`. Delete the Nav2 dependencies once nothing references them.
-
-**Verify:** `./gradlew jvmTest`, `ktlintCheck`, all four target compiles, then full emulator
-verification across every top-level section (not a sample) per CLAUDE.md's Verification rule —
-this step touches navigation for the entire app.
-
-## Step 11: Rewire adaptive-chrome selection state to `NavigationState`
-
-Update `TaigaDrawerWidget.kt`/`MainScreen.kt`'s `currentTopLevelDestination` to read from
-`navigationState.currentTopLevelKey` instead of the Nav2 back stack. Re-run step 4's emulator
-scenarios (compact modal drawer selection highlighting, medium/expanded rail selection
-highlighting) to confirm option 2's work still behaves correctly after the Nav3 cutover.
-
-**Verify:** emulator-testing skill, same two AVDs and scenarios as step 4's `Verify:` entry in
-CHECKLIST-DONE.md.
+IMPLEMENTATION_PLAN.md's "Navigation 3 migration investigation" section). Options 2 and 3's
+migration (steps 2–11) are fully implemented; step 12 (the actual list-detail pane layout, option
+3's real payoff) is gated — see its entry below. Done steps move to
+[CHECKLIST-DONE.md](CHECKLIST-DONE.md).
 
 ## Step 12: Add `ListDetailSceneStrategy` for list-detail two-pane layouts
 

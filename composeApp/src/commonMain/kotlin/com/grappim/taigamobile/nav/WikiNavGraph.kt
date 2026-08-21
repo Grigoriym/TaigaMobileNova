@@ -1,10 +1,9 @@
 package com.grappim.taigamobile.nav
 
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.navigation.Navigator
 import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.wiki.ui.bookmark.create.WikiCreateBookmarkScreen
 import com.grappim.taigamobile.feature.wiki.ui.bookmark.list.WikiBookmarksScreen
@@ -20,41 +19,41 @@ import com.grappim.taigamobile.feature.wiki.ui.page.list.WikiPagesScreen
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navigateToWorkItemEditDescription
 import com.grappim.taigamobile.utils.ui.NativeText
 
-fun NavGraphBuilder.wikiNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
-    composable<WikiCreatePageNavDestination> {
+fun EntryProviderScope<NavKey>.wikiNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
+    entry<WikiCreatePageNavDestination> {
         WikiCreatePageScreen(
             goToWikiPage = { slug, id ->
-                navController.navigateToWikiPage(
+                navigator.navigateToWikiPage(
                     slug = slug,
                     id = id,
-                    popUpToRoute = WikiCreatePageNavDestination
+                    replaceCurrent = true
                 )
             }
         )
     }
 
-    composable<WikiCreateLinkNavDestination> {
+    entry<WikiCreateLinkNavDestination> {
         WikiCreateBookmarkScreen(
             goToWikiPage = { href, id ->
-                navController.navigateToWikiPage(
+                navigator.navigateToWikiPage(
                     slug = href,
                     id = id,
-                    popUpToRoute = WikiCreateLinkNavDestination
+                    replaceCurrent = true
                 )
             }
         )
     }
 
-    composable<WikiPageNavDestination> { backStackEntry ->
+    entry<WikiPageNavDestination> { route ->
         WikiPageScreen(
-            route = backStackEntry.toRoute(),
+            route = route,
             showSnackbar = showSnackbar,
             goToProfile = { userId ->
-                navController.navigateToProfileScreen(userId)
+                navigator.navigateToProfileScreen(userId)
             },
-            goBack = navController::popBackStack,
+            goBack = { navigator.goBack() },
             goToEditDescription = { description: String, id: Long ->
-                navController.navigateToWorkItemEditDescription(
+                navigator.navigateToWorkItemEditDescription(
                     description = description,
                     workItemId = id,
                     taskIdentifier = TaskIdentifier.Wiki
@@ -63,26 +62,26 @@ fun NavGraphBuilder.wikiNavGraph(showSnackbar: (NativeText) -> Unit, navControll
         )
     }
 
-    composable<WikiPagesNavDestination> {
+    entry<WikiPagesNavDestination> {
         WikiPagesScreen(
             showSnackbar = showSnackbar,
             goToWikiCreatePage = {
-                navController.navigate(route = WikiCreatePageNavDestination)
+                navigator.navigate(WikiCreatePageNavDestination)
             },
             goToWikiPage = { slug, id ->
-                navController.navigateToWikiPage(slug, id)
+                navigator.navigateToWikiPage(slug, id)
             }
         )
     }
 
-    composable<WikiLinksNavDestination> {
+    entry<WikiLinksNavDestination> {
         WikiBookmarksScreen(
             showSnackbar = showSnackbar,
             goToWikiCreateBookmark = {
-                navController.navigate(route = WikiCreateLinkNavDestination)
+                navigator.navigate(WikiCreateLinkNavDestination)
             },
             goToWikiPage = { slug, id ->
-                navController.navigateToWikiPage(slug, id)
+                navigator.navigateToWikiPage(slug, id)
             }
         )
     }

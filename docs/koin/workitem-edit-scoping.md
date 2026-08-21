@@ -153,6 +153,16 @@ fun TaskIdentifier.toScopePrefix(): String = when (this) {
 
 ---
 
+**Update (2026-08-21):** the Nav2→Nav3 cutover (tablet-form-factor-support checklist step 10)
+replaced `savedStateHandle.toRoute<T>()`/`typeMapOf` (the sample code below) with a Koin
+`@InjectedParam route: T` constructor parameter — see CLAUDE.md's Navigation Pattern section. The
+navigation-topology facts in the Feasibility investigation below (`NavHost`, `popUpTo(graph.id)`)
+describe the Nav2-era mechanics that were true when this was written; the *conclusions* (single flat
+graph, no nested `navigation{}`, no deep links, `resetTo`'s post-login/logout wipe still clears
+every section before the user sees a restored back stack) still hold under `Navigator`/`NavDisplay`
+— this proposal was never adopted (see Recommendation), so the code samples were left as written
+rather than ported for their own sake.
+
 ## Feasibility investigation (2026-08-14)
 
 Follow-up investigation to confirm the proposal above is actually buildable with what's pinned in

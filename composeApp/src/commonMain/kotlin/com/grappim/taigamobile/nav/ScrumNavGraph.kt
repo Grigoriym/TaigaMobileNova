@@ -4,10 +4,10 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.grappim.taigamobile.core.domain.CommonTaskType
+import com.grappim.taigamobile.core.navigation.Navigator
 import com.grappim.taigamobile.core.navigation.ResultEffect
 import com.grappim.taigamobile.createtask.navigateToCreateTask
 import com.grappim.taigamobile.feature.scrum.ui.ScrumBacklogDestination
@@ -20,17 +20,17 @@ import com.grappim.taigamobile.feature.sprint.ui.navigateToSprintScreen
 import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
 import com.grappim.taigamobile.main.UpdateDataOnBack
 
-fun NavGraphBuilder.scrumNavGraph(navController: NavHostController) {
-    composable<ScrumBacklogDestination> {
+fun EntryProviderScope<NavKey>.scrumNavGraph(navigator: Navigator) {
+    entry<ScrumBacklogDestination> {
         var updateData by remember { mutableStateOf(false) }
         ResultEffect<UpdateDataOnBack> { updateData = true }
         ScrumBacklogScreen(
             updateData = updateData,
             goToCreateUserStory = {
-                navController.navigateToCreateTask(type = CommonTaskType.UserStory)
+                navigator.navigateToCreateTask(type = CommonTaskType.UserStory)
             },
             navigateToTask = { id, _, ref ->
-                navController.navigateToUserStory(
+                navigator.navigateToUserStory(
                     userStoryId = id,
                     ref = ref
                 )
@@ -38,24 +38,24 @@ fun NavGraphBuilder.scrumNavGraph(navController: NavHostController) {
         )
     }
 
-    composable<ScrumOpenSprintsDestination> {
+    entry<ScrumOpenSprintsDestination> {
         var updateData by remember { mutableStateOf(false) }
         ResultEffect<UpdateDataOnBack> { updateData = true }
         ScrumOpenSprintsScreen(
             updateData = updateData,
             goToSprint = { sprint ->
-                navController.navigateToSprintScreen(sprint.id)
+                navigator.navigateToSprintScreen(sprint.id)
             }
         )
     }
 
-    composable<ScrumClosedSprintsDestination> {
+    entry<ScrumClosedSprintsDestination> {
         var updateData by remember { mutableStateOf(false) }
         ResultEffect<UpdateDataOnBack> { updateData = true }
         ScrumClosedSprintsScreen(
             updateData = updateData,
             goToSprint = { sprint ->
-                navController.navigateToSprintScreen(sprint.id)
+                navigator.navigateToSprintScreen(sprint.id)
             }
         )
     }

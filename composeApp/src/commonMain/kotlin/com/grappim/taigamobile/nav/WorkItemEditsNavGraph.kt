@@ -1,10 +1,8 @@
 package com.grappim.taigamobile.nav
 
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.TaskIdentifier
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
+import com.grappim.taigamobile.core.navigation.Navigator
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionNavDestination
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.WorkItemEditDescriptionScreen
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.WorkItemEditTagsNavDestination
@@ -16,73 +14,49 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.WorkItemEditSp
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditTeamMemberNavDestination
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.WorkItemEditTeamMemberScreen
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.typeMapOf
-import kotlin.reflect.typeOf
 
-fun NavGraphBuilder.workItemEditsNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
-    composable<WorkItemEditDescriptionNavDestination>(
-        typeMap = typeMapOf(
-            listOf(
-                typeOf<TaskIdentifier>()
-            )
-        )
-    ) { backStackEntry ->
+fun EntryProviderScope<NavKey>.workItemEditsNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
+    entry<WorkItemEditDescriptionNavDestination> { route ->
         WorkItemEditDescriptionScreen(
-            route = backStackEntry.toRoute(),
+            route = route,
             goBack = {
-                navController.popBackStack()
+                navigator.goBack()
             }
         )
     }
-    composable<WorkItemEditSprintNavDestination>(
-        typeMap = typeMapOf(
-            listOf(typeOf<TaskIdentifier>())
-        )
-    ) { backStackEntry ->
+    entry<WorkItemEditSprintNavDestination> { route ->
         WorkItemEditSprintScreen(
-            route = backStackEntry.toRoute(),
+            route = route,
             goBack = {
-                navController.popBackStack()
+                navigator.goBack()
             }
         )
     }
 
-    composable<WorkItemEditTagsNavDestination>(
-        typeMap = typeMapOf(
-            listOf(typeOf<TaskIdentifier>())
-        )
-    ) { backStackEntry ->
+    entry<WorkItemEditTagsNavDestination> { route ->
         WorkItemEditTagsScreen(
-            route = backStackEntry.toRoute(),
+            route = route,
             showSnackbar = showSnackbar,
             goBack = {
-                navController.popBackStack()
+                navigator.goBack()
             }
         )
     }
 
-    composable<WorkItemEditTeamMemberNavDestination>(
-        typeMap = typeMapOf(
-            listOf(typeOf<TaskIdentifier>())
-        )
-    ) { backStackEntry ->
+    entry<WorkItemEditTeamMemberNavDestination> { route ->
         WorkItemEditTeamMemberScreen(
-            route = backStackEntry.toRoute(),
+            route = route,
             goBack = {
-                navController.popBackStack()
+                navigator.goBack()
             }
         )
     }
 
-    composable<WorkItemEditEpicNavDestination>(
-        typeMap = typeMapOf(
-            listOf(typeOf<TaskIdentifier>())
-        )
-    ) { backStackEntry ->
+    entry<WorkItemEditEpicNavDestination> { route ->
         WorkItemEditEpicScreen(
-            route = backStackEntry.toRoute(),
+            route = route,
             goBack = {
-                navController.popBackStack()
+                navigator.goBack()
             }
         )
     }

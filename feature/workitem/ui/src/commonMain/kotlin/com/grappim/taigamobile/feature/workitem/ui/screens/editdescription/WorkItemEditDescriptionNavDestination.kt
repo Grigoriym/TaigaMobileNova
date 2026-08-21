@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.editdescription
 
-import androidx.navigation.NavController
 import androidx.navigation3.runtime.NavKey
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.navigation.Navigator
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -12,13 +12,9 @@ data class WorkItemEditDescriptionNavDestination(
     val taskIdentifier: TaskIdentifier
 ) : NavKey
 
-fun NavController.navigateToWorkItemEditDescription(
-    description: String,
-    workItemId: Long,
-    taskIdentifier: TaskIdentifier
-) {
+fun Navigator.navigateToWorkItemEditDescription(description: String, workItemId: Long, taskIdentifier: TaskIdentifier) {
     navigate(
-        route = WorkItemEditDescriptionNavDestination(
+        WorkItemEditDescriptionNavDestination(
             description = description,
             workItemId = workItemId,
             taskIdentifier = taskIdentifier

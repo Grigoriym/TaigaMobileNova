@@ -101,21 +101,50 @@ and stop.
 
 ## Navigation Pattern
 
-Destinations use `@Serializable` data classes/objects:
+Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from
+wallosmobile — see `docs/architecture/tablet-form-factor-support/IMPLEMENTATION_PLAN.md`'s step 7
+and step 10 notes for why this is hand-rolled rather than depending on the real Nav3 alpha APIs).
+Destinations are `@Serializable` classes/objects implementing `NavKey`, each with a `Navigator`
+extension function next to it:
 ```kotlin
 @Serializable
-data class TaskDetailsNavDestination(val taskId: Long, val ref: Long)
+data class TaskDetailsNavDestination(val taskId: Long, val ref: Long) : NavKey
 
-fun NavController.navigateToTask(taskId: Long, ref: Long) {
-    navigate(route = TaskDetailsNavDestination(taskId, ref))
+fun Navigator.navigateToTask(taskId: Long, ref: Long) {
+    navigate(TaskDetailsNavDestination(taskId, ref))
 }
 ```
 
-ViewModels extract arguments via `SavedStateHandle.toRoute<T>()`:
+Each `composeApp/.../nav/*NavGraph.kt` file wires one feature's destinations as
+`EntryProviderScope<NavKey>` extensions, called from `MainNavHost.kt`'s single `entryProvider { }`
+block:
 ```kotlin
-private val route = savedStateHandle.toRoute<TaskDetailsNavDestination>()
-private val taskId = route.taskId
+fun EntryProviderScope<NavKey>.taskNavGraph(navigator: Navigator) {
+    entry<TaskDetailsNavDestination> { route ->
+        TaskDetailsScreen(route = route, goBack = { navigator.goBack() }, ...)
+    }
+}
 ```
+
+ViewModels receive the route via a Koin `@InjectedParam` constructor parameter — not
+`SavedStateHandle.toRoute<T>()`, which was Nav2-only and has no Nav3 equivalent:
+```kotlin
+@KoinViewModel
+class TaskDetailsViewModel(
+    @InjectedParam private val route: TaskDetailsNavDestination,
+    ...
+) : ViewModel() {
+    private val taskId: Long = route.taskId
+```
+passed at the call site as `koinViewModel { parametersOf(route) }` in the `Screen` composable.
+
+**`Navigator.navigate(key)` is single-top per top-level section, not a stack push everywhere.** A
+top-level key (one of the drawer sections, seeded in `MainAppState.kt`'s `TOP_LEVEL_KEYS`) gets its
+own independent sub-stack; navigating to a non-top-level key pushes onto whichever section's
+sub-stack is currently active. Two extra primitives beyond `navigate`/`goBack`: `resetTo(key)` wipes
+every section and lands on `key` alone (login/logout); `replaceCurrent(key)` swaps the sub-stack's
+top entry instead of pushing (a "this screen is done, hand off to the next one" transition, e.g. a
+wiki create-page screen handing off to the page it just created).
 
 ## ViewModel + State Pattern
 

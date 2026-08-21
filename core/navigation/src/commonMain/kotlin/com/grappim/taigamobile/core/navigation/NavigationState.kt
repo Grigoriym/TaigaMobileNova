@@ -14,24 +14,30 @@ import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.savedstate.serialization.SavedStateConfiguration
+import kotlin.reflect.KClass
 
 /**
  * The dual back stack: [topLevelStack] records which drawer section is active, and each section
  * owns an independent sub-stack in [subStacks], so switching sections keeps each one's history.
+ *
+ * [subStacks] is keyed by [NavKey]'s runtime class, not by instance equality. A top-level route
+ * can carry a payload (e.g. `ProjectSelectorNavDestination(isFromLogin: Boolean)`), and the
+ * instance navigated to at runtime is rarely `equals()` to whichever instance seeded this map in
+ * [rememberNavigationState] — class identity is what "which section is this" actually means here.
  */
 class NavigationState(
     val startKey: NavKey,
     val topLevelStack: NavBackStack<NavKey>,
-    val subStacks: Map<NavKey, NavBackStack<NavKey>>
+    val subStacks: Map<KClass<out NavKey>, NavBackStack<NavKey>>
 ) {
     val currentTopLevelKey: NavKey by derivedStateOf { topLevelStack.last() }
 
-    val topLevelKeys: Set<NavKey>
+    val topLevelKeyClasses: Set<KClass<out NavKey>>
         get() = subStacks.keys
 
     val currentSubStack: NavBackStack<NavKey>
-        get() = subStacks[currentTopLevelKey]
-            ?: error("Sub stack for $currentTopLevelKey does not exist")
+        get() = subStacks[currentTopLevelKey::class]
+            ?: error("Sub stack for ${currentTopLevelKey::class} does not exist")
 
     val currentKey: NavKey by derivedStateOf { currentSubStack.last() }
 }
@@ -50,7 +56,7 @@ fun rememberNavigationState(
     configuration: SavedStateConfiguration
 ): NavigationState {
     val topLevelStack = rememberNavBackStack(configuration, startKey)
-    val subStacks = topLevelKeys.associateWith { key -> rememberNavBackStack(configuration, key) }
+    val subStacks = topLevelKeys.associate { key -> key::class to rememberNavBackStack(configuration, key) }
 
     return remember(startKey, topLevelKeys) {
         NavigationState(
@@ -81,6 +87,6 @@ fun NavigationState.toEntries(entryProvider: (NavKey) -> NavEntry<NavKey>): Snap
     }
 
     return topLevelStack
-        .flatMap { decoratedEntries[it] ?: emptyList() }
+        .flatMap { decoratedEntries[it::class] ?: emptyList() }
         .toMutableStateList()
 }

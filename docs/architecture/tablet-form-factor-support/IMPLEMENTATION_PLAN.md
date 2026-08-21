@@ -511,3 +511,100 @@ there's no cross-screen collision despite the shared key. **This assumption need
 step 10** if `NavDisplay`'s scene strategy ever keeps more than one entry actively composed at once
 (list-detail two-pane, step 12's eventual payoff, is exactly that shape) — worth a note in step 12's
 own scoping when it starts.
+
+## Step 10 notes (2026-08-21) — the cutover, and two `Navigator` gaps step 7 didn't catch
+
+**Step 11 landed inside this commit, not as its own step.** The checklist split "swap
+`NavHost`→`NavDisplay`" (step 10) from "rewire `currentTopLevelDestination` to
+`NavigationState`" (step 11) as if they were separable, but they aren't: `MainAppState.kt`'s
+`currentTopLevelDestination`/`isTopBarVisible` read the Nav2 `NavController.currentBackStackEntry`
+directly, and that type stops existing the moment `NavController` is deleted — there is no
+intermediate state where step 10 compiles without also doing step 11's rewire. Did both in this
+commit; `CHECKLIST-DONE.md` records step 11 as done here with a pointer back to this note rather
+than pretending it happened as a separate step later. `TaigaDrawerWidget.kt` needed no changes at
+all — it already took `currentTopLevelDestination: DrawerDestination?` as a plain value and
+compared by `==`, with no Nav-library type in its signature; all the Nav2-specific selection logic
+lived in `MainAppState.kt` alone.
+
+**`Navigator`/`NavigationState` (step 7) compared top-level keys by `equals()`, which is wrong the
+moment a top-level route carries a payload.** `ProjectSelectorNavDestination(isFromLogin: Boolean)`
+is a top-level key (it's in the drawer's implicit set alongside `Login`/`Dashboard`/etc., seeded
+once in `MainAppState.kt`'s `TOP_LEVEL_KEYS`), and the two real call sites that navigate to it
+(`MainNavHost.kt`'s initial-nav-state effect, and `LoginScreen`'s `onLoginSuccess`) always pass
+`isFromLogin = true` — never equal to the `ProjectSelectorNavDestination()` (default `false`)
+instance that seeded its `NavigationState.subStacks` entry at startup. Two separate consequences,
+both fixed together:
+
+- `NavigationState.subStacks` was keyed by `NavKey` instance (`Map<NavKey, NavBackStack<NavKey>>`);
+  changed to `Map<KClass<out NavKey>, NavBackStack<NavKey>>` (`NavigationState.kt`,
+  `topLevelKeyClasses` replaces `topLevelKeys`) so "which section is this" is decided by class, not
+  value.
+- `Navigator.navigate()`'s three-way dispatch (`key == currentTopLevelKey` /
+  `key in topLevelKeys` / else) compared by `equals()` too — switched every branch to `::class`
+  comparison. That alone would have made `currentTopLevelKey` report the right *class* while the
+  screen still rendered the *wrong instance*: `toEntries()` renders from each section's own
+  `NavBackStack`, not from `topLevelStack`'s pushed instance, so `goToTopLevel()` and the new
+  `resetSubStackTo()` (the renamed `clearSubStack()`) now also write the fresh key into the target
+  section's `subStacks` root entry. Caught this the hard way — a `NavigatorTest` case for a
+  payload-bearing top-level route failed on `currentKey` even after the class-comparison fix landed,
+  which is what surfaced the second half of the bug. Four new `NavigatorTest` cases cover it
+  (payload-bearing top-level switch, `replaceCurrent`, `resetTo`, `resetTo` clearing every section
+  not just the target).
+
+**`popUpToTop`/`navigateAndPopCurrent` (`core/navigation/NavigationExtensions.kt`, both Nav2-only)
+had exactly two and one real call sites respectively — ported as two new `Navigator` methods
+instead of a 1:1 API port:**
+
+- `Navigator.resetTo(key)` — wipes every section's history and lands on `key` alone. Backs
+  `navigateToLoginAsTopDestination()` (logout) and `navigateToDashboardAsTopDestination()`
+  (post-project-selection and the cold-start-already-selected path in `MainNavHost.kt`'s initial-nav
+  effect). `NavigationExtensions.kt` itself is deleted — nothing else was in that file.
+- `Navigator.replaceCurrent(key)` — pops the current sub-stack entry, then pushes `key`, for
+  "this screen is done, hand off to the next one without leaving it reachable via back" transitions.
+  Backs `WikiPageNavDestination.navigateToWikiPage(..., replaceCurrent: Boolean)` (a wiki
+  create-page/create-bookmark screen handing off to the page it just created) and
+  `UserStoryDetailsNavDestination.navigateToUserStory(..., replaceCurrent: Boolean)` — **this second
+  one was a real, live call site** (`TaskNavGraph.kt`'s `goToUserStory`, `TaskDetailsNavDestination`
+  popped when drilling from a task into its parent user story), not the dead code an earlier pass at
+  scoping this step assumed from an incomplete grep of `navigateToUserStory`'s call sites — re-read
+  every call site's full argument list before deleting a parameter, not just enough of the file to
+  see the function name.
+
+**Mechanical part, for the record:** all 27 `fun NavController.navigateToX()` extensions across
+`feature/*/ui` + `composeApp` became `fun Navigator.navigateToX()` (drop the `route =` named arg
+where `navigate()`'s single parameter made it redundant); all 8 `NavGraphBuilder` files became
+`EntryProviderScope<NavKey>` files (`composable<T> { backStackEntry -> ... toRoute() }` →
+`entry<T> { route -> ... }`, no `toRoute()` needed since Nav3 hands the route object directly);
+`MainNavHost.kt`'s `NavHost` became `NavDisplay` fed by `navigationState.toEntries(entryProvider)`;
+`MainScreen.kt`'s `NavController.OnDestinationChangedListener`-based keyboard-hide side effect
+became a `LaunchedEffect(navigationState.currentKey)`. `typeMapOf`/`JsonSerializableNavType`
+(`utils/ui`, Nav2 `NavType` machinery for `TaskIdentifier`/`CommonTaskType` route fields) had no
+callers left once every `composable<T>(typeMap = ...)` became a plain `entry<T>` — deleted the
+whole file family (commonMain + 3 platform actuals + 2 test files) rather than leaving it orphaned.
+Nav2 itself (`jetbrains.compose.navigation` → `org.jetbrains.androidx.navigation:navigation-compose`,
+applied to *every* KMP Compose module via `KmpCompose.kt`'s convention plugin) came out once a
+repo-wide grep for `androidx.navigation.` imports (excluding `navigation3`/`navigationevent`, a
+different artifact entirely) came back empty — catalog entries (`jetbrainsNavigationCompose`,
+`jetbrains-compose-navigation`) removed too. Touching `build-logic/` trips the guardrails wire
+regardless of content, so this commit carries a `Gate-change:` line for it even though nothing
+about detekt/ktlint/kover actually changed.
+
+**Verified:** `./gradlew jvmTest` (full suite, including `NavigatorTest`'s new cases),
+`ktlintCheck` (one `standard:function-signature` hit in a workitem NavDestination file, fixed by
+`ktlintCommonMainSourceSetFormat` — the same over-120-char-when-unwrapped trap CLAUDE.md's Testing
+section already documents for test code, turns out to bite production `fun Navigator.xxx()`
+one-liners too), `koverXmlReport`/`:koverVerify` (floor still holds — deleting the fully-covered
+`JsonSerializableNavType` family didn't move the ratio meaningfully), and all four target compiles
+(JVM, both iOS targets via `--rerun-tasks`, `androidApp:compileFdroidDebugKotlin`). Full emulator
+walkthrough on `Medium_Phone_API_36.1`: cold start already-logged-in landed on Dashboard directly
+(confirming the `resetTo` cold-start path), back from Dashboard exits to launcher rather than
+reaching Login/ProjectSelector, every drawer section opened and highlighted correctly (Board,
+Epics, Issues, Kanban, Team, Wiki Bookmarks, Wiki All Pages + a wiki page detail, Scrum Backlog,
+Open Sprints + a sprint detail, Settings + Modules), Kanban→task detail→switch to Team→switch back
+to Kanban landed on the task detail (not the board root, proving sub-stack survival across a
+section switch), changing that task's status and backing out updated the Kanban board's column
+count (proving `UpdateDataOnBack` still fires through `NavDisplay`/`Navigator.goBack()`), and
+logout landed cleanly on Login with back exiting to the launcher. `Medium_Tablet` (abbreviated,
+step 11's own scenario): `NavigationRail` renders with every section, Board highlighted on launch,
+tapping Epics switched the rail highlight and the content correctly. No crashes in logcat across
+either AVD.

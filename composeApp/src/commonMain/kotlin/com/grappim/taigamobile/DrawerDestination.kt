@@ -1,7 +1,5 @@
 package com.grappim.taigamobile
 
-import androidx.navigation.NavHostController
-import androidx.navigation.NavOptions
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.epics.ui.list.EpicsNavDestination
 import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
@@ -15,10 +13,6 @@ import com.grappim.taigamobile.feature.teams.ui.TeamNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiLinksNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPagesNavDestination
-
-fun DrawerDestination.navigate(navController: NavHostController, navOptions: NavOptions) {
-    navController.navigate(route = route, navOptions = navOptions)
-}
 
 enum class DrawerDestination(val route: Any) {
     ProjectSelector(ProjectSelectorNavDestination()),

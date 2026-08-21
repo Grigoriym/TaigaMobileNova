@@ -1,16 +1,12 @@
 package com.grappim.taigamobile.feature.projectselector.ui
 
-import androidx.navigation.NavController
-import androidx.navigation.NavOptionsBuilder
 import androidx.navigation3.runtime.NavKey
+import com.grappim.taigamobile.core.navigation.Navigator
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class ProjectSelectorNavDestination(val isFromLogin: Boolean = false) : NavKey
 
-fun NavController.navigateToProjectSelector(
-    isFromLogin: Boolean = false,
-    navOptions: NavOptionsBuilder.() -> Unit = {}
-) = navigate(route = ProjectSelectorNavDestination(isFromLogin)) {
-    navOptions()
+fun Navigator.navigateToProjectSelector(isFromLogin: Boolean = false) {
+    navigate(ProjectSelectorNavDestination(isFromLogin))
 }

@@ -3,6 +3,7 @@ package com.grappim.taigamobile.main
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -11,16 +12,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.navigation.NavController
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.toRoute
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.ui.NavDisplay
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.navigation.LocalResultBus
+import com.grappim.taigamobile.core.navigation.NavigationState
+import com.grappim.taigamobile.core.navigation.Navigator
 import com.grappim.taigamobile.core.navigation.ResultEffect
 import com.grappim.taigamobile.core.navigation.rememberResultBus
 import com.grappim.taigamobile.core.navigation.sendResult
+import com.grappim.taigamobile.core.navigation.toEntries
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
 import com.grappim.taigamobile.createtask.navigateToCreateTask
@@ -55,13 +56,14 @@ import com.grappim.taigamobile.nav.wikiNavGraph
 import com.grappim.taigamobile.nav.workItemEditsNavGraph
 import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
 import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.typeMapOf
-import kotlin.reflect.typeOf
+
+private const val TRANSITION_DURATION_MS = 150
 
 @Composable
 fun MainNavHost(
     initialNavState: InitialNavState,
-    navController: NavHostController,
+    navigator: Navigator,
+    navigationState: NavigationState,
     showSnackbar: (NativeText) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -69,189 +71,191 @@ fun MainNavHost(
         if (initialNavState.isReady) {
             when (val dest = initialNavState.startDestination) {
                 is ProjectSelectorNavDestination ->
-                    navController.navigateToProjectSelector(isFromLogin = dest.isFromLogin)
+                    navigator.navigateToProjectSelector(isFromLogin = dest.isFromLogin)
 
                 is DashboardNavDestination ->
-                    navController.navigateToDashboardAsTopDestination()
+                    navigator.navigateToDashboardAsTopDestination()
             }
+        }
+    }
+
+    val entryProvider = entryProvider {
+        issueNavGraph(
+            showSnackbar = showSnackbar,
+            navigator = navigator
+        )
+
+        userStoryNavGraph(
+            showSnackbar = showSnackbar,
+            navigator = navigator
+        )
+
+        taskNavGraph(
+            showSnackbar = showSnackbar,
+            navigator = navigator
+        )
+
+        workItemEditsNavGraph(
+            showSnackbar = showSnackbar,
+            navigator = navigator
+        )
+
+        epicNavGraph(
+            showSnackbar = showSnackbar,
+            navigator = navigator
+        )
+
+        wikiNavGraph(
+            showSnackbar = showSnackbar,
+            navigator = navigator
+        )
+
+        scrumNavGraph(
+            navigator = navigator
+        )
+
+        settingsNavGraph(
+            navigator = navigator,
+            showSnackbar = showSnackbar
+        )
+
+        entry<LoginNavDestination> {
+            val screenReadySignal = LocalScreenReadySignal.current
+            LaunchedEffect(initialNavState.isReady) {
+                if (initialNavState.isReady && initialNavState.startDestination is LoginNavDestination) {
+                    screenReadySignal.signalReady()
+                }
+            }
+            LoginScreen(
+                onShowSnackbar = showSnackbar,
+                onLoginSuccess = {
+                    navigator.navigateToProjectSelector(isFromLogin = true)
+                }
+            )
+        }
+
+        entry<ProjectSelectorNavDestination> { route ->
+            val screenReadySignal = LocalScreenReadySignal.current
+            LaunchedEffect(initialNavState.isReady) {
+                if (initialNavState.isReady && initialNavState.startDestination is ProjectSelectorNavDestination) {
+                    screenReadySignal.signalReady()
+                }
+            }
+            ProjectSelectorScreen(
+                route = route,
+                goBack = {
+                    navigator.goBack()
+                },
+                onProjectSelect = {
+                    navigator.navigateToDashboardAsTopDestination()
+                }
+            )
+        }
+
+        entry<DashboardNavDestination> {
+            val screenReadySignal = LocalScreenReadySignal.current
+            LaunchedEffect(initialNavState.isReady) {
+                if (initialNavState.isReady && initialNavState.startDestination is DashboardNavDestination) {
+                    screenReadySignal.signalReady()
+                }
+            }
+            DashboardScreen(
+                navigateToTaskScreen = { id, type, ref ->
+                    navigator.navigate(id, type, ref)
+                }
+            )
+        }
+
+        entry<TeamNavDestination> {
+            TeamScreen(
+                showSnackbar = showSnackbar,
+                goToProfile = { userId ->
+                    navigator.navigateToProfileScreen(userId)
+                }
+            )
+        }
+
+        entry<KanbanNavDestination> {
+            var updateData by remember { mutableStateOf(false) }
+            ResultEffect<UpdateDataOnBack> { updateData = true }
+            KanbanScreen(
+                updateData = updateData,
+                showSnackbar = showSnackbar,
+                goToTask = { id, type, ref ->
+                    navigator.navigate(id, type, ref)
+                },
+                goToCreateTask = { task, statusId, swimlaneId ->
+                    navigator.navigateToCreateTask(
+                        type = task,
+                        statusId = statusId,
+                        swimlaneId = swimlaneId
+                    )
+                }
+            )
+        }
+
+        entry<SprintNavDestination> { route ->
+            var updateData by remember { mutableStateOf(false) }
+            ResultEffect<UpdateDataOnBack> { updateData = true }
+            val resultBus = LocalResultBus.current
+            SprintScreen(
+                route = route,
+                updateData = updateData,
+                showSnackbar = showSnackbar,
+                goBack = {
+                    resultBus.sendResult(UpdateDataOnBack)
+                    navigator.goBack()
+                },
+                goToTaskScreen = { id, type, ref ->
+                    navigator.navigate(id, type, ref)
+                },
+                goToCreateTask = { type, parentId, sprintId ->
+                    navigator.navigateToCreateTask(
+                        type = type,
+                        parentId = parentId,
+                        sprintId = sprintId
+                    )
+                }
+            )
+        }
+
+        entry<ProfileNavDestination> { route ->
+            ProfileScreen(
+                route = route,
+                showSnackbar = showSnackbar
+            )
+        }
+
+        entry<CreateTaskNavDestination> { route ->
+            CreateTaskScreen(
+                route = route,
+                showSnackbar = showSnackbar,
+                navigateOnTaskCreated = { id, type, ref ->
+                    navigator.goBack()
+                    navigator.navigate(id, type, ref)
+                }
+            )
         }
     }
 
     CompositionLocalProvider(LocalResultBus provides rememberResultBus()) {
-        NavHost(
+        NavDisplay(
             modifier = modifier,
-            navController = navController,
-            startDestination = LoginNavDestination,
-            enterTransition = {
-                fadeIn(animationSpec = tween(150))
+            transitionSpec = {
+                fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) togetherWith
+                    fadeOut(animationSpec = tween(TRANSITION_DURATION_MS))
             },
-            exitTransition = {
-                fadeOut(animationSpec = tween(150))
-            }
-        ) {
-            issueNavGraph(
-                showSnackbar = showSnackbar,
-                navController = navController
-            )
-
-            userStoryNavGraph(
-                showSnackbar = showSnackbar,
-                navController = navController
-            )
-
-            taskNavGraph(
-                showSnackbar = showSnackbar,
-                navController = navController
-            )
-
-            workItemEditsNavGraph(
-                showSnackbar = showSnackbar,
-                navController = navController
-            )
-
-            epicNavGraph(
-                showSnackbar = showSnackbar,
-                navController = navController
-            )
-
-            wikiNavGraph(
-                showSnackbar = showSnackbar,
-                navController = navController
-            )
-
-            scrumNavGraph(
-                navController = navController
-            )
-
-            settingsNavGraph(
-                navController = navController,
-                showSnackbar = showSnackbar
-            )
-
-            composable<LoginNavDestination> {
-                val screenReadySignal = LocalScreenReadySignal.current
-                LaunchedEffect(initialNavState.isReady) {
-                    if (initialNavState.isReady && initialNavState.startDestination is LoginNavDestination) {
-                        screenReadySignal.signalReady()
-                    }
-                }
-                LoginScreen(
-                    onShowSnackbar = showSnackbar,
-                    onLoginSuccess = {
-                        navController.navigateToProjectSelector(isFromLogin = true)
-                    }
-                )
-            }
-
-            composable<ProjectSelectorNavDestination> { backStackEntry ->
-                val screenReadySignal = LocalScreenReadySignal.current
-                LaunchedEffect(initialNavState.isReady) {
-                    if (initialNavState.isReady && initialNavState.startDestination is ProjectSelectorNavDestination) {
-                        screenReadySignal.signalReady()
-                    }
-                }
-                ProjectSelectorScreen(
-                    route = backStackEntry.toRoute(),
-                    goBack = {
-                        navController.popBackStack()
-                    },
-                    onProjectSelect = {
-                        navController.navigateToDashboardAsTopDestination()
-                    }
-                )
-            }
-
-            composable<DashboardNavDestination> {
-                val screenReadySignal = LocalScreenReadySignal.current
-                LaunchedEffect(initialNavState.isReady) {
-                    if (initialNavState.isReady && initialNavState.startDestination is DashboardNavDestination) {
-                        screenReadySignal.signalReady()
-                    }
-                }
-                DashboardScreen(
-                    navigateToTaskScreen = { id, type, ref ->
-                        navController.navigate(id, type, ref)
-                    }
-                )
-            }
-
-            composable<TeamNavDestination> {
-                TeamScreen(
-                    showSnackbar = showSnackbar,
-                    goToProfile = { userId ->
-                        navController.navigateToProfileScreen(userId)
-                    }
-                )
-            }
-
-            composable<KanbanNavDestination> {
-                var updateData by remember { mutableStateOf(false) }
-                ResultEffect<UpdateDataOnBack> { updateData = true }
-                KanbanScreen(
-                    updateData = updateData,
-                    showSnackbar = showSnackbar,
-                    goToTask = { id, type, ref ->
-                        navController.navigate(id, type, ref)
-                    },
-                    goToCreateTask = { task, statusId, swimlaneId ->
-                        navController.navigateToCreateTask(
-                            type = task,
-                            statusId = statusId,
-                            swimlaneId = swimlaneId
-                        )
-                    }
-                )
-            }
-
-            composable<SprintNavDestination> { navBackStackEntry ->
-                var updateData by remember { mutableStateOf(false) }
-                ResultEffect<UpdateDataOnBack> { updateData = true }
-                val resultBus = LocalResultBus.current
-                SprintScreen(
-                    route = navBackStackEntry.toRoute(),
-                    updateData = updateData,
-                    showSnackbar = showSnackbar,
-                    goBack = {
-                        resultBus.sendResult(UpdateDataOnBack)
-                        navController.popBackStack()
-                    },
-                    goToTaskScreen = { id, type, ref ->
-                        navController.navigate(id, type, ref)
-                    },
-                    goToCreateTask = { type, parentId, sprintId ->
-                        navController.navigateToCreateTask(
-                            type = type,
-                            parentId = parentId,
-                            sprintId = sprintId
-                        )
-                    }
-                )
-            }
-
-            composable<ProfileNavDestination> { backStackEntry ->
-                ProfileScreen(
-                    route = backStackEntry.toRoute(),
-                    showSnackbar = showSnackbar
-                )
-            }
-
-            composable<CreateTaskNavDestination>(
-                typeMap = typeMapOf(listOf(typeOf<CommonTaskType>()))
-            ) { backStackEntry ->
-                CreateTaskScreen(
-                    route = backStackEntry.toRoute(),
-                    showSnackbar = showSnackbar,
-                    navigateOnTaskCreated = { id, type, ref ->
-                        navController.popBackStack()
-                        navController.navigate(id, type, ref)
-                    }
-                )
-            }
-        }
+            popTransitionSpec = {
+                fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) togetherWith
+                    fadeOut(animationSpec = tween(TRANSITION_DURATION_MS))
+            },
+            onBack = { navigator.goBack() },
+            entries = navigationState.toEntries(entryProvider)
+        )
     }
 }
 
-private fun NavController.navigate(id: Long, type: CommonTaskType, ref: Long) {
+private fun Navigator.navigate(id: Long, type: CommonTaskType, ref: Long) {
     when (type) {
         CommonTaskType.UserStory -> this.navigateToUserStory(
             userStoryId = id,

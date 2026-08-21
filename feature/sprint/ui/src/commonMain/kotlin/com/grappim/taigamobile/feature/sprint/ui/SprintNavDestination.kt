@@ -1,12 +1,12 @@
 package com.grappim.taigamobile.feature.sprint.ui
 
-import androidx.navigation.NavController
 import androidx.navigation3.runtime.NavKey
+import com.grappim.taigamobile.core.navigation.Navigator
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class SprintNavDestination(val sprintId: Long) : NavKey
 
-fun NavController.navigateToSprintScreen(sprintId: Long) {
-    navigate(route = SprintNavDestination(sprintId))
+fun Navigator.navigateToSprintScreen(sprintId: Long) {
+    navigate(SprintNavDestination(sprintId))
 }

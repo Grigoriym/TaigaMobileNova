@@ -361,3 +361,72 @@ the "NEW" column lost that card too. No crash either time (`adb logcat` checked 
 
 **Next:** step 10 — replace `NavHost`/`composable<T>` with `NavDisplay`/`entry<T>`. Gated — confirm
 with gregory before starting given the blast radius (no supported Nav2/Nav3 coexistence path).
+
+## Step 10: Replace `NavHost`/`composable<T>` with `NavDisplay`/`entry<T>` — the cutover — ✅ done 2026-08-21
+
+All 27 `fun NavController.navigateToX()` extensions across `feature/*/ui` + `composeApp` became
+`fun Navigator.navigateToX()`; all 8 `NavGraphBuilder` files became `EntryProviderScope<NavKey>`
+files (`composable<T> { backStackEntry -> ... toRoute() }` → `entry<T> { route -> ... }`);
+`MainNavHost.kt`'s `NavHost` became `NavDisplay` fed by `navigationState.toEntries(entryProvider)`.
+Deleted `core/navigation/NavigationExtensions.kt` (Nav2-only `popUpToTop`/`navigateAndPopCurrent`,
+replaced by two new `Navigator` methods — `resetTo`/`replaceCurrent`, see Note below) and the whole
+`utils/ui` `JsonSerializableNavType`/`typeMapOf` file family (commonMain + 3 platform actuals + 2
+test files — Nav2 `NavType` machinery with no callers left once every `composable<T>(typeMap =
+...)` became a plain `entry<T>`). Removed Nav2 itself
+(`org.jetbrains.androidx.navigation:navigation-compose`) from `KmpCompose.kt`'s convention plugin
+and the version catalog, once a repo-wide grep for `androidx.navigation.` imports (excluding the
+different `navigation3`/`navigationevent` artifacts) came back empty.
+
+**Note: step 11 landed in this same commit, not as its own step** — see
+IMPLEMENTATION_PLAN.md's "Step 10 notes" for why they can't be separated (`MainAppState.kt`'s
+`currentTopLevelDestination`/`isTopBarVisible` read the Nav2 `NavController` directly, and that
+type stops existing the moment this step deletes `NavController` — there's no compiling
+intermediate state between the two). `TaigaDrawerWidget.kt` needed no changes; all the Nav2-specific
+selection logic lived in `MainAppState.kt` alone.
+
+**Note: step 7's `Navigator`/`NavigationState` had two related bugs, both fixed here** — full
+mechanism in IMPLEMENTATION_PLAN.md's "Step 10 notes". Short version: top-level key comparison was
+by `equals()`, which silently breaks the moment a top-level route carries a payload
+(`ProjectSelectorNavDestination(isFromLogin: Boolean)`, whose two real call sites always pass
+`isFromLogin = true`, never matching the `isFromLogin = false` instance that seeded
+`NavigationState.subStacks` at startup). Fixed by keying `subStacks` on `KClass<out NavKey>` instead
+of the `NavKey` instance, comparing by `::class` throughout `Navigator`, and having `goToTopLevel`/
+`resetSubStackTo` write the fresh key into the target section's sub-stack root — `toEntries()`
+renders from `subStacks`, not `topLevelStack`, so the class-comparison fix alone would have reported
+the right section while still rendering the wrong (stale-payload) screen instance. Four new
+`NavigatorTest` cases cover it.
+
+**Note: `navigateToUserStory`'s `popUpToRoute` parameter was NOT dead code** — an earlier pass at
+scoping this step read only part of `TaskNavGraph.kt` and concluded it had no live callers; the
+real call site (`goToUserStory`, popping `TaskDetailsNavDestination` when drilling from a task into
+its parent user story) was further down the same file. Ported to `Navigator.replaceCurrent(key)`
+(pop the current sub-stack entry, then push) rather than dropped — the same primitive also backs
+`WikiPageNavDestination.navigateToWikiPage`'s `popUpToRoute` (a real, two-call-site usage in
+`WikiNavGraph.kt`). Re-read a file's full contents before deleting a parameter on the strength of a
+partial grep.
+
+**Verify:** `./gradlew jvmTest` (full suite including 4 new `NavigatorTest` cases), `ktlintCheck`
+(one `standard:function-signature` hit — the same over-120-char-unwrapped trap CLAUDE.md's Testing
+section documents for test code, turns out to bite production `fun Navigator.xxx()` one-liners too
+— fixed by `ktlintCommonMainSourceSetFormat`), `koverXmlReport`/`:koverVerify` (floor holds), and
+all four target compiles (`:composeApp:compileKotlinJvm`,
+`:composeApp:compileKotlinIosSimulatorArm64 --rerun-tasks`, `:composeApp:compileKotlinIosArm64
+--rerun-tasks`, `:androidApp:compileFdroidDebugKotlin --rerun-tasks`). Full emulator walkthrough
+(`emulator-testing` skill) on `Medium_Phone_API_36.1`: cold-start-already-logged-in landed on
+Dashboard directly (`resetTo` cold-start path), back from Dashboard exits to the launcher rather
+than reaching Login/ProjectSelector, every drawer section opened and highlighted correctly (Board,
+Epics, Issues, Kanban, Team, Wiki Bookmarks, Wiki All Pages + a page detail, Scrum Backlog, Open
+Sprints + a sprint detail, Settings + Modules), Kanban → task detail → switch to Team → switch back
+to Kanban landed on the task detail rather than the board root (sub-stack survives a section
+switch), changing that task's status and backing out updated the Kanban board's column count
+(`UpdateDataOnBack` still fires through `NavDisplay`/`Navigator.goBack()`), and logout landed
+cleanly on Login with back exiting to the launcher — no crashes in logcat. `Medium_Tablet`
+(abbreviated, doubling as step 11's own scenario): `NavigationRail` renders every section, Board
+highlighted on launch, tapping Epics switched both the rail highlight and the content correctly.
+
+**Gate-change note:** this commit touches `build-logic/` (`KmpCompose.kt`, removing the Nav2
+dependency) — the guardrails wire trips on the path regardless of content, so the commit carries a
+`Gate-change:` line even though nothing about detekt/ktlint/kover actually changed.
+
+**Next:** step 12 — add `ListDetailSceneStrategy` for list-detail two-pane layouts. Gated — three
+open questions in its own CHECKLIST.md entry need answers from gregory before it can be scoped.

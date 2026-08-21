@@ -19,7 +19,6 @@ import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffo
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -27,7 +26,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
@@ -36,6 +34,7 @@ import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.TaigaDrawerWidget
 import com.grappim.taigamobile.TaigaNavigationSuiteWidget
 import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.core.navigation.NavigationState
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.close
@@ -51,7 +50,6 @@ import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.utils.ui.asStringBlocking
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -101,14 +99,11 @@ private fun MainScreenContent(
             logcat {
                 "Logout Event with $it"
             }
-            appState.navController.navigateToLoginAsTopDestination()
+            appState.navigator.navigateToLoginAsTopDestination()
         }.launchIn(this)
     }
 
-    RegisterOnDestinationChangedListenerSideEffect(
-        navController = appState.navController,
-        coroutineScope = scope
-    )
+    HideKeyboardOnNavigationChangeEffect(navigationState = appState.navigator.state)
 
     ConfirmActionDialog(
         title = stringResource(RString.logout_title),
@@ -142,7 +137,7 @@ private fun MainScreenContent(
                     isVisible = appState.isTopBarVisible,
                     topBarConfig = topBarConfig,
                     drawerState = drawerState,
-                    defaultGoBack = { appState.navController.popBackStack() }
+                    defaultGoBack = { appState.navigator.goBack() }
                 )
             },
             snackbarHost = {
@@ -164,7 +159,8 @@ private fun MainScreenContent(
 
                     MainNavHost(
                         initialNavState = initialNavState,
-                        navController = appState.navController,
+                        navigator = appState.navigator,
+                        navigationState = appState.navigator.state,
                         showSnackbar = { text ->
                             scope.launch {
                                 val result = snackbarHostState.showSnackbar(
@@ -234,22 +230,16 @@ private fun MainScreenContent(
     }
 }
 
+/**
+ * Nav3 has no `NavController.OnDestinationChangedListener` equivalent — [NavigationState.currentKey]
+ * changing is the Nav3-shaped signal that navigation happened, so a [LaunchedEffect] keyed on it
+ * replaces the old listener-based side effect.
+ */
 @Composable
-private fun RegisterOnDestinationChangedListenerSideEffect(
-    navController: NavController,
-    coroutineScope: CoroutineScope
-) {
+private fun HideKeyboardOnNavigationChangeEffect(navigationState: NavigationState) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    DisposableEffect(navController, coroutineScope) {
-        val listener = NavController.OnDestinationChangedListener { _, _, _ ->
-
-            keyboardController?.hide()
-        }
-
-        navController.addOnDestinationChangedListener(listener)
-        onDispose {
-            navController.removeOnDestinationChangedListener(listener)
-        }
+    LaunchedEffect(navigationState.currentKey) {
+        keyboardController?.hide()
     }
 }
