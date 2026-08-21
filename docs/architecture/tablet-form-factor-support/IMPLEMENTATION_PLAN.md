@@ -675,8 +675,26 @@ same one. Options, in order of how much churn they cost:
 3. Leave the mechanism as-is and constrain which entries register a listener at all so only one
    is ever active per pairing — fragile, breaks the moment a third pane variant is added.
 
-Not implemented yet — this was a pre-scoping investigation, done ahead of (and independent of)
-the screen-pairing decision that step 12 itself is still gated on.
+**Implemented 2026-08-21 in step 12a** (option 1 above). One clarification the original wording
+here left ambiguous: of the three call sites named in the next section, only **two** actually
+change key value — `IssuesNavDestination`'s list-refresh listener (`:33`, now
+`ResultEffect<IssueListUpdateDataOnBack>`) and `IssueDetailsNavDestination`'s own `goBack`
+(`:74`→`77` after the new-declaration insert, now `resultBus.sendResult(IssueListUpdateDataOnBack)`)
+— a matched send/receive pair fully contained in `IssueNavGraph.kt`. `IssueDetailsNavDestination`'s
+own self-refresh listener (`:51`→`54`) **stays on the shared `UpdateDataOnBack` key**, deliberately
+unchanged: its sender is `UserStoryNavGraph.kt`/`TaskNavGraph.kt`'s own `goBack`, both out of this
+MVP's scope, so the listener has to keep matching whatever key those files still send. The new
+`private data object IssueListUpdateDataOnBack` lives at the top of `IssueNavGraph.kt` itself,
+scoped to this one pairing.
+
+**Also worth noting for step 12c's manual test plan:** the "Kanban[list] → Issue[detail] →
+UserStory[pushed in the detail column] → back" scenario that originally exposed this race is
+reached through `IssueDetailsScreen`'s **promote-to-user-story action** specifically
+(`IssueDetailsViewModel.promoteToUserStory()` → `promotedToUserStoryTrigger` →
+`goToUserStory(data.id, data.ref)`, `IssueDetailsScreen.kt:162-163`), not a general "open linked
+user story" link — Taiga Issues don't have User Stories as children. Promoting is a one-time,
+data-mutating conversion (turns the Issue into a User Story), so step 12c's repro needs a
+disposable seeded Issue to promote, not just any existing one.
 
 ## Step 12 screen-pairing decision (2026-08-21)
 
@@ -686,7 +704,8 @@ Narrows the `ResultBus` fix above to one pairing: only `IssuesNavGraph.kt`'s two
 `ResultEffect<UpdateDataOnBack>` registrations (`IssuesNavDestination`'s list-refresh listener and
 `IssueDetailsNavDestination`'s own self-refresh listener, `IssueNavGraph.kt:33` and `:51`) and its
 one `sendResult` site (`:74`, `IssueDetailsNavDestination`'s `goBack`) need distinct keys — the
-other five nav-graph files' `UpdateDataOnBack` usage is untouched by this MVP.
+other five nav-graph files' `UpdateDataOnBack` usage is untouched by this MVP. (See the
+"Implemented 2026-08-21" note just above for which of the three actually changed value.)
 
 This is a decision recorded ahead of step 12 actually starting, not a start signal — the step is
 still gated per CHECKLIST.md until scoped and picked up explicitly.

@@ -27,10 +27,13 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateT
 import com.grappim.taigamobile.main.UpdateDataOnBack
 import com.grappim.taigamobile.utils.ui.NativeText
 
+// Distinct from UpdateDataOnBack to avoid colliding with IssueDetailsNavDestination's own self-refresh listener below.
+private data object IssueListUpdateDataOnBack
+
 fun EntryProviderScope<NavKey>.issueNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
     entry<IssuesNavDestination> {
         var updateData by remember { mutableStateOf(false) }
-        ResultEffect<UpdateDataOnBack> { updateData = true }
+        ResultEffect<IssueListUpdateDataOnBack> { updateData = true }
         IssuesScreen(
             showSnackbar = showSnackbar,
             goToCreateIssue = {
@@ -71,7 +74,7 @@ fun EntryProviderScope<NavKey>.issueNavGraph(showSnackbar: (NativeText) -> Unit,
                 )
             },
             goBack = {
-                resultBus.sendResult(UpdateDataOnBack)
+                resultBus.sendResult(IssueListUpdateDataOnBack)
                 navigator.goBack()
             },
             goToEditAssignee = { issueId: Long ->

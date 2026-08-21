@@ -429,4 +429,35 @@ dependency) — the guardrails wire trips on the path regardless of content, so 
 `Gate-change:` line even though nothing about detekt/ktlint/kover actually changed.
 
 **Next:** step 12 — add `ListDetailSceneStrategy` for list-detail two-pane layouts. Gated — three
-open questions in its own CHECKLIST.md entry need answers from gregory before it can be scoped.
+open questions in its own CHECKLIST.md entry needed answers from gregory before it could be
+scoped; all three resolved 2026-08-21 (see step 12a below, and step 12's own decomposition into
+12a/12b/12c).
+
+## Step 12a: Fix the `ResultBus` collision for the Issues pairing — ✅ done 2026-08-21
+
+Added `private data object IssueListUpdateDataOnBack` at the top of `IssueNavGraph.kt`. Changed
+two of the three sites the checklist named: `IssuesNavDestination`'s list-refresh listener
+(`ResultEffect<IssueListUpdateDataOnBack>`) and `IssueDetailsNavDestination`'s `goBack`
+(`resultBus.sendResult(IssueListUpdateDataOnBack)`) — a matched send/receive pair fully contained
+in this file. `IssueDetailsNavDestination`'s own self-refresh listener was **left on the shared
+`UpdateDataOnBack` key**, unchanged: its sender is `UserStoryNavGraph.kt`/`TaskNavGraph.kt`'s
+`goBack`, both out of this MVP's scope, so it has to keep matching whatever key those files still
+send. Full reasoning folded into IMPLEMENTATION_PLAN.md's "Step 12 pre-scoping" section.
+
+**Note: the manual regression check surfaced that `goToUserStory` from Issue detail is not a
+general "linked story" link** — it only fires via the promote-to-user-story action
+(`IssueDetailsViewModel.promoteToUserStory()`). Corrected mid-session after gregory caught the
+wrong assumption; the domain fact and its consequence for step 12c's test plan are now recorded in
+IMPLEMENTATION_PLAN.md alongside the fix above, so 12c doesn't have to re-derive it.
+
+**Verify:** `./gradlew jvmTest` and `ktlintCheck` both green. Manual regression check on the
+desktop build (`:composeApp:run`): opened an Issue's detail, edited its description, went back —
+the Issues list picked up the change, confirming the renamed key still delivers the signal
+end-to-end in today's single-pane mode.
+
+**Also found (not fixed, logged to `docs/revisit.md` #42–44):** the nav rail renders on the Login
+screen at wide window widths (`MainScreen.kt:182-230`, ungated on login state); the Issues list has
+no row dividers on desktop; the desktop build has no non-touch equivalent for pull-to-refresh.
+
+**Next:** step 12b — wire `ListDetailSceneStrategy` for Issues list-detail. Still gated — do not
+start without asking.

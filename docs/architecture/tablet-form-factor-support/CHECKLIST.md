@@ -1,7 +1,7 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 11/12 done. **Current step:** 12a — fix the `ResultBus` collision for the Issues
-pairing (gated, not started).
+**Progress:** 11/12 done (12a of step 12's three sub-steps also done). **Current step:** 12b —
+wire `ListDetailSceneStrategy` for Issues list-detail (gated, not started).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -33,32 +33,10 @@ decisions changed, only the step boundaries.
   global key instead of reaching the one it was meant for. Fix is a call-site change (per-pairing
   result keys instead of one shared marker), not a `ResultBus` rewrite. See
   IMPLEMENTATION_PLAN.md's "Step 12 pre-scoping: the `ResultBus` collision, investigated
-  (2026-08-21)" — step 12a below implements the fix it recommends.
+  (2026-08-21)" — step 12a (done, see CHECKLIST-DONE.md) implements the fix it recommends.
 
 This is option 3's actual payoff — everything in steps 6–11 is infrastructure with no user-visible
 change.
-
-## Step 12a: Fix the `ResultBus` collision for the Issues pairing
-
-⛔ **Gated — do not start without asking.**
-
-Give `IssuesNavDestination`'s list-refresh listener and `IssueDetailsNavDestination`'s own
-self-refresh listener distinct result-key marker types, instead of both sharing the global
-`UpdateDataOnBack` object — option 1 from IMPLEMENTATION_PLAN.md's "Step 12 pre-scoping"
-section (cheap, local diff, no `ResultBus.kt` mechanism change). Touch only
-`IssueNavGraph.kt`'s two `ResultEffect<UpdateDataOnBack>` registrations (list-refresh listener,
-detail self-refresh listener) and its one `sendResult` call site (`IssueDetailsNavDestination`'s
-`goBack`). The other five nav-graph files (`MainNavHost.kt`, `ScrumNavGraph.kt`,
-`EpicNavGraph.kt`, `UserStoryNavGraph.kt`, `TaskNavGraph.kt`) keep using the shared
-`UpdateDataOnBack` key — out of scope for this MVP.
-
-This step lands *before* 12b adds `ListDetailSceneStrategy`, so on its own it's a no-visible-
-behavior-change refactor — the collision it fixes isn't reachable yet in single-pane mode. It's a
-prerequisite so 12b doesn't reintroduce the race the moment two-pane goes live.
-
-**Verify:** `jvmTest` + `ktlintCheck`; manually confirm the Kanban/Issues list still refreshes
-correctly after opening an Issue's detail and navigating back (regression check — behavior must be
-unchanged from before this step).
 
 ## Step 12b: Wire `ListDetailSceneStrategy` for Issues list-detail
 
