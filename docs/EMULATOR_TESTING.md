@@ -58,3 +58,19 @@ technique lives in the skill itself, not here — this file is only what's true 
   the "medium/expanded" `NavigationSuiteScaffold` path.
 - **A fresh `Medium_Tablet` boot pre-fills the login server-URL field with a stale LAN IP**, same
   as the phone AVD gotcha above — clear it the same way before typing `http://10.0.2.2:9000`.
+- **`Medium_Tablet` can cold-boot with no IPv4 default route at all**, even though DHCP reports a
+  gateway (`adb shell dumpsys wifi | grep -i gateway` shows `Gateway 10.0.2.2`) and the WIFI network
+  shows `CONNECTED` — confirmed via `adb shell ip route show table all`: only an IPv6 `default via
+  fe80::2` entry present, no `default via 10.0.2.2 dev wlan0`. The app then gets
+  `java.net.ConnectException: Failed to connect to /10.0.2.2:9000` on every request (visible as
+  `Ktor : REQUEST ... failed with exception` in logcat) despite the emulator otherwise looking fully
+  booted and networked. Fix: `adb shell svc wifi disable && adb shell svc wifi enable` (wait ~8s)
+  forces a DHCP re-run that installs the missing route — confirm with `adb shell ip route show table
+  all | grep "default.*10.0.2.2"` before retrying the app. Not seen on `Medium_Phone_API_36.1` (route
+  present from first boot) — may be specific to `Medium_Tablet`'s virtio-wifi network backend
+  (`ro.boot.qemu.virtiowifi=1`) vs. the phone image's classic SLIRP/eth0 networking.
+- **A stylus first-run tutorial ("Try out your stylus") can pop up over the first tap on
+  `Medium_Tablet`** after a fresh-ish boot, identical in shape to the phone AVD's first-run-tutorial
+  gotcha elsewhere in this skill — it eats the tap with no error. Screenshot before trusting a tap
+  landed in the app; dismiss via its own **Cancel** button (`uiautomator dump` for exact bounds, they
+  shift with content).

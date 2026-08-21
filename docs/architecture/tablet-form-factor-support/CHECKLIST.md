@@ -1,7 +1,8 @@
 # Tablet and Other Form Factor Support — Checklist
 
 **Progress:** 11/12 done (12a and 12b of step 12's three sub-steps also done). **Current step:**
-12c — emulator-verify the Issues two-pane layout on a tablet AVD (gated, not started).
+12c — emulator-verify the Issues two-pane layout on a tablet AVD (started 2026-08-21, blocked on a
+crash — see status below, not done).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -40,7 +41,11 @@ change.
 
 ## Step 12c: Emulator-verify the Issues two-pane layout on a tablet AVD
 
-⛔ **Gated — do not start without asking.** Depends on 12b being done.
+⛔ **Blocked — do not resume without asking.** Started 2026-08-21; hit a reliably-reproducible
+crash before the scenario could be verified. Full writeup:
+[docs/issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md](../../issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md)
+(root cause, repro, options). Do not restart this step until that doc's blocker is resolved or
+gregory says otherwise — see IMPLEMENTATION_PLAN.md's "Step 12c: blocking crash found" note.
 
 Using the **emulator-testing** skill and this project's tablet/wide AVD (see
 `docs/EMULATOR_TESTING.md`): confirm the Issues list and detail panes render side by side on a
@@ -50,3 +55,26 @@ detail column] → back — now refreshes deterministically instead of racing.
 
 **Verify:** manual pass on the tablet AVD (or a connected tablet) plus a phone-width AVD;
 screenshots of both pane arrangements attached to the step's `Note:` when archived.
+
+**Progress so far (2026-08-21):**
+- ✅ List+detail two-pane rendering confirmed on `Medium_Tablet` (list populated, empty detail pane
+  before selection; list + populated detail pane after selecting an Issue) — screenshots in this
+  session's scratchpad (not committed; not durable, re-capture if needed for a PR).
+- ✅ Single-pane on phone width (`Medium_Phone_API_36.1`) confirmed — drawer nav, full-width list,
+  full-screen push navigation.
+- ❌ The actual race scenario (promote → push into detail column → back) crashes on tablet before
+  "back" is reachable. Works cleanly on phone (single-pane) — confirms 12a's `ResultBus` fix still
+  delivers correctly there.
+- Two incidental AVD gotchas hit and documented in `docs/EMULATOR_TESTING.md`: `Medium_Tablet` can
+  cold-boot with no IPv4 default route (fixed by toggling wifi off/on), and a stylus first-run
+  tutorial popup intercepts the first tap after any fresh-ish boot.
+- ❌ Gplay debug build crashes on startup — noticed 2026-08-21, not yet investigated (no logcat
+  captured). To fix later in this PR: build+install `:androidApp:assembleGplayDebug -PgplayBuild`,
+  launch, capture the crash stack via `adb logcat` before diagnosing.
+- Second session on the crash (2026-08-21): four app-level mitigations tried and ruled out (switch
+  top-level nav section before pushing the user story, disable the `NavDisplay` crossfade
+  transition, composable/subcomposition weight of the incoming screen, `ViewModel` `init`-block async
+  timing) — none change the outcome, identical crash every time. Confirmed the original theory (a
+  nested per-screen `Scaffold`) was false. No matching upstream bug report found. Full details in the
+  issue doc's "Further investigation (2026-08-21, session 2)" and updated "Options" sections. gregory
+  is checking the navigation code directly next — still blocked, do not resume 12c without asking.

@@ -709,3 +709,22 @@ other five nav-graph files' `UpdateDataOnBack` usage is untouched by this MVP. (
 
 This is a decision recorded ahead of step 12 actually starting, not a start signal — the step is
 still gated per CHECKLIST.md until scoped and picked up explicitly.
+
+## Step 12c: blocking crash found (2026-08-21)
+
+**Step 12c's manual verification pass could not complete — a reliably-reproducible crash blocks the
+two-pane detail-column-push scenario on tablet.** Promoting an Issue to a User Story while the
+Issues list-detail two-pane layout is active crashes the app (`ComposeRuntimeError: Missed recording
+an endGroup`) the moment the promoted User Story is pushed into the detail pane, before "back" is
+ever reached. Reproduced 2/2 on `Medium_Tablet`; the identical action on phone width (single-pane)
+works cleanly. Full root-cause writeup, stack trace, and options:
+[docs/issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md](../../issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md).
+
+What *is* confirmed working on tablet: the Issues list and an Issue's detail render correctly
+side-by-side (list pane populated + empty detail pane before selection; list pane + populated detail
+pane after selecting an Issue) — only the detail-column *push* (a second screen replacing/stacking
+in the already-open detail pane) crashes.
+
+This is new scope beyond what 12c was chartered to do (verify, not fix) — the fix options in the
+issue doc need gregory's steer before more work goes in. 12c stays open/gated until this is
+resolved; see CHECKLIST.md's current status.
