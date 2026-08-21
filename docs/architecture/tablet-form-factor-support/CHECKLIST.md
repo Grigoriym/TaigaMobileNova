@@ -22,9 +22,9 @@ investigation" section:
   confirmed yes** (decompiled the jar; full API parity, real per-target variants for Android/JVM/
   iosArm64/iosSimulatorArm64, `navigation3-ui` version compatible). See IMPLEMENTATION_PLAN.md's
   "Navigation 3 migration investigation" section for the verification detail.
-- Which screens get list-detail treatment — Kanban/Sprint board + task detail is the obvious
-  candidate but not decided; this is a design decision (see step 3's precedent), not an
-  engineering one.
+- ~~Which screens get list-detail treatment~~ — **decided 2026-08-21: Issues only, as the MVP**
+  (`IssuesNavDestination` + `IssueDetailsNavDestination`). See IMPLEMENTATION_PLAN.md's "Step 12
+  screen-pairing decision".
 - ~~Step 9's hand-rolled `ResultBus` (`core/navigation/.../ResultBus.kt`) assumes only one
   destination is ever actively composed at a time~~ — **confirmed 2026-08-21: it breaks.**
   `ListDetailSceneStrategy` keeps the list pane's `ResultEffect<UpdateDataOnBack>` continuously

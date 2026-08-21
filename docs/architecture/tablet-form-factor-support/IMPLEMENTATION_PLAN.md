@@ -677,3 +677,16 @@ same one. Options, in order of how much churn they cost:
 
 Not implemented yet — this was a pre-scoping investigation, done ahead of (and independent of)
 the screen-pairing decision that step 12 itself is still gated on.
+
+## Step 12 screen-pairing decision (2026-08-21)
+
+**MVP scope: Issues only.** `IssuesNavDestination` (list) paired with `IssueDetailsNavDestination`
+(detail) via `ListDetailSceneStrategy` — Kanban/Sprint/Epics/UserStories stay single-pane for now.
+Narrows the `ResultBus` fix above to one pairing: only `IssuesNavGraph.kt`'s two
+`ResultEffect<UpdateDataOnBack>` registrations (`IssuesNavDestination`'s list-refresh listener and
+`IssueDetailsNavDestination`'s own self-refresh listener, `IssueNavGraph.kt:33` and `:51`) and its
+one `sendResult` site (`:74`, `IssueDetailsNavDestination`'s `goBack`) need distinct keys — the
+other five nav-graph files' `UpdateDataOnBack` usage is untouched by this MVP.
+
+This is a decision recorded ahead of step 12 actually starting, not a start signal — the step is
+still gated per CHECKLIST.md until scoped and picked up explicitly.
