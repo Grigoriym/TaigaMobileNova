@@ -37,10 +37,12 @@ import com.grappim.taigamobile.uikit.utils.PreviewUtils
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.toImmutableList
@@ -85,6 +87,7 @@ fun SprintScreen(
                             )
                         )
                     }
+                    buildDesktopRefreshTopBarAction(onClick = state.onRefresh)?.let { add(it) }
                 }.toImmutableList()
             )
         )
@@ -162,6 +165,7 @@ fun SprintScreenContent(
     modifier: Modifier = Modifier,
     navigateToCreateTask: (type: CommonTaskType, parentId: Long?) -> Unit = { _, _ -> }
 ) {
+    DesktopRefreshEffect(onRefresh = state.onRefresh)
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
         isRefreshing = state.isLoading,

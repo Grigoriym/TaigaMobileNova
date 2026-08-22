@@ -550,3 +550,46 @@ scratchpad (not committed, not durable). No source touched, so no test/lint run 
 
 **Next:** step 15 — add a desktop refresh affordance for pull-to-refresh screens. Still gated — do
 not start without asking; needs a design decision from gregory first.
+
+## Step 15: Add a desktop refresh affordance for pull-to-refresh screens — ✅ done 2026-08-22
+
+Design decided with gregory first (per the step's gate): an icon button in the top bar plus a
+Ctrl+R/F5 keyboard shortcut, both desktop/JVM-only (not width-gated — the real gap is no touch
+input on desktop, not screen size). Survey found 12 `PullToRefreshBox` call sites: the 11 top-level
+screens (Dashboard, Issues, Epics, Sprint, Kanban, ScrumBacklog, Team, ProjectSelector, Tags,
+ProjectValues, plus ScrumOpenSprints/ScrumClosedSprints sharing `SprintsListContentWidget`), all on
+the same mechanism (`androidx.compose.material3.pulltorefresh.PullToRefreshBox`), none previously
+special-casing desktop.
+
+Added: `expect fun isDesktopPlatform(): Boolean` (`utils/ui`, actuals: `true` JVM, `false`
+Android/iOS); `ic_refresh.xml` drawable (`uikit`); `buildDesktopRefreshTopBarAction()` +
+`DesktopRefreshEffect()` + `DesktopRefreshRegistry`
+(`uikit/.../widgets/topbar/DesktopRefresh.kt`); an `onPreviewKeyEvent` hook + one-time root
+`FocusRequester` on `TaigaMobileDesktop.kt`'s `Window(...)`. Wired into all 12 screens' top bar
+`actions` list and `PullToRefreshBox` call sites.
+
+Two real bugs surfaced only by driving the running desktop app with `xdotool`/`wmctrl` (neither
+`jvmTest` nor `ktlintCheck` could have caught them) — full mechanism and fixes in
+IMPLEMENTATION_PLAN.md's "Step 15 notes" section:
+1. A focus-based `Modifier.onPreviewKeyEvent` shortcut (the first attempt) silently died the moment
+   any other click in the app stole Compose focus from its hidden node. Replaced with a
+   window-level `onPreviewKeyEvent` + a screen-agnostic registry.
+2. The registry's `onDispose` was clearing the *whole* registry unconditionally, so an outgoing
+   screen's delayed teardown (Nav3 keeps it briefly alive after the incoming screen mounts) could
+   wipe out the screen just navigated to. Fixed with an identity check (`current === onRefresh`)
+   so a screen only ever clears its own entry.
+
+Also surfaced a testing-tooling gotcha, not an app bug: `xdotool key --window <id> ...` silently
+drops every keystroke on this machine, the same quirk `local-taiga-instance` already documented for
+`xdotool type --window` — cost real time chasing a phantom shortcut bug before finding it. Memory
+and `docs/frictions.md` updated.
+
+**Verify:** `./gradlew jvmTest`, `ktlintCheck`, `:koverVerify` all green. Manually driven on
+`:composeApp:run` against the local Taiga instance: the icon button and both Ctrl+R/F5 confirmed to
+trigger fresh network requests (cross-checked against `taigamobile.log`'s Ktor request log by
+timestamp) on Issues and Kanban, including after bouncing through multiple screens first — not just
+on the first screen visited, which is what the first (buggy) implementation would have passed on a
+shallower check.
+
+**Next:** queue is empty — only step 12 (Issues list-detail two-pane) remains, still deferred/gated
+pending the crash + app-bar-actions investigation.

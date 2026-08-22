@@ -47,3 +47,9 @@ deleted — see `finalize`.
   keystrokes-not-delivered issue. Retyping with `xdotool type --clearmodifiers "..."` produced the
   correct string. Root cause not investigated (probably a stuck-shift or dead-key state); the
   `--clearmodifiers` flag is the workaround.
+- 2026-08-22: `xdotool key --window <id> ctrl+r` (GUI-testing the step-15 desktop refresh shortcut)
+  silently dropped every keystroke, with no error — the exact same `--window`-drops-keyboard-input
+  quirk `local-taiga-instance` already documents for `xdotool type --window`, but for `xdotool key`
+  too. Cost several minutes of chasing a phantom app bug (assumed the shortcut was broken) before
+  testing a plain key press and finding it worked. Fix: drop `--window` for `xdotool key` sends the
+  same as for `type` — click/`windowactivate` the target first, then send the key bare.

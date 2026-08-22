@@ -90,11 +90,13 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.StaticStringColor
@@ -103,6 +105,7 @@ import com.grappim.taigamobile.utils.ui.toColor
 import com.grappim.taigamobile.utils.ui.toHex
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -124,13 +127,14 @@ fun ProjectValuesScreen(
             TopBarConfig(
                 title = NativeText.Resource(titleRes),
                 navigationIcon = NavigationIconConfig.Back(),
-                actions = persistentListOf(
+                actions = listOfNotNull(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_add,
                         contentDescription = "Add value",
                         onClick = state.onAddClick
-                    )
-                )
+                    ),
+                    buildDesktopRefreshTopBarAction(onClick = state.refresh)
+                ).toImmutableList()
             )
         )
     }
@@ -160,6 +164,7 @@ private fun ProjectValuesContent(state: ProjectValuesState) {
             onRetry = state.refresh
         )
     } else {
+        DesktopRefreshEffect(onRefresh = state.refresh)
         PullToRefreshBox(
             modifier = Modifier.fillMaxSize(),
             onRefresh = state.refresh,

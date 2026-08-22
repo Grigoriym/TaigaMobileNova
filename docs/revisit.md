@@ -2056,6 +2056,4 @@ devices.
 **Moved to the tablet-form-factor-support checklist (2026-08-22):** gregory asked for this to become
 the next active work on that initiative's PR rather than sit here. Now tracked as step 15 in
 [tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
-entry stays for the original evidence/reasoning, the checklist step is the one to pick up. Still a
-design question, not a known fix — step 15 is gated on gregory picking the desktop affordance before
-implementation starts.
+entry stays for the original evidence/reasoning, the checklist step is the one to pick up.

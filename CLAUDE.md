@@ -213,6 +213,10 @@ Every `RString.x` reference needs its **own** import (`import com.grappim.taigam
 — the generated strings are extension properties, so importing `RString` alone gives
 `Unresolved reference 'create_task'`. This bites in test files as often as in Composables: a test
 asserting `NativeText.Resource(RString.title_is_empty)` needs the same import line the ViewModel has.
+Same rule for `RDrawable.x` (confirmed 2026-08-22 adding `RDrawable.ic_refresh` inside `uikit` itself
+— the generic "unresolved reference" error gives no hint that a per-symbol import is missing) and any
+other generated resource accessor (font, etc.) — it's a Compose Resources mechanism, not specific to
+strings.
 
 `strings.xml` (`strings/src/commonMain/composeResources/values/`) does not need Android-style
 apostrophe/quote escaping (`\'`) — Compose Multiplatform's resource loader doesn't apply AAPT's
@@ -540,6 +544,15 @@ describing an observed UI state can go stale between when it was queued and when
 picks it up. Confirmed 2026-08-22 (tablet checklist step 14): a queued "Issues list has no row
 divider" entry turned out to already be false — a GUI check on the running desktop app caught it
 before any code was written, instead of after a fix landed for a problem that no longer existed.
+
+**A single successful manual check isn't enough for behavior that depends on prior interaction —
+verify after normal usage, not just on first load.** Confirmed 2026-08-22 (tablet checklist step
+15, desktop keyboard shortcut): a focus-based `onPreviewKeyEvent` implementation passed a GUI check
+immediately after navigating to the screen, then silently stopped working after any other click
+elsewhere in the app stole Compose focus from its hidden node — no error, no visible symptom. The
+first check would have shipped a shortcut that's dead the moment a real user touches anything else.
+Re-test after the kind of interaction a user would actually do in between, not just the one action
+under test.
 
 ### Friction Goes in Writing Too
 

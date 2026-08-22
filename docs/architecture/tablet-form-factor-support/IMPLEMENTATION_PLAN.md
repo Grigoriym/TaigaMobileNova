@@ -766,3 +766,59 @@ verification (12c) are undone.
 bug (CHECKLIST.md step 12c notes, 2026-08-22) both need root-causing/fixing before re-wiring
 `ListDetailSceneStrategy` is worth attempting again, not just re-adding the metadata tags this entry
 removed.
+
+## Step 15 notes (2026-08-22) — desktop refresh affordance architecture
+
+Implemented as: `buildDesktopRefreshTopBarAction()` (a `TopBarAction?`, null off-desktop) plus
+`DesktopRefreshEffect(onRefresh)` (a `DisposableEffect`-backed registration, no-op off-desktop),
+both in `uikit/.../widgets/topbar/DesktopRefresh.kt`; a plain `object DesktopRefreshRegistry` holds
+whichever screen's `onRefresh` is current. `TaigaMobileDesktop.kt`'s `Window(...)` gets an
+`onPreviewKeyEvent` that matches Ctrl+R/F5 and calls `DesktopRefreshRegistry.trigger()`. Gated on a
+new `expect fun isDesktopPlatform(): Boolean` in `utils/ui` (JVM actual `true`, Android/iOS `false`)
+— chosen over a window-width breakpoint (per step 13's precedent) because the real gap is *no touch
+input* on desktop, not screen size; a wide Android tablet already has pull-to-refresh working. Wired
+into the 12 screens that use `PullToRefreshBox` (11 top-level screens + the shared
+`SprintsListContentWidget` behind Open/Closed Sprints).
+
+**Two real bugs found only by driving the running desktop app (not caught by `jvmTest`/ktlint),
+both worth remembering if this pattern is reused elsewhere in Compose Desktop:**
+
+1. **A focus-based `Modifier.onPreviewKeyEvent` shortcut is not viable as a "global" desktop
+   shortcut.** The first implementation attached `FocusRequester().requestFocus()` +
+   `onPreviewKeyEvent` directly to each screen's `PullToRefreshBox`. It worked once, immediately
+   after navigating to a screen — then silently stopped after any other click in the app (e.g. a
+   nav-rail item), because that click's own focus request stole Compose focus from the hidden
+   node, and nothing ever reclaimed it. No error, no visible symptom — the shortcut just stopped
+   doing anything. Replaced with the window-level `onPreviewKeyEvent` + registry design above,
+   which doesn't depend on which Compose node currently holds focus.
+
+2. **`Window(onPreviewKeyEvent = ...)` never receives *any* key event until something in the
+   content tree has requested focus at least once.** Even with the window-level hook and genuine
+   OS-level window focus (`xdotool getactivewindow` confirmed), zero key events arrived — not a
+   matching-condition bug, the callback simply never fired, confirmed by logging every keystroke
+   unconditionally. Fix: a one-time root-level `FocusRequester().requestFocus()` in a
+   `LaunchedEffect(Unit)` wrapping `TaigaAppContent` in `TaigaMobileDesktop.kt`, just to kick-start
+   Compose's key-dispatch pipeline. Once requested, it does not need to be reclaimed — normal UI
+   interaction (text fields, etc.) can still take Compose focus away afterward without breaking
+   the window-level hook.
+
+3. **`DesktopRefreshRegistry`'s naive `onDispose { register(null) }` raced with navigation and
+   silently broke the shortcut after every screen change.** Nav3's transition keeps the outgoing
+   screen's composable (and its `DisposableEffect`) alive for a short window after the incoming
+   screen has already mounted and registered — confirmed via a temporary trace log: the incoming
+   screen's `register(newOnRefresh)` was reliably followed ~100–200ms later by the *outgoing*
+   screen's delayed `onDispose`, which unconditionally nulled the registry, leaving `current` at
+   `null` from then on with nothing left to re-register it. Fix: `unregister(onRefresh)` only
+   clears the registry if `current === onRefresh` (the effect's own registration) — an identity
+   check, not an unconditional null-out. This is a general lesson for any single-slot "currently
+   active screen" registry layered on Nav3: an outgoing screen's cleanup can run *after* the
+   incoming screen's setup, not always before.
+
+Verified via `:composeApp:run` + `xdotool`/`wmctrl` GUI driving against the local Taiga instance
+(see [[local-taiga-instance]] memory) — confirmed both the icon button and Ctrl+R/F5 trigger fresh
+network requests (matched against `taigamobile.log`'s Ktor request log by timestamp), including
+after bouncing through multiple screens, not just on the first screen visited. `./gradlew jvmTest`,
+`ktlintCheck`, and `:koverVerify` all green; no new tests were added (`DesktopRefreshRegistry` is a
+tiny stateful object with no branching worth a dedicated unit test on its own, and the effect itself
+is a Composable side-effect — GUI verification is the applicable check here, per CLAUDE.md's
+Verification section on UI-visible changes).

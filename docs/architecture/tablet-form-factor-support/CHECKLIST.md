@@ -1,6 +1,6 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 13/15 done (counting steps 13-15 added 2026-08-22). **Current step:** none active —
+**Progress:** 14/15 done (counting steps 13-15 added 2026-08-22). **Current step:** none active —
 step 12 (Issues list-detail two-pane) is deferred to a separate PR, not resumed in this one; 12b's
 `ListDetailSceneStrategy` wiring was reverted 2026-08-22 after 12c's verification turned up a
 blocking crash and a second app-bar bug, and Issues is back to single-pane push navigation (12a's
@@ -8,8 +8,8 @@ blocking crash and a second app-bar bug, and Issues is back to single-pane push 
 12b/12c reverted" section for that history. Step 13 (gate the wide-width nav rail on login state)
 is done — see CHECKLIST-DONE.md. Step 14 (add row dividers to the Issues list) is also done — it
 turned out to be a no-op: Issues already had the same divider mechanism Dashboard uses, confirmed
-by a GUI check 2026-08-22; see CHECKLIST-DONE.md. Step 15 is gated — needs a design decision from
-gregory (what the desktop refresh affordance should be) before it can start.
+by a GUI check 2026-08-22; see CHECKLIST-DONE.md. Step 15 (desktop refresh affordance) is also done
+2026-08-22 — see CHECKLIST-DONE.md. Only step 12 remains, still deferred/gated.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -102,24 +102,3 @@ screenshots of both pane arrangements attached to the step's `Note:` when archiv
   wiring issue rather than something Issue-specific. Not root-caused yet — needs its own
   investigation (probably via `investigate-issue`) before a fix is scoped. Separate from the
   step-12c crash above; does not block or get blocked by it.
-
-## Step 15: Add a desktop refresh affordance for pull-to-refresh screens
-
-⛔ **Gated — do not start without asking.** This is a design decision (what the desktop-appropriate
-trigger should be), not a known fix.
-
-Moved from `docs/revisit.md` #44 (2026-08-22, gregory) — queued as the next active work on this PR,
-unrelated to the deferred step 12.
-
-List screens (Issues among them) refresh via swipe/pull-to-refresh, a touch-only gesture. The
-desktop build has no mouse/keyboard equivalent — no refresh button, no keyboard shortcut. Not yet
-surveyed which screens use pull-to-refresh or whether any already special-case desktop.
-
-**Before starting:** survey pull-to-refresh call sites (`grep -rn "PullToRefresh\|pullRefresh"`)
-and bring gregory a short list of candidate desktop affordances (toolbar button, `Ctrl+R`, etc.) —
-per the `adaptive` skill's guidance on pointer/keyboard input devices — for a decision, before
-writing any UI code.
-
-**Verify:** once a design is picked — manual check on desktop that the chosen affordance actually
-triggers a refresh on at least Issues (and any other screen the survey found). `./gradlew jvmTest` +
-`ktlintCheck` green.
