@@ -116,7 +116,7 @@ firebase-bom = "34.17.0"
 # https://developers.google.com/android/guides/google-services-plugin
 google-services = "4.5.0"
 # https://firebase.google.com/docs/crashlytics/android/get-started
-firebase-crashlytics-plugin = "3.0.7"
+firebase-crashlytics-plugin = "3.0.8"
 # https://developer.android.com/guide/playcore#in-app-updates
 in-app-update = "2.1.0"
 
