@@ -86,7 +86,7 @@ jetbrainsComposeIcons = "1.7.3"
 jetbrainsAndroidxLifecycle = "2.11.0"
 jetbrainsNavigationCompose = "2.9.2"
 
-compose-bom = "2026.06.01"
+compose-bom = "2026.08.00"
 
 material = "1.14.0"
 activity-compose = "1.13.0"
