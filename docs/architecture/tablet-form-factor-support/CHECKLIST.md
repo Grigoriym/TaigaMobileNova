@@ -80,9 +80,11 @@ screenshots of both pane arrangements attached to the step's `Note:` when archiv
 - Two incidental AVD gotchas hit and documented in `docs/EMULATOR_TESTING.md`: `Medium_Tablet` can
   cold-boot with no IPv4 default route (fixed by toggling wifi off/on), and a stylus first-run
   tutorial popup intercepts the first tap after any fresh-ish boot.
-- ❌ Gplay debug build crashes on startup — noticed 2026-08-21, not yet investigated (no logcat
-  captured). To fix later in this PR: build+install `:androidApp:assembleGplayDebug -PgplayBuild`,
-  launch, capture the crash stack via `adb logcat` before diagnosing.
+- ✅ Gplay debug build crashes on startup — investigated 2026-08-22, **not a real bug**: reproduces
+  only when `-PgplayBuild` is omitted (`CrashReporterImpl` hits an uninitialized `FirebaseApp`,
+  the exact failure CLAUDE.md already documented 2026-08-10). Built+launched with
+  `-PgplayBuild` on `Medium_Phone_API_36.1`: no crash. See
+  [docs/issues/2026-08-22-gplay-debug-startup-crash-missing-gplaybuild-flag.md](../../issues/2026-08-22-gplay-debug-startup-crash-missing-gplaybuild-flag.md).
 - Second session on the crash (2026-08-21): four app-level mitigations tried and ruled out (switch
   top-level nav section before pushing the user story, disable the `NavDisplay` crossfade
   transition, composable/subcomposition weight of the incoming screen, `ViewModel` `init`-block async
