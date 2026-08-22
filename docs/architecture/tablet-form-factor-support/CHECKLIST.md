@@ -1,10 +1,13 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 11/12 done. **Current step:** none — step 12 (Issues list-detail two-pane) is
-deferred to a separate PR, not resumed in this one. 12b's `ListDetailSceneStrategy` wiring was
-reverted 2026-08-22 after 12c's verification turned up a blocking crash and a second app-bar bug;
-Issues is back to single-pane push navigation. 12a's `ResultBus` key fix was kept (harmless in
-single-pane mode). See status below and IMPLEMENTATION_PLAN.md's "Step 12b/12c reverted" section.
+**Progress:** 11/12 done. **Current step:** 13 — step 12 (Issues list-detail two-pane) is deferred
+to a separate PR, not resumed in this one; 12b's `ListDetailSceneStrategy` wiring was reverted
+2026-08-22 after 12c's verification turned up a blocking crash and a second app-bar bug, and Issues
+is back to single-pane push navigation (12a's `ResultBus` key fix was kept — harmless in single-pane
+mode). See IMPLEMENTATION_PLAN.md's "Step 12b/12c reverted" section for that history. Steps 13–15
+(added 2026-08-22, moved from `docs/revisit.md` #42–44 per gregory) are the next active work on this
+PR — three small desktop/wide-width bugs found during step 12a's manual regression check, unrelated
+to list-detail.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -95,3 +98,64 @@ screenshots of both pane arrangements attached to the step's `Note:` when archiv
   wiring issue rather than something Issue-specific. Not root-caused yet — needs its own
   investigation (probably via `investigate-issue`) before a fix is scoped. Separate from the
   step-12c crash above; does not block or get blocked by it.
+
+## Step 13: Gate the wide-width nav rail on login state
+
+Moved from `docs/revisit.md` #42 (2026-08-22, gregory) — queued as the next active work on this PR,
+unrelated to the deferred step 12.
+
+`MainScreenContent` (`composeApp/.../main/MainScreen.kt:182-230`) branches purely on window width —
+narrow gets `TaigaDrawerWidget` (a modal drawer, invisible until opened), wide gets
+`TaigaNavigationSuiteWidget` (a permanent nav rail with Dashboard/Board/Epics/etc., `:221-230`).
+Neither branch is gated on `initialNavState.isReady`/login state, unlike `MainNavHost.kt:122-158`'s
+individual `entry<...>` blocks, which do check `initialNavState.startDestination is
+LoginNavDestination`. Result: on a wide/desktop window, the rail renders as a permanent, apparently
+navigable app chrome while `LoginNavDestination` is still the active entry and no project is
+selected yet (first launch, or right after logout).
+
+**Fix:** gate the wide (`else`) branch's `TaigaNavigationSuiteWidget` wrapping the same way the
+compact branch's drawer gestures are already gated (`:192-194`, `initialNavState.isReady &&
+initialNavState.isProjectSelected`) — or fall back to bare `mainContent()` while on
+`LoginNavDestination`, regardless of width.
+
+**Verify:** manual check on the desktop build (`:composeApp:run`) at a wide window width — the rail
+must not render (or must render inert) while the Login screen is showing, both on first launch and
+right after logging out. `./gradlew jvmTest` + `ktlintCheck` green.
+
+## Step 14: Add row dividers to the Issues list on desktop
+
+Moved from `docs/revisit.md` #43 (2026-08-22, gregory) — queued as the next active work on this PR,
+unrelated to the deferred step 12.
+
+`IssuesScreen.kt:161` (`feature/issues/ui/src/commonMain/.../list/IssuesScreen.kt`) is a plain
+`LazyColumn` with no divider between rows — unlike the Dashboard's `DashboardSectionCard` list,
+which has one between each pair of items. Whether other list screens (Kanban, Epics, UserStories,
+Sprint) share the gap or already have dividers hasn't been checked yet.
+
+**Fix:** check the **uikit-guide** subagent for the shared divider pattern already used on
+Dashboard and apply the same one to `IssuesScreen.kt`. While there, check whether Kanban/Epics/
+UserStories/Sprint have the same gap and note (don't necessarily fix, unless trivial) what's found.
+
+**Verify:** manual check on desktop (`:composeApp:run`) — Issues list rows show a visible divider,
+matching Dashboard's look. `./gradlew jvmTest` + `ktlintCheck` green.
+
+## Step 15: Add a desktop refresh affordance for pull-to-refresh screens
+
+⛔ **Gated — do not start without asking.** This is a design decision (what the desktop-appropriate
+trigger should be), not a known fix.
+
+Moved from `docs/revisit.md` #44 (2026-08-22, gregory) — queued as the next active work on this PR,
+unrelated to the deferred step 12.
+
+List screens (Issues among them) refresh via swipe/pull-to-refresh, a touch-only gesture. The
+desktop build has no mouse/keyboard equivalent — no refresh button, no keyboard shortcut. Not yet
+surveyed which screens use pull-to-refresh or whether any already special-case desktop.
+
+**Before starting:** survey pull-to-refresh call sites (`grep -rn "PullToRefresh\|pullRefresh"`)
+and bring gregory a short list of candidate desktop affordances (toolbar button, `Ctrl+R`, etc.) —
+per the `adaptive` skill's guidance on pointer/keyboard input devices — for a decision, before
+writing any UI code.
+
+**Verify:** once a design is picked — manual check on desktop that the chosen affordance actually
+triggers a refresh on at least Issues (and any other screen the survey found). `./gradlew jvmTest` +
+`ktlintCheck` green.

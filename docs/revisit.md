@@ -17,9 +17,6 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 42 | [Nav rail shown on the Login screen at wide window widths](#42-nav-rail-shown-on-the-login-screen-at-wide-window-widths) | S | step 12a manual desktop check, 2026-08-21 |
-| 43 | [Issues list has no dividers between rows on desktop](#43-issues-list-has-no-dividers-between-rows-on-desktop) | S | step 12a manual desktop check, 2026-08-21 |
-| 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | S–M (design) | step 12a manual desktop check, 2026-08-21 |
 
 <details>
 <summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
@@ -70,9 +67,9 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
 | 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | ✅ resolved 2026-08-12 |
 | 41 | [Dashboard scroll shows real, hardware-confirmed jank](#41-dashboard-scroll-shows-real-hardware-confirmed-jank-baseline-profile-covers-only-the-cold-startselect-project-journey) | ✅ resolved 2026-08-12 |
-| 42 | [Nav rail shown on the Login screen at wide window widths](#42-nav-rail-shown-on-the-login-screen-at-wide-window-widths) | 🟡 open |
-| 43 | [Issues list has no dividers between rows on desktop](#43-issues-list-has-no-dividers-between-rows-on-desktop) | 🟡 open |
-| 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | 🟡 open |
+| 42 | [Nav rail shown on the Login screen at wide window widths](#42-nav-rail-shown-on-the-login-screen-at-wide-window-widths) | ➡️ moved to tablet checklist 2026-08-22 |
+| 43 | [Issues list has no dividers between rows on desktop](#43-issues-list-has-no-dividers-between-rows-on-desktop) | ➡️ moved to tablet checklist 2026-08-22 |
+| 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | ➡️ moved to tablet checklist 2026-08-22 |
 
 </details>
 
@@ -2015,6 +2012,11 @@ the compact branch's drawer gestures are gated (`:192-194`, `initialNavState.isR
 initialNavState.isProjectSelected`), or fall back to bare `mainContent()` while on `LoginNavDestination`
 regardless of width.
 
+**Moved to the tablet-form-factor-support checklist (2026-08-22):** gregory asked for this to become
+the next active work on that initiative's PR rather than sit here. Now tracked as step 13 in
+[tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
+entry stays for the original evidence/reasoning, the checklist step is the one to pick up.
+
 ## 43. Issues list has no dividers between rows on desktop
 
 **Where:** `feature/issues/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/issues/ui/list/IssuesScreen.kt:161`
@@ -2031,6 +2033,11 @@ have dividers — only Issues was open during this check.
 **Fix, if wanted:** check `uikit-guide` for the shared divider pattern #41 used on Dashboard and apply
 the same one here (and audit the other list screens while at it, per the note above).
 
+**Moved to the tablet-form-factor-support checklist (2026-08-22):** gregory asked for this to become
+the next active work on that initiative's PR rather than sit here. Now tracked as step 14 in
+[tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
+entry stays for the original evidence/reasoning, the checklist step is the one to pick up.
+
 ## 44. Desktop has no refresh affordance for pull-to-refresh screens
 
 **What:** list screens (Issues among them) refresh via swipe/pull-to-refresh, a touch-only gesture.
@@ -2045,3 +2052,10 @@ pull-to-refresh or whether any already special-case desktop.
 **Fix, if wanted:** survey pull-to-refresh call sites (`grep -rn "PullToRefresh\|pullRefresh"`) and
 decide a desktop-appropriate trigger per the `adaptive` skill's guidance on pointer/keyboard input
 devices.
+
+**Moved to the tablet-form-factor-support checklist (2026-08-22):** gregory asked for this to become
+the next active work on that initiative's PR rather than sit here. Now tracked as step 15 in
+[tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
+entry stays for the original evidence/reasoning, the checklist step is the one to pick up. Still a
+design question, not a known fix — step 15 is gated on gregory picking the desktop affordance before
+implementation starts.

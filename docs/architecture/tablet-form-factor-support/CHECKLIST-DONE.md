@@ -458,6 +458,7 @@ end-to-end in today's single-pane mode.
 **Also found (not fixed, logged to `docs/revisit.md` #42–44):** the nav rail renders on the Login
 screen at wide window widths (`MainScreen.kt:182-230`, ungated on login state); the Issues list has
 no row dividers on desktop; the desktop build has no non-touch equivalent for pull-to-refresh.
+Moved into this checklist as steps 13–15 on 2026-08-22, per gregory.
 
 **Next:** step 12b — wire `ListDetailSceneStrategy` for Issues list-detail. Still gated — do not
 start without asking.
