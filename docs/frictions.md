@@ -41,3 +41,9 @@ deleted — see `finalize`.
   allowlist addition (`compose_allowed_composition_locals`) to pass. Mirroring an upstream API's own
   internal shape is not the same as matching this repo's convention for the same concept; check
   `.editorconfig` for a `compose_*` allowlist before assuming a rule needs disabling.
+- 2026-08-22: `xdotool type "http://127.0.0.1:9000"` (GUI-testing the desktop build's login screen)
+  typed the colon as a caret (`http^//...`) even after `windowactivate` + plain `type` (no
+  `--window`), the fix the existing `local-taiga-instance` memory already documents for the
+  keystrokes-not-delivered issue. Retyping with `xdotool type --clearmodifiers "..."` produced the
+  correct string. Root cause not investigated (probably a stuck-shift or dead-key state); the
+  `--clearmodifiers` flag is the workaround.

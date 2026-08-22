@@ -519,3 +519,34 @@ rail), and a compact-width resize (500x900) also shows no drawer/rail on the Log
 screenshots taken to this session's scratchpad (not committed; not durable).
 
 **Next:** step 14 — add row dividers to the Issues list on desktop.
+
+## Step 14: Add row dividers to the Issues list on desktop — ✅ done 2026-08-22 (no-op, premise was wrong)
+
+`docs/revisit.md` #43 claimed `IssuesScreen.kt:161` was "a plain `LazyColumn` with no divider
+between rows." That was wrong: it already calls `simpleTasksListWithTitle`
+(`uikit/src/commonMain/.../widgets/list/SimpleTasksListWithTitle.kt:55-60`), which already renders
+a `HorizontalDivider(color = MaterialTheme.colorScheme.outline)` between rows — the same color
+token `DashboardSectionCard` (`feature/dashboard/ui/.../DashboardScreen.kt:308,319`) uses. Confirmed
+by the **uikit-guide** subagent's code read, then verified visually: launched `:composeApp:run`,
+logged into the local Taiga instance (`http://127.0.0.1:9000`, `admin`/`admin`, per
+[[local-taiga-instance]]) via `xdotool`, and screenshotted the Issues list next to Dashboard's
+`WATCHING` section — Issues shows a divider between every row. The only real difference from
+Dashboard: Issues' divider carries `4.dp` vertical + `mainHorizontalScreenPadding` horizontal
+padding (a shorter, inset line, since it sits on plain background) where Dashboard's spans
+edge-to-edge inside a card. That's a cosmetic padding difference, not a missing divider.
+
+Epics (`feature/epics/ui/.../list/EpicsScreen.kt:161-169`) and UserStories/Scrum backlog
+(`feature/scrum/ui/.../backlog/ScrumBacklogScreen.kt:154-162`) call the same
+`simpleTasksListWithTitle` helper, so they already have the identical divider too. Kanban
+(`feature/kanban/ui/.../KanbanBoardWidget.kt:419-430`'s `StoryItemContent`) and Sprint taskboard
+(`feature/sprint/ui/.../SprintKanbanWidget.kt:408-413`'s `TaskItem`) are card-grid layouts by
+design (`Surface` + `cardShadowElevation`), not row-lists — no divider expected there.
+
+No code changed. If gregory wants Issues' divider to match Dashboard's edge-to-edge look (rather
+than the current inset one), that's a new cosmetic decision, not this step's scope.
+
+**Verify:** manual GUI check on `:composeApp:run`, this session — screenshots in this session's
+scratchpad (not committed, not durable). No source touched, so no test/lint run was needed.
+
+**Next:** step 15 — add a desktop refresh affordance for pull-to-refresh screens. Still gated — do
+not start without asking; needs a design decision from gregory first.

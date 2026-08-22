@@ -535,6 +535,12 @@ project's device facts (AVD name, package ids, app-specific gotchas) — before 
 complete. Don't stop at a green test suite; a passing test and a rendered screen are different
 claims.
 
+**The same applies before starting a fix, not only after it.** A `docs/revisit.md`/checklist entry
+describing an observed UI state can go stale between when it was queued and when a later session
+picks it up. Confirmed 2026-08-22 (tablet checklist step 14): a queued "Issues list has no row
+divider" entry turned out to already be false — a GUI check on the running desktop app caught it
+before any code was written, instead of after a fix landed for a problem that no longer existed.
+
 ### Friction Goes in Writing Too
 
 The rule above (in Surgical Changes) is for problems in the *code* — write those to
