@@ -111,7 +111,6 @@ kotlin {
                 implementation(libs.jetbrains.compose.icons.extended)
                 implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
                 implementation(libs.jetbrains.compose.material3.adaptive)
-                implementation(libs.jetbrains.compose.material3.adaptive.navigation3)
 
                 // Navigation 3. Never the `androidx.navigation3:*` artifacts for navigation3-ui —
                 // they publish the same package names but are Android-only.

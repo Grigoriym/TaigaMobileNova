@@ -1,8 +1,10 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 11/12 done (12a and 12b of step 12's three sub-steps also done). **Current step:**
-12c — emulator-verify the Issues two-pane layout on a tablet AVD (started 2026-08-21, blocked on a
-crash — see status below, not done).
+**Progress:** 11/12 done. **Current step:** none — step 12 (Issues list-detail two-pane) is
+deferred to a separate PR, not resumed in this one. 12b's `ListDetailSceneStrategy` wiring was
+reverted 2026-08-22 after 12c's verification turned up a blocking crash and a second app-bar bug;
+Issues is back to single-pane push navigation. 12a's `ResultBus` key fix was kept (harmless in
+single-pane mode). See status below and IMPLEMENTATION_PLAN.md's "Step 12b/12c reverted" section.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -41,11 +43,16 @@ change.
 
 ## Step 12c: Emulator-verify the Issues two-pane layout on a tablet AVD
 
-⛔ **Blocked — do not resume without asking.** Started 2026-08-21; hit a reliably-reproducible
-crash before the scenario could be verified. Full writeup:
-[docs/issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md](../../issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md)
-(root cause, repro, options). Do not restart this step until that doc's blocker is resolved or
-gregory says otherwise — see IMPLEMENTATION_PLAN.md's "Step 12c: blocking crash found" note.
+⛔ **Deferred — list-detail two-pane work for Issues moved to a separate PR, do not resume without
+asking.** Started 2026-08-21; hit a reliably-reproducible crash before the scenario could be
+verified, plus a second app-bar-actions bug found in the same pass (both logged below). Rather than
+carry a gated, half-working two-pane feature through the rest of this initiative, 12b's
+`ListDetailSceneStrategy` wiring was reverted 2026-08-22 — Issues is back to single-pane push
+navigation, same as every other screen. Full reasoning and exactly what was reverted/kept:
+IMPLEMENTATION_PLAN.md's "Step 12b/12c reverted — Issues back to single-pane" section. The crash
+writeup itself stays open for whenever this is picked back up:
+[docs/issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md](../../issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md).
+Do not restart this step until gregory says otherwise.
 
 Using the **emulator-testing** skill and this project's tablet/wide AVD (see
 `docs/EMULATOR_TESTING.md`): confirm the Issues list and detail panes render side by side on a
@@ -78,3 +85,13 @@ screenshots of both pane arrangements attached to the step's `Note:` when archiv
   nested per-screen `Scaffold`) was false. No matching upstream bug report found. Full details in the
   issue doc's "Further investigation (2026-08-21, session 2)" and updated "Options" sections. gregory
   is checking the navigation code directly next — still blocked, do not resume 12c without asking.
+- **New bug found (2026-08-22, not yet investigated):** the top app bar's actions button is wired to
+  the wrong pane's action set after a back navigation in the two-pane (tablet) layout. Repro: in the
+  Issues two-pane layout, open an Issue in the detail pane (detail's "⋮" overflow actions show
+  correctly), navigate to the promoted user story, then go back — the app bar now shows the list
+  pane's "+" add action instead of the detail pane's "⋮" overflow actions, even though the detail
+  pane (Issue) is still the one on screen. gregory believes this is likely applicable to all
+  list-detail screens, not just Issues, since it looks like a `TopBarController`/pane-selection
+  wiring issue rather than something Issue-specific. Not root-caused yet — needs its own
+  investigation (probably via `investigate-issue`) before a fix is scoped. Separate from the
+  step-12c crash above; does not block or get blocked by it.

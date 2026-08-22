@@ -728,3 +728,41 @@ in the already-open detail pane) crashes.
 This is new scope beyond what 12c was chartered to do (verify, not fix) — the fix options in the
 issue doc need gregory's steer before more work goes in. 12c stays open/gated until this is
 resolved; see CHECKLIST.md's current status.
+
+## Step 12b/12c reverted — Issues back to single-pane (2026-08-22)
+
+**Decision:** the list-detail two-pane split (option 3's actual payoff) is deferred to a separate
+PR, to be picked up once the rest of the app is in good shape — not attempted again in this
+branch/PR. Reason: it's currently blocked by two problems found during 12c's verification, neither
+small — the detail-column-push crash above, and a second bug found the same review: the top app
+bar's actions button showed the wrong pane's action set after a back navigation in two-pane mode
+(list's "+" instead of the still-visible detail pane's "⋮"), suspected to affect all list-detail
+screens, not just Issues (see CHECKLIST.md's step 12c notes). Rather than carry a half-working,
+gated two-pane feature through the rest of this initiative, Issues was reverted to the same
+single-pane, full-screen-push navigation every other screen uses.
+
+**What was reverted** (code only — the docs/history below stay as the record of what was tried):
+- `MainNavHost.kt`: `rememberListDetailSceneStrategy<NavKey>()` and the `sceneStrategies` param on
+  `NavDisplay` — removed. `NavDisplay` now runs with no scene strategies again, same as pre-step-12.
+- `IssueNavGraph.kt`: `ListDetailSceneStrategy.listPane()` / `.detailPane()` metadata tags on the
+  `IssuesNavDestination` / `IssueDetailsNavDestination` `entry<T>` calls — removed.
+- `composeApp/build.gradle.kts` + `gradle/libs.versions.toml`: the
+  `jetbrains-compose-material3-adaptive-navigation3` dependency — removed (it was added solely for
+  `ListDetailSceneStrategy` and had no other call site).
+
+**What was kept:** step 12a's `ResultBus` fix (`IssueListUpdateDataOnBack` as a key distinct from
+the shared `UpdateDataOnBack`, `IssueNavGraph.kt`). It's harmless in single-pane mode — only one
+entry is ever composed at a time, so the collision it fixes can't occur — and keeping it means a
+future attempt at list-detail for Issues doesn't have to rediscover the same `ResultBus` collision
+this session's step 12a investigation already found and fixed.
+
+**Not reverted:** steps 2–11 (adaptive navigation chrome, the Nav3 migration itself — `NavKey`,
+`Navigator`, `NavDisplay`, `entryProvider`, etc.). Those are infrastructure with no two-pane
+dependency and stay as-is; only the `ListDetailSceneStrategy` wiring on top of them (12b) and its
+verification (12c) are undone.
+
+**Resuming this later:** pick up at a re-scoped step 12b — the crash
+(`docs/issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md`) and the app-bar-actions
+bug (CHECKLIST.md step 12c notes, 2026-08-22) both need root-causing/fixing before re-wiring
+`ListDetailSceneStrategy` is worth attempting again, not just re-adding the metadata tags this entry
+removed.

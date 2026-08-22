@@ -493,3 +493,12 @@ job, not this step's; wiring is compile-and-boot verified only here.
 
 **Next:** step 12c — emulator-verify the Issues two-pane layout on a tablet AVD. Still gated — do
 not start without asking.
+
+**Reverted 2026-08-22:** this step's `ListDetailSceneStrategy` wiring (the `adaptive-navigation3`
+dependency, `MainNavHost.kt`'s `rememberListDetailSceneStrategy`/`sceneStrategies`, and
+`IssueNavGraph.kt`'s `listPane()`/`detailPane()` metadata tags) was undone after 12c's verification
+turned up a blocking crash and a second app-bar-actions bug — see IMPLEMENTATION_PLAN.md's "Step
+12b/12c reverted — Issues back to single-pane" section for the full reasoning and exactly what came
+out. Issues is back to plain single-pane push navigation, same as every other screen. This entry
+stays as the historical record of what 12b originally built; it does not describe the code's current
+state.

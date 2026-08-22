@@ -1,7 +1,5 @@
 package com.grappim.taigamobile.nav
 
-import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
-import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -32,9 +30,8 @@ import com.grappim.taigamobile.utils.ui.NativeText
 // Distinct from UpdateDataOnBack to avoid colliding with IssueDetailsNavDestination's own self-refresh listener below.
 private data object IssueListUpdateDataOnBack
 
-@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun EntryProviderScope<NavKey>.issueNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
-    entry<IssuesNavDestination>(metadata = ListDetailSceneStrategy.listPane()) {
+    entry<IssuesNavDestination> {
         var updateData by remember { mutableStateOf(false) }
         ResultEffect<IssueListUpdateDataOnBack> { updateData = true }
         IssuesScreen(
@@ -52,7 +49,7 @@ fun EntryProviderScope<NavKey>.issueNavGraph(showSnackbar: (NativeText) -> Unit,
         )
     }
 
-    entry<IssueDetailsNavDestination>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+    entry<IssueDetailsNavDestination> { route ->
         var updateData by remember { mutableStateOf(false) }
         ResultEffect<UpdateDataOnBack> { updateData = true }
         val resultBus = LocalResultBus.current
