@@ -218,7 +218,7 @@ private fun MainScreenContent(
                 }
             )
         }
-    } else {
+    } else if (initialNavState.isReady && initialNavState.isProjectSelected) {
         TaigaNavigationSuiteWidget(
             drawerItems = drawerItems,
             currentTopLevelDestination = appState.currentTopLevelDestination,
@@ -227,6 +227,8 @@ private fun MainScreenContent(
         ) {
             mainContent()
         }
+    } else {
+        mainContent()
     }
 }
 

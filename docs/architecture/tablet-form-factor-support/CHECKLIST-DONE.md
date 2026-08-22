@@ -503,3 +503,19 @@ turned up a blocking crash and a second app-bar-actions bug — see IMPLEMENTATI
 out. Issues is back to plain single-pane push navigation, same as every other screen. This entry
 stays as the historical record of what 12b originally built; it does not describe the code's current
 state.
+
+## Step 13: Gate the wide-width nav rail on login state — ✅ done 2026-08-22
+
+Gated `MainScreen.kt`'s wide (`else`) branch the same way the compact branch's drawer gestures
+were already gated: `TaigaNavigationSuiteWidget` now only wraps `mainContent()` when
+`initialNavState.isReady && initialNavState.isProjectSelected`; otherwise the branch falls back to
+bare `mainContent()` with no rail, matching the compact branch's existing behavior on
+`LoginNavDestination`.
+
+**Verify:** `./gradlew :composeApp:ktlintCommonMainSourceSetCheck` and `./gradlew jvmTest` both
+green. Manual check on `:composeApp:run` at 1400x900 (wide) confirmed the rail is present on the
+logged-in Dashboard, disappears immediately after logging out (Login screen renders full-width, no
+rail), and a compact-width resize (500x900) also shows no drawer/rail on the Login screen —
+screenshots taken to this session's scratchpad (not committed; not durable).
+
+**Next:** step 14 — add row dividers to the Issues list on desktop.
