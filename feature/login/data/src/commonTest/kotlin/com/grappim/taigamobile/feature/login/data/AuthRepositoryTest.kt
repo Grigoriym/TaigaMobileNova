@@ -5,12 +5,14 @@ import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
 import com.grappim.taigamobile.feature.login.dto.AuthResponse
+import com.grappim.taigamobile.feature.login.dto.TaigaConfJson
 import com.grappim.taigamobile.testing.api.FakeAuthApi
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -99,5 +101,37 @@ internal class AuthRepositoryTest {
     fun `on authWithGithub with error then return failure`() = runTest {
         val actual = sut.authWithGithub(getRandomString())
         assertTrue(actual.isFailure)
+    }
+
+    @Test
+    fun `on getGithubClientId without error then return success with client id`() = runTest {
+        val clientId = getRandomString()
+        authApi.confJsonResult = TaigaConfJson(gitHubClientId = clientId)
+
+        val actual = sut.getGithubClientId("https://example.com/")
+
+        assertEquals(clientId, actual.getOrNull())
+        assertEquals("https://example.com", authApi.confJsonCalls.single())
+        assertEquals("https://example.com", serverStorage.server)
+    }
+
+    @Test
+    fun `on getGithubClientId when server has no github client id then return failure`() = runTest {
+        authApi.confJsonResult = TaigaConfJson(gitHubClientId = null)
+
+        val actual = sut.getGithubClientId(getRandomString())
+
+        assertTrue(actual.isFailure)
+        assertEquals("GitHub auth is not configured on this server", actual.exceptionOrNull()?.message)
+    }
+
+    @Test
+    fun `on getGithubClientId when api throws then return failure`() = runTest {
+        authApi.confJsonThrows = testException
+
+        val actual = sut.getGithubClientId(getRandomString())
+
+        assertTrue(actual.isFailure)
+        assertEquals(testException.message, actual.exceptionOrNull()?.message)
     }
 }

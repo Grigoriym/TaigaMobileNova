@@ -56,4 +56,7 @@ interface WorkItemDao {
         "SELECT * FROM $WORK_ITEM_TABLE WHERE projectId = :projectId AND taskType = :taskType ORDER BY createdDate DESC"
     )
     fun pagingSource(projectId: Long, taskType: CommonTaskType): PagingSource<Int, WorkItemEntity>
+
+    @Query("DELETE FROM $WORK_ITEM_TABLE")
+    suspend fun deleteAll()
 }

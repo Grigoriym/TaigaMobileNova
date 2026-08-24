@@ -29,7 +29,8 @@ console-reports:
         - 'ComplexityReport'
         - 'NotificationReport'
         - 'IssuesReport'
-        - 'FileBasedIssuesReport'
+    # FileBasedIssuesReport stays on so a CI failure names the offending files and rules
+    # in the log, instead of only "Analysis failed with N issues".
     #  - 'LiteIssuesReport'
 
 comments:
@@ -288,6 +289,7 @@ exceptions:
         allowedExceptionNameRegex: '_|(ignore|expected).*'
     TooGenericExceptionThrown:
         active: true
+        excludes: ['**/test/**', '**/androidTest/**', '**/commonTest/**', '**/jvmTest/**', '**/androidUnitTest/**', '**/androidInstrumentedTest/**', '**/jsTest/**', '**/iosTest/**']
         exceptionNames:
             - 'Error'
             - 'Exception'
@@ -344,6 +346,9 @@ naming:
         parameterPattern: '[a-z][A-Za-z0-9]*|_'
     MatchingDeclarationName:
         active: true
+        # Platform files are named after their commonMain counterpart (Koin.kt <-> Koin.android.kt),
+        # so the file name intentionally does not match the actual declaration inside.
+        excludes: ['**/androidMain/**', '**/iosMain/**', '**/jvmMain/**']
         mustBeFirst: true
         multiplatformTargets:
             - 'ios'
@@ -427,7 +432,6 @@ potential-bugs:
     Deprecation:
         active: false
         aliases: ['DEPRECATION']
-        excludeImportStatements: false
     DontDowncastCollectionTypes:
         active: false
     DoubleMutabilityForCollection:

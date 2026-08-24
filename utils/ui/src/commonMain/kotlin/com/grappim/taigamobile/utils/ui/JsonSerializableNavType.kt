@@ -26,11 +26,6 @@ private inline fun <T> KSerializer<*>.cast(): KSerializer<T> = this as KSerializ
  */
 internal expect fun urlEncode(value: String): String
 
-/**
- * Expect/actual for URL decoding since it's platform-specific
- */
-internal expect fun urlDecode(value: String): String
-
 @Suppress("NOTHING_TO_INLINE")
 internal data class JsonSerializableNavType<T : Any>(private val serializer: KSerializer<T>) :
     NavType<T>(isNullableAllowed = false) {

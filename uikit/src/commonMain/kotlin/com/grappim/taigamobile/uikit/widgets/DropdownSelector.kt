@@ -23,10 +23,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import com.grappim.taigamobile.uikit.generated.resources.ic_arrow_down
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import org.jetbrains.compose.resources.painterResource
+
+const val DROPDOWN_SELECTOR_ROW_TEST_TAG = "dropdown_selector_row"
 
 /**
  * Dropdown selector with animated arrow
@@ -57,6 +60,7 @@ fun <T> DropdownSelector(
     Column(modifier = modifier) {
         Row(
             modifier = Modifier
+                .testTag(DROPDOWN_SELECTOR_ROW_TEST_TAG)
                 .let { if (takeMaxWidth) it.fillMaxWidth() else it }
                 .then(
                     if (canModify && !isOffline) {

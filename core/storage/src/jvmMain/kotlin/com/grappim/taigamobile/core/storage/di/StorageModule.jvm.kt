@@ -8,8 +8,10 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
+import com.grappim.taigamobile.core.storage.auth.NoopTokenCipher
 import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.core.storage.cert.TrustedCertStorageImpl
+import com.grappim.taigamobile.core.storage.platform.appDataDir
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Configuration
@@ -25,7 +27,7 @@ actual class PlatformStorageModule
 class AuthDataStoreModule {
 
     @Single
-    fun provideAuthStorage(): AuthStorage = AuthStorageImpl(createAuthDataStore())
+    fun provideAuthStorage(): AuthStorage = AuthStorageImpl(createAuthDataStore(), NoopTokenCipher())
 
     @Single
     fun provideSessionStorage(colorMapper: ColorMapper): TaigaSessionStorage =
@@ -42,25 +44,25 @@ class AuthDataStoreModule {
 
 fun createSessionDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
-        File(System.getProperty("java.io.tmpdir"), "$TAIGA_SESSION_STORAGE$PREFS_EXT").absolutePath
+        File(appDataDir(), "$TAIGA_SESSION_STORAGE$PREFS_EXT").absolutePath
     }
 )
 
 fun createSessionFiltersDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
         File(
-            System.getProperty("java.io.tmpdir"),
+            appDataDir(),
             "$SESSION_FILTERS_DATA_STORE_FILE_NAME$PREFS_EXT"
         ).absolutePath
     }
 )
 
 fun createAuthDataStore(): DataStore<Preferences> = createDataStore(
-    producePath = { File(System.getProperty("java.io.tmpdir"), "$AUTH_DATA_STORE_FILE_NAME$PREFS_EXT").absolutePath }
+    producePath = { File(appDataDir(), "$AUTH_DATA_STORE_FILE_NAME$PREFS_EXT").absolutePath }
 )
 
 fun createTrustedCertDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
-        File(System.getProperty("java.io.tmpdir"), "$TRUSTED_CERT_DATA_STORE_FILE_NAME$PREFS_EXT").absolutePath
+        File(appDataDir(), "$TRUSTED_CERT_DATA_STORE_FILE_NAME$PREFS_EXT").absolutePath
     }
 )

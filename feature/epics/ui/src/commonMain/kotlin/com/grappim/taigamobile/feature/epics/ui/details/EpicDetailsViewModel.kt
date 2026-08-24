@@ -279,8 +279,6 @@ class EpicDetailsViewModel(
         updateState: com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
     ) {
         when (updateState) {
-            com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate.Clear -> {}
-
             is TeamMemberUpdate.Assignees -> {}
 
             is TeamMemberUpdate.Assignee -> {

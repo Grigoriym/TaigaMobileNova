@@ -1,10 +1,15 @@
 package com.grappim.taigamobile.feature.settings.ui.user
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -15,11 +20,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.settings_unencrypted_connection_warning
 import com.grappim.taigamobile.strings.generated.resources.settings_user
 import com.grappim.taigamobile.strings.generated.resources.username_template
 import com.grappim.taigamobile.uikit.generated.resources.default_avatar
@@ -35,6 +42,8 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+
+const val UNENCRYPTED_CONNECTION_WARNING_TEST_TAG = "UNENCRYPTED_CONNECTION_WARNING_TEST_TAG"
 
 @Composable
 fun SettingsUserScreen(viewModel: SettingsUserScreenViewModel = koinViewModel()) {
@@ -99,6 +108,28 @@ private fun SettingsUserScreenContent(state: SettingsUserScreenState) {
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.outline
                     )
+
+                    if (state.isUnencryptedConnection) {
+                        Spacer(Modifier.height(4.dp))
+
+                        Row(
+                            modifier = Modifier.testTag(UNENCRYPTED_CONNECTION_WARNING_TEST_TAG),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Warning,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = stringResource(RString.settings_unencrypted_connection_warning),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -120,6 +151,27 @@ private fun SettingsUserScreenContentPreview() {
                     pk = 8021
                 ),
                 serverUrl = "https://sample.server/"
+            )
+        )
+    }
+}
+
+@[Composable PreviewTaigaDarkLight]
+private fun SettingsUserScreenContentUnencryptedPreview() {
+    TaigaMobileTheme {
+        SettingsUserScreenContent(
+            state = SettingsUserScreenState(
+                user = User(
+                    id = 8606,
+                    fullName = "Elnora Knight",
+                    photo = "ex",
+                    bigPhoto = "massa",
+                    username = "elliott_dean",
+                    name = "Cody Terrell",
+                    pk = 8021
+                ),
+                serverUrl = "http://sample.server/",
+                isUnencryptedConnection = true
             )
         )
     }

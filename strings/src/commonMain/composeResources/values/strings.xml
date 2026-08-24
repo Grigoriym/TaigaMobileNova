@@ -343,6 +343,7 @@
     <string name="settings_attributes">Attributes</string>
     <string name="settings_modules">Modules</string>
     <string name="settings_trusted_certificates">Trusted Certificates</string>
+    <string name="settings_unencrypted_connection_warning">Unencrypted connection — this server is not using HTTPS</string>
     <string name="trusted_cert_issuer">Issued by %1$s</string>
     <string name="trusted_cert_valid_until">Valid until %1$s</string>
     <string name="trusted_cert_fingerprint">SHA-256: %1$s</string>
@@ -387,6 +388,8 @@
     <string name="source_code">Source code</string>
     <string name="privacy_policy_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY.md</string>
     <string name="privacy_policy_url_gplay" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/blob/dev/PRIVACY_POLICY_GPLAY.md</string>
+    <string name="issue_suggestion_link">Issue / Suggestion</string>
+    <string name="github_issues_url" translatable="false">https://github.com/Grigoriym/TaigaMobileNova/issues</string>
 
     <!-- ==================== Settings - Project Values ==================== -->
     <string name="settings_project_values">Project Values</string>

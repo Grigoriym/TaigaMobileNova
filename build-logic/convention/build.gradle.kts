@@ -48,6 +48,10 @@ gradlePlugin {
             id = libs.plugins.taigamobile.kmp.library.compose.get().pluginId
             implementationClass = "KmpLibraryComposeConventionPlugin"
         }
+        register("kmpLibraryStability") {
+            id = libs.plugins.taigamobile.kmp.library.stability.get().pluginId
+            implementationClass = "KmpLibraryStabilityConventionPlugin"
+        }
         register("kmpSerialization") {
             id = libs.plugins.taigamobile.kmp.serialization.get().pluginId
             implementationClass = "KmpSerializationConventionPlugin"

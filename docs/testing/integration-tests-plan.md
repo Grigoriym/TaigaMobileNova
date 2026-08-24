@@ -1,0 +1,389 @@
+# Integration tests against a live Taiga instance — plan
+
+**Status: local coverage done — 2026-08-09.** Tasks 1–4 are complete: login, all 12 `XApi` read
+round-trips, and one write round-trip (create+cleanup) — 13 integration tests total, all
+env-var-gated and manually triggered, none wired into PR CI. **Task 5 (CI-hosted Taiga) is the
+remaining item, and it is explicitly gated** — a materially bigger, separate piece of work (a
+`docker-compose.yml` this repo doesn't have, a multi-container stack, a wait-for-healthy CI step);
+see that task's own section before starting it, and do not start it without asking.
+
+**Created:** 2026-08-08
+**Baseline:** [docs/issues/2026-08-08-integration-tests-live-taiga.md](../issues/2026-08-08-integration-tests-live-taiga.md)
+— the investigation that settled the shape of this work: plain `jvmTest`, env-var gated, no
+Android emulator and no separate Gradle source set, because Android and JVM/Desktop share the
+OkHttp Ktor engine.
+
+A sequence of small, independent tasks, same convention as the (now closed)
+[testing improvement plan](improvement-plan.md). Each task fits in a **single clean context**: a
+session picks the task marked `⬅ NEXT`, does it, runs `finalize`, and stops.
+
+## How to run a task
+
+1. Read the status table below and take the task marked **NEXT**. Never take a `deferred`/gated
+   task without asking first — check both the table row and the task's own section for the gate.
+2. Read only that task's section, plus the baseline doc if you need the wider picture.
+3. Do it. Verify with the task's own `Done when` command — not by eyeballing.
+4. **Update the status table** (`✅ done — <date>`, move `⬅ NEXT`) and add a `**Result (<date>):**`
+   note to the task's own section — especially anything that differed from the description. End the
+   note by naming what comes next (the following task, or "queue is empty").
+5. Run the **`finalize` skill** — each task lists a *Finalize focus* hint.
+6. **Commit and push** (standing authorization in this project — see CLAUDE.md / memory). Branch
+   off `dev` first if starting from `dev`; never push to `dev` directly.
+
+**Every task that adds a test-support helper to this test file or a new shared pattern must update
+`.claude/agents/testing.md`'s "Integration test against a live server" entry** — that's how a future
+session discovers it exists instead of re-deriving the login/cert-trust flow from scratch.
+
+## Status
+
+| # | Task | Size | Status |
+|---|---|---|---|
+| 1 | Login integration test (`LoginIntegrationTest`) | S | ✅ done — 2026-08-08 |
+| 2 | Shared login helper + `ProjectsApi` read round-trip | S | ✅ done — 2026-08-08 |
+| 3 | Read round-trip sweep, one `XApi` module per session | S each | ✅ done — 2026-08-09 |
+| 4 | Write round-trip pilot (create + clean up) | S–M | ✅ done — 2026-08-09 |
+| 5 | CI-hosted Taiga (investigation option B) | — | ⛔ deferred — gated, do not start without asking |
+
+Sizes: XS = minutes, S = under an hour, M = a focused session.
+
+---
+
+## Task 1 — Login integration test
+
+**Result (2026-08-08):** done. `composeApp/src/jvmTest/kotlin/com/grappim/taigamobile/di/LoginIntegrationTest.kt`
+— builds the real Koin graph (same pattern as `KoinGraphTest`), resolves the real `AuthRepository` +
+`TrustedCertStorage`, calls `auth()` against gregory's local instance, and mirrors `LoginViewModel`'s
+trust-on-first-use retry for a self-signed cert. Gated by `TAIGA_INTEGRATION_URL`/`_USERNAME`/
+`_PASSWORD` env vars (skips itself when unset). Verified with a real passing run against
+`http://localhost:9000/`. Full write-up in the baseline doc's "Resolved" section.
+
+**Next: Task 2 — shared login helper + read round-trip.**
+
+---
+
+## Task 2 — Shared login helper + read round-trip
+
+**Why:** every further integration test needs an authenticated session first. Right now that logic
+(login, catch `UntrustedCertificateNetworkException`, trust cert, retry once) lives inline inside
+`LoginIntegrationTest`'s single test method. A second test that duplicates it is the first sign it
+should be shared.
+
+**Scope:**
+- Extract the "log in against `TAIGA_INTEGRATION_*` env vars, handling a self-signed cert" logic
+  from `LoginIntegrationTest` into a small internal helper in the same package (e.g. a
+  `LiveTaigaSession` helper or a top-level function) that other integration tests can call to get a
+  ready `Koin` instance with a valid session. Keep `LoginIntegrationTest` itself passing unchanged
+  after the extraction — it becomes the first caller of the helper, not a special case.
+- Add one new test class exercising a real **read**: `ProjectsApi.getProjects(memberId = <id from
+  the auth response or TaigaSessionStorage>)` is the leading candidate — needs nothing but an
+  authenticated session, no project setup assumptions. Assert the call succeeds (200 / parses),
+  not any particular project count or content — the seeded local instance's data isn't something
+  this repo controls or should assert on.
+
+**Existing pieces:** the login+cert-trust flow already written in `LoginIntegrationTest` (task 1);
+`ProjectsApi`/`ProjectsRepository` already real-vs-fake-swappable like every other `XApi`.
+
+**Result (2026-08-08):** done. Extracted the login+cert-trust flow into
+`liveTaigaSessionOrSkip(): Koin?` in a new `LiveTaigaSession.kt` (same `di` package).
+`LoginIntegrationTest` now just calls it and returns if `null`. Added
+`ProjectsApiIntegrationTest` — resolves `ProjectsApi` + `TaigaSessionStorage` from the returned
+`Koin`, calls `getProjects(memberId = sessionStorage.requireUserId())`, asserts the result is
+non-null (parsed) without asserting on content.
+
+**Deviation from the plan as written:** the helper does not build a fresh `koinApplication<KoinApp>`
+on every call. The JVM `DataStore` backends (`StorageModule.jvm.kt`) read/write fixed files under
+`java.io.tmpdir`, so a second `koinApplication` in the same test JVM throws "multiple DataStores
+active for the same file" the instant it touches one — hit this running `LoginIntegrationTest` and
+`ProjectsApiIntegrationTest` together. Fixed by memoizing the graph-build-and-login behind a
+`private val sharedSession: Lazy<Koin>`; `liveTaigaSessionOrSkip()` still does the env-var gate and
+env-var-per-call read, but the actual Koin graph and login happen once per test JVM and every
+integration test in the run shares that one authenticated session. This means task 3's per-module
+tests won't each pay their own login round-trip either — a side benefit, not just a workaround.
+
+**Side effect on `KoinGraphTest`:** when the three env vars are set, running the full `di` package
+(`--tests "com.grappim.taigamobile.di.*"`) makes `KoinGraphTest`'s *own* `koinApplication` collide
+with the still-open shared session's `DataStore`, adding 2 more "resolved dependencies but threw
+while constructing" entries (`LoginViewModel`, `SettingsUserScreenViewModel`) to its already-tolerated
+noise (see that test's doc comment — only `NoDefinitionFoundException` fails it). Test still passes;
+noted here so a future session doesn't mistake the printed noise for a regression. Confirmed
+`./gradlew jvmTest` with no env vars set stays green (both new tests skip cleanly) and `ktlintCheck`
+is clean.
+
+**Done when:** with the three `TAIGA_INTEGRATION_*` env vars set,
+`./gradlew :composeApp:jvmTest --tests "com.grappim.taigamobile.di.*" --rerun` passes both the
+login test and the new read test; without them set, both skip cleanly and `./gradlew jvmTest`
+(no env vars) stays green.
+
+**Finalize focus:** update `.claude/agents/testing.md`'s integration-test entry to mention the
+shared helper, so task 3's sweep doesn't re-duplicate the login flow on every module.
+
+**Next: Task 3 — read round-trip sweep, one `XApi` module per session.**
+
+---
+
+## Task 3 — Read round-trip sweep, one `XApi` module per session
+
+**Why:** this app has 14 `XApi` interfaces (CLAUDE.md: "Every `XApi` is an `interface XApi` +
+`@Single(binds = [XApi::class]) class XApiImpl` — no exceptions"). Login (task 1) covers `AuthApi`;
+task 2 covers `ProjectsApi`. The other 12 have never been exercised against a real server. Same
+repeatable-task shape as the closed improvement plan's task 9a (missed-branch sweep) and task 11
+(Compose UI widget sweep): pick the next module in the list, write one real read round-trip against
+it, land it, move to the next session.
+
+**Done (5/12):**
+
+| Module | Test | Notes |
+|---|---|---|
+| `UsersApi` | `UsersApiIntegrationTest` — `getMyProfile()` | 2026-08-08. Zero-fixture call, needs only the authenticated session. |
+| `UserStoriesApi` | `UserStoriesApiIntegrationTest` — `getUserStories(GetUserStoriesParams(project = 5))` | 2026-08-08. Project 5 confirmed to have ~19 user stories; asserts the list parses, not its content. |
+| `TasksApi` | `TasksApiIntegrationTest` — `getTasks(project = 5)` | 2026-08-08. Confirmed project 5 has real tasks (e.g. task id 1, ref 31, "Set up authentication middleware") via `taiga-mcp`; asserts the list parses, not its content. |
+| `SprintApi` | `SprintApiIntegrationTest` — `getSprints(project = 5, isClosed = false)` | 2026-08-08. Confirmed project 5 has real sprints/milestones (4/5/6, "Sprint 1/2/3"); asserts the list parses, not its content. |
+| `FiltersApi` | `FiltersApiIntegrationTest` — `getCommonTaskFiltersData(taskPath = "userstories", project = 5)` | 2026-08-08. Single-method interface, no fixture id needed beyond project 5; asserts the response parses, not its content. |
+
+**Corrected — these two have no read method at all (discovered 2026-08-08 while scoping this
+task):**
+
+| Module | Why not | Where the read actually lives |
+|---|---|---|
+| `EpicsApi` | write-only: `linkToEpic`/`unlinkFromEpic` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "epics", project = ...)` |
+| `IssuesApi` | write-only: `createIssue` only, no listing/get | `WorkItemApi.getWorkItems(taskPath = "issues", project = ...)` |
+
+**Done (7/12):**
+
+| Module | Test | Notes |
+|---|---|---|
+| `WikiApi` | `WikiApiIntegrationTest` — `getProjectWikiPages(projectId = 5)` | 2026-08-08. Confirmed project 5 has 4 real wiki pages (home, getting-started, architecture, api-reference); asserts the list parses, not its content. |
+| `WorkItemApi` | `WorkItemApiIntegrationTest` — `getWorkItems(taskPath = "epics", project = 5)` | 2026-08-08. This is where the `EpicsApi`/`IssuesApi` reads actually live — see the correction above; project 5 has 10 confirmed epics; asserts the list parses, not its content. |
+
+**Done (8/12):**
+
+| Module | Test | Notes |
+|---|---|---|
+| `ProjectValuesApi` | `ProjectValuesApiIntegrationTest` — `getProjectValues(endpoint = "userstory-statuses", projectId = 5)` | 2026-08-09. Statuses confirmed to exist on project 5 (6 statuses: New/Ready/In progress/Ready for test/Done/Archived); asserts the list parses, not its content. |
+
+**Done (9/12):**
+
+| Module | Test | Notes |
+|---|---|---|
+| `HistoryApi` | `HistoryApiIntegrationTest` — `getCommonTaskComments(singularTaskPath = "userstory", id = 21)` | 2026-08-09. User story id 21 (ref 11, "As a user I want to log in with my credentials", project 5) confirmed via `taiga-mcp`; `total_comments` is 0 on every user story in project 5, but the call itself (and its response parsing) is what's under test, not comment count — asserts the list parses, not its content. |
+
+**Done (10/12) — task complete, all candidates covered:**
+
+| Module | Test | Notes |
+|---|---|---|
+| `SwimlanesApi` | `SwimlanesApiIntegrationTest` — `getSwimlanes(project = 5)` | 2026-08-09. Project 5 confirmed to have zero swimlanes configured; asserts the call succeeds and parses an empty list — still a valid round-trip of the request/response path. |
+
+**Before each module's task: check what data actually exists in the local instance** (via
+`taiga-mcp`'s `taiga_request`, cheaper than guessing) rather than assuming a project/epic/story
+exists — the seeded instance's `docs/local-info.md` users don't guarantee any project data. Project 5
+("Main project") is confirmed (2026-08-08) to have epics, user stories, and sprints — see the table
+above for specifics already checked.
+
+**Existing pieces:** the shared login helper from task 2. Reuse it, don't re-derive the
+login/cert-trust flow per module.
+
+**Done when (per module):** with the three `TAIGA_INTEGRATION_*` env vars set, the new test for that
+module passes and asserts the call actually succeeded (parses / non-error status) rather than just
+"didn't throw"; without the env vars, it skips cleanly. **Verify with `--tests` scoped to the
+`*IntegrationTest` classes, not the `di.*` wildcard** — running the wildcard risks the pre-existing,
+order-dependent `KoinGraphTest` collision (see
+[revisit #24](../revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently)),
+which is not specific to any one module's test and shouldn't block landing it.
+
+**Finalize focus:** cross off the module in this table (or move it to a "done" list) so the next
+session knows which 9/8/7... remain — don't leave the reader to grep for existing test files to
+figure out what's left.
+
+**Result (2026-08-08):** `UsersApiIntegrationTest` added (`getMyProfile()`). While scoping the
+module list, discovered `EpicsApi` and `IssuesApi` are write-only — corrected the candidates table
+above so a future session doesn't waste time looking for a read that isn't there. Also discovered and
+logged [revisit #24](../revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently):
+running the full `com.grappim.taigamobile.di.*` wildcard with the env vars set can fail *every*
+live-Taiga test (not just the new one) if `KoinGraphTest` happens to run first in that JVM — verified
+by re-running with `--tests` scoped to just the three `*IntegrationTest` classes, which passed
+cleanly every time. Not fixed (shared test infra, out of scope for this task). `./gradlew jvmTest` and
+`ktlintCheck` both green with no env vars set. 10/12 candidates remain — next session picks any row
+from the table above.
+
+**Result (2026-08-08, session 2):** `UserStoriesApiIntegrationTest` added —
+`getUserStories(GetUserStoriesParams(project = 5))`, asserts the returned list is non-null (parsed).
+Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all four integration tests (login, projects, users,
+user stories) pass together. Also verified clean skip with no env vars set, full `./gradlew jvmTest`,
+and `ktlintCheck`, all green. No new shared helper needed — reused `liveTaigaSessionOrSkip()`
+unchanged. 9/12 candidates remain — next session picks any row from the table above.
+
+**Result (2026-08-08, session 3):** `TasksApiIntegrationTest` added — `getTasks(project = 5)`,
+asserts the returned list is non-null (parsed). Checked project 5's data via `taiga-mcp` first per
+the task's own guidance: confirmed real tasks exist (id 1, ref 31, "Set up authentication
+middleware") and swimlanes are empty (noted in the candidates table above for whoever picks that
+row next). Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all five integration tests (login, projects, users,
+user stories, tasks) pass together. `./gradlew jvmTest` (no env vars) failed twice on
+`FiltersStorageImplTest.resetFilters clears every section` — confirmed pre-existing and unrelated
+by reproducing it on a clean `git stash -u` tree at the last commit, and confirmed it passes in
+isolation; logged as revisit #25, then fixed in a follow-up (same session, on request): the test's
+`DataStore` was defaulting to a real `Dispatchers.IO`-backed scope instead of sharing
+`FiltersStorageImpl`'s own `Dispatchers.Main` test-dispatcher scope, so `awaitItem()` was
+real-wall-clock racing the real IO thread pool under a loaded multi-module run. See
+[revisit #25](../revisit.md#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
+for the full fix write-up. Verifying the fix surfaced a second, unrelated flake
+(`WikiPageViewModelTest`, different mechanism) — logged as
+[revisit #26](../revisit.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run),
+not fixed. `ktlintCheck` green. 8/12 candidates remain — next session picks any row from the table
+above.
+
+**Result (2026-08-08, session 4):** `SprintApiIntegrationTest` added —
+`getSprints(project = 5, isClosed = false)`, asserts the returned list is non-null (parsed). No new
+data check needed — project 5's sprints (milestones 4/5/6, "Sprint 1/2/3") were already confirmed by
+an earlier session. Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all six integration tests (login, projects, users,
+user stories, tasks, sprints) pass together. Also verified clean skip with no env vars set: full
+`./gradlew jvmTest --rerun` green (no flakes reproduced this run), and `ktlintCheck` green. No new
+shared helper needed — reused `liveTaigaSessionOrSkip()` unchanged. 7/12 candidates remain — next
+session picks any row from the table above.
+
+**Result (2026-08-08, session 5):** `FiltersApiIntegrationTest` added —
+`getCommonTaskFiltersData(taskPath = "userstories", project = 5)`, asserts the returned DTO is
+non-null (parsed). Picked over `SwimlanesApi` because its return type isn't a `List<T>` — a
+non-collection return is a slightly stronger round-trip check. Login credentials for
+`TAIGA_INTEGRATION_USERNAME`/`_PASSWORD` (admin/admin, the seeded superuser from
+`docs/local-info.md`) confirmed with gregory since no prior session had recorded which seeded
+account to use. Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all seven integration tests (login, projects,
+users, user stories, tasks, sprints, filters) pass together. Full `./gradlew jvmTest --rerun` (no
+env vars) hit one failure unrelated to this change: `uikit:jvmTest`'s
+`ExpandableMarkdownTextTest.longTextShowsExpandButtonAndTogglesOnClick` (a `ComposeTimeoutException`
+waiting on a Skiko test clock) — confirmed flaky by re-running that single test in isolation, where
+it passed; not logged as a new revisit since `uikit`'s Compose UI test flakiness is a different
+mechanism from the `:koverVerify`/DataStore issues already tracked and this session made no change
+in that module. A subsequent full `./gradlew jvmTest --rerun` came back green. `ktlintCheck` green.
+5/12 candidates remain — next session picks any row from the table above.
+
+**Result (2026-08-08, session 6):** `WikiApiIntegrationTest` added — `getProjectWikiPages(projectId
+= 5)`, asserts the returned list is non-null (parsed). Checked project 5's data via `taiga-mcp`
+first: confirmed 4 real wiki pages (home, getting-started, architecture, api-reference). Verified
+with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all eight integration tests (login, projects,
+users, user stories, tasks, sprints, filters, wiki) pass together. Full `./gradlew jvmTest --rerun`
+(no env vars) hit one failure on first run —
+[revisit #26](../revisit.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)'s
+already-logged `WikiPageViewModelTest.onAttachmentAdd failure updates state with error` flake,
+confirmed by the exact `TurbineAssertionError: No value produced in 3s` message matching that entry
+— not a new issue, and not caused by this session (no change touched `feature/wiki/ui`). A
+subsequent `./gradlew jvmTest --rerun` came back fully green. `ktlintCheck` green. 4/12 candidates
+remain — next session picks any row from the table above.
+
+**Result (2026-08-08, session 7):** `WorkItemApiIntegrationTest` added — `getWorkItems(taskPath =
+"epics", project = 5)`, asserts the returned list is non-null (parsed). Picked over the other three
+remaining candidates because it closes the correction noted earlier in this task: `EpicsApi`/
+`IssuesApi` have no read method, so this is the only remaining candidate that actually exercises
+those reads. Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all nine integration tests (login, projects, users,
+user stories, tasks, sprints, filters, wiki, work items) pass together. Full `./gradlew jvmTest
+--rerun` (no env vars) hit one failure on first run — the same already-logged
+[revisit #26](../revisit.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)
+`WikiPageViewModelTest` flake, confirmed by a subsequent `--rerun` coming back fully green; not
+caused by this session (no change touched `feature/wiki/ui`). `ktlintCheck` green. 3/12 candidates
+remain — next session picks any row from the table above.
+
+**Result (2026-08-09, session 8):** `ProjectValuesApiIntegrationTest` added —
+`getProjectValues(endpoint = "userstory-statuses", projectId = 5)`, asserts the returned list is
+non-null (parsed). Picked over `SwimlanesApi`/`HistoryApi` because project 5's statuses were
+already confirmed to exist by an earlier session, and unlike `SwimlanesApi` (confirmed empty) this
+exercises a non-empty real read. Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped
+to `com.grappim.taigamobile.di.*IntegrationTest` — all ten integration tests (login, projects,
+users, user stories, tasks, sprints, filters, wiki, work items, project values) pass together. Full
+`./gradlew jvmTest --rerun` (no env vars) green with no flakes this run. `ktlintCheck` green. 2/12
+candidates remain — next session picks either `SwimlanesApi` or `HistoryApi`.
+
+**Result (2026-08-09, session 9):** `HistoryApiIntegrationTest` added —
+`getCommonTaskComments(singularTaskPath = "userstory", id = 21)`, asserts the returned list is
+non-null (parsed). Picked over `SwimlanesApi` because its call needs a real entity id, which is a
+slightly stronger round-trip than `SwimlanesApi`'s already-confirmed-empty list. Resolved
+`singularTaskPath` from `CommonTaskType.getSingularPath()`
+(`feature/workitem/domain/.../WorkItemPath.kt`) — `"userstory"`, not `"userstories"`. Checked
+project 5's data via `taiga-mcp` first: reused user story id 21 (ref 11), already confirmed by an
+earlier session's `UserStoriesApiIntegrationTest` work; every user story in project 5 shows
+`total_comments: 0`, but that only affects the list's length, not whether the endpoint round-trips.
+Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all eleven integration tests (login, projects,
+users, user stories, tasks, sprints, filters, wiki, work items, project values, history) pass
+together. Full `./gradlew jvmTest --rerun` (no env vars) green with no flakes this run.
+`ktlintCheck` green. 1/12 candidates remain — next session picks `SwimlanesApi`, the last row in
+the table above.
+
+**Result (2026-08-09, session 10):** `SwimlanesApiIntegrationTest` added —
+`getSwimlanes(project = 5)`, asserts the returned list is non-null (parsed). Last remaining
+candidate — task 3 is now complete, all 12 `XApi` modules covered (10 direct reads + the 2
+corrected write-only modules, `EpicsApi`/`IssuesApi`, whose reads live in `WorkItemApi`, already
+covered by session 7). Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
+`com.grappim.taigamobile.di.*IntegrationTest` — all twelve integration tests (login, projects,
+users, user stories, tasks, sprints, filters, wiki, work items, project values, history,
+swimlanes) pass together. Full `./gradlew jvmTest --rerun` (no env vars) green with no flakes this
+run. `ktlintCheck` green. **Task 3 is done — next session picks task 4 (write round-trip pilot).**
+
+---
+
+## Task 4 — Write round-trip pilot (create + clean up)
+
+**Why:** login and reads prove auth and GET work; nothing yet proves a real POST round-trips
+correctly through the app's own request/response mapping. Deliberately after task 3, not before —
+several of task 3's read candidates (e.g. `ProjectValuesApi`'s statuses) are exactly what a write
+pilot would need to already know exist on a real project.
+
+**Scope:** pick a write that has a natural, reliable **delete/cleanup counterpart** in the same API,
+so the test doesn't leave permanent junk in gregory's seeded instance on every run. `ProjectsApi`'s
+tag endpoints (`CreateTagRequestDTO` + `DeleteTagRequestDTO`) are the leading candidate — but this
+needs an existing project to attach a tag to. **First step of this task: check what projects/data
+actually exist in the local instance right now** (via `taiga-mcp`'s `taiga_request`, or whatever
+task 3 already found) before committing to a specific write endpoint.
+
+**Existing pieces:** the shared login helper from task 2; whatever task 3 already learned about what
+data exists in the local instance.
+
+**Done when:** the write test passes, creates something, and the test itself deletes/reverts it
+before finishing (in a `finally` or equivalent) rather than relying on the next run to clean up.
+
+**Finalize focus:** note in the baseline doc whether cleanup-on-failure (the create succeeds but the
+test then fails before deleting) was handled or left as a known gap. If this pilot goes well, it's
+the template for a write-sweep counterpart to task 3 — scope that as a new task only once asked.
+
+**Result (2026-08-09):** `ProjectsApiTagIntegrationTest` added
+(`composeApp/src/jvmTest/.../di/ProjectsApiTagIntegrationTest.kt`) — `createTag`/`deleteTag` on
+project 5, the leading candidate named in this task's own scope. Checked project 5's existing tags
+via `taiga-mcp` first (9 tags: frontend, design, backend, mobile, ux, documentation, testing,
+performance, security, infrastructure) and used a randomized name
+(`"int-test-${getRandomString()}"`, `:testing` module) to avoid colliding with any of them.
+Verifies the round-trip through data, not just "didn't throw": asserts the tag appears in
+`getProjectTagsColors` after `createTag`, then asserts it's gone after `deleteTag`.
+**Cleanup-on-failure is handled**, not left as a gap: a `created` flag set only after `createTag`
+returns successfully drives a `finally` block that deletes the tag if the test fails any later
+assertion, so a failing run doesn't leave the tag behind in gregory's seeded instance — verified by
+temporarily forcing the post-create assertion to fail and confirming the `finally` still deleted it
+(re-checked via `taiga_request` and reverted before landing). Verified with the three
+`TAIGA_INTEGRATION_*` env vars set, scoped to `com.grappim.taigamobile.di.*IntegrationTest` — all
+thirteen integration tests pass together, and confirmed via `taiga_request` to
+`/api/v1/projects/5/tags_colors` that the created tag is actually gone afterward (the 9 original
+tags, nothing more). Also verified clean skip with no env vars set (scoped run) and green on both
+the full `./gradlew jvmTest --rerun` and `ktlintCheck`. **Task 4 is done.** Task 5 stays gated — no
+further task is queued until asked to scope one (e.g. a write-sweep counterpart to task 3, or task
+5 itself).
+
+---
+
+## Task 5 — CI-hosted Taiga (investigation option B)
+
+⛔ **Gated — do not start without asking (see status table).** This is materially bigger than tasks
+1–4: a `docker-compose.yml` this repo doesn't have today, a multi-container stack (`taiga-back`,
+`taiga-front`, `taiga-events`, `taiga-protected`, RabbitMQ, PostgreSQL), a wait-for-healthy CI step,
+and slower CI on every PR if wired into the default workflow. See the baseline doc's "Option B" for
+the full tradeoff. Only take this task if explicitly asked to scope it — and scope it as its own
+sub-plan rather than a single task, given the size.
+
+---
+
+## Considered and deferred
+
+**Option C (public taiga.io)** — not seriously considered; see the baseline doc. Not tracked as a
+task here.

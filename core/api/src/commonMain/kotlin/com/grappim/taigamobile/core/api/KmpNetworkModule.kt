@@ -69,7 +69,6 @@ class KmpNetworkModule {
             level = LogLevel.ALL
         }
         install(ErrorMappingPlugin) {
-            this.json = httpJson
             this.errorMapper = networkErrorMapper
             this.errorResponseParser = errorResponseParser
         }
@@ -109,7 +108,6 @@ class KmpNetworkModule {
             level = LogLevel.ALL
         }
         install(ErrorMappingPlugin) {
-            this.json = httpJson
             this.errorMapper = networkErrorMapper
             this.errorResponseParser = errorResponseParser
         }

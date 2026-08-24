@@ -11,7 +11,7 @@ A global singleton for this communication causes conflicts: if a user navigates 
 `IssueDetailsScreen` into `UserStoryDetailsScreen`, both share the same singleton instance,
 so updates from one bleed into the other.
 
-See `docs/workitem_edit_scoping.puml` for a visual diagram.
+See [`workitem-edit-scoping.puml`](workitem-edit-scoping.puml) for a visual diagram.
 
 ---
 
@@ -153,11 +153,74 @@ fun TaskIdentifier.toScopePrefix(): String = when (this) {
 
 ---
 
+## Feasibility investigation (2026-08-14)
+
+Follow-up investigation to confirm the proposal above is actually buildable with what's pinned in
+this repo today, and that the migration is safe given the real navigation topology. No code was
+changed — this only verifies assumptions.
+
+**Koin versions and APIs — confirmed, no dependency bump needed.** The pinned versions
+(`koin-bom`/`koin-annotations` `4.2.2`, `koin-plugin` `1.1.0`) were checked directly against the
+downloaded jars/sources. `Scope`, `createScope`, `getScope`, `KoinScopeComponent`, `ScopeRegistry`
+all live in `koin-core`'s `commonMain` — identical on Android, iOS, and JVM, no platform-specific
+gap.
+
+**The compiler-plugin route doesn't fit — has to be the manual approach.** `koin-annotations`
+4.2.2 does ship `@Scope`/`@Scoped`/`@ScopeId`, but `@ScopeId(name = "...")` bakes a **compile-time
+literal** string into the generated `getScope("...")` call. It cannot take a runtime-computed id
+like `"Issue_42"`, so it can't express this per-work-item scope. The hand-written
+`KoinComponent` + `getKoin().createScope(...)`/`getKoin().getScope(...)` approach shown above is
+not a stand-in for a nicer annotation-based path — it's the only path.
+
+**No existing scope pattern to copy.** `grep` for `@Scope`, `scoped(`, `getScope`, `createScope`
+across the whole codebase returns nothing outside this proposal. Every screen resolves its
+ViewModel via plain `koinViewModel<T>()` against Koin's default/root scope. This migration would
+be the first Koin scope used anywhere in the project.
+
+**Navigation topology confirmed safe for the "parent creates scope, child looks it up" design.**
+Checked `composeApp/.../main/MainNavHost.kt` and each feature's `*NavGraph.kt`:
+- Single flat `NavHost`, no nested `navigation{}` graphs. The five edit destinations are
+  registered once in `WorkItemEditsNavGraph.kt` and reached from `IssueNavGraph`,
+  `UserStoryNavGraph`, `TaskNavGraph`, `EpicNavGraph`, and (description only) `WikiNavGraph`.
+- Every parent → child call is a plain `navController.navigate(SomeDestination(...))` — no
+  `popUpTo`/`launchSingleTop` that could pop the parent's back stack entry. Every child → back
+  call is a plain `popBackStack()`.
+- No custom `LocalViewModelStoreOwner` anywhere (`grep` empty) — `koinViewModel()` uses the
+  standard Navigation-Compose per-`NavBackStackEntry` `ViewModelStore`. The parent's
+  `viewModelScope`/`onCleared()` only fires when the user navigates back past it, not while a
+  child sits on top.
+- No deep links exist (`grep` for `deepLink`/`navDeepLink` empty) — there's no path that creates a
+  child edit screen without its parent already on the stack.
+- Process death does **not** risk resuming mid-flow: `MainNavHost` always calls
+  `navigateToDashboardAsTopDestination()` on (re)start, which does
+  `popUpTo(graph.id) { inclusive = true; saveState = false }` — any restored back stack is wiped
+  back to Dashboard/ProjectSelector/Login before the user ever sees it. There's no scenario where a
+  child edit ViewModel is created before its parent's.
+- The edit destinations are genuinely **multi-parent** (5 different feature graphs open the same
+  `WorkItemEditDescriptionNavDestination` etc., each with a different `TaskIdentifier`), which is
+  exactly why keying by `"${taskType}_${workItemId}"` — as both the current map and the proposed
+  scope ID do — is required; there's no single owning parent type to scope by instead.
+
+**Real cost the comparison table above understates: testing.** The 5 child edit ViewModels
+currently take `WorkItemEditStateRepository` via plain constructor injection, so their tests just
+construct a fake directly — matching this project's hand-written-fakes-only convention (no MockK,
+see CLAUDE.md Testing / Settled Decisions). Under the scoped design those ViewModels become
+`KoinComponent` and call `getKoin().getScope(id).get()` inside the constructor body, so their tests
+would need a real Koin scope stood up instead of a plain fake — a genuine regression against an
+explicit project convention, not just a style change. There's also a stricter failure mode:
+`getScope(id)` throws `ScopeNotCreatedException` if the parent hasn't opened it yet, where today's
+`getOrCreateSession` silently creates one on first access.
+
+---
+
 ## Recommendation
 
-The current solution is **correct and safe**. The Koin scope approach is more semantically accurate
-and removes the internal session map, but the practical gain is small because `onCleared()` already
-handles cleanup reliably.
+The current solution is **correct and safe**, and the investigation above found nothing that makes
+migrating urgent — no bug, no version blocker, and the navigation topology would support either
+design equally well. The Koin scope approach is more semantically accurate and removes the internal
+session map, but the practical gain is small because `onCleared()` already handles cleanup
+reliably, and the testing-convention cost (previous section) is a real downside, not just a style
+tradeoff.
 
 **Migrate to Koin scopes if:**
 - You want to remove `WorkItemEditStateRepository` as a singleton entirely
@@ -166,7 +229,8 @@ handles cleanup reliably.
 
 **Keep the current approach if:**
 - You prefer simpler, injection-based sub-ViewModel setup (no `getKoin()` lookup)
-- You want easier unit testing of sub-ViewModels without scope setup
+- You want easier unit testing of sub-ViewModels without scope setup (this project's established
+  convention — see above)
 
 If migrating, the scope ID convention (`"${taskType}_${workItemId}"`) is already established and
 consistent with the current session key format — no nav arg changes needed.

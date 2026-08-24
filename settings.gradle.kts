@@ -38,6 +38,7 @@ include(":tools:seed")
 include(":tools:utils")
 
 include(":androidApp")
+include(":benchmark")
 include(":composeApp")
 include(":feature:login:domain")
 include(":uikit")

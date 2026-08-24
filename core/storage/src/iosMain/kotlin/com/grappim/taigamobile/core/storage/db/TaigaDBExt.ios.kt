@@ -1,3 +1,7 @@
 package com.grappim.taigamobile.core.storage.db
 
-actual fun TaigaDB.clearAllTablesKmp() = Unit
+actual suspend fun TaigaDB.clearAllTablesKmp() {
+    projectDao().deleteAll()
+    sprintDao().deleteAll()
+    workItemDao().deleteAll()
+}

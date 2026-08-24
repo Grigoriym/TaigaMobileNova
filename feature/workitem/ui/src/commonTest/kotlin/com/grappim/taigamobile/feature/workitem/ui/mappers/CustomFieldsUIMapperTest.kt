@@ -135,6 +135,30 @@ class CustomFieldsUIMapperTest {
     }
 
     @Test
+    fun `toUI with Multiline field and null value should return empty string`() = runTest {
+        val id = getRandomLong()
+        val name = getRandomString()
+
+        val customFields = CustomFields(
+            fields = persistentListOf(
+                CustomField(
+                    id = id,
+                    type = CustomFieldType.Multiline,
+                    name = name,
+                    value = null
+                )
+            ),
+            version = getRandomLong()
+        )
+
+        val actual = sut.toUI(customFields)
+
+        val item = assertIs<MultilineTextItemState>(actual[0])
+        assertEquals("", item.originalValue)
+        assertEquals("", item.currentValue)
+    }
+
+    @Test
     fun `toUI with RichText field should return RichTextItemState`() = runTest {
         val id = getRandomLong()
         val name = getRandomString()
@@ -163,6 +187,30 @@ class CustomFieldsUIMapperTest {
         assertEquals(description, item.description)
         assertEquals(value, item.originalValue)
         assertEquals(value, item.currentValue)
+    }
+
+    @Test
+    fun `toUI with RichText field and null value should return empty string`() = runTest {
+        val id = getRandomLong()
+        val name = getRandomString()
+
+        val customFields = CustomFields(
+            fields = persistentListOf(
+                CustomField(
+                    id = id,
+                    type = CustomFieldType.RichText,
+                    name = name,
+                    value = null
+                )
+            ),
+            version = getRandomLong()
+        )
+
+        val actual = sut.toUI(customFields)
+
+        val item = assertIs<RichTextItemState>(actual[0])
+        assertEquals("", item.originalValue)
+        assertEquals("", item.currentValue)
     }
 
     @Test
@@ -249,6 +297,30 @@ class CustomFieldsUIMapperTest {
         assertEquals(description, item.description)
         assertEquals(value, item.originalValue)
         assertEquals(value, item.currentValue)
+    }
+
+    @Test
+    fun `toUI with Url field and null value should return empty string`() = runTest {
+        val id = getRandomLong()
+        val name = getRandomString()
+
+        val customFields = CustomFields(
+            fields = persistentListOf(
+                CustomField(
+                    id = id,
+                    type = CustomFieldType.Url,
+                    name = name,
+                    value = null
+                )
+            ),
+            version = getRandomLong()
+        )
+
+        val actual = sut.toUI(customFields)
+
+        val item = assertIs<UrlItemState>(actual[0])
+        assertEquals("", item.originalValue)
+        assertEquals("", item.currentValue)
     }
 
     @Test
@@ -419,6 +491,33 @@ class CustomFieldsUIMapperTest {
         val item = assertIs<DropdownItemState>(actual[0])
         assertEquals(null, item.originalValue)
         assertEquals(null, item.currentValue)
+    }
+
+    @Test
+    fun `toUI with Dropdown field and null options should return null options`() = runTest {
+        val id = getRandomLong()
+        val name = getRandomString()
+        val value = getRandomString()
+
+        val customFields = CustomFields(
+            fields = persistentListOf(
+                CustomField(
+                    id = id,
+                    type = CustomFieldType.Dropdown,
+                    name = name,
+                    value = CustomFieldValue(value),
+                    options = null
+                )
+            ),
+            version = getRandomLong()
+        )
+
+        val actual = sut.toUI(customFields)
+
+        val item = assertIs<DropdownItemState>(actual[0])
+        assertEquals(null, item.options)
+        assertEquals(value, item.originalValue)
+        assertEquals(value, item.currentValue)
     }
 
     @Test

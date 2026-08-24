@@ -2,6 +2,7 @@
 import com.android.build.api.dsl.ApplicationExtension
 import com.grappim.taigamobile.buildlogic.AppBuildTypes
 import com.grappim.taigamobile.buildlogic.configureAndroidOutputNaming
+import com.grappim.taigamobile.buildlogic.configureComposeStabilityReports
 import com.grappim.taigamobile.buildlogic.configureFlavors
 import com.grappim.taigamobile.buildlogic.configureKotlinAndroid
 import com.grappim.taigamobile.buildlogic.libs
@@ -16,6 +17,8 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             apply(plugin = "com.android.application")
             apply(plugin = "org.jetbrains.kotlin.plugin.compose")
             apply(plugin = "io.insert-koin.compiler.plugin")
+
+            configureComposeStabilityReports()
 
             extensions.configure<ApplicationExtension> {
                 defaultConfig.apply {
