@@ -71,9 +71,9 @@ class MainAppState(val navigator: Navigator) {
 
     val currentTopLevelDestination: DrawerDestination?
         @Composable get() {
-            val currentTopLevelKey = navigationState.currentTopLevelKey
+            val currentKey = navigationState.currentKey
             return DrawerDestination.entries.firstOrNull { drawerDestination ->
-                drawerDestination.route::class == currentTopLevelKey::class
+                drawerDestination.route::class == currentKey::class
             }
         }
 
