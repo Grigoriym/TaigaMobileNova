@@ -39,7 +39,7 @@ androidDesugarJdkLibs = "2.1.5"
 
 # Perf profiling (Baseline Profile / Macrobenchmark) — see docs/perf/profiling-plan.md
 # https://developer.android.com/jetpack/androidx/releases/benchmark — also versions the androidx.baselineprofile plugin
-androidxBenchmark = "1.5.0-beta01"
+androidxBenchmark = "1.5.0-rc02"
 # https://developer.android.com/jetpack/androidx/releases/profileinstaller
 profileinstaller = "1.4.1"
 # https://developer.android.com/jetpack/androidx/releases/test
