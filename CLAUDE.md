@@ -101,21 +101,50 @@ and stop.
 
 ## Navigation Pattern
 
-Destinations use `@Serializable` data classes/objects:
+Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from
+wallosmobile — see `docs/architecture/tablet-form-factor-support/IMPLEMENTATION_PLAN.md`'s step 7
+and step 10 notes for why this is hand-rolled rather than depending on the real Nav3 alpha APIs).
+Destinations are `@Serializable` classes/objects implementing `NavKey`, each with a `Navigator`
+extension function next to it:
 ```kotlin
 @Serializable
-data class TaskDetailsNavDestination(val taskId: Long, val ref: Long)
+data class TaskDetailsNavDestination(val taskId: Long, val ref: Long) : NavKey
 
-fun NavController.navigateToTask(taskId: Long, ref: Long) {
-    navigate(route = TaskDetailsNavDestination(taskId, ref))
+fun Navigator.navigateToTask(taskId: Long, ref: Long) {
+    navigate(TaskDetailsNavDestination(taskId, ref))
 }
 ```
 
-ViewModels extract arguments via `SavedStateHandle.toRoute<T>()`:
+Each `composeApp/.../nav/*NavGraph.kt` file wires one feature's destinations as
+`EntryProviderScope<NavKey>` extensions, called from `MainNavHost.kt`'s single `entryProvider { }`
+block:
 ```kotlin
-private val route = savedStateHandle.toRoute<TaskDetailsNavDestination>()
-private val taskId = route.taskId
+fun EntryProviderScope<NavKey>.taskNavGraph(navigator: Navigator) {
+    entry<TaskDetailsNavDestination> { route ->
+        TaskDetailsScreen(route = route, goBack = { navigator.goBack() }, ...)
+    }
+}
 ```
+
+ViewModels receive the route via a Koin `@InjectedParam` constructor parameter — not
+`SavedStateHandle.toRoute<T>()`, which was Nav2-only and has no Nav3 equivalent:
+```kotlin
+@KoinViewModel
+class TaskDetailsViewModel(
+    @InjectedParam private val route: TaskDetailsNavDestination,
+    ...
+) : ViewModel() {
+    private val taskId: Long = route.taskId
+```
+passed at the call site as `koinViewModel { parametersOf(route) }` in the `Screen` composable.
+
+**`Navigator.navigate(key)` is single-top per top-level section, not a stack push everywhere.** A
+top-level key (one of the drawer sections, seeded in `MainAppState.kt`'s `TOP_LEVEL_KEYS`) gets its
+own independent sub-stack; navigating to a non-top-level key pushes onto whichever section's
+sub-stack is currently active. Two extra primitives beyond `navigate`/`goBack`: `resetTo(key)` wipes
+every section and lands on `key` alone (login/logout); `replaceCurrent(key)` swaps the sub-stack's
+top entry instead of pushing (a "this screen is done, hand off to the next one" transition, e.g. a
+wiki create-page screen handing off to the page it just created).
 
 ## ViewModel + State Pattern
 
@@ -184,6 +213,10 @@ Every `RString.x` reference needs its **own** import (`import com.grappim.taigam
 — the generated strings are extension properties, so importing `RString` alone gives
 `Unresolved reference 'create_task'`. This bites in test files as often as in Composables: a test
 asserting `NativeText.Resource(RString.title_is_empty)` needs the same import line the ViewModel has.
+Same rule for `RDrawable.x` (confirmed 2026-08-22 adding `RDrawable.ic_refresh` inside `uikit` itself
+— the generic "unresolved reference" error gives no hint that a per-symbol import is missing) and any
+other generated resource accessor (font, etc.) — it's a Compose Resources mechanism, not specific to
+strings.
 
 `strings.xml` (`strings/src/commonMain/composeResources/values/`) does not need Android-style
 apostrophe/quote escaping (`\'`) — Compose Multiplatform's resource loader doesn't apply AAPT's
@@ -335,6 +368,55 @@ This doesn't prevent widening a gate — it makes doing so silently impossible. 
 `paths-ignore`, unlike `build.yml`/`code_analysis.yml`, so a CLAUDE.md-only commit is still checked.
 Run it locally before committing: `.github/scripts/check-guardrails.sh HEAD~1..HEAD`.
 
+## Multi-Session Work
+
+For any initiative that spans multiple sessions — a feature investigation, a redesign, a
+migration; not a single bug fix — split it into its own directory under `docs/` with two files:
+
+- **`CHECKLIST.md`** — the executable plan: numbered, tickable steps, each sized to fit a single
+  clean context. A `Progress` / `Current step` header at the top is the only record of how far
+  the initiative has got — don't duplicate that anywhere else. Once a step is ticked, move its
+  entry out into a sibling **`CHECKLIST-DONE.md`** so the live checklist stays short enough to
+  read cold at the start of a session — `CHECKLIST-DONE.md` is precedent for a step cited by
+  number, not a place to look for open work.
+- **`IMPLEMENTATION_PLAN.md`** — the reference: architecture, rationale, options weighed and
+  their tradeoffs. Updated with what each step actually taught, so it stays the canonical answer
+  for the next session instead of the checklist's own step text going stale.
+
+`docs/testing/{survey.md, improvement-plan.md, deferred.md}` already used this split informally,
+before it had a name — read that as the worked example if a fresh one doesn't clarify something.
+
+**"Do step N" means:** read `CHECKLIST.md`, do *exactly* that step, run its `Verify:` line, tick
+it and move it to `CHECKLIST-DONE.md`, add a one-line `Note:` if anything deviated from the
+description, and update the `Progress` header. Don't start a step whose dependencies aren't
+ticked, and don't expand scope beyond it. **End the archived step's `Note:` by naming what comes
+next** — the following step's number, or "queue is empty" if none is scoped — in prose, not just
+via the `Progress` header: gregory reads the note to tell whether there's more to do without
+re-reading the whole checklist, so the answer has to be stated, not implied.
+
+**Answering a question a not-yet-started step will ask is not the same as asking for that step to
+run.** If gregory states a preference or decision a later step needs, record it in
+`IMPLEMENTATION_PLAN.md` for when that step starts — don't treat it as the "do step N" trigger and
+launch the step immediately.
+
+**Close a step out every time, without being asked:**
+
+1. Run the `finalize` skill — a step almost always teaches something the plan didn't know; this
+   is where it gets written down instead of dying with the context.
+2. Fold anything structural out of the step's `Note:` into `IMPLEMENTATION_PLAN.md`.
+3. Check the docs for claims the step just made false (grep for what changed — see the `finalize`
+   entry under Skills & Agents below).
+4. Commit, following Git Workflow below — branch + PR into `dev` unless told otherwise. One
+   commit per step; the PR is a checkpoint before it lands, not a batching mechanism.
+
+**Decomposing a new phase of an initiative into checklist steps is its own commit**, made the
+moment it happens — not left for whoever picks up step 1 to discover via `git status`.
+
+A step that's gated on a decision nobody has made yet (gregory needs to pick between options, a
+prerequisite step isn't done) carries `⛔ **Gated — do not start without asking.**` as the first
+line under its own heading, not only a note in the status table — two places to look beats one,
+for when the table gets skipped anyway.
+
 ## Git Workflow
 
 **Default to a feature branch + PR into `dev`.** Push straight to `dev` only when gregory says so
@@ -456,6 +538,21 @@ in the running app. Use the **emulator-testing** skill — `docs/EMULATOR_TESTIN
 project's device facts (AVD name, package ids, app-specific gotchas) — before calling a UI change
 complete. Don't stop at a green test suite; a passing test and a rendered screen are different
 claims.
+
+**The same applies before starting a fix, not only after it.** A `docs/revisit.md`/checklist entry
+describing an observed UI state can go stale between when it was queued and when a later session
+picks it up. Confirmed 2026-08-22 (tablet checklist step 14): a queued "Issues list has no row
+divider" entry turned out to already be false — a GUI check on the running desktop app caught it
+before any code was written, instead of after a fix landed for a problem that no longer existed.
+
+**A single successful manual check isn't enough for behavior that depends on prior interaction —
+verify after normal usage, not just on first load.** Confirmed 2026-08-22 (tablet checklist step
+15, desktop keyboard shortcut): a focus-based `onPreviewKeyEvent` implementation passed a GUI check
+immediately after navigating to the screen, then silently stopped working after any other click
+elsewhere in the app stole Compose focus from its hidden node — no error, no visible symptom. The
+first check would have shipped a shortcut that's dead the moment a real user touches anything else.
+Re-test after the kind of interaction a user would actually do in between, not just the one action
+under test.
 
 ### Friction Goes in Writing Too
 

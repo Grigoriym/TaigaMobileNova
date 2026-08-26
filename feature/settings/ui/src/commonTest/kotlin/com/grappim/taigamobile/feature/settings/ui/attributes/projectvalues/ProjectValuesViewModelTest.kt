@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueItem
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueType
@@ -26,7 +25,7 @@ internal class ProjectValuesViewModelTest {
 
     private val type = ProjectValueType.US_STATUSES
 
-    private val savedStateHandle = SavedStateHandle(mapOf("typeName" to type.name))
+    private val route = ProjectValuesNavDestination(typeName = type.name)
 
     private val repository = FakeProjectValuesRepository()
     private val sessionStorage = FakeTaigaSessionStorage()
@@ -46,7 +45,7 @@ internal class ProjectValuesViewModelTest {
 
     private fun createViewModel() {
         sut = ProjectValuesViewModel(
-            savedStateHandle = savedStateHandle,
+            route = route,
             repository = repository,
             sessionStorage = sessionStorage
         )

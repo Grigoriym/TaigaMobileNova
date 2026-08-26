@@ -74,9 +74,11 @@ import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun UserStoryDetailsScreen(
+    route: UserStoryDetailsNavDestination,
     goBack: () -> Unit,
     goToEditDescription: (description: String, id: Long) -> Unit,
     goToEditTags: (id: Long) -> Unit,
@@ -86,7 +88,7 @@ fun UserStoryDetailsScreen(
     goToEditWatchers: (id: Long) -> Unit,
     goToEpic: (epicId: Long, ref: Long) -> Unit,
     goToEditEpics: (userStoryId: Long) -> Unit,
-    viewModel: UserStoryDetailsViewModel = koinViewModel()
+    viewModel: UserStoryDetailsViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
     val isOffline = LocalOfflineState.current

@@ -1,12 +1,10 @@
 package com.grappim.taigamobile.di
 
-import androidx.lifecycle.SavedStateHandle
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.koin.core.annotation.KoinInternalApi
 import org.koin.core.definition.BeanDefinition
 import org.koin.core.error.NoDefinitionFoundException
-import org.koin.dsl.module
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -51,8 +49,9 @@ import kotlin.test.assertTrue
  * Koin resolves every constructor argument *before* invoking the constructor, so a definition whose
  * constructor body then throws has already proven its wiring. Only [NoDefinitionFoundException] is
  * treated as a failure; anything else is printed and tolerated. That is what makes the ViewModels
- * checkable at all — most of them call `savedStateHandle.toRoute<T>()` during construction, which
- * cannot succeed against the blank [SavedStateHandle] declared below. That noise is expected.
+ * checkable at all — the 15 that take a route via `@InjectedParam` throw `DefinitionParameterException`
+ * here, since nothing supplies a `parametersOf(route)` (that only exists at the Screen's
+ * `koinViewModel { }` call site). That noise is expected.
  *
  * ## Why `Main` is replaced by a dispatcher that never runs
  *
@@ -102,9 +101,6 @@ internal class KoinGraphTest {
             .distinct()
             .map { it.beanDefinition }
             .filter { it.scopeQualifier == root.scopeQualifier }
-
-        // Supplied by the ViewModel's CreationExtras at runtime, never by a module.
-        koin.loadModules(listOf(module { single { SavedStateHandle() } }))
 
         val missing = mutableListOf<String>()
         val constructionFailures = mutableListOf<String>()

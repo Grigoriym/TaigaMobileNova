@@ -2,10 +2,8 @@
 
 package com.grappim.taigamobile.feature.issues.ui.details
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
@@ -73,6 +71,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 private val type = CommonTaskType.Issue
@@ -81,7 +80,7 @@ private val identifierType = TaskIdentifier.WorkItem(type)
 @KoinViewModel
 class IssueDetailsViewModel(
     private val issueDetailsDataUseCase: IssueDetailsDataUseCase,
-    savedStateHandle: SavedStateHandle,
+    @InjectedParam private val route: IssueDetailsNavDestination,
     private val customFieldsUIMapper: CustomFieldsUIMapper,
     private val workItemsGenerator: WorkItemsGenerator,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
@@ -155,8 +154,6 @@ class IssueDetailsViewModel(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ) {
-
-    private val route = savedStateHandle.toRoute<IssueDetailsNavDestination>()
 
     private val issueId: Long = route.issueId
     private val ref = route.ref

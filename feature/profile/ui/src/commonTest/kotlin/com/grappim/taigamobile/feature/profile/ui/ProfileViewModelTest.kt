@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.profile.ui
 
-import androidx.lifecycle.SavedStateHandle
 import com.grappim.taigamobile.feature.profile.domain.GetProfileDataUseCase
 import com.grappim.taigamobile.feature.users.domain.UserStats
 import com.grappim.taigamobile.testing.MainDispatcherRule
@@ -30,7 +29,7 @@ internal class ProfileViewModelTest {
     private val sessionStorage = FakeTaigaSessionStorage()
     private val mainDispatcherRule = MainDispatcherRule()
 
-    private val savedStateHandle = SavedStateHandle(mapOf("userId" to userId))
+    private val route = ProfileNavDestination(userId = userId)
 
     private lateinit var sut: ProfileViewModel
 
@@ -52,9 +51,9 @@ internal class ProfileViewModelTest {
 
     private fun createViewModel() {
         sut = ProfileViewModel(
+            route = route,
             getProfileDataUseCase = GetProfileDataUseCase(usersRepository, projectsRepository),
-            taigaSessionStorage = sessionStorage,
-            savedStateHandle = savedStateHandle
+            taigaSessionStorage = sessionStorage
         )
     }
 

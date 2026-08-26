@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.nav
 
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
+import com.grappim.taigamobile.core.navigation.Navigator
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.settings.ui.about.SettingsAboutScreen
@@ -37,87 +37,87 @@ import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreenNavDes
 import com.grappim.taigamobile.feature.settings.ui.user.goToSettingsUserScreen
 import com.grappim.taigamobile.utils.ui.NativeText
 
-fun NavGraphBuilder.settingsNavGraph(navController: NavHostController, showSnackbar: (NativeText) -> Unit) {
-    composable<SettingsNavDestination> {
+fun EntryProviderScope<NavKey>.settingsNavGraph(navigator: Navigator, showSnackbar: (NativeText) -> Unit) {
+    entry<SettingsNavDestination> {
         SettingsScreen(
             goToAboutScreen = {
-                navController.goToSettingsAboutScreen()
+                navigator.goToSettingsAboutScreen()
             },
             goToInterfaceScreen = {
-                navController.goToSettingsInterfaceScreen()
+                navigator.goToSettingsInterfaceScreen()
             },
             goToUserScreen = {
-                navController.goToSettingsUserScreen()
+                navigator.goToSettingsUserScreen()
             },
             goToAttributesScreen = {
-                navController.goToAttributesScreen()
+                navigator.goToAttributesScreen()
             },
             goToProjectDetailsScreen = {
-                navController.navigateToProjectDetails()
+                navigator.navigateToProjectDetails()
             },
             goToModulesScreen = {
-                navController.navigateToModules()
+                navigator.navigateToModules()
             },
             goToTrustedCertificatesScreen = {
-                navController.goToTrustedCertificatesScreen()
+                navigator.goToTrustedCertificatesScreen()
             }
         )
     }
 
-    composable<ProjectDetailsNavDestination> {
+    entry<ProjectDetailsNavDestination> {
         ProjectDetailsScreen(
-            onNavigateBack = { navController.popBackStack() },
+            onNavigateBack = { navigator.goBack() },
             showSnackbar = showSnackbar
         )
     }
 
-    composable<ModulesNavDestination> {
+    entry<ModulesNavDestination> {
         ModulesScreen(
-            onNavigateBack = { navController.popBackStack() },
+            onNavigateBack = { navigator.goBack() },
             showSnackbar = showSnackbar
         )
     }
 
-    composable<SettingsAboutScreenRouteNavDestination> {
+    entry<SettingsAboutScreenRouteNavDestination> {
         SettingsAboutScreen()
     }
 
-    composable<SettingsInterfaceScreenNavDestination> {
+    entry<SettingsInterfaceScreenNavDestination> {
         SettingsInterfaceScreen()
     }
 
-    composable<SettingsUserScreenNavDestination> {
+    entry<SettingsUserScreenNavDestination> {
         SettingsUserScreen()
     }
 
-    composable<AttributesScreenNavDestination> {
+    entry<AttributesScreenNavDestination> {
         AttributesScreen(
             goToTagsScreen = {
-                navController.goToTagsScreen()
+                navigator.goToTagsScreen()
             },
             goToProjectValuesMenuScreen = {
-                navController.navigateToProjectValuesMenu()
+                navigator.navigateToProjectValuesMenu()
             }
         )
     }
 
-    composable<TagsScreenRouteNavDestination> {
+    entry<TagsScreenRouteNavDestination> {
         TagsScreen(showSnackbar = showSnackbar)
     }
 
-    composable<ProjectValuesMenuNavDestination> {
+    entry<ProjectValuesMenuNavDestination> {
         ProjectValuesMenuScreen(
             goToProjectValues = { type ->
-                navController.navigateToProjectValues(type)
+                navigator.navigateToProjectValues(type)
             }
         )
     }
 
-    composable<ProjectValuesNavDestination> {
-        ProjectValuesScreen(showSnackbar = showSnackbar)
+    entry<ProjectValuesNavDestination> { route ->
+        ProjectValuesScreen(route = route, showSnackbar = showSnackbar)
     }
 
-    composable<TrustedCertificatesNavDestination> {
+    entry<TrustedCertificatesNavDestination> {
         TrustedCertificatesScreen()
     }
 }

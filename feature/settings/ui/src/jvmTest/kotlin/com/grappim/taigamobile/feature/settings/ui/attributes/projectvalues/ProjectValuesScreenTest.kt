@@ -4,7 +4,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
-import androidx.lifecycle.SavedStateHandle
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueItem
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueType
 import com.grappim.taigamobile.testing.MainDispatcherRule
@@ -22,10 +21,11 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 // Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Route-carrying Screen pilot (task 13,
-// improvement-plan.md) — the SavedStateHandle is built directly, the same way every existing
-// ViewModel unit test builds it for this class. MainDispatcherRule's UnconfinedTestDispatcher makes
-// the init block's load finish before the ViewModel constructor returns, so setContent renders the
-// already-loaded state with no polling needed.
+// improvement-plan.md) — the route is built directly and passed via constructor-parameter
+// injection, the same way every existing ViewModel unit test builds it for this class.
+// MainDispatcherRule's UnconfinedTestDispatcher makes the init block's load finish before the
+// ViewModel constructor returns, so setContent renders the already-loaded state with no polling
+// needed.
 class ProjectValuesScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()
@@ -53,8 +53,9 @@ class ProjectValuesScreenTest {
         val repository = FakeProjectValuesRepository().apply {
             getProjectValuesResult = persistentListOf(item)
         }
+        val route = ProjectValuesNavDestination(typeName = type.name)
         val viewModel = ProjectValuesViewModel(
-            savedStateHandle = SavedStateHandle(mapOf("typeName" to type.name)),
+            route = route,
             repository = repository,
             sessionStorage = FakeTaigaSessionStorage()
         )
@@ -62,7 +63,7 @@ class ProjectValuesScreenTest {
         setContent {
             CompositionLocalProvider(LocalTopBarConfig provides TopBarController()) {
                 TaigaMobilePreviewTheme {
-                    ProjectValuesScreen(showSnackbar = {}, viewModel = viewModel)
+                    ProjectValuesScreen(route = route, showSnackbar = {}, viewModel = viewModel)
                 }
             }
         }

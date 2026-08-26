@@ -67,6 +67,9 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 39 | [Domain-model classes read as Compose-unstable across every feature](#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin) | ✅ resolved 2026-08-12 |
 | 40 | [Cold-start worst frame dominated by ART `VerifyClass` overhead](#40-cold-start-worst-frame-dominated-by-art-verifyclass-overhead--baseline-profile-candidate) | ✅ resolved 2026-08-12 |
 | 41 | [Dashboard scroll shows real, hardware-confirmed jank](#41-dashboard-scroll-shows-real-hardware-confirmed-jank-baseline-profile-covers-only-the-cold-startselect-project-journey) | ✅ resolved 2026-08-12 |
+| 42 | [Nav rail shown on the Login screen at wide window widths](#42-nav-rail-shown-on-the-login-screen-at-wide-window-widths) | ➡️ moved to tablet checklist 2026-08-22 |
+| 43 | [Issues list has no dividers between rows on desktop](#43-issues-list-has-no-dividers-between-rows-on-desktop) | ➡️ moved to tablet checklist 2026-08-22 |
+| 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | ➡️ moved to tablet checklist 2026-08-22 |
 
 </details>
 
@@ -1979,3 +1982,105 @@ wrapped in `key(item.id)` for stable composable identity across recomposition. V
 Galaxy S21 Ultra (Android 15): expanded `MY WORK (6)` against the live `tasks.gregstuff.click` instance
 — all 6 items rendered with a divider between each pair and none trailing after the last item, and the
 collapse animation was unaffected.
+
+---
+
+## 42. Nav rail shown on the Login screen at wide window widths
+
+**Where:** `composeApp/src/commonMain/kotlin/com/grappim/taigamobile/main/MainScreen.kt:182-230`.
+
+**What:** `MainScreenContent` branches purely on window width — `isCompactWidth` picks
+`TaigaDrawerWidget` (a modal drawer, closed by default, so invisible until opened) at narrow widths,
+or `TaigaNavigationSuiteWidget` (a permanent nav rail with Dashboard/Board/Epics/etc.) at wide
+widths (`:221-230`). Neither branch is gated on `initialNavState.isReady` or login state — contrast
+with `MainNavHost.kt:122-158`, whose individual `entry<...>` blocks *do* check
+`initialNavState.startDestination is LoginNavDestination` before composing. So on a wide/desktop
+window the drawer items (project sections) render as a permanent rail even while `LoginNavDestination`
+is the active entry and no project is selected — noticed manually 2026-08-21 launching the desktop
+build for step 12a's regression check, before logging in.
+
+**Consequence:** cosmetic/confusing on first launch (or after logout) at desktop/tablet widths — the
+rail implies navigable app sections that have nothing to show yet. Not evaluated whether tapping a
+rail item in this state does anything harmful; `onDrawerItemClick` calls
+`appState.navigateToTopLevelDestination(item)`, whose behavior pre-login wasn't traced.
+
+**Why deferred:** found while doing step 12a's manual regression check (an unrelated `ResultBus`
+key-rename), not something to fix inside that diff.
+
+**Fix, if wanted:** gate the `else` (wide) branch's `TaigaNavigationSuiteWidget` wrapping the same way
+the compact branch's drawer gestures are gated (`:192-194`, `initialNavState.isReady &&
+initialNavState.isProjectSelected`), or fall back to bare `mainContent()` while on `LoginNavDestination`
+regardless of width.
+
+**Moved to the tablet-form-factor-support checklist (2026-08-22):** gregory asked for this to become
+the next active work on that initiative's PR rather than sit here. Now tracked as step 13 in
+[tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
+entry stays for the original evidence/reasoning, the checklist step is the one to pick up.
+
+## 43. Issues list has no dividers between rows on desktop
+
+**Where:** `feature/issues/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/issues/ui/list/IssuesScreen.kt:161`
+— a plain `LazyColumn` with no divider between items.
+
+**What:** noticed manually 2026-08-21 on the desktop build (step 12a's regression check) — the
+Issues list rows have no visible separator, unlike the Dashboard's `DashboardSectionCard` list
+(see #41's resolution above, which explicitly added a divider between each pair of items). Not
+checked whether other list screens (Kanban, Epics, UserStories, Sprint) share the gap or already
+have dividers — only Issues was open during this check.
+
+**Why deferred:** cosmetic, found while doing an unrelated regression check; not this session's task.
+
+**Fix, if wanted:** check `uikit-guide` for the shared divider pattern #41 used on Dashboard and apply
+the same one here (and audit the other list screens while at it, per the note above).
+
+**Moved to the tablet-form-factor-support checklist (2026-08-22):** gregory asked for this to become
+the next active work on that initiative's PR rather than sit here. Now tracked as step 14 in
+[tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
+entry stays for the original evidence/reasoning, the checklist step is the one to pick up.
+
+## 44. Desktop has no refresh affordance for pull-to-refresh screens
+
+**What:** list screens (Issues among them) refresh via swipe/pull-to-refresh, a touch-only gesture.
+Raised 2026-08-21 during step 12a's manual desktop regression check: on the desktop build there's no
+mouse/keyboard equivalent visible — no refresh button, no keyboard shortcut.
+
+**Why deferred:** this is a design question (what the desktop affordance should be — a toolbar
+button, `Ctrl+R`, something else), not a bug with an obvious fix, and out of scope for step 12a's
+`ResultBus` key rename. Not investigated further — no file:line surveyed yet for which screens use
+pull-to-refresh or whether any already special-case desktop.
+
+**Fix, if wanted:** survey pull-to-refresh call sites (`grep -rn "PullToRefresh\|pullRefresh"`) and
+decide a desktop-appropriate trigger per the `adaptive` skill's guidance on pointer/keyboard input
+devices.
+
+**Moved to the tablet-form-factor-support checklist (2026-08-22):** gregory asked for this to become
+the next active work on that initiative's PR rather than sit here. Now tracked as step 15 in
+[tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
+entry stays for the original evidence/reasoning, the checklist step is the one to pick up.
+
+## 45. Tablet nav rail/permanent drawer still has no scroll safety net
+
+**Where:** `TaigaNavigationSuiteWidget` (`composeApp/src/commonMain/kotlin/com/grappim/taigamobile/TaigaDrawerWidget.kt:145-184`).
+
+**What:** investigated 2026-08-26 (`docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`) —
+the medium/expanded-width rail/permanent drawer passes every flattened `DrawerItem` into
+`NavigationSuiteScaffold`'s `navigationSuiteItems` with no scrollable wrapper, unlike the phone's
+`TaigaDrawerWidget` which explicitly wraps its item `Column` in `Modifier.verticalScroll(...)`.
+Reproduced on the desktop build: at 1280×900 all items fit, at 1280×750 the last item is clipped to
+a sliver, at 1280×700 it's fully off-screen and unreachable — no scrollbar or overflow affordance.
+
+**What this session did:** removed `Logout` from the drawer/rail entirely (moved to Settings, see
+the issue doc) — gregory's call, made independent of the clipping bug ("I didn't like it in the
+drawer nevertheless"). That happens to reduce the flattened item count by one everywhere, but it
+does **not** fix the underlying scroll gap. `Settings` is now the trailing item and will clip the
+same way on a short enough window/screen height or a project with enough active sections (Wiki +
+Backlog/Sprints groups both expand into multiple flat items).
+
+**Why deferred:** out of scope for the Logout-relocation task; fixing it means either giving up
+`NavigationSuiteScaffold`'s automatic rail/permanent-drawer breakpoint switching for a custom
+scrollable layout, or capping/collapsing the flattened item count some other way — see Options 1–3
+in the issue doc for the tradeoffs already weighed.
+
+**Fix, if wanted:** pick up Option 1, 2, or 3 from `docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`'s
+Options section for the item(s) still at risk (Settings, and any project with both optional groups
+active).

@@ -44,9 +44,14 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-fun ProfileScreen(viewModel: ProfileViewModel = koinViewModel(), showSnackbar: (NativeText) -> Unit) {
+fun ProfileScreen(
+    route: ProfileNavDestination,
+    showSnackbar: (NativeText) -> Unit,
+    viewModel: ProfileViewModel = koinViewModel { parametersOf(route) }
+) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 

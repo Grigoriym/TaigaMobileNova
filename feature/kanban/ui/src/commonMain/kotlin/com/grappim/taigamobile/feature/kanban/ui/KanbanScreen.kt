@@ -38,10 +38,13 @@ import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.badge.BadgeWidget
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -62,7 +65,10 @@ fun KanbanScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.kanban),
-                navigationIcon = NavigationIconConfig.Menu
+                navigationIcon = NavigationIconConfig.Menu,
+                actions = listOfNotNull(
+                    buildDesktopRefreshTopBarAction(onClick = state.onRefresh)
+                ).toImmutableList()
             )
         )
     }
@@ -117,6 +123,7 @@ fun KanbanScreenContent(
     navigateToStory: (id: Long, ref: Long) -> Unit = { _, _ -> },
     navigateToCreateTask: (statusId: Long, swimlaneId: Long?) -> Unit = { _, _ -> }
 ) {
+    DesktopRefreshEffect(onRefresh = state.onRefresh)
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
         isRefreshing = state.isLoading,

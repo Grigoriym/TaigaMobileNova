@@ -1,33 +1,22 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.editdescription
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.utils.ui.typeMapOf
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
-import kotlin.reflect.typeOf
 
 @KoinViewModel
 class EditDescriptionViewModel(
-    savedStateHandle: SavedStateHandle,
+    @InjectedParam private val route: WorkItemEditDescriptionNavDestination,
     private val workItemEditStateRepository: WorkItemEditStateRepository
 ) : ViewModel() {
-    private val route = savedStateHandle.toRoute<WorkItemEditDescriptionNavDestination>(
-        typeMap = typeMapOf(
-            listOf(
-                typeOf<TaskIdentifier>()
-            )
-        )
-    )
     private val _state = MutableStateFlow(
         EditDescriptionState(
             originalDescription = route.description,

@@ -4,7 +4,6 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
-import androidx.lifecycle.SavedStateHandle
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.cleaner.FakeDataCleaner
 import com.grappim.taigamobile.testing.models.getProject
@@ -44,18 +43,19 @@ class ProjectSelectorScreenTest {
         val projectsRepository = FakeProjectsRepository().apply {
             fetchProjectsResult = persistentListOf(project)
         }
+        val route = ProjectSelectorNavDestination(isFromLogin = false)
         val viewModel = ProjectSelectorViewModel(
             projectsRepository = projectsRepository,
             session = FakeFiltersStorage(),
             taigaSessionStorage = FakeTaigaSessionStorage(),
             dataCleaner = FakeDataCleaner(),
-            savedStateHandle = SavedStateHandle(mapOf("isFromLogin" to false))
+            route = route
         )
 
         setContent {
             CompositionLocalProvider(LocalTopBarConfig provides TopBarController()) {
                 TaigaMobilePreviewTheme {
-                    ProjectSelectorScreen(goBack = {}, onProjectSelect = {}, viewModel = viewModel)
+                    ProjectSelectorScreen(route = route, goBack = {}, onProjectSelect = {}, viewModel = viewModel)
                 }
             }
         }

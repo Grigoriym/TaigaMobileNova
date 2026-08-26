@@ -70,9 +70,11 @@ import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun TaskDetailsScreen(
+    route: TaskDetailsNavDestination,
     goBack: () -> Unit,
     goToEditDescription: (String, Long) -> Unit,
     goToEditTags: (id: Long) -> Unit,
@@ -81,7 +83,7 @@ fun TaskDetailsScreen(
     goToEditAssignee: (id: Long) -> Unit,
     goToEditWatchers: (id: Long) -> Unit,
     goToUserStory: (id: Long, ref: Long) -> Unit,
-    viewModel: TaskDetailsViewModel = koinViewModel()
+    viewModel: TaskDetailsViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()

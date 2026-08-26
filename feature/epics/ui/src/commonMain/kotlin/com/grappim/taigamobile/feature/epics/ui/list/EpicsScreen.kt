@@ -30,10 +30,12 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateAction
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.list.simpleTasksListWithTitle
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.getErrorMessage
@@ -79,6 +81,12 @@ fun EpicsScreen(
                             )
                         )
                     }
+                    buildDesktopRefreshTopBarAction(
+                        onClick = {
+                            epics.refresh()
+                            state.retryLoadFilters()
+                        }
+                    )?.let { add(it) }
                 }.toImmutableList()
             )
         )
@@ -125,6 +133,12 @@ fun EpicsScreenContent(
             isFiltersLoading = state.isFiltersLoading,
             searchQuery = query,
             setSearchQuery = state.onSetQuery
+        )
+        DesktopRefreshEffect(
+            onRefresh = {
+                epics.refresh()
+                state.retryLoadFilters()
+            }
         )
         PullToRefreshBox(
             modifier = Modifier.fillMaxSize(),

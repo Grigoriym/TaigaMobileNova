@@ -46,9 +46,14 @@ import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-fun WorkItemEditEpicScreen(goBack: () -> Unit, viewModel: EditEpicViewModel = koinViewModel()) {
+fun WorkItemEditEpicScreen(
+    route: WorkItemEditEpicNavDestination,
+    goBack: () -> Unit,
+    viewModel: EditEpicViewModel = koinViewModel { parametersOf(route) }
+) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 

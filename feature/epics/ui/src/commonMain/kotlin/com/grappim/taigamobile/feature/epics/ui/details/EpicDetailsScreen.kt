@@ -70,9 +70,11 @@ import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun EpicDetailsScreen(
+    route: EpicDetailsNavDestination,
     showSnackbar: (message: NativeText) -> Unit,
     goToProfile: (userId: Long) -> Unit,
     goToEditDescription: (String, Long) -> Unit,
@@ -82,7 +84,7 @@ fun EpicDetailsScreen(
     goToEditWatchers: (id: Long) -> Unit,
     goToUserStory: (id: Long, type: CommonTaskType, ref: Long) -> Unit,
     updateData: Boolean = false,
-    viewModel: EpicDetailsViewModel = koinViewModel()
+    viewModel: EpicDetailsViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
     val isOffline = LocalOfflineState.current

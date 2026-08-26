@@ -1,7 +1,6 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -63,9 +62,7 @@ internal class EpicDetailsViewModelTest {
 
     private val type = TaskIdentifier.WorkItem(CommonTaskType.Epic)
 
-    private val savedStateHandle = SavedStateHandle(
-        mapOf("epicId" to epicId, "ref" to ref)
-    )
+    private val route = EpicDetailsNavDestination(epicId = epicId, ref = ref)
 
     private val mainDispatcherRule = MainDispatcherRule()
 
@@ -104,7 +101,7 @@ internal class EpicDetailsViewModelTest {
 
     private fun createViewModel() {
         sut = EpicDetailsViewModel(
-            savedStateHandle = savedStateHandle,
+            route = route,
             workItemRepository = workItemRepository,
             patchDataGenerator = patchDataGenerator,
             historyRepository = historyRepository,

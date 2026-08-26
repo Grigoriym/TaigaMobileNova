@@ -2,7 +2,6 @@
 
 package com.grappim.taigamobile.feature.tasks.ui
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -61,9 +60,7 @@ internal class TaskDetailsViewModelTest {
 
     private val type = TaskIdentifier.WorkItem(CommonTaskType.Task)
 
-    private val savedStateHandle = SavedStateHandle(
-        mapOf("taskId" to taskId, "ref" to ref)
-    )
+    private val route = TaskDetailsNavDestination(taskId = taskId, ref = ref)
 
     private val mainDispatcherRule = MainDispatcherRule()
 
@@ -97,7 +94,7 @@ internal class TaskDetailsViewModelTest {
 
     private fun createViewModel() {
         sut = TaskDetailsViewModel(
-            savedStateHandle = savedStateHandle,
+            route = route,
             taskDetailsDataUseCase = taskDetailsDataUseCase,
             workItemsGenerator = workItemsGenerator,
             patchDataGenerator = patchDataGenerator,

@@ -65,11 +65,13 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.StaticColor
@@ -77,6 +79,7 @@ import com.grappim.taigamobile.utils.ui.StaticStringColor
 import com.grappim.taigamobile.utils.ui.asColor
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentSetOf
+import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -92,15 +95,16 @@ fun TagsScreen(showSnackbar: (NativeText) -> Unit, viewModel: TagsScreenViewMode
             TopBarConfig(
                 title = NativeText.Resource(RString.tags_title),
                 navigationIcon = NavigationIconConfig.Back(),
-                actions = persistentListOf(
+                actions = listOfNotNull(
                     TopBarActionIconButton(
                         drawable = RDrawable.ic_options,
                         contentDescription = "Issue options",
                         onClick = {
                             state.setDropdownMenuExpanded(true)
                         }
-                    )
-                )
+                    ),
+                    buildDesktopRefreshTopBarAction(onClick = state.refresh)
+                ).toImmutableList()
             )
         )
     }
@@ -147,6 +151,7 @@ private fun TagsScreenContent(state: TagsScreenState) {
             MergePreviewCard(state = state)
             TagsListContent(state = state)
         } else {
+            DesktopRefreshEffect(onRefresh = state.refresh)
             PullToRefreshBox(
                 modifier = Modifier.fillMaxSize(),
                 onRefresh = state.refresh,

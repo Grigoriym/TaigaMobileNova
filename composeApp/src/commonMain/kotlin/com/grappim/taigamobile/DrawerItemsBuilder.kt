@@ -18,7 +18,6 @@ import com.grappim.taigamobile.strings.generated.resources.dashboard_short
 import com.grappim.taigamobile.strings.generated.resources.epics
 import com.grappim.taigamobile.strings.generated.resources.issues
 import com.grappim.taigamobile.strings.generated.resources.kanban
-import com.grappim.taigamobile.strings.generated.resources.logout_title
 import com.grappim.taigamobile.strings.generated.resources.open_sprints
 import com.grappim.taigamobile.strings.generated.resources.project_selector
 import com.grappim.taigamobile.strings.generated.resources.scrum
@@ -32,7 +31,6 @@ import com.grappim.taigamobile.uikit.generated.resources.ic_epics
 import com.grappim.taigamobile.uikit.generated.resources.ic_folder
 import com.grappim.taigamobile.uikit.generated.resources.ic_issues
 import com.grappim.taigamobile.uikit.generated.resources.ic_kanban
-import com.grappim.taigamobile.uikit.generated.resources.ic_logout
 import com.grappim.taigamobile.uikit.generated.resources.ic_settings
 import com.grappim.taigamobile.uikit.generated.resources.ic_team
 import com.grappim.taigamobile.uikit.generated.resources.ic_wiki
@@ -175,14 +173,6 @@ class DrawerItemsBuilder {
                 destination = DrawerDestination.Settings,
                 label = RString.settings,
                 icon = IconSource.Resource(RDrawable.ic_settings)
-            )
-        )
-
-        items.add(
-            DrawerItem.Destination(
-                destination = DrawerDestination.Logout,
-                label = RString.logout_title,
-                icon = IconSource.Resource(RDrawable.ic_logout)
             )
         )
 

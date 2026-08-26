@@ -13,10 +13,12 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.navigationsuite.ExperimentalMaterial3AdaptiveNavigationSuiteApi
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -24,29 +26,25 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
 import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
+import androidx.window.core.layout.WindowSizeClass
 import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.TaigaDrawerWidget
+import com.grappim.taigamobile.TaigaNavigationSuiteWidget
 import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.core.navigation.NavigationState
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.close
-import com.grappim.taigamobile.strings.generated.resources.logout_text
-import com.grappim.taigamobile.strings.generated.resources.logout_title
-import com.grappim.taigamobile.uikit.generated.resources.ic_logout
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
-import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.banner.OfflineIndicatorBanner
-import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.utils.ui.asStringBlocking
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -55,7 +53,6 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
-    val state by viewModel.state.collectAsStateWithLifecycle()
     val initialNavState by viewModel.initialNavState.collectAsStateWithLifecycle()
     val isOffline by viewModel.isOffline.collectAsStateWithLifecycle()
 
@@ -67,18 +64,17 @@ fun MainContent(viewModel: MainViewModel) {
         MainScreenContent(
             viewModel = viewModel,
             topBarConfig = topBarConfig,
-            state = state,
             initialNavState = initialNavState,
             isOffline = isOffline
         )
     }
 }
 
+@OptIn(ExperimentalMaterial3AdaptiveNavigationSuiteApi::class)
 @Composable
 private fun MainScreenContent(
     viewModel: MainViewModel,
     topBarConfig: TopBarConfig,
-    state: MainScreenState,
     initialNavState: InitialNavState,
     isOffline: Boolean
 ) {
@@ -95,46 +91,22 @@ private fun MainScreenContent(
             logcat {
                 "Logout Event with $it"
             }
-            appState.navController.navigateToLoginAsTopDestination()
+            appState.navigator.navigateToLoginAsTopDestination()
         }.launchIn(this)
     }
 
-    RegisterOnDestinationChangedListenerSideEffect(
-        navController = appState.navController,
-        coroutineScope = scope
-    )
+    HideKeyboardOnNavigationChangeEffect(navigationState = appState.navigator.state)
 
-    ConfirmActionDialog(
-        title = stringResource(RString.logout_title),
-        description = stringResource(RString.logout_text),
-        onConfirm = {
-            state.onLogout()
-        },
-        onDismiss = { state.setIsLogoutConfirmationVisible(false) },
-        iconId = RDrawable.ic_logout,
-        isVisible = state.isLogoutConfirmationVisible
-    )
+    val snackbarActionLabel = stringResource(RString.close)
 
-    TaigaDrawerWidget(
-        drawerItems = drawerItems,
-        currentTopLevelDestination = appState.currentTopLevelDestination,
-        drawerState = drawerState,
-        onDrawerItemClick = { item: DrawerDestination ->
-            scope.launch {
-                drawerState.close()
-            }
-            if (item == DrawerDestination.Logout) {
-                state.setIsLogoutConfirmationVisible(true)
-            } else {
-                appState.navigateToTopLevelDestination(item)
-            }
-        },
-        gesturesEnabled = appState.areDrawerGesturesEnabled &&
-            initialNavState.isReady &&
-            initialNavState.isProjectSelected
-    ) {
-        val snackbarActionLabel = stringResource(RString.close)
+    val onDrawerItemClick: (DrawerDestination) -> Unit = { item ->
+        scope.launch {
+            drawerState.close()
+        }
+        appState.navigateToTopLevelDestination(item)
+    }
 
+    val mainContent: @Composable () -> Unit = {
         Scaffold(
             modifier = Modifier.imePadding(),
             topBar = {
@@ -142,7 +114,7 @@ private fun MainScreenContent(
                     isVisible = appState.isTopBarVisible,
                     topBarConfig = topBarConfig,
                     drawerState = drawerState,
-                    defaultGoBack = { appState.navController.popBackStack() }
+                    defaultGoBack = { appState.navigator.goBack() }
                 )
             },
             snackbarHost = {
@@ -164,7 +136,8 @@ private fun MainScreenContent(
 
                     MainNavHost(
                         initialNavState = initialNavState,
-                        navController = appState.navController,
+                        navigator = appState.navigator,
+                        navigationState = appState.navigator.state,
                         showSnackbar = { text ->
                             scope.launch {
                                 val result = snackbarHostState.showSnackbar(
@@ -179,47 +152,73 @@ private fun MainScreenContent(
                         }
                     )
                 }
-
-                /**
-                 * It is required to place it below MainNavHost because as per documentation
-                 * "If multiple BackHandler are present in the composition,
-                 * the one that is composed last among all enabled handlers will be invoked."
-                 * And with that this one will be called, otherwise on clicking back
-                 * we will go back in navigation but drawer will stay opened
-                 *
-                 * The second condition drawerState.isAnimationRunning is needed to fix an issue
-                 * when the drawer is visibly fully opened but is not opened actually
-                 */
-                NavigationBackHandler(
-                    state = rememberNavigationEventState(NavigationEventInfo.None),
-                    isBackEnabled = drawerState.isOpen || drawerState.isAnimationRunning,
-                    onBackCompleted = {
-                        scope.launch {
-                            drawerState.close()
-                        }
-                    }
-                )
             }
         )
     }
+
+    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+    val isCompactWidth = !windowAdaptiveInfo.windowSizeClass
+        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+
+    if (isCompactWidth) {
+        TaigaDrawerWidget(
+            drawerItems = drawerItems,
+            currentTopLevelDestination = appState.currentTopLevelDestination,
+            drawerState = drawerState,
+            onDrawerItemClick = onDrawerItemClick,
+            gesturesEnabled = appState.areDrawerGesturesEnabled &&
+                initialNavState.isReady &&
+                initialNavState.isProjectSelected
+        ) {
+            mainContent()
+
+            /**
+             * It is required to place it below MainNavHost because as per documentation
+             * "If multiple BackHandler are present in the composition,
+             * the one that is composed last among all enabled handlers will be invoked."
+             * And with that this one will be called, otherwise on clicking back
+             * we will go back in navigation but drawer will stay opened
+             *
+             * The second condition drawerState.isAnimationRunning is needed to fix an issue
+             * when the drawer is visibly fully opened but is not opened actually
+             *
+             * Only needed for the modal drawer above: a rail/permanent drawer has no open/close
+             * animation state for back to intercept.
+             */
+            NavigationBackHandler(
+                state = rememberNavigationEventState(NavigationEventInfo.None),
+                isBackEnabled = drawerState.isOpen || drawerState.isAnimationRunning,
+                onBackCompleted = {
+                    scope.launch {
+                        drawerState.close()
+                    }
+                }
+            )
+        }
+    } else if (initialNavState.isReady && initialNavState.isProjectSelected) {
+        TaigaNavigationSuiteWidget(
+            drawerItems = drawerItems,
+            currentTopLevelDestination = appState.currentTopLevelDestination,
+            onDrawerItemClick = onDrawerItemClick,
+            layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
+        ) {
+            mainContent()
+        }
+    } else {
+        mainContent()
+    }
 }
 
+/**
+ * Nav3 has no `NavController.OnDestinationChangedListener` equivalent — [NavigationState.currentKey]
+ * changing is the Nav3-shaped signal that navigation happened, so a [LaunchedEffect] keyed on it
+ * replaces the old listener-based side effect.
+ */
 @Composable
-private fun RegisterOnDestinationChangedListenerSideEffect(
-    navController: NavController,
-    coroutineScope: CoroutineScope
-) {
+private fun HideKeyboardOnNavigationChangeEffect(navigationState: NavigationState) {
     val keyboardController = LocalSoftwareKeyboardController.current
 
-    DisposableEffect(navController, coroutineScope) {
-        val listener = NavController.OnDestinationChangedListener { _, _, _ ->
-
-            keyboardController?.hide()
-        }
-
-        navController.addOnDestinationChangedListener(listener)
-        onDispose {
-            navController.removeOnDestinationChangedListener(listener)
-        }
+    LaunchedEffect(navigationState.currentKey) {
+        keyboardController?.hide()
     }
 }

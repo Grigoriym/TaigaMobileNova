@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.details
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.wiki.domain.WikiPageUseCase
+import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
@@ -36,9 +36,7 @@ internal class WikiPageViewModelTest {
     private val wikiId = getRandomLong()
     private val slug = getRandomString()
 
-    private val savedStateHandle = SavedStateHandle(
-        mapOf("slug" to slug, "id" to wikiId)
-    )
+    private val route = WikiPageNavDestination(slug = slug, id = wikiId)
 
     private val wikiRepository = FakeWikiRepository()
     private val usersRepository = FakeUsersRepository()
@@ -78,7 +76,7 @@ internal class WikiPageViewModelTest {
             taigaSessionStorage = taigaSessionStorage,
             patchDataGenerator = patchDataGenerator,
             workItemEditStateRepository = workItemEditStateRepository,
-            savedStateHandle = savedStateHandle
+            route = route
         )
     }
 

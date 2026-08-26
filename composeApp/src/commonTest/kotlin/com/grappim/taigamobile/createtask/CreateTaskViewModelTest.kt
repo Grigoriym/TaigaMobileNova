@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.createtask
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
@@ -20,7 +19,6 @@ import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -53,11 +51,6 @@ internal class CreateTaskViewModelTest {
         mainDispatcherRule.tearDown()
     }
 
-    /**
-     * `route.type` goes through [com.grappim.taigamobile.utils.ui.typeMapOf], which stores the enum
-     * as its JSON encoding — hence the `Json.encodeToString` rather than a plain name. The four
-     * `Long?` arguments use navigation's own nullable types and go in as raw values.
-     */
     private fun createViewModel(
         type: CommonTaskType = CommonTaskType.Task,
         parentId: Long? = this.parentId,
@@ -66,14 +59,12 @@ internal class CreateTaskViewModelTest {
         swimlaneId: Long? = this.swimlaneId
     ) {
         sut = CreateTaskViewModel(
-            savedStateHandle = SavedStateHandle(
-                mapOf(
-                    "type" to Json.encodeToString(type),
-                    "parentId" to parentId,
-                    "sprintId" to sprintId,
-                    "statusId" to statusId,
-                    "swimlaneId" to swimlaneId
-                )
+            route = CreateTaskNavDestination(
+                type = type,
+                parentId = parentId,
+                sprintId = sprintId,
+                statusId = statusId,
+                swimlaneId = swimlaneId
             ),
             createWorkItemUseCase = CreateWorkItemUseCase(
                 tasksRepository = tasksRepository,
