@@ -2057,3 +2057,30 @@ devices.
 the next active work on that initiative's PR rather than sit here. Now tracked as step 15 in
 [tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
 entry stays for the original evidence/reasoning, the checklist step is the one to pick up.
+
+## 45. Tablet nav rail/permanent drawer still has no scroll safety net
+
+**Where:** `TaigaNavigationSuiteWidget` (`composeApp/src/commonMain/kotlin/com/grappim/taigamobile/TaigaDrawerWidget.kt:145-184`).
+
+**What:** investigated 2026-08-26 (`docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`) —
+the medium/expanded-width rail/permanent drawer passes every flattened `DrawerItem` into
+`NavigationSuiteScaffold`'s `navigationSuiteItems` with no scrollable wrapper, unlike the phone's
+`TaigaDrawerWidget` which explicitly wraps its item `Column` in `Modifier.verticalScroll(...)`.
+Reproduced on the desktop build: at 1280×900 all items fit, at 1280×750 the last item is clipped to
+a sliver, at 1280×700 it's fully off-screen and unreachable — no scrollbar or overflow affordance.
+
+**What this session did:** removed `Logout` from the drawer/rail entirely (moved to Settings, see
+the issue doc) — gregory's call, made independent of the clipping bug ("I didn't like it in the
+drawer nevertheless"). That happens to reduce the flattened item count by one everywhere, but it
+does **not** fix the underlying scroll gap. `Settings` is now the trailing item and will clip the
+same way on a short enough window/screen height or a project with enough active sections (Wiki +
+Backlog/Sprints groups both expand into multiple flat items).
+
+**Why deferred:** out of scope for the Logout-relocation task; fixing it means either giving up
+`NavigationSuiteScaffold`'s automatic rail/permanent-drawer breakpoint switching for a custom
+scrollable layout, or capping/collapsing the flattened item count some other way — see Options 1–3
+in the issue doc for the tradeoffs already weighed.
+
+**Fix, if wanted:** pick up Option 1, 2, or 3 from `docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`'s
+Options section for the item(s) still at risk (Settings, and any project with both optional groups
+active).

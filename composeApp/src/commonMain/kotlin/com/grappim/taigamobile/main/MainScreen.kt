@@ -38,13 +38,8 @@ import com.grappim.taigamobile.core.navigation.NavigationState
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.close
-import com.grappim.taigamobile.strings.generated.resources.logout_text
-import com.grappim.taigamobile.strings.generated.resources.logout_title
-import com.grappim.taigamobile.uikit.generated.resources.ic_logout
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
-import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.banner.OfflineIndicatorBanner
-import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
@@ -58,7 +53,6 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
-    val state by viewModel.state.collectAsStateWithLifecycle()
     val initialNavState by viewModel.initialNavState.collectAsStateWithLifecycle()
     val isOffline by viewModel.isOffline.collectAsStateWithLifecycle()
 
@@ -70,7 +64,6 @@ fun MainContent(viewModel: MainViewModel) {
         MainScreenContent(
             viewModel = viewModel,
             topBarConfig = topBarConfig,
-            state = state,
             initialNavState = initialNavState,
             isOffline = isOffline
         )
@@ -82,7 +75,6 @@ fun MainContent(viewModel: MainViewModel) {
 private fun MainScreenContent(
     viewModel: MainViewModel,
     topBarConfig: TopBarConfig,
-    state: MainScreenState,
     initialNavState: InitialNavState,
     isOffline: Boolean
 ) {
@@ -105,28 +97,13 @@ private fun MainScreenContent(
 
     HideKeyboardOnNavigationChangeEffect(navigationState = appState.navigator.state)
 
-    ConfirmActionDialog(
-        title = stringResource(RString.logout_title),
-        description = stringResource(RString.logout_text),
-        onConfirm = {
-            state.onLogout()
-        },
-        onDismiss = { state.setIsLogoutConfirmationVisible(false) },
-        iconId = RDrawable.ic_logout,
-        isVisible = state.isLogoutConfirmationVisible
-    )
-
     val snackbarActionLabel = stringResource(RString.close)
 
     val onDrawerItemClick: (DrawerDestination) -> Unit = { item ->
         scope.launch {
             drawerState.close()
         }
-        if (item == DrawerDestination.Logout) {
-            state.setIsLogoutConfirmationVisible(true)
-        } else {
-            appState.navigateToTopLevelDestination(item)
-        }
+        appState.navigateToTopLevelDestination(item)
     }
 
     val mainContent: @Composable () -> Unit = {

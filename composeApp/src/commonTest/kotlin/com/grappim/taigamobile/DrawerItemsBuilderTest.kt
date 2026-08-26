@@ -61,7 +61,6 @@ class DrawerItemsBuilderTest {
         assertTrue(DrawerDestination.Dashboard in destinations)
         assertTrue(DrawerDestination.Team in destinations)
         assertTrue(DrawerDestination.Settings in destinations)
-        assertTrue(DrawerDestination.Logout in destinations)
         assertTrue(items.any { it is DrawerItem.Divider })
     }
 

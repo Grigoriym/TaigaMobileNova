@@ -99,20 +99,6 @@ internal class MainViewModelTest {
         assertEquals(DashboardNavDestination, state.startDestination)
     }
 
-    // --- logout ---
-
-    @Test
-    fun `logout - hides confirmation dialog and calls logoutSuspend`() = runTest {
-        createViewModel()
-        sut.state.value.setIsLogoutConfirmationVisible(true)
-        assertTrue(sut.state.value.isLogoutConfirmationVisible)
-
-        sut.state.value.onLogout()
-
-        assertFalse(sut.state.value.isLogoutConfirmationVisible)
-        assertTrue(filtersStorage.resetFiltersCalled)
-    }
-
     // --- isOffline ---
 
     @Test

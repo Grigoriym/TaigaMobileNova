@@ -25,7 +25,6 @@ enum class DrawerDestination(val route: Any) {
     WikiPages(WikiPagesNavDestination),
     WikiLinks(WikiLinksNavDestination),
     Settings(SettingsNavDestination),
-    Logout(""),
     ScrumBacklog(ScrumBacklogDestination),
     ScrumOpenSprints(ScrumOpenSprintsDestination),
     ScrumClosedSprints(ScrumClosedSprintsDestination)
