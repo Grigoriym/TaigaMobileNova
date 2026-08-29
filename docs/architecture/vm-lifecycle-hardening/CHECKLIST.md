@@ -1,20 +1,10 @@
 # ViewModel Lifecycle & Error-Handling Hardening — Checklist
 
-**Progress:** 0/7 done. **Current step:** none active — step 1 is ready to start.
+**Progress:** 1/7 done. **Current step:** none active — step 2 is gated; step 3 is ready to start.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the source articles, the codebase
-evidence behind each finding, and the findings that were assessed and declined.
-
-1. Add a `CoroutineExceptionHandler` to `provideApplicationScope`
-   - Confirmed gap: `core/async-kmp/src/commonMain/kotlin/com/grappim/taigamobile/core/asynckmp/KmpCorotuinesModule.kt`'s
-     `provideApplicationScope` builds `CoroutineScope(SupervisorJob() + defaultDispatcher)` with no
-     exception handler. Two production call sites (`AuthStateManager.logout()`, `TaigaApp.onCreate()`'s
-     cache-clean call and crash-reporting-toggle flow) launch on it unguarded — any exception there
-     is silently swallowed by `SupervisorJob` semantics, violating CLAUDE.md's Error Handling rule.
-   - Fix: add a `CoroutineExceptionHandler` to `provideApplicationScope` in `KmpCoroutinesModule`
-     that logs via `logcat(LogPriority.ERROR, throwable = e) { "Unhandled exception on ApplicationScope" }`.
-   - Verify: `./gradlew jvmTest`; add a test proving an exception thrown inside a coroutine launched
-     on the scope is logged, not silently dropped or propagated as a crash.
+evidence behind each finding, and the findings that were assessed and declined. See
+[CHECKLIST-DONE.md](CHECKLIST-DONE.md) for ticked steps.
 
 2. ⛔ **Gated — do not start without asking.** Decide scope for process-death UI-state restoration
    - Confirmed gap: `SavedStateHandle` is unused anywhere in production code — every ViewModel's
