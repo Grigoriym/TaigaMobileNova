@@ -1,34 +1,12 @@
 # ViewModel Lifecycle & Error-Handling Hardening — Checklist
 
-**Progress:** 2/7 done. **Current step:** none active — step 3 (OTOS investigation) is ready to
-start next; steps 4-7 are also ungated and available.
+**Progress:** 3/7 done. **Current step:** none active — steps 4-7 are all ungated and available;
+step 4 (watch/unwatch race fix) is the only one with a concrete implementation already scoped
+rather than being an investigation.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the source articles, the codebase
 evidence behind each finding, and the findings that were assessed and declined. See
 [CHECKLIST-DONE.md](CHECKLIST-DONE.md) for ticked steps.
-
-3. Investigate: constructor-injected `initialState` for multi-field form/edit ViewModels (OTOS)
-   - Not gated — this is an investigation step, not a commitment to change the convention project-wide.
-   - Claim to check: "Why your ViewModel is untestable" argues hardcoded initial state forces tests
-     to reach a target state through a chain of setter calls (its own coined "OTOS — one test, one
-     state" rule), and that constructor-injecting `initialState` (with a default) fixes it. Assessed
-     2026-08-29: doesn't help this project's common load-and-display VMs (already one-line fake
-     setup), but could genuinely help multi-field form/edit screens (create task, edit sprint, etc.)
-     where tests currently chain several `viewModel.onXChanged(...)` calls to reach one target state.
-   - Scope the investigation to one concrete form VM (pick one with the most setter-chaining in its
-     existing tests — grep `grep -c "onX\|onSet\|onChange" **/*ViewModelTest.kt`-style to find a
-     candidate) and prototype `initialState` injection there before deciding whether to generalize.
-     Some VMs (e.g. `SettingsUserScreenViewModel`) derive part of their default state from injected
-     repos/storage at construction time, so this isn't a uniform one-line change everywhere — note
-     which shape a candidate VM has before committing to the pattern.
-   - Also worth reading alongside the source article: "Why your ViewModel is untestable" itself
-     cites "The Importance of One Test One Assertion (OTOA) in Unit Testing" (DaniG, Treatwell
-     Product Engineering Blog, 2025-03-02). It refines OTOA more precisely than the newsletter's
-     shorthand: the rule is one test asserts one *behaviour*, not literally one assertion call — a
-     single `assertThat(...).extracting(...)` checking several unrelated fields still violates it
-     even though it's syntactically one statement. Worth keeping that distinction when evaluating
-     this project's own tests against OTOA.
-   - Not started — see IMPLEMENTATION_PLAN.md's "Constructor-injected initial state (OTOS)" section.
 
 4. Gate the watch/unwatch button on `areWatchersLoading` (last-write-wins race)
    - Confirmed gap: `WorkItemWatchersDelegateImpl.handleAddMeToWatchers`/`handleRemoveMeFromWatchers`

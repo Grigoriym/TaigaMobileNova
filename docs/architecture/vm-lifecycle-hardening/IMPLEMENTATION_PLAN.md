@@ -253,6 +253,36 @@ Checklist step 3 scopes this as an investigation: prototype the pattern on one c
 form VM (pick the one with the most setter-chaining in its existing tests) before deciding whether
 to generalize it as a project convention.
 
+**Resolved 2026-08-29: declined — no constructor change needed.** Grepped every `*ViewModelTest.kt`
+for the longest single-test chain of `onXChange`/`setX` calls; `ProjectDetailsViewModelTest`'s
+`onSaveClick - success` test had the worst offender in the codebase (6 chained setters to build one
+target `ProjectDetailsState` before asserting the save). Prototyped fixing it two ways, without
+touching any production code:
+
+- **`ProjectDetailsViewModelTest`** (repo-loaded form): `save()` reads `_state.value`, and `init`
+  copies the fake's `getProjectDetailsResult` straight into that state. Configuring the fake to
+  return the *target* state directly (`details(name = "edited", ...)`) reaches it in one step —
+  the fake's return value already **is** the constructor-time seam OTOS wants `initialState` for.
+  Deleted the six `onXChange`/`onIsXChange` calls entirely; test still passes
+  (`./gradlew :feature:settings:ui:jvmTest --tests "*ProjectDetailsViewModelTest*"`).
+- **`CreateTaskViewModelTest`** (route/`SavedStateHandle`-driven form, no repo load in `init`):
+  `onCreateTask - success` used to chain `setTitle`+`setDescription`. Pre-seeding the constructor's
+  `SavedStateHandle` with `mapOf("title" to "...", "description" to "...")` reaches the same target
+  state in one step, since state-init already calls `restorableState.restore(KEY, "")` against it —
+  the same trick checklist step 2's process-death test already exercised, just not yet reused here.
+
+Both are shapes the plan above called out as *not* needing `initialState` injection
+("load-and-display VMs... tests already reach the state under test in one line by configuring a
+fake's return value") and one it called out as a genuine form VM. The form-VM case turned out to
+resolve the same way once its actual state-construction path (repo fake / `SavedStateHandle`) was
+traced, rather than assuming `onXChange` calls were the only way in. **No VM examined lacked an
+existing collaborator-based seam** (fake repository result, `SavedStateHandle` initial map, route
+nav-args) sufficient to reach any target state in one step. Adding a dedicated `initialState`
+constructor parameter would duplicate that path, not remove setup cost — it's a second, competing
+way to set values the VM can already receive at construction time. Declining to adopt it as a
+convention; both simplified tests are kept as the fix for the two worst chains found, without any
+production-code change.
+
 ### 5. `AppInfoProvider.isDebug()` runtime facade (declined — no action)
 
 Source: *How to keep debug code out of release builds* (2026-08-23).

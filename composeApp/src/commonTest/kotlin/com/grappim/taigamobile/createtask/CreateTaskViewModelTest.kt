@@ -178,13 +178,20 @@ internal class CreateTaskViewModelTest {
 
     // --- onCreateTask: success ---
 
+    /**
+     * State-init restores title/description from `savedStateHandle` (see the process-death
+     * restoration tests below) — pre-seeding it here reaches the target input in one step, with
+     * no `setTitle`/`setDescription` chain needed.
+     */
     @Test
     fun `onCreateTask - success - trims input, passes route arguments and emits creationResult`() = runTest {
         val created = getWorkItem()
         tasksRepository.createTaskResult = created
-        createViewModel()
-        sut.state.value.setTitle("  a title  ")
-        sut.state.value.setDescription("  a description  ")
+        createViewModel(
+            savedStateHandle = SavedStateHandle(
+                mapOf("title" to "  a title  ", "description" to "  a description  ")
+            )
+        )
 
         // `_creationResult` is a rendezvous channel, so the send only completes while collected.
         sut.creationResult.test {

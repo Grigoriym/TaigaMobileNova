@@ -55,3 +55,30 @@ fresh-start path (force-stop, relaunch with nothing to restore) still lands clea
 **Next:** step 3 (OTOS investigation) is not gated and is ready to start. `RestorableState` can now
 also be rolled out to further form screens if wanted — that rollout was parked pending this fix and
 is not itself scoped as a checklist step yet.
+
+## Step 3: Investigate constructor-injected `initialState` (OTOS) — ✅ done 2026-08-29
+
+Grepped every `*ViewModelTest.kt` for the longest single-test chain of `onXChange`/`setX` calls to
+find the concrete candidate the step asked for; `ProjectDetailsViewModelTest`'s `onSaveClick -
+success` test was the worst offender (6 chained setters). Prototyped removing that chain two ways,
+without any production-code change:
+
+- `ProjectDetailsViewModelTest` (repo-loaded form): `save()` reads `_state.value`, which `init`
+  populates straight from the fake's `getProjectDetailsResult`. Setting the fake's result to the
+  *target* state directly reaches it in one step — the fake's return value already is the
+  constructor-time seam OTOS wants a new `initialState` param for.
+- `CreateTaskViewModelTest` (route/`SavedStateHandle`-driven form, no repo load in `init`):
+  pre-seeding the constructor's `SavedStateHandle` with the target title/description reaches the
+  same state in one step, reusing the `restorableState.restore(...)` path step 2 already built.
+
+**Declined the convention.** No VM examined lacked an existing collaborator-based seam (fake repo
+result, `SavedStateHandle` initial map, route nav-args) sufficient to reach any target state in one
+step — a dedicated `initialState` constructor param would duplicate that path, not remove setup
+cost. Both simplified tests are kept as the actual fix for the two worst chains found. Full
+reasoning in IMPLEMENTATION_PLAN.md's "Constructor-injected initial state (OTOS)" section.
+
+**Verify:** `./gradlew jvmTest` — full suite green. `./gradlew :feature:settings:ui:ktlintCommonTestSourceSetCheck
+:composeApp:ktlintCommonTestSourceSetCheck` — green.
+
+**Next:** steps 4-7 are all ungated and available; step 4 (watch/unwatch race fix) is the only one
+with a concrete implementation already scoped rather than being an investigation.

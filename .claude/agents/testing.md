@@ -309,6 +309,16 @@ example; see also the `TaskIdentifier` note under `WorkItemEditStateRepository`.
 ### ViewModel init loads data synchronously
 With `MainDispatcherRule` using `UnconfinedTestDispatcher`, `init { viewModelScope.launch { ... } }` completes before `createViewModel()` returns. Assert state directly after `createViewModel()` without `runTest`.
 
+### Reaching a target state without chaining setters
+Don't chain `onXChange`/`setX` calls to build up a multi-field state before the behaviour under
+test — the VM's own constructor inputs are already the seam: for a load-in-`init` VM, set the
+fake's return value to the *target* state directly (init copies it straight into `_state`); for a
+`SavedStateHandle`-restored VM (see `CreateTaskViewModel`'s `RestorableState`), pre-seed the handle
+with the target values instead of calling the setters. Confirmed 2026-08-29 investigating whether
+ViewModels needed a dedicated constructor-injected `initialState` param (the "OTOS" pattern from
+`docs/architecture/vm-lifecycle-hardening/IMPLEMENTATION_PLAN.md`) — every VM examined already had
+one of these two seams, so the extra param would only duplicate it.
+
 ### Channel / one-off events (Turbine)
 ```kotlin
 @Test
