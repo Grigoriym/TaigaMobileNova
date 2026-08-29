@@ -108,7 +108,7 @@ markdownRenderer = "0.43.0"
 filekit = "0.15.0"
 
 core-ktx = "1.19.0"
-appcompat = "1.7.1"
+appcompat = "1.8.0"
 splashScreen = "1.2.0"
 timber = "5.0.1"
 
