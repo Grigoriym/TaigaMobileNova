@@ -96,7 +96,7 @@ paging = "3.5.1"
 room = "2.8.4"
 sqlite = "2.7.0"
 
-coil = "3.5.0"
+coil = "3.6.0"
 okhttp = "5.5.0"
 junit4 = "4.13.2"
 
