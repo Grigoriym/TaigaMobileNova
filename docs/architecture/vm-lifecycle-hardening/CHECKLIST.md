@@ -1,0 +1,133 @@
+# ViewModel Lifecycle & Error-Handling Hardening — Checklist
+
+**Progress:** 0/7 done. **Current step:** none active — step 1 is ready to start.
+
+See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the source articles, the codebase
+evidence behind each finding, and the findings that were assessed and declined.
+
+1. Add a `CoroutineExceptionHandler` to `provideApplicationScope`
+   - Confirmed gap: `core/async-kmp/src/commonMain/kotlin/com/grappim/taigamobile/core/asynckmp/KmpCorotuinesModule.kt`'s
+     `provideApplicationScope` builds `CoroutineScope(SupervisorJob() + defaultDispatcher)` with no
+     exception handler. Two production call sites (`AuthStateManager.logout()`, `TaigaApp.onCreate()`'s
+     cache-clean call and crash-reporting-toggle flow) launch on it unguarded — any exception there
+     is silently swallowed by `SupervisorJob` semantics, violating CLAUDE.md's Error Handling rule.
+   - Fix: add a `CoroutineExceptionHandler` to `provideApplicationScope` in `KmpCoroutinesModule`
+     that logs via `logcat(LogPriority.ERROR, throwable = e) { "Unhandled exception on ApplicationScope" }`.
+   - Verify: `./gradlew jvmTest`; add a test proving an exception thrown inside a coroutine launched
+     on the scope is logged, not silently dropped or propagated as a crash.
+
+2. ⛔ **Gated — do not start without asking.** Decide scope for process-death UI-state restoration
+   - Confirmed gap: `SavedStateHandle` is unused anywhere in production code — every ViewModel's
+     `MutableStateFlow`-held state resets to its hardcoded default on process death (no
+     `UiStateMachine`/Parcelable-state wrapper exists anywhere in the codebase).
+   - Needs a decision from gregory before any code: which screens actually warrant this (multi-step
+     forms / entry flows where losing user-entered data costs something, vs. simple list/detail
+     screens that just re-fetch and lose nothing a user would notice), and whether to build a shared
+     `UiStateMachine`-style wrapper project-wide up front or add it ad hoc per screen as needed.
+   - Not started — see IMPLEMENTATION_PLAN.md's "Process-death UI-state restoration" section for the
+     tradeoffs to weigh once picked up.
+
+3. Investigate: constructor-injected `initialState` for multi-field form/edit ViewModels (OTOS)
+   - Not gated — this is an investigation step, not a commitment to change the convention project-wide.
+   - Claim to check: "Why your ViewModel is untestable" argues hardcoded initial state forces tests
+     to reach a target state through a chain of setter calls (its own coined "OTOS — one test, one
+     state" rule), and that constructor-injecting `initialState` (with a default) fixes it. Assessed
+     2026-08-29: doesn't help this project's common load-and-display VMs (already one-line fake
+     setup), but could genuinely help multi-field form/edit screens (create task, edit sprint, etc.)
+     where tests currently chain several `viewModel.onXChanged(...)` calls to reach one target state.
+   - Scope the investigation to one concrete form VM (pick one with the most setter-chaining in its
+     existing tests — grep `grep -c "onX\|onSet\|onChange" **/*ViewModelTest.kt`-style to find a
+     candidate) and prototype `initialState` injection there before deciding whether to generalize.
+     Some VMs (e.g. `SettingsUserScreenViewModel`) derive part of their default state from injected
+     repos/storage at construction time, so this isn't a uniform one-line change everywhere — note
+     which shape a candidate VM has before committing to the pattern.
+   - Also worth reading alongside the source article: "Why your ViewModel is untestable" itself
+     cites "The Importance of One Test One Assertion (OTOA) in Unit Testing" (DaniG, Treatwell
+     Product Engineering Blog, 2025-03-02). It refines OTOA more precisely than the newsletter's
+     shorthand: the rule is one test asserts one *behaviour*, not literally one assertion call — a
+     single `assertThat(...).extracting(...)` checking several unrelated fields still violates it
+     even though it's syntactically one statement. Worth keeping that distinction when evaluating
+     this project's own tests against OTOA.
+   - Not started — see IMPLEMENTATION_PLAN.md's "Constructor-injected initial state (OTOS)" section.
+
+4. Gate the watch/unwatch button on `areWatchersLoading` (last-write-wins race)
+   - Confirmed gap: `WorkItemWatchersDelegateImpl.handleAddMeToWatchers`/`handleRemoveMeFromWatchers`
+     each run as their own independent `viewModelScope.launch`, doing several sequential network
+     calls before writing `isWatchedByMe` into `_watchersState`. The watch/unwatch button in
+     `WatchersWidget.kt` is never disabled while `areWatchersLoading` is true (only gated on
+     `isOffline`), so a user can tap watch then unwatch before the first request returns — whichever
+     response lands second wins, regardless of which action the user took last. Affects all four
+     screens sharing this delegate/widget: Task, UserStory, Epic, Issue detail.
+   - Fix: pass `isOffline = isOffline || watchersState.areWatchersLoading` to the watch/unwatch
+     `TaigaTextButtonWidget` call in `WatchersWidget.kt` (feature/workitem/ui). Reuses the existing
+     disabled-button visual; no new prop, no MVI rearchitecture.
+   - Verify: `./gradlew jvmTest`; confirm on the emulator/desktop app per CLAUDE.md's Verification
+     rule (this is a UI-visible change) that the button visibly disables while a watch/unwatch
+     request is in flight.
+   - Worth weighing before starting (not decided): going optimistic instead of/in addition to
+     disabling the button — same pattern `KanbanViewModel.moveStory()` already uses for drag-and-drop
+     (update state immediately, revert + show error on failure). See IMPLEMENTATION_PLAN.md finding
+     8's "Secondary source" note (*What Are Optimistic Updates?*) for the tradeoff. Not scoped yet.
+
+5. Investigate: redundant `init`-time re-fetches of already-known/rarely-changing data
+   - Not gated — this is an investigation step, not a commitment to change anything project-wide.
+   - Claim to check: "How to load ViewModel's data without using 'init'" (its Issue 3, "Customer that
+     never returns") argues that unconditionally re-running an `init`-time load on every VM
+     reconstruction — even for data that already loaded successfully and rarely changes — creates
+     avoidable failure windows: a transient network blip on the re-fetch turns a screen that *was*
+     fine into an error, costing a conversion for no reason tied to the actual data. Distinct from
+     finding 3 above (that one is about test flakiness from concurrent loads) and from checklist step
+     2 (that one is about losing *user-entered* input on process death) — this is about needlessly
+     re-risking read-only/rarely-changing data on any VM recreation, not just process death.
+   - Candidates already surfaced by finding 3's grep: `EpicsViewModel`, `IssuesViewModel`,
+     `KanbanViewModel`, `ScrumBacklogViewModel`, `EditSprintViewModel` all unconditionally call
+     `getPermissions()` from `init` — permissions rarely change mid-session, so every re-entry into
+     these screens re-risks a network call that already succeeded once.
+   - Approach agreed with gregory (2026-08-29): finding candidates is a static-grep pass (does the
+     `init`-time load fetch data that's already known or unlikely to change, e.g. permissions, nav-arg
+     data, already-cached repository reads?) — not something that needs live reproduction to
+     enumerate. Only reproduce live (emulator, airplane-mode toggle around a re-navigation) on the one
+     or two candidates actually picked, to confirm the UX regression is real, not as a blanket sweep.
+   - Not started.
+
+6. Investigate: does the watch/unwatch last-write-wins race (step 4) generalize elsewhere
+   - Not gated — this is an investigation step, not a commitment to fix anything beyond step 4.
+   - Claim to check: step 4's race (two independent `viewModelScope.launch` blocks writing to
+     overlapping state with no ordering/cancellation guard, reachable by a user firing both before
+     the first resolves) was found while investigating watchers specifically — the codebase was
+     never swept for other ViewModels/delegates with the same shape.
+   - Approach: static grep first — state classes/delegates with more than one independent `launch`
+     site writing into the same `MutableStateFlow`, shortlisted by whether the UI actually exposes
+     two overlapping triggers a user could reach (button pair, double-tappable toggle), the way
+     `WatchersWidget` does. Only reproduce live on candidates that survive the shortlist, not as a
+     blanket sweep.
+   - Not started — see IMPLEMENTATION_PLAN.md's "Does the watch/unwatch race generalize?" section.
+
+7. Investigate: UiState-leak and derived-property convention
+   - Not gated — this is an investigation step, not a commitment to change anything project-wide.
+   - Claim to check: "Sealed State vs. Data State" (finding 6 already validated its headline
+     data-class-over-sealed conclusion) also argues (a) a State field is a "UI-decision leak" if it
+     encodes a rendering decision rather than raw data, regardless of sealed vs. data class, and
+     (b) UI-only derived booleans should be `get()` properties on the State class, not stored fields
+     or logic duplicated inline in Composables/mappers.
+   - Approach: static grep over `*State.kt` classes for rendering-decision-shaped field names
+     (`isEmpty`, `showX`, `xVisible`) that are stored fields rather than `get()` properties, and for
+     existing `get()` properties to see whether the convention is already partially followed. Only
+     dig into live behavior/tests for whatever candidates the grep turns up.
+   - Not started — see IMPLEMENTATION_PLAN.md's "UiState-leak and derived-property convention"
+     section.
+
+Findings assessed and declined — see IMPLEMENTATION_PLAN.md for detail, no further action:
+- Concurrent independent loads fired from `init` (the "Startup-Intent" article's flaky-test claim)
+  — confirmed 8 ViewModels do this, but the current test convention (final `.state.value` snapshot
+  assertions + `MainDispatcherRule`'s unconfined dispatcher) already sidesteps the flakiness the
+  article describes.
+- `AppInfoProvider.isDebug()` runtime facade (the "debug code in release builds" article) — matches
+  the flagged anti-pattern, but the article's fix (Android build-type source sets) doesn't
+  generalize across this project's iOS/JVM targets.
+- State design (data class, not sealed) — already matches the article's recommended convention.
+- The Startup-Intent pattern, the Startup Task multibinding pattern, "MVP vs MVVM vs MVI", and the
+  custom FIFO/`UiStateMachine`/`MviViewModel` machinery from "Why your MVI can't handle two Intents
+  at once" — not applicable, they presuppose an MVI pipeline or Hilt multibinding this project
+  doesn't use. That last article's underlying race-condition claim is not MVI-specific though — it
+  produced its own actionable finding, step 4 above.
