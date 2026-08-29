@@ -332,7 +332,7 @@ re-derive the same check.
   out of submission order, "last write wins") isn't itself MVI-specific, and checking it against the
   codebase turned up a real instance — see finding 8 / checklist step 4.
 
-### 8. Watch/unwatch last-write-wins race (actionable — checklist step 4)
+### 8. Watch/unwatch last-write-wins race (done — checklist step 4, see CHECKLIST-DONE.md)
 
 Source: *Why your MVI can't handle two Intents at once* (2026-07-05). Its running example: a
 banking screen where "pay" and "cancel" are two independent async actions on the same resource: the

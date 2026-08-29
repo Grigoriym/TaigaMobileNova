@@ -82,3 +82,29 @@ reasoning in IMPLEMENTATION_PLAN.md's "Constructor-injected initial state (OTOS)
 
 **Next:** steps 4-7 are all ungated and available; step 4 (watch/unwatch race fix) is the only one
 with a concrete implementation already scoped rather than being an investigation.
+
+## Step 4: Gate the watch/unwatch button on `areWatchersLoading` — ✅ done 2026-08-29
+
+Applied exactly the fix the checklist scoped: `WatchersWidget.kt`'s watch/unwatch
+`TaigaTextButtonWidget` now passes `isOffline = isOffline || watchersState.areWatchersLoading`
+instead of bare `isOffline`. One-line change, reuses the existing disabled-button visual (same
+pattern the widget already uses for `isOffline`) — no new prop, no state-shape change.
+
+Did not additionally pursue the "worth weighing" optimistic-update alternative noted in the
+checklist entry — the step scoped only the disable-button fix, and the note explicitly flagged
+that path as undecided/not scoped.
+
+**Verify:** `./gradlew jvmTest` — full suite green. `./gradlew :feature:workitem:ui:ktlintCheck` —
+green. Live GUI verification on the desktop app (`:composeApp:run`) was attempted but
+inconclusive: `xdotool` clicks against the app window registered only intermittently (see
+`docs/frictions.md`'s 2026-08-29 entry) — same coordinates sometimes toggled the UI, sometimes did
+nothing, with no error, across ~10 attempts on three different buttons including plain
+back-navigation. Not caused by this change (the pre-existing "Watch" button was equally
+unclickable). Verified the fix by code read instead: `areWatchersLoading` is set true for the
+duration of `handleAddMeToWatchers`/`handleRemoveMeFromWatchers` in
+`WorkItemWatchersDelegateImpl.kt` and `TaigaTextButtonWidget`'s `isOffline` param already disables
+the button and suppresses its `onClick` (same mechanism the widget's other `isOffline`-gated
+buttons rely on) — confirmed by reading `TaigaTextButtonWidget`'s implementation.
+
+**Next:** steps 5-7 are all ungated investigation steps and available in any order; none is more
+scoped than the others. Step 5 (redundant init-time re-fetches) is next in checklist order.

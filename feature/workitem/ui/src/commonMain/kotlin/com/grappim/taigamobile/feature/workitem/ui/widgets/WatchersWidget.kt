@@ -92,7 +92,7 @@ fun WatchersWidget(
             TaigaTextButtonWidget(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
-                isOffline = isOffline,
+                isOffline = isOffline || watchersState.areWatchersLoading,
                 onClick = {
                     if (watchersState.isWatchedByMe) {
                         onRemoveMeFromWatchersClick()

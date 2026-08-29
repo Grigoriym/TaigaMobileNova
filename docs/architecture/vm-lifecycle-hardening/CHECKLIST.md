@@ -1,31 +1,11 @@
 # ViewModel Lifecycle & Error-Handling Hardening — Checklist
 
-**Progress:** 3/7 done. **Current step:** none active — steps 4-7 are all ungated and available;
-step 4 (watch/unwatch race fix) is the only one with a concrete implementation already scoped
-rather than being an investigation.
+**Progress:** 4/7 done. **Current step:** none active — steps 5-7 are all ungated investigation
+steps and available in any order; step 5 is next in checklist order.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the source articles, the codebase
 evidence behind each finding, and the findings that were assessed and declined. See
 [CHECKLIST-DONE.md](CHECKLIST-DONE.md) for ticked steps.
-
-4. Gate the watch/unwatch button on `areWatchersLoading` (last-write-wins race)
-   - Confirmed gap: `WorkItemWatchersDelegateImpl.handleAddMeToWatchers`/`handleRemoveMeFromWatchers`
-     each run as their own independent `viewModelScope.launch`, doing several sequential network
-     calls before writing `isWatchedByMe` into `_watchersState`. The watch/unwatch button in
-     `WatchersWidget.kt` is never disabled while `areWatchersLoading` is true (only gated on
-     `isOffline`), so a user can tap watch then unwatch before the first request returns — whichever
-     response lands second wins, regardless of which action the user took last. Affects all four
-     screens sharing this delegate/widget: Task, UserStory, Epic, Issue detail.
-   - Fix: pass `isOffline = isOffline || watchersState.areWatchersLoading` to the watch/unwatch
-     `TaigaTextButtonWidget` call in `WatchersWidget.kt` (feature/workitem/ui). Reuses the existing
-     disabled-button visual; no new prop, no MVI rearchitecture.
-   - Verify: `./gradlew jvmTest`; confirm on the emulator/desktop app per CLAUDE.md's Verification
-     rule (this is a UI-visible change) that the button visibly disables while a watch/unwatch
-     request is in flight.
-   - Worth weighing before starting (not decided): going optimistic instead of/in addition to
-     disabling the button — same pattern `KanbanViewModel.moveStory()` already uses for drag-and-drop
-     (update state immediately, revert + show error on failure). See IMPLEMENTATION_PLAN.md finding
-     8's "Secondary source" note (*What Are Optimistic Updates?*) for the tradeoff. Not scoped yet.
 
 5. Investigate: redundant `init`-time re-fetches of already-known/rarely-changing data
    - Not gated — this is an investigation step, not a commitment to change anything project-wide.
