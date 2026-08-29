@@ -1,26 +1,11 @@
 # ViewModel Lifecycle & Error-Handling Hardening — Checklist
 
-**Progress:** 6/7 done. **Current step:** none active — step 7 is ungated and available. Step 8 is
-new (found while doing step 6) and ungated — it's the same one-line fix pattern step 4 already used,
-just at three more call sites.
+**Progress:** 7/7 done, plus a new ungated step 8 found while doing step 6. **Current step:** step 8
+is the only one left — ungated, same one-line fix pattern step 4 already used.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the source articles, the codebase
 evidence behind each finding, and the findings that were assessed and declined. See
 [CHECKLIST-DONE.md](CHECKLIST-DONE.md) for ticked steps.
-
-7. Investigate: UiState-leak and derived-property convention
-   - Not gated — this is an investigation step, not a commitment to change anything project-wide.
-   - Claim to check: "Sealed State vs. Data State" (finding 6 already validated its headline
-     data-class-over-sealed conclusion) also argues (a) a State field is a "UI-decision leak" if it
-     encodes a rendering decision rather than raw data, regardless of sealed vs. data class, and
-     (b) UI-only derived booleans should be `get()` properties on the State class, not stored fields
-     or logic duplicated inline in Composables/mappers.
-   - Approach: static grep over `*State.kt` classes for rendering-decision-shaped field names
-     (`isEmpty`, `showX`, `xVisible`) that are stored fields rather than `get()` properties, and for
-     existing `get()` properties to see whether the convention is already partially followed. Only
-     dig into live behavior/tests for whatever candidates the grep turns up.
-   - Not started — see IMPLEMENTATION_PLAN.md's "UiState-leak and derived-property convention"
-     section.
 
 8. Extend step 4's button-gating fix to the delegates step 6 found doing the same thing
    - Not gated — same one-line fix pattern step 4 already used (`isOffline = isOffline ||

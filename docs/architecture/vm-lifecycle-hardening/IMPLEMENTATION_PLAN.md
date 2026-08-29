@@ -518,7 +518,7 @@ the three remove-actions) a stale-snapshot read that would produce visibly wrong
 sequence needed to establish this is real, and this session's earlier click-flakiness with the
 desktop build (`docs/frictions.md`, 2026-08-29) made another live-repro attempt low-value.
 
-### 11. UiState-leak and derived-property convention (actionable — checklist step 7, investigate first)
+### 11. UiState-leak and derived-property convention (done — checklist step 7, see CHECKLIST-DONE.md)
 
 Source: *Sealed State vs. Data State* (2026-08-09), re-read 2026-08-29. Finding 6 already validated
 this article's headline claim (data class over sealed hierarchy — this project already does that),
@@ -526,22 +526,49 @@ but two more specific sub-claims from the same article weren't checked yet:
 
 1. **UiState ≠ State ("UI-decision leak").** The article's point survives the sealed-vs-data choice:
    a field is a leak if it encodes a *rendering* decision (e.g. a raw `isEmpty: Boolean` the
-   ViewModel computed) rather than raw data the UI itself should decide how to interpret. Not yet
-   checked whether any `FeatureState` in this codebase has a field like that, versus deriving such
-   booleans from raw fields.
+   ViewModel computed) rather than raw data the UI itself should decide how to interpret.
 2. **Derived `get()` properties for UI-only booleans.** The article's fix keeps rendering-decision
    booleans as computed `get()` properties on the State class (not stored fields, not recomputed
    inline in a Composable/mapper) — removing one shouldn't force a ViewModel rebuild or test rewrite.
-   Not yet checked whether this convention is actually followed anywhere in this codebase, or
-   whether equivalent logic instead lives inline in Composables or in separate mapper functions.
 
-Approach: static grep pass over `*State.kt` classes for (a) boolean/enum fields whose name reads as
-a rendering decision rather than raw data (`isEmpty`, `showX`, `xVisible`-shaped names that aren't
-already `get()` properties) and (b) existing `get()` properties on State classes, to see whether the
-convention already exists in places and is just inconsistent, or is absent entirely. Only look at
-live behavior/tests for whichever candidates the grep surfaces, not a blanket sweep.
+**Static-grep pass over all 37 `*State.kt` files under `feature/*/ui`.** No violation of sub-claim 1
+found. Grepped for `isXxxEmpty`/`showXxx`/`isXxxVisible`-shaped fields: the only matches are
+`isXxxDialogVisible`/`isXxxAlertVisible` (SettingsState, SprintState, IssueDetailsState,
+TrustedCertificatesState, WikiBookmarksState, TagsScreenState, ProjectValuesState, WikiPagesState,
+LoginState, EpicDetailsState, and the `EditXxxState`/`SprintDialogState` family) — these are genuine
+raw UI state (a user directly opens/closes a dialog; nothing else in the same State class determines
+that), not a derived rendering decision duplicating another field. No `isEmpty`-shaped field exists
+anywhere, stored or derived — list screens (`WikiPagesState.allPages`, `KanbanState.stories`, etc.)
+don't store an emptiness flag at all.
 
-Checklist step 7 scopes this as an investigation, not a commitment to change anything project-wide.
+**Sub-claim 2's convention already exists — in exactly the one place it's warranted, and via two
+different mechanisms this project already uses.** Only one `*State.kt` has a `get()` property:
+`CustomFieldItemState.isModified` (`originalValue != currentValue`). Checked its usages: referenced
+in `WorkItemCustomFieldsDelegateImpl`, three separate spots in `CustomFieldsWidget.kt` (indication
+color, save-button `enabled`, focus state), and a test assertion — five-plus call sites, genuinely
+avoiding a duplicated `originalValue != currentValue` computation. That matches both the article's
+convention **and** this project's own "no abstraction for single-use code" rule (CLAUDE.md, Coding
+Guidelines) — it earns the `get()` because it's actually multi-use, not by default.
+
+The other mechanism, used more often here than `get()` properties: **a shared widget that takes raw
+fields and computes the render-branch decision once, internally.** `WikiPagesScreen.kt` doesn't
+inline `allPages.isEmpty() && !isLoading`-shaped logic at all — it hands `items`/`isLoading`/`error`
+straight to `WikiListContentWidget`, which owns the branching. For the four Paging-backed list
+screens (Issues, Epics, Kanban, ScrumBacklog), the same de-duplication happens via extension
+functions in `utils/ui/.../PagingUtils.kt` — `LazyPagingItems<*>.hasError()`, `.isNotLoading()`,
+`.hasCompletedLoad()` — each defined once, called from every screen's `when` branch instead of each
+screen re-deriving the same `loadState` logic inline. This achieves the article's actual goal (don't
+duplicate a derived rendering decision in more than one place) through composition across screens
+rather than a computed property per State class — arguably a better fit for this project's
+widget-heavy architecture than adding a `get()` to every list `*State.kt`, since the derived logic
+is genuinely shared *across* screens, not just across call sites within one screen.
+
+**Conclusion: no violation, no action.** The convention this article argues for is already followed
+in substance — a `get()` property where reuse actually justifies it, a shared widget/extension where
+the same derived logic is needed by more than one screen, and no stored field anywhere that
+duplicates a UI-rendering decision the raw data already encodes. Not worth writing up as a new
+CLAUDE.md rule since it isn't a rule being missed — it's already how the code is structured, just not
+under this vocabulary.
 
 ## Candidate for agentic-grappim (project-agnostic, not TaigaMobileNova-specific)
 

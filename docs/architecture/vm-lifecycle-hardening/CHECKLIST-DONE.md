@@ -166,3 +166,27 @@ nothing to verify).
 
 **Next:** step 7 is ungated and available. Step 8 (new) is ungated too — same fix pattern as step 4,
 just at three more call sites.
+
+## Step 7: Investigate UiState-leak and derived-property convention — ✅ done 2026-08-29
+
+Static-grep pass over all 37 `*State.kt` files under `feature/*/ui` found no violation of either
+sub-claim. No `isXxx`-shaped field encodes a derived rendering decision anywhere — the only
+`*Visible`-shaped fields are dialog-open flags (raw user-toggled state, not a leak), and no list
+screen stores an `isEmpty`-style field at all. The article's `get()`-property convention already
+exists in the one place it's earned: `CustomFieldItemState.isModified`, used at 5+ call sites
+(delegate, three widget spots, a test) — genuinely avoiding duplicated `originalValue != currentValue`
+logic, consistent with CLAUDE.md's own "no abstraction for single-use code" rule. Everywhere else,
+the same de-duplication goal is met a different way this project already relies on more heavily: a
+shared widget (`WikiListContentWidget`) or shared extension functions
+(`utils/ui/.../PagingUtils.kt`'s `hasError()`/`isNotLoading()`/`hasCompletedLoad()`) computing the
+render-branch decision once, called from every screen that needs it, rather than a `get()` per State
+class. Full evidence in IMPLEMENTATION_PLAN.md finding 11.
+
+**No action — the convention is already followed in substance**, just via composition (shared
+widgets/extensions) more often than via `get()` properties. Not written up as a new CLAUDE.md rule
+since nothing here is being missed; it's already how the code is structured.
+
+**Verify:** static analysis only, no code changed (no `jvmTest`/`ktlintCheck` to run).
+
+**Next:** step 8 (extend step 4's fix to three more delegates) is the only step left — ungated, ready
+to start.
