@@ -1,45 +1,12 @@
 # ViewModel Lifecycle & Error-Handling Hardening — Checklist
 
-**Progress:** 4/7 done. **Current step:** none active — steps 5-7 are all ungated investigation
-steps and available in any order; step 5 is next in checklist order.
+**Progress:** 6/7 done. **Current step:** none active — step 7 is ungated and available. Step 8 is
+new (found while doing step 6) and ungated — it's the same one-line fix pattern step 4 already used,
+just at three more call sites.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the source articles, the codebase
 evidence behind each finding, and the findings that were assessed and declined. See
 [CHECKLIST-DONE.md](CHECKLIST-DONE.md) for ticked steps.
-
-5. Investigate: redundant `init`-time re-fetches of already-known/rarely-changing data
-   - Not gated — this is an investigation step, not a commitment to change anything project-wide.
-   - Claim to check: "How to load ViewModel's data without using 'init'" (its Issue 3, "Customer that
-     never returns") argues that unconditionally re-running an `init`-time load on every VM
-     reconstruction — even for data that already loaded successfully and rarely changes — creates
-     avoidable failure windows: a transient network blip on the re-fetch turns a screen that *was*
-     fine into an error, costing a conversion for no reason tied to the actual data. Distinct from
-     finding 3 above (that one is about test flakiness from concurrent loads) and from checklist step
-     2 (that one is about losing *user-entered* input on process death) — this is about needlessly
-     re-risking read-only/rarely-changing data on any VM recreation, not just process death.
-   - Candidates already surfaced by finding 3's grep: `EpicsViewModel`, `IssuesViewModel`,
-     `KanbanViewModel`, `ScrumBacklogViewModel`, `EditSprintViewModel` all unconditionally call
-     `getPermissions()` from `init` — permissions rarely change mid-session, so every re-entry into
-     these screens re-risks a network call that already succeeded once.
-   - Approach agreed with gregory (2026-08-29): finding candidates is a static-grep pass (does the
-     `init`-time load fetch data that's already known or unlikely to change, e.g. permissions, nav-arg
-     data, already-cached repository reads?) — not something that needs live reproduction to
-     enumerate. Only reproduce live (emulator, airplane-mode toggle around a re-navigation) on the one
-     or two candidates actually picked, to confirm the UX regression is real, not as a blanket sweep.
-   - Not started.
-
-6. Investigate: does the watch/unwatch last-write-wins race (step 4) generalize elsewhere
-   - Not gated — this is an investigation step, not a commitment to fix anything beyond step 4.
-   - Claim to check: step 4's race (two independent `viewModelScope.launch` blocks writing to
-     overlapping state with no ordering/cancellation guard, reachable by a user firing both before
-     the first resolves) was found while investigating watchers specifically — the codebase was
-     never swept for other ViewModels/delegates with the same shape.
-   - Approach: static grep first — state classes/delegates with more than one independent `launch`
-     site writing into the same `MutableStateFlow`, shortlisted by whether the UI actually exposes
-     two overlapping triggers a user could reach (button pair, double-tappable toggle), the way
-     `WatchersWidget` does. Only reproduce live on candidates that survive the shortlist, not as a
-     blanket sweep.
-   - Not started — see IMPLEMENTATION_PLAN.md's "Does the watch/unwatch race generalize?" section.
 
 7. Investigate: UiState-leak and derived-property convention
    - Not gated — this is an investigation step, not a commitment to change anything project-wide.
@@ -54,6 +21,30 @@ evidence behind each finding, and the findings that were assessed and declined. 
      dig into live behavior/tests for whatever candidates the grep turns up.
    - Not started — see IMPLEMENTATION_PLAN.md's "UiState-leak and derived-property convention"
      section.
+
+8. Extend step 4's button-gating fix to the delegates step 6 found doing the same thing
+   - Not gated — same one-line fix pattern step 4 already used (`isOffline = isOffline ||
+     state.areXxxLoading`) validated by gregory, just applied to three more sites. Not a design
+     question.
+   - Confirmed real in IMPLEMENTATION_PLAN.md finding 10 (step 6's investigation): every case below
+     already has an `areXxxLoading`/`isXxxLoading` flag in state, already rendered as a spinner, but
+     the button(s)/icon(s) that fire the write are gated only by `isOffline`:
+     - `WorkItemWatchersDelegateImpl.handleRemoveWatcher` — the per-watcher remove icon in
+       `WatchersWidget` (via `TeamUserWithActionWidget`, `TeamUserWidget.kt:99-107`) — step 4 fixed
+       only the watch/unwatch toggle button, not this. Same `_watchersState` step 4 touched.
+     - `WorkItemSingleAssigneeDelegateImpl` / `WorkItemMultipleAssigneesDelegateImpl` — the
+       Assign-to-me/Unassign toggle (`AssignedToWidget.kt:160-171`) and the per-assignee remove icon
+       (same `TeamUserWithActionWidget`).
+     - `WorkItemTagsDelegateImpl.handleTagRemove` — each tag chip's remove click (`TagItemWidget`,
+       used from `WorkItemTagsWidget.kt`).
+   - Fix: same shape as step 4 at each site — `isOffline = isOffline || <state>.areXxxLoading` on the
+     relevant button/icon's `enabled`/`isOffline` param. Four screens share `WatchersWidget`
+     (Task/UserStory/Epic/Issue details); `AssignedToWidget` and `WorkItemTagsWidget` are likely
+     shared the same way — check call sites before assuming the count.
+   - Verify: `./gradlew jvmTest` and `ktlintCheck`; per CLAUDE.md's Verification rule this is
+     UI-visible — attempt a live check on device/emulator, but this session's `xdotool` clicks against
+     the desktop build were unreliable (`docs/frictions.md`, 2026-08-29) enough that code-read +
+     `jvmTest` may be the practical fallback again.
 
 Findings assessed and declined — see IMPLEMENTATION_PLAN.md for detail, no further action:
 - Concurrent independent loads fired from `init` (the "Startup-Intent" article's flaky-test claim)

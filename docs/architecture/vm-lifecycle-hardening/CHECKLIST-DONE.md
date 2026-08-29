@@ -108,3 +108,61 @@ buttons rely on) — confirmed by reading `TaigaTextButtonWidget`'s implementati
 
 **Next:** steps 5-7 are all ungated investigation steps and available in any order; none is more
 scoped than the others. Step 5 (redundant init-time re-fetches) is next in checklist order.
+
+## Step 5: Investigate redundant `init`-time re-fetches — ✅ done 2026-08-29
+
+Static-grep pass corrected the checklist's own candidate list: `getPermissions()` is called
+unconditionally in 8 ViewModels, not the 5 originally listed, and `KanbanViewModel` — named as a
+candidate — doesn't call it at all (that came from a different, conflated grep). Traced
+`getPermissions()` to a **local Room read** (`projectDao.getProjectById`), not network — the
+article's "transient network blip" risk doesn't apply to it, so it's not actionable.
+`loadFiltersData()`/`getFiltersData()` (Epics, Issues, Kanban, ScrumBacklog list screens) **is** a
+genuine unconditional network re-fetch matching the article's claim.
+
+Live-verified on `IssuesViewModel`/`IssuesScreen` (`Medium_Phone_API_36.1`, fdroid debug): process
+death + airplane mode + relaunch reproduced the predicted failure, but the dominant visible effect
+was bigger than expected — the entire issues list vanished behind a full-screen "Connection error",
+not just a filters warning badge. Traced that to a separate mechanism, which turned out to already be
+a known, deferred gap: `docs/architecture/offline-support.md`'s Phase 4 already flags "WorkItem
+[Paging] deferred" — `IssuesRepositoryImpl.getIssuesPaging()` bypasses the cache-first
+`WorkItemRepositoryImpl.getWorkItems()` entirely, so no RemoteMediator/Room backs list screens' Paging
+sources. Added a dated confirmation note to that doc's "WorkItem RemoteMediator (Complex)" section
+rather than opening a new, duplicate tracking item. Full evidence and reasoning in
+IMPLEMENTATION_PLAN.md finding 9.
+
+**No fix applied — this was investigate-only per its scope.** `getPermissions()` — declined, doesn't
+match the source article's risk model (it's a local Room read, not network). `loadFiltersData()` —
+confirmed real but secondary; a fix there wouldn't have prevented the actual UX regression observed,
+which traces to the pre-existing, already-tracked Paging-cache gap instead.
+
+**Verify:** live reproduction on device/emulator as described above (no code changed, so no
+`jvmTest`/`ktlintCheck` run).
+
+**Next:** steps 6 and 7 are ungated investigation steps and available in either order.
+
+## Step 6: Investigate whether the watch/unwatch race generalizes — ✅ done 2026-08-29
+
+Yes — the same shape (an `areXxxLoading` flag tracked in state and shown as a spinner, but not used
+to gate the button/icon that fires the write) recurs in three more delegates:
+`WorkItemWatchersDelegateImpl.handleRemoveWatcher` (the per-watcher remove icon — step 4's fix only
+covered the toggle button, not this, even though it's the same `_watchersState`),
+`WorkItemSingleAssigneeDelegateImpl`/`WorkItemMultipleAssigneesDelegateImpl` (Assign-to-me/Unassign
+toggle + per-assignee remove), and `WorkItemTagsDelegateImpl.handleTagRemove` (per-tag remove chip).
+The three remove-actions are worse than a UI glitch — each computes its patch payload from a stale
+`_xxxState.value` snapshot taken at call time, so two rapid removes can silently undo each other's
+result. `WorkItemSprintDelegateImpl`/`WorkItemDueDateDelegateImpl` checked and set aside — both are
+dialog-gated single-confirm actions, not a reachable button pair. Full evidence in
+IMPLEMENTATION_PLAN.md finding 10.
+
+**No fix applied — investigate-only per its scope**, despite the fix pattern being obvious (identical
+to step 4's, at three more sites) — added as new ungated checklist step 8 rather than applied inline,
+consistent with how step 5 stayed investigate-only. No live reproduction attempted for these three;
+the concurrency proof is direct from the code (shared mutable state, no ordering guard, ungated
+trigger, stale-snapshot read) and didn't need a click sequence to establish, unlike step 5's Paging
+finding which only became visible by actually running the app.
+
+**Verify:** code-read only, no production code changed this step (`jvmTest`/`ktlintCheck` not run —
+nothing to verify).
+
+**Next:** step 7 is ungated and available. Step 8 (new) is ungated too — same fix pattern as step 4,
+just at three more call sites.

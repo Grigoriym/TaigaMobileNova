@@ -388,41 +388,77 @@ one-line change; going optimistic is a separate, larger step (still needs the sa
 or a rethink of it, to avoid two optimistic toggles racing the same way) and hasn't been scoped.
 Noting it here as an option to weigh when step 4 is picked up, not committing to it.
 
-### 9. Redundant `init`-time re-fetches of already-known/rarely-changing data (actionable — checklist step 5, investigate first)
+### 9. Redundant `init`-time re-fetches of already-known/rarely-changing data (done — checklist step 5, see CHECKLIST-DONE.md)
 
 Source: *How to load ViewModel's data without using 'init'* (2026-07-19), its Issue 3 ("Customer
 that never returns") — distinct from finding 3 above, which only checked that article's Issue 1
 (test flakiness). Issue 3's argument: unconditionally re-running an `init`-time load on every VM
 reconstruction, even for data that already loaded successfully and rarely changes, creates an
 avoidable failure window — a transient network blip on the re-fetch turns a screen that *was* fine
-into an error, for data that didn't need re-fetching at all. The article frames this as a direct
-revenue-loss argument ("Any error, any additional click, any lost state - it's an additional user
-action, which always leads to revenue loss. → Don't rely on perfect network conditions. Avoid
-requests as much as you can.").
+into an error, for data that didn't need re-fetching at all.
 
 This is a different root cause from checklist step 2 (process-death loses *user-entered* input) —
 Issue 3 is about read-only/rarely-changing data getting needlessly re-risked on *any* VM
 reconstruction, not specifically process death.
 
-Candidates already surfaced by finding 3's grep (same VMs, different reason this time):
-`EpicsViewModel`, `IssuesViewModel`, `KanbanViewModel`, `ScrumBacklogViewModel`,
-`EditSprintViewModel` all unconditionally call `getPermissions()` from `init` — permissions rarely
-change mid-session, so every re-entry into these screens re-risks a network call that already
-succeeded once, for data that's very unlikely to have changed.
+**Static-grep pass (corrects the checklist's own candidate list).** `getPermissions()` is called
+unconditionally from `init`/its `loadData()` in 8 ViewModels, not the 5 originally listed:
+`WikiPagesViewModel`, `WikiBookmarksViewModel`, `ScrumBacklogViewModel`, `ScrumOpenSprintsViewModel`,
+`EditSprintViewModel`, `EpicsViewModel`, `SprintViewModel`, `IssuesViewModel`. `KanbanViewModel` —
+named in the checklist as a candidate — does **not** call `getPermissions()` at all; it was carried
+over from finding 3's *different* grep (2+ independent `init`-time launches, where Kanban's second
+launch is `loadFiltersData()`, not permissions) and the two lists got conflated when step 5 was
+scoped.
 
-Its implementation guideline (`MviConfig`, startup-vs-user Intent naming convention,
-`@Restartable`-annotation filtering, abstract `MviViewModel` base class) is not applicable here —
-same reason as findings 7/8: presupposes the MVI Intent/reducer pipeline this project doesn't have.
+**`getPermissions()` turned out not to match the article's actual concern.** Traced the call:
+`ProjectsRepositoryImpl.getPermissions()` → `getCurrentProjectSimple()` →
+`projectDao.getProjectById(currentProjectId)` — a **local Room read**, not a network call (Room
+data is written by whatever last synced the project, e.g. `fetchAndSaveProjectInfo()` on Dashboard
+load). Issue 3's "transient network blip" risk doesn't apply to it — a local DB read essentially
+can't fail under normal operation. Re-running it on every `init` is a wasted read, not a
+revenue-risking failure window. **Not actionable under this article's argument.**
 
-**Approach agreed with gregory (2026-08-29):** finding candidates is a static-grep pass — does the
-`init`-time load fetch data that's already known or unlikely to change (permissions, nav-arg data,
-an already-cached repository read)? That doesn't need live reproduction to enumerate. Only reproduce
-live (emulator, airplane-mode toggle around a re-navigation) on the one or two candidates actually
-picked, to confirm the UX regression is real — not as a blanket sweep across every VM.
+**`loadFiltersData()` (→ `getFiltersData()`) is the real match.** Called unconditionally from
+`init` in `EpicsViewModel`, `IssuesViewModel`, `KanbanViewModel`, `ScrumBacklogViewModel` — traced to
+`FiltersRepositoryImpl.getFiltersData()` → `filtersApi.getCommonTaskFiltersData(...)`, a genuine Ktor
+network call for a task type's filter options (statuses/tags/priorities/assignees), re-issued on
+every re-entry into these four list screens even though a project's filter options rarely change
+mid-session.
 
-Checklist step 5 scopes this as an investigation, not a commitment to change anything project-wide.
+**Live-verified on `IssuesViewModel`/`IssuesScreen`** (`Medium_Phone_API_36.1`, fdroid debug,
+2026-08-29): loaded the Issues screen online (list + filters both fine) → backgrounded, `am kill`
+(confirmed dead via `pidof`) → `adb shell cmd connectivity airplane-mode enable` → relaunched with
+`am start -n` (`Warning: Activity not started, its current task has been brought to the front`,
+confirming genuine task resume) — Nav3 restored directly to Issues (step 2's fix holding), but with
+a **fresh** `IssuesViewModel`, whose `init` re-ran `getPermissions()` and `loadFiltersData()` against
+no network. Result matched Issue 3's prediction and then some: "Show filters" got a red warning
+badge (`filtersError` set) as expected, but the *dominant* effect was the entire issues list being
+replaced by a full-screen "Connection error" + Retry — hiding the exact same list the user had been
+looking at seconds earlier. Re-enabling airplane mode + tapping Retry (`issues.refresh()` +
+`state.retryLoadFilters()`, `IssuesScreen.kt:157-161`) fully recovered both.
 
-### 10. Does the watch/unwatch race generalize? (actionable — checklist step 6, investigate first)
+**The full-screen wipeout is a separate, bigger mechanism than either scoped candidate — and turns
+out to be an already-tracked, already-deferred gap, not a new one.** `IssuesScreen.kt`'s
+`issues.hasError() && issues.isEmpty()` branch (line 152) is what renders it —
+`IssuesRepositoryImpl.getIssuesPaging()` builds a plain `Pager`/`IssuesPagingSource` straight from
+`WorkItemApi`, bypassing `WorkItemRepositoryImpl`'s cache-first `getWorkItems()` entirely, so none of
+`docs/architecture/offline-support.md`'s Phase 3 caching applies to list screens. That doc already
+names this precisely: Phase 4 is "⚠️ PARTIAL — Sprint RemoteMediator done; WorkItem deferred", and its
+"WorkItem RemoteMediator (Complex)" future-work section already explains why (complex server-side
+filters). This session's contribution is confirming *live* that the deferred gap produces a real,
+visible UX regression (not just a theoretical one) — added as a dated note there rather than a new
+checklist item here, to avoid tracking the same gap in two places. Same structural shape likely
+affects Epics, Kanban, and ScrumBacklog (same `getXxxPaging()` pattern) — not individually confirmed
+live.
+
+**Conclusion:** `getPermissions()` — no action, doesn't match the article's risk model.
+`loadFiltersData()` — confirmed real, but a fix there (e.g. skip re-fetch if already loaded, keep
+last-known filters on failure) wouldn't fix the actual dominant symptom users would hit, since that's
+driven by the pre-existing, already-deferred Paging-cache gap, not the filters call. See
+`docs/architecture/offline-support.md`'s "WorkItem RemoteMediator (Complex)" section for that gap's
+existing tracking — not duplicated as a new checklist step here.
+
+### 10. Does the watch/unwatch race generalize? (done — checklist step 6, see CHECKLIST-DONE.md)
 
 Prompted by gregory re-reading finding 8 (2026-08-29): that finding confirmed one instance of
 "nothing defines update order, any method mutates any field from any coroutine" (the *Why your MVI
@@ -435,15 +471,52 @@ Claim to check: are there other places with two-or-more independent `viewModelSc
 cancellation/versioning/ordering guard, reachable by a user firing both before the first resolves —
 the same last-write-wins shape as watch/unwatch?
 
-Approach (same static-first pattern as findings 3/9): grep for state classes/delegates with more
-than one independent `launch` site writing into the same `MutableStateFlow`/`_xxxState`, shortlist
-candidates by whether the UI actually exposes two overlapping triggers (a button pair, a
-toggle a user can double-tap, two rapid-fire actions on the same field) the way `WatchersWidget`
-does — not every concurrent write is reachable by a real double-action. Only reproduce live on
-whichever candidates survive the shortlist, not as a blanket sweep.
+**Yes — confirmed the same shape in three more delegates, plus a gap step 4 itself left open.**
+Static-grep pass over `feature/workitem/ui/.../delegates/*` for an `areXxxLoading`/`isXxxLoading`
+flag that's tracked in state and shown as a spinner, but not used to gate the button(s) that fire the
+write:
 
-Checklist step 6 scopes this as an investigation, not a commitment to fix anything beyond what step
-4 already covers.
+- **`WorkItemWatchersDelegateImpl.handleRemoveWatcher`** (the per-watcher remove icon in
+  `WatchersWidget`, via the shared `TeamUserWithActionWidget`) writes to the *same* `_watchersState`
+  step 4 already fixed the toggle button for — but the remove icon
+  (`TeamUserWidget.kt:99-107`, `enabled = !isOffline`) was never included in step 4's fix (which was
+  scoped only to "the watch/unwatch button"). Worse than a UI toggle glitch: `handleRemoveWatcher`
+  computes `newWatchers`/`watchersToSave` by filtering `_watchersState.value.watchers` — a **stale
+  snapshot** taken at call time — so two rapid removes (or a remove racing the toggle button) can
+  silently undo each other's result, not just show a wrong loading state.
+- **`WorkItemSingleAssigneeDelegateImpl` / `WorkItemMultipleAssigneesDelegateImpl`** — identical
+  shape to watchers pre-fix: `isAssigneesLoading` is tracked and shown via `DotsLoaderWidget`
+  (`AssignedToWidget.kt:128`), but the Assign-to-me/Unassign toggle
+  (`AssignedToWidget.kt:160-171`, `isOffline = isOffline`) and the per-assignee remove icon (same
+  `TeamUserWithActionWidget` as watchers) are both ungated. `handleRemoveAssignee` (multiple) has the
+  same stale-snapshot problem as `handleRemoveWatcher` above — computes `newAssignees` by filtering
+  `_multipleAssigneesState.value.assignees` at call time.
+- **`WorkItemTagsDelegateImpl.handleTagRemove`** — same shape again: `areTagsLoading` shown as a
+  `CircularProgressIndicator` (`WorkItemTagsWidget.kt:62-67`), but each tag chip's remove click
+  (`TagItemWidget`, gated only by `isOffline`) is not gated by it, and `handleTagRemove` computes
+  `newTags` from a stale `_tagsState.value.tags` snapshot too — reachable any time 2+ tags are shown,
+  which is common.
+
+**Checked and set aside as lower-risk:** `WorkItemSprintDelegateImpl` (edit/create sprint) and
+`WorkItemDueDateDelegateImpl` — both are dialog-gated single-confirm actions, not a pair of
+independently-clickable buttons/icons sitting on the screen at once, so the "user fires both before
+the first resolves" reachability that makes watchers/assignees/tags real doesn't apply the same way.
+Not dug into further, per the shortlist approach.
+
+**Root cause is identical across all four (three new + the original) — the same fix pattern applies.**
+Every case is: an `areXxxLoading`/`isXxxLoading` flag already exists in state and is already rendered
+as a loading spinner, but the actionable button(s)/icon(s) are gated only by `isOffline`, not by that
+loading flag too. Step 4's fix (`isOffline = isOffline || state.areXxxLoading`) is a direct, one-line
+template at each site — no new investigation needed to know *what* the fix looks like, just where to
+apply it. Not applied here (step 6 is investigate-only) — proposed as new checklist step 8.
+
+No live reproduction done for these three (unlike step 4's original, which also wasn't live-verified
+before its fix — see finding 8 — and unlike step 5, where live reproduction was the only way to
+surface the Paging-cache mechanism). The concurrency proof here is direct from the code: shared
+mutable state, no cancellation/ordering guard, a UI trigger not gated by the in-flight flag, and (for
+the three remove-actions) a stale-snapshot read that would produce visibly wrong data — no live click
+sequence needed to establish this is real, and this session's earlier click-flakiness with the
+desktop build (`docs/frictions.md`, 2026-08-29) made another live-repro attempt low-value.
 
 ### 11. UiState-leak and derived-property convention (actionable — checklist step 7, investigate first)
 
