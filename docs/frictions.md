@@ -61,3 +61,6 @@ deleted — see `finalize`.
   (back-arrow nav and two other buttons all showed it). Gave up after ~10 attempts and verified step
   4's fix via code read + `jvmTest`/`ktlintCheck` instead of a live click-through. Root cause not
   found; worth a fresh look if this blocks a future GUI-verification step.
+- 2026-08-29: guessed `diffuse` 0.3.0 download URL (`diffuse-0.3.0-binary.jar`) 404'd; the release
+  asset is actually a `diffuse-0.3.0.zip` — checked via `gh`/GitHub releases API
+  (`browser_download_url`) instead of guessing the filename pattern from the version tag.

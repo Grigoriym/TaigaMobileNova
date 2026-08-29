@@ -62,14 +62,25 @@ size — `build.yml` just asserts the assemble succeeds.
   most for a fast per-PR signal — someone added a large dependency, asset, or accidentally
   unshrunk resource.
 
-**Tooling:** JakeWharton's `diffuse` (CLI + a `diffuse-action` GitHub Action) is the standard
-existing tool for "compare two APK/AAB builds, post a markdown PR comment with size + dex-count +
-resource deltas" — worth checking it still supports whatever this project's current AGP version
-produces before hand-rolling a `du`-based size comparison script.
+**Tooling — confirmed working (2026-08-29).** Downloaded `diffuse` 0.3.0 (JakeWharton/diffuse's
+release binary — the core CLI's last release is Feb 2024, effectively unmaintained upstream but
+stable) and ran it directly against this project's own build output:
+`diffuse diff androidApp/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk
+androidApp/build/outputs/apk/gplay/debug/app-gplay-debug.apk`. It parsed both APKs (AGP 9.3.1
+output, V2 signature scheme) without error and produced the expected dex/arsc/manifest/resource
+size-delta tables plus a per-file diff — confirms the core tool is compatible with this project's
+current AGP version, the open question the checklist step flagged.
 
-**Not started.** No prototype workflow, no confirmation `diffuse` (or an alternative) actually
-works against this project's build output. Treat the fork-PR-secrets gap above as a real open
-question, not a solved edge case, before committing to the release-accurate design.
+For the GitHub Action wrapper: JakeWharton never published one himself. `usefulness/diffuse-action`
+is the actively-maintained community wrapper (pushed 2026-08-25, not archived) — it takes
+`old-file-path`/`new-file-path` and an optional `lib-version` override (defaults to latest
+`diffuse` release), and only exposes the diff as an action *output*; it does not post a PR comment
+itself, so it'd be paired with `peter-evans/create-or-update-comment` (or similar) to actually
+comment the delta on the PR, matching the "post a markdown PR comment" shape from the original ask.
+
+**Still not started:** no prototype `build.yml` job. The fork-PR-secrets gap above is still a real
+open question, not a solved edge case, before committing to the release-accurate design — the
+debug-vs-base-branch delta doesn't need it and is the recommended first cut.
 
 #### (b) Perfetto / Macrobenchmark trace metrics on a schedule
 
@@ -91,15 +102,41 @@ a dependency on but has only used for Baseline Profile generation so far.
 
 - **Login is mandatory, no anonymous path** (`docs/perf/profiling.md`'s own note). A macrobenchmark
   run on a fresh CI emulator starts logged out, but `coldStart()`'s current journey assumes a
-  session already exists and lands on "Select Project." Two options, neither investigated yet:
+  session already exists and lands on "Select Project." Two options:
   (i) extend the journey to script a real login every run — slow, and couples CI to a live Taiga
   instance being reachable from the runner; (ii) seed a pre-authenticated session file onto the
-  emulator's data directory before the benchmark starts — faster and more deterministic, but needs
-  investigating what `core/storage`'s auth persistence actually looks like on disk (DataStore file
-  format/location) before it can be faked reliably.
+  emulator's data directory before the benchmark starts.
+  **Option (ii) investigated (2026-08-29) — more feasible than it looked, with a caveat.** The
+  Android token store (`core/storage/src/androidMain/.../AndroidKeystoreTokenCipher.kt`) encrypts
+  `token`/`refresh_token` with an AES/GCM key generated inside `AndroidKeyStore` — not something a
+  CI script can precompute or transplant onto a fresh emulator. But `AuthStorageImpl`
+  (`core/storage/src/commonMain/.../AuthStorage.kt:23-28`) decrypts via `tokenCipher.decrypt(...)`,
+  and `AndroidKeystoreTokenCipher.decrypt()` has a deliberate legacy fallback: **any stored value
+  that doesn't start with the `"v1:"` ciphertext prefix is passed through unchanged** (it exists to
+  migrate values written before the cipher existed). So a value written *without* that prefix is
+  read back as plaintext with no decryption attempted — the AndroidKeyStore key is never in the
+  loop. That means seeding doesn't require touching the Keystore at all: write plain (unprefixed)
+  token/refresh-token strings into the underlying store and `AuthStorageImpl.isLoggedIn` /
+  `getToken()` will accept them as-is.
+  The store itself is Preferences DataStore, file at
+  `context.preferencesDataStoreFile("auth_storage")` →
+  `/data/data/<applicationId>/files/datastore/auth_storage.preferences_pb`
+  (`StorageModule.android.kt:67-77`, constant in `StorageModule.kt:15`) — a binary protobuf, not a
+  flat key=value file, so it can't be hand-edited byte-for-byte. The safe way to produce a valid
+  one is to call the real `PreferenceDataStoreFactory`/`edit{}` APIs (e.g. from a tiny
+  instrumentation or `adb shell run-as`-scoped setup step run once against a debuggable build)
+  rather than crafting protobuf bytes by hand, then let the emulator boot the real app against that
+  seeded file. **Not yet prototyped end-to-end** — this is confirmed from reading the cipher/store
+  code, not from an actual emulator run — and it still needs the target build variant to be
+  debuggable enough for `run-as` (or `adb root`) to reach app-private storage, which the
+  `benchmark` module's `nonMinifiedRelease` build type may not be by default; that's the next thing
+  to check if this path is picked up.
 - **Emulator cost and flakiness.** Unlike the size check, this needs a real emulator
   (e.g. `reactivecircus/android-emulator-runner`, KVM-backed) — multi-minute boot + install + run
-  per invocation, not a fit for blocking every PR. `docs/perf/profiling.md` also documents real
+  per invocation, not a fit for blocking every PR. GitHub-hosted `ubuntu-latest` runners do support
+  KVM-backed hardware acceleration for this action, gated behind an extra step that adds the
+  runner's user to the KVM udev group before the emulator boots — confirmed viable in principle
+  (not yet tried against this repo's runners). `docs/perf/profiling.md` also documents real
   software-renderer artifacts on the AVD (`swiftshader_indirect` histogram-overflow buckets,
   `Buffer Stuffing` jank-type noise) that a naive single-run CI gate would need to account for or
   it will false-positive on renderer noise, not real regressions.
@@ -111,10 +148,10 @@ a single noisy run. Every-PR gating was the "maybe" gregory floated when raising
 emulator cost and the login blocker are why this refinement downgrades it to scheduled rather than
 per-PR.
 
-**Not started.** This needs its own smaller investigation (what does session seeding actually look
-like, is `reactivecircus/android-emulator-runner` viable on this repo's GitHub-hosted runners,
-what's a sane threshold/trend-detection rule) before it's a committable step rather than a design
-sketch.
+**Still not implemented.** The session-seeding mechanism and the emulator-runner path are now
+sketched (above) rather than unknowns, but neither has been prototyped end-to-end, and a sane
+threshold/trend-detection rule for the tracked JSON is still undecided — this remains a design, not
+a committable step.
 
 ## Candidate for agentic-grappim (project-agnostic, not TaigaMobileNova-specific)
 
