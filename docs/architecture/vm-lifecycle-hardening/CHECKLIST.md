@@ -1,24 +1,11 @@
 # ViewModel Lifecycle & Error-Handling Hardening — Checklist
 
-**Progress:** 1/7 done. **Current step:** none active — step 2's back-stack-restoration gap is next
-(ungated, do it before step 3 or any other step); step 3 remains ready to start after that.
+**Progress:** 2/7 done. **Current step:** none active — step 3 (OTOS investigation) is ready to
+start next; steps 4-7 are also ungated and available.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the source articles, the codebase
 evidence behind each finding, and the findings that were assessed and declined. See
 [CHECKLIST-DONE.md](CHECKLIST-DONE.md) for ticked steps.
-
-2. Process-death UI-state restoration — VM-level piece landed, back-stack gap next (own task)
-   - Scope decided 2026-08-29: forms/entry-flow screens only, with a shared reusable helper
-     (`RestorableState` in `utils/ui`) rather than ad hoc per-field code. Piloted on
-     `CreateTaskViewModel` — implementation is correct and tested (see IMPLEMENTATION_PLAN.md).
-   - An emulator check found the Nav3 back stack itself does not survive a real process kill in this
-     app (relaunch lands on Dashboard, not the screen the user was on), which makes the pilot's
-     `SavedStateHandle` restoration currently inert end-to-end — necessary but not sufficient.
-   - **Decided 2026-08-29: investigate and fix the back-stack gap next, as its own task, in a new
-     session, before anything else on this initiative.** Root-cause candidates and full detail are
-     in IMPLEMENTATION_PLAN.md's "Process-death UI-state restoration" section. Do not roll
-     `RestorableState` out to any other screen until this is fixed — there is no provable payoff
-     yet.
 
 3. Investigate: constructor-injected `initialState` for multi-field form/edit ViewModels (OTOS)
    - Not gated — this is an investigation step, not a commitment to change the convention project-wide.

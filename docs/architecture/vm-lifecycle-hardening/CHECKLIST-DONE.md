@@ -24,3 +24,34 @@ convention (for `testScheduler`) already used elsewhere (e.g. `UserStoryDetailsV
 
 **Next:** step 2 is gated — do not start without asking gregory to decide process-death UI-state
 restoration scope. Step 3 (OTOS investigation) is not gated and can be picked up instead.
+
+## Step 2: Process-death back-stack restoration gap — ✅ done 2026-08-29
+
+Root cause was neither of the two candidates the checklist named (Nav3's own restoration
+mechanism was never broken). `MainNavHost`'s top-level `LaunchedEffect(initialNavState.isReady)`
+was unconditionally calling `navigator.navigateToDashboardAsTopDestination()` — a
+`resetTo(DashboardNavDestination)` that wipes every nav section — on every cold app start where
+the user is logged in with a project selected, including a process-death relaunch after Nav3 had
+already restored a deeper back stack (e.g. `Dashboard` → `CreateTask`). That reset stomped the
+correctly-restored stack down to bare `Dashboard` every time.
+
+Fix (`composeApp/src/commonMain/kotlin/com/grappim/taigamobile/main/MainNavHost.kt`): gated the
+reset on `navigationState.currentKey == LoginNavDestination` (the seed value — true only when
+nothing has diverged the stack yet). Verifying the fix on the emulator surfaced a second bug in
+the same code path: with the reset skipped, the restored screen rendered correctly underneath but
+the splash screen never dismissed, because `ScreenReadySignalController.signalReady()` was only
+called from the `Login`/`ProjectSelector`/`Dashboard` `entry<>` blocks (see that class's doc
+comment) — a restored deeper screen never composes any of those three. Fixed by calling
+`screenReadySignal.signalReady()` directly in the gated `LaunchedEffect`'s `else` branch. Full
+mechanism, both bugs, and the emulator verification steps are in IMPLEMENTATION_PLAN.md's
+"Process-death UI-state restoration" section.
+
+**Verify:** `./gradlew jvmTest` and `./gradlew ktlintCheck` both green. Emulator-verified on
+`Medium_Phone_API_36.1` (fdroid debug): filled the Create Task form, backgrounded, `am kill`
+(confirmed dead via `ps`), relaunched with `am start -n` (`sz=1`, genuine task resume) — landed
+directly back on Create Task with both fields intact, no stuck splash. Re-verified the untouched
+fresh-start path (force-stop, relaunch with nothing to restore) still lands cleanly on Dashboard.
+
+**Next:** step 3 (OTOS investigation) is not gated and is ready to start. `RestorableState` can now
+also be rolled out to further form screens if wanted — that rollout was parked pending this fix and
+is not itself scoped as a checklist step yet.

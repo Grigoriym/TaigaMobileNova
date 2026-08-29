@@ -134,6 +134,49 @@ above documented; it becomes real end-to-end value once the back-stack fix lands
 VM-level work needed for that one screen. Rolling the same pattern out to other form screens stays
 parked until the back-stack gap is fixed — no further screens should pick this up in the meantime.
 
+**Root cause found and fixed 2026-08-29 (step done).** Neither of the two candidates named above was
+it — Nav3's `rememberNavBackStack(configuration, ...)` restoration was never broken. The real cause:
+`MainNavHost`'s top-level `LaunchedEffect(initialNavState.isReady)` unconditionally called
+`navigator.navigateToDashboardAsTopDestination()` (a `resetTo(DashboardNavDestination)`, which wipes
+every nav section per `Navigator`'s own doc comment) on **every** cold app start where the user is
+logged in with a project selected — including a process-death relaunch, even when Nav3 had already
+restored a deeper back stack. This fired on every real cold start (first-ever launch and
+process-death relaunch look identical to this code), stomping the correctly-restored `CreateTask`
+entry down to bare `Dashboard` every time.
+
+Fix (`composeApp/.../main/MainNavHost.kt`): gate that reset on `navigationState.currentKey ==
+LoginNavDestination` (the seed value for `topLevelStack`/each sub-stack when nothing has diverged
+from it yet). A truly fresh app start (or first-ever login) is still sitting on the seeded `Login`
+entry when this effect runs, so the reset still fires and the skip-login-screen behavior is
+unchanged; a process-death relaunch that already restored a deeper entry has a different
+`currentKey`, so the reset is skipped and the restored stack survives.
+
+**Second bug found while verifying the fix on the emulator (fixed in the same change):** with the
+reset skipped, the app relaunched onto a **blank screen forever** — the restored `CreateTask` screen
+was actually rendering correctly underneath (confirmed via `uiautomator dump`, which found the
+restored title/description text in the view tree), but `installSplashScreen()`'s
+`keepOnScreenCondition` never released because `ScreenReadySignalController.signalReady()` is only
+called from the `Login`/`ProjectSelector`/`Dashboard` `entry<>` blocks in `MainNavHost.kt` — see its
+doc comment, which explicitly assumes the app always lands on one of those three. A restored deeper
+screen never composes any of those three entries, so the signal never fires. Fixed by calling
+`screenReadySignal.signalReady()` directly in the top-level `LaunchedEffect`'s `else` branch (the
+"already on the correct restored screen, no Login-flash risk to wait out" case) — `LocalScreenReadySignal.current`
+is read once at the top of `MainNavHost` for this.
+
+**Verified on the `Medium_Phone_API_36.1` AVD** (fdroid debug build): logged in with a project
+selected, navigated Dashboard → Backlog → new user story (Create Task) form, typed a distinct
+title/description, backgrounded (`KEYCODE_HOME`), killed the process for real (`am kill`, confirmed
+dead via `ps`), relaunched (`am start -n`, `sz=1` confirming a genuine task resume not a fresh
+activity). App landed directly back on the Create Task form with both fields intact and no stuck
+splash. Also re-verified the untouched fresh-start path (force-stop, relaunch with no deeper
+navigation) still lands cleanly on Dashboard with the splash dismissing normally. `jvmTest` and
+`ktlintCheck` both green.
+
+No `RestorableState` rollout to further screens was done as part of this step — that was already
+out of scope (see "Resolved 2026-08-29" above, parked pending this fix). It can now be picked up as
+its own task if wanted, since the back-stack restoration this depends on is confirmed working
+end-to-end.
+
 ### 3. Concurrent independent loads in `init` (declined — no action)
 
 Source: *How to load ViewModel's data without using 'init'* (2026-07-19), specifically its Issue 1
