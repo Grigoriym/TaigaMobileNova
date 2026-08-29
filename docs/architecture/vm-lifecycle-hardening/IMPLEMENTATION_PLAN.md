@@ -71,6 +71,69 @@ This is real, but scope matters before doing anything:
 the shared wrapper now for future use or add it per screen as needed, (c) whether it's even
 meaningful on iOS/Desktop targets or Android-only.
 
+**Resolved 2026-08-29:** (a) forms/entry-flow screens only, not list/detail; (b) build a shared
+reusable helper up front, not ad hoc per screen — `RestorableState` (`utils/ui`), a small
+`restore(key, default)` / `save(key, value)` wrapper around `SavedStateHandle`, kept deliberately
+thin rather than a `UiStateMachine`-style base class, since it composes with the existing
+`FeatureState` data-class + `_state.update { }` convention instead of replacing it; (c) not
+resolved — see the blocking finding below.
+
+**Technical groundwork done (pilot: `CreateTaskViewModel`):**
+- `SavedStateHandle` is KMP-ready via the already-pinned `jetbrainsAndroidxLifecycle` (2.11.0)
+  train — `org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate` (new catalog entry
+  `jetbrains-lifecycle-viewmodel-savedstate`, added to `KmpCompose.kt` alongside the other two
+  lifecycle/savedstate deps it already applies project-wide). Real per-target implementation ships
+  under the plain `androidx.lifecycle` group coordinates with per-target classifiers (`-desktop`,
+  `-iosarm64`, …) — the `org.jetbrains.androidx.lifecycle` artifact is a thin Gradle Module
+  Metadata redirect to those, the same pattern already seen for `androidx.navigation3`.
+- Koin's `koinViewModel()` (`org.koin.compose.viewmodel`, via `koin-core-viewmodel`'s
+  `AndroidParametersHolder`) auto-resolves a plain `SavedStateHandle` constructor parameter on any
+  `@KoinViewModel` — no `single { }` registration, no `@InjectedParam` needed. Confirmed by reading
+  `AndroidParametersHolder.elementAt`/`getOrNull`, which special-case the `SavedStateHandle` type
+  and call `extras.createSavedStateHandle()`. This requires the resolved `CreationExtras` to carry
+  a `SavedStateRegistryOwner`.
+- This project's Nav3 decorator wiring (`NavigationState.kt`'s `toEntries()`) already satisfies
+  that: `rememberSaveableStateHolderNavEntryDecorator()` runs before
+  `rememberViewModelStoreNavEntryDecorator<NavKey>()`, which is exactly the order
+  `ViewModelStoreNavEntryDecorator`'s own doc comment requires ("This requires the usage of
+  SaveableStateHolderNavEntryDecorator to ensure that the NavEntry scoped ViewModels can properly
+  provide access to SavedStateHandles").
+- `CreateTaskViewModel` now takes a `savedStateHandle: SavedStateHandle` param, wraps it in
+  `RestorableState`, and restores/persists `title`/`description` through it. Compiles clean;
+  `RestorableStateTest` (`utils/ui`) and new `CreateTaskViewModelTest` cases (restore-from-prior-handle,
+  save-persists-to-handle) pass; full `jvmTest` and `ktlintCheck` are green; `KoinGraphTest` shows
+  no new `NoDefinitionFoundException` (though that test can't fully prove the constructor-param
+  resolution path — its `route`-first `DefinitionParameterException` short-circuits before
+  `savedStateHandle` would ever be evaluated, since Kotlin evaluates constructor args left to right).
+
+**Blocking finding (2026-08-29, emulator-verified — see `docs/EMULATOR_TESTING.md`):** the Nav3
+back stack itself does not survive a real process kill in this app. Reproduced: logged in,
+navigated to the Create Task screen, typed distinct title/description, backgrounded
+(`KEYCODE_HOME`), killed the process (`am kill`, confirmed dead via `ps`), relaunched onto the same
+task (`am start -n`, confirmed a genuine restore via `dumpsys activity activities`'s `sz=1`, not a
+fresh activity). The app landed on **Dashboard** — its post-login start destination — not back on
+Create Task, despite the login session itself surviving. **This means the
+`CreateTaskViewModel`/`RestorableState` wiring above is currently inert in practice**: a user killed
+mid-form never gets back to the form to see the restored fields at all. The per-ViewModel
+`SavedStateHandle` piece was necessary but is not sufficient — the back stack has to survive the
+same process death first, or this delivers no observable benefit regardless of how many screens it's
+added to.
+
+Root cause not yet investigated. Candidates: `MainActivity`'s `setContent` call not receiving/using
+`savedInstanceState`, or `rememberNavigationState`'s `SavedStateConfiguration` param not actually
+being wired to real Activity-level bundle persistence (it may only be surviving
+recomposition/configuration change via `rememberSaveable`, not a true process kill). Needs its own
+investigation before this checklist step can be called done — (c) above (iOS/Desktop meaningfulness)
+is moot until this is fixed, since Android is the only platform where "process death" is even a
+distinct event to test against.
+
+**Decided 2026-08-29:** option 1 — investigate and fix the back-stack restoration gap first, as its
+own task, in a new session, before anything else on this initiative. The `CreateTaskViewModel`/
+`RestorableState` change already built lands now as correct, tested infrastructure with the caveat
+above documented; it becomes real end-to-end value once the back-stack fix lands, with no further
+VM-level work needed for that one screen. Rolling the same pattern out to other form screens stays
+parked until the back-stack gap is fixed — no further screens should pick this up in the meantime.
+
 ### 3. Concurrent independent loads in `init` (declined — no action)
 
 Source: *How to load ViewModel's data without using 'init'* (2026-07-19), specifically its Issue 1

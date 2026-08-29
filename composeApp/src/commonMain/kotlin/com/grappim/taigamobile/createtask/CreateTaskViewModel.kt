@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.createtask
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.taigamobile.core.domain.CommonTaskType
@@ -11,6 +12,7 @@ import com.grappim.taigamobile.strings.generated.resources.create_task
 import com.grappim.taigamobile.strings.generated.resources.create_userstory
 import com.grappim.taigamobile.strings.generated.resources.title_is_empty
 import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.RestorableState
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,8 +26,11 @@ import org.koin.core.annotation.KoinViewModel
 @KoinViewModel
 class CreateTaskViewModel(
     @InjectedParam val route: CreateTaskNavDestination,
-    private val createWorkItemUseCase: CreateWorkItemUseCase
+    private val createWorkItemUseCase: CreateWorkItemUseCase,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel() {
+
+    private val restorableState = RestorableState(savedStateHandle)
 
     private val _state = MutableStateFlow(
         CreateTaskState(
@@ -37,6 +42,8 @@ class CreateTaskViewModel(
                     CommonTaskType.Issue -> RString.create_issue
                 }
             ),
+            title = restorableState.restore(KEY_TITLE, ""),
+            description = restorableState.restore(KEY_DESCRIPTION, ""),
             setTitle = ::setTitle,
             setDescription = ::setDescription,
             onCreateTask = ::onCreateTask
@@ -97,14 +104,21 @@ class CreateTaskViewModel(
     }
 
     private fun setTitle(title: String) {
+        restorableState.save(KEY_TITLE, title)
         _state.update {
             it.copy(title = title)
         }
     }
 
     private fun setDescription(description: String) {
+        restorableState.save(KEY_DESCRIPTION, description)
         _state.update {
             it.copy(description = description)
         }
+    }
+
+    companion object {
+        private const val KEY_TITLE = "title"
+        private const val KEY_DESCRIPTION = "description"
     }
 }

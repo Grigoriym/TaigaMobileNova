@@ -69,6 +69,18 @@ technique lives in the skill itself, not here — this file is only what's true 
   all | grep "default.*10.0.2.2"` before retrying the app. Not seen on `Medium_Phone_API_36.1` (route
   present from first boot) — may be specific to `Medium_Tablet`'s virtio-wifi network backend
   (`ro.boot.qemu.virtiowifi=1`) vs. the phone image's classic SLIRP/eth0 networking.
+- **The Nav3 back stack does not survive a real process kill.** Confirmed 2026-08-29 verifying
+  vm-lifecycle-hardening checklist step 2 (`CreateTaskViewModel`'s new `SavedStateHandle`
+  restoration): logged in, navigated Backlog → New user story, typed distinct title/description,
+  backgrounded (`KEYCODE_HOME`) and killed the process (`am kill`, confirmed dead via `ps`), then
+  relaunched onto the same task (`am start -n`, `sz=1` in `dumpsys activity activities` — a genuine
+  restore, not a fresh activity). The app landed on **Dashboard** (its post-login start
+  destination), not back on the Create Task screen — despite the user still being logged in. This
+  means any per-ViewModel `SavedStateHandle` restoration is currently inert in practice: the user
+  never returns to the screen that would show the restored fields. Root cause not yet
+  investigated — candidates are `MainActivity`'s `setContent`/`savedInstanceState` handling, or
+  `rememberNavigationState`'s `SavedStateConfiguration` not actually being persisted into the
+  Activity bundle. See `docs/architecture/vm-lifecycle-hardening/IMPLEMENTATION_PLAN.md`.
 - **A stylus first-run tutorial ("Try out your stylus") can pop up over the first tap on
   `Medium_Tablet`** after a fresh-ish boot, identical in shape to the phone AVD's first-run-tutorial
   gotcha elsewhere in this skill — it eats the tap with no error. Screenshot before trusting a tap
