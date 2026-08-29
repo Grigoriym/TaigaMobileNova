@@ -57,7 +57,7 @@ fun WatchersWidget(
                     watchersState.onRemoveWatcherClick(item.actualId)
                 },
                 canModify = canModify,
-                isOffline = isOffline
+                isOffline = isOffline || watchersState.areWatchersLoading
             )
 
             if (index < watchersState.watchers.lastIndex) {

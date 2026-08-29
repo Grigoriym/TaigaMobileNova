@@ -190,3 +190,31 @@ since nothing here is being missed; it's already how the code is structured.
 
 **Next:** step 8 (extend step 4's fix to three more delegates) is the only step left — ungated, ready
 to start.
+
+## Step 8: Extend step 4's button-gating fix to the delegates step 6 found — ✅ done 2026-08-29
+
+Applied the same one-line pattern as step 4 (`isOffline = isOffline || <state>.areXxxLoading`) at the
+three sites step 6 found:
+- `WatchersWidget.kt`'s per-watcher remove icon (`TeamUserWithActionWidget` call) — now
+  `isOffline || watchersState.areWatchersLoading`.
+- `AssignedToWidget.kt`'s per-assignee remove icon and the Assign-to-me/Unassign toggle — both now
+  `isOffline || isAssigneesLoading` (shared by `SingleAssignedToWidget`/`MultipleAssignedToWidget`,
+  so both delegates are covered by the one widget change).
+- `WorkItemTagsWidget.kt`'s per-tag remove click (`TagItemWidget`) — now
+  `isOffline || tagsState.areTagsLoading`.
+
+Did not touch "Add assignee"/"Add watcher"/"Edit tags" — those open a separate screen/dialog rather
+than directly writing to the racing state, so they're not part of the confirmed race.
+
+**Verify:** `./gradlew jvmTest` — full suite green. `./gradlew :feature:workitem:ui:ktlintCheck` —
+green. GUI-verified on `Medium_Phone_API_36.1` (fdroid debug, adb-driven — this session's `xdotool`
+flakiness was specific to the desktop build, not the emulator): installed the rebuilt APK, opened
+Issue #82's detail screen, confirmed Tags/Assigned-to/Watchers all render correctly and their
+buttons stay enabled in the idle (not-loading) state — no regression. Did not attempt to force and
+screenshot the actual in-flight-disabled state (would need airplane-mode timing per the
+emulator-testing skill); the fix is mechanically identical to step 4's, which was accepted on code
++ test evidence alone.
+
+**Next:** queue is empty — all 8 checklist steps are done. The initiative's remaining open item is
+IMPLEMENTATION_PLAN.md finding 9's Paging-cache gap, which was deliberately routed to
+`docs/architecture/offline-support.md` instead of tracked here (see step 5's note above).

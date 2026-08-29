@@ -1,35 +1,11 @@
 # ViewModel Lifecycle & Error-Handling Hardening — Checklist
 
-**Progress:** 7/7 done, plus a new ungated step 8 found while doing step 6. **Current step:** step 8
-is the only one left — ungated, same one-line fix pattern step 4 already used.
+**Progress:** 8/8 done. All checklist steps complete — see CHECKLIST-DONE.md. This file now only
+holds the findings assessed and declined below.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the source articles, the codebase
 evidence behind each finding, and the findings that were assessed and declined. See
 [CHECKLIST-DONE.md](CHECKLIST-DONE.md) for ticked steps.
-
-8. Extend step 4's button-gating fix to the delegates step 6 found doing the same thing
-   - Not gated — same one-line fix pattern step 4 already used (`isOffline = isOffline ||
-     state.areXxxLoading`) validated by gregory, just applied to three more sites. Not a design
-     question.
-   - Confirmed real in IMPLEMENTATION_PLAN.md finding 10 (step 6's investigation): every case below
-     already has an `areXxxLoading`/`isXxxLoading` flag in state, already rendered as a spinner, but
-     the button(s)/icon(s) that fire the write are gated only by `isOffline`:
-     - `WorkItemWatchersDelegateImpl.handleRemoveWatcher` — the per-watcher remove icon in
-       `WatchersWidget` (via `TeamUserWithActionWidget`, `TeamUserWidget.kt:99-107`) — step 4 fixed
-       only the watch/unwatch toggle button, not this. Same `_watchersState` step 4 touched.
-     - `WorkItemSingleAssigneeDelegateImpl` / `WorkItemMultipleAssigneesDelegateImpl` — the
-       Assign-to-me/Unassign toggle (`AssignedToWidget.kt:160-171`) and the per-assignee remove icon
-       (same `TeamUserWithActionWidget`).
-     - `WorkItemTagsDelegateImpl.handleTagRemove` — each tag chip's remove click (`TagItemWidget`,
-       used from `WorkItemTagsWidget.kt`).
-   - Fix: same shape as step 4 at each site — `isOffline = isOffline || <state>.areXxxLoading` on the
-     relevant button/icon's `enabled`/`isOffline` param. Four screens share `WatchersWidget`
-     (Task/UserStory/Epic/Issue details); `AssignedToWidget` and `WorkItemTagsWidget` are likely
-     shared the same way — check call sites before assuming the count.
-   - Verify: `./gradlew jvmTest` and `ktlintCheck`; per CLAUDE.md's Verification rule this is
-     UI-visible — attempt a live check on device/emulator, but this session's `xdotool` clicks against
-     the desktop build were unreliable (`docs/frictions.md`, 2026-08-29) enough that code-read +
-     `jvmTest` may be the practical fallback again.
 
 Findings assessed and declined — see IMPLEMENTATION_PLAN.md for detail, no further action:
 - Concurrent independent loads fired from `init` (the "Startup-Intent" article's flaky-test claim)

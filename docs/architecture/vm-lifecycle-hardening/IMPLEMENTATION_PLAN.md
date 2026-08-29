@@ -508,7 +508,7 @@ Every case is: an `areXxxLoading`/`isXxxLoading` flag already exists in state an
 as a loading spinner, but the actionable button(s)/icon(s) are gated only by `isOffline`, not by that
 loading flag too. Step 4's fix (`isOffline = isOffline || state.areXxxLoading`) is a direct, one-line
 template at each site — no new investigation needed to know *what* the fix looks like, just where to
-apply it. Not applied here (step 6 is investigate-only) — proposed as new checklist step 8.
+apply it. Not applied here (step 6 is investigate-only) — applied as checklist step 8.
 
 No live reproduction done for these three (unlike step 4's original, which also wasn't live-verified
 before its fix — see finding 8 — and unlike step 5, where live reproduction was the only way to
