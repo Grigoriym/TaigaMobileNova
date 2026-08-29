@@ -88,6 +88,14 @@ and stop.
   the JVM/native actual doesn't declare it at all (confirmed via `javap` on the `room-runtime`
   artifacts). To clear all tables on JVM/iOS, add a no-arg `deleteAll()` `@Query` to each DAO instead.
 - `core/logger` — KMP logging facade (see Logging below); Timber backs it on Android only
+- The JetBrains AndroidX forks (`org.jetbrains.androidx.lifecycle`, `org.jetbrains.androidx.navigation3`,
+  `org.jetbrains.androidx.savedstate`) publish their real per-platform code under the **plain
+  upstream group id** (`androidx.lifecycle`, `androidx.navigation3`) with platform classifiers
+  (`-desktop`, `-iosarm64`, …) — the `org.jetbrains.androidx.*` coordinate is a thin Gradle Module
+  Metadata redirect with no real classes or sources of its own. Downloading a `org.jetbrains.androidx.*`
+  sources jar to read the implementation returns an empty `redirectCommonMain/EmptyRedirectRoot.kt`
+  stub; look under `androidx.*` instead. Confirmed 2026-08-29 chasing `lifecycle-viewmodel-savedstate`
+  and `lifecycle-viewmodel-navigation3` sources.
 
 **Convention Plugins** (in `build-logic/`):
 

@@ -43,6 +43,14 @@ import kotlin.test.assertTrue
  * - **Nullable and lazy parameters.** A `T?` parameter resolves via `getOrNull()` and is silently
  *   null when unbound; a `Lazy<T>` resolves on first access, which never happens here. Neither
  *   raises, so neither fails this test.
+ * - **Any constructor parameter after the first one Koin can't resolve.** Kotlin evaluates
+ *   constructor arguments left to right, so a route-taking `@InjectedParam` ViewModel throws
+ *   `DefinitionParameterException` on its first (route) parameter and never evaluates the rest —
+ *   a `SavedStateHandle` parameter declared after `route`, for instance, is never actually
+ *   exercised by this test even though it shows up in the same tolerated "resolved their
+ *   dependencies but threw" bucket. Confirmed 2026-08-29 adding `SavedStateHandle` to
+ *   `CreateTaskViewModel`: this test's `constructionFailures` output was identical before and
+ *   after, proving nothing either way about the new parameter.
  *
  * ## Why constructor failures are tolerated
  *
