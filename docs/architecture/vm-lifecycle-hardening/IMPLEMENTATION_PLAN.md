@@ -593,7 +593,11 @@ duplicates a UI-rendering decision the raw data already encodes. Not worth writi
 CLAUDE.md rule since it isn't a rule being missed — it's already how the code is structured, just not
 under this vocabulary.
 
-## Candidate for agentic-grappim (project-agnostic, not TaigaMobileNova-specific)
+## Written up in agentic-grappim (project-agnostic, not TaigaMobileNova-specific)
+
+**Done 2026-08-30** — both items below are now in the shared `mobile-patterns` skill
+(`agentic-grappim/skills/mobile-patterns/SKILL.md`), not just flagged here. Kept below as the
+original evidence trail.
 
 While digging into finding 1 (2026-08-29 discussion), worked out the actual platform-dependent
 behavior of an unhandled root-coroutine exception with no `CoroutineExceptionHandler` — this is

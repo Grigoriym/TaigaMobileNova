@@ -153,11 +153,11 @@ sketched (above) rather than unknowns, but neither has been prototyped end-to-en
 threshold/trend-detection rule for the tracked JSON is still undecided — this remains a design, not
 a committable step.
 
-## Candidate for agentic-grappim (project-agnostic, not TaigaMobileNova-specific)
+## Written up in agentic-grappim (project-agnostic, not TaigaMobileNova-specific)
 
-Not yet written up — flagging for later: "AndroidX Macrobenchmark's structured JSON output is a
-better CI regression-tracking primitive than a hand-rolled Perfetto capture + trace_processor
-script" is general Android knowledge, not specific to this codebase's architecture. Worth a shared
-note in `agentic-grappim` next time it's touched, once this project's own investigation above
-actually confirms the approach works end-to-end (don't write up a pattern that hasn't been proven
-here yet).
+**Done 2026-08-30**, though explicitly marked unconfirmed there per its own caveat below: "AndroidX
+Macrobenchmark's structured JSON output is a better CI regression-tracking primitive than a
+hand-rolled Perfetto capture + trace_processor script" is now in the shared `mobile-patterns` skill
+(`agentic-grappim/skills/mobile-patterns/SKILL.md`), flagged as *not yet proven end-to-end* — this
+project's own step 3 (macrobenchmark CI, still queued) is what would confirm or correct it. Update
+that skill entry once step 3 actually lands, rather than leaving it as a permanent caveat.
