@@ -209,10 +209,33 @@ synchronously), the nondeterministic-ordering failure mode the article describes
 here. The one Turbine usage in that test file (`snackBarMessage.test { awaitItem() }`) asserts a
 single one-off event, not multiple ordered state emissions.
 
-**No action.** Worth remembering if a future test on one of these VMs switches to asserting an
-ordered sequence of `state.test { awaitItem() }` calls instead of a final `.value` snapshot — that
-would reintroduce the exact flakiness this article describes. The fix in that case is to assert the
-final state instead, not to restructure the VM's `init`.
+That covers why the *tests* don't flake — a separate question is whether the concurrency itself is
+still a production correctness risk even though the tests can't see one. It isn't, for two
+structural reasons, both confirmed against `EpicsViewModel.kt`:
+
+- **The two launches write disjoint state fields.** `loadFiltersData()` only touches
+  `isFiltersLoading`/`filtersError`/`filters`; `getPermissions()` only touches `canAddEpic`. Each
+  write goes through `StateFlow.update {}`, which is atomic. With no shared field between them,
+  whichever coroutine finishes first, the final state converges to the same value regardless of
+  interleaving — there is nothing for "order" to corrupt. The other 7 VMs in the list above were
+  found by this same shape (`init` firing two independent `launch` blocks onto separate fields), so
+  this generalizes by construction, though only Epics was opened to confirm it directly.
+- **`viewModelScope` is a `SupervisorJob`, so the two launches fail independently.** Confirmed from
+  `androidx.lifecycle`'s own `commonMain` source
+  (`androidx/lifecycle/viewmodel/internal/CloseableCoroutineScope.kt`, shared across
+  Android/iOS/JVM): `CloseableCoroutineScope(coroutineContext = dispatcher + SupervisorJob())`. An
+  unhandled exception in one `init`-launched coroutine cannot cancel its sibling — each is already
+  wrapped in its own `resultOf`/try-catch regardless.
+
+**No action** — confirmed as a non-issue on both axes: the test-flakiness question the article
+raises, and the underlying production-correctness question it doesn't directly ask but which the
+"is this actually broken?" framing implies. Worth remembering if a future test on one of these VMs
+switches to asserting an ordered sequence of `state.test { awaitItem() }` calls instead of a final
+`.value` snapshot — that would reintroduce the exact flakiness this article describes. The fix in
+that case is to assert the final state instead, not to restructure the VM's `init`. Revisit the
+production-correctness argument specifically if a future VM in this shape ever writes the *same*
+field from two independent `init` launches — disjoint fields is what makes ordering irrelevant
+here, and that would no longer hold.
 
 ### 4. Constructor-injected initial state (OTOS) (actionable — checklist step 3, investigate first)
 
