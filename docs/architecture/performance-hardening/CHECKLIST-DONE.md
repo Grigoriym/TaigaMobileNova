@@ -36,3 +36,38 @@ regression checks..." section:
 workflow is a new decision for gregory to make (a real CI change, and (b) still needs an end-to-end
 seeding prototype before it's committable) — not something this step's "investigate" scope commits
 to starting.
+
+## Step 2: Add APK size delta check to PRs — ✅ done 2026-08-30
+
+Implemented finding (a) from step 1: a new `apk-size-check` job in `.github/workflows/build.yml`,
+parallel to the existing `build` job. Design decision made with gregory first (baseline-APK source
+has a real CI-cost tradeoff): rebuild `dev`'s merge-base commit in the same job rather than fetching
+a `dev`-push-triggered artifact — self-contained, no new push-triggered workflow step, no
+cross-workflow artifact dependency, at the cost of one extra full `assembleFdroidDebug` per PR.
+
+Job does: checkout PR head → `assembleFdroidDebug` → save `head.apk` → `git fetch --depth=1` +
+`checkout` the PR's base sha (`github.event.pull_request.base.sha`) → `assembleFdroidDebug` again →
+save `base.apk` → `usefulness/diffuse-action@v1` (confirmed compatible with this project's AGP
+9.3.1/V2-signed output in step 1) diffs the two → `peter-evans/find-comment@v4` +
+`peter-evans/create-or-update-comment@v5` post/update a single tagged PR comment (`<!-- apk-size-diff
+-->` marker) with `diffuse-action`'s `diff-gh-comment` output, so repeated pushes update one comment
+instead of spamming new ones each time.
+
+Matches this project's existing debug-build signing setup (`TAIGA_ALIAS_D`/`TAIGA_KEY_PASS_D`/
+`TAIGA_STORE_PASS_D`/`ENCODED_STRING_D` env vars, `taigamobilenova_debug.jks` restore) — no
+gplay/`google-services.json` needed since the check only builds the fdroid flavor. Third-party
+action versions pinned to major-version tags (`@v1`/`@v4`/`@v5`), matching this workflow file's
+existing style (`actions/checkout@v7`, etc.) rather than pinning to commit SHAs.
+
+**Verify:** `.github/workflows/build.yml` validated with `actionlint` (via
+`docker run --rm -v "$(pwd)":/repo -w /repo rhysd/actionlint:latest .github/workflows/build.yml`) —
+zero new findings; the only shellcheck notices are pre-existing (`SC2086`, unquoted var in an
+`echo | base64 -d` step already present in the untouched `build` job, and reused here for
+consistency). Not yet verified by an actual PR run — the job's real behavior (Gradle build succeeds
+twice, `diffuse-action` output shape matches what's assumed, the PR comment renders as expected)
+will only be confirmed once this branch's PR runs the workflow for real.
+
+**Next:** step 3 (macrobenchmark CI) is unstarted — see CHECKLIST.md. It is not gated in the
+"needs gregory's decision" sense, but it's substantially larger (real emulator work, an unverified
+`run-as` assumption, an undecided trend-detection design) than step 2 was, so it's being left as its
+own step rather than folded into this one.
