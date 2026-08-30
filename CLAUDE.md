@@ -376,6 +376,17 @@ This doesn't prevent widening a gate — it makes doing so silently impossible. 
 `paths-ignore`, unlike `build.yml`/`code_analysis.yml`, so a CLAUDE.md-only commit is still checked.
 Run it locally before committing: `.github/scripts/check-guardrails.sh HEAD~1..HEAD`.
 
+**Validate a `.github/workflows/*.yml` edit locally before pushing** — `docker run --rm -v
+"$(pwd)":/repo -w /repo rhysd/actionlint:latest .github/workflows/<file>.yml` catches invalid
+expressions, unknown action inputs, and embeds shellcheck on `run:` blocks, none of which a plain
+YAML-syntax check (`python3 -c "import yaml; yaml.safe_load(...)"`) would catch. Confirmed
+2026-08-30 adding `build.yml`'s `apk-size-check` job.
+
+**A `pull_request`-triggered job's default shallow checkout doesn't have the base branch's commit
+object locally** — to build against the PR's merge-base (e.g. for a size/perf diff), fetch it
+explicitly: `git fetch --depth=1 origin ${{ github.event.pull_request.base.sha }}` before `git
+checkout` that sha. Confirmed 2026-08-30 in `build.yml`'s `apk-size-check` job.
+
 ## Multi-Session Work
 
 For any initiative that spans multiple sessions — a feature investigation, a redesign, a

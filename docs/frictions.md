@@ -64,3 +64,7 @@ deleted — see `finalize`.
 - 2026-08-29: guessed `diffuse` 0.3.0 download URL (`diffuse-0.3.0-binary.jar`) 404'd; the release
   asset is actually a `diffuse-0.3.0.zip` — checked via `gh`/GitHub releases API
   (`browser_download_url`) instead of guessing the filename pattern from the version tag.
+- 2026-08-30: `pip install pyyaml` reported "already satisfied" but `python3 -c "import yaml"` still
+  failed with `ModuleNotFoundError` — this machine's `python3` on PATH resolves to a linuxbrew
+  install (3.14) that doesn't see the apt-installed pyyaml under `/usr/lib/python3/dist-packages`.
+  Fixed by calling `/usr/bin/python3` explicitly for the one-off YAML-parse check.
