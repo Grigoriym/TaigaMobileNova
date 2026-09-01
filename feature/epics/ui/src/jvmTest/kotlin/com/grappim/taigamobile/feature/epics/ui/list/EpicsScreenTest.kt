@@ -19,21 +19,21 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Paging sweep, task 20
-// (improvement-plan.md) — same combine()+flatMapLatest shape as task 19's ScrumBacklogViewModel
-// (session.epicsFilters + a local searchQuery MutableStateFlow, flatMapLatest'd into
-// epicsRepository.getEpicsPaging(...)). Task 19 confirmed no extra handling is needed beyond
-// MainDispatcherRule(UnconfinedTestDispatcher) + setContent: both source StateFlows already hold a
-// value when EpicsViewModel.epics's property initializer runs, so combine() emits synchronously and
-// flatMapLatest switches into the paging flow before the first frame settles. Held here verbatim,
-// no combine()-specific surprise.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
 //
-// The "Add Epic" topbar action is NOT tested here, same reasoning as tasks 18/19: it lives in
-// TopBarConfig.actions, rendered by an outer Scaffold this test doesn't compose.
+// EpicsViewModel builds its paging Flow from session.epicsFilters + a local searchQuery
+// MutableStateFlow, combine()'d and flatMapLatest'd into epicsRepository.getEpicsPaging(...). No
+// extra handling is needed beyond MainDispatcherRule(UnconfinedTestDispatcher) + setContent: both
+// source StateFlows already hold a value when EpicsViewModel.epics's property initializer runs, so
+// combine() emits synchronously and flatMapLatest switches into the paging flow before the first
+// frame settles.
 //
-// Item title assertion uses substring = true per task 19's finding: CommonTaskItem merges the title
-// into one semantics Text node together with the ref number and indicator dots, so an exact
-// onNodeWithText(workItem.title) match never finds it.
+// The "Add Epic" topbar action is not tested here: it lives in TopBarConfig.actions, rendered by an
+// outer Scaffold this test doesn't compose.
+//
+// Item title assertions use onNodeWithText(workItem.title, substring = true): CommonTaskItem merges
+// the title into one semantics Text node together with the ref number and indicator dots, so an
+// exact match never finds it.
 class EpicsScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()

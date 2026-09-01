@@ -18,10 +18,11 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Paging-list Screen pilot (task 14,
-// improvement-plan.md) — this Screen's ViewModel exposes a `Flow<PagingData<Project>>` that the
-// Screen collects with `collectAsLazyPagingItems()`. MainDispatcherRule's UnconfinedTestDispatcher
-// runs init's session-storage collector to completion before setContent renders, same as task 13.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
+//
+// This Screen's ViewModel exposes a `Flow<PagingData<Project>>` that the Screen collects with
+// `collectAsLazyPagingItems()`. MainDispatcherRule's UnconfinedTestDispatcher runs init's
+// session-storage collector to completion before setContent renders.
 class ProjectSelectorScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()

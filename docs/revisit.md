@@ -17,6 +17,8 @@ its own section, kept for the reasoning rather than the outcome):
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
+| 45 | Tablet nav rail/permanent drawer still has no scroll safety net | S–M | [tablet nav rail issue](issues/2026-08-26-tablet-nav-rail-logout-clipped.md) |
+| 46 | No deep-link readiness plan yet (3 queued Nav3 patterns) | — | [reference-app-scouting.md](../../agentic-grappim/investigations/reference-app-scouting.md) |
 
 <details>
 <summary><strong>Full index (all 40 entries, resolved included)</strong> — this file is long because
@@ -70,6 +72,8 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 42 | [Nav rail shown on the Login screen at wide window widths](#42-nav-rail-shown-on-the-login-screen-at-wide-window-widths) | ➡️ moved to tablet checklist 2026-08-22 |
 | 43 | [Issues list has no dividers between rows on desktop](#43-issues-list-has-no-dividers-between-rows-on-desktop) | ➡️ moved to tablet checklist 2026-08-22 |
 | 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | ➡️ moved to tablet checklist 2026-08-22 |
+| 45 | [Tablet nav rail/permanent drawer still has no scroll safety net](#45-tablet-nav-railpermanent-drawer-still-has-no-scroll-safety-net) | 🟡 open |
+| 46 | [No deep-link readiness plan yet (3 queued Nav3 patterns)](#46-no-deep-link-readiness-plan-yet-3-navigation-3-patterns-queued-for-whenever-links-are-added) | 🟡 open |
 
 </details>
 
@@ -2084,3 +2088,36 @@ in the issue doc for the tradeoffs already weighed.
 **Fix, if wanted:** pick up Option 1, 2, or 3 from `docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`'s
 Options section for the item(s) still at risk (Settings, and any project with both optional groups
 active).
+
+## 46. No deep-link readiness plan yet (3 Navigation 3 patterns queued for whenever links are added)
+
+**What:** scouting HedvigInsurance's Navigation 3 codebase
+(`agentic-grappim/investigations/reference-app-scouting.md`, 2026-09-01) surfaced three related
+patterns, none applicable today — checked while writing them up: `core/navigation`'s `Navigator.kt`
+has exactly one back primitive (`goBack()`, no deep-link-aware alternative), and
+`composeApp/.../main/MainAppState.kt`'s `TOP_LEVEL_KEYS` is the only cross-cutting shell-level
+concern that exists today. TaigaMobileNova has no deep-link handling anywhere (not exhaustively
+audited, but none found while checking).
+
+1. **Marker interfaces on `NavKey` for cross-cutting shell concerns** (Hedvig's `TopLevelTabRoot`,
+   `DeepLinkAncestry`, etc., opted into per-key) — reach for this instead of a shell-level
+   `when (key) { ... }` the moment the shell needs to ask "does this screen do X" for more than one
+   X. Deep-link ancestry would be the second such concern, after "is this a top-level key."
+2. **Reserve a deep-link-aware "up" for the top-app-bar back arrow only.** If `Navigator` ever grows
+   a second, "smarter" pop method (to rebuild a synthetic parent stack for a screen reached via deep
+   link), don't wire a plain in-content "done"/"close"/"continue" button to it — only the top bar's
+   back arrow should get it. Mixing the two makes a button's behavior depend on how the screen was
+   reached, and can diverge from predictive/system back.
+3. **Deep-link matcher aggregation + a single pending-deep-link slot for the logged-out case.** Each
+   feature contributes its own URL-matching patterns into one app-wide aggregated matcher (instead of
+   a central registry hardcoding every feature's patterns); a link arriving before auth state has
+   resolved is held as at most one pending target and landed after login, rather than dropped or
+   raced against the login flow.
+
+**Why deferred:** no deep-link feature is planned or in progress; this is a "don't reinvent it badly
+the first time" note, not a bug.
+
+**Trigger:** the moment a deep-link feature is proposed for TaigaMobileNova (push-notification-driven
+navigation, universal/app links, "open this task from a link"), read this entry and the fuller
+per-pattern writeups in `agentic-grappim/investigations/reference-app-scouting.md`'s HedvigInsurance
+section before designing the feature from scratch.
