@@ -17,10 +17,7 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Paging sweep, task 18
-// (improvement-plan.md) — reuses task 17's feature/scrum/ui build wiring and FakeSprintsRepository
-// extension. The isClosed fake gap task 17 flagged doesn't matter here since each test constructs
-// its own FakeSprintsRepository instance.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
 //
 // The "Add Sprint" topbar action -> EditSprintDialog interaction is NOT tested here: the action
 // button lives in TopBarConfig.actions, which TopBarController only holds as state — the actual

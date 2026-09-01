@@ -12,9 +12,8 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import kotlin.test.Test
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Feature-level Screen pilot (task 12,
-// improvement-plan.md) — this Screen has no SavedStateHandle/nav-route args; see the task's Result
-// note for what a route-carrying Screen needs differently.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. This Screen has no
+// SavedStateHandle/nav-route args.
 class SettingsAboutScreenTest {
 
     @OptIn(ExperimentalTestApi::class)

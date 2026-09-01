@@ -19,9 +19,9 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Dialog Screen pilot (task 15,
-// improvement-plan.md) — proves a dialog visibility transition (closed -> open -> closed) driven by
-// ViewModel state, on top of the click/type interactions task 11 already established.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
+//
+// Proves a dialog visibility transition (closed -> open -> closed) driven by ViewModel state.
 class TrustedCertificatesScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()

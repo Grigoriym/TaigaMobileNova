@@ -20,12 +20,12 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Route-carrying Screen pilot (task 13,
-// improvement-plan.md) — the route is built directly and passed via constructor-parameter
-// injection, the same way every existing ViewModel unit test builds it for this class.
-// MainDispatcherRule's UnconfinedTestDispatcher makes the init block's load finish before the
-// ViewModel constructor returns, so setContent renders the already-loaded state with no polling
-// needed.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
+//
+// The route is built directly and passed via constructor-parameter injection, the same way every
+// ViewModel unit test for this class builds it. MainDispatcherRule's UnconfinedTestDispatcher makes
+// the init block's load finish before the ViewModel constructor returns, so setContent renders the
+// already-loaded state with no polling needed.
 class ProjectValuesScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()

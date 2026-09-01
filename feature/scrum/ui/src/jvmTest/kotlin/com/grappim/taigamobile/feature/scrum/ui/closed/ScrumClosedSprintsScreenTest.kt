@@ -15,10 +15,10 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Paging sweep, task 17
-// (improvement-plan.md) — the simplest of the six paging-list Screens: one constructor dep, no
-// init, no route. MainDispatcherRule's UnconfinedTestDispatcher lets cachedIn(viewModelScope)'s
-// coroutine (which needs Dispatchers.Main) run, same reasoning as task 14's ProjectSelectorScreenTest.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
+//
+// One constructor dependency, no init, no route. MainDispatcherRule's UnconfinedTestDispatcher lets
+// cachedIn(viewModelScope)'s coroutine (which needs Dispatchers.Main) run.
 class ScrumClosedSprintsScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()

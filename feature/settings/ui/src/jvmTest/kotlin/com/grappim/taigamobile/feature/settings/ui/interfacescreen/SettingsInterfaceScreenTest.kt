@@ -19,9 +19,10 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Multi-state-source Screen pilot
-// (task 16, improvement-plan.md) — proves two independently launched `onEach{}.launchIn` collectors
-// (themeSettings, crashReportingEnabled) both reach the rendered UI in one test.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
+//
+// Proves two independently launched `onEach{}.launchIn` collectors (themeSettings,
+// crashReportingEnabled) both reach the rendered UI in one test.
 class SettingsInterfaceScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()
