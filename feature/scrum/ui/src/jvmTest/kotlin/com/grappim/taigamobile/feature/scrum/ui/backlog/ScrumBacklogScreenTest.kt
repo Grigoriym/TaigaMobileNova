@@ -19,22 +19,21 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Paging sweep, task 19
-// (improvement-plan.md) — the first paging-list Screen whose ViewModel builds its paging Flow from a
-// real combine() (session.scrumFilters + a local searchQuery MutableStateFlow) flatMapLatest'd into
-// the repository call, rather than a class-level cold flow (tasks 14/17/18). No extra handling was
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
+//
+// ScrumBacklogViewModel builds its paging Flow from a real combine() (session.scrumFilters + a
+// local searchQuery MutableStateFlow) flatMapLatest'd into the repository call. No extra handling is
 // needed beyond the established MainDispatcherRule(UnconfinedTestDispatcher) + setContent pattern:
 // both source StateFlows already hold a value (session.scrumFilters defaults to FiltersData(),
 // searchQuery defaults to ""), so combine() emits synchronously on collection and flatMapLatest
 // switches into the paging flow before the first frame settles — same as a plain cold flow.
 //
-// The "Add User Story" topbar action is NOT tested here, same reasoning as task 18: it lives in
-// TopBarConfig.actions, rendered by an outer Scaffold this test doesn't compose.
+// The "Add User Story" topbar action is not tested here: it lives in TopBarConfig.actions, rendered
+// by an outer Scaffold this test doesn't compose.
 //
-// The one real unknown here was unrelated to combine()/flatMapLatest: CommonTaskItem renders the
-// title via CommonTaskTitle's "#ref title" pattern merged into one semantics Text node together with
-// the ref number and indicator dots, so onNodeWithText(workItem.title) (exact match) never matches —
-// only onNodeWithText(workItem.title, substring = true) does.
+// CommonTaskItem renders the title via CommonTaskTitle's "#ref title" pattern merged into one
+// semantics Text node together with the ref number and indicator dots, so onNodeWithText(workItem.title)
+// (exact match) never matches — only onNodeWithText(workItem.title, substring = true) does.
 class ScrumBacklogScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()

@@ -19,23 +19,18 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 
-// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. Paging sweep, task 21
-// (improvement-plan.md) — last of the five-Screen sweep, same combine()+flatMapLatest shape as
-// tasks 19/20 (session.issuesFilters + a local searchQuery MutableStateFlow, flatMapLatest'd into
-// issuesRepository.getIssuesPaging(...)). No extra handling needed beyond
-// MainDispatcherRule(UnconfinedTestDispatcher) + setContent, per tasks 19/20.
+// Desktop/JVM only: see docs/testing/compose-ui-test-spike.md.
 //
-// FakeIssuesRepository.getIssuesPaging previously returned emptyFlow() (never emitted any
-// PagingData), unlike every other paging fake's flowOf(PagingData.empty()) baseline — fixed to the
-// common baseline before extending it to PagingData.from(...), same shape as
-// FakeEpicsRepository/FakeSprintsRepository/FakeUserStoriesRepository.
+// IssuesViewModel builds its paging Flow from session.issuesFilters + a local searchQuery
+// MutableStateFlow, combine()'d and flatMapLatest'd into issuesRepository.getIssuesPaging(...). No
+// extra handling is needed beyond MainDispatcherRule(UnconfinedTestDispatcher) + setContent.
 //
-// The "Add" (create issue) topbar action is NOT tested here, same reasoning as tasks 18/19/20: it
-// lives in TopBarConfig.actions, rendered by an outer Scaffold this test doesn't compose.
+// The "Add" (create issue) topbar action is not tested here: it lives in TopBarConfig.actions,
+// rendered by an outer Scaffold this test doesn't compose.
 //
-// Item title assertion uses substring = true per task 19's finding: CommonTaskItem merges the title
-// into one semantics Text node together with the ref number and indicator dots, so an exact
-// onNodeWithText(workItem.title) match never finds it.
+// Item title assertions use onNodeWithText(workItem.title, substring = true): CommonTaskItem merges
+// the title into one semantics Text node together with the ref number and indicator dots, so an
+// exact match never finds it.
 class IssuesScreenTest {
 
     private val mainDispatcherRule = MainDispatcherRule()

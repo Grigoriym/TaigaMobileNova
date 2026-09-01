@@ -211,6 +211,11 @@ feature/{name}/
 └── ui/       → NavDestination, Screen, State, ViewModel
 ```
 
+**A DTO must never appear outside `data/`** — no `Repository`/`UseCase` interface, ViewModel, or
+`ui/` type may take or return one. Map to a domain model before returning, even when the wire shape
+is already a perfect fit; this keeps the domain/ui layers insulated from API schema changes and
+keeps every repository swappable.
+
 ## Koin DI
 
 For DI patterns, the `expect/actual @Configuration` rule, module registry, qualifier map, and troubleshooting, see the **koin-expert** subagent. It is not in this repo — it lives in `agentic-grappim` and is symlinked into `~/.claude/agents/` (see Skills below). Never use KSP — this project uses `io.insert-koin.compiler.plugin` exclusively.
@@ -520,6 +525,21 @@ enough evidence (`file:line`, or a link to an issue doc) that a cold session can
 re-deriving anything.
 
 The test: Every changed line should trace directly to the user's request.
+
+### Comments
+
+**A comment must describe only the current code, and stand alone.** Before writing one, ask: would
+this make sense to someone reading cold, with no knowledge of the PR, the conversation, or what was
+decided against? If not, it doesn't belong in the source. Do not reference:
+
+- **History or migration:** "replaces X…", "used to live in…", "previously returned emptyFlow()".
+- **Rejected alternatives:** "…not Y", "rather than Z" left unjustified on its own terms — if `X`
+  is worth a comment, justify `X`; drop the `Y` half.
+- **Conversation or process state:** "for now", "TBD", a task/checklist number ("task 19/20").
+
+Migration history, rejected alternatives, and task tracking belong in the commit message or the
+relevant `docs/` checklist — not in a comment that has to keep making sense years after the PR that
+added it is forgotten.
 
 ### Don't Break Production in Favor of Tests
 
