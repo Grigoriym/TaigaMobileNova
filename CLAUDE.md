@@ -59,6 +59,9 @@ and stop.
 ./gradlew :composeApp:compileKotlinIosArm64 --rerun-tasks            # iOS device
 # Android equivalent (also forces Koin compiler logs):
 ./gradlew :androidApp:compileFdroidDebugKotlin --rerun-tasks
+
+# Render the full module dependency graph (requires graphviz: apt/brew install graphviz)
+./gradlew generateProjectDependencyGraph   # → build/reports/dependency-graph/project.png
 ```
 
 ## Architecture
