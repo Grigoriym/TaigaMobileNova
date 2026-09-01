@@ -57,7 +57,7 @@ fun WatchersWidget(
                     watchersState.onRemoveWatcherClick(item.actualId)
                 },
                 canModify = canModify,
-                isOffline = isOffline
+                isOffline = isOffline || watchersState.areWatchersLoading
             )
 
             if (index < watchersState.watchers.lastIndex) {
@@ -92,7 +92,7 @@ fun WatchersWidget(
             TaigaTextButtonWidget(
                 text = stringResource(buttonText),
                 icon = buttonIcon,
-                isOffline = isOffline,
+                isOffline = isOffline || watchersState.areWatchersLoading,
                 onClick = {
                     if (watchersState.isWatchedByMe) {
                         onRemoveMeFromWatchersClick()

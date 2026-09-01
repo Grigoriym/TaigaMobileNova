@@ -144,6 +144,7 @@ jetbrains-compose-material3-adaptive-navigation-suite = { module = "org.jetbrain
 jetbrains-compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "jetbrainsComposeMaterial3Adaptive" }
 jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrainsAndroidxLifecycle" }
 jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrainsAndroidxLifecycle" }
+jetbrains-lifecycle-viewmodel-savedstate = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "jetbrainsAndroidxLifecycle" }
 jetbrains-androidx-savedstate = { module = "org.jetbrains.androidx.savedstate:savedstate", version.ref = "jetbrainsSavedState" }
 jetbrains-compose-icons = { module = "org.jetbrains.compose.material:material-icons-core", version.ref = "jetbrainsComposeIcons" }
 jetbrains-compose-icons-extended = { module = "org.jetbrains.compose.material:material-icons-extended", version.ref = "jetbrainsComposeIcons" }

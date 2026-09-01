@@ -117,6 +117,17 @@ CreateCommentBar(..., isOffline = isOffline)
 - Consider showing toast/snackbar if user tries to drag while offline
 
 **WorkItem RemoteMediator (Complex)**
+
+**Live-confirmed 2026-08-29** (vm-lifecycle-hardening checklist step 5, see that initiative's
+`IMPLEMENTATION_PLAN.md` finding 9): this gap is not just theoretical. On `Medium_Phone_API_36.1`,
+killing the process, going offline, and relaunching the Issues list screen (Nav3 correctly restores
+the screen, but with a fresh `IssuesViewModel`/`Pager`) replaced the entire previously-loaded issues
+list with a full-screen "Connection error" — `IssuesRepositoryImpl.getIssuesPaging()` builds a plain
+`Pager`/`IssuesPagingSource` straight from `WorkItemApi`, bypassing `WorkItemRepositoryImpl`'s
+cache-first `getWorkItems()` entirely, so none of Phase 3's caching applies to list screens. Same
+structural gap likely affects Epics, Kanban, and ScrumBacklog (same `getXxxPaging()` shape), not
+individually confirmed live.
+
 The WorkItem paging sources have complex server-side filters:
 
 - Assignees, created by, watchers

@@ -184,21 +184,21 @@ internal class ProjectDetailsViewModelTest {
      * before the send (the `isSaving = false` update) has already happened once `awaitItem`
      * returns.
      *
-     * `save` reads `_state.value` rather than the loaded details, so the edits made here are what
-     * must reach the repository.
+     * `save` reads `_state.value` rather than a separately tracked "edited" value, and `init`
+     * copies the fake's result straight into that state — so configuring the fake's result to
+     * already be the target state reaches it in one step, with no `onXChange` chain needed.
      */
     @Test
     fun `onSaveClick - success - sends the edited state to the repository and navigates back`() = runTest {
-        projectsRepository.getProjectDetailsResult = details(name = "loaded", description = "loaded")
+        projectsRepository.getProjectDetailsResult = details(
+            name = "edited",
+            description = "edited description",
+            isPrivate = true,
+            isLookingForPeople = true,
+            lookingForPeopleNote = "join us",
+            isContactActivated = true
+        )
         createViewModel()
-        with(sut.state.value) {
-            onNameChange("edited")
-            onDescriptionChange("edited description")
-            onIsPrivateChange(true)
-            onIsLookingForPeopleChange(true)
-            onLookingForPeopleNoteChange("join us")
-            onIsContactActivatedChange(true)
-        }
 
         sut.navigateBack.test {
             sut.state.value.onSaveClick()

@@ -67,14 +67,26 @@ fun MainNavHost(
     showSnackbar: (NativeText) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val screenReadySignal = LocalScreenReadySignal.current
     LaunchedEffect(initialNavState.isReady) {
+        // navigationState.currentKey is only still LoginNavDestination (the seed value) when
+        // nothing has restored a deeper back stack yet — on a process-death relaunch, Nav3 has
+        // already restored the saved stack by this point, and resetting here would wipe it.
         if (initialNavState.isReady) {
-            when (val dest = initialNavState.startDestination) {
-                is ProjectSelectorNavDestination ->
-                    navigator.navigateToProjectSelector(isFromLogin = dest.isFromLogin)
+            if (navigationState.currentKey == LoginNavDestination) {
+                when (val dest = initialNavState.startDestination) {
+                    is ProjectSelectorNavDestination ->
+                        navigator.navigateToProjectSelector(isFromLogin = dest.isFromLogin)
 
-                is DashboardNavDestination ->
-                    navigator.navigateToDashboardAsTopDestination()
+                    is DashboardNavDestination ->
+                        navigator.navigateToDashboardAsTopDestination()
+                }
+            } else {
+                // A deeper back stack already restored: the correct screen is already on
+                // screen, so there's no Login-flash risk to wait out — the per-entry
+                // signalReady() calls below only cover the Login/ProjectSelector/Dashboard
+                // landing case.
+                screenReadySignal.signalReady()
             }
         }
     }

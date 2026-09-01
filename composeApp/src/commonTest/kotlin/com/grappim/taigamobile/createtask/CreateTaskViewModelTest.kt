@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.createtask
 
+import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
@@ -56,7 +57,8 @@ internal class CreateTaskViewModelTest {
         parentId: Long? = this.parentId,
         sprintId: Long? = this.sprintId,
         statusId: Long? = this.statusId,
-        swimlaneId: Long? = this.swimlaneId
+        swimlaneId: Long? = this.swimlaneId,
+        savedStateHandle: SavedStateHandle = SavedStateHandle()
     ) {
         sut = CreateTaskViewModel(
             route = CreateTaskNavDestination(
@@ -71,7 +73,8 @@ internal class CreateTaskViewModelTest {
                 issuesRepository = issuesRepository,
                 userStoriesRepository = userStoriesRepository,
                 workItemRepository = workItemRepository
-            )
+            ),
+            savedStateHandle = savedStateHandle
         )
     }
 
@@ -175,13 +178,20 @@ internal class CreateTaskViewModelTest {
 
     // --- onCreateTask: success ---
 
+    /**
+     * State-init restores title/description from `savedStateHandle` (see the process-death
+     * restoration tests below) — pre-seeding it here reaches the target input in one step, with
+     * no `setTitle`/`setDescription` chain needed.
+     */
     @Test
     fun `onCreateTask - success - trims input, passes route arguments and emits creationResult`() = runTest {
         val created = getWorkItem()
         tasksRepository.createTaskResult = created
-        createViewModel()
-        sut.state.value.setTitle("  a title  ")
-        sut.state.value.setDescription("  a description  ")
+        createViewModel(
+            savedStateHandle = SavedStateHandle(
+                mapOf("title" to "  a title  ", "description" to "  a description  ")
+            )
+        )
 
         // `_creationResult` is a rendezvous channel, so the send only completes while collected.
         sut.creationResult.test {
@@ -226,6 +236,44 @@ internal class CreateTaskViewModelTest {
         val call = userStoriesRepository.createUserStoryCalls.single()
         assertEquals(statusId, call.status)
         assertEquals(swimlaneId, call.swimlane)
+    }
+
+    // --- process-death restoration ---
+
+    @Test
+    fun `initial state - restores title and description from a prior SavedStateHandle`() = runTest {
+        val restoredTitle = getRandomString()
+        val restoredDescription = getRandomString()
+        val savedStateHandle = SavedStateHandle(
+            mapOf("title" to restoredTitle, "description" to restoredDescription)
+        )
+
+        createViewModel(savedStateHandle = savedStateHandle)
+
+        assertEquals(restoredTitle, sut.state.value.title)
+        assertEquals(restoredDescription, sut.state.value.description)
+    }
+
+    @Test
+    fun `setTitle - persists the new value to the SavedStateHandle`() = runTest {
+        val savedStateHandle = SavedStateHandle()
+        createViewModel(savedStateHandle = savedStateHandle)
+        val title = getRandomString()
+
+        sut.state.value.setTitle(title)
+
+        assertEquals(title, savedStateHandle.get<String>("title"))
+    }
+
+    @Test
+    fun `setDescription - persists the new value to the SavedStateHandle`() = runTest {
+        val savedStateHandle = SavedStateHandle()
+        createViewModel(savedStateHandle = savedStateHandle)
+        val description = getRandomString()
+
+        sut.state.value.setDescription(description)
+
+        assertEquals(description, savedStateHandle.get<String>("description"))
     }
 
     // --- onCreateTask: failure ---

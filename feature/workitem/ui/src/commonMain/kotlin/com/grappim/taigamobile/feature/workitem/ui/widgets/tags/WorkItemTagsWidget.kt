@@ -55,7 +55,7 @@ fun WorkItemTagsWidget(
                         onTagRemoveClick(tag)
                     },
                     canModify = canModify,
-                    isOffline = isOffline
+                    isOffline = isOffline || tagsState.areTagsLoading
                 )
             }
 

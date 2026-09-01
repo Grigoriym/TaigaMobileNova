@@ -309,6 +309,16 @@ example; see also the `TaskIdentifier` note under `WorkItemEditStateRepository`.
 ### ViewModel init loads data synchronously
 With `MainDispatcherRule` using `UnconfinedTestDispatcher`, `init { viewModelScope.launch { ... } }` completes before `createViewModel()` returns. Assert state directly after `createViewModel()` without `runTest`.
 
+### Reaching a target state without chaining setters
+Don't chain `onXChange`/`setX` calls to build up a multi-field state before the behaviour under
+test — the VM's own constructor inputs are already the seam: for a load-in-`init` VM, set the
+fake's return value to the *target* state directly (init copies it straight into `_state`); for a
+`SavedStateHandle`-restored VM (see `CreateTaskViewModel`'s `RestorableState`), pre-seed the handle
+with the target values instead of calling the setters. Confirmed 2026-08-29 investigating whether
+ViewModels needed a dedicated constructor-injected `initialState` param (the "OTOS" pattern from
+`docs/architecture/vm-lifecycle-hardening/IMPLEMENTATION_PLAN.md`) — every VM examined already had
+one of these two seams, so the extra param would only duplicate it.
+
 ### Channel / one-off events (Turbine)
 ```kotlin
 @Test
@@ -421,6 +431,30 @@ fun `patchData should propagate api error`() = runTest {
   proves less: it passes when a fake hit its own `error("… not set")` guard.
   `CreateWorkItemUseCaseTest` and `GetProfileDataUseCaseTest` both do this with a local helper; if a
   third file needs it, promote it to `:testing`'s `TestUtils.kt`.
+
+### Asserting something was logged (`TaigaLogger`)
+
+To prove a `catch` block or a `CoroutineExceptionHandler` actually logs (CLAUDE.md's Error
+Handling rule) rather than swallowing silently, implement `TaigaLogger` inline in the test, call
+`TaigaLogger.install(it)`, exercise the code, then assert on the recorded `priority`/`throwable`.
+`TaigaLogger.uninstall()` in `@AfterTest` — it's a process-wide `@Volatile var`, so a leaked
+install bleeds into unrelated tests in the same JVM process (see gotcha 7 on shared test process
+state). First example: `core/async-kmp/src/commonTest/.../KmpCoroutinesModuleTest.kt`.
+
+```kotlin
+private class RecordingLogger : TaigaLogger {
+    var priority: LogPriority? = null
+    var throwable: Throwable? = null
+
+    override fun log(priority: LogPriority, tag: String?, throwable: Throwable?, message: () -> String) {
+        this.priority = priority
+        this.throwable = throwable
+    }
+}
+
+@AfterTest
+fun tearDown() = TaigaLogger.uninstall()
+```
 
 ### Ktor plugins and anything needing a real `HttpResponse`
 

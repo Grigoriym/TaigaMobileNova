@@ -53,3 +53,18 @@ deleted — see `finalize`.
   too. Cost several minutes of chasing a phantom app bug (assumed the shortcut was broken) before
   testing a plain key press and finding it worked. Fix: drop `--window` for `xdotool key` sends the
   same as for `type` — click/`windowactivate` the target first, then send the key bare.
+- 2026-08-29: `xdotool mousemove --window <id> X Y click 1` against the composeApp desktop window
+  registered only intermittently (roughly 1 in 5-6 attempts) — same exact coordinates, same target
+  button, sometimes toggled the UI and sometimes silently did nothing, with no error and the mouse
+  cursor visibly landing on target each time (`getmouselocation` confirmed). Not a coordinate/offset
+  problem (retried at several nearby offsets with the same flakiness) and not specific to one widget
+  (back-arrow nav and two other buttons all showed it). Gave up after ~10 attempts and verified step
+  4's fix via code read + `jvmTest`/`ktlintCheck` instead of a live click-through. Root cause not
+  found; worth a fresh look if this blocks a future GUI-verification step.
+- 2026-08-29: guessed `diffuse` 0.3.0 download URL (`diffuse-0.3.0-binary.jar`) 404'd; the release
+  asset is actually a `diffuse-0.3.0.zip` — checked via `gh`/GitHub releases API
+  (`browser_download_url`) instead of guessing the filename pattern from the version tag.
+- 2026-08-30: `pip install pyyaml` reported "already satisfied" but `python3 -c "import yaml"` still
+  failed with `ModuleNotFoundError` — this machine's `python3` on PATH resolves to a linuxbrew
+  install (3.14) that doesn't see the apt-installed pyyaml under `/usr/lib/python3/dist-packages`.
+  Fixed by calling `/usr/bin/python3` explicitly for the one-off YAML-parse check.
