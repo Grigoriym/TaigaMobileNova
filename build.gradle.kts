@@ -240,3 +240,5 @@ val syncIosVersion by tasks.registering {
 project(":composeApp").tasks.matching { it.name.startsWith("assembleTaigaMobileNova") }.configureEach {
     dependsOn(syncIosVersion)
 }
+
+apply(from = "gradle/projectDependencyGraph.gradle")
