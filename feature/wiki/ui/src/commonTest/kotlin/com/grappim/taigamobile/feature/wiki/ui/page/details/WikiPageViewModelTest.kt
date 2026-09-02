@@ -320,4 +320,24 @@ internal class WikiPageViewModelTest {
 
         assertTrue(workItemRepository.patchWikiPageCalls.isEmpty())
     }
+
+    // A page opened via Bookmarks navigates with the wiki-link's id as route.id,
+    // which differs from the wiki page's own id (see docs/issues/2026-09-02-wiki-
+    // bookmark-edit-description-save-no-op.md). The session must be keyed off the
+    // loaded page's id, not route.id, or the save silently no-ops.
+
+    @Test
+    fun `description update keyed by page id succeeds even when route id differs`() = runTest {
+        val pageId = getRandomLong()
+        val page = makeWikiPage(id = pageId, content = "original")
+        wikiRepository.getProjectWikiPageBySlugResult = page
+        val newVersion = getRandomLong()
+        workItemRepository.patchWikiPageResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        createViewModel()
+
+        workItemEditStateRepository.updateDescription(pageId, TaskIdentifier.Wiki, "updated")
+
+        assertEquals("updated", sut.state.value.currentPage?.content)
+        assertEquals(newVersion, sut.state.value.currentPage?.version)
+    }
 }

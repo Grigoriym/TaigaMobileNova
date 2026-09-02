@@ -50,8 +50,6 @@ class WikiPageViewModel(
         patchDataGenerator = patchDataGenerator
     ) {
 
-    private val wikiId: Long = route.id
-
     private val _state = MutableStateFlow(
         WikiPageState(
             pageSlug = route.slug,
@@ -71,18 +69,21 @@ class WikiPageViewModel(
 
     init {
         loadData()
+    }
 
+    private fun subscribeToDescriptionUpdates(pageId: Long) {
         workItemEditStateRepository
-            .getDescriptionFlow(wikiId, TaskIdentifier.Wiki)
+            .getDescriptionFlow(pageId, TaskIdentifier.Wiki)
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
         super.onCleared()
-        workItemEditStateRepository.clearSession(wikiId, TaskIdentifier.Wiki)
+        val pageId = _state.value.currentPage?.id ?: return
+        workItemEditStateRepository.clearSession(pageId, TaskIdentifier.Wiki)
         logcat {
-            "WikiPageViewModel cleared - session cleaned up for taskId: $wikiId"
+            "WikiPageViewModel cleared - session cleaned up for taskId: $pageId"
         }
     }
 
@@ -189,6 +190,7 @@ class WikiPageViewModel(
                             shouldShowActions = data.canModifyPage
                         )
                     }
+                    subscribeToDescriptionUpdates(data.page.id)
                 }.onFailure { error ->
                     logcat(throwable = error) {
                         "Error loading wiki page data"
