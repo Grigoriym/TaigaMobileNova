@@ -157,6 +157,15 @@ every section and lands on `key` alone (login/logout); `replaceCurrent(key)` swa
 top entry instead of pushing (a "this screen is done, hand off to the next one" transition, e.g. a
 wiki create-page screen handing off to the page it just created).
 
+**`NavigationIconConfig.Back()` with no `onBackClick` does not call the screen's own `goBack`
+param** — `TaigaTopAppBar.kt`'s `NavigationIcon` falls back to a `defaultGoBack` wired centrally in
+`MainScreen.kt` instead. Any screen whose `goBack` lambda does something beyond `navigator.goBack()`
+(most commonly: `resultBus.sendResult(UpdateDataOnBack)` before popping, so a list screen refreshes
+on return — see `EpicNavGraph.kt`/`EpicDetailsScreen.kt` for the pattern) must pass
+`NavigationIconConfig.Back(onBackClick = { goBack() })` explicitly, or the top bar's back arrow — the
+primary way users leave the screen — silently bypasses it. Confirmed 2026-09-02: `WikiPageScreen`
+used the bare form and its `UpdateDataOnBack` send never fired from the back arrow.
+
 ## ViewModel + State Pattern
 
 State class contains data AND callback functions:
@@ -200,6 +209,17 @@ class MyViewModel @Inject constructor() : ViewModel(), SnackbarDelegate by Snack
     // Use showSnackbarSuspend(message) to show snackbars
 }
 ```
+
+**`WorkItemEditStateRepository` (`feature/workitem/ui/.../screens/WorkItemEditStateRepository.kt`)
+sessions use unbuffered rendezvous `Channel`s, keyed by `(workItemId, TaskIdentifier)`.** If the
+screen that writes an update (e.g. the edit-description screen) and the screen that's supposed to
+receive it key their session with different ids, the write doesn't fail or get dropped — `send()`
+just suspends forever inside whichever `viewModelScope.launch` called it, since nothing is
+`receive()`-ing that session. Confirmed 2026-09-02: `WikiPageViewModel` keyed its listener off
+`route.id` (the nav-route's id) while the writer keyed off the loaded page's real id: for any screen
+reached with a different id than its own (e.g. `WikiPageNavDestination` opened via a bookmark, whose
+`id` is the wiki-link's id, not the page's), the update silently hung rather than erroring. Key both
+ends off the same, authoritative id — not whatever the caller happened to navigate in with.
 
 ## Use Cases
 
@@ -451,6 +471,19 @@ explicitly for that change — a general "commit and push" without naming `dev` 
 not a direct push. `dev` has a GitHub branch-protection rule requiring PRs; a direct push still
 goes through (bypassed via admin permissions), so nothing technically stops it — this is a process
 discipline to follow regardless, not something the repo enforces on its own.
+
+**Releases go through `release-prepare.yml`, not a hand-rolled branch/PR.** Trigger it
+(`gh workflow run release-prepare.yml -f version=X.Y.Z -f version_code=N`, next code = current
+`gradle/libs.versions.toml` `version-code` + 1) — it merges `dev` into a new `release/vX.Y.Z` branch,
+bumps `gradle/libs.versions.toml`, stubs the F-Droid/Play Store changelogs, and opens a PR into
+`master`. Edit the changelog stubs and commit any fixes found during release testing directly onto
+that `release/vX.Y.Z` branch (small commits, same as any other work) — merging the PR auto-tags
+`vX.Y.Z`, `release.yml` builds and publishes it, and `release-finalize.yml` back-merges `master` into
+`dev`. **`guardrails.yml`'s range for a `release/* -> master` PR must diff against `dev`, not
+`master`** (fixed 2026-09-02, first release PR since that workflow shipped) — `master` only advances
+on releases, so diffing against it re-checks the entire dev-vs-master backlog instead of just the
+release branch's own commits. See `docs/revisit.md` #47 for the equivalent, still-open gap on the
+`push`-triggered run that fires on `master` right after the merge.
 
 ## Skills & Agents
 

@@ -70,7 +70,7 @@ fun WikiPageScreen(
             TopBarConfig(
                 title =
                     NativeText.Simple(state.link?.title ?: state.pageSlug),
-                navigationIcon = NavigationIconConfig.Back(),
+                navigationIcon = NavigationIconConfig.Back(onBackClick = { goBack() }),
                 actions = buildList {
                     if (state.shouldShowActions) {
                         add(

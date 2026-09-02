@@ -40,7 +40,7 @@ fun WikiListContentWidget(
         horizontalAlignment = Alignment.Start
     ) {
         when {
-            isLoading -> {
+            isLoading && items.isEmpty() -> {
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

@@ -1,0 +1,5 @@
+- Add Issue/Suggestion button to Settings > About for quick feedback
+- Fixed GitHub login sometimes reusing a stale session after logging out
+- Fixed editing a wiki page's description doing nothing when the page was opened from Bookmarks
+- Wiki pages and bookmarks now show up right away after creating them, and can be pulled to refresh
+- Dependency updates and internal improvements
