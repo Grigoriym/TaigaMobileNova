@@ -2121,3 +2121,32 @@ the first time" note, not a bug.
 navigation, universal/app links, "open this task from a link"), read this entry and the fuller
 per-pattern writeups in `agentic-grappim/investigations/reference-app-scouting.md`'s HedvigInsurance
 section before designing the feature from scratch.
+
+## 47. `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge
+
+**Where:** `.github/workflows/guardrails.yml`, "Work out the range to check" step, the `else`
+branch (the `push` event path, used for pushes to `dev` and `master`).
+
+**What:** fixed the `pull_request` path for `release/* -> master` PRs in this session (PR #379,
+v2.2.0) — it now diffs `origin/dev..HEAD` instead of `origin/master..HEAD`, since master only
+advances on releases and the old range re-checked weeks of already-gated dev history. The `push`
+path has the identical root problem and was **not** touched: once a release PR merges,
+`push: branches: [master]` fires with `github.event.before` = the previous master tip (the last
+release) and `HEAD` = the new tip (the whole dev backlog just merged in). That range will re-trip
+the same old, already-gated commits this session just fixed the PR-side check for.
+
+**Consequence:** low — the merge has already happened by the time this run fires, so a failure here
+doesn't block anything (unlike the PR check). It just leaves a red X on `master`'s history after
+every release, which is misleading (it reads as "this release broke guardrails," but the commits it
+flags predate the release entirely).
+
+**Why deferred:** out of scope for unblocking PR #379, which only needed the `pull_request` path
+fixed. Same fix shape applies (`before` should become `dev`'s tip rather than the previous
+`master` tip when the pushed range looks like a release merge), but it needs its own verification —
+there's no in-flight release-merge push to test against right now, and `github.event.before` isn't
+easily fake-able locally the way `check-guardrails.sh <range>` is.
+
+**Trigger:** next time a release PR merges into `master`, check whether the resulting `push`-triggered
+guardrails run on `master` failed. If it did (for the reason above, not a real new violation), fix
+the `else` branch the same way: when the event is a push to `master` and `before` is not an ancestor
+of `dev`'s current tip reachable within the release-only commits, use `dev`'s merge-base instead.
