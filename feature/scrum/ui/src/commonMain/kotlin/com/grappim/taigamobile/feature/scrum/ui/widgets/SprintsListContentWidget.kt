@@ -18,6 +18,7 @@ import com.grappim.taigamobile.strings.generated.resources.no_sprints
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateAction
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.hasCompletedLoad
@@ -32,6 +33,7 @@ fun SprintsListContentWidget(
     goToSprint: (Sprint) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    DesktopRefreshEffect(onRefresh = { sprints.refresh() })
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
         onRefresh = { sprints.refresh() },

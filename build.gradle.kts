@@ -1,8 +1,12 @@
+import kotlinx.kover.gradle.plugin.dsl.CoverageUnit
+
 plugins {
     alias(libs.plugins.android.application) apply false
     alias(libs.plugins.android.library) apply false
     alias(libs.plugins.android.lint) apply false
+    alias(libs.plugins.android.test) apply false
     alias(libs.plugins.android.kotlin.multiplatform.library) apply false
+    alias(libs.plugins.androidx.baselineprofile) apply false
 
     alias(libs.plugins.jetbrains.compose.compiler) apply false
     alias(libs.plugins.jetbrains.kotlin.jvm) apply false
@@ -40,8 +44,11 @@ kover {
                     *variants(
                         // Data layer
                         "Api", "ApiImpl", "DTO", "Repository",
-                        // Architecture boilerplate
-                        "Delegate", "Plugin", "Module",
+                        // Architecture boilerplate. Deliberately *not* "Plugin" — the only
+                        // classes matching that suffix are core/api's five Ktor plugins
+                        // (TokenRefreshPlugin, ErrorMappingPlugin, ...), which are hand-written
+                        // auth/error-mapping logic, not boilerplate. See docs/revisit.md #10.
+                        "Delegate", "Module",
                         "TimberLogger", "PagingSource", "Exception",
                         // App entry points & platform glue
                         "App", "Desktop", "Activity",
@@ -64,7 +71,14 @@ kover {
                     "**.*ApiConstants",
                     // Preferences — broad glob covers all generated variants
                     "**.*Preferences*",
-                    "**.*BuildConfig"
+                    "**.*BuildConfig",
+                    // The file-level `Foo_androidKt` facade of every `Foo.android.kt`. The root
+                    // aggregation locates both the `jvm` target and the KMP Android library
+                    // target as JVM origins (KotlinMultiPlatformLocator), so these are compiled
+                    // into the report even though CI runs jvmTest only — permanently 0 %. See
+                    // docs/revisit.md #23.
+                    "**.*_androidKt",
+                    "**.*_androidKt\$*"
                 )
 
                 // Compose Multiplatform generated string resources — large generated package
@@ -78,13 +92,48 @@ kover {
                     "com.grappim.taigamobile.core.storage.db.wrapper",
                     "com.grappim.taigamobile.core.storage.di",
                     "com.grappim.taigamobile.core.storage.network",
-                    "com.grappim.taigamobile.core.storage.cache"
+                    "com.grappim.taigamobile.core.storage.cache",
+                    // androidMain-only SharedPreferences delegates (StringPreference) — same
+                    // Android-variant-in-jvmTest-only-CI unreachability as the _androidKt facades
+                    // above. See docs/revisit.md #17 and #23.
+                    "com.grappim.taigamobile.core.storage.utils"
                 )
             }
         }
         total {
             xml { }
             html { }
+
+            // Floors, not targets. Ratchet them up as coverage improves; never lower them to
+            // make a build pass. The branch bound is the point of the exercise — it sits ~15
+            // points under the line bound, and that gap is the untested error paths.
+            //
+            // Bounds are ~3 points under what koverVerify measured on 2026-08-08 (after
+            // docs/revisit.md #23 excluded Android-variant-only classes — the *_androidKt
+            // facades and core.storage.utils — that jvmTest-only CI can never cover): line
+            // 95.4814 %, branch 81.3863 %. Previous reading (before #23): line 94.9199 %,
+            // branch 80.2198 %.
+            //
+            // koverXmlReport and koverVerify agree to six significant figures *within a single
+            // invocation* — VariantReportsSet hands both tasks the same filters and the same
+            // artifacts. Across invocations they can differ, because the report counts whichever
+            // compiler output happens to exist on disk, which an Android build or a KSP re-run
+            // changes. So take the reading from a run that also produced the XML you compare it
+            // against. See docs/issues/2026-08-07-kover-excludes-and-report-mode-flip.md.
+            verify {
+                rule("Line coverage") {
+                    bound {
+                        minValue = 92
+                        coverageUnits = CoverageUnit.LINE
+                    }
+                }
+                rule("Branch coverage") {
+                    bound {
+                        minValue = 78
+                        coverageUnits = CoverageUnit.BRANCH
+                    }
+                }
+            }
         }
     }
 }
@@ -191,3 +240,5 @@ val syncIosVersion by tasks.registering {
 project(":composeApp").tasks.matching { it.name.startsWith("assembleTaigaMobileNova") }.configureEach {
     dependsOn(syncIosVersion)
 }
+
+apply(from = "gradle/projectDependencyGraph.gradle")

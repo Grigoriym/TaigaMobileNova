@@ -1,5 +1,6 @@
 
 import com.android.build.api.dsl.KotlinMultiplatformAndroidLibraryExtension
+import com.grappim.taigamobile.buildlogic.configureComposeStabilityReports
 import com.grappim.taigamobile.buildlogic.configureKmp
 import com.grappim.taigamobile.buildlogic.configureKmpCompose
 import com.grappim.taigamobile.buildlogic.configureLinting
@@ -18,6 +19,7 @@ class KmpLibraryComposeConventionPlugin : Plugin<Project> {
                 apply("org.jetbrains.compose")
                 apply("org.jetbrains.kotlin.plugin.compose")
             }
+            configureComposeStabilityReports()
             configureKmp()
             configureKmpCompose()
             configureTests()

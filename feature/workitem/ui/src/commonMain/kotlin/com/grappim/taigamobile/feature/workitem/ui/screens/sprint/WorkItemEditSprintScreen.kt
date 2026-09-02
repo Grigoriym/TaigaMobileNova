@@ -44,9 +44,14 @@ import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
-fun WorkItemEditSprintScreen(goBack: () -> Unit, viewModel: EditSprintViewModel = koinViewModel()) {
+fun WorkItemEditSprintScreen(
+    route: WorkItemEditSprintNavDestination,
+    goBack: () -> Unit,
+    viewModel: EditSprintViewModel = koinViewModel { parametersOf(route) }
+) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
 

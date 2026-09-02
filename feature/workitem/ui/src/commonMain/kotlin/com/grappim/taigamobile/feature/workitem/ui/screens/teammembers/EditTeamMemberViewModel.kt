@@ -1,17 +1,13 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.teammembers
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TeamMemberUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberEditType
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.utils.ui.typeMapOf
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
@@ -21,24 +17,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
-import kotlin.reflect.typeOf
 
 @KoinViewModel
 class EditTeamMemberViewModel(
     private val usersRepository: UsersRepository,
     private val teamMemberUIMapper: TeamMemberUIMapper,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
-    savedStateHandle: SavedStateHandle
+    @InjectedParam val route: WorkItemEditTeamMemberNavDestination
 ) : ViewModel() {
-
-    val route = savedStateHandle.toRoute<WorkItemEditTeamMemberNavDestination>(
-        typeMap = typeMapOf(
-            listOf(
-                typeOf<TaskIdentifier>()
-            )
-        )
-    )
 
     private val _state = MutableStateFlow(
         EditTeamMemberState(

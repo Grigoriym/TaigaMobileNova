@@ -192,6 +192,23 @@ internal class LoginViewModelTest {
     }
 
     @Test
+    fun `on validateAuthData with bare localhost server should not set server error`() {
+        val authType = AuthType.LDAP
+        val password = getRandomString()
+        val username = getRandomString()
+        val server = "https://localhost:9000"
+
+        sut.state.value.onServerValueChange(server)
+        sut.state.value.onAuthTypeChange(authType)
+        sut.state.value.onPasswordValueChange(password)
+        sut.state.value.onLoginValueChange(username)
+
+        sut.state.value.validateAuthData(authType)
+
+        assertFalse(sut.state.value.isServerInputError)
+    }
+
+    @Test
     fun `on onAuthTypeChange should change the authType`() {
         assertEquals(AuthType.NORMAL, sut.state.value.authType)
 

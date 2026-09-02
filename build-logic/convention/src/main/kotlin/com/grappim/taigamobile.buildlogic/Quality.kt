@@ -8,6 +8,7 @@ import org.gradle.api.tasks.testing.logging.TestLogEvent
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.gradle.kotlin.dsl.withType
+import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetContainer
 import org.jlleitschuh.gradle.ktlint.KtlintExtension
 import org.jlleitschuh.gradle.ktlint.reporter.ReporterType
 
@@ -36,12 +37,27 @@ fun Project.configureLinting() {
     pluginManager.apply("dev.detekt")
     pluginManager.apply("org.jlleitschuh.gradle.ktlint")
 
+    // The plain `detekt` task defaults to the JVM layout (src/main/kotlin, src/test/kotlin),
+    // which no KMP module uses — without this every task reports NO-SOURCE.
+    // Source sets also carry generated dirs (BuildKonfig, Compose resources, Room); those live
+    // under the build dir and are dropped here, since detekt's own `build/` exclude does not
+    // match the absolute paths the source sets hand over.
+    val kotlinSrcDirs = provider {
+        val buildDir = layout.buildDirectory.get().asFile
+        extensions.findByType(KotlinSourceSetContainer::class.java)
+            ?.sourceSets
+            ?.flatMap { it.kotlin.srcDirs }
+            ?.filterNot { it.startsWith(buildDir) }
+            .orEmpty()
+    }
+
     // https://detekt.dev/docs/introduction/configurations/
     configure<DetektExtension> {
         buildUponDefaultConfig.set(true)
         parallel.set(true)
         config.setFrom(rootProject.files("config/detekt/detekt.yml"))
         allRules.set(false)
+        source.setFrom(kotlinSrcDirs)
     }
 
     // ./gradlew --continue ktlintCheck

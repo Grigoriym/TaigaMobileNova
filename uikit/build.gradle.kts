@@ -1,3 +1,5 @@
+@file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+
 plugins {
     alias(libs.plugins.taigamobile.kmp.library)
     alias(libs.plugins.taigamobile.kmp.library.compose)
@@ -8,6 +10,10 @@ compose.resources {
     generateResClass = always
     publicResClass = true
 }
+
+val composeUiTestDep = compose.dependencies.uiTest
+val composeDesktopUiTestJUnit4Dep = compose.dependencies.desktop.uiTestJUnit4
+val composeDesktopCurrentOsDep = compose.dependencies.desktop.currentOs
 
 kotlin {
     sourceSets {
@@ -34,6 +40,11 @@ kotlin {
             implementation(libs.markdownRenderer.core)
             implementation(libs.markdownRenderer.m3)
             implementation(libs.markdownRenderer.coil)
+        }
+        jvmTest.dependencies {
+            implementation(composeUiTestDep)
+            implementation(composeDesktopUiTestJUnit4Dep)
+            implementation(composeDesktopCurrentOsDep)
         }
     }
 }

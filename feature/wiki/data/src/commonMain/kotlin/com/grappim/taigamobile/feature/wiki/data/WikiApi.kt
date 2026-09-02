@@ -11,37 +11,49 @@ import io.ktor.client.request.setBody
 import io.ktor.client.statement.discardRemaining
 import org.koin.core.annotation.Single
 
-@Single
-class WikiApi(private val httpClient: HttpClient) {
+interface WikiApi {
 
-    suspend fun getProjectWikiPages(projectId: Long): List<WikiPageDTO> = httpClient.get("wiki") {
+    suspend fun getProjectWikiPages(projectId: Long): List<WikiPageDTO>
+    suspend fun getProjectWikiPageBySlug(projectId: Long, slug: String): WikiPageDTO
+    suspend fun deleteWikiPage(pageId: Long)
+    suspend fun getWikiLink(projectId: Long): List<WikiLinkDTO>
+    suspend fun createWikiLink(body: NewWikiLinkRequestDTO): WikiLinkDTO
+    suspend fun deleteWikiLink(linkId: Long)
+    suspend fun createWikiPage(body: CreateWikiPageRequestDTO): WikiPageDTO
+}
+
+@Single(binds = [WikiApi::class])
+class WikiApiImpl(private val httpClient: HttpClient) : WikiApi {
+
+    override suspend fun getProjectWikiPages(projectId: Long): List<WikiPageDTO> = httpClient.get("wiki") {
         url { parameters.append("project", projectId.toString()) }
     }.body()
 
-    suspend fun getProjectWikiPageBySlug(projectId: Long, slug: String): WikiPageDTO = httpClient.get("wiki/by_slug") {
-        url {
-            parameters.append("project", projectId.toString())
-            parameters.append("slug", slug)
-        }
-    }.body()
+    override suspend fun getProjectWikiPageBySlug(projectId: Long, slug: String): WikiPageDTO =
+        httpClient.get("wiki/by_slug") {
+            url {
+                parameters.append("project", projectId.toString())
+                parameters.append("slug", slug)
+            }
+        }.body()
 
-    suspend fun deleteWikiPage(pageId: Long) {
+    override suspend fun deleteWikiPage(pageId: Long) {
         httpClient.delete("wiki/$pageId").discardRemaining()
     }
 
-    suspend fun getWikiLink(projectId: Long): List<WikiLinkDTO> = httpClient.get("wiki-links") {
+    override suspend fun getWikiLink(projectId: Long): List<WikiLinkDTO> = httpClient.get("wiki-links") {
         url { parameters.append("project", projectId.toString()) }
     }.body()
 
-    suspend fun createWikiLink(body: NewWikiLinkRequestDTO): WikiLinkDTO = httpClient.post("wiki-links") {
+    override suspend fun createWikiLink(body: NewWikiLinkRequestDTO): WikiLinkDTO = httpClient.post("wiki-links") {
         setBody(body)
     }.body()
 
-    suspend fun deleteWikiLink(linkId: Long) {
+    override suspend fun deleteWikiLink(linkId: Long) {
         httpClient.delete("wiki-links/$linkId").discardRemaining()
     }
 
-    suspend fun createWikiPage(body: CreateWikiPageRequestDTO): WikiPageDTO = httpClient.post("wiki") {
+    override suspend fun createWikiPage(body: CreateWikiPageRequestDTO): WikiPageDTO = httpClient.post("wiki") {
         setBody(body)
     }.body()
 }

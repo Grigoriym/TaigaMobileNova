@@ -1,10 +1,17 @@
 package com.grappim.taigamobile.nav
 
-import androidx.navigation.NavGraphBuilder
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.navigation3.runtime.EntryProviderScope
+import androidx.navigation3.runtime.NavKey
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.core.navigation.LocalResultBus
+import com.grappim.taigamobile.core.navigation.Navigator
+import com.grappim.taigamobile.core.navigation.ResultEffect
+import com.grappim.taigamobile.core.navigation.sendResult
 import com.grappim.taigamobile.createtask.navigateToCreateTask
 import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsNavDestination
 import com.grappim.taigamobile.feature.epics.ui.details.EpicDetailsScreen
@@ -16,22 +23,21 @@ import com.grappim.taigamobile.feature.userstories.ui.navigateToUserStory
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navigateToWorkItemEditDescription
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditTeamMember
-import com.grappim.taigamobile.main.UPDATE_DATA_ON_BACK
-import com.grappim.taigamobile.main.setUpdateDataOnBack
+import com.grappim.taigamobile.main.UpdateDataOnBack
 import com.grappim.taigamobile.utils.ui.NativeText
 
-fun NavGraphBuilder.epicNavGraph(showSnackbar: (NativeText) -> Unit, navController: NavHostController) {
-    composable<EpicsNavDestination> { navBackStackEntry ->
-        val updateData: Boolean =
-            navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
+fun EntryProviderScope<NavKey>.epicNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
+    entry<EpicsNavDestination> {
+        var updateData by remember { mutableStateOf(false) }
+        ResultEffect<UpdateDataOnBack> { updateData = true }
         EpicsScreen(
             showSnackbar = showSnackbar,
             goToCreateEpic = {
-                navController.navigateToCreateTask(type = CommonTaskType.Epic)
+                navigator.navigateToCreateTask(type = CommonTaskType.Epic)
             },
             updateData = updateData,
             goToEpic = { id, _, ref ->
-                navController.navigateToEpicDetails(
+                navigator.navigateToEpicDetails(
                     epicId = id,
                     ref = ref
                 )
@@ -39,46 +45,48 @@ fun NavGraphBuilder.epicNavGraph(showSnackbar: (NativeText) -> Unit, navControll
         )
     }
 
-    composable<EpicDetailsNavDestination> { navBackStackEntry ->
-        val updateData: Boolean =
-            navBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK] ?: false
+    entry<EpicDetailsNavDestination> { route ->
+        var updateData by remember { mutableStateOf(false) }
+        ResultEffect<UpdateDataOnBack> { updateData = true }
+        val resultBus = LocalResultBus.current
         EpicDetailsScreen(
+            route = route,
             showSnackbar = showSnackbar,
             updateData = updateData,
             goToProfile = { creatorId ->
-                navController.navigateToProfileScreen(creatorId)
+                navigator.navigateToProfileScreen(creatorId)
             },
             goToEditDescription = { description: String, id: Long ->
-                navController.navigateToWorkItemEditDescription(
+                navigator.navigateToWorkItemEditDescription(
                     description = description,
                     workItemId = id,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Epic)
                 )
             },
             goToEditTags = { id ->
-                navController.navigateToWorkItemEditTags(
+                navigator.navigateToWorkItemEditTags(
                     workItemId = id,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Epic)
                 )
             },
             goBack = {
-                navController.setUpdateDataOnBack()
-                navController.popBackStack()
+                resultBus.sendResult(UpdateDataOnBack)
+                navigator.goBack()
             },
             goToEditAssignee = { id ->
-                navController.navigateToWorkItemEditTeamMember(
+                navigator.navigateToWorkItemEditTeamMember(
                     workItemId = id,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Epic)
                 )
             },
             goToEditWatchers = { id ->
-                navController.navigateToWorkItemEditTeamMember(
+                navigator.navigateToWorkItemEditTeamMember(
                     workItemId = id,
                     taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Epic)
                 )
             },
             goToUserStory = { id, _, ref ->
-                navController.navigateToUserStory(
+                navigator.navigateToUserStory(
                     userStoryId = id,
                     ref = ref
                 )

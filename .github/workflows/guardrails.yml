@@ -1,0 +1,58 @@
+name: Guardrails
+
+# Deliberately no `paths-ignore`, unlike build.yml/code_analysis.yml: a commit that only edits
+# CLAUDE.md produces no CI run at all, and that file decides what every later session is allowed
+# to do.
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches:
+      - dev
+      - master
+  pull_request:
+    branches:
+      - dev
+      - master
+
+concurrency:
+  group: guardrails-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  guardrails:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Work out the range to check
+        id: range
+        run: |
+          if [ "${{ github.event_name }}" = 'pull_request' ]; then
+            range="origin/${{ github.base_ref }}..HEAD"
+          else
+            before='${{ github.event.before }}'
+            if ! git cat-file -e "${before}^{commit}" 2>/dev/null; then
+              before="$(git rev-parse --verify --quiet 'HEAD^' || echo '')"
+            fi
+            range="${before:+${before}..}HEAD"
+          fi
+          echo "range=${range}" >> "$GITHUB_OUTPUT"
+          echo "Checking ${range}"
+
+      - name: Check the gate tripwires
+        run: .github/scripts/check-guardrails.sh '${{ steps.range.outputs.range }}'
+
+      - name: Validate workflow YAML syntax
+        run: |
+          npm install --no-save js-yaml
+          for f in .github/workflows/*.yml; do
+            echo "Checking ${f}"
+            node -e "require('js-yaml').load(require('fs').readFileSync('${f}', 'utf8'))"
+          done

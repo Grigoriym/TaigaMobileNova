@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.core.api.errors
 
+import com.grappim.taigamobile.core.api.sanitizedForCrashReporting
 import com.grappim.taigamobile.core.domain.NetworkException
 import com.grappim.taigamobile.core.domain.ProjectLimitInfo
 import com.grappim.taigamobile.core.logger.LogPriority
@@ -11,15 +12,12 @@ import io.ktor.client.plugins.plugin
 import io.ktor.client.statement.HttpResponse
 import io.ktor.client.statement.bodyAsText
 import io.ktor.util.AttributeKey
-import kotlinx.serialization.json.Json
 
 class ErrorMappingPlugin(
-    private val json: Json,
     private val networkErrorMapper: NetworkErrorMapper,
     private val errorResponseParser: ErrorResponseParser
 ) {
     class Config {
-        lateinit var json: Json
         lateinit var errorMapper: NetworkErrorMapper
         lateinit var errorResponseParser: ErrorResponseParser
     }
@@ -31,7 +29,6 @@ class ErrorMappingPlugin(
         override fun prepare(block: Config.() -> Unit): ErrorMappingPlugin {
             val config = Config().apply(block)
             return ErrorMappingPlugin(
-                json = config.json,
                 networkErrorMapper = config.errorMapper,
                 errorResponseParser = config.errorResponseParser
             )
@@ -66,7 +63,11 @@ class ErrorMappingPlugin(
                 } catch (e: NetworkException) {
                     throw e
                 } catch (e: Exception) {
-                    logcat(priority = LogPriority.ERROR, tag = "ErrorMappingPlugin", throwable = e) {
+                    logcat(
+                        priority = LogPriority.ERROR,
+                        tag = "ErrorMappingPlugin",
+                        throwable = e.sanitizedForCrashReporting()
+                    ) {
                         "Request failed"
                     }
                     throw plugin.networkErrorMapper.mapToNetworkException(e)

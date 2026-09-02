@@ -6,6 +6,7 @@ import com.grappim.taigamobile.utils.ui.NativeText
 data class SettingsUserScreenState(
     val user: User? = null,
     val serverUrl: String = "",
+    val isUnencryptedConnection: Boolean = false,
     val isLoading: Boolean = false,
     val error: NativeText = NativeText.Empty
 )

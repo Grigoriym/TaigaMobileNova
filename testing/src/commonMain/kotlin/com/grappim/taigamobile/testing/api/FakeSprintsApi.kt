@@ -16,11 +16,23 @@ class FakeSprintsApi : SprintApi {
     var lastEditRequest: EditSprintRequest? = null
     var lastDeleteId: Long? = null
 
+    var sprintsPagingResponse: HttpResponse? = null
+    var getSprintsPagingThrows: Throwable? = null
+    var lastPagingProject: Long? = null
+    var lastPagingPage: Int? = null
+    var lastPagingIsClosed: Boolean? = null
+
     override suspend fun getSprintsPaging(
         project: Long,
         page: Int,
         isClosed: Boolean
-    ): HttpResponse = error("not used in this test")
+    ): HttpResponse {
+        lastPagingProject = project
+        lastPagingPage = page
+        lastPagingIsClosed = isClosed
+        getSprintsPagingThrows?.let { throw it }
+        return sprintsPagingResponse ?: error("sprintsPagingResponse not set")
+    }
 
     override suspend fun getSprints(
         project: Long,

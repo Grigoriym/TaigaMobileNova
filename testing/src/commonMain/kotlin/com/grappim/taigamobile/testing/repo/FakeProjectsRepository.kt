@@ -16,9 +16,19 @@ import kotlinx.coroutines.flow.flowOf
 class FakeProjectsRepository : ProjectsRepository {
 
     var permissions: ImmutableList<TaigaPermission> = persistentListOf(TaigaPermission.MODIFY_PROJECT)
+    var getPermissionsThrows: Throwable? = null
 
-    override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> =
-        flowOf(PagingData.empty())
+    var fetchProjectsResult: ImmutableList<Project> = persistentListOf()
+    val fetchProjectsCalls: MutableList<String> = mutableListOf()
+
+    override suspend fun fetchProjects(query: String): Flow<PagingData<Project>> {
+        fetchProjectsCalls += query
+        return if (fetchProjectsResult.isEmpty()) {
+            flowOf(PagingData.empty())
+        } else {
+            flowOf(PagingData.from(fetchProjectsResult))
+        }
+    }
 
     override suspend fun getMyProjects(): ImmutableList<Project> = error("not used in this test")
 
@@ -38,12 +48,21 @@ class FakeProjectsRepository : ProjectsRepository {
         saveProjectCalledWith = project
     }
 
-    override suspend fun getCurrentProjectSimple(): ProjectSimple = error("not used in this test")
+    var getCurrentProjectSimpleResult: ProjectSimple? = null
+    var getCurrentProjectSimpleThrows: Throwable? = null
+
+    override suspend fun getCurrentProjectSimple(): ProjectSimple {
+        getCurrentProjectSimpleThrows?.let { throw it }
+        return getCurrentProjectSimpleResult ?: error("getCurrentProjectSimpleResult not set")
+    }
 
     var projectFlow: Flow<ProjectSimple> = flowOf()
     override fun getCurrentProjectFlow(): Flow<ProjectSimple> = projectFlow
 
-    override suspend fun getPermissions(): ImmutableList<TaigaPermission> = permissions
+    override suspend fun getPermissions(): ImmutableList<TaigaPermission> {
+        getPermissionsThrows?.let { throw it }
+        return permissions
+    }
 
     var fetchAndSaveProjectInfoCalled = false
     var fetchAndSaveProjectInfoThrows: Throwable? = null
@@ -69,8 +88,19 @@ class FakeProjectsRepository : ProjectsRepository {
         return getProjectModulesResult ?: error("getProjectModulesResult not set")
     }
 
+    data class UpdateModulesCall(
+        val isEpicsActivated: Boolean,
+        val isBacklogActivated: Boolean,
+        val isKanbanActivated: Boolean,
+        val isIssuesActivated: Boolean,
+        val isWikiActivated: Boolean,
+        val totalMilestones: Int?,
+        val totalStoryPoints: Double?
+    )
+
     var updateModulesCalled = false
     var updateModulesThrows: Throwable? = null
+    val updateModulesCalls: MutableList<UpdateModulesCall> = mutableListOf()
 
     override suspend fun updateModules(
         isEpicsActivated: Boolean,
@@ -82,11 +112,30 @@ class FakeProjectsRepository : ProjectsRepository {
         totalStoryPoints: Double?
     ) {
         updateModulesCalled = true
+        updateModulesCalls += UpdateModulesCall(
+            isEpicsActivated = isEpicsActivated,
+            isBacklogActivated = isBacklogActivated,
+            isKanbanActivated = isKanbanActivated,
+            isIssuesActivated = isIssuesActivated,
+            isWikiActivated = isWikiActivated,
+            totalMilestones = totalMilestones,
+            totalStoryPoints = totalStoryPoints
+        )
         updateModulesThrows?.let { throw it }
     }
 
+    data class UpdateProjectCall(
+        val name: String,
+        val description: String,
+        val isPrivate: Boolean,
+        val isLookingForPeople: Boolean,
+        val lookingForPeopleNote: String,
+        val isContactActivated: Boolean
+    )
+
     var updateProjectCalled = false
     var updateProjectThrows: Throwable? = null
+    val updateProjectCalls: MutableList<UpdateProjectCall> = mutableListOf()
 
     override suspend fun updateProject(
         name: String,
@@ -97,6 +146,14 @@ class FakeProjectsRepository : ProjectsRepository {
         isContactActivated: Boolean,
     ) {
         updateProjectCalled = true
+        updateProjectCalls += UpdateProjectCall(
+            name = name,
+            description = description,
+            isPrivate = isPrivate,
+            isLookingForPeople = isLookingForPeople,
+            lookingForPeopleNote = lookingForPeopleNote,
+            isContactActivated = isContactActivated
+        )
         updateProjectThrows?.let { throw it }
     }
 

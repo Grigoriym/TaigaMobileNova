@@ -1,11 +1,12 @@
 package com.grappim.taigamobile.feature.profile.ui
 
-import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
+import com.grappim.taigamobile.core.navigation.Navigator
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class ProfileNavDestination(val userId: Long)
+data class ProfileNavDestination(val userId: Long) : NavKey
 
-fun NavController.navigateToProfileScreen(userId: Long) {
-    navigate(route = ProfileNavDestination(userId))
+fun Navigator.navigateToProfileScreen(userId: Long) {
+    navigate(ProfileNavDestination(userId))
 }

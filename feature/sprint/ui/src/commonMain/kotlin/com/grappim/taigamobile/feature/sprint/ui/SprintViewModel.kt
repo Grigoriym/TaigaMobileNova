@@ -1,9 +1,7 @@
 package com.grappim.taigamobile.feature.sprint.ui
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
@@ -27,6 +25,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
@@ -34,7 +33,7 @@ class SprintViewModel(
     private val sprintsRepository: SprintsRepository,
     private val projectsRepository: ProjectsRepository,
     private val dateTimeUtils: DateTimeUtils,
-    savedStateHandle: SavedStateHandle
+    @InjectedParam private val route: SprintNavDestination
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),
     WorkItemSprintDelegate by WorkItemSprintDelegateImpl(
@@ -53,8 +52,6 @@ class SprintViewModel(
         )
     )
     val state = _state.asStateFlow()
-
-    private val route = savedStateHandle.toRoute<SprintNavDestination>()
 
     private val sprintId: Long = route.sprintId
     private val _deleteResult = Channel<Unit>()

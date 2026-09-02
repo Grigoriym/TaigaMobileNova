@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.DateItemState
+import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.EditableItem
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.NumberItemState
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import kotlinx.collections.immutable.ImmutableList
@@ -104,7 +105,9 @@ class WorkItemCustomFieldsDelegateImpl(
         }.onSuccess { result ->
             doOnSuccess?.invoke()
 
-            onCustomFieldEditToggle(item)
+            if (item is EditableItem) {
+                onCustomFieldEditToggle(item)
+            }
             onCustomFieldSaved(item.getSavedItem())
             _customFieldsState.update {
                 it.copy(

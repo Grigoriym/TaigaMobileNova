@@ -19,10 +19,9 @@ fun Project.configureKmpCompose() {
 
                 implementation(libs.findLibrary("jetbrains.lifecycle.runtime.compose").get())
                 implementation(libs.findLibrary("jetbrains.lifecycle.viewmodel.compose").get())
+                implementation(libs.findLibrary("jetbrains.lifecycle.viewmodel.savedstate").get())
 
                 implementation(libs.findLibrary("jetbrains.androidx.savedstate").get())
-
-                implementation(libs.findLibrary("jetbrains.compose.navigation").get())
             }
             jvmMain.dependencies {
                 implementation(libs.findLibrary("jetbrains.compose.desktop").get())

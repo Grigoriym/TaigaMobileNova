@@ -1,17 +1,17 @@
 package com.grappim.taigamobile.feature.userstories.ui
 
-import androidx.navigation.NavController
-import com.grappim.taigamobile.core.navigation.navigateAndPopCurrent
+import androidx.navigation3.runtime.NavKey
+import com.grappim.taigamobile.core.navigation.Navigator
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class UserStoryDetailsNavDestination(val userStoryId: Long, val ref: Long)
+data class UserStoryDetailsNavDestination(val userStoryId: Long, val ref: Long) : NavKey
 
-fun NavController.navigateToUserStory(userStoryId: Long, ref: Long, popUpToRoute: Any? = null) {
+fun Navigator.navigateToUserStory(userStoryId: Long, ref: Long, replaceCurrent: Boolean = false) {
     val route = UserStoryDetailsNavDestination(userStoryId = userStoryId, ref = ref)
-    if (popUpToRoute != null) {
-        navigateAndPopCurrent(route = route, popUpToRoute = popUpToRoute)
+    if (replaceCurrent) {
+        replaceCurrent(route)
     } else {
-        navigate(route = route)
+        navigate(route)
     }
 }

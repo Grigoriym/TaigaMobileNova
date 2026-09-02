@@ -41,6 +41,20 @@ data class PatchDataCall(
     val commonTaskType: CommonTaskType,
 )
 
+data class PatchCustomAttributesCall(
+    val customAttributesVersion: Long,
+    val workItemId: Long,
+    val payload: ImmutableMap<String, Any?>,
+    val commonTaskType: CommonTaskType,
+)
+
+data class CreateWorkItemCall(
+    val commonTaskType: CommonTaskType,
+    val subject: String,
+    val description: String,
+    val status: Long?,
+)
+
 data class PatchWikiPageCall(
     val pageId: Long,
     val version: Long,
@@ -70,6 +84,10 @@ class FakeWorkItemRepository : WorkItemRepository {
 
     var deleteAttachmentThrows: Throwable? = null
     val deleteAttachmentCalls: MutableList<DeleteAttachmentCall> = mutableListOf()
+
+    var patchCustomAttributesResult: PatchedCustomAttributes? = null
+    var patchCustomAttributesThrows: Throwable? = null
+    val patchCustomAttributesCalls: MutableList<PatchCustomAttributesCall> = mutableListOf()
 
     var patchWikiPageResult: PatchedData? = null
     var patchWikiPageThrows: Throwable? = null
@@ -105,7 +123,16 @@ class FakeWorkItemRepository : WorkItemRepository {
         workItemId: Long,
         payload: ImmutableMap<String, Any?>,
         commonTaskType: CommonTaskType,
-    ): PatchedCustomAttributes = error("not used in this test")
+    ): PatchedCustomAttributes {
+        patchCustomAttributesCalls += PatchCustomAttributesCall(
+            customAttributesVersion,
+            workItemId,
+            payload,
+            commonTaskType,
+        )
+        patchCustomAttributesThrows?.let { throw it }
+        return patchCustomAttributesResult ?: error("patchCustomAttributesResult not configured")
+    }
 
     override suspend fun addAttachment(
         workItemId: Long,
@@ -128,11 +155,15 @@ class FakeWorkItemRepository : WorkItemRepository {
     }
 
     var getWorkItemAttachmentsResult: ImmutableList<Attachment> = persistentListOf()
+    var getWorkItemAttachmentsThrows: Throwable? = null
 
     override suspend fun getWorkItemAttachments(
         workItemId: Long,
         taskIdentifier: TaskIdentifier,
-    ): ImmutableList<Attachment> = getWorkItemAttachmentsResult
+    ): ImmutableList<Attachment> {
+        getWorkItemAttachmentsThrows?.let { throw it }
+        return getWorkItemAttachmentsResult
+    }
 
     var watchWorkItemThrows: Throwable? = null
     var watchWorkItemCalled = false
@@ -181,11 +212,15 @@ class FakeWorkItemRepository : WorkItemRepository {
     }
 
     var getCustomFieldsResult: CustomFields? = null
+    var getCustomFieldsThrows: Throwable? = null
 
     override suspend fun getCustomFields(
         workItemId: Long,
         commonTaskType: CommonTaskType,
-    ): CustomFields = getCustomFieldsResult ?: error("getCustomFieldsResult not set")
+    ): CustomFields {
+        getCustomFieldsThrows?.let { throw it }
+        return getCustomFieldsResult ?: error("getCustomFieldsResult not set")
+    }
 
     override suspend fun deleteWorkItem(
         workItemId: Long,
@@ -205,12 +240,20 @@ class FakeWorkItemRepository : WorkItemRepository {
         return patchWikiPageResult ?: error("patchWikiPageResult not configured")
     }
 
+    var createWorkItemResult: WorkItem? = null
+    var createWorkItemThrows: Throwable? = null
+    val createWorkItemCalls: MutableList<CreateWorkItemCall> = mutableListOf()
+
     override suspend fun createWorkItem(
         commonTaskType: CommonTaskType,
         subject: String,
         description: String,
         status: Long?,
-    ): WorkItem = error("not used in this test")
+    ): WorkItem {
+        createWorkItemCalls += CreateWorkItemCall(commonTaskType, subject, description, status)
+        createWorkItemThrows?.let { throw it }
+        return createWorkItemResult ?: error("createWorkItemResult not configured")
+    }
 
     override suspend fun promoteToUserStory(
         workItemId: Long,

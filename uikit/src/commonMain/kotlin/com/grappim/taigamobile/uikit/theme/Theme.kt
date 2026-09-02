@@ -7,7 +7,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalUriHandler
+import com.grappim.taigamobile.uikit.utils.SafeUriHandler
 
 internal val DarkColorPalette = darkColorScheme(
     primary = taigaGreen,
@@ -35,9 +38,12 @@ expect fun colorScheme(darkTheme: Boolean): ColorScheme
 fun TaigaMobileTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
     MaterialTheme(
         colorScheme = colorScheme(darkTheme),
-        typography = typography,
-        content = content
-    )
+        typography = typography
+    ) {
+        CompositionLocalProvider(LocalUriHandler provides SafeUriHandler(LocalUriHandler.current)) {
+            content()
+        }
+    }
 }
 
 @Composable

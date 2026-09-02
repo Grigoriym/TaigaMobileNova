@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.sprint
 
-import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.sprint_end_date_empty
 import com.grappim.taigamobile.strings.generated.resources.sprint_name_empty
 import com.grappim.taigamobile.strings.generated.resources.sprint_start_date_empty
 import com.grappim.taigamobile.testing.repo.FakeSprintsRepository
@@ -9,6 +9,7 @@ import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
+import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,13 +21,14 @@ import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class WorkItemSprintDelegateImplTest {
 
     private val dateTimeUtils: DateTimeUtils = FakeDateTimeUtils()
-    private val sprintsRepository: SprintsRepository = FakeSprintsRepository()
+    private val sprintsRepository = FakeSprintsRepository()
 
     private lateinit var sut: WorkItemSprintDelegateImpl
 
@@ -249,6 +251,140 @@ class WorkItemSprintDelegateImplTest {
         assertFalse(state.isEndDateDialogVisible)
         assertEquals(localDate, state.endDate)
         assertEquals(formattedDate, state.endDateToDisplay)
+    }
+
+    @Test
+    fun `onEndDateConfirmButtonClick should do nothing when millis is null`() = runTest {
+        sut.sprintDialogState.value.onEndDateConfirmButtonClick(null)
+
+        val state = sut.sprintDialogState.value
+        assertFalse(state.isEndDateDialogVisible)
+        assertNull(state.endDate)
+        assertEquals("", state.endDateToDisplay)
+    }
+
+    @Test
+    fun `start date dismiss callbacks should hide the start date dialog`() = runTest {
+        sut.sprintDialogState.value.setIsStartDateDialogVisible(true)
+        sut.sprintDialogState.value.onStartDateDismissRequest()
+        assertFalse(sut.sprintDialogState.value.isStartDateDialogVisible)
+
+        sut.sprintDialogState.value.setIsStartDateDialogVisible(true)
+        sut.sprintDialogState.value.onStartDateDismissButonClick()
+        assertFalse(sut.sprintDialogState.value.isStartDateDialogVisible)
+    }
+
+    @Test
+    fun `end date dismiss callbacks should hide the end date dialog`() = runTest {
+        sut.sprintDialogState.value.setIsEndDateDialogVisible(true)
+        sut.sprintDialogState.value.onEndDateDismissRequest()
+        assertFalse(sut.sprintDialogState.value.isEndDateDialogVisible)
+
+        sut.sprintDialogState.value.setIsEndDateDialogVisible(true)
+        sut.sprintDialogState.value.onEndDateDismissButonClick()
+        assertFalse(sut.sprintDialogState.value.isEndDateDialogVisible)
+    }
+
+    @Test
+    fun `createSprint should show error when end date is null`() = runTest {
+        setupNameAndStartDateOnly()
+
+        sut.createSprint()
+
+        val state = sut.sprintDialogState.value
+        assertEquals(NativeText.Resource(RString.sprint_end_date_empty), state.dialogError)
+        assertFalse(sprintsRepository.createSprintCalled)
+    }
+
+    @Test
+    fun `editSprint should show error when end date is null`() = runTest {
+        setupNameAndStartDateOnly()
+
+        sut.editSprint(sprintId = getRandomLong())
+
+        val state = sut.sprintDialogState.value
+        assertEquals(NativeText.Resource(RString.sprint_end_date_empty), state.dialogError)
+        assertFalse(sprintsRepository.editSprintCalled)
+    }
+
+    @Test
+    fun `createSprint should set dialog error and call doOnError on failure`() = runTest {
+        setupSprintState(getRandomString(), nowLocalDate, nowLocalDate.plus(14, DateTimeUnit.DAY))
+        sprintsRepository.createSprintThrows = testException
+        sut.setSprintDialogVisibility(true)
+
+        var errorCalled = false
+        var successCalled = false
+        sut.createSprint(doOnSuccess = { successCalled = true }, doOnError = { errorCalled = true })
+
+        assertTrue(errorCalled)
+        assertFalse(successCalled)
+        val state = sut.sprintDialogState.value
+        assertEquals(NativeText.Simple(testException.message.toString()), state.dialogError)
+        assertTrue(state.isSprintDialogVisible)
+    }
+
+    @Test
+    fun `createSprint should still set dialog error when doOnError is null`() = runTest {
+        setupSprintState(getRandomString(), nowLocalDate, nowLocalDate.plus(14, DateTimeUnit.DAY))
+        sprintsRepository.createSprintThrows = testException
+
+        sut.createSprint()
+
+        val state = sut.sprintDialogState.value
+        assertEquals(NativeText.Simple(testException.message.toString()), state.dialogError)
+    }
+
+    @Test
+    fun `editSprint should set dialog error and call doOnError on failure`() = runTest {
+        setupSprintState(getRandomString(), nowLocalDate, nowLocalDate.plus(14, DateTimeUnit.DAY))
+        sprintsRepository.editSprintThrows = testException
+        sut.setSprintDialogVisibility(true)
+
+        var errorCalled = false
+        var successCalled = false
+        sut.editSprint(
+            sprintId = getRandomLong(),
+            doOnSuccess = { successCalled = true },
+            doOnError = { errorCalled = true }
+        )
+
+        assertTrue(errorCalled)
+        assertFalse(successCalled)
+        val state = sut.sprintDialogState.value
+        assertEquals(NativeText.Simple(testException.message.toString()), state.dialogError)
+        assertTrue(state.isSprintDialogVisible)
+    }
+
+    @Test
+    fun `editSprint should still set dialog error when doOnError is null`() = runTest {
+        setupSprintState(getRandomString(), nowLocalDate, nowLocalDate.plus(14, DateTimeUnit.DAY))
+        sprintsRepository.editSprintThrows = testException
+
+        sut.editSprint(sprintId = getRandomLong())
+
+        val state = sut.sprintDialogState.value
+        assertEquals(NativeText.Simple(testException.message.toString()), state.dialogError)
+    }
+
+    @Test
+    fun `editSprint should hide the dialog on success when doOnSuccess is null`() = runTest {
+        setupSprintState(getRandomString(), nowLocalDate, nowLocalDate.plus(14, DateTimeUnit.DAY))
+        sut.setSprintDialogVisibility(true)
+
+        sut.editSprint(sprintId = getRandomLong())
+
+        assertTrue(sprintsRepository.editSprintCalled)
+        assertFalse(sut.sprintDialogState.value.isSprintDialogVisible)
+    }
+
+    /**
+     * Leaves [SprintDialogState.endDate] null, which [setInitialSprint] cannot do — it always fills
+     * both dates. The end-date picker is the only way to set one date without the other.
+     */
+    private fun setupNameAndStartDateOnly() {
+        sut.sprintDialogState.value.onSetSprintNameValue(getRandomString())
+        sut.sprintDialogState.value.onStartDateConfirmButtonClick(getRandomLong())
     }
 
     private fun setupSprintState(name: String, startDate: LocalDate, endDate: LocalDate) {

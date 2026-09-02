@@ -1,16 +1,12 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.epic
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.EpicsRepository
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.utils.ui.typeMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,24 +14,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
-import kotlin.reflect.typeOf
 
 @KoinViewModel
 class EditEpicViewModel(
     private val epicsRepository: EpicsRepository,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
     private val taigaSessionStorage: TaigaSessionStorage,
-    savedStateHandle: SavedStateHandle
+    @InjectedParam private val route: WorkItemEditEpicNavDestination
 ) : ViewModel() {
-
-    private val route = savedStateHandle.toRoute<WorkItemEditEpicNavDestination>(
-        typeMap = typeMapOf(
-            listOf(
-                typeOf<TaskIdentifier>()
-            )
-        )
-    )
 
     private val _state = MutableStateFlow(
         EditEpicState(

@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.sprint.ui
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.sprint.domain.SprintData
@@ -26,7 +25,7 @@ import kotlin.test.assertTrue
 internal class SprintViewModelTest {
 
     private val sprintId = getRandomLong()
-    private val savedStateHandle = SavedStateHandle(mapOf("sprintId" to sprintId))
+    private val route = SprintNavDestination(sprintId = sprintId)
 
     private val sprintsRepository = FakeSprintsRepository()
     private val projectsRepository = FakeProjectsRepository()
@@ -51,7 +50,7 @@ internal class SprintViewModelTest {
             sprintsRepository = sprintsRepository,
             projectsRepository = projectsRepository,
             dateTimeUtils = dateTimeUtils,
-            savedStateHandle = savedStateHandle
+            route = route
         )
     }
 

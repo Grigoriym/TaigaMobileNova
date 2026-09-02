@@ -10,15 +10,23 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 
+data class EpicLinkCall(val epicId: Long, val userStoryId: Long)
+
 class FakeEpicsRepository : EpicsRepository {
 
     var getEpicResult: Epic? = null
     var getEpicThrows: Throwable? = null
 
+    var getEpicsPagingResult: ImmutableList<WorkItem> = persistentListOf()
+
     override fun getEpicsPaging(
         filters: FiltersData,
         query: String
-    ): Flow<PagingData<WorkItem>> = flowOf(PagingData.empty())
+    ): Flow<PagingData<WorkItem>> = if (getEpicsPagingResult.isEmpty()) {
+        flowOf(PagingData.empty())
+    } else {
+        flowOf(PagingData.from(getEpicsPagingResult))
+    }
 
     var getEpicsResult: ImmutableList<Epic> = persistentListOf()
     var getEpicsThrows: Throwable? = null
@@ -33,11 +41,21 @@ class FakeEpicsRepository : EpicsRepository {
         return getEpicsResult
     }
 
-    override suspend fun linkToEpic(epicId: Long, userStoryId: Long) =
-        error("not used in this test")
+    var linkToEpicThrows: Throwable? = null
+    val linkToEpicCalls: MutableList<EpicLinkCall> = mutableListOf()
 
-    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) =
-        error("not used in this test")
+    override suspend fun linkToEpic(epicId: Long, userStoryId: Long) {
+        linkToEpicCalls += EpicLinkCall(epicId = epicId, userStoryId = userStoryId)
+        linkToEpicThrows?.let { throw it }
+    }
+
+    var unlinkFromEpicThrows: Throwable? = null
+    val unlinkFromEpicCalls: MutableList<EpicLinkCall> = mutableListOf()
+
+    override suspend fun unlinkFromEpic(epicId: Long, userStoryId: Long) {
+        unlinkFromEpicCalls += EpicLinkCall(epicId = epicId, userStoryId = userStoryId)
+        unlinkFromEpicThrows?.let { throw it }
+    }
 
     override suspend fun getEpic(id: Long): Epic {
         getEpicThrows?.let { throw it }

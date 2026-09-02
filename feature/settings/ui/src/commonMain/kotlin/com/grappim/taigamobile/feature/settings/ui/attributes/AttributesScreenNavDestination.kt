@@ -1,11 +1,12 @@
 package com.grappim.taigamobile.feature.settings.ui.attributes
 
-import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
+import com.grappim.taigamobile.core.navigation.Navigator
 import kotlinx.serialization.Serializable
 
 @Serializable
-data object AttributesScreenNavDestination
+data object AttributesScreenNavDestination : NavKey
 
-fun NavController.goToAttributesScreen() {
-    navigate(route = AttributesScreenNavDestination)
+fun Navigator.goToAttributesScreen() {
+    navigate(AttributesScreenNavDestination)
 }

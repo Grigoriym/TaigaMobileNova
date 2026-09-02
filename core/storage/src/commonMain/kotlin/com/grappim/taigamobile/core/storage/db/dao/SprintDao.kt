@@ -35,4 +35,7 @@ interface SprintDao {
 
     @Query("DELETE FROM $SPRINT_TABLE WHERE projectId = :projectId AND isClosed = :isClosed")
     suspend fun deleteByProjectIdAndClosed(projectId: Long, isClosed: Boolean)
+
+    @Query("DELETE FROM $SPRINT_TABLE")
+    suspend fun deleteAll()
 }

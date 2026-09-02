@@ -30,6 +30,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -57,10 +58,13 @@ import com.grappim.taigamobile.strings.generated.resources.dashboard_watching_ti
 import com.grappim.taigamobile.strings.generated.resources.retry
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.TaigaWidthSpacer
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
+import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -77,7 +81,10 @@ fun DashboardScreen(
         topBarController.update(
             TopBarConfig(
                 title = NativeText.Resource(RString.dashboard),
-                navigationIcon = NavigationIconConfig.Menu
+                navigationIcon = NavigationIconConfig.Menu,
+                actions = listOfNotNull(
+                    buildDesktopRefreshTopBarAction(onClick = { state.retry() })
+                ).toImmutableList()
             )
         )
     }
@@ -99,6 +106,7 @@ private fun DashboardScreenContent(
     val containerColor = MaterialTheme.colorScheme.surfaceVariant
     val titleColor = MaterialTheme.colorScheme.onSurfaceVariant
 
+    DesktopRefreshEffect(onRefresh = { state.retry() })
     PullToRefreshBox(
         modifier = modifier.fillMaxSize(),
         onRefresh = {
@@ -305,14 +313,16 @@ private fun DashboardSectionCard(
         ) {
             Column {
                 HorizontalDivider(color = MaterialTheme.colorScheme.outline)
-                sectionState.items.forEach { item ->
-                    DashboardWorkItemCard(
-                        item = item,
-                        onClick = { navigateToTask(item) },
-                        showTimestamp = showTimestamp,
-                        showCheckmark = showCheckmark
-                    )
-                    if (item != sectionState.items.last()) {
+                sectionState.items.forEachIndexed { index, item ->
+                    key(item.id) {
+                        DashboardWorkItemCard(
+                            item = item,
+                            onClick = { navigateToTask(item) },
+                            showTimestamp = showTimestamp,
+                            showCheckmark = showCheckmark
+                        )
+                    }
+                    if (index != sectionState.items.lastIndex) {
                         HorizontalDivider(color = MaterialTheme.colorScheme.outline)
                     }
                 }

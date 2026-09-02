@@ -35,12 +35,14 @@ import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun CreateTaskScreen(
+    route: CreateTaskNavDestination,
     showSnackbar: (NativeText) -> Unit,
     navigateOnTaskCreated: (Long, CommonTaskType, Long) -> Unit,
-    viewModel: CreateTaskViewModel = koinViewModel()
+    viewModel: CreateTaskViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()

@@ -117,7 +117,7 @@ private fun AssignedToWidget(
                     onRemoveAssigneeClick(item)
                 },
                 canModify = canModify,
-                isOffline = isOffline
+                isOffline = isOffline || isAssigneesLoading
             )
 
             if (index < assignees.lastIndex) {
@@ -160,7 +160,7 @@ private fun AssignedToWidget(
                     TaigaTextButtonWidget(
                         text = stringResource(buttonText),
                         icon = buttonIcon,
-                        isOffline = isOffline,
+                        isOffline = isOffline || isAssigneesLoading,
                         onClick = {
                             if (isAssignedToMe) {
                                 onUnassign?.invoke()

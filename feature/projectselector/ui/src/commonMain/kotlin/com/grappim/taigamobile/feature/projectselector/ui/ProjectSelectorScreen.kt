@@ -45,9 +45,11 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
@@ -56,18 +58,23 @@ import com.grappim.taigamobile.utils.ui.hasError
 import com.grappim.taigamobile.utils.ui.isEmpty
 import com.grappim.taigamobile.utils.ui.isLoading
 import com.grappim.taigamobile.utils.ui.isNotLoading
+import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun ProjectSelectorScreen(
+    route: ProjectSelectorNavDestination,
     goBack: () -> Unit,
     onProjectSelect: () -> Unit,
-    viewModel: ProjectSelectorViewModel = koinViewModel()
+    viewModel: ProjectSelectorViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val projects = viewModel.projects.collectAsLazyPagingItems()
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -82,13 +89,13 @@ fun ProjectSelectorScreen(
                     )
                 } else {
                     NavigationIconConfig.Menu
-                }
+                },
+                actions = listOfNotNull(
+                    buildDesktopRefreshTopBarAction(onClick = { projects.refresh() })
+                ).toImmutableList()
             )
         )
     }
-
-    val projects = viewModel.projects.collectAsLazyPagingItems()
-    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
 
     NavigationBackHandler(
         state = rememberNavigationEventState(NavigationEventInfo.None),
@@ -135,6 +142,7 @@ fun ProjectSelectorScreenContent(
         )
         Spacer(modifier = Modifier.height(10.dp))
 
+        DesktopRefreshEffect(onRefresh = { projects.refresh() })
         PullToRefreshBox(
             modifier = Modifier.fillMaxSize(),
             onRefresh = {

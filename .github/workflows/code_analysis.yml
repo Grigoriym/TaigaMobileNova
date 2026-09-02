@@ -10,16 +10,22 @@ on:
             - master
         paths-ignore:
             - '**.md'
-            - 'playstore/**'
             - 'docs/**'
+            - 'art/**'
+            - 'playstore/**'
+            - 'fastlane/metadata/**'
+            - 'LICENSE'
     push:
         branches:
             - dev
             - master
         paths-ignore:
             - '**.md'
-            - 'playstore/**'
             - 'docs/**'
+            - 'art/**'
+            - 'playstore/**'
+            - 'fastlane/metadata/**'
+            - 'LICENSE'
 
 concurrency:
     group: code-analysis-${{ github.event.pull_request.number || github.ref }}
@@ -39,6 +45,7 @@ jobs:
         TAIGA_STORE_PASS_D: ${{ secrets.TAIGA_STORE_PASS_D }}
         TAIGA_ALIAS_D: ${{ secrets.TAIGA_ALIAS_D }}
         ENCODED_STRING_D: ${{ secrets.TAIGA_KEYSTORE_D }}
+        ENCODED_GOOGLE_SERVICES_GPLAY: ${{ secrets.GOOGLE_SERVICES_GPLAY }}
 
     steps:
       - name: Check out the repo
@@ -47,13 +54,26 @@ jobs:
       - name: Setup Android Environment
         uses: ./.github/actions/android-setup-composite-action
 
-#      - name: Run Detekt
-#        run: ./gradlew detekt
+      - name: Restore google-services.json
+        run: echo $ENCODED_GOOGLE_SERVICES_GPLAY | base64 -d > ./androidApp/src/gplay/google-services.json
+
+      - name: Run Detekt
+        run: ./gradlew detekt
 
       - name: Run Ktlint
         run: ./gradlew ktlintCheck
 
-      - name: Run tests and generate Kover XML report
+      - name: Run Android/Compose lint
+        run: ./gradlew :androidApp:lintFdroidDebug :androidApp:lintGplayDebug -PgplayBuild
+
+      # koverXmlReport only runs jvmTest for the modules aggregated in the root
+      # build.gradle.kts kover {} block, so a test in a non-aggregated module
+      # (:testing, :uikit, :tools:*) would never execute. This step runs every
+      # jvmTest task; the Kover step below then reuses the results.
+      - name: Run tests
+        run: ./gradlew jvmTest
+
+      - name: Generate Kover XML report
         run: ./gradlew koverXmlReport
 
       - name: Debug coverage report
@@ -77,3 +97,10 @@ jobs:
           verbose: true
           override_branch: ${{ github.head_ref || github.ref_name }}
           override_commit: ${{ github.event.pull_request.head.sha || github.sha }}
+
+      # Runs after the Codecov upload on purpose: when the floor is breached, the report
+      # is already published, so the drop can be diagnosed from the PR rather than by
+      # re-running the build locally. Qualified as :koverVerify because the unqualified
+      # name would also run the rule-less koverVerify of every module.
+      - name: Check coverage floor
+        run: ./gradlew :koverVerify

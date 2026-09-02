@@ -18,6 +18,7 @@ import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.toImmutableList
@@ -52,6 +53,7 @@ fun ScrumOpenSprintsScreen(
                             )
                         )
                     }
+                    buildDesktopRefreshTopBarAction(onClick = { openSprints.refresh() })?.let { add(it) }
                 }.toImmutableList()
             )
         )
