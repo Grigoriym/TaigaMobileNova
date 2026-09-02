@@ -1,1 +1,3 @@
-What's new in v2.2.0
+- Add Issue/Suggestion button to Settings > About for quick feedback
+- Fixed GitHub login sometimes reusing a stale session after logging out
+- Dependency updates and internal improvements
