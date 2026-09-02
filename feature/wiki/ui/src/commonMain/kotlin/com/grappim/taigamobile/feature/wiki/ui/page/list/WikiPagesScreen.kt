@@ -1,5 +1,8 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.list
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -15,10 +18,12 @@ import com.grappim.taigamobile.uikit.generated.resources.ic_add
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
 import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.toImmutableList
@@ -28,6 +33,7 @@ import org.koin.compose.viewmodel.koinViewModel
 @Composable
 fun WikiPagesScreen(
     showSnackbar: (NativeText) -> Unit,
+    updateData: Boolean,
     goToWikiCreatePage: () -> Unit,
     goToWikiPage: (slug: String, id: Long) -> Unit,
     viewModel: WikiPagesViewModel = koinViewModel()
@@ -52,9 +58,16 @@ fun WikiPagesScreen(
                             )
                         )
                     }
+                    buildDesktopRefreshTopBarAction(onClick = state.refresh)?.let { add(it) }
                 }.toImmutableList()
             )
         )
+    }
+
+    LaunchedEffect(updateData) {
+        if (updateData) {
+            state.refresh()
+        }
     }
 
     ObserveAsEvents(viewModel.onDeleteSuccess) {
@@ -83,6 +96,7 @@ fun WikiPagesScreen(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WikiPagesScreenContent(
     state: WikiPagesState,
@@ -91,19 +105,25 @@ fun WikiPagesScreenContent(
     navigateToCreatePage: () -> Unit = {},
     goToPage: (slug: String, id: Long) -> Unit = { _, _ -> }
 ) {
-    WikiListContentWidget(
-        items = state.allPages,
-        isLoading = state.isLoading,
-        error = state.error,
-        onRetry = state.refresh,
-        navigateToCreate = navigateToCreatePage,
-        canCreate = state.canAddWikiPage,
-        onClick = goToPage,
-        canDeleteItem = state.canDeleteWikiPage,
-        onDeleteItemClick = state.onDeleteClick,
-        modifier = modifier,
-        isOffline = isOffline
-    )
+    DesktopRefreshEffect(onRefresh = state.refresh)
+    PullToRefreshBox(
+        modifier = modifier.fillMaxSize(),
+        onRefresh = state.refresh,
+        isRefreshing = state.isLoading
+    ) {
+        WikiListContentWidget(
+            items = state.allPages,
+            isLoading = state.isLoading,
+            error = state.error,
+            onRetry = state.refresh,
+            navigateToCreate = navigateToCreatePage,
+            canCreate = state.canAddWikiPage,
+            onClick = goToPage,
+            canDeleteItem = state.canDeleteWikiPage,
+            onDeleteItemClick = state.onDeleteClick,
+            isOffline = isOffline
+        )
+    }
 }
 
 @Preview
