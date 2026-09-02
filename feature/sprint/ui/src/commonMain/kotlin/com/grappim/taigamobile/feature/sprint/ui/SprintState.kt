@@ -15,7 +15,7 @@ data class SprintState(
     val sprintToolbarSubtitle: NativeText = NativeText.Empty,
 
     val statuses: ImmutableList<Statuses> = persistentListOf(),
-    val storiesWithTasks: ImmutableMap<WorkItem, List<WorkItem>> = persistentMapOf(),
+    val storiesWithTasks: ImmutableMap<WorkItem, ImmutableList<WorkItem>> = persistentMapOf(),
     val issues: ImmutableList<WorkItem> = persistentListOf(),
     val storylessTasks: ImmutableList<WorkItem> = persistentListOf(),
 

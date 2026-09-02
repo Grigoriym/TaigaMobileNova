@@ -1,10 +1,8 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
@@ -71,11 +69,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class EpicDetailsViewModel(
-    savedStateHandle: SavedStateHandle,
+    @InjectedParam private val route: EpicDetailsNavDestination,
     private val workItemRepository: WorkItemRepository,
     private val patchDataGenerator: PatchDataGenerator,
     private val historyRepository: HistoryRepository,
@@ -151,7 +150,6 @@ class EpicDetailsViewModel(
         private val epicTaskType = CommonTaskType.Epic
     }
 
-    private val route = savedStateHandle.toRoute<EpicDetailsNavDestination>()
     private val ref = route.ref
 
     private val epicId: Long = route.epicId
@@ -279,8 +277,6 @@ class EpicDetailsViewModel(
         updateState: com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate
     ) {
         when (updateState) {
-            com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberUpdate.Clear -> {}
-
             is TeamMemberUpdate.Assignees -> {}
 
             is TeamMemberUpdate.Assignee -> {

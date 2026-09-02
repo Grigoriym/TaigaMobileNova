@@ -50,12 +50,14 @@ import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun WorkItemEditTagsScreen(
+    route: WorkItemEditTagsNavDestination,
     showSnackbar: (NativeText) -> Unit,
     goBack: () -> Unit,
-    viewModel: WorkItemEditTagsViewModel = koinViewModel()
+    viewModel: WorkItemEditTagsViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()

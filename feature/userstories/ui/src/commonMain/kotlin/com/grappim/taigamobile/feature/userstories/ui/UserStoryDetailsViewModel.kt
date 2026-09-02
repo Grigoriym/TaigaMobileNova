@@ -1,9 +1,7 @@
 package com.grappim.taigamobile.feature.userstories.ui
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
@@ -74,11 +72,12 @@ import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class UserStoryDetailsViewModel(
-    savedStateHandle: SavedStateHandle,
+    @InjectedParam private val route: UserStoryDetailsNavDestination,
     private val userStoryDetailsDataUseCase: UserStoryDetailsDataUseCase,
     private val workItemsGenerator: WorkItemsGenerator,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
@@ -157,7 +156,6 @@ class UserStoryDetailsViewModel(
         patchDataGenerator = patchDataGenerator
     ) {
 
-    private val route = savedStateHandle.toRoute<UserStoryDetailsNavDestination>()
     private val ref = route.ref
     private val userStoryId: Long = route.userStoryId
 
@@ -705,8 +703,6 @@ class UserStoryDetailsViewModel(
 
     private suspend fun handleTeamMemberUpdate(updateState: TeamMemberUpdate) {
         when (updateState) {
-            TeamMemberUpdate.Clear -> {}
-
             is TeamMemberUpdate.Assignee -> {}
 
             is TeamMemberUpdate.Assignees -> {

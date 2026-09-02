@@ -2,6 +2,7 @@ package com.grappim.taigamobile.testing.models
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.db.entities.WorkItemEntity
+import com.grappim.taigamobile.feature.epics.dto.EpicShortInfoDTO
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.dto.StatusExtraInfoDTO
 import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
@@ -54,6 +55,18 @@ fun getWorkItemResponseDTO(): WorkItemResponseDTO =
         fromTaskRef = null,
         kanbanOrder = getRandomLong()
     )
+
+fun getEpicShortInfoDTO(
+    id: Long = getRandomLong(),
+    title: String = getRandomString(),
+    ref: Long = getRandomLong(),
+    color: String = "#FF0000"
+): EpicShortInfoDTO = EpicShortInfoDTO(
+    id = id,
+    title = title,
+    ref = ref,
+    color = color
+)
 
 fun getWorkItemEntity(
     taskType: CommonTaskType = CommonTaskType.Task,

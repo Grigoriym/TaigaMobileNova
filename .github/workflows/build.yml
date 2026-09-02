@@ -9,8 +9,11 @@ on:
             - dev
         paths-ignore:
             - '**.md'
-            - 'playstore/**'
             - 'docs/**'
+            - 'art/**'
+            - 'playstore/**'
+            - 'fastlane/metadata/**'
+            - 'LICENSE'
 
 concurrency:
     group: build-${{ github.event.pull_request.number || github.ref }}
@@ -50,3 +53,87 @@ jobs:
 
       - name: Assemble gradle gplay project
         run: ./gradlew :androidApp:assembleGplayDebug -PgplayBuild
+
+  apk-size-check:
+    runs-on: ubuntu-latest
+    env:
+        TAIGA_PATH_D: ${{ secrets.TAIGA_PATH_D }}
+        TAIGA_KEY_PASS_D: ${{ secrets.TAIGA_KEY_PASS_D }}
+        TAIGA_STORE_PASS_D: ${{ secrets.TAIGA_STORE_PASS_D }}
+        TAIGA_ALIAS_D: ${{ secrets.TAIGA_ALIAS_D }}
+        ENCODED_STRING_D: ${{ secrets.TAIGA_KEYSTORE_D }}
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v7
+
+      - name: Setup Android Environment
+        uses: ./.github/actions/android-setup-composite-action
+
+      - name: Restore taigamobilenova_debug.jks
+        run: echo $ENCODED_STRING_D | base64 -d > ./taigamobilenova_debug.jks
+
+      - name: Assemble fdroid debug (PR head)
+        run: ./gradlew :androidApp:assembleFdroidDebug
+
+      - name: Save PR head APK
+        run: |
+            mkdir -p apk-diff
+            cp androidApp/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk apk-diff/head.apk
+
+      - name: Check out PR base (${{ github.event.pull_request.base.sha }})
+        run: |
+            git fetch --depth=1 origin ${{ github.event.pull_request.base.sha }}
+            git checkout ${{ github.event.pull_request.base.sha }}
+
+      - name: Assemble fdroid debug (base)
+        run: ./gradlew :androidApp:assembleFdroidDebug
+
+      - name: Save base APK
+        run: cp androidApp/build/outputs/apk/fdroid/debug/app-fdroid-debug.apk apk-diff/base.apk
+
+      - name: Diff APK size
+        id: diffuse
+        uses: usefulness/diffuse-action@v1
+        with:
+            old-file-path: apk-diff/base.apk
+            new-file-path: apk-diff/head.apk
+
+      - name: Find existing APK size comment
+        uses: peter-evans/find-comment@v4
+        id: fc
+        with:
+            issue-number: ${{ github.event.pull_request.number }}
+            comment-author: 'github-actions[bot]'
+            body-includes: '<!-- apk-size-diff -->'
+
+      - name: Comment APK size delta on PR
+        uses: peter-evans/create-or-update-comment@v5
+        with:
+            comment-id: ${{ steps.fc.outputs.comment-id }}
+            issue-number: ${{ github.event.pull_request.number }}
+            edit-mode: replace
+            body: |
+                <!-- apk-size-diff -->
+                ${{ steps.diffuse.outputs.diff-gh-comment }}
+
+  desktop-package:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v7
+
+      - name: Setup Android Environment
+        uses: ./.github/actions/android-setup-composite-action
+
+      - name: Install fakeroot and rpm
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y fakeroot rpm
+
+      - name: Package Linux deb
+        run: ./gradlew :composeApp:packageDeb
+
+      - name: Package Linux rpm
+        run: ./gradlew :composeApp:packageRpm

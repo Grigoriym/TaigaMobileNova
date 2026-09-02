@@ -362,6 +362,45 @@ internal class TagsScreenViewModelTest {
         assertTrue(sut.state.value.tags.any { it.name == tagName })
     }
 
+    // --- onSaveTag ---
+
+    @Test
+    fun `onSaveTag - success - creates tag, dismisses dialog and reloads tags`() {
+        projectsRepository.getTagsColorsResult = persistentListOf()
+        createViewModel()
+
+        sut.state.value.onAddTagClick()
+
+        val name = getRandomString()
+        val newTag = makeTag(name)
+        projectsRepository.getTagsColorsResult = persistentListOf(newTag)
+
+        sut.state.value.onSaveClick(name, Color.Red)
+
+        assertTrue(projectsRepository.createTagCalled)
+        assertFalse(sut.state.value.isOperationLoading)
+        assertFalse(sut.tagEditDialogState.value.isVisible)
+        assertEquals(listOf(name), sut.state.value.tags.map { it.name })
+    }
+
+    @Test
+    fun `onSaveTag - failure - snackbar shown and isOperationLoading false`() = runTest {
+        projectsRepository.getTagsColorsResult = persistentListOf()
+        createViewModel()
+
+        sut.state.value.onAddTagClick()
+        projectsRepository.createTagThrows = RuntimeException("create failed")
+
+        sut.state.value.onSaveClick(getRandomString(), Color.Red)
+
+        sut.snackBarMessage.test {
+            assertTrue(awaitItem() !is NativeText.Empty)
+            cancelAndIgnoreRemainingEvents()
+        }
+
+        assertFalse(sut.state.value.isOperationLoading)
+    }
+
     // --- initDialogTags ---
 
     @Test

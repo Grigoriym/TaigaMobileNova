@@ -1,11 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.edittags
 
 import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
-import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.LogPriority
 import com.grappim.taigamobile.core.logger.logcat
@@ -18,7 +15,6 @@ import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
-import com.grappim.taigamobile.utils.ui.typeMapOf
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.toImmutableList
@@ -29,8 +25,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
-import kotlin.reflect.typeOf
 
 @KoinViewModel
 class WorkItemEditTagsViewModel(
@@ -38,7 +34,7 @@ class WorkItemEditTagsViewModel(
     private val workItemEditStateRepository: WorkItemEditStateRepository,
     private val projectsRepository: ProjectsRepository,
     private val taigaSessionStorage: TaigaSessionStorage,
-    savedStateHandle: SavedStateHandle
+    @InjectedParam private val route: WorkItemEditTagsNavDestination
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl(),
     TagEditDialogDelegate by TagEditDialogDelegateImpl(
@@ -46,13 +42,6 @@ class WorkItemEditTagsViewModel(
         taigaSessionStorage = taigaSessionStorage
     ) {
 
-    private val route = savedStateHandle.toRoute<WorkItemEditTagsNavDestination>(
-        typeMap = typeMapOf(
-            listOf(
-                typeOf<TaskIdentifier>()
-            )
-        )
-    )
     private val _state = MutableStateFlow(
         EditTagsState(
             setIsDialogVisible = ::setIsDialogVisible,

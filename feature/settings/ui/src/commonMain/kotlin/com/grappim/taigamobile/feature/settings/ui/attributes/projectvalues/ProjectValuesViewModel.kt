@@ -1,9 +1,7 @@
 package com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
@@ -19,17 +17,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class ProjectValuesViewModel(
-    savedStateHandle: SavedStateHandle,
+    @InjectedParam private val route: ProjectValuesNavDestination,
     private val repository: ProjectValuesRepository,
     private val sessionStorage: TaigaSessionStorage
 ) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl() {
 
-    private val route = savedStateHandle.toRoute<ProjectValuesNavDestination>()
     private val type = ProjectValueType.valueOf(route.typeName)
 
     private val _state = MutableStateFlow(

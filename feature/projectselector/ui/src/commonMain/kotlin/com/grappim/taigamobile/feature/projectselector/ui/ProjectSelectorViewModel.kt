@@ -1,9 +1,7 @@
 package com.grappim.taigamobile.feature.projectselector.ui
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import com.grappim.taigamobile.core.storage.FiltersStorage
@@ -18,6 +16,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,10 +26,8 @@ class ProjectSelectorViewModel(
     private val session: FiltersStorage,
     private val taigaSessionStorage: TaigaSessionStorage,
     private val dataCleaner: DataCleaner,
-    savedStateHandle: SavedStateHandle
+    @InjectedParam private val route: ProjectSelectorNavDestination
 ) : ViewModel() {
-
-    private val route = savedStateHandle.toRoute<ProjectSelectorNavDestination>()
 
     private val _state = MutableStateFlow(
         ProjectSelectorState(

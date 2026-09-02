@@ -1,9 +1,7 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.details
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
@@ -29,6 +27,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
@@ -38,7 +37,7 @@ class WikiPageViewModel(
     private val taigaSessionStorage: TaigaSessionStorage,
     private val patchDataGenerator: PatchDataGenerator,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
-    savedStateHandle: SavedStateHandle
+    @InjectedParam private val route: WikiPageNavDestination
 ) : ViewModel(),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
         taskIdentifier = TaskIdentifier.Wiki,
@@ -50,10 +49,6 @@ class WikiPageViewModel(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
     ) {
-
-    private val route = savedStateHandle.toRoute<WikiPageNavDestination>()
-
-    private val wikiId: Long = route.id
 
     private val _state = MutableStateFlow(
         WikiPageState(
@@ -74,18 +69,21 @@ class WikiPageViewModel(
 
     init {
         loadData()
+    }
 
+    private fun subscribeToDescriptionUpdates(pageId: Long) {
         workItemEditStateRepository
-            .getDescriptionFlow(wikiId, TaskIdentifier.Wiki)
+            .getDescriptionFlow(pageId, TaskIdentifier.Wiki)
             .onEach(::onNewDescriptionUpdate)
             .launchIn(viewModelScope)
     }
 
     override fun onCleared() {
         super.onCleared()
-        workItemEditStateRepository.clearSession(wikiId, TaskIdentifier.Wiki)
+        val pageId = _state.value.currentPage?.id ?: return
+        workItemEditStateRepository.clearSession(pageId, TaskIdentifier.Wiki)
         logcat {
-            "WikiPageViewModel cleared - session cleaned up for taskId: $wikiId"
+            "WikiPageViewModel cleared - session cleaned up for taskId: $pageId"
         }
     }
 
@@ -192,6 +190,7 @@ class WikiPageViewModel(
                             shouldShowActions = data.canModifyPage
                         )
                     }
+                    subscribeToDescriptionUpdates(data.page.id)
                 }.onFailure { error ->
                     logcat(throwable = error) {
                         "Error loading wiki page data"

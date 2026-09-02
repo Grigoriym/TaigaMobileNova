@@ -1,9 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.sprint
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
@@ -12,7 +10,6 @@ import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canModifyIssue
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.utils.ui.typeMapOf
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,24 +17,16 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
-import kotlin.reflect.typeOf
 
 @KoinViewModel
 class EditSprintViewModel(
     private val sprintsRepository: SprintsRepository,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
     private val projectsRepository: ProjectsRepository,
-    savedStateHandle: SavedStateHandle
+    @InjectedParam private val route: WorkItemEditSprintNavDestination
 ) : ViewModel() {
-
-    private val route = savedStateHandle.toRoute<WorkItemEditSprintNavDestination>(
-        typeMap = typeMapOf(
-            listOf(
-                typeOf<TaskIdentifier>()
-            )
-        )
-    )
 
     private val _state = MutableStateFlow(
         EditSprintState(

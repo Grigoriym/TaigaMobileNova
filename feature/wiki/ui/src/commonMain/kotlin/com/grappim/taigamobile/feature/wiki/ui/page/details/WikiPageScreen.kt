@@ -19,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.widgets.WikiPageDropDownMenuWidget
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState
@@ -46,14 +47,16 @@ import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun WikiPageScreen(
+    route: WikiPageNavDestination,
     goBack: () -> Unit,
     goToProfile: (userId: Long) -> Unit,
     showSnackbar: (NativeText) -> Unit,
     goToEditDescription: (String, Long) -> Unit,
-    viewModel: WikiPageViewModel = koinViewModel()
+    viewModel: WikiPageViewModel = koinViewModel { parametersOf(route) }
 ) {
     val topBarController = LocalTopBarConfig.current
 
@@ -67,7 +70,7 @@ fun WikiPageScreen(
             TopBarConfig(
                 title =
                     NativeText.Simple(state.link?.title ?: state.pageSlug),
-                navigationIcon = NavigationIconConfig.Back(),
+                navigationIcon = NavigationIconConfig.Back(onBackClick = { goBack() }),
                 actions = buildList {
                     if (state.shouldShowActions) {
                         add(

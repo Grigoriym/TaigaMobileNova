@@ -1,1 +1,0 @@
-../agentic-grappim/templates/spec.md

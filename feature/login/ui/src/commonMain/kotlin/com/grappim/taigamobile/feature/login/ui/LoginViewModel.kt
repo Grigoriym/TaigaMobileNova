@@ -30,7 +30,7 @@ class LoginViewModel(
 ) : ViewModel() {
 
     companion object {
-        private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)+[\w\d-]+(:\d+)?(/\w+)*/?"""
+        private const val SERVER_REGEX = """(http|https)://([\w\d-]+\.)*[\w\d-]+(:\d+)?(/\w+)*/?"""
         private const val GITHUB_OAUTH_URL =
             "https://github.com/login/oauth/authorize?client_id=%CLIENT_ID%&state=github&scope=user:email"
     }

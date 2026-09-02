@@ -27,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.logout_text
+import com.grappim.taigamobile.strings.generated.resources.logout_title
 import com.grappim.taigamobile.strings.generated.resources.settings
 import com.grappim.taigamobile.strings.generated.resources.settings_about
 import com.grappim.taigamobile.strings.generated.resources.settings_attributes
@@ -36,10 +38,12 @@ import com.grappim.taigamobile.strings.generated.resources.settings_project_deta
 import com.grappim.taigamobile.strings.generated.resources.settings_trusted_certificates
 import com.grappim.taigamobile.strings.generated.resources.settings_user
 import com.grappim.taigamobile.uikit.generated.resources.ic_brick
+import com.grappim.taigamobile.uikit.generated.resources.ic_logout
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
+import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
@@ -94,6 +98,17 @@ fun SettingsScreenContent(
     goToModulesScreen: () -> Unit = {},
     goToTrustedCertificatesScreen: () -> Unit = {}
 ) {
+    ConfirmActionDialog(
+        title = stringResource(RString.logout_title),
+        description = stringResource(RString.logout_text),
+        onConfirm = {
+            state.onLogout()
+        },
+        onDismiss = { state.setIsLogoutConfirmationVisible(false) },
+        iconId = RDrawable.ic_logout,
+        isVisible = state.isLogoutConfirmationVisible
+    )
+
     Surface {
         Column(
             modifier = Modifier
@@ -184,21 +199,23 @@ fun SettingsScreenContent(
                 }
             )
 
-            ListItem(
-                modifier = Modifier
-                    .clickable {
-                        goToTrustedCertificatesScreen()
+            if (state.canSeeTrustedCertificates) {
+                ListItem(
+                    modifier = Modifier
+                        .clickable {
+                            goToTrustedCertificatesScreen()
+                        },
+                    headlineContent = {
+                        Text(text = stringResource(RString.settings_trusted_certificates))
                     },
-                headlineContent = {
-                    Text(text = stringResource(RString.settings_trusted_certificates))
-                },
-                leadingContent = {
-                    Icon(
-                        imageVector = Icons.Default.Lock,
-                        contentDescription = "Trusted Certificates Screen"
-                    )
-                }
-            )
+                    leadingContent = {
+                        Icon(
+                            imageVector = Icons.Default.Lock,
+                            contentDescription = "Trusted Certificates Screen"
+                        )
+                    }
+                )
+            }
 
             ListItem(
                 modifier = Modifier
@@ -210,6 +227,22 @@ fun SettingsScreenContent(
                 },
                 leadingContent = {
                     Icon(imageVector = Icons.Filled.Info, contentDescription = "About Screen")
+                }
+            )
+
+            ListItem(
+                modifier = Modifier
+                    .clickable {
+                        state.setIsLogoutConfirmationVisible(true)
+                    },
+                headlineContent = {
+                    Text(text = stringResource(RString.logout_title))
+                },
+                leadingContent = {
+                    Icon(
+                        painter = painterResource(RDrawable.ic_logout),
+                        contentDescription = "Log out"
+                    )
                 }
             )
 

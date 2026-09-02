@@ -12,20 +12,25 @@ The previous author archived the original project. This version has been complet
 |----------|--------|--------------|
 | Android  | Released | Google Play & F-Droid |
 | iOS      | Builds & runs | Distribution TBD |
-| Desktop (Linux / macOS / Windows) | Builds & runs | Distribution TBD |
+| Desktop (Linux) | Released | [GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases) (`.deb` / `.rpm`) |
+| Desktop (macOS / Windows) | Builds & runs | Distribution TBD |
 
 ### Android
 
-[<img src="docs/google-badge.png"
+[<img src="art/google-badge.png"
 alt="Get it on Google Play"
 height="80">](https://play.google.com/store/apps/details?id=com.grappim.taigamobile)
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
 alt="Get it on F-Droid"
 height="80">](https://f-droid.org/en/packages/com.grappim.taigamobile.fdroid/)
 
-### iOS & Desktop
+### Desktop (Linux)
 
-iOS and Desktop builds are functional but distribution channels are not yet set up. If you want to try them, clone the repo and build locally — see [Build Commands](#build-commands) below.
+Download the latest `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/openSUSE) from [GitHub Releases](https://github.com/Grigoriym/TaigaMobileNova/releases).
+
+### iOS & Desktop (macOS / Windows)
+
+iOS and Desktop (macOS / Windows) builds are functional but distribution channels are not yet set up. If you want to try them, clone the repo and build locally — see [Build Commands](#build-commands) below.
 
 [Project board](https://tasks.gregstuff.click/project/taigamobilenova/kanban)
 
@@ -33,13 +38,13 @@ iOS and Desktop builds are functional but distribution channels are not yet set 
 
 | Dark Mode | Light Mode |
 |-----------|------------|
-| <img width="400" height="900" alt="Login - Dark" src="./info/art/login-dark.png" /> | <img width="400" height="900" alt="Login - Light" src="./info/art/login-light.png" /> |
-| <img width="400" height="900" alt="Dashboard - Dark" src="./info/art/dashboard-dark.png" /> | <img width="400" height="900" alt="Dashboard - Light" src="./info/art/dashboard-light.png" /> |
-| <img width="400" height="900" alt="Bookmarks - Dark" src="./info/art/bookmarks-dark.png" /> | <img width="400" height="900" alt="Bookmarks - Light" src="./info/art/bookmarks-light.png" /> |
-| <img width="400" height="900" alt="Drawer - Dark" src="./info/art/drawer-dark.png" /> | <img width="400" height="900" alt="Drawer - Light" src="./info/art/drawer-light.png" /> |
-| <img width="400" height="900" alt="Kanban - Dark" src="./info/art/kanban-dark.png" /> | <img width="400" height="900" alt="Kanban - Light" src="./info/art/kanban-light.png" /> |
-| <img width="400" height="900" alt="Issue Details - Dark" src="./info/art/issue-dark.png" /> | <img width="400" height="900" alt="Issue Comments - Dark" src="./info/art/issue-2-dark.png" /> |
-| <img width="400" height="900" alt="Issues List - Dark" src="./info/art/issues-dark.png" /> | |
+| <img width="400" height="900" alt="Login - Dark" src="./art/login-dark.png" /> | <img width="400" height="900" alt="Login - Light" src="./art/login-light.png" /> |
+| <img width="400" height="900" alt="Dashboard - Dark" src="./art/dashboard-dark.png" /> | <img width="400" height="900" alt="Dashboard - Light" src="./art/dashboard-light.png" /> |
+| <img width="400" height="900" alt="Bookmarks - Dark" src="./art/bookmarks-dark.png" /> | <img width="400" height="900" alt="Bookmarks - Light" src="./art/bookmarks-light.png" /> |
+| <img width="400" height="900" alt="Drawer - Dark" src="./art/drawer-dark.png" /> | <img width="400" height="900" alt="Drawer - Light" src="./art/drawer-light.png" /> |
+| <img width="400" height="900" alt="Kanban - Dark" src="./art/kanban-dark.png" /> | <img width="400" height="900" alt="Kanban - Light" src="./art/kanban-light.png" /> |
+| <img width="400" height="900" alt="Issue Details - Dark" src="./art/issue-dark.png" /> | <img width="400" height="900" alt="Issue Comments - Dark" src="./art/issue-2-dark.png" /> |
+| <img width="400" height="900" alt="Issues List - Dark" src="./art/issues-dark.png" /> | |
 
 ## Features
 

@@ -6,5 +6,6 @@
     "prHourlyLimit": 3,
     "baseBranchPatterns": [
         "dev"
-    ]
+    ],
+    "osvVulnerabilityAlerts": true
 }

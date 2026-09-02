@@ -1,6 +1,5 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.epic
 
-import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -16,7 +15,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
-import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -30,19 +28,13 @@ internal class EditEpicViewModelTest {
 
     private val workItemId = getRandomLong()
     private val taskIdentifier: TaskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
-    private val taskIdentifierJson = Json.encodeToString(taskIdentifier)
 
     private val epicsRepository = FakeEpicsRepository()
     private val workItemEditStateRepository = WorkItemEditStateRepository()
     private val sessionStorage = FakeTaigaSessionStorage()
     private val mainDispatcherRule = MainDispatcherRule()
 
-    private val savedStateHandle = SavedStateHandle(
-        mapOf(
-            "workItemId" to workItemId,
-            "taskIdentifier" to taskIdentifierJson
-        )
-    )
+    private val route = WorkItemEditEpicNavDestination(workItemId = workItemId, taskIdentifier = taskIdentifier)
 
     private lateinit var sut: EditEpicViewModel
 
@@ -61,7 +53,7 @@ internal class EditEpicViewModelTest {
             epicsRepository = epicsRepository,
             workItemEditStateRepository = workItemEditStateRepository,
             taigaSessionStorage = sessionStorage,
-            savedStateHandle = savedStateHandle
+            route = route
         )
     }
 

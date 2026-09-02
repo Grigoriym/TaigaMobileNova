@@ -52,6 +52,7 @@ class GetKanbanDataUseCaseImpl(
             val stories = userStories.await().sortedBy { it.kanbanOrder }.toImmutableList()
             val statuses = filters.await()
             val members = teamMembers.await()
+            val currentProject = project.await()
 
             val swimlanes = buildSwimlanesWithUnclassified(
                 rawSwimlanes = rawSwimlanes,
@@ -62,7 +63,7 @@ class GetKanbanDataUseCaseImpl(
                 swimlanes.find { it.id == storageSwimlane }
                     ?: swimlanes.firstOrNull()
             } else {
-                swimlanes.find { it.id == project.await().defaultSwimlane }
+                swimlanes.find { it.id == currentProject.defaultSwimlane }
                     ?: swimlanes.firstOrNull()
             }
 
@@ -78,8 +79,8 @@ class GetKanbanDataUseCaseImpl(
                 swimlanes = swimlanes,
                 statuses = statuses,
                 teamMembers = members,
-                canAddUserStory = projectsRepository.getPermissions().canAddUserStory(),
-                canModifyUserStory = projectsRepository.getPermissions().canModifyUserStory(),
+                canAddUserStory = currentProject.myPermissions.canAddUserStory(),
+                canModifyUserStory = currentProject.myPermissions.canModifyUserStory(),
                 defaultSwimlane = defaultSwimlane,
                 storiesByStatus = storiesByStatus
             )

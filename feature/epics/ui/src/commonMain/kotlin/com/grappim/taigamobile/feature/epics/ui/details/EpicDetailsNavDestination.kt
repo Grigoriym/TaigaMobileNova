@@ -1,11 +1,12 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
-import androidx.navigation.NavController
+import androidx.navigation3.runtime.NavKey
+import com.grappim.taigamobile.core.navigation.Navigator
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class EpicDetailsNavDestination(val epicId: Long, val ref: Long)
+data class EpicDetailsNavDestination(val epicId: Long, val ref: Long) : NavKey
 
-fun NavController.navigateToEpicDetails(epicId: Long, ref: Long) {
-    navigate(route = EpicDetailsNavDestination(epicId = epicId, ref = ref))
+fun Navigator.navigateToEpicDetails(epicId: Long, ref: Long) {
+    navigate(EpicDetailsNavDestination(epicId = epicId, ref = ref))
 }

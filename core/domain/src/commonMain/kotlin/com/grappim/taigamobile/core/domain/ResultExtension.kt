@@ -32,14 +32,3 @@ inline fun <T, R> T.resultOf(block: T.() -> R): Result<R> = try {
 } catch (e: Exception) {
     Result.failure(e)
 }
-
-/**
- * Like [mapCatching], but uses [resultOf] instead of [runCatching].
- */
-inline fun <R, T> Result<T>.mapResult(transform: (value: T) -> R): Result<R> {
-    val successResult = getOrNull()
-    return when {
-        successResult != null -> resultOf { transform(successResult) }
-        else -> Result.failure(exceptionOrNull() ?: error("Unreachable state"))
-    }
-}

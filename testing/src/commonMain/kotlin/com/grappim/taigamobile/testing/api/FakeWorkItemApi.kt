@@ -58,6 +58,12 @@ data class GetWorkItemByRefApiCall(val taskPath: String, val project: Long, val 
 
 class FakeWorkItemApi : WorkItemApi {
 
+    /**
+     * When set, every method throws it. Calls are recorded *before* the throw, so a test can assert
+     * both that the API was reached and that the caller handled the failure.
+     */
+    var errorToThrow: Throwable? = null
+
     var workItemByIdResponse: WorkItemResponseDTO? = null
     var workItemsResponse: List<WorkItemResponseDTO> = emptyList()
     val getWorkItemsCalls = mutableListOf<GetWorkItemsApiCall>()
@@ -96,8 +102,10 @@ class FakeWorkItemApi : WorkItemApi {
 
     val deleteWorkItemCalls = mutableListOf<Pair<String, Long>>()
 
-    override suspend fun getWorkItemById(taskPath: String, id: Long): WorkItemResponseDTO =
-        workItemByIdResponse ?: error("workItemByIdResponse not set")
+    override suspend fun getWorkItemById(taskPath: String, id: Long): WorkItemResponseDTO {
+        errorToThrow?.let { throw it }
+        return workItemByIdResponse ?: error("workItemByIdResponse not set")
+    }
 
     override suspend fun getWorkItems(
         taskPath: String,
@@ -127,8 +135,17 @@ class FakeWorkItemApi : WorkItemApi {
             sprint = sprint,
             pageSize = pageSize,
         )
+        errorToThrow?.let { throw it }
         return getWorkItemsLambda?.invoke(taskPath, sprint, userStory) ?: workItemsResponse
     }
+
+    var workItemsPaginationResponse: HttpResponse? = null
+    var getWorkItemsPaginationThrows: Throwable? = null
+    var lastPaginationTaskPath: String? = null
+    var lastPaginationProject: Long? = null
+    var lastPaginationPage: Int? = null
+    var lastPaginationPageSize: Int? = null
+    var lastPaginationSprint: Any? = null
 
     override suspend fun getWorkItemsPagination(
         taskPath: String,
@@ -146,13 +163,22 @@ class FakeWorkItemApi : WorkItemApi {
         priorities: String?,
         severities: String?,
         types: String?
-    ): HttpResponse = error("not used in this test")
+    ): HttpResponse {
+        lastPaginationTaskPath = taskPath
+        lastPaginationProject = project
+        lastPaginationPage = page
+        lastPaginationPageSize = pageSize
+        lastPaginationSprint = sprint
+        getWorkItemsPaginationThrows?.let { throw it }
+        return workItemsPaginationResponse ?: error("workItemsPaginationResponse not set")
+    }
 
     override suspend fun createWorkItem(
         taskPath: String,
         createRequest: CreateWorkItemRequestDTO
     ): WorkItemResponseDTO {
         createWorkItemCalls += CreateWorkItemApiCall(taskPath, createRequest)
+        errorToThrow?.let { throw it }
         return createWorkItemResponse ?: error("createWorkItemResponse not set")
     }
 
@@ -162,6 +188,7 @@ class FakeWorkItemApi : WorkItemApi {
         ref: Long
     ): WorkItemResponseDTO {
         workItemByRefCalls += GetWorkItemByRefApiCall(taskPath, project, ref)
+        errorToThrow?.let { throw it }
         return workItemByRefResponse ?: error("workItemByRefResponse not set")
     }
 
@@ -171,19 +198,23 @@ class FakeWorkItemApi : WorkItemApi {
         payload: JsonObject
     ): WorkItemResponseDTO {
         patchWorkItemCalls += PatchWorkItemApiCall(taskPath, id, payload)
+        errorToThrow?.let { throw it }
         return patchWorkItemResponse ?: error("patchWorkItemResponse not set")
     }
 
     override suspend fun unwatchWorkItem(taskPath: String, workItemId: Long) {
         unwatchWorkItemCalls += taskPath to workItemId
+        errorToThrow?.let { throw it }
     }
 
     override suspend fun watchWorkItem(taskPath: String, workItemId: Long) {
         watchWorkItemCalls += taskPath to workItemId
+        errorToThrow?.let { throw it }
     }
 
     override suspend fun deleteWorkItem(taskPath: String, workItemId: Long) {
         deleteWorkItemCalls += taskPath to workItemId
+        errorToThrow?.let { throw it }
     }
 
     override suspend fun promoteToUserStory(
@@ -192,6 +223,7 @@ class FakeWorkItemApi : WorkItemApi {
         body: PromoteToUserStoryRequestDTO
     ): List<Long> {
         promoteToUserStoryCalls += PromoteToUserStoryApiCall(taskPath, workItemId, body)
+        errorToThrow?.let { throw it }
         return promoteToUserStoryResponse
     }
 
@@ -199,10 +231,14 @@ class FakeWorkItemApi : WorkItemApi {
         taskPath: String,
         objectId: Long,
         projectId: Long
-    ): List<AttachmentDTO> = getAttachmentsResponse
+    ): List<AttachmentDTO> {
+        errorToThrow?.let { throw it }
+        return getAttachmentsResponse
+    }
 
     override suspend fun deleteAttachment(taskPath: String, attachmentId: Long) {
         deleteAttachmentCalls += taskPath to attachmentId
+        errorToThrow?.let { throw it }
     }
 
     override suspend fun uploadCommonTaskAttachment(
@@ -213,22 +249,29 @@ class FakeWorkItemApi : WorkItemApi {
         objectId: Long
     ): AttachmentDTO {
         uploadAttachmentCalls += UploadAttachmentApiCall(taskPath, fileName, fileBytes, projectId, objectId)
+        errorToThrow?.let { throw it }
         return uploadAttachmentResponse ?: error("uploadAttachmentResponse not set")
     }
 
     override suspend fun getCustomAttributes(
         taskPath: String,
         projectId: Long
-    ): List<CustomAttributeResponseDTO> = customAttributesResponse
+    ): List<CustomAttributeResponseDTO> {
+        errorToThrow?.let { throw it }
+        return customAttributesResponse
+    }
 
     override suspend fun getCustomAttributesValues(
         taskPath: String,
         id: Long
-    ): CustomAttributesValuesResponseDTO =
-        customAttributesValuesResponse ?: error("customAttributesValuesResponse not set")
+    ): CustomAttributesValuesResponseDTO {
+        errorToThrow?.let { throw it }
+        return customAttributesValuesResponse ?: error("customAttributesValuesResponse not set")
+    }
 
     override suspend fun patchWikiPage(pageId: Long, payload: JsonObject): WikiPageDTO {
         patchWikiPageCalls += PatchWikiPageApiCall(pageId, payload)
+        errorToThrow?.let { throw it }
         return patchWikiPageResponse ?: error("patchWikiPageResponse not set")
     }
 
@@ -238,6 +281,7 @@ class FakeWorkItemApi : WorkItemApi {
         payload: JsonObject
     ): CustomAttributesValuesResponseDTO {
         patchCustomAttributesValuesCalls += PatchCustomAttributesValuesApiCall(taskPath, taskId, payload)
+        errorToThrow?.let { throw it }
         return patchCustomAttributesValuesResponse ?: error("patchCustomAttributesValuesResponse not set")
     }
 }

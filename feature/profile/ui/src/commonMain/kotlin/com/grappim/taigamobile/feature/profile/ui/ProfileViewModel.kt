@@ -1,9 +1,7 @@
 package com.grappim.taigamobile.feature.profile.ui
 
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.navigation.toRoute
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.profile.domain.GetProfileDataUseCase
@@ -14,18 +12,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import org.koin.core.annotation.InjectedParam
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
 class ProfileViewModel(
+    @InjectedParam private val route: ProfileNavDestination,
     private val getProfileDataUseCase: GetProfileDataUseCase,
-    private val taigaSessionStorage: TaigaSessionStorage,
-    savedStateHandle: SavedStateHandle
+    private val taigaSessionStorage: TaigaSessionStorage
 ) : ViewModel() {
 
-    private val navRoute = savedStateHandle.toRoute<ProfileNavDestination>()
     private val userId: Long
-        get() = navRoute.userId
+        get() = route.userId
 
     private val _state = MutableStateFlow(
         ProfileState(

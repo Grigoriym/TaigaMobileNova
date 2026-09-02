@@ -17,16 +17,12 @@ import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
@@ -46,14 +42,6 @@ class MainViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = false
         )
-
-    private val _state = MutableStateFlow(
-        MainScreenState(
-            setIsLogoutConfirmationVisible = ::showLogoutConfirmation,
-            onLogout = ::logout
-        )
-    )
-    val state = _state.asStateFlow()
 
     val logoutEvent = authStateManager.logoutEvents
 
@@ -107,20 +95,6 @@ class MainViewModel(
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = persistentListOf()
         )
-
-    private fun logout() {
-        viewModelScope.launch {
-            _state.update {
-                it.copy(isLogoutConfirmationVisible = false)
-            }
-
-            authStateManager.logoutSuspend()
-        }
-    }
-
-    private fun showLogoutConfirmation(isVisible: Boolean) {
-        _state.update { it.copy(isLogoutConfirmationVisible = isVisible) }
-    }
 }
 
 data class InitialNavState(val isReady: Boolean, val isProjectSelected: Boolean, val startDestination: Any)

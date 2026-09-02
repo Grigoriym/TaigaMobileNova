@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Security
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -17,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.github_repo_link
+import com.grappim.taigamobile.strings.generated.resources.issue_suggestion_link
 import com.grappim.taigamobile.strings.generated.resources.privacy_policy_title
 import com.grappim.taigamobile.strings.generated.resources.settings_about
 import com.grappim.taigamobile.uikit.generated.resources.github_mark
@@ -58,6 +60,8 @@ private fun SettingsAboutScreenContent(state: SettingsAboutScreenState) {
         Column {
             GithubRepoContent(state = state)
 
+            IssueSuggestionContent(state = state)
+
             PrivacyPolicyContent(state = state)
 
             TaigaHeightSpacer(16.dp)
@@ -77,6 +81,18 @@ private fun GithubRepoContent(state: SettingsAboutScreenState) {
         onClick = {
             uriHandler.openUri(uri)
         }
+    )
+}
+
+@Composable
+private fun IssueSuggestionContent(state: SettingsAboutScreenState) {
+    val uriHandler = LocalUriHandler.current
+    val uri = state.githubIssuesLink.asString()
+    TaigaHeightSpacer(16.dp)
+    TaigaOutlinedButton(
+        imageVector = Icons.Filled.BugReport,
+        text = stringResource(RString.issue_suggestion_link),
+        onClick = { uriHandler.openUri(uri) }
     )
 }
 

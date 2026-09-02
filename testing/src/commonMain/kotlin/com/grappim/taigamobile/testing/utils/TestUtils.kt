@@ -7,6 +7,8 @@ import kotlinx.datetime.Month
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
 import kotlin.random.Random
+import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.time.Clock
 
 val nowLocalDate: LocalDate = Clock.System.now().toLocalDateTime(TimeZone.currentSystemDefault()).date
@@ -41,3 +43,17 @@ fun getRandomColor(): Color {
 }
 
 val testException = IllegalStateException("error")
+
+/**
+ * Asserts that [block] fails with [testException], matching **type and message rather than
+ * identity**. Two reasons not to use `assertEquals(testException, caught)`:
+ *
+ * - a throw from inside an `async` child is rethrown as a *copy* on JVM (coroutines' stack-trace
+ *   recovery), so identity and equality both fail;
+ * - a bare `assertFailsWith<IllegalStateException>` also passes when a fake hits its own
+ *   `error("… not set")` guard, which would make a failure-path test green for the wrong reason.
+ */
+inline fun assertFailsWithTestException(block: () -> Unit) {
+    val thrown = assertFailsWith<IllegalStateException>(block = block)
+    assertEquals(testException.message, thrown.message)
+}

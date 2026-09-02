@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <exclude domain="file" path="datastore/auth_storage.preferences_pb" />
+    <exclude domain="sharedpref" path="auth_storage.xml" />
+</full-backup-content>
