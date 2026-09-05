@@ -68,7 +68,7 @@ atomicfu = "0.33.0"
 # https://github.com/cashapp/turbine/releases
 turbine = "1.2.1"
 ktor = "3.5.2"
-slf4j = "2.0.18"
+slf4j = "2.0.19"
 
 # https://github.com/InsertKoinIO/koin/releases
 koin-bom = "4.2.2"
