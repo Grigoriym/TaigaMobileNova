@@ -18,6 +18,17 @@ A rule that fits in a sentence or two, with at most one example, stays here. A r
 worked example, a script snippet, or a running list of confirmed cases belongs in `docs/` — link it
 and stop.
 
+## Template Adoption
+
+This file does not use `agentic-grappim/templates/CLAUDE.md.template`'s section names or structure
+verbatim — headings like "Coding Guidelines" (template: "Working agreements"), "Settled Decisions"
+(template: "Settled decisions"), and no standalone "Reference projects" section. **Decision
+(2026-09-05): intentional, not drift.** The template's substance — working agreements, settled
+decisions, friction log, close-out ritual, `/finalize` — is already present here section-by-section,
+grown organically before the shared template existed; renaming or reorganizing to match it verbatim
+would be pure churn with no functional benefit. Treat a future divergence in *content*, not heading
+names, as the thing worth reconciling.
+
 ## Build Commands
 
 ```bash
