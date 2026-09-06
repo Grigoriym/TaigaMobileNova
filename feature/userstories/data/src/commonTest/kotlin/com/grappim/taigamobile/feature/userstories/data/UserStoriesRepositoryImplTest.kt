@@ -132,4 +132,27 @@ class UserStoriesRepositoryImplTest {
         assertEquals(dto1.id, actual[0].id)
         assertEquals(dto2.id, actual[1].id)
     }
+
+    @Test
+    fun `getUserStories should default project to current project id when not supplied`() = runTest {
+        val currentProjectId = getRandomLong()
+        fakeTaigaSessionStorage.currentProjectId = currentProjectId
+
+        sut.getUserStories()
+
+        assertEquals(1, fakeUserStoriesApi.getUserStoriesCalls.size)
+        assertEquals(currentProjectId, fakeUserStoriesApi.getUserStoriesCalls.last().project)
+    }
+
+    @Test
+    fun `getUserStories should not override an explicitly supplied project`() = runTest {
+        val currentProjectId = getRandomLong()
+        val explicitProjectId = getRandomLong()
+        fakeTaigaSessionStorage.currentProjectId = currentProjectId
+
+        sut.getUserStories(project = explicitProjectId)
+
+        assertEquals(1, fakeUserStoriesApi.getUserStoriesCalls.size)
+        assertEquals(explicitProjectId, fakeUserStoriesApi.getUserStoriesCalls.last().project)
+    }
 }

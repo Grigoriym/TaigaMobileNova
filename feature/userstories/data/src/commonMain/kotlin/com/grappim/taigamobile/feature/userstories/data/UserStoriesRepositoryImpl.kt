@@ -72,7 +72,7 @@ class UserStoriesRepositoryImpl(
                 isDashboard = isDashboard,
                 watcherId = watcherId,
                 epic = epicId,
-                project = project,
+                project = project ?: taigaSessionStorage.getCurrentProjectId(),
                 sprint = sprint
             )
         )
