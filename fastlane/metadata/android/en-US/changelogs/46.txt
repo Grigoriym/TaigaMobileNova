@@ -1,0 +1,1 @@
+- Fixed Kanban timing out ("Waiting limit exceeded") by scoping its user stories fetch to the current project instead of every project
