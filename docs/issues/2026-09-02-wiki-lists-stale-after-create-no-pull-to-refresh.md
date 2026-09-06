@@ -49,7 +49,7 @@ PullToRefreshBox(
 `buildDesktopRefreshTopBarAction` + `DesktopRefreshEffect`
 (`uikit/.../topbar/DesktopRefreshRegistry.kt`) add a top-bar refresh icon and a
 Ctrl+R/F5 shortcut on desktop, since there's no swipe gesture there — the doc
-comment on that file explains exactly why (`docs/revisit.md` #44 tracked this as a
+comment on that file explains exactly why (`docs/archive/revisit-resolved.md` #44 tracked this as a
 design gap until `tablet-form-factor-support` step 15 built it; it's finished
 infrastructure now, not an open question). `EpicsScreen.kt:84-89,137-142` shows both
 wired alongside `PullToRefreshBox`. Wiki uses neither.

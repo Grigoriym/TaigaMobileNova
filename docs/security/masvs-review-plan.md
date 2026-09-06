@@ -281,7 +281,7 @@ empty there since nothing ever populates `TrustedCertStorage` on that platform. 
 not an Open row.
 
 Two small, real gaps found but not fixed inline (out of this task's scope — a documentation review,
-not a UI change) — written into `docs/revisit.md` with evidence: **#32** (no warning when the
+not a UI change) — written into `docs/archive/revisit-resolved.md` with evidence: **#32** (no warning when the
 configured server URL is `http://`, despite the token being sent over it) and **#33**
 (`TrustedCertificatesScreen` inert on iOS, plus the missing TLS trust port).
 
@@ -330,7 +330,7 @@ device rows, plus Notes). Findings:
   gaps go beyond that documented tradeoff: navigation isn't host-restricted (any URL without `code`/
   `error` loads unconditionally) and the WebView's cookies are never cleared on dismiss (GitHub's
   session persists in the app's shared `CookieManager` store, untied to app logout). Near-term fix
-  (host allowlist + cookie clearing) written to `docs/revisit.md` #34 rather than implemented — a
+  (host allowlist + cookie clearing) written to `docs/archive/revisit-resolved.md` #34 rather than implemented — a
   correct allowlist isn't safely derivable from source alone (GitHub's SSO/2FA redirect chain isn't
   enumerable without a device), and this repo has no Android unit-test source set to verify a
   `WebViewClient` change automatically. The stale plan doc for the reverted Custom Tabs approach,
@@ -339,7 +339,7 @@ device rows, plus Notes). Findings:
 - **Primary username/password + LDAP login** confirmed to go through the same Ktor channel MASVS-NETWORK
   already characterized (`AuthRepositoryImpl.auth` → `AuthApiImpl.auth`, plain `POST auth`) — recorded
   as an Accepted deviation cross-referencing NETWORK rather than a new finding. One correction made
-  along the way: both the NETWORK section's existing row and `docs/revisit.md` #32 claimed cleartext
+  along the way: both the NETWORK section's existing row and `docs/archive/revisit-resolved.md` #32 claimed cleartext
   bearer-token exposure had "no in-app warning" — false. `LoginViewModel` shows a real "Unencrypted
   connection" confirmation dialog before the *first* credential submission when the server is
   `http://` (`LoginViewModel.kt:122-127,135-140`). Both were corrected in place (no breadcrumb) to say
@@ -401,7 +401,7 @@ Needs-a-device rows, plus Notes). Findings:
   (`window.setFlags(FLAG_SECURE, ...)`) applies app-wide since this is a single-`Activity` app,
   trading away in-app screenshot/recording capability everywhere to close a local-access-only gap on
   one screen; that's a product tradeoff, not a default to flip silently. Written up in
-  `docs/revisit.md` #35.
+  `docs/archive/revisit-resolved.md` #35.
 - One item moved to "Needs a device": whether the revealed password actually shows up in a live
   recents-list screenshot when the app is backgrounded mid-reveal — source only confirms the flag is
   absent, not the resulting screenshot content.
@@ -463,7 +463,7 @@ Needs-a-device rows, plus Notes). Findings:
   **not** fixed — `AttachmentsWidget.kt:160` (lower risk, server-constructed URL) and markdown-embedded
   links in task descriptions/comments/wiki (higher risk, unconfirmed whether the third-party markdown
   renderer's link-click path even reaches `LocalUriHandler` — class-name inspection only, no
-  decompile) — recorded as an Open finding and written up in `docs/revisit.md` #36, since the correct
+  decompile) — recorded as an Open finding and written up in `docs/archive/revisit-resolved.md` #36, since the correct
   fix is one app-wide `LocalUriHandler` wrapper, not three scattered patches.
 - One item moved to "Needs a device"/"can't verify from source": whether the OSV alert actually fires
   on a real vulnerable dependency, and whether the markdown renderer's link click truly goes through
@@ -521,7 +521,7 @@ Open row, plus Notes). Findings:
   and preferences but leaves the Room cache (projects/sprints/work items) fully populated for the next
   account on a shared device. Fix is a proven three-line port of the JVM version (same three DAOs
   already exist) — not implemented inline (documentation-review task, no iOS-executable test in this
-  repo to verify beyond a `compileKotlinIosArm64` compile), written up in `docs/revisit.md` #37.
+  repo to verify beyond a `compileKotlinIosArm64` compile), written up in `docs/archive/revisit-resolved.md` #37.
 - **MASVS-PRIVACY-1/2 both confirmed, not assumed trivial.** Permissions: `INTERNET` and
   `ACCESS_NETWORK_STATE` are the only two declared and both have a real call site (Ktor client;
   `ConnectivityManagerNetworkMonitor`/`NetworkMonitorImpl.jvm.kt`). Identification: grepped for

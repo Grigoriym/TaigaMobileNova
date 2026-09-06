@@ -220,7 +220,7 @@ adb shell dumpsys package $PKG | grep -A2 "x86_64:"
 All four steps were run for real against this project's `fdroidRelease` build (2026-08-12) and
 produced exactly the output shown above.
 
-## Before/after re-capture: does `VerifyClass` shrink post-profile? (`docs/revisit.md` #40)
+## Before/after re-capture: does `VerifyClass` shrink post-profile? (`docs/archive/revisit-resolved.md` #40)
 
 Real A/B against the `fdroidRelease` build, same journey as above, no reinstall between the two
 compile-mode captures (2026-08-12):
@@ -343,4 +343,4 @@ pays some avoidable first-run verification cost in principle. But a severe Dashb
 on the SM-A920F (worst frame 650ms) did **not** reproduce on the SM-G998B (same APK, same journey,
 same lack of Dashboard profile coverage, worst frame 10.2ms, zero `VerifyClass` slices) — the
 SM-A920F's age/weak GPU was the dominant factor, not the missing profile coverage. Full writeup and
-the corrected before/after picture in `docs/revisit.md` #41.
+the corrected before/after picture in `docs/archive/revisit-resolved.md` #41.

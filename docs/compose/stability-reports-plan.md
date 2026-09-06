@@ -23,7 +23,7 @@ cost to a normal build, the same way `-PgplayBuild` gates Firebase.
 |---|------|------|--------|
 | 1 | Gradle wiring: opt-in stability reports | S | Done (2026-08-11) |
 | 2 | Aggregator script + first repo-wide audit + doc | M | Done (2026-08-12) |
-| 3 | Fix domain-model stability gap (`docs/revisit.md` #39) | M | Done (2026-08-12) |
+| 3 | Fix domain-model stability gap (`docs/archive/revisit-resolved.md` #39) | M | Done (2026-08-12) |
 
 ## Researched facts (so task 1 doesn't have to re-derive them)
 
@@ -67,7 +67,7 @@ cost to a normal build, the same way `-PgplayBuild` gates Firebase.
   need a compile check instead of `ktlintCheck`. Use `./gradlew :build-logic:convention:compileKotlin`,
   **not** `:build-logic:convention:build`: task 1 found `:build-logic:convention:build` fails on a
   pre-existing, unrelated `validatePlugins` error (`RenameApkTask` missing a caching annotation) even
-  on a clean tree — see [docs/revisit.md #38](../revisit.md#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change).
+  on a clean tree — see [docs/archive/revisit-resolved.md #38](../archive/revisit-resolved.md#38-build-logicconventionbuild-fails-on-a-pre-existing-validateplugins-error-unrelated-to-any-specific-change).
 
 ## Task 1 — Gradle wiring: opt-in stability reports
 
@@ -226,7 +226,7 @@ Triage of the scan's output (121 unstable-class findings, 60 unstable-composable
   fix is a repo-wide policy decision (apply Compose compiler to ~15 domain modules, or maintain a
   `stabilityConfigurationFiles` list) that doesn't belong riding along on a scan-triage task. Full
   mechanism, evidence, and the fix options considered:
-  [docs/revisit.md #39](../revisit.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin).
+  [docs/archive/revisit-resolved.md #39](../archive/revisit-resolved.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin).
 - **Expected, not actionable without a policy call**: `NavController`/`NavHostController` and
   `LazyPagingItems<T>` (third-party types, same "no marker" cause but not our code to fix), and
   `Any`-typed parameters in `uikit`'s drag-and-drop (inherently unstable by design). `kotlinx.datetime`
@@ -242,9 +242,9 @@ one-line CLAUDE.md pointer next to the `ImmutableList` convention bullet.
 since the only production edit was a type-parameter widening on an existing line, no formatting
 change.
 
-**Next: task 3** — Fix the domain-model stability gap (`docs/revisit.md` #39). Done, see below.
+**Next: task 3** — Fix the domain-model stability gap (`docs/archive/revisit-resolved.md` #39). Done, see below.
 
-## Task 3 — Fix domain-model stability gap (`docs/revisit.md` #39)
+## Task 3 — Fix domain-model stability gap (`docs/archive/revisit-resolved.md` #39)
 
 **Size:** M
 
@@ -316,7 +316,7 @@ all 11 remaining are exactly the three buckets already flagged as independently 
 compiler had apparently been propagating `WorkItem`'s instability into that generic wrapper the same
 way it does for `ImmutableList<WorkItem>`, so fixing `WorkItem` fixed both.
 
-`./gradlew jvmTest` and `ktlintCheck` green across the whole repo. `docs/revisit.md` #39 updated with
+`./gradlew jvmTest` and `ktlintCheck` green across the whole repo. `docs/archive/revisit-resolved.md` #39 updated with
 a Resolved note carrying this same evidence.
 
 **Finalize focus:** none — this task's own Result note is the full record; nothing here depends on a

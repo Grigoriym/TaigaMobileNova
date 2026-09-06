@@ -187,7 +187,7 @@ module passes and asserts the call actually succeeded (parses / non-error status
 "didn't throw"; without the env vars, it skips cleanly. **Verify with `--tests` scoped to the
 `*IntegrationTest` classes, not the `di.*` wildcard** — running the wildcard risks the pre-existing,
 order-dependent `KoinGraphTest` collision (see
-[revisit #24](../revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently)),
+[revisit #24](../archive/revisit-resolved.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently)),
 which is not specific to any one module's test and shouldn't block landing it.
 
 **Finalize focus:** cross off the module in this table (or move it to a "done" list) so the next
@@ -197,7 +197,7 @@ figure out what's left.
 **Result (2026-08-08):** `UsersApiIntegrationTest` added (`getMyProfile()`). While scoping the
 module list, discovered `EpicsApi` and `IssuesApi` are write-only — corrected the candidates table
 above so a future session doesn't waste time looking for a read that isn't there. Also discovered and
-logged [revisit #24](../revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently):
+logged [revisit #24](../archive/revisit-resolved.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently):
 running the full `com.grappim.taigamobile.di.*` wildcard with the env vars set can fail *every*
 live-Taiga test (not just the new one) if `KoinGraphTest` happens to run first in that JVM — verified
 by re-running with `--tests` scoped to just the three `*IntegrationTest` classes, which passed
@@ -226,10 +226,10 @@ isolation; logged as revisit #25, then fixed in a follow-up (same session, on re
 `DataStore` was defaulting to a real `Dispatchers.IO`-backed scope instead of sharing
 `FiltersStorageImpl`'s own `Dispatchers.Main` test-dispatcher scope, so `awaitItem()` was
 real-wall-clock racing the real IO thread pool under a loaded multi-module run. See
-[revisit #25](../revisit.md#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
+[revisit #25](../archive/revisit-resolved.md#25-filtersstorageimpltestresetfilters-clears-every-section-is-flaky-under-a-full-jvmtest-run)
 for the full fix write-up. Verifying the fix surfaced a second, unrelated flake
 (`WikiPageViewModelTest`, different mechanism) — logged as
-[revisit #26](../revisit.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run),
+[revisit #26](../archive/revisit-resolved.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run),
 not fixed. `ktlintCheck` green. 8/12 candidates remain — next session picks any row from the table
 above.
 
@@ -267,7 +267,7 @@ with the three `TAIGA_INTEGRATION_*` env vars set, scoped to
 `com.grappim.taigamobile.di.*IntegrationTest` — all eight integration tests (login, projects,
 users, user stories, tasks, sprints, filters, wiki) pass together. Full `./gradlew jvmTest --rerun`
 (no env vars) hit one failure on first run —
-[revisit #26](../revisit.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)'s
+[revisit #26](../archive/revisit-resolved.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)'s
 already-logged `WikiPageViewModelTest.onAttachmentAdd failure updates state with error` flake,
 confirmed by the exact `TurbineAssertionError: No value produced in 3s` message matching that entry
 — not a new issue, and not caused by this session (no change touched `feature/wiki/ui`). A
@@ -282,7 +282,7 @@ those reads. Verified with the three `TAIGA_INTEGRATION_*` env vars set, scoped 
 `com.grappim.taigamobile.di.*IntegrationTest` — all nine integration tests (login, projects, users,
 user stories, tasks, sprints, filters, wiki, work items) pass together. Full `./gradlew jvmTest
 --rerun` (no env vars) hit one failure on first run — the same already-logged
-[revisit #26](../revisit.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)
+[revisit #26](../archive/revisit-resolved.md#26-wikipageviewmodeltestonattachmentadd-failure-updates-state-with-error-is-flaky-under-a-full-jvmtest-run)
 `WikiPageViewModelTest` flake, confirmed by a subsequent `--rerun` coming back fully green; not
 caused by this session (no change touched `feature/wiki/ui`). `ktlintCheck` green. 3/12 candidates
 remain — next session picks any row from the table above.

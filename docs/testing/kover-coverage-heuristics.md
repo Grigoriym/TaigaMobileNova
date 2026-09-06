@@ -4,7 +4,7 @@ Reference material for running a future coverage sweep — ranking packages and 
 branches or lines, reading Kover's XML report accurately (`koverXmlReport` vs `:koverVerify`
 agreement, the `kover-rank.py`/`kover-diff.py` scripts), and recognising the recurring `mb`/`cb`
 signatures on a report line that mean "this residual isn't worth a test." Split out of `CLAUDE.md`'s
-`## Testing` section on 2026-08-09 ([docs/revisit.md](../revisit.md) #28) because it's read rarely
+`## Testing` section on 2026-08-09 ([docs/archive/revisit-resolved.md](../archive/revisit-resolved.md#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc) #28) because it's read rarely
 compared to the day-to-day conventions that stayed there. See `CLAUDE.md`'s Testing section for the
 coverage-floor-is-a-ratchet rule and the current line/branch bounds.
 
@@ -28,7 +28,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   which is why it has never been wrong. Locally: take before and after from runs with the same
   compilation state, or simply re-run — the count is not sticky within a session, and one re-run is
   cheaper than reasoning about a mismatched pair. Every Android-variant class it adds is permanently
-  0 % under `jvmTest`; that half is [revisit #23](../revisit.md), still open.
+  0 % under `jvmTest`; that half is [revisit #23](../archive/revisit-resolved.md#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach), still open.
 - **To read `:koverVerify`'s own percentages, temporarily set both `minValue`s to 99** in the root
   `build.gradle.kts` and run it: it names each violated rule and prints the actual figure. There is no
   other way to get the number the gate is actually comparing against. `git checkout build.gradle.kts`
@@ -116,7 +116,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   ranking a package by its missed branches, and before reading a flat delta as "the tests did
   nothing." `**.*Plugin` used to be on that list and dropped all five of `core/api`'s Ktor plugins
   (~98 lines and 38 branches of real auth and error-mapping logic) purely because their names ended
-  in "Plugin" — removed 2026-08-08, see [revisit #10](../revisit.md), since a repo-wide grep found
+  in "Plugin" — removed 2026-08-08, see [revisit #10](../archive/revisit-resolved.md#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi), since a repo-wide grep found
   no other class the pattern was meant to catch. `**.*Module` stayed: every class it matches is a
   real Koin `@Module`.
   The suffix match is exact, so the reverse also holds: `**.*Repository` does **not** match
@@ -132,7 +132,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   **An excluded class is absent from the report entirely — not listed at 0 % — so a class that is
   both excluded *and* dead is invisible to every coverage-driven ranking.** `SprintPagingSource`
   (`**.*PagingSource`) has zero references repo-wide and no report row of any kind; nothing in a
-  missed-branch sweep could ever have surfaced it ([revisit #21](../revisit.md)). When a sweep
+  missed-branch sweep could ever have surfaced it ([revisit #21](../archive/revisit-resolved.md#21-sprintpagingsource-is-dead-code-and-it-is-invisible-to-kover)). When a sweep
   closes a package, `ls` its source directory against the class names in the report before calling
   the package done — the difference is the excluded set, and it is worth a look.
 - **A `*_androidKt` / `*_iosKt` class in the report is dead weight, and it can dominate a sweep row.**
@@ -143,7 +143,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   BRANCH / 10/10 LINE (covered incidentally by `core/api`'s `NetworkErrorMapper` tests). The logic is
   not untested; it is counted twice and only one copy is executable. **Diff the actuals before
   scoping any `expect`/`actual` package** — a `*_androidKt` row is a reason to close the row, not to
-  write tests. **Since [revisit #23](../revisit.md) (2026-08-08), `*_androidKt` classes are excluded
+  write tests. **Since [revisit #23](../archive/revisit-resolved.md#23-the-coverage-report-counts-android-variant-classes-no-test-can-reach) (2026-08-08), `*_androidKt` classes are excluded
   from the report entirely** (`**.*_androidKt` in the root `excludes` block) — this heuristic is kept
   for how the finding was made, but a future sweep won't see these rows at all.
 - **Much of the branch denominator is unreachable**, in two distinct ways, and a package's
@@ -182,7 +182,7 @@ coverage-floor-is-a-ratchet rule and the current line/branch bounds.
   1-line hole in an otherwise 100 % method.** Stop there rather than hunting for the test that would
   reach it. Also unreachable in the same way: the default value of a state class's callback parameter
   (`onSaveClick: (String, Color) -> Unit = { _, _ -> }`), which the ViewModel always overrides.
-  [revisit #16](../revisit.md) has the fix if it is ever judged worth the ~96 lines.
+  [revisit #16](../archive/revisit-resolved.md#16-every-logcat-message-lambda-is-a-permanently-uncovered-line) has the fix if it is ever judged worth the ~96 lines.
   **This is not a ceiling on LINE, though** — whether the lambda becomes its own synthetic method
   varies. `EditSprintViewModel`'s `logcat` inside a `viewModelScope.launch` was split out at 0/1, and
   `ModulesViewModel`'s two were folded into the covered `invokeSuspend`, taking that package to LINE
