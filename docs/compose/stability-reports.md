@@ -98,7 +98,7 @@ A `*/domain` module that defines a type consumed as a Composable parameter anywh
 also apply `alias(libs.plugins.taigamobile.kmp.library.stability)` alongside its usual
 `taigamobile.kmp.library`. Without it, the Compose compiler in every downstream UI module has no
 stability marker to trust for that type and defaults it to `Unstable`, no matter how simple the class
-actually is — see [docs/revisit.md #39](../revisit.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin)
+actually is — see [docs/archive/revisit-resolved.md #39](../archive/revisit-resolved.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin)
 for the mechanism and the fix chosen (a convention plugin applying only the Compose Kotlin compiler
 subplugin + a `compileOnly compose-runtime` dependency — no UI toolkit reaches the domain layer).
 
@@ -136,7 +136,7 @@ unstable-composable-parameter findings dropped from 60 to 11, and all 11 remaini
 type. Unpredicted bonus: `LazyPagingItems<WorkItem>` findings (Paging Compose, itself `@Stable`)
 disappeared too — the compiler had apparently been propagating `WorkItem`'s instability into that
 generic wrapper the same way it does for `ImmutableList<WorkItem>`. Full writeup:
-[docs/revisit.md #39](../revisit.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin).
+[docs/archive/revisit-resolved.md #39](../archive/revisit-resolved.md#39-domain-model-classes-read-as-compose-unstable-across-every-feature-because-domain-modules-dont-apply-the-compose-compiler-plugin).
 
 **Expected, not actionable without a `stabilityConfigurationFiles` policy decision** (still true after
 the fix above — these are independent mechanisms): `NavController`/`NavHostController` (third-party

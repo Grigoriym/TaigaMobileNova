@@ -1,12 +1,12 @@
 # TokenRefreshPlugin's MAX_RETRIES guard is unreachable
 
 **Status:** Done
-**Link:** `docs/revisit.md` #11 (found while writing `TokenRefreshPluginTest`, testing improvement-plan task 9a)
+**Link:** `docs/archive/revisit-resolved.md` #11 (found while writing `TokenRefreshPluginTest`, testing improvement-plan task 9a)
 **Updated:** 2026-08-07
 
 ## Report
 
-This is not a user bug report — it's an internally-found defect, recorded in `docs/revisit.md` #11
+This is not a user bug report — it's an internally-found defect, recorded in `docs/archive/revisit-resolved.md` #11
 while writing test coverage for `core/api`'s auth plugins. The revisit entry's claim:
 
 > `retryCountKey` is only ever written at the end of the same interceptor invocation, and

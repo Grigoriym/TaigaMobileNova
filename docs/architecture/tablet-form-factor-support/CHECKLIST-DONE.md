@@ -455,7 +455,7 @@ desktop build (`:composeApp:run`): opened an Issue's detail, edited its descript
 the Issues list picked up the change, confirming the renamed key still delivers the signal
 end-to-end in today's single-pane mode.
 
-**Also found (not fixed, logged to `docs/revisit.md` #42–44):** the nav rail renders on the Login
+**Also found (not fixed, logged to `docs/archive/revisit-resolved.md` #42–44):** the nav rail renders on the Login
 screen at wide window widths (`MainScreen.kt:182-230`, ungated on login state); the Issues list has
 no row dividers on desktop; the desktop build has no non-touch equivalent for pull-to-refresh.
 Moved into this checklist as steps 13–15 on 2026-08-22, per gregory.
@@ -522,7 +522,7 @@ screenshots taken to this session's scratchpad (not committed; not durable).
 
 ## Step 14: Add row dividers to the Issues list on desktop — ✅ done 2026-08-22 (no-op, premise was wrong)
 
-`docs/revisit.md` #43 claimed `IssuesScreen.kt:161` was "a plain `LazyColumn` with no divider
+`docs/archive/revisit-resolved.md` #43 claimed `IssuesScreen.kt:161` was "a plain `LazyColumn` with no divider
 between rows." That was wrong: it already calls `simpleTasksListWithTitle`
 (`uikit/src/commonMain/.../widgets/list/SimpleTasksListWithTitle.kt:55-60`), which already renders
 a `HorizontalDivider(color = MaterialTheme.colorScheme.outline)` between rows — the same color

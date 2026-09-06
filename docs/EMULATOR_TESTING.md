@@ -22,7 +22,7 @@ technique lives in the skill itself, not here — this file is only what's true 
   on the host — from the emulator, reach it at `http://10.0.2.2:9000` (standard AVD
   host-loopback alias). Seeded creds `admin`/`admin` (see `docs/local-info.md`).
   `LoginViewModel.SERVER_REGEX` requires a dotted hostname, so `10.0.2.2` works but bare
-  `localhost` would not (see `docs/revisit.md` #29 and memory `local-taiga-instance`).
+  `localhost` would not (see `docs/archive/revisit-resolved.md` #29 and memory `local-taiga-instance`).
   The app shows an "Unencrypted connection" confirm dialog for plain `http://` — tap
   **Yes** to proceed (this is expected for a self-hosted/LAN server, not a bug).
 

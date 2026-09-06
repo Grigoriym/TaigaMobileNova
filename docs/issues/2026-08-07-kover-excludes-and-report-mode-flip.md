@@ -1,15 +1,15 @@
 # 2026-08-07 — Kover's `excludes` "applied partially, and differently by the two tasks"
 
 **Status:** Done
-**Link:** [docs/revisit.md #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify)
+**Link:** [docs/archive/revisit-resolved.md #8](../archive/revisit-resolved.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify)
 **Updated:** 2026-08-07
 
-Blocks [#10](../revisit.md) (Ktor plugins wrongly excluded) and [#14](../revisit.md) (coverage floor
+Blocks [#10](../archive/revisit-resolved.md#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi) (Ktor plugins wrongly excluded) and [#14](../archive/revisit-resolved.md#14-the-kover-coverage-floor-is-far-below-actual-1722-points-in-2026-08-03-2940-by-2026-08-05) (coverage floor
 ~35–42 points below actual).
 
 ## Report
 
-`docs/revisit.md` #8, opened 2026-08-03 and amended four times. Three distinct claims:
+`docs/archive/revisit-resolved.md` #8, opened 2026-08-03 and amended four times. Three distinct claims:
 
 1. **The two report tasks disagree.** Measured at `af8a185a`: `koverXmlReport` 65.30 % line /
    45.88 % branch, `:koverVerify` 60.47 % / 40.29 %, "what the configured excludes should produce"
@@ -250,7 +250,7 @@ packages by equality instead of by prefix.
 
 ### A — Correct the record; fix the script; raise the floor. No build-config change.
 
-Rewrite `docs/revisit.md` #8 to what findings 1–5 establish, delete the false comment at
+Rewrite `docs/archive/revisit-resolved.md` #8 to what findings 1–5 establish, delete the false comment at
 `build.gradle.kts:95-99`, cut CLAUDE.md's mode-flip workarounds down to the one true rule ("the
 denominator depends on which compilations exist; take before/after from the same invocation, or
 `clean` first"), fix `kover-rank.py:56` to prefix matching, and raise the floor from 58/38 to ~92/77
@@ -323,7 +323,7 @@ Broken into three independently-verifiable parts:
    total on today's report (which contains no such class, so the fix must be a no-op there).
 2. **Floor raise + delete the false comment** in the root `build.gradle.kts`. Verified by
    `./gradlew :koverVerify` staying green at the new bounds.
-3. **Docs.** `docs/revisit.md` #8 and #14, CLAUDE.md's Testing section, and this file's status. No
+3. **Docs.** `docs/archive/revisit-resolved.md` #8 and #14, CLAUDE.md's Testing section, and this file's status. No
    automated verification; the check is that no surviving sentence contradicts findings 1–5.
 
 ## What landed
@@ -343,7 +343,7 @@ Three parts, all verified:
    `./gradlew ktlintCheck` green. The `excludes` block itself was **not** touched — finding 1 says it
    is correct as written, and the three redundant `packages(…)` entries were left in place rather than
    pruned, so the block still mirrors `kover-rank.py`'s list line for line.
-3. **Docs** — `docs/revisit.md` #8 rewritten (its ~100 lines of disproved analysis and four
+3. **Docs** — `docs/archive/revisit-resolved.md` #8 rewritten (its ~100 lines of disproved analysis and four
    contradicted trigger hypotheses deleted rather than archived, so the next reader is not sent down
    the same path), #14 closed with the floor raise, the stale "still open" table reduced to the seven
    genuinely-open entries, and new entry **#23** filed for the deferred option C. CLAUDE.md's Testing
