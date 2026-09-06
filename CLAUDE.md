@@ -10,7 +10,8 @@ Testing section's Kover coverage-sweep heuristics did exactly this over many ses
 reached 717 lines before the catalogue (missed-branch/line ranking heuristics, `mb`/`cb` report
 signatures, `kover-rank.py`/`kover-diff.py` usage) moved to
 [docs/testing/kover-coverage-heuristics.md](docs/testing/kover-coverage-heuristics.md) (2026-08-09,
-[docs/revisit.md](docs/revisit.md) #28). Watch for the same shape starting again elsewhere: a bullet
+[docs/archive/revisit-resolved.md](docs/archive/revisit-resolved.md#28-claudemd-has-grown-too-big-split-the-kover-ranking-heuristics-out-into-their-own-doc)
+#28). Watch for the same shape starting again elsewhere: a bullet
 accumulating dated, confirmed cases ("Confirmed for X (date)... And for Y (date)...") is reference
 material earned by a specific investigation, not a day-to-day rule every session needs to read.
 

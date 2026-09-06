@@ -197,7 +197,7 @@ branch was exercised at runtime; macOS/Windows branches are unverified best-effo
 **Found and deliberately not fixed:** the login screen's server-URL validation regex rejects a bare
 `localhost` hostname (requires a dotted FQDN), so testing needed `http://127.0.0.1:9000` instead of
 `http://localhost:9000` — pre-existing, unrelated to this task's diff. Logged as
-[docs/revisit.md #29](../revisit.md#29-login-screens-server-url-regex-rejects-bare-localhost).
+[docs/archive/revisit-resolved.md #29](../archive/revisit-resolved.md#29-login-screens-server-url-regex-rejects-bare-localhost).
 
 Next: task 2, the CI job that builds the Linux package on PRs.
 
@@ -652,7 +652,7 @@ and confirmed the offline banner appeared correctly — approved as "it works fi
 **Dead code noticed, not touched:** `androidApp/src/main/kotlin/com/grappim/taigamobile/data/ConnectivityManagerNetworkMonitor.kt`
 is a second, unused `NetworkMonitor`-shaped class (not the one actually wired via DI) discovered
 while checking `@param:IoDispatcher` usage patterns — out of scope for this task, logged to
-[docs/revisit.md](../revisit.md#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp).
+[docs/archive/revisit-resolved.md](../archive/revisit-resolved.md#31-unused-duplicate-connectivitymanagernetworkmonitor-in-androidapp).
 
 This was the last task in the plan (0–9 all done). Queue is empty — no task is scoped next in this
 plan. Follow-ups that were surveyed but not actioned now live in [deferred.md](deferred.md).

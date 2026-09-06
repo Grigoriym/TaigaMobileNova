@@ -513,7 +513,7 @@ a null body is reachable — do not write it off as unreachable.
 **Before writing tests purely to move coverage, check the class is not excluded.** The root
 `build.gradle.kts` `kover { … excludes { … } }` drops `**.*Plugin`, `**.*Module`, `**.*Repository`,
 `**.*Api`, `**.*Screen`, `**.*Widget` and more by *name suffix*, so a well-tested `FooPlugin` shows
-up as zero movement (see [revisit #10](../../docs/revisit.md)). The tests are still worth writing —
+up as zero movement (see [revisit #10](../../docs/archive/revisit-resolved.md#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi)). The tests are still worth writing —
 just do not expect them in the report, and do not conclude coverage regressed.
 
 ---
@@ -558,7 +558,7 @@ instance.
   with "login failed: ... multiple DataStores active" — `KoinGraphTest` never closes its `Koin`
   instance, so the shared session's own `koinApplication` collides with it and `liveTaigaSessionOrSkip()`
   does not tolerate that failure. Neither test closes its `Koin`, and nothing here fixes the
-  underlying collision — see [revisit #24](../../docs/revisit.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently).
+  underlying collision — see [revisit #24](../../docs/archive/revisit-resolved.md#24-koingraphtest-and-the-live-taiga-integration-tests-collide-on-the-jvm-datastore-file-order-dependently).
   **If a live-Taiga test fails this way while writing/running a new one, re-run with `--tests`
   scoped to just the `*IntegrationTest` classes (excluding `KoinGraphTest`) to confirm it isn't the
   new test's own fault** before debugging further.
