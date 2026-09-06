@@ -75,6 +75,7 @@ moved out. Expand for a one-line-per-entry jump table instead of scrolling.</sum
 | 45 | [Tablet nav rail/permanent drawer still has no scroll safety net](#45-tablet-nav-railpermanent-drawer-still-has-no-scroll-safety-net) | 🟡 open |
 | 46 | [No deep-link readiness plan yet (3 queued Nav3 patterns)](#46-no-deep-link-readiness-plan-yet-3-navigation-3-patterns-queued-for-whenever-links-are-added) | 🟡 open |
 | 48 | [`page_size` is a no-op on the unpaginated user-stories request](#48-page_size-is-a-no-op-on-the-unpaginated-user-stories-request) | 🟡 open |
+| 49 | [Kanban fetches `filters_data` twice on load](#49-kanban-fetches-filters_data-twice-on-load) | 🟡 open |
 
 </details>
 
@@ -2176,3 +2177,30 @@ that investigation rather than folded into that diff.
 **Trigger:** next time this API is touched, consider whether `page_size` should only be sent when
 `params.page != null` (i.e. only for actual paginated calls), to stop shipping a parameter that
 currently does nothing.
+
+## 49. Kanban fetches `filters_data` twice on load
+
+**Where:** `feature/kanban/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/ui/KanbanViewModel.kt:51-54,110-119`
+and `feature/kanban/domain/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/domain/GetKanbanDataUseCase.kt:49`.
+
+**What:** noticed while walking through #386's request list with gregory. `KanbanViewModel.init`
+fires `getKanbanData()` and `loadFiltersData()` at the same time. `getKanbanData()` calls
+`getKanbanDataUseCase.getData()`, which calls `filtersRepository.getStatuses(UserStory)`
+(`GetKanbanDataUseCase.kt:49`) to get the board's status columns. Independently,
+`loadFiltersData()` calls `filtersRepository.getFiltersData(UserStory)` directly, to populate the
+filter dropdown (tags/assignees/etc., stored in `allFilters`). Both hit the exact same endpoint
+(`GET userstories/filters_data?project=<id>`) with the exact same params —
+`FiltersRepositoryImpl.getStatuses()` is itself just `getFiltersData()` plus picking statuses out
+of the result (`FiltersRepositoryImpl.kt:31-33`), so the first call's response already contains
+everything the second call needs.
+
+**Consequence:** none functionally — both calls succeed and each path gets what it needs. It's a
+redundant round trip on every Kanban load/refresh, not a correctness bug.
+
+**Why deferred:** unrelated to #386's fix (which only changes the `project` param on the
+user-stories request); flagged during that investigation rather than folded into that diff.
+
+**Trigger:** next time Kanban's load path is touched, consider having `loadFiltersData()` reuse the
+`FiltersData` `getKanbanData()` already fetches (e.g. thread it through `KanbanData`/the use case
+result) instead of issuing its own request, or have the use case expose both the statuses and the
+raw `FiltersData` from a single call.
