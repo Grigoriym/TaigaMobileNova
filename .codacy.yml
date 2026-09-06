@@ -3,3 +3,4 @@ exclude_paths:
   - "docs/**"
   - ".claude/**"
   - "PRIVACY_POLICY_GPLAY.md"
+  - "CLAUDE.md"
