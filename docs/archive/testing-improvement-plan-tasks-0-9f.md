@@ -311,7 +311,7 @@ resolution. `:feature:kanban:domain:jvmTest`, the full `jvmTest` and `detekt` ar
 
 **No behaviour bug was found** — the task expected one. `docs/architecture/kanban-filters.md` matches
 what the tests prove; no correction needed. The one real problem found is an efficiency issue, filed
-as [revisit #6](../revisit.md#6-getkanbandatausecase-reads-the-current-project-three-times): `getData`
+as [revisit #6](revisit-resolved.md#6-getkanbandatausecase-reads-the-current-project-three-times): `getData`
 reads the current project three times (once as `async`, twice more via `getPermissions()`, which is
 just `getCurrentProjectSimple().myPermissions`).
 
@@ -504,7 +504,7 @@ artifacts: XML 65.30 % / 45.88 %, verify 60.47 % / 40.29 %. With all filters rem
 four decimal places, so the divergence is entirely in how each applies the `excludes` block — and
 neither applies it in full (a faithful application gives 71.97 % / 49.73 %). Several exclusion
 entries are silent no-ops, all of them in `:core:storage`; full evidence in
-[revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify).
+[revisit #8](revisit-resolved.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify).
 
 The bounds are therefore set from **`:koverVerify`'s own numbers, not the XML's** — the gate has to
 be tuned to the task that enforces it. This is safe: fixing the excludes can only raise coverage.
@@ -764,7 +764,7 @@ runs with identical denominators (see the comparability trap below):
 boilerplate", which in this module means all five Ktor plugins — ~98 lines and 38 branches of real
 auth / error-mapping / host-rewriting logic, previously at 0 % and now fully covered, none of it in
 the report. `core/api/errors` does not move at all because `ErrorMappingPlugin` is entirely excluded.
-Filed as [revisit #10](../revisit.md#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi)
+Filed as [revisit #10](revisit-resolved.md#10-the-plugin-and-module-exclusion-patterns-hide-real-logic-in-coreapi)
 with the per-class figures; narrowing the patterns has to happen together with revisit #8, so it was
 not done here.
 
@@ -779,7 +779,7 @@ not done here.
   62.00 % here, 742 / 71.96 % after a build-script edit, because the `excludes` are only applied in
   full in the second. A baseline and an after-run on opposite sides are *not* comparable; this cost
   most of a session. Full reproduction in
-  [revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify).
+  [revisit #8](revisit-resolved.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify).
   ⚠️ The rule this note originally gave — "take both measurements with a build-file change present" —
   **was disproved** by the `feature/projects/data` session below, which saw a third value (854) with
   no build file touched. Print the class count and compare package denominators instead.
@@ -790,9 +790,9 @@ not done here.
   behind `getVersionName()` is a JVM signature clash.
 
 Two behaviour findings came out of it, both deferred:
-[revisit #11](../revisit.md#11-tokenrefreshplugins-max_retries-guard-is-unreachable) (the plugin's
+[revisit #11](revisit-resolved.md#11-tokenrefreshplugins-max_retries-guard-is-unreachable) (the plugin's
 retry cap can never fire, because `execute()` does not re-enter its own interceptor) and
-[revisit #12](../revisit.md#12-two-small-dead-spots-in-coreapi).
+[revisit #12](revisit-resolved.md#12-two-small-dead-spots-in-coreapi).
 
 ### `feature/projects/data` + `feature/projects/mapper` — ✅ done 2026-08-03
 
@@ -956,7 +956,7 @@ Three things worth carrying forward:
   which is why `GetErrorMessageTest`'s 24 tests cost nothing.
 - **`:koverVerify` and a 742-class `koverXmlReport` agree exactly.** `:koverVerify` reported
   75.4249 % / 60.5173 %; `kover-rank.py` over the same run's XML reported 75.42 % / 60.52 %. The
-  "~5 points apart" warning in CLAUDE.md and [revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify)
+  "~5 points apart" warning in CLAUDE.md and [revisit #8](revisit-resolved.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify)
   therefore describes `koverVerify` versus an **821/854-class** XML, not an intrinsic difference —
   **`kover-rank.py`'s totals are the gate number**, not an approximation of it. Read `:koverVerify`'s
   own figures by temporarily setting both `minValue`s to 99; it names both rules and prints the actual
@@ -964,11 +964,11 @@ Three things worth carrying forward:
 - **The floor is now ~17/22 points below actual** (58/38 versus 75.42/60.52) and was deliberately
   *not* raised — the gap is far larger than the tests added since task 8 can explain, which suggests
   `:koverVerify` may flip between excludes modes the same way `koverXmlReport` does. Filed as
-  [revisit #14](../revisit.md#14-the-kover-coverage-floor-is-far-below-actual-1722-points-in-2026-08-03-2940-by-2026-08-05) with the
+  [revisit #14](revisit-resolved.md#14-the-kover-coverage-floor-is-far-below-actual-1722-points-in-2026-08-03-2940-by-2026-08-05) with the
   arithmetic and the check to run first. Do not raise it from a single reading.
 
 Also found and filed, not fixed: `urlDecode` is an `internal expect` with three actuals and **zero
-call sites** ([revisit #13](../revisit.md#13-urldecode-in-utilsui-is-dead-code-with-three-actuals)).
+call sites** ([revisit #13](revisit-resolved.md#13-urldecode-in-utilsui-is-dead-code-with-three-actuals)).
 `JsonSerializableNavTypeTest` uses it to reverse `serializeAsValue`, so deleting it means rewriting
 two assertions.
 
@@ -1063,7 +1063,7 @@ Three things worth carrying forward:
   the remaining `error("not used in this test")` stubs are `createWorkItem` and nothing else.
 
 One behaviour finding, filed not fixed:
-[revisit #15](../revisit.md#15-saving-a-non-editable-custom-field-leaks-its-id-into-editingitemids) —
+[revisit #15](revisit-resolved.md#15-saving-a-non-editable-custom-field-leaks-its-id-into-editingitemids) —
 `handleCustomFieldSave`'s success path calls the *toggle* `onCustomFieldEditToggle(item)` to close
 edit mode, but the save button is rendered for every item type while edit mode is only ever entered
 for `EditableItem`s. So saving a Text/Number/Date/Dropdown/Checkbox field adds its id to
@@ -1135,7 +1135,7 @@ The baseline and the final after-run were both 742-class runs with identical tot
 9709 LINE), so no comparability dance was needed. Repo-wide: BRANCH 1293 → 1314, LINE 7451 → 7563.
 The *intermediate* after-run came back at **787** classes and is what turned up a third Kover
 class-count mode — `excludes` applied in full, surplus made up of Android-variant / Room classes.
-That is written up in `CLAUDE.md` (Testing) and [revisit #8](../revisit.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify);
+That is written up in `CLAUDE.md` (Testing) and [revisit #8](revisit-resolved.md#8-kovers-excludes-are-applied-partially-and-differently-by-koverxmlreport-and-koververify);
 the package's denominators were identical in all three runs, so it did not affect this table.
 
 **The residual 8 lines are unreachable and carry no branches.** `EditFormState` (0/7) is a
@@ -1210,7 +1210,7 @@ Three things worth carrying forward:
   lines are exactly that (`onTagClick`'s tag-not-found warning and `fetchTags`' failure log); the
   third is `EditTagsState`'s six-underscore default `onSaveClick`, the same unreachable
   default-parameter lambda the projectvalues session found. Repo-wide there are 96 such call sites.
-  Written up as [revisit #16](../revisit.md#16-every-logcat-message-lambda-is-a-permanently-uncovered-line),
+  Written up as [revisit #16](revisit-resolved.md#16-every-logcat-message-lambda-is-a-permanently-uncovered-line),
   including the `:testing`-installs-a-logger fix and why it is a build change rather than a test one.
   **Recognise the signature — a 1-line hole in an otherwise 100 % method — and stop.**
 
@@ -1259,7 +1259,7 @@ Two things worth carrying forward:
 - **The single residual line is a `logcat { }` lambda**, exactly the signature CLAUDE.md says to stop
   at — `getSprints`' `"Error while getting sprints"` failure log, reported as
   `EditSprintViewModel$getSprints$1.invokeSuspend$lambda$2$0` at 0/1. Recognised and left; see
-  [revisit #16](../revisit.md#16-every-logcat-message-lambda-is-a-permanently-uncovered-line).
+  [revisit #16](revisit-resolved.md#16-every-logcat-message-lambda-is-a-permanently-uncovered-line).
 
 ---
 

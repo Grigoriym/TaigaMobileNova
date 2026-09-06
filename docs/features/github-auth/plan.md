@@ -7,7 +7,7 @@ loopback redirect this doc describes would either break the web login or need a 
 registered OAuth App (a server-admin change outside this codebase's control). The shipped
 implementation is the `WebView`-based one in `GithubOAuthWebViewDialog.android.kt` instead. Kept here
 as a historical record of why the loopback approach doesn't work for this app; see the MASVS-AUTH
-section of `docs/security/masvs.md` and `docs/revisit.md` #34 for the current security review of the
+section of `docs/security/masvs.md` and `docs/archive/revisit-resolved.md` #34 for the current security review of the
 `WebView` approach.
 
 ## Overview

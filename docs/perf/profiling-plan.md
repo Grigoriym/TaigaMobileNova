@@ -163,7 +163,7 @@ was a histogram-overflow-bucket artifact, not a real duration (this AVD runs
 `TraceProcessor` (venv + `pip install perfetto`, no network-fetch or pandas issues hit), reproduced
 the main-thread `comm`-truncation gotcha (`tid`'s name showed as `le.fdroid.debug`, not `main`) and
 surfaced a real finding: the worst frame (288.8ms) was dominated by ART `VerifyClass` slices for
-Compose/androidx and one app class, logged as `docs/revisit.md` #40 as concrete before-evidence for
+Compose/androidx and one app class, logged as `docs/archive/revisit-resolved.md` #40 as concrete before-evidence for
 task 3. Full detail and real command output in `docs/perf/profiling.md`, published this session.
 `docs/EMULATOR_TESTING.md` was created as a side effect (didn't exist before). **Next: task 3.**
 
@@ -201,7 +201,7 @@ once the table above is all Done.
 `docs/perf/profiling.md`'s new "Baseline Profile" section:
 
 - **Generator:** `benchmark/.../BaselineProfileGenerator.kt` has one `coldStart()` test only — task
-  2's `VerifyClass` finding (`docs/revisit.md` #40) was startup-wide, not tied to a specific
+  2's `VerifyClass` finding (`docs/archive/revisit-resolved.md` #40) was startup-wide, not tied to a specific
   post-login screen, so there was no concrete second journey to add per the "What" section's own
   condition for one.
 - **Gap found and fixed:** task 1 wired `:benchmark` (the producer) but never applied the
@@ -226,7 +226,7 @@ once the table above is all Done.
   fired via `androidx.startup`); forcing the real system mechanism (`adb shell cmd package
   bg-dexopt-job`, not a synthetic override) flipped it to `[status=speed-profile]
   [reason=bg-dexopt]`.
-- **Resolved (2026-08-12, later session):** `docs/revisit.md` #40 asked for a re-capture to see
+- **Resolved (2026-08-12, later session):** `docs/archive/revisit-resolved.md` #40 asked for a re-capture to see
   whether the `VerifyClass` run in the worst cold-start frame shrinks post-profile. Redone correctly
   (`docs/perf/profiling.md`'s "Before/after re-capture" section has the full write-up) — the answer
   is that `VerifyClass` cost was already near-zero on the `fdroidRelease` build in *both* the

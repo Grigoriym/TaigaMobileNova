@@ -10,6 +10,7 @@ import com.grappim.taigamobile.feature.workitem.dto.WorkItemResponseDTO
 class FakeUserStoriesApi : UserStoriesApi {
 
     var getUserStoriesResult: List<WorkItemResponseDTO> = emptyList()
+    val getUserStoriesCalls = mutableListOf<GetUserStoriesParams>()
 
     var createUserStoryResult: WorkItemResponseDTO? = null
     val createUserStoryCalls = mutableListOf<CreateUserStoryRequest>()
@@ -22,6 +23,8 @@ class FakeUserStoriesApi : UserStoriesApi {
     override suspend fun bulkUpdateKanbanOrder(request: BulkUpdateKanbanOrderRequest): List<BulkUpdateKanbanOrderResponseItem> =
         error("not used in this test")
 
-    override suspend fun getUserStories(params: GetUserStoriesParams): List<WorkItemResponseDTO> =
-        getUserStoriesResult
+    override suspend fun getUserStories(params: GetUserStoriesParams): List<WorkItemResponseDTO> {
+        getUserStoriesCalls += params
+        return getUserStoriesResult
+    }
 }

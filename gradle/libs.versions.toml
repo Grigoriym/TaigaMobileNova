@@ -1,8 +1,8 @@
 [versions]
 #noinspection UnusedVersionCatalogEntry
-version-code = "45"
+version-code = "46"
 #noinspection UnusedVersionCatalogEntry
-version-name = "2.2.0"
+version-name = "2.2.1"
 #noinspection UnusedVersionCatalogEntry
 app-pkg = "com.grappim.taigamobile"
 #noinspection UnusedVersionCatalogEntry
@@ -30,10 +30,10 @@ ktlint = "14.2.0"
 # https://github.com/Kotlin/kotlinx-kover/releases
 kover = "0.9.9"
 # https://github.com/mrmans0n/compose-rules/releases
-composeRules = "0.6.4"
+composeRules = "0.6.6"
 
 # https://developer.android.com/reference/tools/gradle-api
-agp = "9.3.1"
+agp = "9.4.0"
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 androidDesugarJdkLibs = "2.1.5"
 
@@ -68,7 +68,7 @@ atomicfu = "0.33.0"
 # https://github.com/cashapp/turbine/releases
 turbine = "1.2.1"
 ktor = "3.5.2"
-slf4j = "2.0.18"
+slf4j = "2.0.19"
 
 # https://github.com/InsertKoinIO/koin/releases
 koin-bom = "4.2.2"
@@ -96,7 +96,7 @@ paging = "3.5.1"
 room = "2.8.4"
 sqlite = "2.7.0"
 
-coil = "3.6.1"
+coil = "3.6.2"
 okhttp = "5.5.0"
 junit4 = "4.13.2"
 
