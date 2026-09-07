@@ -1993,3 +1993,20 @@ the next active work on that initiative's PR rather than sit here. Now tracked a
 [tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
 entry stays for the original evidence/reasoning, the checklist step is the one to pick up.
 
+## 48. `page_size` is a no-op on the unpaginated user-stories request
+
+**Where:** `feature/userstories/data/src/commonMain/kotlin/com/grappim/taigamobile/feature/userstories/data/UserStoriesApi.kt:38-40,64`.
+
+**What:** noticed while investigating #386 (see
+`docs/issues/386-kanban-timeout-unfiltered-userstories-fetch.md`). `applyUserStoryParams()`
+unconditionally appended `page_size` to every `GET userstories` request, and separately
+`getUserStories()` adds the `x-disable-pagination: true` header whenever `params.page == null`.
+The header, per the code's own comment, makes the Taiga server ignore pagination — and therefore
+`page_size` — entirely, regardless of its value. Every production caller left `page` unset (the
+only one being `GetKanbanDataUseCaseImpl`), so `page_size` was always sent and always ignored.
+
+**Fix (2026-09-07):** `applyUserStoryParams()` now only appends `page_size` when `params.page !=
+null` — i.e. only for actual paginated calls, matching the header's own `params.page == null`
+condition right above it. Verified with `./gradlew jvmTest` (full suite, clean) and
+`ktlintCommonMainSourceSetCheck` on the module.
+
