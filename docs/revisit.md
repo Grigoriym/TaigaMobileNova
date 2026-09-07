@@ -22,7 +22,6 @@ now that the table below covers everything left.
 | 45 | Tablet nav rail/permanent drawer still has no scroll safety net | S–M | [tablet nav rail issue](issues/2026-08-26-tablet-nav-rail-logout-clipped.md) |
 | 46 | No deep-link readiness plan yet (3 queued Nav3 patterns) | — | [reference-app-scouting.md](../../agentic-grappim/investigations/reference-app-scouting.md) |
 | 47 | `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge | S | — |
-| 48 | `page_size` is a no-op on the unpaginated user-stories request | S | [386 investigation](issues/386-kanban-timeout-unfiltered-userstories-fetch.md) |
 | 49 | Kanban fetches `filters_data` twice on load | S | [386 investigation](issues/386-kanban-timeout-unfiltered-userstories-fetch.md) |
 
 ---
@@ -161,31 +160,6 @@ easily fake-able locally the way `check-guardrails.sh <range>` is.
 guardrails run on `master` failed. If it did (for the reason above, not a real new violation), fix
 the `else` branch the same way: when the event is a push to `master` and `before` is not an ancestor
 of `dev`'s current tip reachable within the release-only commits, use `dev`'s merge-base instead.
-
-## 48. `page_size` is a no-op on the unpaginated user-stories request
-
-**Where:** `feature/userstories/data/src/commonMain/kotlin/com/grappim/taigamobile/feature/userstories/data/UserStoriesApi.kt:38-40,64`.
-
-**What:** noticed while investigating #386 (see
-`docs/issues/386-kanban-timeout-unfiltered-userstories-fetch.md`). `applyUserStoryParams()`
-unconditionally appends `page_size` to every `GET userstories` request, and separately
-`getUserStories()` adds the `x-disable-pagination: true` header whenever `params.page == null`.
-The header, per the code's own comment, makes the Taiga server ignore pagination — and therefore
-`page_size` — entirely, regardless of its value. Every current caller of
-`UserStoriesRepositoryImpl.getUserStories()` / `UserStoriesApi.getUserStories()` leaves `page` unset
-(the only production caller is `GetKanbanDataUseCaseImpl`, see #386's investigation doc), so in
-practice `page_size` is always sent and always ignored.
-
-**Consequence:** none today — this is dead/no-op request data, not a bug. It would only start
-mattering if a future caller passed an explicit `page`, which would skip the disable-pagination
-header and let `page_size` actually control the response.
-
-**Why deferred:** unrelated to #386's fix (which only changes the `project` param); flagged during
-that investigation rather than folded into that diff.
-
-**Trigger:** next time this API is touched, consider whether `page_size` should only be sent when
-`params.page != null` (i.e. only for actual paginated calls), to stop shipping a parameter that
-currently does nothing.
 
 ## 49. Kanban fetches `filters_data` twice on load
 
