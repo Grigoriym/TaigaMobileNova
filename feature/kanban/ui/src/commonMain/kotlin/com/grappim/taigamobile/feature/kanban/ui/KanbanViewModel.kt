@@ -51,10 +51,7 @@ class KanbanViewModel(
     private fun getKanbanData() {
         viewModelScope.launch {
             _state.update {
-                it.copy(
-                    isLoading = true,
-                    error = NativeText.Empty
-                )
+                it.copy(isLoading = true)
             }
             getKanbanDataUseCase.getData(
                 storageSwimlane = taigaSessionStorage.kanbanDefaultSwimline.first()
@@ -72,6 +69,7 @@ class KanbanViewModel(
                 _state.update {
                     it.copy(
                         isLoading = false,
+                        error = NativeText.Empty,
                         statuses = result.statuses,
                         swimlanes = result.swimlanes,
                         stories = result.stories,
