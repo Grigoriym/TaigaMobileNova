@@ -22,7 +22,7 @@ now that the table below covers everything left.
 | 45 | Tablet nav rail/permanent drawer still has no scroll safety net | S–M | [tablet nav rail issue](issues/2026-08-26-tablet-nav-rail-logout-clipped.md) |
 | 46 | No deep-link readiness plan yet (3 queued Nav3 patterns) | — | [reference-app-scouting.md](../../agentic-grappim/investigations/reference-app-scouting.md) |
 | 47 | `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge | S | — |
-| 49 | Kanban fetches `filters_data` twice on load | S | [386 investigation](issues/386-kanban-timeout-unfiltered-userstories-fetch.md) |
+| 51 | Switching drawer sections is recorded on the back stack, so back cascades through prior sections | S–M | this file |
 
 ---
 
@@ -161,29 +161,42 @@ guardrails run on `master` failed. If it did (for the reason above, not a real n
 the `else` branch the same way: when the event is a push to `master` and `before` is not an ancestor
 of `dev`'s current tip reachable within the release-only commits, use `dev`'s merge-base instead.
 
-## 49. Kanban fetches `filters_data` twice on load
+## 51. Switching drawer sections is recorded on the back stack, so back cascades through prior sections
 
-**Where:** `feature/kanban/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/ui/KanbanViewModel.kt:51-54,110-119`
-and `feature/kanban/domain/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/domain/GetKanbanDataUseCase.kt:49`.
+**Where:** `core/navigation/src/commonMain/kotlin/com/grappim/taigamobile/core/navigation/Navigator.kt`
+— `goToTopLevel()` (lines 92-107) and `goBack()` (lines 35-47);
+`core/navigation/src/commonMain/kotlin/com/grappim/taigamobile/core/navigation/NavigationState.kt:28-33`
+(`topLevelStack: NavBackStack<NavKey>`, `currentTopLevelKey = topLevelStack.last()`).
 
-**What:** noticed while walking through #386's request list with gregory. `KanbanViewModel.init`
-fires `getKanbanData()` and `loadFiltersData()` at the same time. `getKanbanData()` calls
-`getKanbanDataUseCase.getData()`, which calls `filtersRepository.getStatuses(UserStory)`
-(`GetKanbanDataUseCase.kt:49`) to get the board's status columns. Independently,
-`loadFiltersData()` calls `filtersRepository.getFiltersData(UserStory)` directly, to populate the
-filter dropdown (tags/assignees/etc., stored in `allFilters`). Both hit the exact same endpoint
-(`GET userstories/filters_data?project=<id>`) with the exact same params —
-`FiltersRepositoryImpl.getStatuses()` is itself just `getFiltersData()` plus picking statuses out
-of the result (`FiltersRepositoryImpl.kt:31-33`), so the first call's response already contains
-everything the second call needs.
+**What:** reported by gregory (2026-09-07): navigate Epics → Issues via the drawer, then press back —
+lands on Epics instead of wherever was open before Epics (or exiting the app), which reads as
+unexpected. Traced to the mechanism: `topLevelStack` is a real stack, not a "currently selected
+section" pointer. `goToTopLevel(key)` (`Navigator.kt:92-99`) removes any existing entry for that
+section's class then `add(key)s` it — so switching sections *pushes*, it doesn't replace. `goBack()`
+(`Navigator.kt:35-41`) pops `topLevelStack` whenever the current screen is itself the top of its
+section's sub-stack, so a chain of drawer taps (Epics → Issues → Kanban → …) builds a stack of
+sections that back walks through one at a time, most-recent-first, before ever reaching whatever was
+open before the first drawer tap. `NavigationState.kt:20-21`'s own doc comment confirms this is by
+design ("`topLevelStack` records which drawer section is active"), not an oversight — but it's a
+different UX model than the typical drawer/bottom-nav pattern (Android's own bottom-nav guidance,
+most drawer apps) where switching top-level destinations does *not* grow the back stack and back
+either returns to the single previous screen or exits.
 
-**Consequence:** none functionally — both calls succeed and each path gets what it needs. It's a
-redundant round trip on every Kanban load/refresh, not a correctness bug.
+**Consequence:** every drawer navigation the user makes silently extends how many back-presses it
+takes to leave the app, and the "previous section" back lands on is whichever was tapped most
+recently — not necessarily the one the user thinks of as "before this."
 
-**Why deferred:** unrelated to #386's fix (which only changes the `project` param on the
-user-stories request); flagged during that investigation rather than folded into that diff.
+**Why deferred:** UX behavior change to a core, deliberately-designed piece of shared navigation
+infrastructure (`Navigator`/`NavigationState` back all top-level nav — drawer, rail, permanent drawer
+across phone/tablet/desktop per the tablet-form-factor-support work), not something to redesign as a
+side note. Needs a decision on the intended model, not just a code change.
 
-**Trigger:** next time Kanban's load path is touched, consider having `loadFiltersData()` reuse the
-`FiltersData` `getKanbanData()` already fetches (e.g. thread it through `KanbanData`/the use case
-result) instead of issuing its own request, or have the use case expose both the statuses and the
-raw `FiltersData` from a single call.
+**Fix, if wanted:** the conventional alternative is what `resetSubStackTo()` already does for
+re-tapping the *active* section (`Navigator.kt:109-116`, `topLevelStack[lastIndex] = key` — replace,
+not push) — applying the same replace-not-push shape to `goToTopLevel()` would make switching
+sections never grow `topLevelStack` past whatever depth it already had, so back would skip past
+previously-visited sections entirely and go straight to wherever the user was before entering the
+drawer flow (or exit, if that was the start destination). Confirm with gregory this is the wanted
+model before changing it — the current design may be intentional to let users "walk back" through
+their drawer navigation history, which is also a defensible choice some apps make deliberately.
+

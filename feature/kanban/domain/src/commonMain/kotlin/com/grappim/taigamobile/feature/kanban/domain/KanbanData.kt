@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.kanban.domain
 
+import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import com.grappim.taigamobile.feature.users.domain.TeamMember
@@ -15,5 +16,6 @@ data class KanbanData(
     val canAddUserStory: Boolean,
     val canModifyUserStory: Boolean,
     val defaultSwimlane: Swimlane?,
-    val storiesByStatus: ImmutableMap<Statuses, ImmutableList<KanbanUserStory>>
+    val storiesByStatus: ImmutableMap<Statuses, ImmutableList<KanbanUserStory>>,
+    val filtersData: FiltersData = FiltersData()
 )

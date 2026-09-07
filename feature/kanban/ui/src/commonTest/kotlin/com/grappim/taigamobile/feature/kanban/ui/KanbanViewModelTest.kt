@@ -21,11 +21,9 @@ import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getSwimlane
 import com.grappim.taigamobile.testing.models.getTeamMember
 import com.grappim.taigamobile.testing.models.getUserStory
-import com.grappim.taigamobile.testing.repo.FakeFiltersRepository
 import com.grappim.taigamobile.testing.repo.FakeUserStoriesRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.usecases.FakeGetKanbanDataUseCase
-import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableMap
 import kotlinx.collections.immutable.persistentListOf
@@ -49,7 +47,6 @@ internal class KanbanViewModelTest {
     private val getKanbanDataUseCase = FakeGetKanbanDataUseCase()
     private val sessionStorage = FakeTaigaSessionStorage()
     private val userStoriesRepository = FakeUserStoriesRepository()
-    private val filtersRepository = FakeFiltersRepository()
 
     private lateinit var sut: KanbanViewModel
 
@@ -67,8 +64,7 @@ internal class KanbanViewModelTest {
         sut = KanbanViewModel(
             getKanbanDataUseCase = getKanbanDataUseCase,
             taigaSessionStorage = sessionStorage,
-            userStoriesRepository = userStoriesRepository,
-            filtersRepository = filtersRepository
+            userStoriesRepository = userStoriesRepository
         )
     }
 
@@ -97,7 +93,6 @@ internal class KanbanViewModelTest {
         )
         getKanbanDataUseCase.getDataResult = Result.success(kanbanData)
         getKanbanDataUseCase.computeStoriesByStatusResult = storiesByStatus
-        filtersRepository.filtersDataResult = FiltersData()
 
         createViewModel()
 
@@ -116,39 +111,12 @@ internal class KanbanViewModelTest {
     @Test
     fun `on init - getData failure - error is set and isLoading is false`() = runTest {
         getKanbanDataUseCase.getDataResult = Result.failure(RuntimeException("network error"))
-        filtersRepository.filtersDataResult = FiltersData()
 
         createViewModel()
 
         with(sut.state.value) {
             assertFalse(isLoading)
             assertTrue(error.isNotEmpty())
-        }
-    }
-
-    @Test
-    fun `on init - loadFiltersData success - filtersLoading false and no filtersError`() = runTest {
-        getKanbanDataUseCase.getDataResult = Result.failure(RuntimeException("not testing this"))
-        filtersRepository.filtersDataResult = FiltersData()
-
-        createViewModel()
-
-        with(sut.state.value) {
-            assertFalse(isFiltersLoading)
-            assertTrue(filtersError.isEmpty())
-        }
-    }
-
-    @Test
-    fun `on init - loadFiltersData failure - filtersError is set`() = runTest {
-        getKanbanDataUseCase.getDataResult = Result.failure(RuntimeException("not testing this"))
-        filtersRepository.filtersDataThrows = testException
-
-        createViewModel()
-
-        with(sut.state.value) {
-            assertFalse(isFiltersLoading)
-            assertTrue(filtersError.isNotEmpty())
         }
     }
 
@@ -166,7 +134,6 @@ internal class KanbanViewModelTest {
                 canModifyUserStory = false
             )
         )
-        filtersRepository.filtersDataResult = FiltersData()
         createViewModel()
 
         assertEquals(1, getKanbanDataUseCase.getDataCallCount)
@@ -190,7 +157,6 @@ internal class KanbanViewModelTest {
                 canModifyUserStory = false
             )
         )
-        filtersRepository.filtersDataResult = FiltersData()
         createViewModel()
 
         val newSwimlane = getSwimlane()
@@ -214,7 +180,6 @@ internal class KanbanViewModelTest {
                 canModifyUserStory = false
             )
         )
-        filtersRepository.filtersDataResult = FiltersData()
         createViewModel()
 
         sut.state.value.onSelectSwimlane(null)
@@ -247,7 +212,6 @@ internal class KanbanViewModelTest {
             )
         )
         getKanbanDataUseCase.computeStoriesByStatusResult = storiesByStatus
-        filtersRepository.filtersDataResult = FiltersData()
         createViewModel()
 
         val unassignedFilter = UsersFilters(id = null, name = "Unassigned", count = 1L)
@@ -281,7 +245,6 @@ internal class KanbanViewModelTest {
             )
         )
         getKanbanDataUseCase.computeStoriesByStatusResult = initialStoriesByStatus
-        filtersRepository.filtersDataResult = FiltersData()
         createViewModel()
 
         sut.state.value.onMoveStory(42L, statusB.id, null, null, null)
@@ -316,7 +279,6 @@ internal class KanbanViewModelTest {
             )
         )
         getKanbanDataUseCase.computeStoriesByStatusResult = initialStoriesByStatus
-        filtersRepository.filtersDataResult = FiltersData()
         userStoriesRepository.bulkUpdateKanbanOrderThrows = RuntimeException("API error")
         createViewModel()
 
@@ -382,11 +344,11 @@ internal class KanbanViewModelTest {
                 canAddUserStory = false,
                 defaultSwimlane = defaultSwimlane,
                 storiesByStatus = storiesByStatus,
-                canModifyUserStory = false
+                canModifyUserStory = false,
+                filtersData = filters
             )
         )
         getKanbanDataUseCase.computeStoriesByStatusResult = storiesByStatus
-        filtersRepository.filtersDataResult = filters
         createViewModel()
     }
 
@@ -847,20 +809,4 @@ internal class KanbanViewModelTest {
         assertEquals(listOf(10L), idsIn(statusNew))
     }
     // endregion
-
-    @Test
-    fun `onRetryFilters - reloads the filters and clears a previous filtersError`() = runTest {
-        getKanbanDataUseCase.getDataResult = Result.failure(RuntimeException("not testing this"))
-        filtersRepository.filtersDataThrows = testException
-        createViewModel()
-        assertTrue(sut.state.value.filtersError.isNotEmpty())
-        assertEquals(1, filtersRepository.getFiltersDataCallCount)
-
-        filtersRepository.filtersDataThrows = null
-        filtersRepository.filtersDataResult = FiltersData()
-        sut.state.value.onRetryFilters()
-
-        assertEquals(2, filtersRepository.getFiltersDataCallCount)
-        assertTrue(sut.state.value.filtersError.isEmpty())
-    }
 }

@@ -1,6 +1,8 @@
 package com.grappim.taigamobile.feature.kanban.domain
 
+import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.Status
+import com.grappim.taigamobile.feature.filters.domain.model.StatusFilters
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
@@ -44,7 +46,11 @@ class GetKanbanDataUseCaseTest {
     @BeforeTest
     fun setup() {
         projectsRepository.getCurrentProjectSimpleResult = getProjectSimple().copy(defaultSwimlane = null)
-        filtersRepository.statusesResult = persistentListOf(todo, done)
+        filtersRepository.filtersDataResult = FiltersData(
+            statuses = persistentListOf(todo, done).map {
+                StatusFilters(id = it.id, name = it.name, color = it.color, count = 0)
+            }.toImmutableList()
+        )
 
         sut = GetKanbanDataUseCaseImpl(
             usersRepository = usersRepository,
@@ -253,7 +259,7 @@ class GetKanbanDataUseCaseTest {
 
     @Test
     fun `getData returns failure when the statuses lookup throws`() = runTest {
-        filtersRepository.statusesThrows = testException
+        filtersRepository.filtersDataThrows = testException
 
         assertFailedWithTestException(sut.getData(storageSwimlane = null))
     }
