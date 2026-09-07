@@ -70,18 +70,19 @@ class NavigatorTest {
     }
 
     @Test
-    fun `navigate to another top level key switches section and keeps each sub stack`() {
+    fun `navigate to another top level key replaces the section and keeps each sub stack`() {
         val navigator = navigator()
         navigator.navigate(DetailRoute(1))
 
         navigator.navigate(SettingsRoute)
 
-        assertEquals(listOf(HomeRoute, SettingsRoute), navigator.state.topLevelStack.toList())
+        assertEquals(listOf(SettingsRoute), navigator.state.topLevelStack.toList())
         assertEquals(listOf(SettingsRoute), navigator.state.currentSubStack.toList())
 
         navigator.navigate(HomeRoute)
         // back on Home, its sub stack is untouched — the re-tap reset only applies to the section
         // that is already current, and Home was not
+        assertEquals(listOf(HomeRoute), navigator.state.topLevelStack.toList())
         assertEquals(
             listOf(HomeRoute, DetailRoute(1)),
             navigator.state.currentSubStack.toList()
@@ -89,28 +90,17 @@ class NavigatorTest {
     }
 
     @Test
-    fun `navigate to the start key clears the top level stack`() {
+    fun `navigate between top level keys never grows the top level stack`() {
         val navigator = navigator()
         navigator.navigate(SettingsRoute)
         navigator.navigate(AboutRoute)
+        navigator.navigate(SettingsRoute)
+
+        assertEquals(listOf(SettingsRoute), navigator.state.topLevelStack.toList())
 
         navigator.navigate(HomeRoute)
 
         assertEquals(listOf(HomeRoute), navigator.state.topLevelStack.toList())
-    }
-
-    @Test
-    fun `navigate to a top level key already in the stack moves it to the top`() {
-        val navigator = navigator()
-        navigator.navigate(SettingsRoute)
-        navigator.navigate(AboutRoute)
-
-        navigator.navigate(SettingsRoute)
-
-        assertEquals(
-            listOf(HomeRoute, AboutRoute, SettingsRoute),
-            navigator.state.topLevelStack.toList()
-        )
     }
 
     @Test
@@ -123,19 +113,19 @@ class NavigatorTest {
 
         assertTrue(handled)
         assertEquals(listOf(SettingsRoute), navigator.state.currentSubStack.toList())
-        assertEquals(listOf(HomeRoute, SettingsRoute), navigator.state.topLevelStack.toList())
+        assertEquals(listOf(SettingsRoute), navigator.state.topLevelStack.toList())
     }
 
     @Test
-    fun `goBack at a sub stack root pops the top level stack`() {
+    fun `goBack at a top level section root is not handled - switching sections doesn't grow the back stack`() {
         val navigator = navigator()
         navigator.navigate(SettingsRoute)
 
         val handled = navigator.goBack()
 
-        assertTrue(handled)
-        assertEquals(listOf(HomeRoute), navigator.state.topLevelStack.toList())
-        assertEquals(HomeRoute, navigator.state.currentKey)
+        assertFalse(handled)
+        assertEquals(listOf(SettingsRoute), navigator.state.topLevelStack.toList())
+        assertEquals(SettingsRoute, navigator.state.currentKey)
     }
 
     @Test
@@ -149,7 +139,7 @@ class NavigatorTest {
     }
 
     @Test
-    fun `canGoBack is false only at the start destination`() {
+    fun `canGoBack is false at any top level section root, true only inside a sub stack`() {
         val navigator = navigator()
         assertFalse(navigator.canGoBack())
 
@@ -160,7 +150,7 @@ class NavigatorTest {
         assertFalse(navigator.canGoBack())
 
         navigator.navigate(SettingsRoute)
-        assertTrue(navigator.canGoBack())
+        assertFalse(navigator.canGoBack())
     }
 
     @Test
@@ -172,7 +162,7 @@ class NavigatorTest {
         navigator.navigate(PayloadTopLevelRoute(flag = true))
 
         assertEquals(
-            listOf(HomeRoute, PayloadTopLevelRoute(flag = true)),
+            listOf(PayloadTopLevelRoute(flag = true)),
             navigator.state.topLevelStack.toList()
         )
         assertEquals(PayloadTopLevelRoute(flag = true), navigator.state.currentKey)
@@ -183,7 +173,7 @@ class NavigatorTest {
         navigator.navigate(PayloadTopLevelRoute(flag = false))
 
         assertEquals(
-            listOf(HomeRoute, SettingsRoute, PayloadTopLevelRoute(flag = false)),
+            listOf(PayloadTopLevelRoute(flag = false)),
             navigator.state.topLevelStack.toList()
         )
     }

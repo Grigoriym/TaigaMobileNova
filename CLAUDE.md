@@ -169,6 +169,15 @@ every section and lands on `key` alone (login/logout); `replaceCurrent(key)` swa
 top entry instead of pushing (a "this screen is done, hand off to the next one" transition, e.g. a
 wiki create-page screen handing off to the page it just created).
 
+**Switching top-level sections replaces the active slot in `topLevelStack`, it does not push.**
+`goToTopLevel()` (the branch `navigate()` takes for any top-level key that isn't the current one)
+writes the new key into `topLevelStack`'s existing slot rather than appending — so drawer-tap chains
+(Epics → Issues → Kanban) never grow the stack past whatever depth it already had (size 1 outside
+`resetTo()`), and `goBack()`/`canGoBack()` treat any section's root as unhandled — falling through to
+the system/exit — instead of walking back through previously-visited sections. Fixed 2026-09-07
+(was `removeAll` + `add`, which pushed and made back cascade through every section visited that
+session); see `docs/archive/revisit-resolved.md`#51 for the full mechanism and fix.
+
 **`NavigationIconConfig.Back()` with no `onBackClick` does not call the screen's own `goBack`
 param** — `TaigaTopAppBar.kt`'s `NavigationIcon` falls back to a `defaultGoBack` wired centrally in
 `MainScreen.kt` instead. Any screen whose `goBack` lambda does something beyond `navigator.goBack()`

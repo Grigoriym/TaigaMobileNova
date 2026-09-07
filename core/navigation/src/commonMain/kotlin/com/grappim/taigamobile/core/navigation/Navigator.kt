@@ -89,15 +89,15 @@ class Navigator(val state: NavigationState) {
         }
     }
 
+    /**
+     * Switches section by replacing the current entry in [NavigationState.topLevelStack] rather
+     * than pushing, so switching sections never grows the stack — [goBack] at any section's root
+     * is then unhandled (falls through to the system/exit) instead of walking back through
+     * previously-visited sections.
+     */
     private fun goToTopLevel(key: NavKey) {
-        state.topLevelStack.apply {
-            if (key::class == state.startKey::class) {
-                clear()
-            } else {
-                removeAll { it::class == key::class }
-            }
-            add(key)
-        }
+        val topLevelStack = state.topLevelStack
+        topLevelStack[topLevelStack.lastIndex] = key
         // carry the fresh payload (if any) into the target section's own sub-stack root too —
         // toEntries() renders from subStacks, not topLevelStack, so this is what the screen
         // actually sees.
