@@ -23,6 +23,7 @@ now that the table below covers everything left.
 | 46 | No deep-link readiness plan yet (3 queued Nav3 patterns) | — | [reference-app-scouting.md](../../agentic-grappim/investigations/reference-app-scouting.md) |
 | 47 | `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge | S | — |
 | 51 | Switching drawer sections is recorded on the back stack, so back cascades through prior sections | S–M | this file |
+| 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 
 ---
 
@@ -199,4 +200,64 @@ previously-visited sections entirely and go straight to wherever the user was be
 drawer flow (or exit, if that was the start destination). Confirm with gregory this is the wanted
 model before changing it — the current design may be intentional to let users "walk back" through
 their drawer navigation history, which is also a defensible choice some apps make deliberately.
+
+## 52. No way for a user to send debug logs when filing a bug report
+
+**What:** raised by gregory (2026-09-07), inspired by Symfonium's pattern — a "debug mode" toggle
+that a user can turn on, reproduce a bug, then send the resulting log file to the developer for
+investigation. TaigaMobileNova has no equivalent today. Open questions gregory raised: how the log
+gets from the user to the developer (email? pasted into a GitHub issue?), and how that interacts with
+the privacy policy.
+
+**Current logging state (`core/logger`), confirmed by reading each backend:**
+- **Desktop/JVM** — already has almost the whole mechanism except the "send" step:
+  `FileLogger` (`core/logger/src/jvmMain/.../FileLogger.kt`) writes every `logcat()` call to
+  `taigamobile.log` in the per-user app-data dir, rotating to `<name>.old` past 5 MB
+  (`MAX_LOG_FILE_BYTES`, line 8) — always on, not gated behind a debug-mode toggle. A "reveal in file
+  manager" / "copy path" Settings action would need very little new code.
+- **Android** — `TimberLogger` (`core/logger/src/androidMain/.../TimberLogger.kt`) uses a `DebugTree`
+  (debug builds only — Logcat, ephemeral, not exportable from a release build a real user would run)
+  and, Gplay only, a `CrashlyticsTree` that forwards `ERROR`-priority `logcat()` calls with throwables
+  to Firebase automatically on crash — not a full session log, not user-triggered, and not present on
+  F-Droid at all. **No persistent, user-exportable log file exists on Android today.**
+- **iOS** — `NSLogLogger` (`core/logger/src/iosMain/.../NSLogLogger.kt`) writes to `NSLog` only, no
+  persistence at all.
+
+**Privacy policy precedent already exists to extend, not invent from scratch:** `PRIVACY_POLICY.md`
+(F-Droid/base) and `PRIVACY_POLICY_GPLAY.md` (adds a Crashlytics section) already disclose what's
+collected, name an opt-out path by its exact Settings menu location, and are tracked in
+`docs/security/masvs.md`'s MASVS-PRIVACY-3 row (see that row and its confirmation note for the
+disclosure shape a debug-log feature would need to match — what's collected, exclusions like
+credentials/tokens/project content, and the exact in-app path to trigger/disable it).
+
+**Why deferred:** a real feature investigation, not a bug — spans three platforms with three
+different starting points (Desktop nearly there, Android has no persistent log at all, iOS has
+nothing), a privacy-policy amendment on both `PRIVACY_POLICY.md` and `PRIVACY_POLICY_GPLAY.md`, and a
+`docs/security/masvs.md` register update once shipped. Not something to scope inline here.
+
+**Questions a real investigation needs to answer** (not decided — options only):
+- **Collection scope:** always-on rotating file (like Desktop today) vs. an explicit "debug mode"
+  toggle a user enables only while reproducing a bug (Symfonium's model — smaller privacy footprint,
+  matches what gregory described).
+- **What's in the log:** `logcat()` calls already exclude secrets by convention (see CLAUDE.md's Error
+  Handling section on `ExceptionSanitization.kt`), but a full-session export is a broader surface than
+  today's ERROR-only Crashlytics forwarding — needs its own audit before shipping, same shape as the
+  MASVS-PRIVACY-3 Crashlytics review.
+- **Get-it-out-of-the-app mechanism:** Android/iOS have native share sheets
+  (`Intent.ACTION_SEND`/`UIActivityViewController`) that can hand a file to whatever app the user
+  picks (email, GitHub's own app, Files/saved-to-clipboard, etc.) without the app choosing a
+  destination or embedding any credential — this avoids the "how does it get to me" question being
+  the app's problem at all. Desktop's answer is likely just "reveal file location" and let the user
+  attach it manually. **Do not** have the app itself post to GitHub or email anything automatically —
+  that would need an embedded credential (GitHub token / SMTP creds), which is its own security
+  problem this project has deliberately avoided elsewhere (see Settled Decisions).
+- **Where the user is told to send it:** almost certainly "attach the exported file to the GitHub
+  issue" (this repo's actual bug-report channel) rather than email, once the share-sheet approach
+  above makes GitHub's own app/web upload a normal share-sheet target — worth confirming against
+  gregory's actual issue-triage workflow before committing to that framing in the UI copy.
+
+**Trigger:** pick this up as its own multi-session initiative (per CLAUDE.md's Multi-Session Work
+section — `docs/architecture/debug-logging/` with `CHECKLIST.md` + `IMPLEMENTATION_PLAN.md`) once
+gregory wants to prioritize it; the platform-parity gap above (Android/iOS have no persistent log at
+all) is probably the first real design decision, before UI or privacy-policy wording.
 
