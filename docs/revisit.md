@@ -24,6 +24,7 @@ now that the table below covers everything left.
 | 47 | `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge | S | — |
 | 51 | Switching drawer sections is recorded on the back stack, so back cascades through prior sections | S–M | this file |
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
+| 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
 
 ---
 
@@ -260,4 +261,68 @@ nothing), a privacy-policy amendment on both `PRIVACY_POLICY.md` and `PRIVACY_PO
 section — `docs/architecture/debug-logging/` with `CHECKLIST.md` + `IMPLEMENTATION_PLAN.md`) once
 gregory wants to prioritize it; the platform-parity gap above (Android/iOS have no persistent log at
 all) is probably the first real design decision, before UI or privacy-policy wording.
+
+---
+
+## 53. Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere
+
+**What:** raised by gregory (2026-09-07) right after commit `0c34a570` fixed Kanban firing
+`filters_data` twice on load (resolving #49/#50) — the underlying problem (the app making more
+Taiga API calls than it needs to) is probably not unique to Kanban. This entry is a lead list from
+a quick grep-based survey, not a diagnosis — nothing here should be fixed without first confirming
+it with real network traffic (see "How to confirm" below).
+
+**Lead 1 — filter-load may double-fetch the paginated list on `IssuesViewModel`/
+`EpicsViewModel`/`ScrumBacklogViewModel`, but only when the user already has saved filters:**
+- `feature/issues/ui/.../list/IssuesViewModel.kt:53-69`,
+  `feature/epics/ui/.../list/EpicsViewModel.kt:55-75`,
+  `feature/scrum/ui/.../backlog/ScrumBacklogViewModel.kt:53-71` — each exposes its paginated list as
+  `combine(session.xFilters, searchQuery).flatMapLatest { ... xRepository.getXPaging(...) }`, and
+  each `init` also calls `loadFiltersData()`, whose `onSuccess` calls
+  `session.changeXFilters(_state.value.activeFilters.updateData(result))` — writing to the exact
+  `StateFlow` the paging `combine` watches.
+- Traced `FiltersStorageImpl` (`core/storage/.../FiltersStorageImpl.kt`): `xFilters` is
+  `dataStore.data.map { ... }.stateIn(scope, Eagerly, FiltersData())`, and `FiltersData.updateData`
+  (`feature/filters/domain/.../FiltersData.kt`) maps over `this` (the *current* `activeFilters`),
+  so on a **fresh session with no filters selected**, `activeFilters` is the all-empty default and
+  `updateData` produces another structurally-equal all-empty `FiltersData` — StateFlow's built-in
+  conflation (drops consecutive `equals()`-equal values) means this write likely does **not**
+  re-emit, so no second list fetch happens in the common cold-start case. But once a user has
+  previously selected any filter (assignee, status, tag…), `activeFilters` is non-empty at init,
+  and `updateData` refreshes each selected item's `name`/`color`/`count` from the freshly-fetched
+  server data — genuinely changing the value in the common case (counts drift as project data
+  changes) — which *would* re-trigger `combine` → `flatMapLatest` → a second call to the paginated
+  list endpoint. **Not yet confirmed** — this is inference from reading the conflation contract, not
+  an observed trace.
+- A background survey agent checked whether `loadFiltersData()` itself is called more than once per
+  screen (it isn't, in Issues/Epics/Scrum — each calls it exactly once) and whether
+  `DashboardViewModel.loadAll()`'s 4 parallel `init` launches overlap endpoints (they don't — each
+  hits a distinct use case). Neither of those is a lead; the StateFlow-driven re-fetch above is the
+  one worth tracing.
+
+**Lead 2 — no debounce anywhere in the codebase** (`grep -rn debounce --include=*.kt` — zero hits).
+`IssuesViewModel`, `EpicsViewModel`, `ScrumBacklogViewModel`, and
+`feature/projectselector/ui/.../ProjectSelectorViewModel.kt:45` all wire `searchQuery` straight into
+a `combine(...).flatMapLatest` that drives paging — every keystroke starts a new request and
+`flatMapLatest` cancels whatever was still in flight, so a fast typist likely initiates one HTTP
+request per keystroke (mostly aborted, not completed) rather than one per pause. Adding
+`.debounce(300)` (or similar) before these `flatMapLatest` calls is the standard fix, once this is
+confirmed worth doing.
+
+**Resource for verifying any of this: the local `taiga-mcp` server**
+(`/home/gregory/proj/grappim/taiga-mcp/`, gregory's own MCP server — `mcp__taiga-mcp__taiga_request`
+tool) talks to the same local Taiga instance the app is configured against
+(`http://localhost:9000/` per this session's memory). It's a fast way to independently issue the
+same raw requests a screen *should* need and compare against what the app's Ktor client actually
+sends, without setting up a full proxy — useful as a sanity check once real request logs are
+captured, not a replacement for them.
+
+**How to actually confirm any of this (not done here):** capture real per-screen request counts —
+either enable Ktor call logging into the desktop `FileLogger` output (`core/logger`, see CLAUDE.md's
+Logging section) or run a local proxy — for Issues, Epics, and Scrum Backlog cold loads (with and
+without a previously-saved filter selection), and for typing in each screen's search box. Confirm an
+actual duplicate before changing any production code.
+
+**Trigger:** pick up as a standalone investigation (`investigate-issue` skill) once gregory wants to
+prioritize it.
 
