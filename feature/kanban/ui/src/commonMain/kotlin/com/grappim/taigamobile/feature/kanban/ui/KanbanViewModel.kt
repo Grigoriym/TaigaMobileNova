@@ -2,12 +2,10 @@ package com.grappim.taigamobile.feature.kanban.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
-import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
 import com.grappim.taigamobile.feature.kanban.domain.GetKanbanDataUseCase
 import com.grappim.taigamobile.feature.kanban.domain.KanbanUserStory
 import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
@@ -31,8 +29,7 @@ import org.koin.core.annotation.KoinViewModel
 class KanbanViewModel(
     private val getKanbanDataUseCase: GetKanbanDataUseCase,
     private val taigaSessionStorage: TaigaSessionStorage,
-    private val userStoriesRepository: UserStoriesRepository,
-    private val filtersRepository: FiltersRepository
+    private val userStoriesRepository: UserStoriesRepository
 ) : ViewModel() {
 
     private var allFilters = FiltersData()
@@ -42,7 +39,6 @@ class KanbanViewModel(
             onRefresh = ::refresh,
             onSelectSwimlane = ::selectSwimlane,
             onSelectFilters = ::selectFilters,
-            onRetryFilters = ::loadFiltersData,
             onMoveStory = ::moveStory
         )
     )
@@ -50,20 +46,17 @@ class KanbanViewModel(
 
     init {
         getKanbanData()
-        loadFiltersData()
     }
 
     private fun getKanbanData() {
         viewModelScope.launch {
             _state.update {
-                it.copy(
-                    isLoading = true,
-                    error = NativeText.Empty
-                )
+                it.copy(isLoading = true)
             }
             getKanbanDataUseCase.getData(
                 storageSwimlane = taigaSessionStorage.kanbanDefaultSwimline.first()
             ).onSuccess { result ->
+                allFilters = result.filtersData
                 val activeFilters = _state.value.filtersBySwimlane[result.defaultSwimlane?.id]
                     ?: FiltersData()
                 val unfiltered = getKanbanDataUseCase.computeStoriesByStatus(
@@ -76,6 +69,7 @@ class KanbanViewModel(
                 _state.update {
                     it.copy(
                         isLoading = false,
+                        error = NativeText.Empty,
                         statuses = result.statuses,
                         swimlanes = result.swimlanes,
                         stories = result.stories,
@@ -105,41 +99,6 @@ class KanbanViewModel(
 
     private fun refresh() {
         getKanbanData()
-    }
-
-    private fun loadFiltersData() {
-        viewModelScope.launch {
-            _state.update {
-                it.copy(
-                    isFiltersLoading = true,
-                    filtersError = NativeText.Empty
-                )
-            }
-
-            runCatching { filtersRepository.getFiltersData(CommonTaskType.UserStory) }
-                .onSuccess { result ->
-                    allFilters = result
-                    val currentState = _state.value
-
-                    _state.update {
-                        it.copy(
-                            isFiltersLoading = false,
-                            filters = computeSwimlaneFilters(
-                                currentState.unfilteredStoriesByStatus,
-                                currentState.teamMembers
-                            )
-                        )
-                    }
-                }
-                .onFailure { error ->
-                    _state.update {
-                        it.copy(
-                            isFiltersLoading = false,
-                            filtersError = getErrorMessage(error)
-                        )
-                    }
-                }
-        }
     }
 
     private fun selectSwimlane(swimlane: Swimlane?) {

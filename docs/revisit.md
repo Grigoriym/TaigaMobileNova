@@ -22,7 +22,9 @@ now that the table below covers everything left.
 | 45 | Tablet nav rail/permanent drawer still has no scroll safety net | S–M | [tablet nav rail issue](issues/2026-08-26-tablet-nav-rail-logout-clipped.md) |
 | 46 | No deep-link readiness plan yet (3 queued Nav3 patterns) | — | [reference-app-scouting.md](../../agentic-grappim/investigations/reference-app-scouting.md) |
 | 47 | `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge | S | — |
-| 49 | Kanban fetches `filters_data` twice on load | S | [386 investigation](issues/386-kanban-timeout-unfiltered-userstories-fetch.md) |
+| 51 | Switching drawer sections is recorded on the back stack, so back cascades through prior sections | S–M | this file |
+| 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
+| 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
 
 ---
 
@@ -161,29 +163,166 @@ guardrails run on `master` failed. If it did (for the reason above, not a real n
 the `else` branch the same way: when the event is a push to `master` and `before` is not an ancestor
 of `dev`'s current tip reachable within the release-only commits, use `dev`'s merge-base instead.
 
-## 49. Kanban fetches `filters_data` twice on load
+## 51. Switching drawer sections is recorded on the back stack, so back cascades through prior sections
 
-**Where:** `feature/kanban/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/ui/KanbanViewModel.kt:51-54,110-119`
-and `feature/kanban/domain/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/domain/GetKanbanDataUseCase.kt:49`.
+**Where:** `core/navigation/src/commonMain/kotlin/com/grappim/taigamobile/core/navigation/Navigator.kt`
+— `goToTopLevel()` (lines 92-107) and `goBack()` (lines 35-47);
+`core/navigation/src/commonMain/kotlin/com/grappim/taigamobile/core/navigation/NavigationState.kt:28-33`
+(`topLevelStack: NavBackStack<NavKey>`, `currentTopLevelKey = topLevelStack.last()`).
 
-**What:** noticed while walking through #386's request list with gregory. `KanbanViewModel.init`
-fires `getKanbanData()` and `loadFiltersData()` at the same time. `getKanbanData()` calls
-`getKanbanDataUseCase.getData()`, which calls `filtersRepository.getStatuses(UserStory)`
-(`GetKanbanDataUseCase.kt:49`) to get the board's status columns. Independently,
-`loadFiltersData()` calls `filtersRepository.getFiltersData(UserStory)` directly, to populate the
-filter dropdown (tags/assignees/etc., stored in `allFilters`). Both hit the exact same endpoint
-(`GET userstories/filters_data?project=<id>`) with the exact same params —
-`FiltersRepositoryImpl.getStatuses()` is itself just `getFiltersData()` plus picking statuses out
-of the result (`FiltersRepositoryImpl.kt:31-33`), so the first call's response already contains
-everything the second call needs.
+**What:** reported by gregory (2026-09-07): navigate Epics → Issues via the drawer, then press back —
+lands on Epics instead of wherever was open before Epics (or exiting the app), which reads as
+unexpected. Traced to the mechanism: `topLevelStack` is a real stack, not a "currently selected
+section" pointer. `goToTopLevel(key)` (`Navigator.kt:92-99`) removes any existing entry for that
+section's class then `add(key)s` it — so switching sections *pushes*, it doesn't replace. `goBack()`
+(`Navigator.kt:35-41`) pops `topLevelStack` whenever the current screen is itself the top of its
+section's sub-stack, so a chain of drawer taps (Epics → Issues → Kanban → …) builds a stack of
+sections that back walks through one at a time, most-recent-first, before ever reaching whatever was
+open before the first drawer tap. `NavigationState.kt:20-21`'s own doc comment confirms this is by
+design ("`topLevelStack` records which drawer section is active"), not an oversight — but it's a
+different UX model than the typical drawer/bottom-nav pattern (Android's own bottom-nav guidance,
+most drawer apps) where switching top-level destinations does *not* grow the back stack and back
+either returns to the single previous screen or exits.
 
-**Consequence:** none functionally — both calls succeed and each path gets what it needs. It's a
-redundant round trip on every Kanban load/refresh, not a correctness bug.
+**Consequence:** every drawer navigation the user makes silently extends how many back-presses it
+takes to leave the app, and the "previous section" back lands on is whichever was tapped most
+recently — not necessarily the one the user thinks of as "before this."
 
-**Why deferred:** unrelated to #386's fix (which only changes the `project` param on the
-user-stories request); flagged during that investigation rather than folded into that diff.
+**Why deferred:** UX behavior change to a core, deliberately-designed piece of shared navigation
+infrastructure (`Navigator`/`NavigationState` back all top-level nav — drawer, rail, permanent drawer
+across phone/tablet/desktop per the tablet-form-factor-support work), not something to redesign as a
+side note. Needs a decision on the intended model, not just a code change.
 
-**Trigger:** next time Kanban's load path is touched, consider having `loadFiltersData()` reuse the
-`FiltersData` `getKanbanData()` already fetches (e.g. thread it through `KanbanData`/the use case
-result) instead of issuing its own request, or have the use case expose both the statuses and the
-raw `FiltersData` from a single call.
+**Fix, if wanted:** the conventional alternative is what `resetSubStackTo()` already does for
+re-tapping the *active* section (`Navigator.kt:109-116`, `topLevelStack[lastIndex] = key` — replace,
+not push) — applying the same replace-not-push shape to `goToTopLevel()` would make switching
+sections never grow `topLevelStack` past whatever depth it already had, so back would skip past
+previously-visited sections entirely and go straight to wherever the user was before entering the
+drawer flow (or exit, if that was the start destination). Confirm with gregory this is the wanted
+model before changing it — the current design may be intentional to let users "walk back" through
+their drawer navigation history, which is also a defensible choice some apps make deliberately.
+
+## 52. No way for a user to send debug logs when filing a bug report
+
+**What:** raised by gregory (2026-09-07), inspired by Symfonium's pattern — a "debug mode" toggle
+that a user can turn on, reproduce a bug, then send the resulting log file to the developer for
+investigation. TaigaMobileNova has no equivalent today. Open questions gregory raised: how the log
+gets from the user to the developer (email? pasted into a GitHub issue?), and how that interacts with
+the privacy policy.
+
+**Current logging state (`core/logger`), confirmed by reading each backend:**
+- **Desktop/JVM** — already has almost the whole mechanism except the "send" step:
+  `FileLogger` (`core/logger/src/jvmMain/.../FileLogger.kt`) writes every `logcat()` call to
+  `taigamobile.log` in the per-user app-data dir, rotating to `<name>.old` past 5 MB
+  (`MAX_LOG_FILE_BYTES`, line 8) — always on, not gated behind a debug-mode toggle. A "reveal in file
+  manager" / "copy path" Settings action would need very little new code.
+- **Android** — `TimberLogger` (`core/logger/src/androidMain/.../TimberLogger.kt`) uses a `DebugTree`
+  (debug builds only — Logcat, ephemeral, not exportable from a release build a real user would run)
+  and, Gplay only, a `CrashlyticsTree` that forwards `ERROR`-priority `logcat()` calls with throwables
+  to Firebase automatically on crash — not a full session log, not user-triggered, and not present on
+  F-Droid at all. **No persistent, user-exportable log file exists on Android today.**
+- **iOS** — `NSLogLogger` (`core/logger/src/iosMain/.../NSLogLogger.kt`) writes to `NSLog` only, no
+  persistence at all.
+
+**Privacy policy precedent already exists to extend, not invent from scratch:** `PRIVACY_POLICY.md`
+(F-Droid/base) and `PRIVACY_POLICY_GPLAY.md` (adds a Crashlytics section) already disclose what's
+collected, name an opt-out path by its exact Settings menu location, and are tracked in
+`docs/security/masvs.md`'s MASVS-PRIVACY-3 row (see that row and its confirmation note for the
+disclosure shape a debug-log feature would need to match — what's collected, exclusions like
+credentials/tokens/project content, and the exact in-app path to trigger/disable it).
+
+**Why deferred:** a real feature investigation, not a bug — spans three platforms with three
+different starting points (Desktop nearly there, Android has no persistent log at all, iOS has
+nothing), a privacy-policy amendment on both `PRIVACY_POLICY.md` and `PRIVACY_POLICY_GPLAY.md`, and a
+`docs/security/masvs.md` register update once shipped. Not something to scope inline here.
+
+**Questions a real investigation needs to answer** (not decided — options only):
+- **Collection scope:** always-on rotating file (like Desktop today) vs. an explicit "debug mode"
+  toggle a user enables only while reproducing a bug (Symfonium's model — smaller privacy footprint,
+  matches what gregory described).
+- **What's in the log:** `logcat()` calls already exclude secrets by convention (see CLAUDE.md's Error
+  Handling section on `ExceptionSanitization.kt`), but a full-session export is a broader surface than
+  today's ERROR-only Crashlytics forwarding — needs its own audit before shipping, same shape as the
+  MASVS-PRIVACY-3 Crashlytics review.
+- **Get-it-out-of-the-app mechanism:** Android/iOS have native share sheets
+  (`Intent.ACTION_SEND`/`UIActivityViewController`) that can hand a file to whatever app the user
+  picks (email, GitHub's own app, Files/saved-to-clipboard, etc.) without the app choosing a
+  destination or embedding any credential — this avoids the "how does it get to me" question being
+  the app's problem at all. Desktop's answer is likely just "reveal file location" and let the user
+  attach it manually. **Do not** have the app itself post to GitHub or email anything automatically —
+  that would need an embedded credential (GitHub token / SMTP creds), which is its own security
+  problem this project has deliberately avoided elsewhere (see Settled Decisions).
+- **Where the user is told to send it:** almost certainly "attach the exported file to the GitHub
+  issue" (this repo's actual bug-report channel) rather than email, once the share-sheet approach
+  above makes GitHub's own app/web upload a normal share-sheet target — worth confirming against
+  gregory's actual issue-triage workflow before committing to that framing in the UI copy.
+
+**Trigger:** pick this up as its own multi-session initiative (per CLAUDE.md's Multi-Session Work
+section — `docs/architecture/debug-logging/` with `CHECKLIST.md` + `IMPLEMENTATION_PLAN.md`) once
+gregory wants to prioritize it; the platform-parity gap above (Android/iOS have no persistent log at
+all) is probably the first real design decision, before UI or privacy-policy wording.
+
+---
+
+## 53. Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere
+
+**What:** raised by gregory (2026-09-07) right after commit `0c34a570` fixed Kanban firing
+`filters_data` twice on load (resolving #49/#50) — the underlying problem (the app making more
+Taiga API calls than it needs to) is probably not unique to Kanban. This entry is a lead list from
+a quick grep-based survey, not a diagnosis — nothing here should be fixed without first confirming
+it with real network traffic (see "How to confirm" below).
+
+**Lead 1 — filter-load may double-fetch the paginated list on `IssuesViewModel`/
+`EpicsViewModel`/`ScrumBacklogViewModel`, but only when the user already has saved filters:**
+- `feature/issues/ui/.../list/IssuesViewModel.kt:53-69`,
+  `feature/epics/ui/.../list/EpicsViewModel.kt:55-75`,
+  `feature/scrum/ui/.../backlog/ScrumBacklogViewModel.kt:53-71` — each exposes its paginated list as
+  `combine(session.xFilters, searchQuery).flatMapLatest { ... xRepository.getXPaging(...) }`, and
+  each `init` also calls `loadFiltersData()`, whose `onSuccess` calls
+  `session.changeXFilters(_state.value.activeFilters.updateData(result))` — writing to the exact
+  `StateFlow` the paging `combine` watches.
+- Traced `FiltersStorageImpl` (`core/storage/.../FiltersStorageImpl.kt`): `xFilters` is
+  `dataStore.data.map { ... }.stateIn(scope, Eagerly, FiltersData())`, and `FiltersData.updateData`
+  (`feature/filters/domain/.../FiltersData.kt`) maps over `this` (the *current* `activeFilters`),
+  so on a **fresh session with no filters selected**, `activeFilters` is the all-empty default and
+  `updateData` produces another structurally-equal all-empty `FiltersData` — StateFlow's built-in
+  conflation (drops consecutive `equals()`-equal values) means this write likely does **not**
+  re-emit, so no second list fetch happens in the common cold-start case. But once a user has
+  previously selected any filter (assignee, status, tag…), `activeFilters` is non-empty at init,
+  and `updateData` refreshes each selected item's `name`/`color`/`count` from the freshly-fetched
+  server data — genuinely changing the value in the common case (counts drift as project data
+  changes) — which *would* re-trigger `combine` → `flatMapLatest` → a second call to the paginated
+  list endpoint. **Not yet confirmed** — this is inference from reading the conflation contract, not
+  an observed trace.
+- A background survey agent checked whether `loadFiltersData()` itself is called more than once per
+  screen (it isn't, in Issues/Epics/Scrum — each calls it exactly once) and whether
+  `DashboardViewModel.loadAll()`'s 4 parallel `init` launches overlap endpoints (they don't — each
+  hits a distinct use case). Neither of those is a lead; the StateFlow-driven re-fetch above is the
+  one worth tracing.
+
+**Lead 2 — no debounce anywhere in the codebase** (`grep -rn debounce --include=*.kt` — zero hits).
+`IssuesViewModel`, `EpicsViewModel`, `ScrumBacklogViewModel`, and
+`feature/projectselector/ui/.../ProjectSelectorViewModel.kt:45` all wire `searchQuery` straight into
+a `combine(...).flatMapLatest` that drives paging — every keystroke starts a new request and
+`flatMapLatest` cancels whatever was still in flight, so a fast typist likely initiates one HTTP
+request per keystroke (mostly aborted, not completed) rather than one per pause. Adding
+`.debounce(300)` (or similar) before these `flatMapLatest` calls is the standard fix, once this is
+confirmed worth doing.
+
+**Resource for verifying any of this: the local `taiga-mcp` server**
+(`/home/gregory/proj/grappim/taiga-mcp/`, gregory's own MCP server — `mcp__taiga-mcp__taiga_request`
+tool) talks to the same local Taiga instance the app is configured against
+(`http://localhost:9000/` per this session's memory). It's a fast way to independently issue the
+same raw requests a screen *should* need and compare against what the app's Ktor client actually
+sends, without setting up a full proxy — useful as a sanity check once real request logs are
+captured, not a replacement for them.
+
+**How to actually confirm any of this (not done here):** capture real per-screen request counts —
+either enable Ktor call logging into the desktop `FileLogger` output (`core/logger`, see CLAUDE.md's
+Logging section) or run a local proxy — for Issues, Epics, and Scrum Backlog cold loads (with and
+without a previously-saved filter selection), and for typing in each screen's search box. Confirm an
+actual duplicate before changing any production code.
+
+**Trigger:** pick up as a standalone investigation (`investigate-issue` skill) once gregory wants to
+prioritize it.
+

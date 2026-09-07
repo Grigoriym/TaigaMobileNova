@@ -53,6 +53,7 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 42 | [Nav rail shown on the Login screen at wide window widths](#42-nav-rail-shown-on-the-login-screen-at-wide-window-widths) | ➡️ moved to tablet checklist 2026-08-22 |
 | 43 | [Issues list has no dividers between rows on desktop](#43-issues-list-has-no-dividers-between-rows-on-desktop) | ➡️ moved to tablet checklist 2026-08-22 |
 | 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | ➡️ moved to tablet checklist 2026-08-22 |
+| 49 | [Kanban fetches `filters_data` twice on load](#49-kanban-fetches-filters_data-twice-on-load) | ✅ resolved 2026-09-07 |
 
 ---
 
@@ -2009,4 +2010,73 @@ only one being `GetKanbanDataUseCaseImpl`), so `page_size` was always sent and a
 null` — i.e. only for actual paginated calls, matching the header's own `params.page == null`
 condition right above it. Verified with `./gradlew jvmTest` (full suite, clean) and
 `ktlintCommonMainSourceSetCheck` on the module.
+
+## 49. Kanban fetches `filters_data` twice on load
+
+**Where:** `feature/kanban/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/ui/KanbanViewModel.kt:51-54,110-119`
+and `feature/kanban/domain/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/domain/GetKanbanDataUseCase.kt:49`.
+
+**What:** noticed while walking through #386's request list with gregory. `KanbanViewModel.init`
+fires `getKanbanData()` and `loadFiltersData()` at the same time. `getKanbanData()` calls
+`getKanbanDataUseCase.getData()`, which calls `filtersRepository.getStatuses(UserStory)`
+(`GetKanbanDataUseCase.kt:49`) to get the board's status columns. Independently,
+`loadFiltersData()` calls `filtersRepository.getFiltersData(UserStory)` directly, to populate the
+filter dropdown (tags/assignees/etc., stored in `allFilters`). Both hit the exact same endpoint
+(`GET userstories/filters_data?project=<id>`) with the exact same params —
+`FiltersRepositoryImpl.getStatuses()` is itself just `getFiltersData()` plus picking statuses out
+of the result (`FiltersRepositoryImpl.kt:31-33`), so the first call's response already contains
+everything the second call needs.
+
+**Consequence:** none functionally — both calls succeed and each path gets what it needs. It's a
+redundant round trip on every Kanban load/refresh, not a correctness bug.
+
+**Fix (2026-09-07):** threaded the already-fetched `FiltersData` through the domain layer instead of
+fetching it twice. `GetKanbanDataUseCaseImpl.getData()` now calls `filtersRepository.getFiltersData()`
+once, derives `statuses` from it locally (`Status(color, id, name)` per entry, replacing the
+`getStatuses()` call), and returns the raw `FiltersData` on a new `KanbanData.filtersData` field
+(defaulted, so existing test-literal `KanbanData(...)` constructions were unaffected).
+`KanbanViewModel.init` no longer calls `loadFiltersData()` — `getKanbanData()`'s `onSuccess` now sets
+`allFilters = result.filtersData` directly (before computing `computeSwimlaneFilters`, which also
+incidentally fixed a latent race: `allFilters` is now populated synchronously by the time the swimlane
+filters are first computed, instead of depending on `loadFiltersData()`'s independent coroutine having
+already completed). `loadFiltersData()` itself, and the `onRetryFilters`/`filtersError`/
+`isFiltersLoading` state wired to it, were left in place unchanged as a manual retry path — see #50
+for the follow-up this created (that retry UI is no longer reachable automatically, since filters can't
+fail independently of the board fetch anymore). Updated `GetKanbanDataUseCaseTest.kt` (stub
+`filtersDataResult`/`filtersDataThrows` instead of `statusesResult`/`statusesThrows`) and
+`KanbanViewModelTest.kt` (removed the two `on init - loadFiltersData ...` tests whose premise no
+longer holds, strengthened `on init - getData success/failure` to assert `filtersRepository`'s
+`getFiltersData` is never called, rewrote `onRetryFilters`'s test around the new manual-only flow, and
+fixed the `givenBoard` test helper — used by all `computeSwimlaneFilters - ...` tests — to route filter
+data through `KanbanData.filtersData` instead of the now-unused `filtersRepository.filtersDataResult`
+stub). Verified with `./gradlew jvmTest ktlintCheck` (full suite, clean) and
+`./gradlew koverXmlReport :koverVerify` (floor still met).
+
+**Follow-up #50 resolved (2026-09-07):** the fix above left `onRetryFilters`/`filtersError`/
+`isFiltersLoading`/`loadFiltersData()` in place as an unreachable manual-only path (logged separately
+as revisit #50). Investigated which of Kanban's board data and the filter list can genuinely fail
+independently, comparing against every other screen that injects `FiltersRepository`: Scrum Backlog,
+Epics and Issues (list screens) all keep a real standalone `loadFiltersData()` because their main data
+(a paginated list) renders fine with zero knowledge of filters — filters there are a pure add-on
+feature. UserStory/Task/Epic/Issue detail use cases and `SprintsRepositoryImpl`, by contrast, all fetch
+filters/statuses *inside* the same `coroutineScope`/`resultOf` as the rest of the entity's data, with
+no independent filters state — because those screens can't render without it. Kanban was already
+architecturally in the second group even before this fix (`GetKanbanDataUseCaseImpl` already needed
+`getStatuses()` bundled into its own `resultOf` to build `storiesByStatus` — the board's columns *are*
+the statuses), so the old standalone `loadFiltersData()`/`filtersError`/`onRetryFilters` was Pattern-1
+shape copy-pasted onto a Pattern-2 screen, not a deliberate design fetching genuinely independent data.
+Removed `onRetryFilters`, `filtersError`, `isFiltersLoading` from `KanbanState`; removed
+`loadFiltersData()` and the now-unused `filtersRepository` constructor param from `KanbanViewModel`
+(the `FiltersRepository` import went with it — `FiltersData`/`Statuses` still come from
+`feature.filters.domain`, so no build-file change was needed); updated `KanbanScreen.kt`'s
+`KanbanFilters`/`FilterModalBottomSheetWidget` call site to pass a literal `filtersError =
+NativeText.Empty` instead of state fields that no longer exist (the shared
+`FilterModalBottomSheetWidget`/`FilterErrorContent` widget itself was left untouched — Issues/Epics/
+Scrum still route real independent failures through it). Removed the matching
+`KanbanViewModelTest.kt` scaffolding (`FakeFiltersRepository`, `testException` import, every
+`filtersRepository.filtersDataResult = FiltersData()` no-op stub line, the `onRetryFilters` test).
+Verified with `./gradlew jvmTest ktlintCheck` (full suite, clean), `./gradlew koverXmlReport
+:koverVerify` (floor still met), and a repo-wide grep confirming no remaining Kanban-side reference to
+`filtersError`/`isFiltersLoading`/`onRetryFilters`/`loadFiltersData` (Scrum/Epics/Issues's own,
+legitimate copies are untouched).
 

@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.kanban.domain
 
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
@@ -46,11 +47,14 @@ class GetKanbanDataUseCaseImpl(
             val project = async { projectsRepository.getCurrentProjectSimple() }
             val userStories = async { userStoriesRepository.getUserStories() }
             val teamMembers = async { usersRepository.getTeamMembers(false) }
-            val filters = async { filtersRepository.getStatuses(CommonTaskType.UserStory) }
+            val filtersData = async { filtersRepository.getFiltersData(CommonTaskType.UserStory) }
             val rawSwimlanes = swimlanesRepository.getSwimlanes()
 
             val stories = userStories.await().sortedBy { it.kanbanOrder }.toImmutableList()
-            val statuses = filters.await()
+            val filters = filtersData.await()
+            val statuses = filters.statuses.map {
+                Status(color = it.color, id = it.id, name = it.name)
+            }.toImmutableList()
             val members = teamMembers.await()
             val currentProject = project.await()
 
@@ -82,7 +86,8 @@ class GetKanbanDataUseCaseImpl(
                 canAddUserStory = currentProject.myPermissions.canAddUserStory(),
                 canModifyUserStory = currentProject.myPermissions.canModifyUserStory(),
                 defaultSwimlane = defaultSwimlane,
-                storiesByStatus = storiesByStatus
+                storiesByStatus = storiesByStatus,
+                filtersData = filters
             )
         }
     }
