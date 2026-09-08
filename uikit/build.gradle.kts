@@ -27,7 +27,7 @@ kotlin {
             implementation(projects.feature.workitem.domain)
             implementation(projects.feature.projects.domain)
             implementation(projects.feature.users.domain)
-            implementation(projects.core.navigation)
+            implementation(libs.grappim.kit.navigation)
             implementation(projects.utils.formatter.datetime)
 
             implementation(libs.coil.compose)

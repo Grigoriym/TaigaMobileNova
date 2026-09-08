@@ -149,7 +149,6 @@ dependencies {
     kover(projects.core.domain)
     kover(projects.core.appinfoApi)
     kover(projects.core.crashApi)
-    kover(projects.core.navigation)
     kover(projects.core.serialization)
     kover(projects.core.asyncKmp)
     kover(projects.core.logger)

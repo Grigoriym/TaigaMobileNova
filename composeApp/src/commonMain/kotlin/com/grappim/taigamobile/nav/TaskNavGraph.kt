@@ -2,11 +2,11 @@ package com.grappim.taigamobile.nav
 
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.grappim.kit.navigation.LocalResultBus
+import com.grappim.kit.navigation.Navigator
+import com.grappim.kit.navigation.sendResult
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.navigation.LocalResultBus
-import com.grappim.taigamobile.core.navigation.Navigator
-import com.grappim.taigamobile.core.navigation.sendResult
 import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.tasks.ui.TaskDetailsNavDestination
 import com.grappim.taigamobile.feature.tasks.ui.TaskDetailsScreen

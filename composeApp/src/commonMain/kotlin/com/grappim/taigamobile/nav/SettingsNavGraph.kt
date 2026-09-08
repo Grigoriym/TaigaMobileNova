@@ -2,7 +2,7 @@ package com.grappim.taigamobile.nav
 
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
-import com.grappim.taigamobile.core.navigation.Navigator
+import com.grappim.kit.navigation.Navigator
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.settings.ui.about.SettingsAboutScreen

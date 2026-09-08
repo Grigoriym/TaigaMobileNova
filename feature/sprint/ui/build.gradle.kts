@@ -22,7 +22,7 @@ kotlin {
             implementation(projects.core.storage)
             implementation(projects.utils.ui)
             implementation(projects.utils.formatter.datetime)
-            implementation(projects.core.navigation)
+            implementation(libs.grappim.kit.navigation)
 
             implementation(libs.coil.compose)
             implementation(libs.coil.ktor)

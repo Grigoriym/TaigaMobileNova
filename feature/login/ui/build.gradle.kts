@@ -12,7 +12,7 @@ kotlin {
             implementation(projects.core.api)
             implementation(projects.core.domain)
             implementation(projects.core.storage)
-            implementation(projects.core.navigation)
+            implementation(libs.grappim.kit.navigation)
             implementation(projects.utils.ui)
             implementation(projects.uikit)
 

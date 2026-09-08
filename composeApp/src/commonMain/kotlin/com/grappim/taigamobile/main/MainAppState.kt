@@ -6,9 +6,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.navigation3.runtime.NavKey
+import com.grappim.kit.navigation.Navigator
+import com.grappim.kit.navigation.rememberNavigationState
 import com.grappim.taigamobile.DrawerDestination
-import com.grappim.taigamobile.core.navigation.Navigator
-import com.grappim.taigamobile.core.navigation.rememberNavigationState
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.epics.ui.list.EpicsNavDestination
 import com.grappim.taigamobile.feature.issues.ui.list.IssuesNavDestination
@@ -27,7 +27,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 /**
- * Every top-level drawer section gets its own [com.grappim.taigamobile.core.navigation.NavigationState]
+ * Every top-level drawer section gets its own [com.grappim.kit.navigation.NavigationState]
  * sub-stack, plus [LoginNavDestination] (not a drawer destination, but needs a slot too since
  * [NavigationState.currentSubStack] requires the active top-level key to resolve one).
  */

@@ -28,7 +28,7 @@ kotlin {
             implementation(projects.uikit)
             implementation(projects.core.domain)
             implementation(projects.core.storage)
-            implementation(projects.core.navigation)
+            implementation(libs.grappim.kit.navigation)
             implementation(projects.utils.ui)
 
             implementation(libs.androidx.paging.compose)
