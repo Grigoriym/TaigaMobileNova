@@ -68,3 +68,8 @@ deleted — see `finalize`.
   failed with `ModuleNotFoundError` — this machine's `python3` on PATH resolves to a linuxbrew
   install (3.14) that doesn't see the apt-installed pyyaml under `/usr/lib/python3/dist-packages`.
   Fixed by calling `/usr/bin/python3` explicitly for the one-off YAML-parse check.
+- 2026-09-08: `search.maven.org`'s Solr search API (`/solrsearch/select?...`) returned
+  `numFound: 0` for `io.github.grigoriym:grappim-kit-navigation` even for the already-published
+  `0.1.0` — its index lags well behind `repo1.maven.org` itself. Probing the versioned POM path
+  directly (`repo1.maven.org/maven2/.../<version>/<artifact>-<version>.pom`, expect `200`) is the
+  reliable freshness check; don't use the search API to confirm a fresh publish landed.
