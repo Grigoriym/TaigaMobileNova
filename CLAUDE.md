@@ -517,6 +517,14 @@ on releases, so diffing against it re-checks the entire dev-vs-master backlog in
 release branch's own commits. See `docs/revisit.md` #47 for the equivalent, still-open gap on the
 `push`-triggered run that fires on `master` right after the merge.
 
+**Never write a bare `#N` to reference a `docs/revisit.md`/archive entry number in a PR/issue
+description, comment, or commit message.** GitHub autolinks any `#<digits>` rendered through its
+web UI (PR/issue bodies and comments, and file content rendered from the repo) to that repo's own
+issue/PR `#N` — unrelated to what `N` actually means here — the moment an issue or PR with that
+number exists. "tracked as revisit #51" in a PR description silently became a link to PR #51.
+Write `revisit.md entry 51` / `revisit #51 (docs/revisit.md)`, or wrap it in backticks (`` `#51` ``,
+which suppresses GitHub's autolink), instead of a bare `#51`.
+
 ## Skills & Agents
 
 `.claude/agents/` in this repo holds only the project-specific agents: **testing** and
