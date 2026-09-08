@@ -155,8 +155,12 @@ fun MainNavHost(
             }
             ProjectSelectorScreen(
                 route = route,
+                // only ever invoked on the isFromLogin path (see ProjectSelectorScreen's own
+                // back handling) — resetTo() lands back on Login. navigator.goBack() has nowhere
+                // to pop to here since ProjectSelector replaces Login's topLevelStack slot rather
+                // than pushing onto it.
                 goBack = {
-                    navigator.goBack()
+                    navigator.resetTo(LoginNavDestination)
                 },
                 onProjectSelect = {
                     navigator.navigateToDashboardAsTopDestination()

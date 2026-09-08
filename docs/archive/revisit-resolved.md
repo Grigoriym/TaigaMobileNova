@@ -2130,8 +2130,13 @@ accumulated history to clear regardless of which section is the target. `goBack(
 never trigger post-fix (the stack is invariant at size 1 outside of `resetTo()`), which is the correct
 behavior with no code change needed there: back at any section's root now falls through to the
 system/exit instead of walking through previously-visited sections. Confirmed no other file reads
-`topLevelStack`/`goToTopLevel`/`currentTopLevelKey` (grepped repo-wide), so this was a self-contained
-change. Updated `NavigatorTest.kt`'s six affected tests (renamed
+`topLevelStack`/`goToTopLevel`/`currentTopLevelKey` (grepped repo-wide) — **this grep was
+insufficient**: it only found direct readers of the changed state, not a caller depending on
+`goBack()`'s postcondition built on top of it. `ProjectSelectorScreen`'s login-abandon back
+handling relied on `goBack()` actually popping `topLevelStack` past `Login`, without reading any
+of the three symbols directly — see
+`docs/issues/2026-09-08-project-selector-back-after-login-does-nothing.md` for the regression this
+caused and its fix. Updated `NavigatorTest.kt`'s six affected tests (renamed
 `navigate to another top level key switches section...` → `...replaces the section...`; replaced
 `navigate to the start key clears the top level stack` / `navigate to a top level key already in the
 stack moves it to the top` with a single `navigate between top level keys never grows the top level
