@@ -131,8 +131,8 @@ artifact — `core/navigation` → `io.github.grigoriym:grappim-kit-navigation` 
 against this repo's current HEAD rather than trusting an extraction's "canonical, mechanical
 swap" verdict — an extraction commit can predate a fix that lands here afterward and still get
 published stale (confirmed for `navigation` 0.1.0 vs. this repo's `e78fe61b`). See
-`grappim-kit/CLAUDE.md`'s "Consuming a published module from an app" section for the general
-gotcha. When the swap deletes a `core/*` module outright, also drop its `kover(projects.X)` line
+`grappim-kit/CONSUMING.md`'s `navigation` section for the general gotcha. When the swap deletes
+a `core/*` module outright, also drop its `kover(projects.X)` line
 from the root `build.gradle.kts` aggregation and re-run `koverXmlReport`/`:koverVerify` — the
 floor is enforced against whatever remains aggregated.
 
