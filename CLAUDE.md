@@ -122,6 +122,20 @@ names, as the thing worth reconciling.
 - `taigamobile.kmp.network` - Ktor with platform-specific engines (OkHttp / Darwin)
 - `taigamobile.kotlin.library` - Pure Kotlin library (no Android/KMP)
 
+## grappim-kit Modules
+
+`core/*` modules are progressively being extracted into `grappim-kit` (sibling repo, shared
+across this app, wallosmobile, wayprint, HateItOrRateIt) and swapped for the published Maven
+artifact — `core/navigation` → `io.github.grigoriym:grappim-kit-navigation` was the first
+(2026-09-08, PR #393). Before wiring a swap like this, diff the published module's actual source
+against this repo's current HEAD rather than trusting an extraction's "canonical, mechanical
+swap" verdict — an extraction commit can predate a fix that lands here afterward and still get
+published stale (confirmed for `navigation` 0.1.0 vs. this repo's `e78fe61b`). See
+`grappim-kit/CONSUMING.md`'s `navigation` section for the general gotcha. When the swap deletes
+a `core/*` module outright, also drop its `kover(projects.X)` line
+from the root `build.gradle.kts` aggregation and re-run `koverXmlReport`/`:koverVerify` — the
+floor is enforced against whatever remains aggregated.
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from

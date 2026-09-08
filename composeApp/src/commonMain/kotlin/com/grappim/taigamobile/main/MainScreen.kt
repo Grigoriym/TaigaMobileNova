@@ -30,11 +30,11 @@ import androidx.navigationevent.NavigationEventInfo
 import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.window.core.layout.WindowSizeClass
+import com.grappim.kit.navigation.NavigationState
 import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.TaigaDrawerWidget
 import com.grappim.taigamobile.TaigaNavigationSuiteWidget
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.navigation.NavigationState
 import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.close

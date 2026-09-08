@@ -14,14 +14,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.grappim.kit.navigation.LocalResultBus
+import com.grappim.kit.navigation.NavigationState
+import com.grappim.kit.navigation.Navigator
+import com.grappim.kit.navigation.ResultEffect
+import com.grappim.kit.navigation.rememberResultBus
+import com.grappim.kit.navigation.sendResult
+import com.grappim.kit.navigation.toEntries
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.navigation.LocalResultBus
-import com.grappim.taigamobile.core.navigation.NavigationState
-import com.grappim.taigamobile.core.navigation.Navigator
-import com.grappim.taigamobile.core.navigation.ResultEffect
-import com.grappim.taigamobile.core.navigation.rememberResultBus
-import com.grappim.taigamobile.core.navigation.sendResult
-import com.grappim.taigamobile.core.navigation.toEntries
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
 import com.grappim.taigamobile.createtask.navigateToCreateTask
@@ -298,7 +298,7 @@ private fun Navigator.navigate(id: Long, type: CommonTaskType, ref: Long) {
 /**
  * The result-bus signal that a screen we're returning to should refresh its data. Replaces the
  * old Nav2 `previousBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK]` convention — see
- * [com.grappim.taigamobile.core.navigation.ResultBus]'s doc for why this is hand-rolled instead
+ * [com.grappim.kit.navigation.ResultBus]'s doc for why this is hand-rolled instead
  * of the real Nav3 `ResultEventBus`. One shared signal for every screen, same as the constant key
  * the old convention used.
  */

@@ -131,7 +131,7 @@ kotlin {
                 implementation(projects.core.asyncKmp)
                 implementation(projects.core.appinfoApi)
                 implementation(projects.core.crashApi)
-                implementation(projects.core.navigation)
+                implementation(libs.grappim.kit.navigation)
                 implementation(projects.core.serialization)
 
                 implementation(projects.feature.dashboard.domain)
