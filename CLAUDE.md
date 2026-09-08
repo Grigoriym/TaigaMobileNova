@@ -169,6 +169,26 @@ every section and lands on `key` alone (login/logout); `replaceCurrent(key)` swa
 top entry instead of pushing (a "this screen is done, hand off to the next one" transition, e.g. a
 wiki create-page screen handing off to the page it just created).
 
+**Switching top-level sections replaces the active slot in `topLevelStack`, it does not push.**
+`goToTopLevel()` (the branch `navigate()` takes for any top-level key that isn't the current one)
+writes the new key into `topLevelStack`'s existing slot rather than appending — so drawer-tap chains
+(Epics → Issues → Kanban) never grow the stack past whatever depth it already had (size 1 outside
+`resetTo()`), and `goBack()`/`canGoBack()` treat any section's root as unhandled — falling through to
+the system/exit — instead of walking back through previously-visited sections. Fixed 2026-09-07
+(was `removeAll` + `add`, which pushed and made back cascade through every section visited that
+session); see `docs/archive/revisit-resolved.md`#51 for the full mechanism and fix.
+
+**Any screen whose back handling assumes `goBack()` pops past its own top-level boundary broke
+when the above landed.** `ProjectSelectorScreen`'s login-abandon path is the one confirmed case:
+its `NavigationBackHandler`/back-arrow (`isBackEnabled = state.isFromLogin`) used to rely on
+`goBack()` popping `topLevelStack` from `[Login, ProjectSelector]` back to `[Login]` — under the
+replace-not-push fix that pop has nothing to do, so `goBack()` silently no-ops and the back
+gesture does nothing. Fixed 2026-09-08 by having `MainNavHost.kt`'s `ProjectSelectorScreen` call
+site wire `goBack` to `navigator.resetTo(LoginNavDestination)` instead — see
+`docs/issues/2026-09-08-project-selector-back-after-login-does-nothing.md`. Any other screen that
+is simultaneously a top-level key *and* expects back to escape past its own section (not just
+pop its own sub-stack) needs the same treatment, not plain `navigator.goBack()`.
+
 **`NavigationIconConfig.Back()` with no `onBackClick` does not call the screen's own `goBack`
 param** — `TaigaTopAppBar.kt`'s `NavigationIcon` falls back to a `defaultGoBack` wired centrally in
 `MainScreen.kt` instead. Any screen whose `goBack` lambda does something beyond `navigator.goBack()`
@@ -496,6 +516,14 @@ that `release/vX.Y.Z` branch (small commits, same as any other work) — merging
 on releases, so diffing against it re-checks the entire dev-vs-master backlog instead of just the
 release branch's own commits. See `docs/revisit.md` #47 for the equivalent, still-open gap on the
 `push`-triggered run that fires on `master` right after the merge.
+
+**Never write a bare `#N` to reference a `docs/revisit.md`/archive entry number in a PR/issue
+description, comment, or commit message.** GitHub autolinks any `#<digits>` rendered through its
+web UI (PR/issue bodies and comments, and file content rendered from the repo) to that repo's own
+issue/PR `#N` — unrelated to what `N` actually means here — the moment an issue or PR with that
+number exists. "tracked as revisit #51" in a PR description silently became a link to PR #51.
+Write `revisit.md entry 51` / `revisit #51 (docs/revisit.md)`, or wrap it in backticks (`` `#51` ``,
+which suppresses GitHub's autolink), instead of a bare `#51`.
 
 ## Skills & Agents
 

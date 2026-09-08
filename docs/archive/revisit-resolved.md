@@ -54,6 +54,7 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 43 | [Issues list has no dividers between rows on desktop](#43-issues-list-has-no-dividers-between-rows-on-desktop) | ➡️ moved to tablet checklist 2026-08-22 |
 | 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | ➡️ moved to tablet checklist 2026-08-22 |
 | 49 | [Kanban fetches `filters_data` twice on load](#49-kanban-fetches-filters_data-twice-on-load) | ✅ resolved 2026-09-07 |
+| 51 | [Switching drawer sections is recorded on the back stack, so back cascades through prior sections](#51-switching-drawer-sections-is-recorded-on-the-back-stack-so-back-cascades-through-prior-sections) | ✅ resolved 2026-09-07 |
 
 ---
 
@@ -2079,4 +2080,71 @@ Verified with `./gradlew jvmTest ktlintCheck` (full suite, clean), `./gradlew ko
 :koverVerify` (floor still met), and a repo-wide grep confirming no remaining Kanban-side reference to
 `filtersError`/`isFiltersLoading`/`onRetryFilters`/`loadFiltersData` (Scrum/Epics/Issues's own,
 legitimate copies are untouched).
+
+## 51. Switching drawer sections is recorded on the back stack, so back cascades through prior sections
+
+**Where:** `core/navigation/src/commonMain/kotlin/com/grappim/taigamobile/core/navigation/Navigator.kt`
+— `goToTopLevel()` (lines 92-107) and `goBack()` (lines 35-47);
+`core/navigation/src/commonMain/kotlin/com/grappim/taigamobile/core/navigation/NavigationState.kt:28-33`
+(`topLevelStack: NavBackStack<NavKey>`, `currentTopLevelKey = topLevelStack.last()`).
+
+**What:** reported by gregory (2026-09-07): navigate Epics → Issues via the drawer, then press back —
+lands on Epics instead of wherever was open before Epics (or exiting the app), which reads as
+unexpected. Traced to the mechanism: `topLevelStack` is a real stack, not a "currently selected
+section" pointer. `goToTopLevel(key)` (`Navigator.kt:92-99`) removes any existing entry for that
+section's class then `add(key)s` it — so switching sections *pushes*, it doesn't replace. `goBack()`
+(`Navigator.kt:35-41`) pops `topLevelStack` whenever the current screen is itself the top of its
+section's sub-stack, so a chain of drawer taps (Epics → Issues → Kanban → …) builds a stack of
+sections that back walks through one at a time, most-recent-first, before ever reaching whatever was
+open before the first drawer tap. `NavigationState.kt:20-21`'s own doc comment confirms this is by
+design ("`topLevelStack` records which drawer section is active"), not an oversight — but it's a
+different UX model than the typical drawer/bottom-nav pattern (Android's own bottom-nav guidance,
+most drawer apps) where switching top-level destinations does *not* grow the back stack and back
+either returns to the single previous screen or exits.
+
+**Consequence:** every drawer navigation the user makes silently extends how many back-presses it
+takes to leave the app, and the "previous section" back lands on is whichever was tapped most
+recently — not necessarily the one the user thinks of as "before this."
+
+**Why deferred:** UX behavior change to a core, deliberately-designed piece of shared navigation
+infrastructure (`Navigator`/`NavigationState` back all top-level nav — drawer, rail, permanent drawer
+across phone/tablet/desktop per the tablet-form-factor-support work), not something to redesign as a
+side note. Needs a decision on the intended model, not just a code change.
+
+**Fix, if wanted:** the conventional alternative is what `resetSubStackTo()` already does for
+re-tapping the *active* section (`Navigator.kt:109-116`, `topLevelStack[lastIndex] = key` — replace,
+not push) — applying the same replace-not-push shape to `goToTopLevel()` would make switching
+sections never grow `topLevelStack` past whatever depth it already had, so back would skip past
+previously-visited sections entirely and go straight to wherever the user was before entering the
+drawer flow (or exit, if that was the start destination). Confirm with gregory this is the wanted
+model before changing it — the current design may be intentional to let users "walk back" through
+their drawer navigation history, which is also a defensible choice some apps make deliberately.
+
+**Fix (2026-09-07):** gregory confirmed the replace-not-push model. Changed `goToTopLevel()`
+(`Navigator.kt`) to do exactly that — `topLevelStack[topLevelStack.lastIndex] = key` instead of the
+old `removeAll { it::class == key::class }` + `add(key)`, mirroring `resetSubStackTo()`'s shape. This
+also made the `key::class == state.startKey::class -> clear()` special case unnecessary and it was
+removed: since every `goToTopLevel()` call now replaces rather than grows the stack, there's no
+accumulated history to clear regardless of which section is the target. `goBack()`/`canGoBack()`
+(`Navigator.kt:35-50`) were left untouched — their existing `topLevelStack.size > 1` checks now simply
+never trigger post-fix (the stack is invariant at size 1 outside of `resetTo()`), which is the correct
+behavior with no code change needed there: back at any section's root now falls through to the
+system/exit instead of walking through previously-visited sections. Confirmed no other file reads
+`topLevelStack`/`goToTopLevel`/`currentTopLevelKey` (grepped repo-wide) — **this grep was
+insufficient**: it only found direct readers of the changed state, not a caller depending on
+`goBack()`'s postcondition built on top of it. `ProjectSelectorScreen`'s login-abandon back
+handling relied on `goBack()` actually popping `topLevelStack` past `Login`, without reading any
+of the three symbols directly — see
+`docs/issues/2026-09-08-project-selector-back-after-login-does-nothing.md` for the regression this
+caused and its fix. Updated `NavigatorTest.kt`'s six affected tests (renamed
+`navigate to another top level key switches section...` → `...replaces the section...`; replaced
+`navigate to the start key clears the top level stack` / `navigate to a top level key already in the
+stack moves it to the top` with a single `navigate between top level keys never grows the top level
+stack`; rewrote `goBack at a sub stack root pops the top level stack` → `goBack at a top level section
+root is not handled...`; updated `canGoBack is false only at the start destination` →
+`...at any top level section root, true only inside a sub stack`; fixed the payload-identity test's
+expected stacks) to assert the new invariant. Verified with `./gradlew :core:navigation:jvmTest`
+(12/12 green), full `./gradlew jvmTest` (all green, no cross-module fallout), and
+`./gradlew :core:navigation:ktlintCommonMainSourceSetCheck :core:navigation:ktlintCommonTestSourceSetCheck`
+(clean).
 
