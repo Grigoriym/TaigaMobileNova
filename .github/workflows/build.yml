@@ -127,6 +127,11 @@ jobs:
       - name: Setup Android Environment
         uses: ./.github/actions/android-setup-composite-action
 
+      - name: Debug apt sources
+        run: |
+            ls -la /etc/apt/sources.list.d/
+            grep -rH "dl.google.com" /etc/apt/sources.list.d/ /etc/apt/sources.list || true
+
       - name: Install fakeroot and rpm
         run: |
             sudo rm -f /etc/apt/sources.list.d/google-chrome.list
