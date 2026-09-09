@@ -24,12 +24,15 @@ import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.take
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 internal class ProjectsRepositoryImplTest {
@@ -238,14 +241,25 @@ internal class ProjectsRepositoryImplTest {
     }
 
     @Test
-    fun `on getCurrentProjectFlow skips null entities`() = runTest {
+    fun `on getCurrentProjectFlow emits null then the mapped project as the dao resolves the row`() = runTest {
         val entity = getProjectEntity()
         taigaSessionStorage.setCurrentProjectId(entity.id)
         projectDao.projectFlowsById[entity.id] = listOf(null, entity)
 
+        val actual = sut.getCurrentProjectFlow().take(2).toList()
+
+        assertEquals(listOf(null, projectMapper.toProjectSimple(entity)), actual)
+    }
+
+    @Test
+    fun `on getCurrentProjectFlow emits null when the dao has no matching row for the current id`() = runTest {
+        val projectId = getRandomLong()
+        taigaSessionStorage.setCurrentProjectId(projectId)
+        projectDao.projectFlowsById[projectId] = listOf(null)
+
         val actual = sut.getCurrentProjectFlow().first()
 
-        assertEquals(projectMapper.toProjectSimple(entity), actual)
+        assertNull(actual)
     }
 
     @Test

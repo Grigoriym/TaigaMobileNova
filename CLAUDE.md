@@ -225,6 +225,26 @@ on return — see `EpicNavGraph.kt`/`EpicDetailsScreen.kt` for the pattern) must
 primary way users leave the screen — silently bypasses it. Confirmed 2026-09-02: `WikiPageScreen`
 used the bare form and its `UpdateDataOnBack` send never fired from the back arrow.
 
+**`resetTo()`/`goToTopLevel()` do not reset a top-level screen's ViewModel — they only reset
+which nav key is showing.** Every `TOP_LEVEL_KEYS` entry (`MainAppState.kt`) except
+`ProjectSelectorNavDestination` is a payload-less `data object` singleton. Both functions write
+that same singleton back into a `NavBackStack` slot rather than removing the old entry and
+pushing a new one — real Nav3's `ViewModelStoreNavEntryDecorator` only disposes a screen's
+`ViewModelStore` when its key structurally *disappears* from the tracked backstack (confirmed by
+reading `navigation3-runtime`/`lifecycle-viewmodel-navigation3` sources directly — see
+`agentic-grappim`'s `mobile-patterns` skill, Navigation section, for the full mechanism), so
+writing the same singleton back never registers as a change and the `ViewModelStore` — and
+therefore the `@KoinViewModel` resolved against it — survives indefinitely. This is what made
+`DashboardViewModel` keep showing a previous account's data after logout→login until a manual
+refresh (`docs/issues/2026-09-09-account-switch-stale-data-flash-and-refresh-failure.md`).
+Fixed 2026-09-09 by wrapping `MainScreen.kt`'s `MainScreenContent` body (from
+`rememberMainAppState()` down) in `key(sessionGeneration)`, bumped on logout — a Compose-level
+`key()` change fully tears down and rebuilds the subtree (every section's `ViewModelStoreProvider`
+included) regardless of Nav3's own pop-detection. Also flagged as a known, not-yet-fixed issue in
+`grappim-kit/CONSUMING.md`'s navigation section for other consumers of the shared library. **A GUI
+check that force-stops the app between logins cannot catch this** — a fresh process never had the
+stale instance to begin with; verification needs two logins inside one continuous process.
+
 ## ViewModel + State Pattern
 
 State class contains data AND callback functions:

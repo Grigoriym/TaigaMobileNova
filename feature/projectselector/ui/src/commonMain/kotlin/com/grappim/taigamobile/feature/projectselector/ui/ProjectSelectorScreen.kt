@@ -51,6 +51,7 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
 import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 import com.grappim.taigamobile.utils.ui.hasCompletedLoad
@@ -75,6 +76,8 @@ fun ProjectSelectorScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val projects = viewModel.projects.collectAsLazyPagingItems()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+
+    ObserveAsEvents(viewModel.projectSelected) { onProjectSelect() }
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -110,10 +113,7 @@ fun ProjectSelectorScreen(
         state = state,
         searchQuery = searchQuery,
         projects = projects,
-        selectProject = {
-            state.setProject(it)
-            onProjectSelect()
-        }
+        selectProject = { state.setProject(it) }
     )
 }
 

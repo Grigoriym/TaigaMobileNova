@@ -20,7 +20,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.annotation.KoinViewModel
@@ -86,9 +85,8 @@ class MainViewModel(
         )
 
     val drawerItems: StateFlow<ImmutableList<DrawerItem>> = currentProject
-        .filterNotNull()
         .map { project ->
-            drawerItemsBuilder.build(project)
+            project?.let { drawerItemsBuilder.build(it) } ?: persistentListOf()
         }
         .stateIn(
             scope = viewModelScope,

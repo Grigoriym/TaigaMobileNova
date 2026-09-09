@@ -983,6 +983,20 @@ kotlin {
     argument that would normally distinguish call sites before writing the "expected" side of an
     assembly test.
 
+22. **A multi-value `flowOf(a, b)` feeding a chain of two or more nested `stateIn(WhileSubscribed)`
+    layers can lose an intermediate value to conflation before a turbine collector ever sees it.**
+    `MainViewModel.currentProject` (`stateIn` over the repository flow) feeding
+    `MainViewModel.drawerItems` (a second `stateIn` over `currentProject.map { }`) is exactly this
+    shape: setting the fake's source to `flowOf(project, null)` and asserting
+    `awaitItem().isNotEmpty()` then `awaitItem().isEmpty()` failed — the second `awaitItem()` came
+    back non-empty, because `WhileSubscribed`'s lazy-start plus `UnconfinedTestDispatcher`'s eager
+    execution let both upstream emissions race through before `drawerItems`'s own subscription (which
+    is what starts `currentProject`'s collection in the first place) settled. Don't feed a fixed
+    multi-value cold flow through more than one `stateIn` layer in a test; seed a `MutableStateFlow`
+    instead and mutate `.value` explicitly *between* `awaitItem()` calls, so each transition is
+    deterministic and turbine can only observe the step in the order you set it. Worked example:
+    `MainViewModelTest`'s `drawerItems - resets to empty when current project becomes null`.
+
 ---
 
 ## Testing a class backed by `DataStore<Preferences>`

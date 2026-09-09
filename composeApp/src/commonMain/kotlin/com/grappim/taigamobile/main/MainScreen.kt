@@ -21,8 +21,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -40,7 +44,6 @@ import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.TaigaDrawerWidget
 import com.grappim.taigamobile.TaigaNavigationSuiteWidget
 import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.feature.login.ui.navigateToLoginAsTopDestination
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.close
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
@@ -78,136 +81,149 @@ private fun MainScreenContent(
     initialNavState: InitialNavState,
     isOffline: Boolean
 ) {
-    val appState = rememberMainAppState()
-
-    val scope = rememberCoroutineScope()
-    val drawerState by appState.drawerState.collectAsStateWithLifecycle()
-    val drawerItems by viewModel.drawerItems.collectAsStateWithLifecycle()
-
-    val snackbarHostState = remember { SnackbarHostState() }
+    // Bumped on every logout so the key(sessionGeneration) block below is torn down and rebuilt
+    // from scratch — Nav3's ViewModelStoreNavEntryDecorator only disposes a top-level screen's
+    // ViewModelStore when that screen's key structurally disappears from its own sub-stack, and
+    // every top-level key (DashboardNavDestination, EpicsNavDestination, ...) is a singleton
+    // `data object`, so resetTo()/goToTopLevel() writing that same object back never registers as
+    // a change. Without this, every top-level screen's ViewModel survives logout/login and keeps
+    // showing whichever account loaded it first. rememberSaveable so a process death mid-session
+    // (generation > 0) restores against the same composite key its back stack was saved under,
+    // instead of silently losing the deeper back stack because generation reset to 0.
+    var sessionGeneration by rememberSaveable { mutableIntStateOf(0) }
 
     LaunchedEffect(Unit) {
         viewModel.logoutEvent.onEach {
             logcat {
                 "Logout Event with $it"
             }
-            appState.navigator.navigateToLoginAsTopDestination()
+            sessionGeneration++
         }.launchIn(this)
     }
 
-    HideKeyboardOnNavigationChangeEffect(navigationState = appState.navigator.state)
+    key(sessionGeneration) {
+        val appState = rememberMainAppState()
 
-    val snackbarActionLabel = stringResource(RString.close)
+        val scope = rememberCoroutineScope()
+        val drawerState by appState.drawerState.collectAsStateWithLifecycle()
+        val drawerItems by viewModel.drawerItems.collectAsStateWithLifecycle()
 
-    val onDrawerItemClick: (DrawerDestination) -> Unit = { item ->
-        scope.launch {
-            drawerState.close()
+        val snackbarHostState = remember { SnackbarHostState() }
+
+        HideKeyboardOnNavigationChangeEffect(navigationState = appState.navigator.state)
+
+        val snackbarActionLabel = stringResource(RString.close)
+
+        val onDrawerItemClick: (DrawerDestination) -> Unit = { item ->
+            scope.launch {
+                drawerState.close()
+            }
+            appState.navigateToTopLevelDestination(item)
         }
-        appState.navigateToTopLevelDestination(item)
-    }
 
-    val mainContent: @Composable () -> Unit = {
-        Scaffold(
-            modifier = Modifier.imePadding(),
-            topBar = {
-                TopBar(
-                    isVisible = appState.isTopBarVisible,
-                    topBarConfig = topBarConfig,
-                    drawerState = drawerState,
-                    defaultGoBack = { appState.navigator.goBack() },
-                    backContentDescription = "Back",
-                    menuContentDescription = "Menu"
-                )
-            },
-            snackbarHost = {
-                SnackbarHost(
-                    modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
-                    hostState = snackbarHostState
-                ) {
-                    Snackbar(
-                        snackbarData = it,
-                        shape = MaterialTheme.shapes.small,
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = contentColorFor(MaterialTheme.colorScheme.surface)
+        val mainContent: @Composable () -> Unit = {
+            Scaffold(
+                modifier = Modifier.imePadding(),
+                topBar = {
+                    TopBar(
+                        isVisible = appState.isTopBarVisible,
+                        topBarConfig = topBarConfig,
+                        drawerState = drawerState,
+                        defaultGoBack = { appState.navigator.goBack() },
+                        backContentDescription = "Back",
+                        menuContentDescription = "Menu"
                     )
-                }
-            },
-            content = { paddingValues ->
-                Column(modifier = Modifier.padding(paddingValues)) {
-                    OfflineIndicatorBanner(isOffline = isOffline)
+                },
+                snackbarHost = {
+                    SnackbarHost(
+                        modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
+                        hostState = snackbarHostState
+                    ) {
+                        Snackbar(
+                            snackbarData = it,
+                            shape = MaterialTheme.shapes.small,
+                            containerColor = MaterialTheme.colorScheme.surface,
+                            contentColor = contentColorFor(MaterialTheme.colorScheme.surface)
+                        )
+                    }
+                },
+                content = { paddingValues ->
+                    Column(modifier = Modifier.padding(paddingValues)) {
+                        OfflineIndicatorBanner(isOffline = isOffline)
 
-                    MainNavHost(
-                        initialNavState = initialNavState,
-                        navigator = appState.navigator,
-                        navigationState = appState.navigator.state,
-                        showSnackbar = { text ->
-                            scope.launch {
-                                val result = snackbarHostState.showSnackbar(
-                                    message = text.asStringBlocking(),
-                                    actionLabel = snackbarActionLabel,
-                                    duration = SnackbarDuration.Short
-                                )
-                                if (result == SnackbarResult.ActionPerformed) {
-                                    snackbarHostState.currentSnackbarData?.dismiss()
+                        MainNavHost(
+                            initialNavState = initialNavState,
+                            navigator = appState.navigator,
+                            navigationState = appState.navigator.state,
+                            showSnackbar = { text ->
+                                scope.launch {
+                                    val result = snackbarHostState.showSnackbar(
+                                        message = text.asStringBlocking(),
+                                        actionLabel = snackbarActionLabel,
+                                        duration = SnackbarDuration.Short
+                                    )
+                                    if (result == SnackbarResult.ActionPerformed) {
+                                        snackbarHostState.currentSnackbarData?.dismiss()
+                                    }
                                 }
                             }
-                        }
-                    )
-                }
-            }
-        )
-    }
-
-    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
-    val isCompactWidth = !windowAdaptiveInfo.windowSizeClass
-        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
-
-    if (isCompactWidth) {
-        TaigaDrawerWidget(
-            drawerItems = drawerItems,
-            currentTopLevelDestination = appState.currentTopLevelDestination,
-            drawerState = drawerState,
-            onDrawerItemClick = onDrawerItemClick,
-            gesturesEnabled = appState.areDrawerGesturesEnabled &&
-                initialNavState.isReady &&
-                initialNavState.isProjectSelected
-        ) {
-            mainContent()
-
-            /**
-             * It is required to place it below MainNavHost because as per documentation
-             * "If multiple BackHandler are present in the composition,
-             * the one that is composed last among all enabled handlers will be invoked."
-             * And with that this one will be called, otherwise on clicking back
-             * we will go back in navigation but drawer will stay opened
-             *
-             * The second condition drawerState.isAnimationRunning is needed to fix an issue
-             * when the drawer is visibly fully opened but is not opened actually
-             *
-             * Only needed for the modal drawer above: a rail/permanent drawer has no open/close
-             * animation state for back to intercept.
-             */
-            NavigationBackHandler(
-                state = rememberNavigationEventState(NavigationEventInfo.None),
-                isBackEnabled = drawerState.isOpen || drawerState.isAnimationRunning,
-                onBackCompleted = {
-                    scope.launch {
-                        drawerState.close()
+                        )
                     }
                 }
             )
         }
-    } else if (initialNavState.isReady && initialNavState.isProjectSelected) {
-        TaigaNavigationSuiteWidget(
-            drawerItems = drawerItems,
-            currentTopLevelDestination = appState.currentTopLevelDestination,
-            onDrawerItemClick = onDrawerItemClick,
-            layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
-        ) {
+
+        val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+        val isCompactWidth = !windowAdaptiveInfo.windowSizeClass
+            .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+
+        if (isCompactWidth) {
+            TaigaDrawerWidget(
+                drawerItems = drawerItems,
+                currentTopLevelDestination = appState.currentTopLevelDestination,
+                drawerState = drawerState,
+                onDrawerItemClick = onDrawerItemClick,
+                gesturesEnabled = appState.areDrawerGesturesEnabled &&
+                    initialNavState.isReady &&
+                    initialNavState.isProjectSelected
+            ) {
+                mainContent()
+
+                /**
+                 * It is required to place it below MainNavHost because as per documentation
+                 * "If multiple BackHandler are present in the composition,
+                 * the one that is composed last among all enabled handlers will be invoked."
+                 * And with that this one will be called, otherwise on clicking back
+                 * we will go back in navigation but drawer will stay opened
+                 *
+                 * The second condition drawerState.isAnimationRunning is needed to fix an issue
+                 * when the drawer is visibly fully opened but is not opened actually
+                 *
+                 * Only needed for the modal drawer above: a rail/permanent drawer has no open/close
+                 * animation state for back to intercept.
+                 */
+                NavigationBackHandler(
+                    state = rememberNavigationEventState(NavigationEventInfo.None),
+                    isBackEnabled = drawerState.isOpen || drawerState.isAnimationRunning,
+                    onBackCompleted = {
+                        scope.launch {
+                            drawerState.close()
+                        }
+                    }
+                )
+            }
+        } else if (initialNavState.isReady && initialNavState.isProjectSelected) {
+            TaigaNavigationSuiteWidget(
+                drawerItems = drawerItems,
+                currentTopLevelDestination = appState.currentTopLevelDestination,
+                onDrawerItemClick = onDrawerItemClick,
+                layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
+            ) {
+                mainContent()
+            }
+        } else {
             mainContent()
         }
-    } else {
-        mainContent()
     }
 }
 

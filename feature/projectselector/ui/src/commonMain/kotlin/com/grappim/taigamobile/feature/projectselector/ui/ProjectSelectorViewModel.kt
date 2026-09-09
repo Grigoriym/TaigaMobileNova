@@ -10,10 +10,12 @@ import com.grappim.taigamobile.core.storage.cleaner.DataCleaner
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.InjectedParam
@@ -46,6 +48,9 @@ class ProjectSelectorViewModel(
         projectsRepository.fetchProjects(query)
     }.cachedIn(viewModelScope)
 
+    private val _projectSelected = Channel<Unit>()
+    val projectSelected = _projectSelected.receiveAsFlow()
+
     init {
         viewModelScope.launch {
             taigaSessionStorage.currentProjectIdFlow.collect { id ->
@@ -71,6 +76,7 @@ class ProjectSelectorViewModel(
             taigaSessionStorage.setCurrentProjectId(projectId = project.id)
             projectsRepository.saveProject(project)
             session.resetFilters()
+            _projectSelected.send(Unit)
         }
     }
 }

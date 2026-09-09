@@ -56,8 +56,8 @@ class FakeProjectsRepository : ProjectsRepository {
         return getCurrentProjectSimpleResult ?: error("getCurrentProjectSimpleResult not set")
     }
 
-    var projectFlow: Flow<ProjectSimple> = flowOf()
-    override fun getCurrentProjectFlow(): Flow<ProjectSimple> = projectFlow
+    var projectFlow: Flow<ProjectSimple?> = flowOf()
+    override fun getCurrentProjectFlow(): Flow<ProjectSimple?> = projectFlow
 
     override suspend fun getPermissions(): ImmutableList<TaigaPermission> {
         getPermissionsThrows?.let { throw it }

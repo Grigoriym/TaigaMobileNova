@@ -23,7 +23,6 @@ import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import org.koin.core.annotation.Single
@@ -80,13 +79,12 @@ class ProjectsRepositoryImpl(
         return projectMapper.toProjectSimple(entity)
     }
 
-    override fun getCurrentProjectFlow(): Flow<ProjectSimple> = taigaSessionStorage.currentProjectIdFlow
+    override fun getCurrentProjectFlow(): Flow<ProjectSimple?> = taigaSessionStorage.currentProjectIdFlow
         .flatMapLatest { projectId ->
             projectDao.getProjectByIdFlow(projectId)
         }
-        .filterNotNull()
         .map { entity ->
-            projectMapper.toProjectSimple(entity)
+            entity?.let { projectMapper.toProjectSimple(it) }
         }
 
     override suspend fun getPermissions(): ImmutableList<TaigaPermission> = getCurrentProjectSimple().myPermissions
