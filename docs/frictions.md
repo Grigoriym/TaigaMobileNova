@@ -26,13 +26,6 @@ deleted — see `finalize`.
   directly). Not fork-specific; the skill name from CLAUDE.md's table just doesn't resolve via the
   `Skill` tool at all, in any session type. Second occurrence — one more and this needs an actual
   fix, not another line here.
-- 2026-08-15: assumed `NavBackStackEntry.toRoute<T>(typeMap = ...)` existed, copying
-  `SavedStateHandle.toRoute<T>(typeMap = ...)`'s call shape into 6 NavGraph call sites (step 8) —
-  compiler rejected all 6 ("No parameter with name 'typeMap' found"). `NavBackStackEntry.toRoute()`
-  takes no typeMap arg at all; it reads the typeMap the enclosing `composable<T>(typeMap = ...)`
-  already registered on the destination. Confirmed by reading
-  `navigation-common-desktop-2.9.2-sources.jar` directly rather than guessing from the sibling
-  `SavedStateHandle` overload's signature.
 - 2026-08-15: a hand-rolled `CompositionLocal` shaped like androidx's own `LocalResultEventBus`
   (an `object` wrapping a private `compositionLocalOf`) failed `ktlintCheck` twice over
   (`compose:compositionlocal-naming`, `compose:compositionlocal-allowlist`) before switching to a
@@ -61,9 +54,6 @@ deleted — see `finalize`.
   (back-arrow nav and two other buttons all showed it). Gave up after ~10 attempts and verified step
   4's fix via code read + `jvmTest`/`ktlintCheck` instead of a live click-through. Root cause not
   found; worth a fresh look if this blocks a future GUI-verification step.
-- 2026-08-29: guessed `diffuse` 0.3.0 download URL (`diffuse-0.3.0-binary.jar`) 404'd; the release
-  asset is actually a `diffuse-0.3.0.zip` — checked via `gh`/GitHub releases API
-  (`browser_download_url`) instead of guessing the filename pattern from the version tag.
 - 2026-08-30: `pip install pyyaml` reported "already satisfied" but `python3 -c "import yaml"` still
   failed with `ModuleNotFoundError` — this machine's `python3` on PATH resolves to a linuxbrew
   install (3.14) that doesn't see the apt-installed pyyaml under `/usr/lib/python3/dist-packages`.
