@@ -84,3 +84,6 @@ deleted — see `finalize`.
   or popping one nav level — cost a recovery detour (tap SKIP, `am force-stop` + relaunch). Root
   cause not diagnosed; avoid `KEYCODE_BACK` as a generic "undo my last tap" move on this AVD and
   re-screenshot after any BACK before assuming it stayed in-app.
+- 2026-09-09: `gh pr edit` (title/body) failed with a GraphQL "Projects (classic) is being
+  deprecated" error on this repo regardless of what fields were passed — worked around with
+  `gh api repos/<owner>/<repo>/pulls/<n> -X PATCH -f title=... -f body=...` instead.
