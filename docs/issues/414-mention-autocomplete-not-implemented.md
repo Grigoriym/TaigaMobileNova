@@ -1,7 +1,7 @@
 # 414 — User marking with @ not triggering tagging
 
 **Status:** Awaiting decision
-**Link:** https://github.com/Grigoriym/TaigaMobileNova/issues/414   **Updated:** 2026-09-09
+**Link:** https://github.com/Grigoriym/TaigaMobileNova/issues/414   **Updated:** 2026-09-09 (backend verified against `taiga-back`/`taiga-front` source)
 
 ## Report
 
@@ -65,38 +65,107 @@ strings in production source, and the markdown rendering path.
 
 All of the above are direct code-search results (file:line), not inference.
 
-**Not verified (inference / open question):** whether Taiga's *server* itself parses
-`@username` out of comment/description text server-side (e.g. to send a mention
-notification) independent of what the client renders. This repo has no access to the
-`taiga-back`/`taiga-front` source, so this wasn't checked — see Open Questions.
+**Resolved against `taiga-back` source** (`/home/gregory/proj/taiga/taiga-back`, local
+checkout): the server *does* fully handle `@username` server-side, independent of
+anything the client does beyond sending the plain text:
+
+- `taiga/mdrender/extensions/mentions.py:40-84` — a Markdown inline-pattern extension
+  (`MENTION_RE = r"\B(@)([\w.-]+)\b"`) that runs whenever the server renders
+  description/comment markdown to HTML. It looks up the matched username against the
+  project's members, and for a match rewrites it into `<a class="mention"
+  href="...">@username</a>` — this is the server-rendered HTML the client never
+  requests (see below).
+- `taiga/projects/notifications/services.py:100-133` (`get_mentions`,
+  `get_object_mentions`, `add_watchers_to_project_from_mentions`) — the same
+  extraction also runs independently of HTML rendering, purely to build a list of
+  mentioned `User` objects from raw text.
+- `taiga/projects/notifications/mixins.py:104-195`
+  (`create_web_notifications_for_mentioned_users`,
+  `create_web_notifications_for_mentions_in_comments`) — on every save of a
+  description/content field or a new comment, diffs old vs. new mentions and fires
+  `signal_mentions` / `signal_comment_mentions` for anything newly mentioned.
+- `taiga/projects/notifications/signals.py:98-122` (`on_mentions`,
+  `on_comment_mentions`) — the signal receivers push a real
+  `WebNotificationType.mentioned` / `mentioned_in_comment` web notification to the
+  mentioned user, and (`services.py:109-111`) add them as a watcher on the object.
+
+**This means "tagging" in the sense the reporter means — the mentioned user actually
+getting notified — already works today from this app**, with zero client-side special
+handling: typing plain `@someusername` as ordinary text and saving/submitting the
+comment or description is enough to trigger the server-side notification, because the
+app already sends raw markdown text on the existing update/comment endpoints.
+
+**What's genuinely missing is purely visual, on both ends of the round-trip:**
+
+1. **Input-side:** no autocomplete/suggestion popup while typing `@` (confirmed
+   above) — a user has to already know and correctly spell a teammate's username with
+   no help or confirmation.
+2. **Render-side:** the server *does* produce a ready-to-use hyperlinked
+   `description_html` (`taiga/projects/userstories/serializers.py:149-158`, and the
+   task/issue/epic equivalents) and `comment_html`
+   (`taiga/projects/history/serializers.py:29`) field with the mention already
+   resolved into a link — but this app's DTOs never decode it. Confirmed empty-result
+   grep for `_html`/`description_html`/`comment_html` across all `*.kt` sources, and
+   directly in the DTOs: `feature/workitem/dto/.../WorkItemResponseDTO.kt:36` only
+   declares `val description: String?` (raw markdown), and
+   `feature/workitem/dto/.../CommentDTO.kt` only declares the raw `comment` field —
+   neither has an `_html` counterpart. The app re-renders raw markdown client-side via
+   `MarkdownTextWidget`'s `com.mikepenz.markdown.m3.Markdown`, which has no mention
+   rule, so the link the server already computed is discarded and never shown.
 
 ## Root cause
 
-There is no root cause to trace, because there is no existing @-mention feature to be
-broken. `CreateCommentBar`/`HintTextField` and the description `BasicTextField` are
-plain text fields with no character-triggered logic, no member-suggestion popup, and
-no post-hoc `@username` markdown styling. The reported behavior ("@ does nothing") is
-exactly what a text field with no mention handling would do — it isn't a regression
-or a misfiring trigger, it's an absent feature. GitHub's own `enhancement` label on
-the issue agrees with this reading.
+There is no client-side root cause to trace in the sense of a broken trigger — there
+is no existing @-mention input feature to be broken. `CreateCommentBar`/
+`HintTextField` and the description `BasicTextField` are plain text fields with no
+character-triggered logic or member-suggestion popup. But the underlying
+functionality the reporter actually wants — a mentioned user getting notified/tagged
+— **already works server-side today**, purely because the app sends raw markdown
+text; the server independently parses `@username` and fires a web notification (see
+Findings). What's actually missing is two purely-visual gaps: no input-side
+autocomplete, and no client-side rendering of the mention link the server already
+computes and returns (discarded because the DTOs don't decode `description_html`/
+`comment_html`). GitHub's `enhancement` label undersells this slightly — the visible
+part of the report ("marking him within the text" doesn't happen) is a real client
+bug/gap in how little of the server's own response is used, not purely a feature
+request.
 
 ## Impact
 
-Every user who tries to @-mention a teammate in a comment or a description gets no
-feedback and no tagging — the text is literally just typed characters. This is a
-parity gap against Taiga's own web client, which does support inline @-mention
-autocomplete. No workaround inside the app; a user has to know the teammate's
-username and type it in prose, with no confirmation it will notify anyone.
+A user who @-mentions a teammate gets no visual feedback while typing and no
+indication afterward that a link/tag was created — the text just looks like plain
+`@username`. **This is actively misleading every reporter into believing tagging
+silently fails outright, when it doesn't: confirmed live (Open Questions #1) that the
+mentioned user is notified and added as a watcher purely from the plain-text
+`@username` this app already sends.** This is a parity gap against Taiga's web
+client (which shows the autocomplete popup and renders the link) and a real,
+confirmed client bug in how little of the server's response this app uses — not a
+functional/notification gap.
 
 ## Open questions
 
-1. **Does the Taiga backend do anything with a literal `@username` substring in a
-   comment/description today** (e.g. trigger a notification) even without client-side
-   autocomplete? If yes, a minimal fix could be "just render `@username` as a
-   clickable/styled mention" without needing an input-side autocomplete popup. Needs
-   checking against `taiga-back`'s comment/history-parsing code or a live instance
-   test (type a raw `@username` from this app today and see if the mentioned user
-   gets notified) — not done as part of this investigation.
+1. ~~Not yet confirmed against a live instance...~~ **Resolved — confirmed live**
+   against the local Taiga instance (`http://localhost:9000`, via `taiga-mcp`):
+   `PATCH /api/v1/userstories/21` as `admin` with
+   `{"comment": "Hey @user1 please check this out"}` produced, in the same response:
+   - `watchers` went from `[5]` to `[5, 6]` (`user1`'s id is 6) — the mention added
+     them as a watcher, exactly per `services.py:109-111`.
+   - `GET /api/v1/history/userstory/21` shows `comment_html: "<p>Hey <a
+     class=\"mention\" href=\"http://localhost:9000/profile/user1\"
+     title=\"user1\">@user1</a> please check this out</p>"` — the server-rendered
+     mention link this app's `CommentDTO` never decodes.
+   - Logging in as `user1` and calling `GET /api/v1/web-notifications` shows a brand
+     new notification, `event_type: 6` (`WebNotificationType.mentioned_in_comment`,
+     confirmed against `choices.py:25-31`), timestamped the same second as the
+     comment.
+
+   **This proves the tagging/notification mechanism works end-to-end today, exactly
+   as typing plain `@username` text and submitting a comment through this app's
+   existing API calls** — no client-side mention handling of any kind is required for
+   the functional half of the reporter's request. Confirms the Root Cause/Impact
+   sections above are correct, not merely source-level inference. (Test comment left
+   on the local dev instance's user story #21 — disposable test data on a local dev
+   instance, not the production Taiga this app talks to.)
 2. Reporter didn't say which entity type or confirm Android vs. no other platform;
    likely irrelevant since the input widgets (`CreateCommentBar`, description editor)
    are shared across all work-item types and are KMP-common, not Android-specific.
@@ -108,40 +177,50 @@ Add a popup/dropdown to `CreateCommentBar` and the description editor that opens
 `@`, filters the current project's team members (reusing the data source behind
 `WorkItemEditTeamMembersScreen`) as the user types, and on selection inserts
 `@username` into the text; render `@username` spans as styled/clickable in
-`MarkdownTextWidget`.
-- Pros: closes the parity gap completely; reuses an existing member data source.
+`MarkdownTextWidget` (see option B for that half in isolation).
+- Pros: closes the parity gap completely — matches Taiga web's actual input UX,
+  reuses an existing member data source, protects users from silent typos in a
+  username (a typo currently fails the server-side match silently — `mentions.py:69`
+  falls back to plain `@typo'd-name` with no error).
 - Cons: non-trivial UI work — needs a new suggestion-popup component in `uikit`
   (doesn't exist today), cursor-position-aware text editing, and coordination between
-  `BasicTextField`/`HintTextField`'s raw text and structured token insertion. Also
-  depends on open question 1 — if the backend doesn't act on `@username` at all, this
-  becomes cosmetic-only rather than "tagging."
+  `BasicTextField`/`HintTextField`'s raw text and structured token insertion.
 - Risk/blast radius: touches shared `uikit` text-field code and two feature modules'
   editors; moderate size for a single PR, likely wants the multi-session
   `docs/<initiative>/CHECKLIST.md` split per CLAUDE.md.
 
-**B. Minimal version: style/link `@username` in rendered markdown only, no input-side
-autocomplete.**
-Leaves comment/description input as plain text; only `MarkdownTextWidget` gains a rule
-recognizing `@username` (matched against known project members) and renders it as a
-clickable span (e.g. navigates to that user, or just visually highlights).
-- Pros: much smaller surface — one file, no new uikit component, no text-editing
-  cursor logic.
-- Cons: doesn't address the reporter's actual ask ("the action with @ is ... not
-  marking him within the text" while *typing* — they want the input-time experience,
-  not just rendering). Partial fix at best.
+**B. Render `@username` as a styled/clickable link in `MarkdownTextWidget`, no
+input-side autocomplete.**
+Leaves comment/description input as plain text (already functionally sufficient per
+the live confirmation above); only `MarkdownTextWidget`/`ExpandableMarkdownText` gain
+a rule recognizing `@username` against the current project's member list and render
+it as a link/styled span — the client-side equivalent of what
+`mentions.py:54-84` already computes server-side and this app already receives but
+discards.
+- Pros: small, contained surface (rendering only, no text-field/cursor work); directly
+  fixes the visible part of the report ("not... marking him within the text") for
+  every place a comment/description is later *displayed*, and — since tagging already
+  works functionally (Open Questions #1) — closes most of the reporter's actual
+  complaint on its own.
+- Cons: doesn't add the input-time discovery/autocomplete Taiga web has — a user still
+  has to know and correctly spell a teammate's username while typing, with no
+  in-the-moment confirmation.
 
 **C. Won't fix / backlog.**
 Leave as-is, label stays `enhancement`.
 - Pros: zero engineering cost.
-- Cons: known parity gap stays open indefinitely; issue will likely resurface from
-  other reporters.
+- Cons: leaves users believing @-mentions don't work at all (per Impact) even though
+  the notification already fires — a false negative that actively discourages a
+  working feature.
 
-**Recommendation: A**, gated on resolving open question 1 first (a 5-minute check
-against a live Taiga instance settles whether the backend already acts on
-`@username`, which changes how much of A's scope is "must build" vs. "already
-exists server-side"). This is a genuine feature addition, not a bug fix — sized for
-the multi-session `docs/<name>/CHECKLIST.md` process in CLAUDE.md rather than a single
-PR, given the new uikit component and the cross-module editor changes.
+**Recommendation: B first, then A as a follow-up if gregory wants full input-time
+parity.** The live test proves the *notification* mechanism is already fine — the
+entire user-facing gap is that nothing in the app ever shows a mention as a mention.
+B closes that with a single, contained rendering change and no risk to the
+comment/description input surfaces. A is worth doing afterward for typing-time
+discoverability and typo protection, but it's a genuine feature addition (new uikit
+component, cross-module editor changes) — size it as its own
+`docs/<name>/CHECKLIST.md` initiative per CLAUDE.md rather than bundling it with B.
 
 ## Decision
 
