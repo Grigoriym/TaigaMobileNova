@@ -5,9 +5,11 @@ import com.grappim.taigamobile.DrawerItemsBuilder
 import com.grappim.taigamobile.core.storage.auth.AuthStateManager
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
+import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import com.grappim.taigamobile.testing.FakeNetworkMonitor
 import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.models.getProjectSimple
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage
 import com.grappim.taigamobile.testing.storage.FakeDatabaseWrapper
@@ -15,6 +17,7 @@ import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
@@ -109,6 +112,23 @@ internal class MainViewModelTest {
             assertFalse(awaitItem()) // online → not offline
             networkMonitor.setOnline(false)
             assertTrue(awaitItem())
+            cancel()
+        }
+    }
+
+    // --- drawerItems ---
+
+    @Test
+    fun `drawerItems - resets to empty when current project becomes null`() = runTest {
+        val project = getProjectSimple()
+        val projectFlow = MutableStateFlow<ProjectSimple?>(project)
+        projectsRepository.projectFlow = projectFlow
+        createViewModel()
+
+        sut.drawerItems.test {
+            assertTrue(awaitItem().isNotEmpty())
+            projectFlow.value = null
+            assertTrue(awaitItem().isEmpty())
             cancel()
         }
     }

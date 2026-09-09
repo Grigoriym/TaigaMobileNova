@@ -73,3 +73,14 @@ deleted — see `finalize`.
   `0.1.0` — its index lags well behind `repo1.maven.org` itself. Probing the versioned POM path
   directly (`repo1.maven.org/maven2/.../<version>/<artifact>-<version>.pom`, expect `200`) is the
   reliable freshness check; don't use the search API to confirm a fresh publish landed.
+- 2026-09-09: `./gradlew :androidApp:assembleFdroidDebug --console=plain` printed no
+  `compileKotlin*`/`compileFdroidDebugKotlin` task lines at all (not even `UP-TO-DATE`) on a run
+  that reused the configuration cache, even though a real recompile had happened — had to confirm
+  the APK actually picked up source changes by comparing its mtime against the edited files'
+  mtimes instead of trusting the printed task graph.
+- 2026-09-09: on `Medium_Phone_API_36.1`, `adb shell input keyevent KEYCODE_BACK` from a
+  drawer-navigated screen (Settings drawer item mis-tapped, landed on "Open Sprints") exited the
+  app entirely to a system "Sign in with ease" Google setup screen instead of closing the drawer
+  or popping one nav level — cost a recovery detour (tap SKIP, `am force-stop` + relaunch). Root
+  cause not diagnosed; avoid `KEYCODE_BACK` as a generic "undo my last tap" move on this AVD and
+  re-screenshot after any BACK before assuming it stayed in-app.
