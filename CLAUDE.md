@@ -225,25 +225,27 @@ on return — see `EpicNavGraph.kt`/`EpicDetailsScreen.kt` for the pattern) must
 primary way users leave the screen — silently bypasses it. Confirmed 2026-09-02: `WikiPageScreen`
 used the bare form and its `UpdateDataOnBack` send never fired from the back arrow.
 
-**`resetTo()`/`goToTopLevel()` do not reset a top-level screen's ViewModel — they only reset
-which nav key is showing.** Every `TOP_LEVEL_KEYS` entry (`MainAppState.kt`) except
-`ProjectSelectorNavDestination` is a payload-less `data object` singleton. Both functions write
-that same singleton back into a `NavBackStack` slot rather than removing the old entry and
-pushing a new one — real Nav3's `ViewModelStoreNavEntryDecorator` only disposes a screen's
-`ViewModelStore` when its key structurally *disappears* from the tracked backstack (confirmed by
-reading `navigation3-runtime`/`lifecycle-viewmodel-navigation3` sources directly — see
-`agentic-grappim`'s `mobile-patterns` skill, Navigation section, for the full mechanism), so
-writing the same singleton back never registers as a change and the `ViewModelStore` — and
-therefore the `@KoinViewModel` resolved against it — survives indefinitely. This is what made
-`DashboardViewModel` keep showing a previous account's data after logout→login until a manual
-refresh (`docs/issues/2026-09-09-account-switch-stale-data-flash-and-refresh-failure.md`).
-Fixed 2026-09-09 by wrapping `MainScreen.kt`'s `MainScreenContent` body (from
-`rememberMainAppState()` down) in `key(sessionGeneration)`, bumped on logout — a Compose-level
-`key()` change fully tears down and rebuilds the subtree (every section's `ViewModelStoreProvider`
-included) regardless of Nav3's own pop-detection. Also flagged as a known, not-yet-fixed issue in
-`grappim-kit/CONSUMING.md`'s navigation section for other consumers of the shared library. **A GUI
-check that force-stops the app between logins cannot catch this** — a fresh process never had the
-stale instance to begin with; verification needs two logins inside one continuous process.
+**`resetTo()` fully disposes every top-level screen's ViewModel, not just whichever section's
+sub-stack actually lost entries.** Every `TOP_LEVEL_KEYS` entry (`MainAppState.kt`) except
+`ProjectSelectorNavDestination` is a payload-less `data object` singleton, and writing that same
+singleton back into a `NavBackStack` slot is invisible to Nav3's own `ViewModelStoreNavEntryDecorator`,
+which only disposes a `ViewModelStore` when a key structurally *disappears* from the tracked
+backstack — this made `DashboardViewModel` keep showing a previous account's data after
+logout→login until a manual refresh
+(`docs/issues/2026-09-09-account-switch-stale-data-flash-and-refresh-failure.md`). Fixed at the
+library level in `grappim-kit-navigation` 0.1.3: `NavigationState` gained a `resetGeneration`
+counter that `resetTo()` bumps, and `toEntries()` wraps its per-section decoration in
+`key(resetGeneration)`, forcing Compose to discard and recreate every section's decorators (and
+therefore their `ViewModelStore`s) on a reset regardless of whether any individual key's identity
+changed. `navigate()`/`goToTopLevel()`/`goBack()` never touch it — ordinary tab-switch/back state
+preservation is unaffected, and `goToTopLevel()` was never actually part of this bug (preserving a
+section's state across a switch is intended behavior). This app's own interim workaround —
+wrapping `MainScreen.kt`'s `MainScreenContent` body in an app-level `key(sessionGeneration)`,
+landed 2026-09-09 — was removed the same day once 0.1.3 shipped; `MainScreen.kt`'s logout handler
+now just calls `navigator.resetTo(LoginNavDestination)` directly, relying on the library fix.
+**A GUI check that force-stops the app between logins cannot catch a regression here** — a fresh
+process never had the stale instance to begin with; verification needs two logins inside one
+continuous process.
 
 ## ViewModel + State Pattern
 
