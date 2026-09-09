@@ -149,6 +149,17 @@ for what diverged from the extraction's own writeup (an added `Surface` wrap in 
 added top-bar slide animation, and the adapter pattern for a platform-varying `ColorScheme` like
 Android's dynamic color, which `KitTheme` has no accommodation for on its own).
 
+`core/logger`'s `Logcat`/`LogPriority`/`TaigaLogger`/`TimberLogger`/`NSLogLogger`/`FileLogger` →
+`io.github.grigoriym:grappim-kit-logger` was the third swap (2026-09-09, PR #413) — the local
+module was deleted, same as `navigation`. **Unlike `navigation`/`uikit`, check whether the
+consuming app wires the old local module in centrally before assuming it's a per-module
+`build.gradle.kts` line**: this repo's `build-logic/convention/.../KmpConfiguration.kt` hardcoded
+`implementation(project(":core:logger"))` once inside `configureKmp()` (applied to every KMP
+library module), not 40-odd separate `build.gradle.kts` additions — the swap there was a single
+line to `libs.grappim.kit.logger`. `androidApp` (a plain Android application module that never
+goes through `configureKmp()`) still needed its own explicit dependency line update, same as any
+consumer.
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from
