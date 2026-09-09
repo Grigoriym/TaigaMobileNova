@@ -5,6 +5,7 @@ import androidx.navigation3.runtime.NavKey
 import com.grappim.kit.navigation.LocalResultBus
 import com.grappim.kit.navigation.Navigator
 import com.grappim.kit.navigation.sendResult
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
@@ -15,7 +16,6 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navig
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditTeamMember
 import com.grappim.taigamobile.main.UpdateDataOnBack
-import com.grappim.taigamobile.utils.ui.NativeText
 
 fun EntryProviderScope<NavKey>.taskNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
     entry<TaskDetailsNavDestination> { route ->

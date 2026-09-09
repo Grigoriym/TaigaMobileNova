@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.issues.ui.list
 
 import app.cash.turbine.test
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.testing.MainDispatcherRule
@@ -10,7 +11,6 @@ import com.grappim.taigamobile.testing.repo.FakeIssuesRepository
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest

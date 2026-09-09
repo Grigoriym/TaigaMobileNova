@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.workitem.ui.mappers
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.filters.domain.model.StatusFilters
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticStringColor
 import org.koin.core.annotation.Factory
 

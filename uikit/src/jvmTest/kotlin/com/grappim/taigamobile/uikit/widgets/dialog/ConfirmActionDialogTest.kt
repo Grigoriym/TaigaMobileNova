@@ -4,8 +4,8 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.runComposeUiTest
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

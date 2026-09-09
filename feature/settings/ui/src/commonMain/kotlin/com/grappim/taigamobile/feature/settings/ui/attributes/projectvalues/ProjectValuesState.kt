@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueItem
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueType
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

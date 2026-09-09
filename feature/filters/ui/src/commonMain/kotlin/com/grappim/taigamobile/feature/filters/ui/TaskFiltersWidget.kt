@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.filters.domain.hasData
 import com.grappim.taigamobile.feature.filters.domain.model.Filters
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
@@ -55,7 +56,6 @@ import com.grappim.taigamobile.uikit.widgets.badge.BadgeWidget
 import com.grappim.taigamobile.uikit.widgets.editor.TextFieldStringWithHint
 import com.grappim.taigamobile.uikit.widgets.editor.searchFieldHorizontalPadding
 import com.grappim.taigamobile.uikit.widgets.editor.searchFieldVerticalPadding
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch

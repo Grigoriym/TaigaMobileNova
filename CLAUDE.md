@@ -136,6 +136,19 @@ a `core/*` module outright, also drop its `kover(projects.X)` line
 from the root `build.gradle.kts` aggregation and re-run `koverXmlReport`/`:koverVerify` — the
 floor is enforced against whatever remains aggregated.
 
+`uikit`'s theme/top-bar scaffolding and `NativeText` → `io.github.grigoriym:grappim-kit-uikit`
+was the second swap (2026-09-09, PR #394) — unlike `navigation`, no local module was deleted
+(`:uikit`/`:utils:ui` keep existing with reduced content), so add the new artifact as `api(...)`
+on whichever local module's consumers reach the moved type through same-module resolution, not
+`implementation(...)`. **A type moving out of a module breaks any file that referenced it via
+same-package implicit resolution with no explicit import** — a repo-wide import-line rename
+alone misses those; the build has to actually run to surface them (confirmed:
+`utils/ui/PagingUtils.kt` and `SnackbarDelegate.kt` both referenced `NativeText` with no import
+since it used to live in their own package). See `grappim-kit/CONSUMING.md`'s `uikit` section
+for what diverged from the extraction's own writeup (an added `Surface` wrap in `KitTheme`, an
+added top-bar slide animation, and the adapter pattern for a platform-varying `ColorScheme` like
+Android's dynamic color, which `KitTheme` has no accommodation for on its own).
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from

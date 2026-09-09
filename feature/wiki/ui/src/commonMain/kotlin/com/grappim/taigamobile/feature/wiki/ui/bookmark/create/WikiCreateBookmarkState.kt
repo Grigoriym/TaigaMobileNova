@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.wiki.ui.bookmark.create
 
-import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.kit.uikit.NativeText
 
 data class WikiCreateBookmarkState(
     val title: String = "",

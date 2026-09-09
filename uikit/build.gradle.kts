@@ -19,6 +19,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.jetbrains.compose.components.resources)
+            api(libs.grappim.kit.uikit)
 
             implementation(projects.utils.ui)
             implementation(projects.strings)

@@ -3,6 +3,7 @@ package com.grappim.taigamobile.nav
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.grappim.kit.navigation.Navigator
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.settings.ui.SettingsNavDestination
 import com.grappim.taigamobile.feature.settings.ui.SettingsScreen
 import com.grappim.taigamobile.feature.settings.ui.about.SettingsAboutScreen
@@ -35,7 +36,6 @@ import com.grappim.taigamobile.feature.settings.ui.trustedcerts.goToTrustedCerti
 import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreen
 import com.grappim.taigamobile.feature.settings.ui.user.SettingsUserScreenNavDestination
 import com.grappim.taigamobile.feature.settings.ui.user.goToSettingsUserScreen
-import com.grappim.taigamobile.utils.ui.NativeText
 
 fun EntryProviderScope<NavKey>.settingsNavGraph(navigator: Navigator, showSnackbar: (NativeText) -> Unit) {
     entry<SettingsNavDestination> {

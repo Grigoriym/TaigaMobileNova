@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.settings.ui.interfacescreen
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.crashapi.CrashReporter
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
@@ -9,7 +10,6 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.theme_dark
 import com.grappim.taigamobile.strings.generated.resources.theme_light
 import com.grappim.taigamobile.strings.generated.resources.theme_system
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.launchIn

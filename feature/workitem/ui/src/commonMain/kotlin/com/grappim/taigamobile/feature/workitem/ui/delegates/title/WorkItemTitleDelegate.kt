@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.title
 
-import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.kit.uikit.NativeText
 import kotlinx.coroutines.flow.StateFlow
 
 interface WorkItemTitleDelegate {

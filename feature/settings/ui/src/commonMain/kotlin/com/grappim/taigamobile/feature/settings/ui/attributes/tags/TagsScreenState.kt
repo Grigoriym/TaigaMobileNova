@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.settings.ui.attributes.tags
 
 import androidx.compose.ui.graphics.Color
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.ImmutableSet
 import kotlinx.collections.immutable.persistentListOf

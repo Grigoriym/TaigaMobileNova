@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.create
 
-import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.kit.uikit.NativeText
 
 data class WikiCreatePageState(
     val slug: String = "",

@@ -21,6 +21,7 @@ import com.grappim.kit.navigation.ResultEffect
 import com.grappim.kit.navigation.rememberResultBus
 import com.grappim.kit.navigation.sendResult
 import com.grappim.kit.navigation.toEntries
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
@@ -55,7 +56,6 @@ import com.grappim.taigamobile.nav.userStoryNavGraph
 import com.grappim.taigamobile.nav.wikiNavGraph
 import com.grappim.taigamobile.nav.workItemEditsNavGraph
 import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
-import com.grappim.taigamobile.utils.ui.NativeText
 
 private const val TRANSITION_DURATION_MS = 150
 

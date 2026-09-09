@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.userstories.ui
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.users.domain.User
@@ -10,7 +11,6 @@ import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
-import com.grappim.taigamobile.utils.ui.NativeText
 import io.github.vinceglb.filekit.PlatformFile
 
 data class UserStoryDetailsState(

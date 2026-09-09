@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.dashboard.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
@@ -10,7 +11,6 @@ import com.grappim.taigamobile.feature.dashboard.domain.GetRecentActivityUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetRecentlyCompletedItemsUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetWatchingItemsUseCase
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow

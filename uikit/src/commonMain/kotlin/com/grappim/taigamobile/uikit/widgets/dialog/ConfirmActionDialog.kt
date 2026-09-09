@@ -9,11 +9,11 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.grappim.kit.uikit.NativeText
+import com.grappim.kit.uikit.asString
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.no
 import com.grappim.taigamobile.strings.generated.resources.yes
-import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.asString
 import org.jetbrains.compose.resources.DrawableResource
 import org.jetbrains.compose.resources.painterResource
 

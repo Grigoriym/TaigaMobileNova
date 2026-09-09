@@ -12,6 +12,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboard
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.block
 import com.grappim.taigamobile.strings.generated.resources.copy_link
@@ -20,7 +21,6 @@ import com.grappim.taigamobile.strings.generated.resources.delete
 import com.grappim.taigamobile.strings.generated.resources.promote_to_user_story
 import com.grappim.taigamobile.strings.generated.resources.unblock
 import com.grappim.taigamobile.uikit.theme.dialogTonalElevation
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.toClipEntry
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource

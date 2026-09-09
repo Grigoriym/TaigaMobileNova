@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.settings.ui.interfacescreen
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.storage.ThemeSettings
-import com.grappim.taigamobile.utils.ui.NativeText
 
 data class SettingsInterfaceViewState(
     val themeSettings: ThemeSettings = ThemeSettings.default(),

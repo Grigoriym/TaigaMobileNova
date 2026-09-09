@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.profile.ui
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.profile.domain.GetProfileDataUseCase
 import com.grappim.taigamobile.feature.users.domain.UserStats
 import com.grappim.taigamobile.testing.MainDispatcherRule
@@ -10,7 +11,6 @@ import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.testException
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

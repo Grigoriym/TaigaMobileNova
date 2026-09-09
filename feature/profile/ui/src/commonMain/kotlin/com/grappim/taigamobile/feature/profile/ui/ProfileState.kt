@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.profile.ui
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.users.domain.User
 import com.grappim.taigamobile.feature.users.domain.UserStats
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 
