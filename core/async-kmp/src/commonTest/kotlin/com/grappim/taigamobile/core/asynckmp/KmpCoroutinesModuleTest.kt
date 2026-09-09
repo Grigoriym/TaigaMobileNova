@@ -2,8 +2,8 @@
 
 package com.grappim.taigamobile.core.asynckmp
 
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.TaigaLogger
+import com.grappim.kit.logger.KitLogger
+import com.grappim.kit.logger.LogPriority
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
@@ -15,7 +15,7 @@ import kotlin.test.assertSame
 
 internal class KmpCoroutinesModuleTest {
 
-    private class RecordingLogger : TaigaLogger {
+    private class RecordingLogger : KitLogger {
         var priority: LogPriority? = null
         var throwable: Throwable? = null
 
@@ -29,13 +29,13 @@ internal class KmpCoroutinesModuleTest {
 
     @AfterTest
     fun tearDown() {
-        TaigaLogger.uninstall()
+        KitLogger.uninstall()
     }
 
     @Test
     fun `exception thrown on ApplicationScope is logged, not propagated`() = runTest {
         val recordingLogger = RecordingLogger()
-        TaigaLogger.install(recordingLogger)
+        KitLogger.install(recordingLogger)
         val exception = IllegalStateException("boom")
         val scope = sut.provideApplicationScope(UnconfinedTestDispatcher(testScheduler))
 

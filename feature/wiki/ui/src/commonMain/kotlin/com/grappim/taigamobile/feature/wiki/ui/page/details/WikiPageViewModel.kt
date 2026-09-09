@@ -2,9 +2,9 @@ package com.grappim.taigamobile.feature.wiki.ui.page.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.wiki.domain.WikiPageUseCase
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination

@@ -88,6 +88,7 @@ jetbrainsAndroidxLifecycle = "2.11.0"
 jetbrainsNav3 = "1.1.1"
 grappimKitNavigation = "0.1.3"
 grappimKitUikit = "0.1.3"
+grappimKitLogger = "0.1.3"
 
 compose-bom = "2026.08.00"
 
@@ -154,6 +155,7 @@ jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:naviga
 jetbrains-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "jetbrainsAndroidxLifecycle" }
 grappim-kit-navigation = { module = "io.github.grigoriym:grappim-kit-navigation", version.ref = "grappimKitNavigation" }
 grappim-kit-uikit = { module = "io.github.grigoriym:grappim-kit-uikit", version.ref = "grappimKitUikit" }
+grappim-kit-logger = { module = "io.github.grigoriym:grappim-kit-logger", version.ref = "grappimKitLogger" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }

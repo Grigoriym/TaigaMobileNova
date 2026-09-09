@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.data
 
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
 import com.grappim.taigamobile.core.storage.network.NetworkMonitor

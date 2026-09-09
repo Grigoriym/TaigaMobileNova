@@ -8,7 +8,7 @@ import coil3.SingletonImageLoader
 import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
 import com.grappim.taigamobile.core.asynckmp.ApplicationScope
 import com.grappim.taigamobile.core.crashapi.CrashReporter
-import com.grappim.taigamobile.core.logger.TimberLogger
+import com.grappim.kit.logger.TimberLogger
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.cache.CacheManager
 import com.grappim.taigamobile.data.CrashlyticsTree

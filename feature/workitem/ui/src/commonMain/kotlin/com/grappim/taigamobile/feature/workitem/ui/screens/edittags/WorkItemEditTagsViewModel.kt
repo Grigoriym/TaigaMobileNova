@@ -3,9 +3,9 @@ package com.grappim.taigamobile.feature.workitem.ui.screens.edittags
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.logger.LogPriority
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit.TagEditDialogDelegate

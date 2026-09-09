@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.attachments
 
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository

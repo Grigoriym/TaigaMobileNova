@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.data
 
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.storage.db.entities.WorkItemEntity
 import com.grappim.taigamobile.core.storage.di.DbJsonQualifier
 import com.grappim.taigamobile.feature.filters.domain.model.Status

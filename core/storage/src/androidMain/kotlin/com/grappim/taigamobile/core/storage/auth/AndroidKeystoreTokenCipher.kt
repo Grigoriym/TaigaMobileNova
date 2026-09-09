@@ -2,8 +2,8 @@ package com.grappim.taigamobile.core.storage.auth
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.logger.LogPriority
+import com.grappim.kit.logger.logcat
 import java.security.GeneralSecurityException
 import java.security.KeyStore
 import javax.crypto.Cipher

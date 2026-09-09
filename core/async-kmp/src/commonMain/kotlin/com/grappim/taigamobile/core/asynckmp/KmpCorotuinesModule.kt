@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.core.asynckmp
 
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.logger.LogPriority
+import com.grappim.kit.logger.logcat
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
