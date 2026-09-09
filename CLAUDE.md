@@ -102,7 +102,7 @@ names, as the thing worth reconciling.
 - Room 2.8.4 + BundledSQLiteDriver (KMP-ready) — **`RoomDatabase.clearAllTables()` is Android-only**;
   the JVM/native actual doesn't declare it at all (confirmed via `javap` on the `room-runtime`
   artifacts). To clear all tables on JVM/iOS, add a no-arg `deleteAll()` `@Query` to each DAO instead.
-- `core/logger` — KMP logging facade (see Logging below); Timber backs it on Android only
+- `grappim-kit-logger` — KMP logging facade (see Logging below); Timber backs it on Android only
 - The JetBrains AndroidX forks (`org.jetbrains.androidx.lifecycle`, `org.jetbrains.androidx.navigation3`,
   `org.jetbrains.androidx.savedstate`) publish their real per-platform code under the **plain
   upstream group id** (`androidx.lifecycle`, `androidx.navigation3`) with platform classifiers
@@ -763,12 +763,14 @@ Weighed and declined — don't re-propose these.
 
 ## Logging
 
-`core/logger` is a KMP logging facade — it is added to every KMP module's `commonMain` automatically
-by the convention plugin, so `logcat` is always available without a dependency change.
+`grappim-kit-logger` (published Maven artifact, `io.github.grigoriym:grappim-kit-logger` — swapped
+in for the local `core/logger` module, see grappim-kit Modules above) is a KMP logging facade — it
+is added to every KMP module's `commonMain` automatically by the convention plugin, so `logcat` is
+always available without a dependency change.
 
 ```kotlin
-import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.logger.LogPriority   // separate import, only if you set a priority
+import com.grappim.kit.logger.logcat
+import com.grappim.kit.logger.LogPriority   // separate import, only if you set a priority
 
 logcat { "plain debug message" }                               // as an Any extension: tag = this::class.simpleName
 logcat(tag = "Ktor") { "explicit tag" }                        // top-level overload: tag is null unless given
@@ -778,9 +780,9 @@ logcat(LogPriority.ERROR, throwable = e) { "failed to load" }
 Priorities: `VERBOSE`, `DEBUG` (default), `INFO`, `WARN`, `ERROR`, `ASSERT`.
 
 The message is a lambda, so it isn't built unless a logger is installed. Never call `Timber`
-directly outside `core/logger`.
+directly outside `grappim-kit-logger`.
 
-**Backends** — `TaigaLogger.install(...)` is called once per platform entry point:
+**Backends** — `KitLogger.install(...)` is called once per platform entry point:
 
 | Platform | Impl | Installed in |
 |----------|------|--------------|

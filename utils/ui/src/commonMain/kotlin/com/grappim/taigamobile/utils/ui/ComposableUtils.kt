@@ -3,7 +3,7 @@ package com.grappim.taigamobile.utils.ui
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.logger.logcat
 
 /**
  * gray, because api returns null instead of gray -_-

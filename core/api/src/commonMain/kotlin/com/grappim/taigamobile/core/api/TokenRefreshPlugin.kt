@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.core.api
 
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.logger.LogPriority
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall

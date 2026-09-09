@@ -2,9 +2,9 @@ package com.grappim.taigamobile.feature.wiki.ui.bookmark.create
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiLink
 import com.grappim.taigamobile.utils.ui.getErrorMessage

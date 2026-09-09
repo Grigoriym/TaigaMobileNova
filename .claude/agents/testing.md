@@ -432,17 +432,17 @@ fun `patchData should propagate api error`() = runTest {
   `CreateWorkItemUseCaseTest` and `GetProfileDataUseCaseTest` both do this with a local helper; if a
   third file needs it, promote it to `:testing`'s `TestUtils.kt`.
 
-### Asserting something was logged (`TaigaLogger`)
+### Asserting something was logged (`KitLogger`)
 
 To prove a `catch` block or a `CoroutineExceptionHandler` actually logs (CLAUDE.md's Error
-Handling rule) rather than swallowing silently, implement `TaigaLogger` inline in the test, call
-`TaigaLogger.install(it)`, exercise the code, then assert on the recorded `priority`/`throwable`.
-`TaigaLogger.uninstall()` in `@AfterTest` — it's a process-wide `@Volatile var`, so a leaked
+Handling rule) rather than swallowing silently, implement `KitLogger` inline in the test, call
+`KitLogger.install(it)`, exercise the code, then assert on the recorded `priority`/`throwable`.
+`KitLogger.uninstall()` in `@AfterTest` — it's a process-wide `@Volatile var`, so a leaked
 install bleeds into unrelated tests in the same JVM process (see gotcha 7 on shared test process
 state). First example: `core/async-kmp/src/commonTest/.../KmpCoroutinesModuleTest.kt`.
 
 ```kotlin
-private class RecordingLogger : TaigaLogger {
+private class RecordingLogger : KitLogger {
     var priority: LogPriority? = null
     var throwable: Throwable? = null
 
@@ -453,7 +453,7 @@ private class RecordingLogger : TaigaLogger {
 }
 
 @AfterTest
-fun tearDown() = TaigaLogger.uninstall()
+fun tearDown() = KitLogger.uninstall()
 ```
 
 ### Ktor plugins and anything needing a real `HttpResponse`

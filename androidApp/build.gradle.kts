@@ -48,7 +48,7 @@ dependencies {
     implementation(projects.uikit)
     implementation(projects.core.storage)
 
-    implementation(projects.core.logger)
+    implementation(libs.grappim.kit.logger)
     implementation(projects.core.appinfoApi)
     implementation(projects.core.crashApi)
     implementation(projects.core.asyncKmp)

@@ -151,7 +151,6 @@ dependencies {
     kover(projects.core.crashApi)
     kover(projects.core.serialization)
     kover(projects.core.asyncKmp)
-    kover(projects.core.logger)
     kover(projects.feature.dashboard.ui)
     kover(projects.feature.dashboard.domain)
     kover(projects.feature.projects.data)

@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.core.api.errors
 
+import com.grappim.kit.logger.LogPriority
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.api.sanitizedForCrashReporting
 import com.grappim.taigamobile.core.domain.NetworkException
 import com.grappim.taigamobile.core.domain.ProjectLimitInfo
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.logcat
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpClientPlugin
 import io.ktor.client.plugins.HttpSend

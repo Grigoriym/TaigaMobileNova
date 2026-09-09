@@ -2,9 +2,9 @@ package com.grappim.taigamobile.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.DrawerItem
 import com.grappim.taigamobile.DrawerItemsBuilder
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.core.storage.auth.AuthStateManager

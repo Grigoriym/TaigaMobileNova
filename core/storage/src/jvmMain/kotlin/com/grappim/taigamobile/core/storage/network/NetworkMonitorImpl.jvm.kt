@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.core.storage.network
 
+import com.grappim.kit.logger.LogPriority
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.asynckmp.ApplicationScope
 import com.grappim.taigamobile.core.asynckmp.IoDispatcher
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.logcat
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.delay
