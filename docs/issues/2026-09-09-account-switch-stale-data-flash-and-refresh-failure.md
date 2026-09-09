@@ -498,3 +498,9 @@ instead of each app needing its own `key(sessionGeneration)` workaround. Flagged
 gregory in the options above; not actioned here per CLAUDE.md's grappim-kit swap
 guidance (needs its own investigation into whether other consumers rely on today's
 behavior, and its own go-ahead).
+
+**Follow-up closed 2026-09-09:** Option E landed upstream — `grappim-kit-navigation` 0.1.3 fixes
+`resetTo()` itself via a `resetGeneration` counter (`goToTopLevel()` confirmed never part of the
+bug). This app's `key(sessionGeneration)` workaround was removed the same day once the app bumped
+onto 0.1.3; `MainScreen.kt`'s logout handler now calls `navigator.resetTo(LoginNavDestination)`
+directly. See CLAUDE.md's Navigation Pattern section for the current mechanism.
