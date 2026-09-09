@@ -1,6 +1,6 @@
 # 414 — User marking with @ not triggering tagging
 
-**Status:** Awaiting decision
+**Status:** Approved
 **Link:** https://github.com/Grigoriym/TaigaMobileNova/issues/414   **Updated:** 2026-09-09 (backend verified against `taiga-back`/`taiga-front` source)
 
 ## Report
@@ -224,4 +224,7 @@ component, cross-module editor changes) — size it as its own
 
 ## Decision
 
-Pending — not yet made by gregory.
+**2026-09-09, gregory: go full support — Option A** (input-time autocomplete +
+rendered mention links), not just the render-only minimal fix. Tracked as its own
+multi-session initiative:
+[docs/architecture/mention-tagging-support/](../architecture/mention-tagging-support/CHECKLIST.md).
