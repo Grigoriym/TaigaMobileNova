@@ -63,6 +63,12 @@ import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import com.grappim.kit.uikit.NativeText
+import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.kit.uikit.widgets.topbar.NavigationIconConfig
+import com.grappim.kit.uikit.widgets.topbar.TopBarActionIconButton
+import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
+import com.grappim.kit.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueItem
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueType
 import com.grappim.taigamobile.strings.RString
@@ -91,13 +97,7 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
-import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarActionIconButton
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.StaticStringColor
 import com.grappim.taigamobile.utils.ui.asColor

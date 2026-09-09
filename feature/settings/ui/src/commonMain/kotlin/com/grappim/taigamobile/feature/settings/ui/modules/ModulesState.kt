@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.settings.ui.modules
 
-import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.kit.uikit.NativeText
 
 data class ModulesState(
     val isEpicsActivated: Boolean = false,

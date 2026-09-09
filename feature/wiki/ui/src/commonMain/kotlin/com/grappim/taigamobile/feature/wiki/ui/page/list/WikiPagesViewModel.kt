@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.wiki.ui.page.list
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
@@ -9,7 +10,6 @@ import com.grappim.taigamobile.feature.projects.domain.canAddWikiPage
 import com.grappim.taigamobile.feature.projects.domain.canDeleteWikiPage
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
 import com.grappim.taigamobile.feature.wiki.ui.model.WikiUIItem
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
 import com.grappim.taigamobile.utils.ui.getErrorMessage

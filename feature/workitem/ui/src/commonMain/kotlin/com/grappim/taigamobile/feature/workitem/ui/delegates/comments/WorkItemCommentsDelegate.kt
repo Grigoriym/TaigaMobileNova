@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.comments
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.domain.CreatedCommentData
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.StateFlow

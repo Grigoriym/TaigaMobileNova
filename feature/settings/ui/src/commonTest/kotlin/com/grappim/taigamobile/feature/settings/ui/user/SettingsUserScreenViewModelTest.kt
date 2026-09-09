@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.feature.settings.ui.user
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.utils.testException
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

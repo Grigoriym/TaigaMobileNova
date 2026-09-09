@@ -22,6 +22,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.comment_hint
 import com.grappim.taigamobile.uikit.generated.resources.ic_send
@@ -30,7 +31,6 @@ import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
-import com.grappim.taigamobile.utils.ui.NativeText
 import org.jetbrains.compose.resources.painterResource
 
 const val CREATE_COMMENT_BAR_TEXT_FIELD_TEST_TAG = "create_comment_bar_text_field"

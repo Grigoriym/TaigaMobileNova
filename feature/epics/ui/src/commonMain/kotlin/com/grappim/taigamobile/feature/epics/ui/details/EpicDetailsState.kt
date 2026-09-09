@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.epics.ui.details
 
 import androidx.compose.ui.graphics.Color
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.users.domain.User
@@ -11,7 +12,6 @@ import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
-import com.grappim.taigamobile.utils.ui.NativeText
 import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

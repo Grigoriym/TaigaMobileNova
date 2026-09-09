@@ -31,6 +31,11 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.window.core.layout.WindowSizeClass
 import com.grappim.kit.navigation.NavigationState
+import com.grappim.kit.uikit.asStringBlocking
+import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.kit.uikit.widgets.topbar.TopBar
+import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
+import com.grappim.kit.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.TaigaDrawerWidget
 import com.grappim.taigamobile.TaigaNavigationSuiteWidget
@@ -40,11 +45,6 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.close
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.widgets.banner.OfflineIndicatorBanner
-import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TaigaTopAppBar
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
-import com.grappim.taigamobile.utils.ui.asStringBlocking
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -110,11 +110,13 @@ private fun MainScreenContent(
         Scaffold(
             modifier = Modifier.imePadding(),
             topBar = {
-                TaigaTopAppBar(
+                TopBar(
                     isVisible = appState.isTopBarVisible,
                     topBarConfig = topBarConfig,
                     drawerState = drawerState,
-                    defaultGoBack = { appState.navigator.goBack() }
+                    defaultGoBack = { appState.navigator.goBack() },
+                    backContentDescription = "Back",
+                    menuContentDescription = "Menu"
                 )
             },
             snackbarHost = {

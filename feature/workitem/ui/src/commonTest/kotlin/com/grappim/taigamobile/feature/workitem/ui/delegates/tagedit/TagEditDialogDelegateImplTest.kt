@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit
 
 import androidx.compose.ui.graphics.Color
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.test.runTest

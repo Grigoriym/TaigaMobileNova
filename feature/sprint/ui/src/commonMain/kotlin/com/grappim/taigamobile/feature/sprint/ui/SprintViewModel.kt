@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.sprint.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
@@ -15,7 +16,6 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.sprint.WorkItemSpri
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.sprint_dates_template
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
 import com.grappim.taigamobile.utils.ui.getErrorMessage

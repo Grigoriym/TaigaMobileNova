@@ -25,6 +25,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.grappim.kit.uikit.NativeText
+import com.grappim.kit.uikit.asString
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.assignees_title
@@ -40,8 +42,6 @@ import com.grappim.taigamobile.strings.generated.resources.status_title
 import com.grappim.taigamobile.strings.generated.resources.tags_title
 import com.grappim.taigamobile.strings.generated.resources.type_title
 import com.grappim.taigamobile.strings.generated.resources.unassigned
-import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.asString
 import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.stringResource
 

@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit
 
 import androidx.compose.ui.graphics.Color
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
@@ -10,7 +11,6 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.tags.editdialog.TagEd
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.add_tag
 import com.grappim.taigamobile.strings.generated.resources.edit_tag
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.toHex

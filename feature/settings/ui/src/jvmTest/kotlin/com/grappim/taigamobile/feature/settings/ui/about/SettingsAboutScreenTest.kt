@@ -4,12 +4,12 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
+import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.kit.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.testing.FakeAppInfoProvider
 import com.grappim.taigamobile.testing.FakeCrashReporter
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
-import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import kotlin.test.Test
 
 // Desktop/JVM only: see docs/testing/compose-ui-test-spike.md. This Screen has no

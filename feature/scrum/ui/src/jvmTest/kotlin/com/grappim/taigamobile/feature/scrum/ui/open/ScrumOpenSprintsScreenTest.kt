@@ -4,14 +4,14 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
+import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.kit.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getSprint
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.repo.FakeSprintsRepository
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
-import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

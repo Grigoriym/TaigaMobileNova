@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.itemContentType
 import androidx.paging.compose.itemKey
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.no_sprints
@@ -19,7 +20,6 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateAction
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.hasCompletedLoad
 import com.grappim.taigamobile.utils.ui.hasError

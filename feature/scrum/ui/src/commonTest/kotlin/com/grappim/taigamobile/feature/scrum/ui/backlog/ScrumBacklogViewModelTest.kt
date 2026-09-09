@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.scrum.ui.backlog
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import com.grappim.taigamobile.testing.MainDispatcherRule
@@ -9,7 +10,6 @@ import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.repo.FakeUserStoriesRepository
 import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

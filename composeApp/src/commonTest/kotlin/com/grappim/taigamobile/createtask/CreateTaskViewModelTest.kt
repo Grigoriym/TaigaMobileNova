@@ -2,6 +2,7 @@ package com.grappim.taigamobile.createtask
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.create_epic
@@ -18,7 +19,6 @@ import com.grappim.taigamobile.testing.repo.FakeWorkItemRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

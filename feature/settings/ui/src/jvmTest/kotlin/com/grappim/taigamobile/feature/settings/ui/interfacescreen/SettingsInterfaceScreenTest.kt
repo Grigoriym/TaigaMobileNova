@@ -8,13 +8,13 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
+import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.kit.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.testing.FakeCrashReporter
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
-import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarController
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test

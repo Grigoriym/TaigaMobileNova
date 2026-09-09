@@ -3,6 +3,7 @@
 package com.grappim.taigamobile.feature.tasks.ui
 
 import app.cash.turbine.test
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
@@ -40,7 +41,6 @@ import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.decimal.createDecimalFormatter
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.UnconfinedTestDispatcher

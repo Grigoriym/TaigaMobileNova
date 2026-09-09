@@ -3,6 +3,7 @@ package com.grappim.taigamobile.utils.ui
 import androidx.paging.CombinedLoadStates
 import androidx.paging.LoadState
 import androidx.paging.compose.LazyPagingItems
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.error_loading_data
 

@@ -3,6 +3,7 @@ package com.grappim.taigamobile.createtask
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.strings.RString
@@ -11,7 +12,6 @@ import com.grappim.taigamobile.strings.generated.resources.create_issue
 import com.grappim.taigamobile.strings.generated.resources.create_task
 import com.grappim.taigamobile.strings.generated.resources.create_userstory
 import com.grappim.taigamobile.strings.generated.resources.title_is_empty
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.RestorableState
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.channels.Channel

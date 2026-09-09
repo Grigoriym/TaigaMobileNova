@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.sprint
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.sprint_end_date_empty
 import com.grappim.taigamobile.strings.generated.resources.sprint_name_empty
@@ -11,7 +12,6 @@ import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDate
 import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import kotlinx.datetime.DateTimeUnit
