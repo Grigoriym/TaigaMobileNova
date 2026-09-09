@@ -496,6 +496,17 @@ object locally** — to build against the PR's merge-base (e.g. for a size/perf 
 explicitly: `git fetch --depth=1 origin ${{ github.event.pull_request.base.sha }}` before `git
 checkout` that sha. Confirmed 2026-08-30 in `build.yml`'s `apk-size-check` job.
 
+**`ubuntu-latest`'s preinstalled Google Chrome apt repo can intermittently fail `apt-get update`
+with a Hash Sum mismatch** (a CDN metadata race on Google's end, unrelated to this repo) and abort
+the whole `apt-get update`, breaking any later `apt-get install` in the same step — hit in
+`build.yml`'s `desktop-package` job (`Install fakeroot and rpm`), which doesn't use Chrome at all.
+Fix: `sudo rm -f /etc/apt/sources.list.d/google-chrome.sources` before `apt-get update`. Note the
+filename — it's the newer deb822 format (`.sources`, `URIs:`/`Suites:` keys), not the legacy
+`google-chrome.list` that `actions/runner-images`' own `install-google-chrome.sh` still references;
+guessing the old name is a silent no-op (`rm -f` doesn't error on a missing path) rather than a
+visible failure. Confirmed 2026-09-09 (PR #409) by listing `/etc/apt/sources.list.d/` in a debug
+step rather than guessing twice.
+
 ## Multi-Session Work
 
 For any initiative that spans multiple sessions — a feature investigation, a redesign, a
@@ -687,6 +698,17 @@ procedure by hand — a script or a hook can't skip a step or get one wrong the 
 can. `.github/scripts/check-guardrails.sh` is this project's own example: the gate rules are a
 script, not a mental checklist to re-derive each session. Reserve judgment for what actually needs
 it — ambiguous input, a plan, a choice between options.
+
+**Never guess an external artifact's exact name from convention — list or query the real source
+first.** A filename, URL, or API signature that "should" follow a pattern (a release-asset name
+built from a version tag, an apt source's legacy filename, a sibling function's parameter list)
+routinely doesn't, and a wrong guess that fails silently (e.g. `rm -f` on a missing path) can burn
+a full round-trip before the mismatch is even visible. Confirmed three times: a GitHub release's
+actual asset name vs. one built from the version tag (`docs/frictions.md` 2026-08-29), an
+`androidx` API's real signature vs. a sibling overload's shape (2026-08-15), and a CI runner's
+actual apt source filename vs. the legacy name referenced in its own build script (2026-09-09,
+PR #409) — see the CI Guardrails entry above for that case. Check with `gh api`/`ls`/reading the
+real source before writing the fix, not after it fails once.
 
 ### Goal-Driven Execution
 
