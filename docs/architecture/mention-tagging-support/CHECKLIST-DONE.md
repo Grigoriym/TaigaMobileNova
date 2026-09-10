@@ -183,3 +183,77 @@ fired from a mention composed entirely via the new picker, not just free-typed t
 This is the first real end-to-end verification of Step 1's rendering mechanism too, as
 scoped. Next: Step 5 (wire autocomplete into the description editor for work items and
 wiki) — depends on Steps 2 and 3 (already done); not gated on anything from this step.
+
+## Step 5: Wire autocomplete into the description editor (work items and wiki)
+
+Applied Step 4's `CreateCommentBar` mechanism to `WorkItemEditDescriptionScreen.kt`.
+`EditDescriptionState.currentDescription`/`onDescriptionChange` moved from `String` to
+`TextFieldValue` (needed for cursor position); `originalDescription` stays `String` and
+the `shouldGoBackWithCurrentValue`/repository-write comparisons now read
+`currentDescription.text`. `EditDescriptionViewModel` mixes in
+`WorkItemMentionsDelegate by WorkItemMentionsDelegateImpl(usersRepository =
+usersRepository)` (unchanged from Step 4) and calls `loadMembers()` in `init {}`, same
+pattern as the 4 details ViewModels. `EditDescriptionContent` (made public, was
+`private`, so a Compose UI test can call it directly with a hand-built
+`EditDescriptionState` — matches `SettingsScreenContent`'s existing public-content-
+composable convention rather than inventing a new one) gained the same
+`isMentionPopupDismissed`/`findActiveMentionQuery`/`MentionSuggestionsPopup` wiring as
+`CreateCommentBar`, anchored in a `Box` around the `BasicTextField` (switched from its
+`String` overload to the `TextFieldValue` one — both are built into
+`androidx.compose.foundation.text.BasicTextField` itself, no new `uikit` wrapper needed
+unlike `CreateCommentBar`'s `HintTextField` overload).
+
+No rendering-side work was needed: Step 4 already wired `members`/`onMentionClick` into
+`WorkItemDescriptionWidget` at every details-screen call site, and this step only
+touches the input-side editor, which has no markdown rendering of its own. Confirmed
+`WorkItemEditsNavGraph.kt`'s single `entry<WorkItemEditDescriptionNavDestination>` needs
+no new params — `members` is self-fetched via the ViewModel's delegate exactly as Step
+4's `CreateCommentBar` call sites were, not threaded through the nav graph. Wiki page
+description editing needed no separate implementation: `WorkItemEditDescriptionScreen`
+is the single shared screen for both entity types (routed via `TaskIdentifier.WorkItem`/
+`TaskIdentifier.Wiki`), so wiring `EditDescriptionViewModel` once covers both, confirmed
+by GUI-verifying each path independently rather than assuming the wiki path for free.
+
+**Deviation from the step's plan:** `feature/workitem/ui` had no `jvmTest` source set
+before this step (only `commonTest`) — `CreateCommentBarTest`'s `runComposeUiTest`
+pattern lives in `uikit`, which already had one. Added the same
+`compose.desktop.uiTestJUnit4`/`compose.desktop.currentOs` jvmTest dependency block to
+`feature/workitem/ui/build.gradle.kts` (matching `feature/settings/ui`'s existing
+identical block, an established repo pattern, not new infra) to host
+`EditDescriptionContentTest.kt`.
+
+Verify: extended `EditDescriptionViewModelTest.kt` with a
+`usersRepository`/`FakeUsersRepository` constructor param (added to every existing test
+call) and one new test confirming `loadMembers()` populates `mentionsState` on init;
+updated every `onDescriptionChange`/`currentDescription` reference for the
+`TextFieldValue` change. New `EditDescriptionContentTest.kt`
+(`feature/workitem/ui/src/jvmTest/`) mirrors `CreateCommentBarTest`'s mention test:
+types `Hey @al`-equivalent, confirms prefix filtering (`alice` shown, `bob` not), taps
+the suggestion, confirms the field reads `...@alice `. `./gradlew jvmTest` (full
+suite), `ktlintCheck` (whole repo — one `standard:property-wrapping`/
+`argument-list-wrapping` fix needed in the new jvmTest file, auto-fixed via
+`ktlintJvmTestSourceSetFormat`), `koverXmlReport` + `:koverVerify` (floor holds with no
+change needed), and `:feature:workitem:ui:compileKotlinIosSimulatorArm64` all green.
+
+GUI-verified on `Medium_Phone_API_36.1` against the local Taiga instance, both paths
+independently: (1) Epic #1's description — typed `@ad` after a preceding space, the
+popup showed only `admin` (prefix match), tapped it, inserted `@admin `, saved, and the
+rendered description showed the mention link, tapping it navigated to admin's Profile
+screen — full input→render→navigate round trip through the real edit screen, not just
+the widget in isolation as Step 4 verified. (2) The `home` wiki page's description
+(reached via Wiki → All Pages → home → tapping the description) — typed `@us` after a
+space, the popup showed `user1`/`user2`/`user3` (excluding `admin`, confirming real
+project-member filtering, not a stale/hardcoded list), tapped `user2`, inserted
+`@user2 ` correctly, then discarded (via the existing "discard changes?" dialog, which
+fired identically for the wiki path) to leave the seed page's content clean. Epic #1's
+description was left with the `@admin` mention from part (1) rather than reverted —
+matches Step 4's own precedent of leaving its comment-bar test artifact
+(`Hey @admin`) on the same Epic. **Friction (not re-added to `docs/frictions.md` since
+it's already documented as a known gotcha in the `emulator-testing` skill itself):**
+`adb shell input text` dropped characters typed immediately after a `MOVE_END` landing
+mid-way through a wrapped multi-line `BasicTextField` — `KEYCODE_MOVE_END` moves to the
+end of the current *visual* line, not the end of the whole field, so a tap that lands
+mid-paragraph plus `MOVE_END` does not reach the field's true end; re-tapping directly
+at the last visible line's end character fixed it. Next: Step 6 (full-suite
+verification and polish) — depends on everything before it, all done; queue is empty
+after that.

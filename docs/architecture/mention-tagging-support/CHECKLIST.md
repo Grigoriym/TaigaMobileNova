@@ -1,36 +1,14 @@
 # @-Mention Tagging Support — Checklist
 
-**Progress:** 4/6 done. **Current step:** 5 (wire autocomplete into the description
-editor for work items and wiki) — depends on 2 and 3, both done.
+**Progress:** 5/6 done. **Current step:** 6 (full-suite verification and polish) —
+depends on everything before it, all done.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for architecture, the server
 contract this relies on, and the reasoning behind each mechanism choice — including
 its "Team-member data source" section (added 2026-09-10). Origin:
 [docs/issues/414-mention-autocomplete-not-implemented.md](../../issues/414-mention-autocomplete-not-implemented.md),
 approved by gregory 2026-09-09 (full support, not just the render-only minimal fix).
-Steps 1-4 are done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
-
-Step 5 depends on 2 and 3 (both done). Step 6 depends on everything before it.
-
-## Step 5: Wire autocomplete into the description editor (work items and wiki)
-
-Same input-side mechanism as Step 4, applied to
-`WorkItemEditDescriptionScreen.kt`'s `BasicTextField`/`EditDescriptionState.kt`/
-`EditDescriptionViewModel.kt`, plus the same rendering-wiring finish (`members` +
-`onMentionClick` into `WorkItemDescriptionWidget` at the description-display call
-site, if Step 4 didn't already cover every entity type). This screen is shared by
-`WikiPageScreen` via the `WorkItemDescriptionState`/delegate pattern (CLAUDE.md's
-Navigation Pattern section) — confirm wiki pages get the popup too as a side effect,
-not a separate implementation, and that Wiki's own ViewModel can reuse Step 4's
-delegate (or needs its own instance — Wiki isn't one of the 4
-`CreateCommentBar` call sites, so this may be the first time its ViewModel needs
-`members` at all; check what it already has in scope before assuming reuse is free).
-
-**Verify:** extend `EditDescriptionViewModelTest.kt` the same way as Step 4's
-comment-bar test. GUI-verify on the emulator for both a work-item description and a
-wiki page description (per CLAUDE.md's note that description input is shared code,
-but the two screens are reached through different navigation paths — worth a real
-click-through on each once, not just one and an assumption about the other).
+Steps 1-5 are done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
 
 ## Step 6: Full-suite verification and polish
 
