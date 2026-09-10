@@ -37,41 +37,105 @@ afterward when it's rendered.
 ## Data source
 
 `UsersRepository.getTeamMembersByProjectId(projectId, generateMemberStats = false):
-ImmutableList<TeamMember>`
-(`feature/users/domain/.../UsersRepository.kt:9-12`) is the existing call used to
-populate the assignee/watcher picker
-(`EditTeamMemberViewModel.kt:196` via `getTeamMembers()`, the no-project-id overload
-used when the current project is already known from context). `TeamMember` already
+ImmutableList<TeamMember>` and its no-arg-project sibling `getTeamMembers(...)`
+(`feature/users/domain/.../UsersRepository.kt:7-12`) are the existing calls used to
+populate the assignee/watcher picker (`EditTeamMemberViewModel.kt:196`, via
+`getTeamMembers()` — the current-project-from-context overload). `TeamMember` already
 carries `id`, `username`, `name` — exactly what both autocomplete filtering and
 mention-link resolution need. **No new API/DTO work required anywhere in this
-initiative** — every step below is UI/state-layer only, reusing this one existing
-repository method.
+initiative.**
+
+**Found 2026-09-10, before any code was written for Step 1:** despite the method
+already existing, **no details ViewModel currently holds this data.**
+`EditTeamMemberViewModel` fetches it lazily, only when the user navigates into the
+separate full-screen assignee/watcher picker — none of `TaskDetailsViewModel`,
+`UserStoryDetailsViewModel`/equivalent, `EpicDetailsViewModel`, `IssueDetailsViewModel`,
+or the Wiki page ViewModel keep a project's team-member list in memory today. Getting
+real `members` into `WorkItemDescriptionWidget`/`CommentsSectionWidget` (Step 1's
+original scope) or into `CreateCommentBar`/the description editor (Steps 4-5) both
+require the same new fetch — so building it once, shared, is the only sane sequencing.
+This codebase already has an established shape for exactly this kind of cross-cutting,
+per-entity-type concern: composed delegates under
+`feature/workitem/ui/.../delegates/{comments,description,assignee,watchers,...}`,
+each mixed into every details ViewModel via `by SomeDelegateImpl(...)`
+(`TaskDetailsViewModel.kt:112` for the comments delegate is the concrete example
+already read). **Decision (2026-09-10): build a new delegate in that same family**
+(exact name TBD when Step 4 starts) exposing `StateFlow<ImmutableList<TeamMember>>`,
+mixed into every details ViewModel that needs it, rather than duplicating an ad hoc
+fetch per screen. This pushed the real data-wiring out of Step 1 and into Step 4 — see
+CHECKLIST.md's Step 1 scope note and Step 4 for the concrete split. The navigation
+side of this was already free: `goToProfile: (Long) -> Unit` is already threaded from
+each `*NavGraph.kt` (wired to `navigator.navigateToProfileScreen`) down through every
+one of these screens and into `CommentsSectionWidget`/`CommentItem` already — confirmed
+reading `TaskDetailsScreen.kt:81,301,371-423` and `CommentsSectionWidget.kt:41,63,83,108`
+— so `onMentionClick` in Step 4/5 is just `goToProfile`, not a new callback to invent.
 
 ## Rendering mechanism
 
 `uikit` renders markdown via `com.mikepenz:multiplatform-markdown-renderer-m3`
-(`MarkdownTextWidget.kt`, `ExpandableMarkdownText.kt`) — confirmed by decompiling the
-library sources (`0.45.0`) that it exposes exactly the hook this needs, with no
-custom Markdown extension required:
+(`MarkdownTextWidget.kt`, `ExpandableMarkdownText.kt`, both driven by the
+`com.mikepenz.markdown.m3.Markdown(...)` composable). Confirmed by decompiling the
+exact pinned version (`0.45.0`, `gradle/libs.versions.toml`'s `markdownRenderer`) that
+it exposes what this needs, with no custom Markdown extension required — but the hook
+is one level down from what the plan originally assumed:
 
-- `com.mikepenz.markdown.annotator.annotatorSettings(...)` takes a
-  `linkInteractionListener: LinkInteractionListener?` — fires with the clicked
-  `LinkAnnotation` whenever a rendered markdown link (`[text](url)`, standard
-  CommonMark, already supported) is tapped. Default behavior opens the URL via
-  `LocalUriHandler`; this can be overridden per-call.
+- `Markdown(...)`'s own top-level params have **no** `linkInteractionListener`/click
+  override — its `components: MarkdownComponents` param is the only per-node-type
+  customization surface (`m3/Markdown.kt:62-102`, delegates to
+  `com.mikepenz.markdown.compose.Markdown`).
+- `MarkdownComponents` (`compose/components/MarkdownComponents.kt`) holds one
+  `@Composable (MarkdownComponentModel) -> Unit` lambda per markdown node type —
+  `text`, `paragraph`, `heading1..6`, `blockQuote`, lists, etc. — each defaulted to a
+  `CurrentComponentsBridge` entry that calls the matching element composable
+  (`MarkdownText`, `MarkdownParagraph`, ...).
+- **`MarkdownText(content: String, node, style, ...)` and `MarkdownParagraph(content,
+  node, ...)` (`compose/elements/`) both take `annotatorSettings: AnnotatorSettings =
+  annotatorSettings()` directly** — this is the actual hook.
+  `com.mikepenz.markdown.annotator.AnnotatorSettings` (`annotator/AnnotatorSettings.kt`)
+  carries `linkInteractionListener: LinkInteractionListener?`; `annotatorSettings()`'s
+  default listener opens the clicked `LinkAnnotation.Url.url` via `LocalUriHandler`.
+  Traced the link all the way through: `AnnotatedStringKtx.kt:145,182,213,230` builds
+  every rendered link as `LinkAnnotation.Url(url, annotatorSettings.linkTextSpanStyle,
+  annotatorSettings.linkInteractionListener)` — so whatever listener is threaded
+  through `annotatorSettings` at render time becomes that specific link's own
+  listener; nothing ambient/global to fight with.
+- **So the actual override point is `Markdown(...)`'s `components` param**, built via
+  `markdownComponents(text = { model -> MarkdownText(..., annotatorSettings = X) },
+  paragraph = { model -> MarkdownParagraph(..., annotatorSettings = X) })`. Only
+  these two need overriding — nested contexts (list items, blockquotes, table cells)
+  all read the same `LocalMarkdownComponents.current` CompositionLocal to render their
+  own inline content (confirmed in `MarkdownList.kt:49`), so the override propagates
+  automatically without touching every component individually.
+- `X` (a small `@Composable` helper, not exported as a public API — build once in
+  `MarkdownTextWidget.kt`): start from the default `annotatorSettings()` and wrap its
+  `linkInteractionListener` — for a `LinkAnnotation.Url` whose `url` starts with a
+  `mention:` scheme, call `onMentionClick(id)`; otherwise delegate to the *default*
+  listener (which still opens a real `http(s)` URL via `LocalUriHandler` exactly as
+  today). Overriding the listener outright instead of falling back would silently
+  break clicking any genuine non-mention link already present in a description —
+  don't do that.
 - **Plan:** before handing raw text to `Markdown(...)`, rewrite any `@username`
   substring that matches a real member in the passed-in member list into standard
-  markdown link syntax: `[@username](mention:<id>)`. Pass a custom
-  `linkInteractionListener` that recognizes the `mention:` scheme, extracts the id,
-  and calls an `onMentionClick: (Long) -> Unit` callback instead of opening a URL —
-  wired at the call site to
-  `com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen(userId)`
+  markdown link syntax: `[@username](mention:<id>)` (a plain string preprocessing
+  pass over the raw markdown source, not an AST-aware rewrite — known limitation: a
+  literal `@name` inside an inline code span would also get linkified, since the
+  regex can't see node boundaries; acceptable for v1, revisit only if it's ever
+  reported as a real problem). `onMentionClick: (Long) -> Unit` gets wired at the
+  call site to `com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen(userId)`
   (`ProfileNavDestination(userId: Long)`, already navigable from any screen —
   confirmed it's already used this way for issue/task/US/epic/wiki "creator" avatars
-  in `composeApp/.../nav/*NavGraph.kt`, not gated to "self profile only").
+  in `composeApp/.../nav/*NavGraph.kt`, not gated to "self profile only") — in
+  practice this is just the `goToProfile` callback every details screen already has,
+  see the Data source section above.
 - Both `MarkdownTextWidget` and `ExpandableMarkdownText` need a new optional
   `members: ImmutableList<TeamMember> = persistentListOf()` param (default empty =
-  today's behavior, unchanged) and `onMentionClick: (Long) -> Unit = {}`.
+  today's behavior, unchanged, and skips building the custom `components` object
+  entirely) and `onMentionClick: (Long) -> Unit = {}`.
+- The mention regex the client should use to find candidates before matching against
+  `members`: `\B@([\w.-]+)\b`, mirroring the server's own `\B(@)([\w.-]+)\b`
+  (`mentions.py:48`) minus the capture group around `@` itself (not needed
+  client-side). Same pattern reused for Step 2's cursor-based detection — keep both
+  in sync if one ever changes.
 
 Only two production call sites render markdown that could plausibly contain a
 mention: `feature/workitem/ui/.../widgets/WorkItemDescriptionWidget.kt` (description)
