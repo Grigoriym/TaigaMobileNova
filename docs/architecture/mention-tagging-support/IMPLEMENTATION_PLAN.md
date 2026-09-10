@@ -236,6 +236,49 @@ field's text changes and set `true` by `onDismissRequest`; `expanded =
 !isMentionPopupDismissed && <query matches something>`. Step 5's description-editor
 popup needs the same explicit flag, not a repeat of the pure-derivation attempt.
 
+**Decision (2026-09-10): replace the `DropdownMenu`-based `MentionSuggestionsPopup`
+with an inline, horizontally-scrollable row — not a second option kept alongside the
+first.** Origin: gregory compared the dropdown against a row-based picker used by
+another app and preferred the row (fixed position under the input, doesn't grow
+unbounded); investigating a separate report that typing `@` dismisses/flickers the
+keyboard (`docs/issues/2026-09-10-mention-popup-keyboard-dismiss-flicker.md`) then
+found a structural reason to prefer it too, not just a style call: `DropdownMenu`'s
+default `PopupProperties(focusable = true)` (confirmed via decompiled
+`androidx.compose.material3`/`androidx.compose.ui` sources — see that doc's Findings)
+makes the popup a genuinely separate, focusable Android window, and Android hands
+that window input focus the moment it opens, detaching the IME from the text field
+being typed into. A `LazyRow` rendered inline in normal layout flow never creates a
+second window, so it avoids this by construction. Setting `focusable = false` on the
+existing `DropdownMenu` was considered and rejected: that flag is the same one the
+popup needs for its own back-press/outside-tap dismiss (the `isMentionPopupDismissed`
+paragraph above), so turning it off trades the keyboard-dismiss bug for a
+back-dismiss regression instead of fixing anything.
+
+**What the replacement changes, for whichever step implements it:**
+
+- `MentionSuggestionsPopup.kt` (`uikit/.../widgets/editor/`) gets replaced in place
+  (not duplicated) with a row component built on `LazyRow`, not `DropdownMenu`/
+  `Popup`. Its `members`/`onSelect` params stay the same shape; `onDismissRequest`
+  most likely goes away entirely (see next point) — confirm rather than assume once
+  actually wiring it.
+- **`isMentionPopupDismissed` most likely becomes unnecessary at both call sites.**
+  The whole reason it exists (`DropdownMenu`'s own back-press/outside-tap dismiss
+  fighting a pure-derivation `expanded`, previous paragraph) doesn't apply to a
+  non-`Popup` row — there is no framework-driven dismiss to fight. Visibility can
+  likely go back to the originally-attempted pure derivation:
+  `activeMentionQuery != null && mentionSuggestions.isNotEmpty()`, which also matches
+  gregory's own stated hide condition ("the moment @ is removed, we will hide it").
+  Verify this actually holds once built — don't carry the flag over on the assumption
+  it's still needed.
+- Chip content (avatar only vs. avatar+username, full name likely dropped for space)
+  is not decided here — a UI call to make during implementation, not a blocker before
+  starting.
+- GUI verification for whichever step confirms this must use **real on-screen-keyboard
+  taps**, not `adb shell input text` — Step 5's own GUI check used synthetic text
+  injection and screenshotted after each string landed rather than frame-by-frame at
+  the moment `@` was typed, which is why it never caught the keyboard-dismiss/flicker
+  in the first place (see the investigation doc's Open Questions).
+
 ## Offline / permissions
 
 Per CLAUDE.md's Offline State Pattern: the mention popup is a convenience, not a
