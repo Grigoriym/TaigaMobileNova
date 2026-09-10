@@ -201,13 +201,15 @@ Match the query pattern against the server's own `[\w.-]+` shape (see Server
 contract above) so a query the popup is filtering on is always a legal Taiga
 username shape.
 
-**New `uikit` component:** a suggestion popup/dropdown, anchored to the text field,
+**New `uikit` component:** `MentionSuggestionsPopup` (`uikit/.../widgets/editor/`),
 showing `TeamMember` rows (avatar, username, name) filtered by the active query's
-prefix, dismissed on selection or on the query no longer matching any member.
-Consult the **uikit-guide** subagent first (per CLAUDE.md) for whatever
-dropdown/popup primitive already exists in `uikit` (e.g. the pattern behind
-`DropdownSelector`) before building a new one from scratch — this may turn out to be
-a thin wrapper rather than new positioning/anchoring logic.
+prefix, dismissed on selection or on the query no longer matching any member. Built
+directly on Material3's `DropdownMenu`/`DropdownMenuItem`, not a wrapper around
+`DropdownSelector` — that composable always owns its own tap-to-toggle trigger row
+with no externally-driven `expanded` param, which doesn't fit a popup whose
+visibility must track "is there an active query" rather than a tap. Its `expanded`/
+`onDismissRequest` params are the minimum `DropdownMenu` itself requires to be driven
+externally.
 
 **Call-site wiring:** both `CreateCommentBar` and `WorkItemEditDescriptionScreen`
 need a new `members: ImmutableList<TeamMember>` param, sourced from

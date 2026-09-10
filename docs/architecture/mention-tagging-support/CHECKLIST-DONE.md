@@ -71,3 +71,37 @@ plus 2 `insertMention` splice cases — all 7 pass. `./gradlew jvmTest` (full su
 `:uikit:ktlintCheck`, and `:uikit:compileKotlinIosSimulatorArm64` all green. No
 deviation from the step's description. Next: Step 3 (mention suggestion popup
 component) — independent of this step, no gate.
+
+## Step 3: Mention suggestion popup component
+
+Consulted the **uikit-guide** subagent first, per the step's "before starting" note.
+`DropdownSelector` (`uikit/.../widgets/DropdownSelector.kt`) turned out unsuitable to
+wrap: it always renders its own tap-to-toggle trigger row with no externally-driven
+`expanded` param, but a mention popup's visibility must be driven by "is there an
+active `@query`," not a tap. Its underlying primitive — Material3's own
+`DropdownMenu`/`DropdownMenuItem` — is what it's built on, and is exactly the right
+building block to use directly. Also confirmed no existing uikit row composable fits
+(`UserItem` has no username field; the assignee picker's `TeamMemberItem` is
+feature-local, private, and bakes in a selection checkmark) — built a small private
+`MentionSuggestionRow` instead, matching `UserItem`'s avatar/spacer/column layout
+convention (40dp circular avatar, 6dp spacer, username then name stacked).
+
+Added `MentionSuggestionsPopup(members: ImmutableList<TeamMember>, expanded: Boolean,
+onSelect: (TeamMember) -> Unit, onDismissRequest: () -> Unit, modifier: Modifier =
+Modifier)` in `uikit/.../widgets/editor/MentionSuggestionsPopup.kt` (same package as
+Step 2's `MentionInput.kt`). `expanded`/`onDismissRequest` were added beyond the two
+params the checklist named (`members`, `onSelect`) — not scope creep, but the minimum
+Material3's `DropdownMenu` itself requires to be driven externally rather than by an
+internal tap-to-toggle. Background uses `dialogTonalElevation`, matching
+`DropdownSelector`'s own surface treatment for visual consistency with the existing
+dropdown.
+
+Verify: new `uikit` `jvmTest` (`MentionSuggestionsPopupTest.kt`, same source set and
+`runComposeUiTest` pattern as `DropdownSelectorTest.kt`) covers both `expanded = true`
+(renders all given members' username+name, tapping a row invokes `onSelect` with that
+member) and `expanded = false` (renders nothing) — both pass. `./gradlew jvmTest`
+(full suite), `:uikit:ktlintCheck`, and `:uikit:compileKotlinIosSimulatorArm64` all
+green. No deviation from the step's description. No emulator check — this component
+has no call site yet (Step 4 wires it into `CreateCommentBar`). Next: Step 4 (team-
+members delegate + `CreateCommentBar` wiring + finish Step 1's rendering wiring) —
+depends on Steps 2 and 3, both now done.

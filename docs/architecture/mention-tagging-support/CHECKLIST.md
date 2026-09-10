@@ -1,35 +1,19 @@
 # @-Mention Tagging Support — Checklist
 
-**Progress:** 2/6 done. **Current step:** 3 (mention suggestion popup component) —
-independent of steps 1-2, no gate.
+**Progress:** 3/6 done. **Current step:** 4 (team-members delegate, `CreateCommentBar`
+autocomplete wiring, finish Step 1's rendering wiring) — depends on 2 and 3, both done.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for architecture, the server
 contract this relies on, and the reasoning behind each mechanism choice — including
 its new "Team-member data source" section (added 2026-09-10). Origin:
 [docs/issues/414-mention-autocomplete-not-implemented.md](../../issues/414-mention-autocomplete-not-implemented.md),
 approved by gregory 2026-09-09 (full support, not just the render-only minimal fix).
-Steps 1-2 are done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
+Steps 1-3 are done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
 
 Steps 1-3 are independent building blocks (rendering, detection logic, popup
 component) with no ordering dependency between them. Step 1 did not produce a
 user-visible change by itself (see its CHECKLIST-DONE.md note) — that lands with
 Step 4. Steps 4-5 depend on 2 and 3. Step 6 depends on everything before it.
-
-## Step 3: Mention suggestion popup component
-
-**Before starting:** consult the **uikit-guide** subagent for any existing
-dropdown/anchored-popup primitive in `uikit` (e.g. whatever backs
-`DropdownSelector`) — reuse or thinly wrap it rather than building new
-positioning/anchoring logic if one already fits.
-
-Add a new `uikit` composable (suggested name: `MentionSuggestionsPopup`) taking a
-filtered `ImmutableList<TeamMember>` and `onSelect: (TeamMember) -> Unit`, rendering
-an anchored list of member rows (avatar, username, name) below/above the text field.
-
-**Verify:** a Compose UI test (or screenshot test, matching whatever pattern the
-**testing** subagent recommends for a new uikit widget) confirming the popup renders
-the given members and `onSelect` fires with the tapped one. No live network — pass a
-fixed fake list.
 
 ## Step 4: Build the team-members delegate, wire autocomplete into `CreateCommentBar`, and finish Step 1's rendering wiring
 
