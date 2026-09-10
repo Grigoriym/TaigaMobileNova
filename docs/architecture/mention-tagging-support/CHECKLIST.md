@@ -1,34 +1,19 @@
 # @-Mention Tagging Support — Checklist
 
-**Progress:** 1/6 done. **Current step:** 2 (mention-query detection + insertion
-utility) — independent of step 1, no gate.
+**Progress:** 2/6 done. **Current step:** 3 (mention suggestion popup component) —
+independent of steps 1-2, no gate.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for architecture, the server
 contract this relies on, and the reasoning behind each mechanism choice — including
 its new "Team-member data source" section (added 2026-09-10). Origin:
 [docs/issues/414-mention-autocomplete-not-implemented.md](../../issues/414-mention-autocomplete-not-implemented.md),
 approved by gregory 2026-09-09 (full support, not just the render-only minimal fix).
-Step 1 is done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
+Steps 1-2 are done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
 
 Steps 1-3 are independent building blocks (rendering, detection logic, popup
 component) with no ordering dependency between them. Step 1 did not produce a
 user-visible change by itself (see its CHECKLIST-DONE.md note) — that lands with
 Step 4. Steps 4-5 depend on 2 and 3. Step 6 depends on everything before it.
-
-## Step 2: Mention-query detection + insertion utility
-
-Add `findActiveMentionQuery(value: TextFieldValue): MentionQuery?` and
-`insertMention(value: TextFieldValue, query: MentionQuery, username: String):
-TextFieldValue` to `uikit` (pure functions, no Compose UI dependency beyond
-`TextFieldValue`). Query pattern matches the server's `\B(@)([\w.-]+)\b`
-(`taiga-back`'s `mentions.py:48`) so what the popup filters on is always a shape the
-server will actually tag.
-
-**Verify:** `commonTest` cases covering: cursor mid-word after `@` (query found),
-cursor after a completed mention with trailing space (no active query), `@` preceded
-by a word character (not a mention trigger — `\B` boundary), empty query (bare `@`),
-and `insertMention` producing the correct spliced text + cursor position for each.
-Write failing first.
 
 ## Step 3: Mention suggestion popup component
 

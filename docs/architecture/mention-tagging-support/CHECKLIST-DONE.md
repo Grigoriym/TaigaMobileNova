@@ -43,3 +43,31 @@ Verify: new `uikit` `commonTest`
 emulator check — this step has no live screen yet (Step 4 wires real data in). Next:
 Step 2 (mention-query detection + insertion utility) — independent of this step, no
 gate.
+
+## Step 2: Mention-query detection + insertion utility
+
+Added `MentionQuery(query: String, range: IntRange)`, `findActiveMentionQuery(value:
+TextFieldValue): MentionQuery?` and `insertMention(value: TextFieldValue, query:
+MentionQuery, username: String): TextFieldValue` — pure functions, no Compose UI
+dependency beyond the `TextFieldValue`/`TextRange` types — in a new
+`uikit/.../widgets/editor/MentionInput.kt` (same package as `TextFieldWithHint.kt`,
+the other text-input primitive).
+
+`findActiveMentionQuery` walks backward from the (collapsed-selection) cursor through
+`[\w.-]` characters looking for a preceding `@`; it returns `null` if the selection
+isn't collapsed, no `@` is found, or the `@` is itself preceded by a word character
+(`\w`) — mirroring the server's `\B(@)([\w.-]+)\b` (`taiga-back`'s `mentions.py:48`,
+already cited in Step 1) without needing regex backtracking over the whole string.
+`range` covers `@` through the last query character inclusive, so `insertMention` can
+replace it directly with `String.replaceRange`. `insertMention` splices in
+`"@$username "` and moves the cursor to just after the trailing space.
+
+Verify: new `uikit` `commonTest` (`MentionInputTest.kt`, same source set as Step 1's
+`MarkdownTextWidgetTest.kt` — the functions take `TextFieldValue`/`TextRange`, both
+multiplatform Compose UI types, not JVM-only) covers all 5 cases from the checklist
+(mid-word query found, completed-mention-plus-space not active, `@` after a word
+character not a trigger, bare-`@` empty query, non-collapsed selection not active)
+plus 2 `insertMention` splice cases — all 7 pass. `./gradlew jvmTest` (full suite),
+`:uikit:ktlintCheck`, and `:uikit:compileKotlinIosSimulatorArm64` all green. No
+deviation from the step's description. Next: Step 3 (mention suggestion popup
+component) — independent of this step, no gate.
