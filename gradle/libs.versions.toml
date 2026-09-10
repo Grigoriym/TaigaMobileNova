@@ -51,18 +51,18 @@ androidxTestUiautomator = "2.4.0"
 buildKonfig = "0.22.0"
 
 # https://github.com/JetBrains/kotlin/releases
-kotlin = "2.4.10"
+kotlin = "2.4.20"
 # https://github.com/Kotlin/kotlinx.coroutines/releases
 coroutines = "1.11.0"
 ksp = "2.3.12"
-kotlin-serialization-plugin = "2.4.10"
+kotlin-serialization-plugin = "2.4.20"
 kotlin-serialization-json = "1.11.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
 kotlinx-collections = "0.5.2"
 # https://github.com/Kotlin/kotlinx-datetime/releases
 kotlin-date-time = "0.8.0"
 kotlinx-io-core = "0.9.1"
-kotlinTest = "2.4.10"
+kotlinTest = "2.4.20"
 # https://github.com/Kotlin/kotlinx-atomicfu/releases
 atomicfu = "0.33.0"
 # https://github.com/cashapp/turbine/releases
