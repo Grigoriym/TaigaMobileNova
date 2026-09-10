@@ -106,14 +106,33 @@ is one level down from what the plan originally assumed:
   all read the same `LocalMarkdownComponents.current` CompositionLocal to render their
   own inline content (confirmed in `MarkdownList.kt:49`), so the override propagates
   automatically without touching every component individually.
-- `X` (a small `@Composable` helper, not exported as a public API — build once in
-  `MarkdownTextWidget.kt`): start from the default `annotatorSettings()` and wrap its
-  `linkInteractionListener` — for a `LinkAnnotation.Url` whose `url` starts with a
-  `mention:` scheme, call `onMentionClick(id)`; otherwise delegate to the *default*
-  listener (which still opens a real `http(s)` URL via `LocalUriHandler` exactly as
-  today). Overriding the listener outright instead of falling back would silently
-  break clicking any genuine non-mention link already present in a description —
-  don't do that.
+- `X` (a small `@Composable` helper, not exported as a public API — built in
+  `MarkdownTextWidget.kt` as `mentionAnnotatorSettings(onMentionClick)`): start from
+  the default `annotatorSettings()` and wrap its `linkInteractionListener` — for a
+  `LinkAnnotation.Url` whose `url` starts with a `mention:` scheme, call
+  `onMentionClick(id)`; otherwise delegate to the *default* listener (which still
+  opens a real `http(s)` URL via `LocalUriHandler` exactly as today). Overriding the
+  listener outright instead of falling back would silently break clicking any genuine
+  non-mention link already present in a description — don't do that.
+- **`mentionAnnotatorSettings(...)` must be called from *inside* each `text`/
+  `paragraph` component lambda, not hoisted once above `Markdown(...)`.** Its call to
+  the library's `annotatorSettings()` reads `LocalMarkdownTypography.current`
+  (`AnnotatorSettings.kt:48`), which `Markdown(...)` only provides within its own
+  composition — not yet available at `MarkdownTextWidget`'s call site before
+  `Markdown(...)` is entered. Hoisting it crashed every existing caller
+  (`ExpandableMarkdownTextTest`, `CreateCommentBarTest`) with `IllegalStateException:
+  No local MarkdownTypography` (confirmed 2026-09-10, Step 1). The library's own
+  `CurrentComponentsBridge` defaults call `annotatorSettings()` the same lazy way, in
+  the same place — this is the pattern to follow, not an edge case to work around.
+- **Overriding `components` at all also silently swaps the checkbox renderer** unless
+  `checkbox` is re-specified in the same `markdownComponents(...)` call. The m3
+  `Markdown(...)`'s own default (`m3/Markdown.kt:75`) already overrides `checkbox` to
+  `com.mikepenz.markdown.m3.elements.MarkdownCheckBox` (renders a Material3
+  `Checkbox`); once *any* custom `components` object is passed in, that default is
+  gone and GFM task-list items would silently fall back to the core library's plain
+  checkbox. Copy that same `checkbox` lambda into the custom `markdownComponents(...)`
+  call to avoid the regression (confirmed 2026-09-10, Step 1 — not something the
+  original plan anticipated).
 - **Plan:** before handing raw text to `Markdown(...)`, rewrite any `@username`
   substring that matches a real member in the passed-in member list into standard
   markdown link syntax: `[@username](mention:<id>)` (a plain string preprocessing
@@ -129,8 +148,10 @@ is one level down from what the plan originally assumed:
   see the Data source section above.
 - Both `MarkdownTextWidget` and `ExpandableMarkdownText` need a new optional
   `members: ImmutableList<TeamMember> = persistentListOf()` param (default empty =
-  today's behavior, unchanged, and skips building the custom `components` object
-  entirely) and `onMentionClick: (Long) -> Unit = {}`.
+  today's rendered output, unchanged — `rewriteMentions` short-circuits on an empty
+  list) and `onMentionClick: (Long) -> Unit = {}`. The custom `components` object is
+  always built regardless of whether `members` is empty — it's cheap, and branching
+  on it would just be two code paths to keep in sync for no behavioral gain.
 - The mention regex the client should use to find candidates before matching against
   `members`: `\B@([\w.-]+)\b`, mirroring the server's own `\B(@)([\w.-]+)\b`
   (`mentions.py:48`) minus the capture group around `@` itself (not needed

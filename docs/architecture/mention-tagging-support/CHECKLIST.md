@@ -1,73 +1,19 @@
 # @-Mention Tagging Support — Checklist
 
-**Progress:** 0/6 done. **Current step:** 1 (mention-link rendering — mechanism only,
-re-scoped 2026-09-10 before any code was written, see note below).
+**Progress:** 1/6 done. **Current step:** 2 (mention-query detection + insertion
+utility) — independent of step 1, no gate.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for architecture, the server
 contract this relies on, and the reasoning behind each mechanism choice — including
 its new "Team-member data source" section (added 2026-09-10). Origin:
 [docs/issues/414-mention-autocomplete-not-implemented.md](../../issues/414-mention-autocomplete-not-implemented.md),
 approved by gregory 2026-09-09 (full support, not just the render-only minimal fix).
+Step 1 is done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md).
 
 Steps 1-3 are independent building blocks (rendering, detection logic, popup
-component) with no ordering dependency between them. Step 1 no longer produces a
-user-visible change by itself (see its scope note) — that lands with Step 4. Steps
-4-5 depend on 2 and 3. Step 6 depends on everything before it.
-
-## Step 1: Render `@username` as a tappable mention link (uikit mechanism only)
-
-**Scope note, added 2026-09-10 before implementation started:** this step originally
-also wired real project-member data into `WorkItemDescriptionWidget`/
-`CommentsSectionWidget`. Investigation (done live, no code written) found that no
-details ViewModel — Task/UserStory/Epic/Issue/Wiki — currently holds a project's
-team-member list; that data is only ever fetched today inside the standalone
-assignee/watcher picker (`EditTeamMemberViewModel`). Sourcing it for real means a new
-shared delegate mirroring the existing `feature/workitem/ui/.../delegates/*` pattern
-(comments/description/assignee all work this way), mixed into all ~5-6 details
-ViewModels — which is exactly what Steps 4-5 need anyway for the autocomplete popup.
-Rather than build that fetch twice, **this step is uikit-only**: the rendering
-mechanism, verified with fake/fixture data, not a live screen. Steps 4 and 5 now own
-building the delegate and wiring `members` into both the display widgets (finishing
-this step's leftover) and the input widgets, in one pass. Full reasoning:
-IMPLEMENTATION_PLAN.md's "Team-member data source" section.
-
-Add mention-link rewriting to `MarkdownTextWidget`/`ExpandableMarkdownText`
-(`uikit/.../widgets/text/`): a new optional `members: ImmutableList<TeamMember> =
-persistentListOf()` and `onMentionClick: (Long) -> Unit = {}` param. Before handing
-text to `Markdown(...)`, rewrite any `@username` substring matching a real entry in
-`members` into `[@username](mention:<id>)`. The mikepenz library's top-level
-`Markdown(...)` composable has no direct `linkInteractionListener`/click-override
-param — the hook is one level down: `MarkdownParagraph(...)` and `MarkdownText(...)`
-(`com.mikepenz.markdown.compose.elements`) both take an `annotatorSettings:
-AnnotatorSettings = annotatorSettings()` param directly, and `AnnotatorSettings`
-carries `linkInteractionListener` (confirmed by decompiling
-`multiplatform-markdown-renderer[-m3]:0.45.0` sources — this project's pinned
-version). So: override `Markdown(...)`'s `components` param
-(`markdownComponents(text = ..., paragraph = ...)`) with lambdas that call
-`MarkdownText`/`MarkdownParagraph` passing a custom `annotatorSettings` — build it by
-taking the default `annotatorSettings()` and wrapping its `linkInteractionListener`:
-for a `LinkAnnotation.Url` whose `url` starts with the `mention:` scheme, call
-`onMentionClick(id)`; otherwise delegate to the default listener (which opens the URL
-via `LocalUriHandler`, e.g. for a real link that happens to be in the text) — don't
-just replace it outright, or genuine non-mention links break. Only `text` and
-`paragraph` need overriding; nested contexts (list items, blockquotes) read the same
-`LocalMarkdownComponents.current` and inherit the override automatically — confirmed
-by reading `MarkdownList.kt`, don't re-verify this in the next session.
-
-Demonstrate the mechanism with `@PreviewTaigaDarkLight` previews passing a literal
-fixture `ImmutableList<TeamMember>` (2-3 fake members, one referenced by `@` in the
-sample text, one not — to show both the linked and pass-through cases side by side).
-**Do not touch `WorkItemDescriptionWidget.kt`, `CommentsSectionWidget.kt`, or any
-ViewModel in this step** — that's Step 4/5's job now. Leave `CustomFieldsWidget.kt`
-alone too either way (default empty `members`, out of scope per the plan).
-
-**Verify:** a new `uikit` `commonTest` for the rewrite function (given text + a
-member list, assert the exact rewritten markdown string, including the "no match for
-this username" pass-through case, and the "`@` preceded by a word char is not a
-mention" case per the server's `\B` boundary — see Step 2's identical concern) —
-write it failing first, then make it pass. No emulator check for this step — there's
-no real screen showing live data yet; the first real GUI-verify of rendered mentions
-happens in Step 4.
+component) with no ordering dependency between them. Step 1 did not produce a
+user-visible change by itself (see its CHECKLIST-DONE.md note) — that lands with
+Step 4. Steps 4-5 depend on 2 and 3. Step 6 depends on everything before it.
 
 ## Step 2: Mention-query detection + insertion utility
 
