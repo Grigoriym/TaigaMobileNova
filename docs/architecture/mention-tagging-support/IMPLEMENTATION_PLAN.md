@@ -220,7 +220,21 @@ need a new `members: ImmutableList<TeamMember>` param, sourced from
 also reused by `WikiPageScreen` via the shared `WorkItemDescriptionState`/delegate
 pattern per CLAUDE.md's Navigation Pattern section) — check during Step 4/5 whether
 each of these screens already fetches the project's team members for something else
-(e.g. the assignee widget) before adding a second fetch; reuse if so.
+(e.g. the assignee widget) before adding a second fetch; reuse if so. Step 4 answered
+this for `CreateCommentBar`'s 4 call sites: none had team members in scope, hence the
+new `WorkItemMentionsDelegate` (see "Team-member data source" above) — check the same
+question for `WorkItemEditDescriptionScreen`/`WikiPageScreen`'s ViewModels in Step 5
+rather than assuming the answer carries over.
+
+**`expanded` cannot be a pure function of "is there an active query."** Step 4 tried
+that for `CreateCommentBar` and it broke `DropdownMenu`'s own back-press/outside-tap
+dismiss: `onDismissRequest` fired, but with nothing to set, the next recomposition
+re-derived `expanded = true` from the still-live query and the popup reappeared
+immediately — silently swallowing the Android back gesture while the popup was open.
+Fixed with an explicit `isMentionPopupDismissed` boolean, reset to `false` whenever the
+field's text changes and set `true` by `onDismissRequest`; `expanded =
+!isMentionPopupDismissed && <query matches something>`. Step 5's description-editor
+popup needs the same explicit flag, not a repeat of the pure-derivation attempt.
 
 ## Offline / permissions
 

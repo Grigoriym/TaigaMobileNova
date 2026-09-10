@@ -105,3 +105,81 @@ green. No deviation from the step's description. No emulator check — this comp
 has no call site yet (Step 4 wires it into `CreateCommentBar`). Next: Step 4 (team-
 members delegate + `CreateCommentBar` wiring + finish Step 1's rendering wiring) —
 depends on Steps 2 and 3, both now done.
+
+## Step 4: Team-members delegate, `CreateCommentBar` autocomplete wiring, Step 1 rendering finish
+
+Built `WorkItemMentionsDelegate`/`WorkItemMentionsDelegateImpl`
+(`feature/workitem/ui/.../delegates/mentions/`), matching the existing delegate family:
+exposes `mentionsState: StateFlow<WorkItemMentionsState>` (`members:
+PersistentList<TeamMember>`), populated by a `suspend fun loadMembers()` that calls
+`usersRepository.getTeamMembers()` (confirmed it resolves the current project id
+internally via `TaigaSessionStorage`, per `UsersRepositoryImpl` — no project-id param
+needed) inside `resultOf {}`, logging at `LogPriority.ERROR` and leaving `members`
+empty on failure (a mention popup that stays empty is a silent, non-blocking
+degradation — no snackbar/error state needed for this convenience feature). Mixed into
+all 4 details ViewModels (`TaskDetailsViewModel`, `UserStoryDetailsViewModel`,
+`EpicDetailsViewModel`, `IssueDetailsViewModel`) via `by WorkItemMentionsDelegateImpl(
+usersRepository = usersRepository)`, each calling `viewModelScope.launch {
+loadMembers() }` in `init {}` alongside the existing `loadTask()`/equivalent call.
+
+Wired `CreateCommentBar` (`uikit/.../widgets/CreateCommentBar.kt`) for autocomplete: its
+local comment state moved from `rememberSaveable { mutableStateOf("") }` to
+`rememberSaveable(stateSaver = TextFieldValue.Saver) { mutableStateOf(TextFieldValue("")) }`,
+needing a new `HintTextField` overload (`uikit/.../widgets/editor/TextFieldWithHint.kt`)
+taking `TextFieldValue`/`(TextFieldValue) -> Unit` — mirrors the existing `String`
+overload exactly, added as an overload rather than changing the existing one since 4
+other call sites still use plain `String`. On every edit, `findActiveMentionQuery`
+(Step 2) runs against the new value; a non-null query filters the new `members` param
+by `startsWith(query, ignoreCase = true)` and feeds `MentionSuggestionsPopup` (Step 3),
+wrapped in a `Box` around the text field so the popup anchors to it. Selecting a
+suggestion calls `insertMention` (Step 2). Deviation from the step's plan: added an
+explicit `isMentionPopupDismissed` boolean (reset to `false` whenever the text changes,
+set `true` in `onDismissRequest`) rather than deriving `expanded` purely from
+"is there a live query" — a pure derivation left `DropdownMenu`'s own
+back-press/outside-tap dismiss with nothing to do (the query stays active, so a purely
+derived `expanded` would immediately show it again), which would have swallowed the
+Android back gesture while the popup was open. Confirmed `isOffline` needs no separate
+branch: the field disables via `enabled = !isOffline` exactly as before, so the popup
+never gets a chance to open while offline — no new code path.
+
+Updated the 4 call sites (`TaskDetailsScreen`, `UserStoryDetailsScreen`,
+`EpicDetailsScreen`, `IssueDetailsScreen`) to collect `viewModel.mentionsState` and pass
+`members = mentionsState.members` into `CreateCommentBar`, and `members`/
+`onMentionClick = goToProfile` into `WorkItemDescriptionWidget`
+(`feature/workitem/ui/.../widgets/WorkItemDescriptionWidget.kt`, gained both params
+forwarding to `ExpandableMarkdownText`) and `CommentsSectionWidget`
+(`feature/workitem/ui/.../widgets/CommentsSectionWidget.kt`, gained both params
+forwarding through its private `CommentItem` to `MarkdownTextWidget`) — this is what
+makes Step 1's rendering mechanism visible in the running app for the first time, as
+planned. `onMentionClick` needed no new callback: `goToProfile` was already threaded to
+every one of these call sites (confirmed in Step 1's data-source note).
+
+Verify: extended `CreateCommentBarTest.kt` (`uikit/src/jvmTest/`) with
+`typingAtSignShowsSuggestionsAndSelectingOneInsertsMention` — types `"Hey @al"`,
+confirms only the matching member's row exists (prefix filtering), taps it, confirms
+the field now reads `"Hey @alice "`, sends, and asserts the trimmed `"Hey @alice"`
+reaches `onButtonClick` — plus the two pre-existing tests (plain-text send, blank-send
+no-op) still pass unmodified, confirming no regression to the no-`@` path. New
+`WorkItemMentionsDelegateImplTest.kt` (`feature/workitem/ui/commonTest/`) covers initial
+empty state, successful load, and failure-leaves-empty. `./gradlew jvmTest` (full
+suite), `ktlintCheck` (whole repo — one `standard:property-wrapping`/
+`argument-list-wrapping` fix needed in the new test, auto-fixed via
+`ktlintJvmTestSourceSetFormat`; one `standard:class-signature` fix needed in the new
+delegate files, auto-fixed via `ktlintCommonMainSourceSetFormat`), `koverXmlReport` +
+`:koverVerify` (floor holds with no change needed), and
+`:uikit:compileKotlinIosSimulatorArm64`/the 4 details-`ui` modules' iOS compiles all
+green.
+
+GUI-verified on `Medium_Phone_API_36.1` against the local Taiga instance: opened Epic
+#1 ("User Authentication & Authorization"), typed `Hey @ad` into the comment bar —
+the popup appeared showing only `admin` (the real project member matching the prefix,
+confirming filtering against the loaded `members` list rather than a hardcoded/stale
+set), tapped it, the field became `Hey @admin `, sent it, and the comment rendered as
+"Hey **@admin**" with the mention underlined/styled distinctly from plain text —
+tapping it navigated straight to admin's Profile screen. Also observed `admin` was
+added to the Epic's watchers list as a side effect of the mention, confirming the
+already-working server-side tagging mechanism (documented in the investigation doc)
+fired from a mention composed entirely via the new picker, not just free-typed text.
+This is the first real end-to-end verification of Step 1's rendering mechanism too, as
+scoped. Next: Step 5 (wire autocomplete into the description editor for work items and
+wiki) — depends on Steps 2 and 3 (already done); not gated on anything from this step.

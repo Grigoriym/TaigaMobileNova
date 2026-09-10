@@ -34,6 +34,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -154,6 +156,9 @@ class UserStoryDetailsViewModel(
         taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory),
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemMentionsDelegate by WorkItemMentionsDelegateImpl(
+        usersRepository = usersRepository
     ) {
 
     private val ref = route.ref
@@ -201,6 +206,7 @@ class UserStoryDetailsViewModel(
 
     init {
         loadUserStory()
+        viewModelScope.launch { loadMembers() }
 
         workItemEditStateRepository
             .getTeamMemberUpdateFlow(userStoryId, TaskIdentifier.WorkItem(CommonTaskType.UserStory))

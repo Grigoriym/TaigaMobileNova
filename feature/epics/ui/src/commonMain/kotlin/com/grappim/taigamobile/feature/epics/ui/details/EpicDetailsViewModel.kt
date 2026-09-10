@@ -32,6 +32,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkIt
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -144,6 +146,9 @@ class EpicDetailsViewModel(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemMentionsDelegate by WorkItemMentionsDelegateImpl(
+        usersRepository = usersRepository
     ) {
 
     companion object {
@@ -195,6 +200,7 @@ class EpicDetailsViewModel(
 
     init {
         loadEpic()
+        viewModelScope.launch { loadMembers() }
 
         workItemEditStateRepository
             .getTeamMemberUpdateFlow(epicId, TaskIdentifier.WorkItem(epicTaskType))

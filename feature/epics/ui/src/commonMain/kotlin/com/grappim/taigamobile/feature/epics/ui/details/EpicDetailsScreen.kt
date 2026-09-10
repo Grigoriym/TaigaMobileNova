@@ -31,6 +31,7 @@ import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.epics.ui.widgets.EpicColorWidget
 import com.grappim.taigamobile.feature.epics.ui.widgets.WorkItemsSectionWidget
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
@@ -67,6 +68,7 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -104,6 +106,7 @@ fun EpicDetailsScreen(
     val attachmentState by viewModel.attachmentsState.collectAsStateWithLifecycle()
     val customFieldsState by viewModel.customFieldsState.collectAsStateWithLifecycle()
     val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
+    val mentionsState by viewModel.mentionsState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -257,6 +260,7 @@ fun EpicDetailsScreen(
             customFieldsState = customFieldsState,
             assigneesState = assigneesState,
             descriptionState = descriptionState,
+            members = mentionsState.members,
             isOffline = isOffline,
             goToEditTags = goToEditTags,
             goToEditDescription = goToEditDescription,
@@ -280,6 +284,7 @@ private fun EpicDetailsScreenContent(
     customFieldsState: WorkItemCustomFieldsState,
     assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
+    members: ImmutableList<TeamMember>,
     isOffline: Boolean,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (String, Long) -> Unit,
@@ -338,7 +343,9 @@ private fun EpicDetailsScreenContent(
                     },
                     descriptionState = descriptionState,
                     canModify = state.canModifyEpic,
-                    isOffline = isOffline
+                    isOffline = isOffline,
+                    members = members,
+                    onMentionClick = goToProfile
                 )
 
                 WorkItemTagsWidget(
@@ -416,13 +423,16 @@ private fun EpicDetailsScreenContent(
                     goToProfile = goToProfile,
                     onCommentRemove = { value ->
                         state.onCommentRemove(value)
-                    }
+                    },
+                    members = members,
+                    onMentionClick = goToProfile
                 )
             }
         }
         CreateCommentBar(
             onButtonClick = state.onCreateCommentClick,
             canComment = state.canComment,
+            members = members,
             isOffline = isOffline
         )
     }

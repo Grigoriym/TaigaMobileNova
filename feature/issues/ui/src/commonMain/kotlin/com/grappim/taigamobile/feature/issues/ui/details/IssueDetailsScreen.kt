@@ -28,6 +28,7 @@ import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
@@ -69,6 +70,7 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -106,6 +108,7 @@ fun IssueDetailsScreen(
     val blockState by viewModel.blockState.collectAsStateWithLifecycle()
     val assigneesState by viewModel.singleAssigneeState.collectAsStateWithLifecycle()
     val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
+    val mentionsState by viewModel.mentionsState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -277,6 +280,7 @@ fun IssueDetailsScreen(
             dueDateState = dueDateState,
             assigneesState = assigneesState,
             descriptionState = descriptionState,
+            members = mentionsState.members,
             goToProfile = goToProfile,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
@@ -302,6 +306,7 @@ private fun IssueDetailsScreenContent(
     dueDateState: WorkItemDueDateState,
     assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
+    members: ImmutableList<TeamMember>,
     isOffline: Boolean,
     goToProfile: (Long) -> Unit,
     goToEditDescription: (description: String, issueId: Long) -> Unit,
@@ -362,7 +367,9 @@ private fun IssueDetailsScreenContent(
                     },
                     descriptionState = descriptionState,
                     canModify = state.canModifyIssue,
-                    isOffline = isOffline
+                    isOffline = isOffline,
+                    members = members,
+                    onMentionClick = goToProfile
                 )
 
                 WorkItemSprintInfoWidget(
@@ -451,13 +458,16 @@ private fun IssueDetailsScreenContent(
                     goToProfile = goToProfile,
                     onCommentRemove = { value ->
                         state.onCommentRemove(value)
-                    }
+                    },
+                    members = members,
+                    onMentionClick = goToProfile
                 )
             }
         }
         CreateCommentBar(
             onButtonClick = state.onCreateCommentClick,
             canComment = state.canComment,
+            members = members,
             isOffline = isOffline
         )
     }
