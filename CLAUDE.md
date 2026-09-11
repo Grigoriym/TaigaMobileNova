@@ -671,6 +671,13 @@ unreviewable), not dropped, not just mentioned in chat — chat is not persisten
 enough evidence (`file:line`, or a link to an issue doc) that a cold session can act on it without
 re-deriving anything.
 
+**When a later session fixes a `docs/revisit.md` entry, close it out the same way the pre-#45
+entries were: move the whole section to
+[docs/archive/revisit-resolved.md](docs/archive/revisit-resolved.md) with a `**Fix (date):**`
+paragraph appended describing what changed, and remove it from `revisit.md`.** Both files keep a
+`| # | Item | ... |` index table above their sections — update both, not just the section body, or
+the index goes stale while the section itself disappears. Confirmed 2026-09-11 closing entry 54.
+
 The test: Every changed line should trace directly to the user's request.
 
 ### Comments

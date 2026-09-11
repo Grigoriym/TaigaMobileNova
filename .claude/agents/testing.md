@@ -309,6 +309,19 @@ example; see also the `TaskIdentifier` note under `WorkItemEditStateRepository`.
 ### ViewModel init loads data synchronously
 With `MainDispatcherRule` using `UnconfinedTestDispatcher`, `init { viewModelScope.launch { ... } }` completes before `createViewModel()` returns. Assert state directly after `createViewModel()` without `runTest`.
 
+### Asserting a conditional side-effect fired, without a call counter
+Several fakes (e.g. `FakeUsersRepository.getUsersList`, `FakeWorkItemRepository.getUpdateWorkItem`)
+have no call counter — they're plain read-style methods that just return a configured result. To
+prove a conditional branch actually invoked one (e.g. "posting a comment that mentions someone
+refreshes watchers, one that doesn't should not"), don't add a counter to the fake just for this;
+stub the downstream fake results to something *distinguishable* from the pre-existing state (a
+fresh `persistentListOf(getUser())` rather than whatever `setupSuccessfulLoad()` already seeded),
+capture the ViewModel's state before the action, then assert it changed (branch taken) or stayed
+equal to the captured before-value (branch not taken). `TaskDetailsViewModelTest`'s
+`onCreateCommentClick with a mention of a known/unknown ...` pair is the worked example — same
+technique the "Write round-trip pattern" integration tests above use for a real server, just
+applied to a fake's stubbed return value instead of a live read-back call.
+
 ### Reaching a target state without chaining setters
 Don't chain `onXChange`/`setX` calls to build up a multi-field state before the behaviour under
 test — the VM's own constructor inputs are already the seam: for a load-in-`init` VM, set the
