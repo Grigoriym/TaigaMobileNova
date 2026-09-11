@@ -394,4 +394,48 @@ internal class WorkItemWatchersDelegateImplTest {
 
         assertFalse(sut.watchersState.value.areWatchersLoading)
     }
+
+    // refreshWatchers
+
+    @Test
+    fun `refreshWatchers should update watchers and isWatchedByMe on success`() = runTest {
+        val sut = createSut()
+        val watcher1 = getUser()
+        val watcher2 = getUser()
+        workItemRepository.getUpdateWorkItemResult =
+            UpdateWorkItem(watcherUserIds = persistentListOf(watcher1.actualId, watcher2.actualId))
+        usersRepository.getUsersListResult = persistentListOf(watcher1, watcher2)
+        usersRepository.isAnyAssignedToMeResult = true
+
+        sut.refreshWatchers(workItemId = 1L, doOnError = {})
+
+        val state = sut.watchersState.value
+        assertEquals(2, state.watchers.size)
+        assertTrue(state.isWatchedByMe)
+    }
+
+    @Test
+    fun `refreshWatchers should call doOnError on failure`() = runTest {
+        val sut = createSut()
+        var errorCalled = false
+        workItemRepository.getUpdateWorkItemThrows = RuntimeException("error")
+
+        sut.refreshWatchers(workItemId = 1L, doOnError = { errorCalled = true })
+
+        assertTrue(errorCalled)
+    }
+
+    @Test
+    fun `refreshWatchers should not change state on failure`() = runTest {
+        val sut = createSut()
+        val existingWatcher = getUser()
+        sut.setInitialWatchers(listOf(existingWatcher), isWatchedByMe = true)
+        workItemRepository.getUpdateWorkItemThrows = RuntimeException("error")
+
+        sut.refreshWatchers(workItemId = 1L, doOnError = {})
+
+        val state = sut.watchersState.value
+        assertEquals(listOf(existingWatcher), state.watchers)
+        assertTrue(state.isWatchedByMe)
+    }
 }

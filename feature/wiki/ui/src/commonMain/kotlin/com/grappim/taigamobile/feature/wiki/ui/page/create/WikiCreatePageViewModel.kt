@@ -1,12 +1,16 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.create
 
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.resultOf
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegateImpl
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +21,9 @@ import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
 @KoinViewModel
-class WikiCreatePageViewModel(private val wikiRepository: WikiRepository) : ViewModel() {
+class WikiCreatePageViewModel(private val wikiRepository: WikiRepository, usersRepository: UsersRepository) :
+    ViewModel(),
+    WorkItemMentionsDelegate by WorkItemMentionsDelegateImpl(usersRepository = usersRepository) {
 
     private val _state = MutableStateFlow(
         WikiCreatePageState(
@@ -31,6 +37,10 @@ class WikiCreatePageViewModel(private val wikiRepository: WikiRepository) : View
     private val _creationResult = Channel<WikiPage>()
     val creationResult = _creationResult.receiveAsFlow()
 
+    init {
+        viewModelScope.launch { loadMembers() }
+    }
+
     private fun setSlug(slug: String) {
         _state.update {
             it.copy(
@@ -40,7 +50,7 @@ class WikiCreatePageViewModel(private val wikiRepository: WikiRepository) : View
         }
     }
 
-    private fun setContent(content: String) {
+    private fun setContent(content: TextFieldValue) {
         _state.update {
             it.copy(content = content)
         }
@@ -49,7 +59,7 @@ class WikiCreatePageViewModel(private val wikiRepository: WikiRepository) : View
     private fun createWikiPage() {
         createWikiPage(
             slug = _state.value.slug,
-            content = _state.value.content
+            content = _state.value.content.text
         )
     }
 

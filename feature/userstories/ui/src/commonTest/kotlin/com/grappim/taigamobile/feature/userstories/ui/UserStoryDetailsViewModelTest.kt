@@ -28,6 +28,7 @@ import com.grappim.taigamobile.strings.generated.resources.userstory_slug
 import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getComment
 import com.grappim.taigamobile.testing.models.getStatusUI
+import com.grappim.taigamobile.testing.models.getTeamMember
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getUserStory
 import com.grappim.taigamobile.testing.models.getUserStoryDetailsData
@@ -610,6 +611,38 @@ internal class UserStoryDetailsViewModelTest {
     }
 
     @Test
+    fun `onCreateCommentClick with a mention of a known member should refresh watchers`() {
+        val newVersion = getRandomLong()
+        val refreshedWatchers = persistentListOf(getUser())
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        usersRepository.getTeamMembersResult = persistentListOf(getTeamMember(username = "alice"))
+        workItemRepository.getUpdateWorkItemResult = UpdateWorkItem(persistentListOf(getRandomLong()))
+        usersRepository.getUsersListResult = refreshedWatchers
+        createViewModel()
+
+        sut.state.value.onCreateCommentClick("thanks @alice")
+
+        assertEquals(refreshedWatchers, sut.watchersState.value.watchers)
+    }
+
+    @Test
+    fun `onCreateCommentClick with a mention of an unknown username should not refresh watchers`() {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        usersRepository.getTeamMembersResult = persistentListOf(getTeamMember(username = "alice"))
+        workItemRepository.getUpdateWorkItemResult = UpdateWorkItem(persistentListOf(getRandomLong()))
+        usersRepository.getUsersListResult = persistentListOf(getUser())
+        createViewModel()
+        val initialWatchers = sut.watchersState.value.watchers
+
+        sut.state.value.onCreateCommentClick("thanks @bob")
+
+        assertEquals(initialWatchers, sut.watchersState.value.watchers)
+    }
+
+    @Test
     fun `onCommentRemove success should drop the comment from the state`() {
         setupSuccessfulLoad()
         createViewModel()
@@ -1055,5 +1088,37 @@ internal class UserStoryDetailsViewModelTest {
         }
 
         assertEquals(originalDescription, sut.state.value.currentUserStory?.description)
+    }
+
+    @Test
+    fun `description update with a mention of a known member should refresh watchers`() = runTest {
+        val newVersion = getRandomLong()
+        val refreshedWatchers = persistentListOf(getUser())
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        usersRepository.getTeamMembersResult = persistentListOf(getTeamMember(username = "alice"))
+        workItemRepository.getUpdateWorkItemResult = UpdateWorkItem(persistentListOf(getRandomLong()))
+        usersRepository.getUsersListResult = refreshedWatchers
+        createViewModel()
+
+        workItemEditStateRepository.updateDescription(userStoryId, type, "thanks @alice")
+
+        assertEquals(refreshedWatchers, sut.watchersState.value.watchers)
+    }
+
+    @Test
+    fun `description update with a mention of an unknown username should not refresh watchers`() = runTest {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        usersRepository.getTeamMembersResult = persistentListOf(getTeamMember(username = "alice"))
+        workItemRepository.getUpdateWorkItemResult = UpdateWorkItem(persistentListOf(getRandomLong()))
+        usersRepository.getUsersListResult = persistentListOf(getUser())
+        createViewModel()
+        val initialWatchers = sut.watchersState.value.watchers
+
+        workItemEditStateRepository.updateDescription(userStoryId, type, "thanks @bob")
+
+        assertEquals(initialWatchers, sut.watchersState.value.watchers)
     }
 }

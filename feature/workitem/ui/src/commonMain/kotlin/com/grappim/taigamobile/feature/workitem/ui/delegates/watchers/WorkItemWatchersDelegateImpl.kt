@@ -63,19 +63,7 @@ class WorkItemWatchersDelegateImpl(
                 commonTaskType = commonTaskType
             )
 
-            val workItem = workItemRepository.getUpdateWorkItem(
-                workItemId = workItemId,
-                commonTaskType = commonTaskType
-            )
-
-            val watchers = usersRepository.getUsersList(workItem.watcherUserIds)
-
-            val isWatchedByMe = usersRepository.isAnyAssignedToMe(watchers)
-
-            WatchersData(
-                watchers = watchers,
-                isWatchedByMe = isWatchedByMe
-            )
+            fetchWatchersData(workItemId)
         }.onSuccess { result ->
             doOnSuccess?.invoke(result)
 
@@ -111,18 +99,7 @@ class WorkItemWatchersDelegateImpl(
                 commonTaskType = commonTaskType
             )
 
-            val workItem = workItemRepository.getUpdateWorkItem(
-                workItemId = workItemId,
-                commonTaskType = commonTaskType
-            )
-
-            val watchers = usersRepository.getUsersList(workItem.watcherUserIds)
-            val isWatchedByMe = usersRepository.isAnyAssignedToMe(watchers)
-
-            WatchersData(
-                watchers = watchers,
-                isWatchedByMe = isWatchedByMe
-            )
+            fetchWatchersData(workItemId)
         }.onSuccess { result ->
             doOnSuccess?.invoke(result)
 
@@ -234,5 +211,35 @@ class WorkItemWatchersDelegateImpl(
                 isWatchedByMe = isWatchedByMe
             )
         }
+    }
+
+    override suspend fun refreshWatchers(workItemId: Long, doOnError: (Throwable) -> Unit) {
+        resultOf {
+            fetchWatchersData(workItemId)
+        }.onSuccess { result ->
+            _watchersState.update {
+                it.copy(
+                    watchers = result.watchers.toPersistentList(),
+                    isWatchedByMe = result.isWatchedByMe
+                )
+            }
+        }.onFailure { error ->
+            doOnError(error)
+        }
+    }
+
+    private suspend fun fetchWatchersData(workItemId: Long): WatchersData {
+        val workItem = workItemRepository.getUpdateWorkItem(
+            workItemId = workItemId,
+            commonTaskType = commonTaskType
+        )
+
+        val watchers = usersRepository.getUsersList(workItem.watcherUserIds)
+        val isWatchedByMe = usersRepository.isAnyAssignedToMe(watchers)
+
+        return WatchersData(
+            watchers = watchers,
+            isWatchedByMe = isWatchedByMe
+        )
     }
 }

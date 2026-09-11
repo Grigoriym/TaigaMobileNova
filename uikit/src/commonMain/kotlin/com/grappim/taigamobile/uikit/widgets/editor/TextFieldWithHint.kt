@@ -77,6 +77,44 @@ fun HintTextField(
 }
 
 @Composable
+fun HintTextField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    hint: NativeText,
+    modifier: Modifier = Modifier,
+    error: NativeText = NativeText.Empty,
+    singleLine: Boolean = false,
+    shape: Shape = OutlinedTextFieldDefaults.shape,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    enabled: Boolean = true
+) {
+    OutlinedTextField(
+        modifier = modifier,
+        isError = error.isNotEmpty(),
+        value = value,
+        shape = shape,
+        singleLine = singleLine,
+        enabled = enabled,
+        placeholder = {
+            Text(text = hint.asString())
+        },
+        maxLines = maxLines,
+        onValueChange = onValueChange,
+        supportingText = if (error.isNotEmpty()) {
+            {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = error.asString(),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        } else {
+            null
+        }
+    )
+}
+
+@Composable
 fun TextFieldWithHint(
     hintId: StringResource,
     value: TextFieldValue,

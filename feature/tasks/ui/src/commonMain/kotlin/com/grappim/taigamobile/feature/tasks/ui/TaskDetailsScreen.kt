@@ -28,6 +28,7 @@ import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.workitem.ui.delegates.assignee.single.WorkItemSingleAssigneeState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
 import com.grappim.taigamobile.feature.workitem.ui.delegates.badge.WorkItemBadgeState
@@ -67,6 +68,7 @@ import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -101,6 +103,7 @@ fun TaskDetailsScreen(
     val blockState by viewModel.blockState.collectAsStateWithLifecycle()
     val assigneesState by viewModel.singleAssigneeState.collectAsStateWithLifecycle()
     val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
+    val mentionsState by viewModel.mentionsState.collectAsStateWithLifecycle()
     val isOffline = LocalOfflineState.current
 
     LaunchedEffect(Unit) {
@@ -272,6 +275,7 @@ fun TaskDetailsScreen(
             dueDateState = dueDateState,
             assigneesState = assigneesState,
             descriptionState = descriptionState,
+            members = mentionsState.members,
             goToEditDescription = goToEditDescription,
             goToEditTags = goToEditTags,
             goToProfile = goToProfile,
@@ -295,6 +299,7 @@ private fun TaskDetailsScreenContent(
     dueDateState: WorkItemDueDateState,
     assigneesState: WorkItemSingleAssigneeState,
     descriptionState: WorkItemDescriptionState,
+    members: ImmutableList<TeamMember>,
     isOffline: Boolean,
     goToEditDescription: (description: String, id: Long) -> Unit,
     goToEditTags: (id: Long) -> Unit,
@@ -344,7 +349,9 @@ private fun TaskDetailsScreenContent(
                     },
                     descriptionState = descriptionState,
                     canModify = state.canModifyTask,
-                    isOffline = isOffline
+                    isOffline = isOffline,
+                    members = members,
+                    onMentionClick = goToProfile
                 )
 
                 WorkItemTagsWidget(
@@ -423,14 +430,17 @@ private fun TaskDetailsScreenContent(
                     goToProfile = goToProfile,
                     onCommentRemove = { value ->
                         state.onCommentRemove(value)
-                    }
+                    },
+                    members = members,
+                    onMentionClick = goToProfile
                 )
             }
         }
         CreateCommentBar(
             onButtonClick = state.onCreateCommentClick,
             canComment = state.canComment,
-            isOffline = isOffline
+            isOffline = isOffline,
+            members = members
         )
     }
 }

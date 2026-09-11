@@ -77,3 +77,11 @@ deleted — see `finalize`.
 - 2026-09-09: `gh pr edit` (title/body) failed with a GraphQL "Projects (classic) is being
   deprecated" error on this repo regardless of what fields were passed — worked around with
   `gh api repos/<owner>/<repo>/pulls/<n> -X PATCH -f title=... -f body=...` instead.
+- 2026-09-11: reading a raw `adb exec-out screencap -p` PNG (or even a half-scale JPEG at
+  quality 70) with the Read tool failed with "over the 350-line ollama-relay threshold" —
+  a harness-level gate, unrelated to this project. Fix: resize to half dimensions and
+  re-encode as JPEG at a low-ish quality (35-50 was reliable; 70 still tripped it on some
+  screenshots); a crop of just the region of interest at full resolution also works and is
+  better for precise tap-coordinate reading. Whichever resize factor is used, any tap
+  coordinate read off the resized image must be scaled back up by that same factor before
+  calling `adb shell input tap` — recorded in the shared `emulator-testing` skill too.
