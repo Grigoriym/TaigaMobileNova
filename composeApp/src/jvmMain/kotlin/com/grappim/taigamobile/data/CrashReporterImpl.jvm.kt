@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.data
 
-import com.grappim.taigamobile.core.crashapi.CrashReporter
+import com.grappim.kit.crash.CrashReporter
 import org.koin.core.annotation.Single
 
 // No-op by design: there is no Crashlytics-equivalent backend on desktop to report to. Uncaught

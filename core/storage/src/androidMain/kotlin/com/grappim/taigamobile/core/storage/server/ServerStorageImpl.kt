@@ -1,12 +1,17 @@
 package com.grappim.taigamobile.core.storage.server
 
 import android.content.Context
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import com.grappim.taigamobile.core.storage.utils.string
 import org.koin.core.annotation.Single
 
 @Single(binds = [ServerStorage::class])
-class ServerStorageImpl(private val context: Context, private val appInfoProvider: AppInfoProvider) : ServerStorage {
+class ServerStorageImpl(
+    private val context: Context,
+    private val appInfoProvider: AppInfoProvider,
+    private val debugLocalHostProvider: DebugLocalHostProvider
+) : ServerStorage {
 
     companion object {
         private const val SERVER_STORAGE_NAME = "taiga_server_storage_name"
@@ -24,8 +29,8 @@ class ServerStorageImpl(private val context: Context, private val appInfoProvide
     )
 
     private fun getServerDefaultValue(): String =
-        if (appInfoProvider.isDebug() && appInfoProvider.getDebugLocalHost().isNotEmpty()) {
-            appInfoProvider.getDebugLocalHost()
+        if (appInfoProvider.isDebug() && debugLocalHostProvider.getDebugLocalHost().isNotEmpty()) {
+            debugLocalHostProvider.getDebugLocalHost()
         } else {
             "https://api.taiga.io"
         }

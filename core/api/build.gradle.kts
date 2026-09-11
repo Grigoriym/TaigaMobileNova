@@ -12,6 +12,7 @@ kotlin {
             implementation(libs.ktor.logging)
             implementation(libs.ktor.serialization.json)
 
+            implementation(libs.grappim.kit.appinfo)
             implementation(projects.core.appinfoApi)
             implementation(projects.core.domain)
             implementation(projects.core.storage)
