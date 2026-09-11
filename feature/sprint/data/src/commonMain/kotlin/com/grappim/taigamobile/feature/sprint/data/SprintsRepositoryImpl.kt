@@ -7,11 +7,11 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import com.grappim.kit.domain.resultOf
 import com.grappim.kit.logger.logcat
+import com.grappim.kit.storage.NetworkMonitor
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.SprintDao
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
-import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
 import com.grappim.taigamobile.feature.sprint.domain.SprintData

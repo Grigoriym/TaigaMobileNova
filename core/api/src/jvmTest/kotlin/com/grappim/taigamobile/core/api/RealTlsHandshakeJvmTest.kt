@@ -20,13 +20,14 @@ import kotlin.test.assertEquals
 import kotlin.test.assertTrue
 
 /**
- * Drives [CompositeTrustManager] through a real JSSE handshake — a real self-signed HTTPS server
- * and the actual [createPlatformHttpClientEngine] wiring — rather than a hand-built exception
- * chain. [CompositeTrustManagerTest] and [com.grappim.taigamobile.core.api.errors.NetworkErrorMapperJvmTest]
- * prove the mapping logic in isolation; this proves the JDK's TLS stack still recognizes what
- * [CompositeTrustManager] throws (a plain [java.security.cert.CertificateException] wrapping the
- * grappim-kit-domain exception, which is no longer a [java.security.cert.CertificateException]
- * subtype itself) and produces the same [javax.net.ssl.SSLHandshakeException] chain in practice.
+ * Drives `grappim-kit-trustmanager`'s `CompositeTrustManager` through a real JSSE handshake — a
+ * real self-signed HTTPS server and the actual [createPlatformHttpClientEngine] wiring — rather
+ * than a hand-built exception chain. The kit's own `CompositeTrustManagerTest` and
+ * [com.grappim.taigamobile.core.api.errors.NetworkErrorMapperJvmTest] prove the mapping logic in
+ * isolation; this proves the JDK's TLS stack still recognizes what `CompositeTrustManager` throws
+ * (a plain [java.security.cert.CertificateException] wrapping the grappim-kit-domain exception,
+ * which is no longer a [java.security.cert.CertificateException] subtype itself) and produces the
+ * same [javax.net.ssl.SSLHandshakeException] chain in practice.
  */
 class RealTlsHandshakeJvmTest {
 

@@ -8,8 +8,7 @@ import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
  *
  * They live here rather than in `:testing` on purpose: `AppInfoProvider`, [BaseUrlProvider] and
  * [TokenRefresher] are only faked by this module's own tests, and `:testing` would have to gain a
- * dependency on `:core:api` — which every other module already depends on — to host them. The
- * `FakeX509TrustManager` in `jvmTest` sets the same precedent.
+ * dependency on `:core:api` — which every other module already depends on — to host them.
  */
 class FakeAppInfoProvider(
     var versionNameToReturn: String = "1.0.0",

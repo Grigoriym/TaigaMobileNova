@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.storage.network.NetworkMonitor
+import com.grappim.kit.storage.NetworkMonitor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
