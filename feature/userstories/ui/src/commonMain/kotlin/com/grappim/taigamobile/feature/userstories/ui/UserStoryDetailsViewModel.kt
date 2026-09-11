@@ -34,6 +34,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -52,6 +54,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFi
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.userstory_slug
+import com.grappim.taigamobile.uikit.widgets.editor.containsKnownMention
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
@@ -154,6 +157,9 @@ class UserStoryDetailsViewModel(
         taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory),
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemMentionsDelegate by WorkItemMentionsDelegateImpl(
+        usersRepository = usersRepository
     ) {
 
     private val ref = route.ref
@@ -201,6 +207,7 @@ class UserStoryDetailsViewModel(
 
     init {
         loadUserStory()
+        viewModelScope.launch { loadMembers() }
 
         workItemEditStateRepository
             .getTeamMemberUpdateFlow(userStoryId, TaskIdentifier.WorkItem(CommonTaskType.UserStory))
@@ -403,6 +410,13 @@ class UserStoryDetailsViewModel(
                 },
                 doOnSuccess = { result ->
                     updateVersion(result.newVersion)
+                    if (containsKnownMention(newComment, mentionsState.value.members.map { it.username })) {
+                        viewModelScope.launch {
+                            refreshWatchers(workItemId = currentUserStory.id, doOnError = { error ->
+                                logcat(throwable = error) { "Error refreshing watchers after mention" }
+                            })
+                        }
+                    }
                 },
                 doOnError = { error ->
                     emitError(error)
@@ -736,6 +750,14 @@ class UserStoryDetailsViewModel(
                         currentUserStory = updatedUserStory,
                         originalUserStory = updatedUserStory
                     )
+                }
+
+                if (containsKnownMention(newDescription, mentionsState.value.members.map { it.username })) {
+                    viewModelScope.launch {
+                        refreshWatchers(workItemId = currentUserStory.id, doOnError = { error ->
+                            logcat(throwable = error) { "Error refreshing watchers after mention" }
+                        })
+                    }
                 }
             }
         )

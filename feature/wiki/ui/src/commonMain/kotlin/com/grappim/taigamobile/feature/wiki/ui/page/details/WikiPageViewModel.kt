@@ -6,6 +6,7 @@ import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
+import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiPageUseCase
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.workitem.domain.Attachment
@@ -16,6 +17,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import io.github.vinceglb.filekit.PlatformFile
@@ -37,6 +40,7 @@ class WikiPageViewModel(
     private val taigaSessionStorage: TaigaSessionStorage,
     private val patchDataGenerator: PatchDataGenerator,
     private val workItemEditStateRepository: WorkItemEditStateRepository,
+    usersRepository: UsersRepository,
     @InjectedParam private val route: WikiPageNavDestination
 ) : ViewModel(),
     WorkItemAttachmentsDelegate by WorkItemAttachmentsDelegateImpl(
@@ -48,6 +52,9 @@ class WikiPageViewModel(
         taskIdentifier = TaskIdentifier.Wiki,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemMentionsDelegate by WorkItemMentionsDelegateImpl(
+        usersRepository = usersRepository
     ) {
 
     private val _state = MutableStateFlow(
@@ -69,6 +76,7 @@ class WikiPageViewModel(
 
     init {
         loadData()
+        viewModelScope.launch { loadMembers() }
     }
 
     private fun subscribeToDescriptionUpdates(pageId: Long) {

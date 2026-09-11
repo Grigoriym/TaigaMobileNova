@@ -86,3 +86,13 @@ technique lives in the skill itself, not here — this file is only what's true 
   gotcha elsewhere in this skill — it eats the tap with no error. Screenshot before trusting a tap
   landed in the app; dismiss via its own **Cancel** button (`uiautomator dump` for exact bounds, they
   shift with content).
+- **Typing `@` via the real on-screen keyboard (not `adb shell input text`) needs navigating to the
+  IME's symbols page first** — the default Gboard alphabetic layout on `Medium_Phone_API_36.1` has no
+  `@` key. `uiautomator dump` does not capture the IME's own window (only the app window), so its
+  keys have to be tapped from real device-pixel coordinates read off a full-resolution screenshot
+  crop (not `uiautomator dump`, and not eyeballed from the half-scale/low-quality image used to dodge
+  the Read-tool threshold above — see that note for why those need scaling back up). At 1080x2400:
+  tap `(85, 2180)` for the bottom-left `?123` key to switch to the first symbols page, then `(56,
+  1868)` for `@` (leftmost key of that page's top row). Confirmed while GUI-verifying mention-tagging
+  Step 7 (`docs/architecture/mention-tagging-support/`); needed again for any future real-keyboard
+  `@`-typing check on this AVD/resolution.

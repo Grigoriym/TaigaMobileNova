@@ -1,12 +1,16 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.editdescription
 
+import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
 import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
@@ -24,6 +28,7 @@ internal class EditDescriptionViewModelTest {
     private val description = getRandomString()
 
     private val workItemEditStateRepository = WorkItemEditStateRepository()
+    private val usersRepository = FakeUsersRepository()
     private val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var sut: EditDescriptionViewModel
@@ -45,7 +50,8 @@ internal class EditDescriptionViewModelTest {
                 workItemId = workItemId,
                 taskIdentifier = taskIdentifier
             ),
-            workItemEditStateRepository = workItemEditStateRepository
+            workItemEditStateRepository = workItemEditStateRepository,
+            usersRepository = usersRepository
         )
     }
 
@@ -56,7 +62,19 @@ internal class EditDescriptionViewModelTest {
         createViewModel()
 
         assertEquals(description, sut.state.value.originalDescription)
-        assertEquals(description, sut.state.value.currentDescription)
+        assertEquals(description, sut.state.value.currentDescription.text)
+    }
+
+    @Test
+    fun `on init members are loaded via the mentions delegate`() {
+        val members = persistentListOf(
+            TeamMember(id = 1L, avatarUrl = null, name = "Alice Anderson", role = "Developer", username = "alice")
+        )
+        usersRepository.getTeamMembersResult = members
+
+        createViewModel()
+
+        assertEquals(members, sut.mentionsState.value.members)
     }
 
     @Test
@@ -73,9 +91,9 @@ internal class EditDescriptionViewModelTest {
         createViewModel()
         val newValue = getRandomString()
 
-        sut.state.value.onDescriptionChange(newValue)
+        sut.state.value.onDescriptionChange(TextFieldValue(newValue))
 
-        assertEquals(newValue, sut.state.value.currentDescription)
+        assertEquals(newValue, sut.state.value.currentDescription.text)
         assertEquals(description, sut.state.value.originalDescription)
     }
 
@@ -135,7 +153,7 @@ internal class EditDescriptionViewModelTest {
         val taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
         createViewModel(taskIdentifier)
         val newValue = getRandomString()
-        sut.state.value.onDescriptionChange(newValue)
+        sut.state.value.onDescriptionChange(TextFieldValue(newValue))
 
         var received: String? = null
         val collectJob = launch {
@@ -178,7 +196,7 @@ internal class EditDescriptionViewModelTest {
     fun `shouldGoBackWithCurrentValue false sends nothing even when the description changed`() = runTest {
         val taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
         createViewModel(taskIdentifier)
-        sut.state.value.onDescriptionChange(getRandomString())
+        sut.state.value.onDescriptionChange(TextFieldValue(getRandomString()))
 
         var received: String? = null
         val collectJob = launch {
@@ -204,7 +222,7 @@ internal class EditDescriptionViewModelTest {
     fun `shouldGoBackWithCurrentValue true sends the description for a wiki page`() = runTest {
         createViewModel(TaskIdentifier.Wiki)
         val newValue = getRandomString()
-        sut.state.value.onDescriptionChange(newValue)
+        sut.state.value.onDescriptionChange(TextFieldValue(newValue))
 
         var received: String? = null
         val collectJob = launch {
