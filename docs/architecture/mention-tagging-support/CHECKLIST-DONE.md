@@ -254,6 +254,51 @@ it's already documented as a known gotcha in the `emulator-testing` skill itself
 mid-way through a wrapped multi-line `BasicTextField` — `KEYCODE_MOVE_END` moves to the
 end of the current *visual* line, not the end of the whole field, so a tap that lands
 mid-paragraph plus `MOVE_END` does not reach the field's true end; re-tapping directly
-at the last visible line's end character fixed it. Next: Step 6 (full-suite
-verification and polish) — depends on everything before it, all done; queue is empty
-after that.
+at the last visible line's end character fixed it. Next: Step 6 (replace
+`MentionSuggestionsPopup` with an inline horizontally-scrollable row) — added after
+this step closed, per the keyboard-dismiss-flicker investigation; not gated on
+anything from this step.
+
+## Step 6: Replace `MentionSuggestionsPopup` with an inline horizontally-scrollable row
+
+Full context and rationale:
+[docs/issues/2026-09-10-mention-popup-keyboard-dismiss-flicker.md](../../issues/2026-09-10-mention-popup-keyboard-dismiss-flicker.md)
+and `IMPLEMENTATION_PLAN.md`'s "Input-side mechanism" decision note. Added a new
+`MentionSuggestionsRow` component (`uikit/.../widgets/editor/MentionSuggestionsRow.kt`)
+built on `LazyRow`, not `DropdownMenu`/`Popup` — renders inline in normal layout flow
+instead of opening a separate focusable Android window, which is what caused the
+keyboard dismiss/flicker being fixed. **Added alongside the existing
+`MentionSuggestionsPopup.kt`, not in place of it** — deviates from the step's own
+wording ("replace ... in place") but matches every earlier step's own pattern (Step 3
+built the popup component with no call site yet; Step 4 wired it in). Both call sites
+(`CreateCommentBar`, `WorkItemEditDescriptionScreen`) still construct
+`MentionSuggestionsPopup` today; swapping them onto the row and deleting the old
+component/test is entirely Step 7's job, per the checklist's own "once nothing
+references the old component, delete it" instruction — deleting the old file in this
+step would have broken both call sites' compilation with no replacement wired in yet.
+
+Kept the `members`/`onSelect` param shape; dropped `expanded` and `onDismissRequest`
+entirely, confirming (not assuming) the plan's prediction — there's no `Popup`-driven
+dismiss for a `LazyRow` to fight, so visibility is left entirely to the caller
+choosing whether to compose the row at all (Step 7's job), with an internal
+`if (members.isNotEmpty())` guard as a second line of defense matching the "empty
+members renders nothing" verify requirement. Reused the existing 40dp circular avatar
+treatment. Chip content dropped the full name (kept avatar + username only) to fit a
+horizontally-scrollable chip shape — the UI call the plan flagged as undecided.
+Reused `dialogTonalElevation` for the row's background, matching the old popup's own
+surface treatment. `MENTION_SUGGESTION_ROW_TEST_TAG` (used by the still-live
+`MentionSuggestionsPopupTest.kt`) was already taken in the same package, so the new
+chip's test tag is `MENTION_SUGGESTION_CHIP_TEST_TAG` — both will coexist until Step 7
+deletes the old file, at which point the old constant goes with it.
+
+Verify: new `uikit` `jvmTest` (`MentionSuggestionsRowTest.kt`, same `runComposeUiTest`
+pattern as `MentionSuggestionsPopupTest.kt`) covers: two members render two chips
+(counted via `onAllNodesWithTag(MENTION_SUGGESTION_CHIP_TEST_TAG)`, since chip text no
+longer includes the full name to assert against directly), tapping a chip invokes
+`onSelect` with that member, and an empty `members` list renders zero chips — all 3
+pass. `./gradlew jvmTest` (full suite), `:uikit:ktlintCheck`, `koverXmlReport` +
+`:koverVerify` (floor holds — `uikit` isn't aggregated into coverage at all, so this
+step's new code has no floor impact either way), and
+`:uikit:compileKotlinIosSimulatorArm64` all green. No emulator check — this component
+has no call site yet, same as Step 3. Next: Step 7 (rewire both call sites onto the
+row, delete the old popup component and its test) — depends on this step, now done.

@@ -1,8 +1,7 @@
 # @-Mention Tagging Support — Checklist
 
-**Progress:** 5/8 done. **Current step:** 6 (replace the popup with an inline
-horizontally-scrollable row) — no unfinished dependency, approved by gregory
-2026-09-10.
+**Progress:** 6/8 done. **Current step:** 7 (rewire both call sites onto the row) —
+no unfinished dependency, depends on Step 6 (done).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for architecture, the server
 contract this relies on, and the reasoning behind each mechanism choice — including
@@ -10,29 +9,10 @@ its "Team-member data source" section (added 2026-09-10) and the row-replacement
 decision recorded at the end of "Input-side mechanism" (added 2026-09-10). Origin:
 [docs/issues/414-mention-autocomplete-not-implemented.md](../../issues/414-mention-autocomplete-not-implemented.md),
 approved by gregory 2026-09-09 (full support, not just the render-only minimal fix).
-Steps 1-5 are done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md). Steps 6-7 replace
+Steps 1-6 are done — see [CHECKLIST-DONE.md](CHECKLIST-DONE.md). Steps 6-7 replace
 the `DropdownMenu`-based popup built in steps 3-4 outright, per
 [docs/issues/2026-09-10-mention-popup-keyboard-dismiss-flicker.md](../../issues/2026-09-10-mention-popup-keyboard-dismiss-flicker.md)'s
 investigation and decision — not a second implementation kept alongside the first.
-
-## Step 6: Replace `MentionSuggestionsPopup` with an inline horizontally-scrollable row
-
-Full context and rationale:
-[docs/issues/2026-09-10-mention-popup-keyboard-dismiss-flicker.md](../../issues/2026-09-10-mention-popup-keyboard-dismiss-flicker.md)
-and `IMPLEMENTATION_PLAN.md`'s "Input-side mechanism" decision note. Replace
-`uikit/.../widgets/editor/MentionSuggestionsPopup.kt` in place — built on `LazyRow`,
-not `DropdownMenu`/`Popup`, so it renders inline in normal layout flow instead of a
-separate focusable Android window (that's what causes the keyboard dismiss/flicker
-being fixed). Keep the `members`/`onSelect` param shape; `onDismissRequest` most
-likely goes away entirely since there's no `Popup`-driven dismiss to fight — confirm
-rather than assume. Reuse the existing 40dp circular avatar treatment from the
-current `MentionSuggestionRow`; exact chip content (avatar only vs. avatar+username,
-full name likely dropped for space) is a UI call to make here, not pre-decided.
-
-**Verify:** new `uikit` `jvmTest` (mirroring `MentionSuggestionsPopupTest.kt`'s
-`runComposeUiTest` pattern, in the same file or a replacement for it) covering: the
-row renders one chip per filtered member, tapping a chip invokes `onSelect`, and an
-empty `members` list renders nothing.
 
 ## Step 7: Rewire both call sites onto the row
 
