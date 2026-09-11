@@ -1,16 +1,15 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.editdescription
 
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.testTag
@@ -32,7 +31,7 @@ import com.grappim.taigamobile.strings.generated.resources.edit_description
 import com.grappim.taigamobile.strings.generated.resources.keep_editing
 import com.grappim.taigamobile.strings.generated.resources.save
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
-import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsPopup
+import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsRow
 import com.grappim.taigamobile.uikit.widgets.editor.findActiveMentionQuery
 import com.grappim.taigamobile.uikit.widgets.editor.insertMention
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
@@ -104,7 +103,17 @@ fun WorkItemEditDescriptionScreen(
 
 @Composable
 fun EditDescriptionContent(state: EditDescriptionState, members: ImmutableList<TeamMember>) {
-    Box(
+    val activeMentionQuery = findActiveMentionQuery(state.currentDescription)
+    val mentionSuggestions = remember(activeMentionQuery, members) {
+        val query = activeMentionQuery?.query
+        if (query == null) {
+            persistentListOf()
+        } else {
+            members.filter { it.username.startsWith(query, ignoreCase = true) }.toPersistentList()
+        }
+    }
+
+    Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(
@@ -112,43 +121,26 @@ fun EditDescriptionContent(state: EditDescriptionState, members: ImmutableList<T
                 vertical = 8.dp
             )
     ) {
-        var isMentionPopupDismissed by remember { mutableStateOf(false) }
-        val activeMentionQuery = findActiveMentionQuery(state.currentDescription)
-        val mentionSuggestions = remember(activeMentionQuery, members) {
-            val query = activeMentionQuery?.query
-            if (query == null) {
-                persistentListOf()
-            } else {
-                members.filter { it.username.startsWith(query, ignoreCase = true) }.toPersistentList()
-            }
-        }
-
         BasicTextField(
             modifier = Modifier
-                .fillMaxSize()
+                .weight(1f)
+                .fillMaxWidth()
                 .testTag(EDIT_DESCRIPTION_TEXT_FIELD_TEST_TAG),
             value = state.currentDescription,
-            onValueChange = { newValue ->
-                if (newValue.text != state.currentDescription.text) {
-                    isMentionPopupDismissed = false
-                }
-                state.onDescriptionChange(newValue)
-            },
+            onValueChange = { newValue -> state.onDescriptionChange(newValue) },
             textStyle = MaterialTheme.typography.bodyLarge.copy(
                 color = MaterialTheme.colorScheme.onSurface
             ),
             cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface)
         )
 
-        MentionSuggestionsPopup(
+        MentionSuggestionsRow(
             members = mentionSuggestions,
-            expanded = !isMentionPopupDismissed && mentionSuggestions.isNotEmpty(),
             onSelect = { member ->
                 activeMentionQuery?.let { query ->
                     state.onDescriptionChange(insertMention(state.currentDescription, query, member.username))
                 }
-            },
-            onDismissRequest = { isMentionPopupDismissed = true }
+            }
         )
     }
 }

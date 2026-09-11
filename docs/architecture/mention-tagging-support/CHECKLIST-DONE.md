@@ -302,3 +302,57 @@ step's new code has no floor impact either way), and
 `:uikit:compileKotlinIosSimulatorArm64` all green. No emulator check — this component
 has no call site yet, same as Step 3. Next: Step 7 (rewire both call sites onto the
 row, delete the old popup component and its test) — depends on this step, now done.
+
+## Step 7: Rewire both call sites onto the row
+
+Swapped both call sites from `MentionSuggestionsPopup` to `MentionSuggestionsRow`.
+`CreateCommentBar.kt`: the `Box`-anchored overlay layout became a `Column` —
+`HintTextField`+`IconButton` in an inner `Row` (unchanged relative to each other,
+`HintTextField` now takes `weight(1f)` directly instead of via a wrapping `Box`), then
+`MentionSuggestionsRow` below it in normal layout flow, so it renders as a fixed strip
+under the whole input row rather than floating over the text field. Same restructure in
+`WorkItemEditDescriptionScreen.kt`'s `EditDescriptionContent`: outer `Box` became a
+`Column`, `BasicTextField` took `weight(1f)` + `fillMaxWidth()` (previously
+`fillMaxSize()` inside the `Box`) so it still fills the available space above the row,
+which sits below it.
+
+**Confirmed, not assumed, per the plan's own instruction: `isMentionPopupDismissed`
+was dropped entirely at both call sites**, along with its `onValueChange`-driven reset.
+Visibility is now the pure derivation `activeMentionQuery != null &&
+mentionSuggestions.isNotEmpty()` was predicted to become — in practice just passing
+`mentionSuggestions` straight to `MentionSuggestionsRow`, since the `remember` block
+already returns an empty list whenever `activeMentionQuery` is null and the row itself
+no-ops on an empty list (Step 6). No `DropdownMenu`-style dismiss-fighting appeared, as
+the plan expected for a non-`Popup` row.
+
+Deleted `MentionSuggestionsPopup.kt` and `MentionSuggestionsPopupTest.kt` outright
+(confirmed via `grep -rn MentionSuggestionsPopup` empty first) — this was the full
+replacement Step 6 deferred, not a second implementation kept alongside the row.
+`MENTION_SUGGESTION_ROW_TEST_TAG` (defined in the deleted popup file, already unused
+elsewhere) went with it.
+
+Verify: `CreateCommentBarTest.kt` and `EditDescriptionContentTest.kt` needed no changes
+— both already asserted mention behavior via `onNodeWithText`/`onNodeWithTag` rather
+than anything `DropdownMenu`-specific, so they exercise the row unchanged and still
+pass. `./gradlew jvmTest` (full suite), `ktlintCheck` (whole repo), and
+`koverXmlReport` + `:koverVerify` (floor holds, no change needed) all green.
+
+GUI-verified on `Medium_Phone_API_36.1` against the local Taiga instance, using real
+on-screen-keyboard taps (not `adb shell input text`) per the step's own instruction —
+navigating the IME's symbols page to tap `@` rather than synthetic text injection, since
+that's the specific gap that missed the keyboard-dismiss bug this replacement fixes.
+(1) Epic #1's comment bar: tapped the field, typed `@` via real keyboard taps — the
+chip row appeared inline directly below the input (not overlapping it), the on-screen
+keyboard stayed open and visible the entire time, and tapping the `user1` chip inserted
+`@user1 ` into the field correctly. Cleared the field afterward. (2) User story #17's
+"Edit description" screen, reached after navigating away to Dashboard and back through
+Kanban (satisfying the "re-test after normal in-between usage" rule rather than only a
+fresh-load check) — tapped into the description field, typed `@` via real keyboard taps
+at the end of the existing text, the chip row appeared inline above the keyboard,
+keyboard stayed open throughout, tapping `user1` inserted `@user1 ` correctly. Discarded
+the edit via the existing "discard changes?" dialog to leave the seed data clean. No
+flicker or keyboard dismiss observed on either screen — the specific regression this
+replacement exists to fix did not reproduce.
+
+Deviation from the step's plan: none. Next: Step 8 (full-suite verification and
+polish) — depends on this step, now done.

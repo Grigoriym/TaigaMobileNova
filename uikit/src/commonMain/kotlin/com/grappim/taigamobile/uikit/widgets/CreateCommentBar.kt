@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.uikit.widgets
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
@@ -35,7 +35,7 @@ import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
-import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsPopup
+import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsRow
 import com.grappim.taigamobile.uikit.widgets.editor.findActiveMentionQuery
 import com.grappim.taigamobile.uikit.widgets.editor.insertMention
 import kotlinx.collections.immutable.ImmutableList
@@ -66,7 +66,6 @@ fun CreateCommentBar(
             var commentTextValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
                 mutableStateOf(TextFieldValue(""))
             }
-            var isMentionPopupDismissed by remember { mutableStateOf(false) }
             val activeMentionQuery = findActiveMentionQuery(commentTextValue)
             val mentionSuggestions = remember(activeMentionQuery, members) {
                 val query = activeMentionQuery?.query
@@ -77,69 +76,61 @@ fun CreateCommentBar(
                 }
             }
 
-            Row(
+            Column(
                 modifier = Modifier
-                    .padding(vertical = 12.dp, horizontal = mainHorizontalScreenPadding),
-                verticalAlignment = Alignment.CenterVertically
+                    .padding(vertical = 12.dp, horizontal = mainHorizontalScreenPadding)
             ) {
-                Box(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
                     HintTextField(
                         modifier = Modifier
-                            .fillMaxWidth()
+                            .weight(1f)
                             .testTag(CREATE_COMMENT_BAR_TEXT_FIELD_TEST_TAG),
                         shape = MaterialTheme.shapes.large,
                         value = commentTextValue,
-                        onValueChange = { newValue ->
-                            if (newValue.text != commentTextValue.text) {
-                                isMentionPopupDismissed = false
-                            }
-                            commentTextValue = newValue
-                        },
+                        onValueChange = { newValue -> commentTextValue = newValue },
                         hint = NativeText.Resource(RString.comment_hint),
                         maxLines = 3,
                         enabled = !isOffline
                     )
 
-                    MentionSuggestionsPopup(
-                        members = mentionSuggestions,
-                        expanded = !isMentionPopupDismissed && mentionSuggestions.isNotEmpty(),
-                        onSelect = { member ->
-                            activeMentionQuery?.let { query ->
-                                commentTextValue = insertMention(commentTextValue, query, member.username)
+                    TaigaWidthSpacer(6.dp)
+
+                    IconButton(
+                        onClick = {
+                            commentTextValue.text.trim().takeIf { it.isNotEmpty() }?.let {
+                                keyboardController?.hide()
+                                onButtonClick(it)
+                                commentTextValue = TextFieldValue("")
                             }
                         },
-                        onDismissRequest = { isMentionPopupDismissed = true }
-                    )
-                }
-
-                TaigaWidthSpacer(6.dp)
-
-                IconButton(
-                    onClick = {
-                        commentTextValue.text.trim().takeIf { it.isNotEmpty() }?.let {
-                            keyboardController?.hide()
-                            onButtonClick(it)
-                            commentTextValue = TextFieldValue("")
-                        }
-                    },
-                    enabled = !isOffline,
-                    modifier = Modifier
-                        .testTag(CREATE_COMMENT_BAR_SEND_BUTTON_TEST_TAG)
-                        .clip(CircleShape)
-                        .background(
-                            if (isOffline) {
-                                MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
-                            } else {
-                                MaterialTheme.colorScheme.primary
-                            }
+                        enabled = !isOffline,
+                        modifier = Modifier
+                            .testTag(CREATE_COMMENT_BAR_SEND_BUTTON_TEST_TAG)
+                            .clip(CircleShape)
+                            .background(
+                                if (isOffline) {
+                                    MaterialTheme.colorScheme.primary.copy(alpha = 0.38f)
+                                } else {
+                                    MaterialTheme.colorScheme.primary
+                                }
+                            )
+                    ) {
+                        Icon(
+                            painter = painterResource(RDrawable.ic_send),
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary
                         )
-                ) {
-                    Icon(
-                        painter = painterResource(RDrawable.ic_send),
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary
-                    )
+                    }
                 }
+
+                MentionSuggestionsRow(
+                    members = mentionSuggestions,
+                    onSelect = { member ->
+                        activeMentionQuery?.let { query ->
+                            commentTextValue = insertMention(commentTextValue, query, member.username)
+                        }
+                    }
+                )
             }
         }
     }
