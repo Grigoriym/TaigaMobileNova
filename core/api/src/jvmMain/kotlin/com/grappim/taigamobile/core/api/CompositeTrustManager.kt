@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.core.api
 
-import com.grappim.taigamobile.core.domain.CertificateHostnameMismatchException
-import com.grappim.taigamobile.core.domain.PendingCertTrust
-import com.grappim.taigamobile.core.domain.UntrustedCertificateException
+import com.grappim.kit.domain.CertificateHostnameMismatchException
+import com.grappim.kit.domain.PendingCertTrust
+import com.grappim.kit.domain.UntrustedCertificateException
 import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import kotlinx.coroutines.runBlocking
 import java.net.Socket
@@ -71,12 +71,14 @@ class CompositeTrustManager(
             // actually succeed (hostname verification runs separately, after this check, and
             // would still reject it) — so don't offer TOFU for it, surface a clear error instead.
             if (!hostMatchesCertificate(host, leaf)) {
-                throw CertificateHostnameMismatchException(
-                    "Certificate presented for $host does not match its subject/SAN entries",
-                    e
+                throw CertificateException(
+                    CertificateHostnameMismatchException(
+                        "Certificate presented for $host does not match its subject/SAN entries",
+                        e
+                    )
                 )
             }
-            throw UntrustedCertificateException(pendingCertTrust(host, leaf), e)
+            throw CertificateException(UntrustedCertificateException(pendingCertTrust(host, leaf), cause = e))
         }
     }
 

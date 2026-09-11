@@ -2,9 +2,9 @@ package com.grappim.taigamobile.feature.dashboard.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.domain.resultOf
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.dashboard.domain.GetMyWorkItemsUseCase
 import com.grappim.taigamobile.feature.dashboard.domain.GetRecentActivityUseCase

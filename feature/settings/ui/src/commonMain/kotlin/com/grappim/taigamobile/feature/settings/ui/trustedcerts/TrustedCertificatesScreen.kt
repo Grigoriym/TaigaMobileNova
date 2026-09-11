@@ -14,11 +14,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.kit.domain.PendingCertTrust
 import com.grappim.kit.uikit.NativeText
 import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.core.domain.PendingCertTrust
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.revoke_cert_text
 import com.grappim.taigamobile.strings.generated.resources.revoke_cert_title

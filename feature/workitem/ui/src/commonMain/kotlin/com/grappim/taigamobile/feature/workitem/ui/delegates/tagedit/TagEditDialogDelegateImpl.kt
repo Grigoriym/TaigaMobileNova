@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.tagedit
 
 import androidx.compose.ui.graphics.Color
+import com.grappim.kit.domain.resultOf
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI

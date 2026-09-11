@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.core.domain
 
+import com.grappim.kit.domain.PendingCertTrust
+
 sealed class PlatformNetworkError {
     data class Code(val errorCode: Int) : PlatformNetworkError()
     data class UntrustedCertificate(val pendingCertTrust: PendingCertTrust) : PlatformNetworkError()

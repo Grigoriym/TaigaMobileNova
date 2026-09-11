@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.core.api.errors
 
-import com.grappim.taigamobile.core.domain.CertificateHostnameMismatchException
+import com.grappim.kit.domain.CertificateHostnameMismatchException
+import com.grappim.kit.domain.PendingCertTrust
+import com.grappim.kit.domain.UntrustedCertificateException
 import com.grappim.taigamobile.core.domain.NetworkException
-import com.grappim.taigamobile.core.domain.PendingCertTrust
-import com.grappim.taigamobile.core.domain.UntrustedCertificateException
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import java.net.UnknownHostException
 import javax.net.ssl.SSLHandshakeException
@@ -49,7 +49,13 @@ class NetworkErrorMapperJvmTest {
             notAfter = "2027-01-01",
             sha256Fingerprint = "AA:BB:CC"
         )
-        val cause = UntrustedCertificateException(pendingCertTrust, CertificateExceptionStub())
+        // CompositeTrustManager wraps the kit exception in a plain CertificateException so JSSE's
+        // handshake code (which only recognizes CertificateException) accepts the throw — the kit
+        // type itself is no longer a CertificateException subtype. Mirror that two-level chain here
+        // rather than attaching the kit exception directly, or this test would pass without proving
+        // the mapper's chain walk actually reaches through the wrapper.
+        val kitCause = UntrustedCertificateException(pendingCertTrust, CertificateExceptionStub())
+        val cause = CertificateExceptionStub(kitCause)
         val e = SSLHandshakeException("certificate not trusted").apply { initCause(cause) }
 
         val result = sut.mapToNetworkException(e)
@@ -77,7 +83,9 @@ class NetworkErrorMapperJvmTest {
 
     @Test
     fun `mapToNetworkException unwraps a CertificateHostnameMismatchException into ERROR_SSL_HOSTNAME_MISMATCH`() {
-        val cause = CertificateHostnameMismatchException("host mismatch", CertificateExceptionStub())
+        val cause = CertificateExceptionStub(
+            CertificateHostnameMismatchException("host mismatch", CertificateExceptionStub())
+        )
         val e = SSLHandshakeException("certificate not trusted").apply { initCause(cause) }
 
         val result = sut.mapToNetworkException(e)
@@ -86,4 +94,5 @@ class NetworkErrorMapperJvmTest {
     }
 }
 
-private class CertificateExceptionStub : java.security.cert.CertificateException("untrusted")
+private class CertificateExceptionStub(cause: Throwable? = null) :
+    java.security.cert.CertificateException("untrusted", cause)

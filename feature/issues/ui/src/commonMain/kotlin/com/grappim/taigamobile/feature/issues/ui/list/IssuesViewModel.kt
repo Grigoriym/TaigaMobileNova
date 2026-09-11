@@ -5,10 +5,10 @@ package com.grappim.taigamobile.feature.issues.ui.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.cachedIn
+import com.grappim.kit.domain.resultOf
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.FiltersStorage
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
