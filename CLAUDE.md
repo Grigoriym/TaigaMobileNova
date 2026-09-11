@@ -242,10 +242,14 @@ on every call rather than returning this app's canonical one. Local `CompositeTr
 it called the class's `internal` 3-arg `checkServerTrusted` overload, which stops compiling once
 the class is external (Kotlin `internal` is compilation-unit-scoped); `RealTlsHandshakeJvmTest`
 (added in the `domain` swap) already exercises the same real-JSSE-handshake path end-to-end and
-needed no changes beyond a stale KDoc reference. Also found: the published `grappim-kit-storage`/
-`grappim-kit-trustmanager:0.1.4` sources jars are incomplete (missing platform source sets,
-`trustmanager`'s is entirely empty) — compiled jars are unaffected, but diff-the-sources-jar
-verification for these two needs a local `grappim-kit` checkout instead. See
+needed no changes beyond a stale KDoc reference. The bare root coordinates
+(`grappim-kit-storage`/`grappim-kit-trustmanager:0.1.4`) publish only `commonMain` + shared
+intermediates (this is KGP's umbrella/metadata publication, not a `grappim-kit` defect —
+`trustmanager` has no `commonMain` at all, so its root sources jar is empty) — diff-the-sources-jar
+verification needs the per-target coordinates instead: `grappim-kit-storage-android`,
+`grappim-kit-storage-jvm`, `grappim-kit-trustmanager-android`, `grappim-kit-trustmanager-jvm`, each
+carrying a complete sources jar (confirmed by downloading and unzipping all four from Maven
+Central). Same split-artifact shape the `logger` swap already documented above. See
 `grappim-kit/CONSUMING.md`'s `storage`/`trustmanager` sections (TaigaMobileNova subsections) for
 the full writeup.
 
