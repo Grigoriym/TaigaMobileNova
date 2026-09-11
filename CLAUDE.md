@@ -160,6 +160,32 @@ line to `libs.grappim.kit.logger`. `androidApp` (a plain Android application mod
 goes through `configureKmp()`) still needed its own explicit dependency line update, same as any
 consumer.
 
+`core/async-kmp`'s `ThreadSafeMap`/`ApplicationScope` provider machinery →
+`io.github.grigoriym:grappim-kit-coroutines` was the fourth swap (2026-09-11, PR #421) — the
+local module was kept (it still hosts this app's own Koin qualifier annotations and provider
+functions, which just re-source from the kit's `KitDispatchers`/`applicationScope()` instead of
+raw `kotlinx.coroutines`), so this was a per-module `build.gradle.kts` addition, not a
+`build-logic` change. `ThreadSafeMap` needed `api(...)` rather than `implementation(...)` since
+`WorkItemEditStateRepository` consumes the type one hop away from `core/async-kmp` — see
+`grappim-kit/CONSUMING.md`'s `coroutines` section for the full writeup, including a real (not
+just mechanical) behavior change: `applicationScope()` installs a `CoroutineExceptionHandler`
+this app's own hand-rolled version never had.
+
+`core/crash-api`'s `CrashReporter` → `io.github.grigoriym:grappim-kit-crash` and
+`core/appinfo-api`'s `AppInfoProvider` → `io.github.grigoriym:grappim-kit-appinfo` were the fifth
+swap (2026-09-11, PR #422). `crash` was byte-identical and `core/crash-api` was deleted outright,
+same shape as `navigation`/`logger`. `appinfo` went the **opposite** direction from every prior
+swap here: this app's own `AppInfoProvider` was a strict *superset* of the kit's, not a subset —
+`getAppInfo()` (dropped as a pure formatting concern, now composed in
+`SettingsAboutScreenViewModel` from `versionName()`/`versionCode()`/`buildType()`, which trims the
+Android build's flavor suffix off the About screen) and `getDebugLocalHost()` (dropped as
+app-specific; this app's local-dev network-debugging feature has no equivalent in the kit).
+`core/appinfo-api` survives, narrowed to a single-method `DebugLocalHostProvider` interface;
+every platform `AppInfoProviderImpl` implements both it and the kit's `AppInfoProvider` via
+`@Single(binds = [AppInfoProvider::class, DebugLocalHostProvider::class])` — koin-annotations'
+multi-type `binds` syntax, confirmed working here for the first time (see the **koin-expert**
+subagent). See `grappim-kit/CONSUMING.md`'s `crash`/`appinfo` sections for the full writeup.
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from
