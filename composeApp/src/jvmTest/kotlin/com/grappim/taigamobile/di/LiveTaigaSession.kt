@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.di
 
+import com.grappim.kit.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
-import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository

@@ -3,7 +3,7 @@ package com.grappim.taigamobile.feature.settings.ui.trustedcerts
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.kit.domain.PendingCertTrust
-import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
+import com.grappim.kit.storage.cert.TrustedCertStorage
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

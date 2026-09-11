@@ -4,6 +4,7 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
+import com.grappim.kit.storage.SecretCipher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -17,15 +18,15 @@ interface AuthStorage {
     suspend fun clear()
 }
 
-class AuthStorageImpl(private val dataStore: DataStore<Preferences>, private val tokenCipher: TokenCipher) :
+class AuthStorageImpl(private val dataStore: DataStore<Preferences>, private val secretCipher: SecretCipher) :
     AuthStorage {
 
     private val tokenFlow = dataStore.data.map { prefs ->
-        prefs[TOKEN_KEY]?.let(tokenCipher::decrypt).orEmpty()
+        prefs[TOKEN_KEY]?.let(secretCipher::decrypt).orEmpty()
     }
 
     private val refreshTokenFlow = dataStore.data.map { prefs ->
-        prefs[REFRESH_TOKEN_KEY]?.let(tokenCipher::decrypt).orEmpty()
+        prefs[REFRESH_TOKEN_KEY]?.let(secretCipher::decrypt).orEmpty()
     }
 
     override suspend fun getToken(): String = tokenFlow.first()
@@ -37,8 +38,8 @@ class AuthStorageImpl(private val dataStore: DataStore<Preferences>, private val
 
     override suspend fun setAuthCredentials(token: String, refreshToken: String) {
         dataStore.edit { prefs ->
-            prefs[TOKEN_KEY] = tokenCipher.encrypt(token)
-            prefs[REFRESH_TOKEN_KEY] = tokenCipher.encrypt(refreshToken)
+            prefs[TOKEN_KEY] = secretCipher.encrypt(token)
+            prefs[REFRESH_TOKEN_KEY] = secretCipher.encrypt(refreshToken)
         }
     }
 
