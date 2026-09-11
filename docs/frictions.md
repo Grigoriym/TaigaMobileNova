@@ -85,3 +85,8 @@ deleted — see `finalize`.
   better for precise tap-coordinate reading. Whichever resize factor is used, any tap
   coordinate read off the resized image must be scaled back up by that same factor before
   calling `adb shell input tap` — recorded in the shared `emulator-testing` skill too.
+- 2026-09-11: `./gradlew koverXmlReport :koverVerify` failed with "Not enough memory to run
+  compilation" right after a full `jvmTest` run, on a machine with several other Claude
+  sessions and browser processes competing for RAM. `./gradlew --stop` (kill stale Kotlin/Gradle
+  daemons) plus `--max-workers=2` on the retry succeeded — a plain retry alone likely would not
+  have, since the daemons holding memory don't release it on their own between invocations.

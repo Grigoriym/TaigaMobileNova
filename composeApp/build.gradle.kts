@@ -129,8 +129,9 @@ kotlin {
                 implementation(projects.core.domain)
                 implementation(projects.core.storage)
                 implementation(projects.core.asyncKmp)
+                implementation(libs.grappim.kit.appinfo)
+                implementation(libs.grappim.kit.crash)
                 implementation(projects.core.appinfoApi)
-                implementation(projects.core.crashApi)
                 implementation(libs.grappim.kit.navigation)
                 implementation(projects.core.serialization)
 

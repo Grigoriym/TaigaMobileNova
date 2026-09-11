@@ -1,21 +1,20 @@
 package com.grappim.taigamobile.data
 
+import com.grappim.kit.appinfo.AppInfoProvider
 import com.grappim.taigamobile.BuildConfig
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import org.koin.core.annotation.Single
 
-@Single(binds = [AppInfoProvider::class])
-class AppInfoProviderImpl : AppInfoProvider {
-    override fun getAppInfo(): String = "${BuildConfig.VERSION_NAME} - " +
-        "${BuildConfig.VERSION_CODE} - " +
-        BuildConfig.BUILD_TYPE + " - " + BuildConfig.FLAVOR
-
+@Single(binds = [AppInfoProvider::class, DebugLocalHostProvider::class])
+class AppInfoProviderImpl : AppInfoProvider, DebugLocalHostProvider {
     override fun isDebug(): Boolean = BuildConfig.DEBUG
     override fun isFdroidBuild(): Boolean = BuildConfig.FLAVOR == "fdroid"
 
-    override fun getVersionName(): String = BuildConfig.VERSION_NAME
+    override fun versionName(): String = BuildConfig.VERSION_NAME
+
+    override fun versionCode(): Int = BuildConfig.VERSION_CODE
+
+    override fun buildType(): String = BuildConfig.BUILD_TYPE
 
     override fun getDebugLocalHost(): String = BuildConfig.DEBUG_LOCAL_HOST
-
-    override fun getBuildType(): String = BuildConfig.BUILD_TYPE
 }

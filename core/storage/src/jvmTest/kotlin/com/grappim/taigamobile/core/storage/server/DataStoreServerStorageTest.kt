@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.core.storage.server
 
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import com.grappim.taigamobile.core.storage.createTestDataStore
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -15,18 +16,20 @@ class DataStoreServerStorageTest {
     private class FakeAppInfoProvider(
         private val isDebugToReturn: Boolean = false,
         private val debugLocalHostToReturn: String = ""
-    ) : AppInfoProvider {
-        override fun getAppInfo(): String = "app info"
+    ) : AppInfoProvider,
+        DebugLocalHostProvider {
         override fun isDebug(): Boolean = isDebugToReturn
         override fun isFdroidBuild(): Boolean = false
-        override fun getVersionName(): String = "1.0.0"
+        override fun versionName(): String = "1.0.0"
+        override fun versionCode(): Int = 1
+        override fun buildType(): String = "debug"
         override fun getDebugLocalHost(): String = debugLocalHostToReturn
-        override fun getBuildType(): String = "debug"
     }
 
-    private fun createSut(appInfoProvider: AppInfoProvider = FakeAppInfoProvider()) = DataStoreServerStorage(
+    private fun createSut(appInfoProvider: FakeAppInfoProvider = FakeAppInfoProvider()) = DataStoreServerStorage(
         dataStore = createTestDataStore("server_storage_test"),
-        appInfoProvider = appInfoProvider
+        appInfoProvider = appInfoProvider,
+        debugLocalHostProvider = appInfoProvider
     )
 
     @Test

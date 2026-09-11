@@ -2,7 +2,7 @@ package com.grappim.taigamobile.data
 
 import com.google.firebase.Firebase
 import com.google.firebase.crashlytics.crashlytics
-import com.grappim.taigamobile.core.crashapi.CrashReporter
+import com.grappim.kit.crash.CrashReporter
 import org.koin.core.annotation.Single
 
 @Single(binds = [CrashReporter::class])

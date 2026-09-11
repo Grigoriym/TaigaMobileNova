@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.testing
 
-import com.grappim.taigamobile.core.crashapi.CrashReporter
+import com.grappim.kit.crash.CrashReporter
 
 class FakeCrashReporter : CrashReporter {
     override var isAvailable: Boolean = false

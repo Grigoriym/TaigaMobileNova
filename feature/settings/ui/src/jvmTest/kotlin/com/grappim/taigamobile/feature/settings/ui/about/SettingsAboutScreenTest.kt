@@ -19,7 +19,11 @@ class SettingsAboutScreenTest {
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun rendersAppInfoFromViewModel() = runComposeUiTest {
-        val appInfoProvider = FakeAppInfoProvider().apply { appInfoToReturn = getRandomString() }
+        val appInfoProvider = FakeAppInfoProvider().apply {
+            versionNameToReturn = getRandomString()
+            versionCodeToReturn = 42
+            buildTypeToReturn = getRandomString()
+        }
         val crashReporter = FakeCrashReporter()
         val viewModel = SettingsAboutScreenViewModel(appInfoProvider, crashReporter)
 
@@ -31,13 +35,15 @@ class SettingsAboutScreenTest {
             }
         }
 
-        onNodeWithText(appInfoProvider.appInfoToReturn).assertExists()
+        val expectedAppInfo = "${appInfoProvider.versionNameToReturn} - " +
+            "${appInfoProvider.versionCodeToReturn} - ${appInfoProvider.buildTypeToReturn}"
+        onNodeWithText(expectedAppInfo).assertExists()
     }
 
     @OptIn(ExperimentalTestApi::class)
     @Test
     fun rendersIssueSuggestionButton() = runComposeUiTest {
-        val appInfoProvider = FakeAppInfoProvider().apply { appInfoToReturn = getRandomString() }
+        val appInfoProvider = FakeAppInfoProvider()
         val crashReporter = FakeCrashReporter()
         val viewModel = SettingsAboutScreenViewModel(appInfoProvider, crashReporter)
 

@@ -16,8 +16,8 @@ kotlin {
         commonMain.dependencies {
             implementation(projects.strings)
             implementation(projects.core.api)
-            implementation(projects.core.appinfoApi)
-            implementation(projects.core.crashApi)
+            implementation(libs.grappim.kit.appinfo)
+            implementation(libs.grappim.kit.crash)
             implementation(projects.core.domain)
             implementation(projects.core.storage)
             implementation(libs.grappim.kit.navigation)

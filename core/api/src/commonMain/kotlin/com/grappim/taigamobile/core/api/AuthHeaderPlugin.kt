@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.core.api
 
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.kit.appinfo.AppInfoProvider
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpClientPlugin
@@ -26,7 +26,7 @@ class AuthHeaderPlugin(private val authStorage: AuthStorage, private val appInfo
         override fun install(plugin: AuthHeaderPlugin, scope: HttpClient) {
             scope.plugin(HttpSend).intercept { request ->
                 request.headers[ApiConstants.USER_AGENT] =
-                    "TaigaMobileNova/${plugin.appInfoProvider.getVersionName()}"
+                    "TaigaMobileNova/${plugin.appInfoProvider.versionName()}"
 
                 val token = plugin.authStorage.getToken()
                 if (token.isNotEmpty()) {

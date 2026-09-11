@@ -24,8 +24,8 @@ kotlin {
 
             api(projects.core.domain)
             api(projects.core.storage)
-            api(projects.core.appinfoApi)
-            api(projects.core.crashApi)
+            api(libs.grappim.kit.appinfo)
+            api(libs.grappim.kit.crash)
 
             api(projects.feature.login.domain)
             api(projects.feature.login.data)
