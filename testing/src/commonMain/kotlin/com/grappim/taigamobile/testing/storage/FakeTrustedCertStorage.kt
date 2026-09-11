@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.testing.storage
 
-import com.grappim.taigamobile.core.domain.PendingCertTrust
+import com.grappim.kit.domain.PendingCertTrust
 import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

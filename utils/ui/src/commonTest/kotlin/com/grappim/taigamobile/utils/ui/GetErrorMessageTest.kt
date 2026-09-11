@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.utils.ui
 
+import com.grappim.kit.domain.PendingCertTrust
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.NetworkException
-import com.grappim.taigamobile.core.domain.PendingCertTrust
 import com.grappim.taigamobile.core.domain.TaigaErrorDetails
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import com.grappim.taigamobile.strings.RString

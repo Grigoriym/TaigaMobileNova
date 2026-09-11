@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.core.storage.cert
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import com.grappim.taigamobile.core.domain.PendingCertTrust
+import com.grappim.kit.domain.PendingCertTrust
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json

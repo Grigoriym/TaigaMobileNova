@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.wiki.domain
 
+import com.grappim.kit.domain.resultOf
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canModifyWikiPage
 import com.grappim.taigamobile.feature.users.domain.UsersRepository

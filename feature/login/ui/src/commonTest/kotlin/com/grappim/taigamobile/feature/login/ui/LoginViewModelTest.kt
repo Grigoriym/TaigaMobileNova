@@ -3,7 +3,7 @@
 package com.grappim.taigamobile.feature.login.ui
 
 import app.cash.turbine.test
-import com.grappim.taigamobile.core.domain.PendingCertTrust
+import com.grappim.kit.domain.PendingCertTrust
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType

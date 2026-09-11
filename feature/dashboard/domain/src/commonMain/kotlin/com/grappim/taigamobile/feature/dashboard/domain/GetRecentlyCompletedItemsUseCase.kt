@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.dashboard.domain
 
+import com.grappim.kit.domain.resultOf
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.workitem.domain.GetWorkItemsParams
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository

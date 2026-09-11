@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.mentions
 
+import com.grappim.kit.domain.resultOf
 import com.grappim.kit.logger.LogPriority
 import com.grappim.kit.logger.logcat
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.MutableStateFlow

@@ -3,9 +3,9 @@ package com.grappim.taigamobile.feature.wiki.ui.page.create
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.domain.resultOf
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.wiki.domain.WikiRepository
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage

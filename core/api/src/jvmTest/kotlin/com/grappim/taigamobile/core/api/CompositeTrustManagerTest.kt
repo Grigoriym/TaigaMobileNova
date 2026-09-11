@@ -1,8 +1,9 @@
 package com.grappim.taigamobile.core.api
 
-import com.grappim.taigamobile.core.domain.CertificateHostnameMismatchException
-import com.grappim.taigamobile.core.domain.PendingCertTrust
-import com.grappim.taigamobile.core.domain.UntrustedCertificateException
+import com.grappim.kit.domain.CertificateHostnameMismatchException
+import com.grappim.kit.domain.PendingCertTrust
+import com.grappim.kit.domain.UntrustedCertificateException
+import com.grappim.kit.domain.findPendingCertTrust
 import com.grappim.taigamobile.testing.storage.FakeTrustedCertStorage
 import kotlinx.coroutines.test.runTest
 import java.security.cert.CertificateException
@@ -11,7 +12,6 @@ import java.util.Date
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
-import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class CompositeTrustManagerTest {
@@ -60,12 +60,16 @@ class CompositeTrustManagerTest {
     fun `unpinned cert with a known host is wrapped with the presented cert's details for TOFU`() = runTest {
         val sut = createSut(defaultTrustManager = FakeX509TrustManager(serverTrustedThrows = true))
 
-        val exception = assertFailsWith<UntrustedCertificateException> {
+        // Thrown as a plain CertificateException wrapping the kit's UntrustedCertificateException,
+        // not the kit type directly — JSSE's handshake code only recognizes CertificateException,
+        // and the kit type is a portable commonMain Exception, not a CertificateException subtype.
+        val exception = assertFailsWith<CertificateException> {
             sut.checkServerTrusted(arrayOf(certA), "RSA", "taiga.example.com")
         }
 
-        assertEquals("taiga.example.com", exception.pendingCertTrust.host)
-        assertEquals(sha256Fingerprint(certA), exception.pendingCertTrust.sha256Fingerprint)
+        val pendingCertTrust = exception.findPendingCertTrust()
+        assertEquals("taiga.example.com", pendingCertTrust?.host)
+        assertEquals(sha256Fingerprint(certA), pendingCertTrust?.sha256Fingerprint)
     }
 
     @Test
@@ -148,7 +152,7 @@ class CompositeTrustManagerTest {
             sut.checkServerTrusted(arrayOf(certA), "RSA", host = null)
         }
 
-        assertFalse(exception is UntrustedCertificateException)
+        assertEquals(null, exception.findPendingCertTrust())
     }
 
     @Test
@@ -156,9 +160,11 @@ class CompositeTrustManagerTest {
         val cert = FakeX509Certificate(byteArrayOf(9, 9, 9), commonName = "other-host.example.com")
         val sut = createSut(defaultTrustManager = FakeX509TrustManager(serverTrustedThrows = true))
 
-        assertFailsWith<CertificateHostnameMismatchException> {
+        val exception = assertFailsWith<CertificateException> {
             sut.checkServerTrusted(arrayOf(cert), "RSA", "taiga.example.com")
         }
+
+        assertTrue(exception.cause is CertificateHostnameMismatchException)
     }
 
     @Test
@@ -169,9 +175,11 @@ class CompositeTrustManagerTest {
         )
         val sut = createSut(defaultTrustManager = FakeX509TrustManager(serverTrustedThrows = true))
 
-        assertFailsWith<UntrustedCertificateException> {
+        val exception = assertFailsWith<CertificateException> {
             sut.checkServerTrusted(arrayOf(cert), "RSA", "192.168.0.241")
         }
+
+        assertTrue(exception.cause is UntrustedCertificateException)
     }
 
     @Test
@@ -182,8 +190,10 @@ class CompositeTrustManagerTest {
         )
         val sut = createSut(defaultTrustManager = FakeX509TrustManager(serverTrustedThrows = true))
 
-        assertFailsWith<CertificateHostnameMismatchException> {
+        val exception = assertFailsWith<CertificateException> {
             sut.checkServerTrusted(arrayOf(cert), "RSA", "192.168.0.248")
         }
+
+        assertTrue(exception.cause is CertificateHostnameMismatchException)
     }
 }

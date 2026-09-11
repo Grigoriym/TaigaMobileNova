@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.kanban.domain
 
+import com.grappim.kit.domain.resultOf
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.feature.filters.domain.model.Statuses
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository

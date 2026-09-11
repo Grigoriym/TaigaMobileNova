@@ -5,9 +5,9 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.map
+import com.grappim.kit.domain.resultOf
 import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.db.dao.SprintDao
 import com.grappim.taigamobile.core.storage.db.dao.WorkItemDao
