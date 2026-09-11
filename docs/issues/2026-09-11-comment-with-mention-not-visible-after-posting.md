@@ -1,4 +1,4 @@
-# 2026-09-11 — Comment containing a mention doesn't show up after posting
+# 2026-09-11 — Posted comments don't show up (general comment logic, not mention-specific)
 
 **Status:** Reported — investigation not started. Pick up with the `investigate-issue` skill next
 session, in this same PR/branch (`docs/issue-414-mention-investigation`), before closing it out.
@@ -16,12 +16,18 @@ project's Nav3 pattern — see CLAUDE.md's Navigation Pattern section — so thi
 
 gregory's own hypothesis: "I have a feeling it was there before our changes" — i.e. likely a
 pre-existing bug in comment posting/loading, not something this PR's `containsKnownMention` change
-introduced. Not yet confirmed either way.
+introduced.
+
+**Update (2026-09-11, same report, gregory):** "I think the issue is not about mention, but a
+general comment logic, the mention just helped me to notice that with the user being added to
+watchers." So the mention is almost certainly incidental — it's what drew attention to the missing
+comment (via the now-correctly-added watcher), not a contributing cause. Treat this as a
+**general comment-visibility bug**, reproducible with a plain comment with no `@` in it at all;
+don't spend investigation time on anything mention-specific unless a plain-comment repro fails to
+reproduce it.
 
 Not stated: which work item type (Task/Issue/UserStory/Epic — all four share the same
-`WorkItemCommentsDelegateImpl` code path), platform, or whether the mentioned username was a real
-team member or not (irrelevant to this bug in principle, but worth checking since it's the
-condition this PR's own fix cares about).
+`WorkItemCommentsDelegateImpl` code path) or platform.
 
 ## Starting points for the investigation (not verified, just pointers)
 
@@ -41,16 +47,13 @@ condition this PR's own fix cares about).
   the comment is still missing after a full re-navigation, the fresh load is getting the same
   (wrong) answer, which points at the server response or the mapper rather than anything
   comment-creation-specific.
-- Since the report happened right after posting a comment *with* a mention specifically, also check
-  whether taiga-back does anything different for a comment containing `@username` on the
-  create/read path (separate from the watcher side-effect already confirmed working) — e.g. via
-  `taiga-mcp` against the local dev Taiga instance, same approach used for the original issue 414
-  investigation.
+- gregory has since clarified this is general comment logic, not mention-specific (see Update
+  above) — deprioritize checking whether taiga-back treats `@username` comments differently on the
+  create/read path; only worth a look if a plain-comment repro doesn't reproduce the bug.
 
 ## Next steps
 
-Run the `investigate-issue` skill from a fresh session: reproduce (ideally with a plain,
-mention-free comment first, to isolate whether the mention is actually a factor or just what
-gregory happened to be testing when he noticed it), trace root cause with real evidence (live
-Taiga round-trip via `taiga-mcp`, not just reading source), then write findings/options into this
-doc before any fix.
+Run the `investigate-issue` skill from a fresh session: reproduce with a **plain comment, no
+mention**, against the local dev Taiga instance (`taiga-mcp`) to confirm this is general comment
+logic as gregory suspects, trace root cause with real evidence (a live Taiga round-trip, not just
+reading source), then write findings/options into this doc before any fix.
