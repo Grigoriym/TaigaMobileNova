@@ -213,6 +213,42 @@ handshake — to prove the wrap survives real JSSE, not just the hand-built exce
 `CompositeTrustManagerTest`/`NetworkErrorMapperJvmTest` construct. See
 `grappim-kit/CONSUMING.md`'s `domain` section for the full writeup.
 
+`core/storage`'s `NetworkMonitor`(+impls)/`TrustedCertStorage`/`TokenCipher` →
+`io.github.grigoriym:grappim-kit-storage`, and `core/api`'s `CompositeTrustManager` (jvm+android)
+→ `io.github.grigoriym:grappim-kit-trustmanager`, were the seventh swap (2026-09-11, PR #424,
+one combined PR since `grappim-kit-trustmanager`'s `CompositeTrustManager` takes the kit's own
+`TrustedCertStorage` type directly). `NetworkMonitor`/`TrustedCertStorage`/`CompositeTrustManager`
+were all mechanical — this app's own pre-swap classes were essentially byte-identical to what got
+extracted, including the `CertificateHostnameMismatchException` wiring the `domain` swap had
+already landed in `CompositeTrustManager` before `trustmanager` existed as its own kit module.
+`TokenCipher`/`NoopTokenCipher`/`AndroidKeystoreTokenCipher` are replaced by the kit's
+`SecretCipher`/`NoopSecretCipher`/`KeystoreSecretCipher` — the Android Keystore alias is kept as
+`"taiga_auth_token_key"` so existing installs keep decrypting their stored tokens through the same
+underlying key, and `decrypt()` is now nullable (`AuthStorageImpl` already handled that case via
+`.orEmpty()`, so no behavior change). **Confirmed this app is not exposed to a real migration bug
+wallosmobile found in the same swap**: `KeystoreSecretCipher`'s `"v1:"`-prefix passthrough treats
+any *unprefixed* stored ciphertext as legacy plaintext rather than failing to decrypt, silently
+corrupting a pre-existing encrypted value on upgrade for an app whose old cipher had no such
+prefix — this app's deleted `AndroidKeystoreTokenCipher` already used the identical `"v1:"` prefix,
+IV length, GCM tag length and cipher transformation, verified with a throwaway JVM test (not
+committed) that round-trips the old ciphertext byte layout through the new cipher's decode path.
+`core/storage`/`core/api` both survive, narrowed. `NetworkMonitorImpl`/`CompositeTrustManager`
+aren't Koin-annotated in the kit, so each platform gained explicit `@Single` providers — the jvm
+`NetworkMonitor` provider explicitly injects this app's existing singleton
+`@IoDispatcher`/`@ApplicationScope` rather than the kit class's own bare defaults (`=
+applicationScope()`), since that factory function builds a **new**, independent `CoroutineScope`
+on every call rather than returning this app's canonical one. Local `CompositeTrustManagerTest`
+(plus its `FakeX509Certificate`/`FakeX509TrustManager` fakes) was deleted rather than reworked —
+it called the class's `internal` 3-arg `checkServerTrusted` overload, which stops compiling once
+the class is external (Kotlin `internal` is compilation-unit-scoped); `RealTlsHandshakeJvmTest`
+(added in the `domain` swap) already exercises the same real-JSSE-handshake path end-to-end and
+needed no changes beyond a stale KDoc reference. Also found: the published `grappim-kit-storage`/
+`grappim-kit-trustmanager:0.1.4` sources jars are incomplete (missing platform source sets,
+`trustmanager`'s is entirely empty) — compiled jars are unaffected, but diff-the-sources-jar
+verification for these two needs a local `grappim-kit` checkout instead. See
+`grappim-kit/CONSUMING.md`'s `storage`/`trustmanager` sections (TaigaMobileNova subsections) for
+the full writeup.
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from
