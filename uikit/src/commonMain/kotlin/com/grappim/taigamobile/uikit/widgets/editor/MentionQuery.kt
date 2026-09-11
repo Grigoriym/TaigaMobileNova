@@ -14,6 +14,13 @@ private val mentionRegex = Regex("""\B@[\w.-]+\b""")
 // text will cause the backend to add mentioned users as watchers.
 fun containsMention(text: String): Boolean = mentionRegex.containsMatchIn(text)
 
+// Same syntactic match as containsMention, narrowed to usernames the server can actually resolve
+// (taiga-back's mentions.py:59-69 does an exact, case-sensitive `username=` lookup and silently
+// leaves an unresolvable token as plain text). Use this over containsMention wherever a match
+// drives a network call, so a typo'd or unrelated `@token` doesn't trigger one for nothing.
+fun containsKnownMention(text: String, knownUsernames: Collection<String>): Boolean = knownUsernames.isNotEmpty() &&
+    mentionRegex.findAll(text).any { it.value.removePrefix("@") in knownUsernames }
+
 // Mirrors the server's mention pattern (\B(@)([\w.-]+)\b, taiga-back's mentions.py:48): an `@`
 // only starts a mention when it isn't itself preceded by a word character.
 fun findActiveMentionQuery(value: TextFieldValue): MentionQuery? {

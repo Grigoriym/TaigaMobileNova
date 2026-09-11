@@ -94,4 +94,29 @@ class MentionQueryTest {
     fun `containsMention returns true for a mention at the start of the text`() {
         assertTrue(containsMention("@bob please review"))
     }
+
+    @Test
+    fun `containsKnownMention returns true when the mentioned username is known`() {
+        assertTrue(containsKnownMention("Hey @alice, can you check this?", listOf("alice", "bob")))
+    }
+
+    @Test
+    fun `containsKnownMention returns false when the mentioned username is not known`() {
+        assertFalse(containsKnownMention("Hey @typo, can you check this?", listOf("alice", "bob")))
+    }
+
+    @Test
+    fun `containsKnownMention returns false when the known-usernames list is empty`() {
+        assertFalse(containsKnownMention("Hey @alice, can you check this?", emptyList()))
+    }
+
+    @Test
+    fun `containsKnownMention is case-sensitive, matching the server's exact username lookup`() {
+        assertFalse(containsKnownMention("Hey @Alice, can you check this?", listOf("alice")))
+    }
+
+    @Test
+    fun `containsKnownMention returns false for plain text with no at-sign`() {
+        assertFalse(containsKnownMention("no mentions here", listOf("alice")))
+    }
 }
