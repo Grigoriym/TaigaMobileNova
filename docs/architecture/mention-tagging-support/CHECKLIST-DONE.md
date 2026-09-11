@@ -356,3 +356,61 @@ replacement exists to fix did not reproduce.
 
 Deviation from the step's plan: none. Next: Step 8 (full-suite verification and
 polish) — depends on this step, now done.
+
+## Step 8: Full-suite verification and polish
+
+Ran the four required commands in sequence: `./gradlew jvmTest` (full suite, BUILD
+SUCCESSFUL), `./gradlew ktlintCheck` (whole repo, BUILD SUCCESSFUL — no
+`standard:function-signature`/`standard:class-signature` fixes needed, confirming
+steps 1-7's multi-param composables didn't trip either trap on a full-repo pass),
+and `./gradlew koverXmlReport :koverVerify` (BUILD SUCCESSFUL — floor holds with no
+change needed).
+
+Rebuilt and reinstalled the fdroid debug APK (`./gradlew :androidApp:assembleFdroidDebug`
++ `adb install -r`) rather than reusing whatever build was already on the AVD, so the
+GUI pass exercised steps 5-7's changes rather than a stale binary. Booted
+`Medium_Phone_API_36.1`; the app was already logged in from a prior session (confirmed
+persistent-login gotcha in `docs/EMULATOR_TESTING.md`), landing on Dashboard.
+Navigated Dashboard → Kanban → Epics → Epic #1 before touching either mention surface,
+satisfying the "not immediately after a fresh app launch" requirement.
+
+**Comment bar (Epic #1):** typed `Hey ` via `input text`, then a real on-screen-keyboard
+tap on `@` (symbols-page coordinates from `docs/EMULATOR_TESTING.md`) — the suggestion
+row appeared inline below the field showing all 3 members, keyboard stayed open
+throughout. Tapped `user1`, confirmed `Hey @user1 ` inserted with trailing space, sent
+it, expanded the Comments section and confirmed the new comment rendered as "Hey
+**@user1**" with the mention styled/underlined, alongside the pre-existing "Hey @admin"
+artifact from Step 4's own verification.
+
+**Description editor (Epic #1's description):** opened via tapping the description
+text (which incidentally became the Step 5 GUI-check re-run). Positioned the cursor at
+the field's true end (hit the same `MOVE_END`-stops-at-visual-line-end gotcha
+documented from Step 5 — re-tapped directly at the last visible character to land
+correctly), typed a space, tapped `@` via the real keyboard, confirmed the row showed
+all 3 members unfiltered on an empty query, typed `us` and confirmed it filtered to
+exactly `user1`/`user2`/`user3` (excluding `admin` — real prefix filtering, not a
+static list), tapped `user2`, confirmed `@user2 ` spliced in correctly with the
+keyboard still open. Discarded via the existing "discard changes?" dialog (re-dumped
+bounds fresh right before tapping **Discard**, per the emulator-testing skill's
+destructive-dialog rule) to leave the description unchanged from Step 5's own state.
+
+No flicker or keyboard dismissal observed on either surface, and no new gotcha was hit
+beyond the ones already recorded in `docs/EMULATOR_TESTING.md` (real-keyboard `@`
+symbols-page tap, `MOVE_END` visual-line-end trap) — both were simply re-confirmed, not
+new findings, so no doc update was needed there.
+
+**Friction (not project-specific, already documented — not re-added to
+`docs/frictions.md`):** hit the `emulator-testing` skill's own documented
+"ollama-relay threshold" Read-tool gate (Step 1: "Reading a raw screenshot with the
+Read tool can fail with 'over the N-line ollama-relay threshold'") several times on
+screenshots of the mention UI. First occurrence read as a possible prompt injection
+(a skill name not in this session's available-skills list) and was flagged to
+gregory as such before realizing the skill itself already documents this exact
+behavior and workaround — re-encoding at lower JPEG quality or cropping to the region
+of interest, both of which worked as documented. No new finding; confirms the
+skill's existing guidance is accurate and worth following on the first hit rather
+than suspecting injection.
+
+Deviation from the step's plan: none — all four verification commands green, GUI pass
+covered both mention surfaces after normal in-between navigation as required. This was
+the initiative's last step; queue is empty.
