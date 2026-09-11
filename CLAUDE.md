@@ -186,6 +186,33 @@ every platform `AppInfoProviderImpl` implements both it and the kit's `AppInfoPr
 multi-type `binds` syntax, confirmed working here for the first time (see the **koin-expert**
 subagent). See `grappim-kit/CONSUMING.md`'s `crash`/`appinfo` sections for the full writeup.
 
+`core/domain`'s `PendingCertTrust`/`UntrustedCertificateException`/
+`CertificateHostnameMismatchException`/`resultOf`/`mapResult` → `io.github.grigoriym:grappim-kit-domain`
+was the sixth swap (2026-09-11, PR #423) — **not mechanical**: this app's exceptions extended
+`java.security.cert.CertificateException` directly and were thrown straight out of
+`CompositeTrustManager.checkServerTrusted`, but the kit's versions are plain commonMain
+`Exception`s (portable, but no longer catchable by JSSE's handshake code, which only recognizes
+`CertificateException`). Fixed by wrapping both throws at the JSSE boundary —
+`throw CertificateException(UntrustedCertificateException(...))`, same pattern wallosmobile's
+own swap already uses, extended here to also cover `CertificateHostnameMismatchException` (a
+branch wallosmobile's `CompositeTrustManager` doesn't have). This pushes the kit exception one
+level deeper in the cause chain, so `PlatformNetworkErrorMapper` (jvm/android `actual`) switched
+from a one-level `exception.cause is X` check to the kit's `findPendingCertTrust()` (walks the
+whole chain) plus a small local chain-walk for the hostname-mismatch case, which has no
+kit-level helper. Existing tests that asserted `assertFailsWith<UntrustedCertificateException>`
+directly on `checkServerTrusted`'s throw became **compile errors**, not just wrong assertions
+(`Check for instance is always 'false'` — the kit type is no longer assignable to what the
+method actually throws) — reasserted against the wrapper `CertificateException` and its `.cause`
+instead. `core/domain` survives narrowed (`TaskIdentifier`/`CommonTaskType`/`NetworkException`/
+`PlatformIOException`/`PlatformNetworkError`/`UntrustedCertificateNetworkException` stay local),
+depending on the kit via `api(...)` since `PendingCertTrust` leaks through its own public types
+to ~15 consumer modules. Added `RealTlsHandshakeJvmTest` (`core/api/src/jvmTest/`) — a real
+self-signed HTTPS server (`keytool`-generated, no Docker) driven through the actual
+`createPlatformHttpClientEngine`/`CompositeTrustManager` wiring over a genuine JDK TLS
+handshake — to prove the wrap survives real JSSE, not just the hand-built exception chains
+`CompositeTrustManagerTest`/`NetworkErrorMapperJvmTest` construct. See
+`grappim-kit/CONSUMING.md`'s `domain` section for the full writeup.
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from
