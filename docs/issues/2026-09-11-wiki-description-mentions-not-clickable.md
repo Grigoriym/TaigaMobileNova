@@ -1,6 +1,6 @@
 # 2026-09-11 — Wiki page descriptions don't render `@mentions` as clickable
 
-**Status:** Awaiting decision
+**Status:** Fixed
 **Link:** reported by gregory in conversation (no GitHub issue)   **Updated:** 2026-09-11
 
 ## Report
@@ -128,4 +128,32 @@ abstraction, and resolves the inconsistency gregory noticed.
 
 ## Decision
 
-Not yet made — gregory wants this implemented in a separate session, not this one.
+Option A, implemented 2026-09-11. Additionally, gregory chose to fold in mention
+**autocomplete** (not rendering — see below) for `WikiCreatePageScreen`'s content field, which
+the "Open questions" section above had flagged as materially bigger scope.
+
+## Fix (2026-09-11)
+
+**Read view (Option A):** `WikiPageViewModel` mixes in `WorkItemMentionsDelegate by
+WorkItemMentionsDelegateImpl(usersRepository)` and calls `loadMembers()` in `init`, mirroring the
+four work-item ViewModels. `WikiPageScreen` now collects `mentionsState` and passes
+`members`/`onMentionClick = goToProfile` into its `WorkItemDescriptionWidget` call — `@mentions` in
+a wiki page's content now render as clickable links, confirmed on-device (tapped `@admin` in a wiki
+page's description, landed on the Profile screen).
+
+**Wiki page creation:** while investigating the "Open questions" scope call, found that *editing* an
+existing wiki page's content already went through the shared `WorkItemEditDescriptionScreen`/
+`EditDescriptionViewModel` (via `navigateToWorkItemEditDescription` in `WikiNavGraph.kt`), which
+already has `WorkItemMentionsDelegate` and the `MentionSuggestionsRow`/`findActiveMentionQuery`/
+`insertMention` autocomplete wired in — nothing to fix there. Only `WikiCreatePageScreen` (initial
+page creation) lacked it, since its content field was a plain `String`-backed `HintTextField` with
+no cursor awareness. Fixed by switching `WikiCreatePageState.content` from `String` to
+`TextFieldValue`, mixing `WorkItemMentionsDelegate` into `WikiCreatePageViewModel`, and adding the
+same `MentionSuggestionsRow` pattern used in `EditDescriptionContent` to
+`WikiCreatePageScreenContent`. Confirmed on-device: typing `Hey @ad` in the create-page content
+field showed an "admin" suggestion chip; tapping it inserted `@admin `, and the saved page rendered
+the mention as a clickable link in the read view.
+
+Files: `feature/wiki/ui/.../page/details/WikiPageViewModel.kt`, `WikiPageScreen.kt`,
+`feature/wiki/ui/.../page/create/WikiCreatePageState.kt`, `WikiCreatePageViewModel.kt`,
+`WikiCreatePageScreen.kt`, plus their `commonTest` counterparts.
