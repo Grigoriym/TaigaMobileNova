@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens
 
+import com.grappim.kit.coroutines.ThreadSafeMap
 import com.grappim.kit.logger.logcat
-import com.grappim.taigamobile.core.asynckmp.ThreadSafeMap
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import kotlinx.collections.immutable.ImmutableList

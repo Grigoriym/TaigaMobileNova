@@ -1,13 +1,9 @@
 package com.grappim.taigamobile.core.asynckmp
 
-import com.grappim.kit.logger.LogPriority
-import com.grappim.kit.logger.logcat
+import com.grappim.kit.coroutines.KitDispatchers
+import com.grappim.kit.coroutines.applicationScope
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.IO
-import kotlinx.coroutines.SupervisorJob
 import org.koin.core.annotation.ComponentScan
 import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
@@ -34,28 +30,24 @@ annotation class MainDispatcher
 @Qualifier
 annotation class MainImmediateDispatcher
 
-private val applicationScopeExceptionHandler = CoroutineExceptionHandler { _, throwable ->
-    logcat(LogPriority.ERROR, throwable = throwable) { "Unhandled exception on ApplicationScope" }
-}
-
 @Module
 @Configuration
 @ComponentScan("com.grappim.taigamobile.core.asynckmp")
 class KmpCoroutinesModule {
 
     @[Single DefaultDispatcher]
-    fun providesDefaultDispatcher(): CoroutineDispatcher = Dispatchers.Default
+    fun providesDefaultDispatcher(): CoroutineDispatcher = KitDispatchers.default
 
     @[Single IoDispatcher]
-    fun providesIoDispatcher(): CoroutineDispatcher = Dispatchers.IO
+    fun providesIoDispatcher(): CoroutineDispatcher = KitDispatchers.io
 
     @[Single ApplicationScope]
     fun provideApplicationScope(@DefaultDispatcher defaultDispatcher: CoroutineDispatcher): CoroutineScope =
-        CoroutineScope(SupervisorJob() + defaultDispatcher + applicationScopeExceptionHandler)
+        applicationScope(defaultDispatcher)
 
     @[Single MainDispatcher]
-    fun providesMainDispatcher(): CoroutineDispatcher = Dispatchers.Main
+    fun providesMainDispatcher(): CoroutineDispatcher = KitDispatchers.main
 
     @[Single MainImmediateDispatcher]
-    fun providesMainImmediateDispatcher(): CoroutineDispatcher = Dispatchers.Main.immediate
+    fun providesMainImmediateDispatcher(): CoroutineDispatcher = KitDispatchers.mainImmediate
 }
