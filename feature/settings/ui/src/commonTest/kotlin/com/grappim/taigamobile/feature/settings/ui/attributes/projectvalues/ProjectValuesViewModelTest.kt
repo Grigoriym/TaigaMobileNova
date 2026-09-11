@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues
 
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueItem
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueType
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeProjectValuesRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong

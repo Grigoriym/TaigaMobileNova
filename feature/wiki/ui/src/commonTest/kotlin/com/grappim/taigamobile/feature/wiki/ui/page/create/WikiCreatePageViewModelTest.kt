@@ -2,10 +2,10 @@ package com.grappim.taigamobile.feature.wiki.ui.page.create
 
 import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.repo.FakeWikiRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong

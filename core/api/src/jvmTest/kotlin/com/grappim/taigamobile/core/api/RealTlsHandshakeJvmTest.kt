@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.core.api
 
+import com.grappim.kit.testing.FakeTrustedCertStorage
 import com.grappim.taigamobile.core.api.errors.NetworkErrorMapper
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
-import com.grappim.taigamobile.testing.storage.FakeTrustedCertStorage
 import com.sun.net.httpserver.HttpsConfigurator
 import com.sun.net.httpserver.HttpsServer
 import io.ktor.client.HttpClient

@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.details
 
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
@@ -11,7 +12,6 @@ import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository

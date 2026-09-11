@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.projectselector.ui
 
 import app.cash.turbine.test
-import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.cleaner.FakeDataCleaner
 import com.grappim.taigamobile.testing.models.getProject
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository

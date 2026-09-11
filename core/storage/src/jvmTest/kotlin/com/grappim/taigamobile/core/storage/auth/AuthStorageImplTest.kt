@@ -6,8 +6,8 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.grappim.kit.storage.NoopSecretCipher
 import com.grappim.kit.storage.SecretCipher
+import com.grappim.kit.testing.FakeSecretCipher
 import com.grappim.taigamobile.core.storage.createTestDataStore
-import com.grappim.taigamobile.testing.storage.FakeSecretCipher
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import kotlin.test.Test

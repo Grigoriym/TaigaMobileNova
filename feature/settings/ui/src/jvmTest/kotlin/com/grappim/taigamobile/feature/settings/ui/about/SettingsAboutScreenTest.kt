@@ -4,10 +4,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
+import com.grappim.kit.testing.FakeAppInfoProvider
+import com.grappim.kit.testing.FakeCrashReporter
 import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarController
-import com.grappim.taigamobile.testing.FakeAppInfoProvider
-import com.grappim.taigamobile.testing.FakeCrashReporter
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import kotlin.test.Test
