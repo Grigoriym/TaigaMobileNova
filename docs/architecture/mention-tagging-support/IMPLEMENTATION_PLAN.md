@@ -26,7 +26,11 @@ re-entered. Fixed separately (not as a checklist step) by adding
 `WorkItemWatchersDelegate.refreshWatchers()`, called from `createComment()`/
 `onNewDescriptionUpdate()` in all four work-item ViewModels (Task/Issue/UserStory/
 Epic) only when the posted text contains a mention, to avoid two extra network
-calls on every plain comment/description save.
+calls on every plain comment/description save. That first pass used the purely
+syntactic `containsMention()`, which can't tell a real member's username from a
+typo — see `docs/archive/revisit-resolved.md`'s entry 54 for the follow-up fix that
+narrowed the check to `containsKnownMention(text, knownUsernames)`, cross-referenced
+against the already-loaded team-members list.
 
 ## Server contract this plan relies on
 

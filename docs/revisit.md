@@ -24,7 +24,6 @@ now that the table below covers everything left.
 | 47 | `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge | S | — |
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 | 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
-| 54 | `containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member | S | this file |
 
 ---
 
@@ -286,37 +285,4 @@ actual duplicate before changing any production code.
 
 **Trigger:** pick up as a standalone investigation (`investigate-issue` skill) once gregory wants to
 prioritize it.
-
----
-
-## 54. `containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member
-
-**What:** raised by gregory (2026-09-11) right after the watchers-refresh-on-mention fix landed
-(`66c8d21f`, see
-[docs/architecture/mention-tagging-support/IMPLEMENTATION_PLAN.md](architecture/mention-tagging-support/IMPLEMENTATION_PLAN.md)'s
-added note). `containsMention(text)` (`uikit/src/commonMain/kotlin/com/grappim/taigamobile/uikit/widgets/editor/MentionQuery.kt`)
-is a pure syntactic check — it mirrors the server's `\B(@)([\w.-]+)\b` regex
-(`taiga-back`'s `mentions.py:48`) but has no idea whether the matched token is an actual project
-member.
-
-So posting a comment or description containing `@non-present` (a token that doesn't resolve to a
-real team member) still makes `containsMention()` return `true`, which still triggers
-`WorkItemWatchersDelegate.refreshWatchers()` — called from `createComment()`/
-`onNewDescriptionUpdate()` in all four work-item ViewModels (`TaskDetailsViewModel.kt`,
-`IssueDetailsViewModel.kt`, `UserStoryDetailsViewModel.kt`, `EpicDetailsViewModel.kt`). Server-side,
-`mentions.py:66-69` silently leaves an unresolvable username as plain text and adds no watcher (per
-the plan's "Server contract" section), so the refresh just re-fetches the same watchers list that
-was already in state — a harmless but unnecessary `getUpdateWorkItem` + `getUsersList` round-trip.
-
-**Why not fixed inline:** low severity (the row-based autocomplete only lets a user *insert* a
-mention by picking a real member from suggestions, so a bogus `@name` only reaches the server via
-manual edits or pasted text — not the normal flow) and the fix is a small, separate, independently
-testable change — not worth folding into the watchers-refresh fix's diff.
-
-**Possible fix:** have the mention check cross-reference the already-loaded team-members list (the
-same list `CreateCommentBar`'s suggestions and `WorkItemMentionsDelegate.loadMembers()` already
-fetch) instead of just matching the regex — only refresh watchers when the mentioned token actually
-matches a known member's username.
-
-**Trigger:** pick up whenever gregory wants the wasted call gone; not urgent.
 
