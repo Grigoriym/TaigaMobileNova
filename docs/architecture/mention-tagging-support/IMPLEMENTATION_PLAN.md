@@ -15,6 +15,19 @@ that — it already works and needs no client change. Everything below is client
 UX: showing the user that a mention is a mention, both while typing it and
 afterward when it's rendered.
 
+**One client-side consequence of that server-side add was missed by this plan's
+original 8 steps**: the work-item screen's own `watchersState` (the watchers list
+shown in the UI, `WorkItemWatchersDelegate` in `feature/workitem/ui`) is a client
+cache loaded once in `loadTask()` and otherwise only updated by explicit
+watch/unwatch actions — posting a comment or description that mentions someone
+never refreshed it, so the new watcher was invisible until the screen was left and
+re-entered. Fixed separately (not as a checklist step) by adding
+`containsMention(text)` (`uikit/.../editor/MentionQuery.kt`) and
+`WorkItemWatchersDelegate.refreshWatchers()`, called from `createComment()`/
+`onNewDescriptionUpdate()` in all four work-item ViewModels (Task/Issue/UserStory/
+Epic) only when the posted text contains a mention, to avoid two extra network
+calls on every plain comment/description save.
+
 ## Server contract this plan relies on
 
 - `taiga-back`'s `taiga/mdrender/extensions/mentions.py:48`:
