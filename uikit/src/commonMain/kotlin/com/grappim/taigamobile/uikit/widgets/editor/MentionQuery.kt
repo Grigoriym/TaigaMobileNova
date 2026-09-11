@@ -8,6 +8,11 @@ data class MentionQuery(val query: String, val range: IntRange)
 
 private val mentionQueryCharRegex = Regex("""[\w.-]""")
 private val wordCharRegex = Regex("""\w""")
+private val mentionRegex = Regex("""\B@[\w.-]+\b""")
+
+// Mirrors the server's mention pattern (taiga-back's mentions.py:48) to decide whether posted
+// text will cause the backend to add mentioned users as watchers.
+fun containsMention(text: String): Boolean = mentionRegex.containsMatchIn(text)
 
 // Mirrors the server's mention pattern (\B(@)([\w.-]+)\b, taiga-back's mentions.py:48): an `@`
 // only starts a mention when it isn't itself preceded by a word character.

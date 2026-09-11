@@ -54,6 +54,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFi
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.task_slug
+import com.grappim.taigamobile.uikit.widgets.editor.containsMention
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
@@ -400,6 +401,13 @@ class TaskDetailsViewModel(
                 },
                 doOnSuccess = { result ->
                     updateVersion(result.newVersion)
+                    if (containsMention(newComment)) {
+                        viewModelScope.launch {
+                            refreshWatchers(workItemId = currentTask.id, doOnError = { error ->
+                                logcat(throwable = error) { "Error refreshing watchers after mention" }
+                            })
+                        }
+                    }
                 },
                 doOnError = { error ->
                     emitError(error)
@@ -749,6 +757,14 @@ class TaskDetailsViewModel(
                         currentTask = updatedTask,
                         originalTask = updatedTask
                     )
+                }
+
+                if (containsMention(newDescription)) {
+                    viewModelScope.launch {
+                        refreshWatchers(workItemId = currentTask.id, doOnError = { error ->
+                            logcat(throwable = error) { "Error refreshing watchers after mention" }
+                        })
+                    }
                 }
             }
         )

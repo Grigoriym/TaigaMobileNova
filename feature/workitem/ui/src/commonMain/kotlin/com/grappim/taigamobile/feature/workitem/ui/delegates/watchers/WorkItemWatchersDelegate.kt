@@ -42,6 +42,8 @@ interface WorkItemWatchersDelegate {
     )
 
     fun setInitialWatchers(watchers: List<User>, isWatchedByMe: Boolean)
+
+    suspend fun refreshWatchers(workItemId: Long, doOnError: (Throwable) -> Unit)
 }
 
 data class WorkItemWatchersState(

@@ -4,9 +4,11 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
-class MentionInputTest {
+class MentionQueryTest {
 
     @Test
     fun `findActiveMentionQuery finds a query while typing mid-word after at-sign`() {
@@ -71,5 +73,25 @@ class MentionInputTest {
         val result = insertMention(value, query, "bob")
 
         assertEquals(TextFieldValue(text = "@bob ", selection = TextRange(5)), result)
+    }
+
+    @Test
+    fun `containsMention returns true for a mention mid-text`() {
+        assertTrue(containsMention("Hey @alice, can you check this?"))
+    }
+
+    @Test
+    fun `containsMention returns false when at-sign is preceded by a word character`() {
+        assertFalse(containsMention("contact me at email@alice"))
+    }
+
+    @Test
+    fun `containsMention returns false for plain text with no at-sign`() {
+        assertFalse(containsMention("no mentions here"))
+    }
+
+    @Test
+    fun `containsMention returns true for a mention at the start of the text`() {
+        assertTrue(containsMention("@bob please review"))
     }
 }

@@ -54,6 +54,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFi
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.userstory_slug
+import com.grappim.taigamobile.uikit.widgets.editor.containsMention
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
@@ -409,6 +410,13 @@ class UserStoryDetailsViewModel(
                 },
                 doOnSuccess = { result ->
                     updateVersion(result.newVersion)
+                    if (containsMention(newComment)) {
+                        viewModelScope.launch {
+                            refreshWatchers(workItemId = currentUserStory.id, doOnError = { error ->
+                                logcat(throwable = error) { "Error refreshing watchers after mention" }
+                            })
+                        }
+                    }
                 },
                 doOnError = { error ->
                     emitError(error)
@@ -742,6 +750,14 @@ class UserStoryDetailsViewModel(
                         currentUserStory = updatedUserStory,
                         originalUserStory = updatedUserStory
                     )
+                }
+
+                if (containsMention(newDescription)) {
+                    viewModelScope.launch {
+                        refreshWatchers(workItemId = currentUserStory.id, doOnError = { error ->
+                            logcat(throwable = error) { "Error refreshing watchers after mention" }
+                        })
+                    }
                 }
             }
         )
