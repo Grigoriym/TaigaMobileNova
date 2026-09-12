@@ -90,3 +90,6 @@ deleted — see `finalize`.
   sessions and browser processes competing for RAM. `./gradlew --stop` (kill stale Kotlin/Gradle
   daemons) plus `--max-workers=2` on the retry succeeded — a plain retry alone likely would not
   have, since the daemons holding memory don't release it on their own between invocations.
+- 2026-09-12: same "Not enough memory to run compilation" failure recurred on a plain
+  `./gradlew jvmTest` (no prior kover run this time) — second occurrence of the 2026-09-11 entry
+  above, same `--max-workers=2` retry fixed it, no `--stop` needed this time.

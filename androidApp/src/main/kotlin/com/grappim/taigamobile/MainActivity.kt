@@ -7,8 +7,8 @@ import androidx.activity.enableEdgeToEdge
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.snackbar.Snackbar
-import com.grappim.taigamobile.data.AppUpdateChecker
-import com.grappim.taigamobile.data.UpdateState
+import com.grappim.kit.appupdate.AppUpdateChecker
+import com.grappim.kit.appupdate.UpdateState
 import com.grappim.taigamobile.main.TaigaAppContent
 import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
 import io.github.vinceglb.filekit.FileKit

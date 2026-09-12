@@ -86,5 +86,6 @@ dependencies {
 
     // Play In-App Updates ship in the gplay flavor only — the fdroid flavor never pulls in
     // this proprietary dependency, only a no-op AppUpdateChecker implementation.
-    gplayImplementation(libs.google.inapp.update.ktx)
+    gplayImplementation(libs.grappim.kit.appupdate.gplay)
+    fdroidImplementation(libs.grappim.kit.appupdate.fdroid)
 }

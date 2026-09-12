@@ -253,6 +253,37 @@ Central). Same split-artifact shape the `logger` swap already documented above. 
 `grappim-kit/CONSUMING.md`'s `storage`/`trustmanager` sections (TaigaMobileNova subsections) for
 the full writeup.
 
+`:testing`'s six hand-written fakes (`MainDispatcherRule`, `FakeNetworkMonitor`,
+`FakeAppInfoProvider`, `FakeSecretCipher`, `FakeCrashReporter`, `FakeTrustedCertStorage`) →
+`io.github.grigoriym:grappim-kit-testing` was the eighth swap (2026-09-11, PR #426) — all six were
+functionally identical to this app's own versions (diffed against the local `grappim-kit`
+checkout) modulo cosmetic formatting/doc-comment differences. `:testing/build.gradle.kts` dropped
+its direct `api(grappim.kit.appinfo)`/`api(grappim.kit.crash)` lines, which existed only to
+support the two deleted fakes — `grappim-kit-testing` re-exposes both transitively.
+
+`androidApp`'s `AppUpdateChecker`/`AppUpdateCheckerImpl` (Play In-App Update wrapper) →
+`io.github.grigoriym:grappim-kit-appupdate`/`-gplay`/`-fdroid` was the ninth swap (2026-09-12, PR
+#427) — byte-identical apart from the package rename and dropped Koin annotation, confirmed by
+downloading the published `0.1.4` sources jars from Maven Central and diffing them against the
+local `grappim-kit` checkout (itself confirmed to match the published jars) and then against this
+app's pre-swap code. Unlike every other swap so far, this kit module ships as **three separate
+artifacts, not one** — `grappim-kit-appupdate` (interface + `UpdateState`), `-gplay` and `-fdroid`
+(each `api`-depends on the base module, mirroring this app's own `gplayImplementation`/
+`fdroidImplementation` split as separate Maven coordinates instead of separate source sets). Since
+neither impl carries a Koin annotation and the gplay/fdroid constructors genuinely differ
+(`Context` vs. no-arg — no single shared provider function can cover both, unlike `storage`'s
+`NetworkMonitor`/`SecretCipher`/`TrustedCertStorage` providers), each flavor got its own small
+`AppUpdateModule.kt` (`@Module` class with one `@Single` provider function) in
+`androidApp/src/{gplay,fdroid}/.../data/`, included into `AndroidModule` via
+`@Module(includes = [AppUpdateModule::class])`. **A DI change entirely inside `androidApp` is
+invisible to `KoinGraphTest`** (which only verifies `composeApp`'s graph) — compiling both flavors
+proves the impl classes satisfy the interface but not that Koin can resolve the binding at
+runtime, so this was verified with a real cold start on `Medium_Phone_API_36.1` for both flavors:
+no crash on either, and the gplay flavor's logcat showed PlayCore's real `AppUpdateService`
+actually bind and run `requestUpdateInfo`/`registerListener` from `MainActivity.onCreate`/
+`onResume`. See `grappim-kit/CONSUMING.md`'s `appupdate` section (TaigaMobileNova subsection) for
+the full writeup.
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from
