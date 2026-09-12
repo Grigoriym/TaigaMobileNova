@@ -60,7 +60,7 @@ kotlin-serialization-json = "1.11.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
 kotlinx-collections = "0.5.2"
 # https://github.com/Kotlin/kotlinx-datetime/releases
-kotlin-date-time = "0.8.0"
+kotlin-date-time = "0.8.0-0.6.x-compat"
 kotlinx-io-core = "0.9.1"
 kotlinTest = "2.4.10"
 # https://github.com/Kotlin/kotlinx-atomicfu/releases
