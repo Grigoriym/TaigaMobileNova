@@ -284,6 +284,17 @@ actually bind and run `requestUpdateInfo`/`registerListener` from `MainActivity.
 `onResume`. See `grappim-kit/CONSUMING.md`'s `appupdate` section (TaigaMobileNova subsection) for
 the full writeup.
 
+`TaigaDrawerWidget`/`TaigaNavigationSuiteWidget` → `com.grappim.kit.uikit.widgets.drawer`'s
+`DrawerWidget`/`NavigationSuiteWidget` was the tenth swap (2026-09-12, PR pending) — this app was
+the extraction source, so the port was mechanical: `DrawerItem`/`IconSource` deleted locally,
+`DrawerItemsBuilder`'s ~15 construction sites switched `label = RString.x` to
+`NativeText.Resource(RString.x)`, `MainViewModel`'s `drawerItems` type gained the `DrawerDestination`
+type argument, and `MainScreen.kt`'s two call sites now pass `headerTitle` explicitly instead of the
+widget reading `app_name` internally. `DrawerDestination` itself stays local as the generic `T`. See
+`grappim-kit/CONSUMING.md`'s `widgets/drawer` section (TaigaMobileNova subsection) for the full
+writeup, including why the two local drawer tests were updated rather than deleted despite the kit
+now having its own.
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from

@@ -4,7 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.storage.NetworkMonitor
-import com.grappim.taigamobile.DrawerItem
+import com.grappim.kit.uikit.widgets.drawer.DrawerItem
+import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.DrawerItemsBuilder
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
@@ -84,7 +85,7 @@ class MainViewModel(
             initialValue = ThemeSettings.default()
         )
 
-    val drawerItems: StateFlow<ImmutableList<DrawerItem>> = currentProject
+    val drawerItems: StateFlow<ImmutableList<DrawerItem<DrawerDestination>>> = currentProject
         .map { project ->
             project?.let { drawerItemsBuilder.build(it) } ?: persistentListOf()
         }
