@@ -2,8 +2,8 @@ package com.grappim.taigamobile.feature.workitem.ui.screens.teammembers
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.domain.resultOf
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.feature.users.domain.UsersRepository
 import com.grappim.taigamobile.feature.workitem.ui.mappers.TeamMemberUIMapper
 import com.grappim.taigamobile.feature.workitem.ui.screens.TeamMemberEditType

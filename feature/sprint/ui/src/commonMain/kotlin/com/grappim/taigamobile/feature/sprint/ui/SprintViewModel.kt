@@ -2,9 +2,9 @@ package com.grappim.taigamobile.feature.sprint.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.domain.resultOf
+import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canAddIssue
 import com.grappim.taigamobile.feature.projects.domain.canAddTask

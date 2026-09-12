@@ -15,7 +15,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.kit.uikit.NativeText
@@ -23,6 +25,7 @@ import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.content_hint
 import com.grappim.taigamobile.strings.generated.resources.create_new_page
@@ -33,8 +36,13 @@ import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
+import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsRow
+import com.grappim.taigamobile.uikit.widgets.editor.findActiveMentionQuery
+import com.grappim.taigamobile.uikit.widgets.editor.insertMention
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
@@ -45,6 +53,7 @@ fun WikiCreatePageScreen(
 ) {
     val topBarController = LocalTopBarConfig.current
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val mentionsState by viewModel.mentionsState.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -68,11 +77,25 @@ fun WikiCreatePageScreen(
         goToWikiPage(result.slug, result.id)
     }
 
-    WikiCreatePageScreenContent(state = state)
+    WikiCreatePageScreenContent(state = state, members = mentionsState.members)
 }
 
 @Composable
-fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier = Modifier) {
+fun WikiCreatePageScreenContent(
+    state: WikiCreatePageState,
+    modifier: Modifier = Modifier,
+    members: ImmutableList<TeamMember> = persistentListOf()
+) {
+    val activeMentionQuery = findActiveMentionQuery(state.content)
+    val mentionSuggestions = remember(activeMentionQuery, members) {
+        val query = activeMentionQuery?.query
+        if (query == null) {
+            persistentListOf()
+        } else {
+            members.filter { it.username.startsWith(query, ignoreCase = true) }.toPersistentList()
+        }
+    }
+
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -118,6 +141,15 @@ fun WikiCreatePageScreenContent(state: WikiCreatePageState, modifier: Modifier =
                 value = state.content,
                 onValueChange = { state.setContent(it) }
             )
+
+            MentionSuggestionsRow(
+                members = mentionSuggestions,
+                onSelect = { member ->
+                    activeMentionQuery?.let { query ->
+                        state.setContent(insertMention(state.content, query, member.username))
+                    }
+                }
+            )
         }
     }
 }
@@ -128,7 +160,7 @@ private fun WikiCreatePageScreenPreview() {
     WikiCreatePageScreenContent(
         state = WikiCreatePageState(
             slug = "getting-started-guide",
-            content = "This is the content..."
+            content = TextFieldValue("This is the content...")
         )
     )
 }

@@ -102,7 +102,7 @@ names, as the thing worth reconciling.
 - Room 2.8.4 + BundledSQLiteDriver (KMP-ready) — **`RoomDatabase.clearAllTables()` is Android-only**;
   the JVM/native actual doesn't declare it at all (confirmed via `javap` on the `room-runtime`
   artifacts). To clear all tables on JVM/iOS, add a no-arg `deleteAll()` `@Query` to each DAO instead.
-- `core/logger` — KMP logging facade (see Logging below); Timber backs it on Android only
+- `grappim-kit-logger` — KMP logging facade (see Logging below); Timber backs it on Android only
 - The JetBrains AndroidX forks (`org.jetbrains.androidx.lifecycle`, `org.jetbrains.androidx.navigation3`,
   `org.jetbrains.androidx.savedstate`) publish their real per-platform code under the **plain
   upstream group id** (`androidx.lifecycle`, `androidx.navigation3`) with platform classifiers
@@ -148,6 +148,141 @@ since it used to live in their own package). See `grappim-kit/CONSUMING.md`'s `u
 for what diverged from the extraction's own writeup (an added `Surface` wrap in `KitTheme`, an
 added top-bar slide animation, and the adapter pattern for a platform-varying `ColorScheme` like
 Android's dynamic color, which `KitTheme` has no accommodation for on its own).
+
+`core/logger`'s `Logcat`/`LogPriority`/`TaigaLogger`/`TimberLogger`/`NSLogLogger`/`FileLogger` →
+`io.github.grigoriym:grappim-kit-logger` was the third swap (2026-09-09, PR #413) — the local
+module was deleted, same as `navigation`. **Unlike `navigation`/`uikit`, check whether the
+consuming app wires the old local module in centrally before assuming it's a per-module
+`build.gradle.kts` line**: this repo's `build-logic/convention/.../KmpConfiguration.kt` hardcoded
+`implementation(project(":core:logger"))` once inside `configureKmp()` (applied to every KMP
+library module), not 40-odd separate `build.gradle.kts` additions — the swap there was a single
+line to `libs.grappim.kit.logger`. `androidApp` (a plain Android application module that never
+goes through `configureKmp()`) still needed its own explicit dependency line update, same as any
+consumer.
+
+`core/async-kmp`'s `ThreadSafeMap`/`ApplicationScope` provider machinery →
+`io.github.grigoriym:grappim-kit-coroutines` was the fourth swap (2026-09-11, PR #421) — the
+local module was kept (it still hosts this app's own Koin qualifier annotations and provider
+functions, which just re-source from the kit's `KitDispatchers`/`applicationScope()` instead of
+raw `kotlinx.coroutines`), so this was a per-module `build.gradle.kts` addition, not a
+`build-logic` change. `ThreadSafeMap` needed `api(...)` rather than `implementation(...)` since
+`WorkItemEditStateRepository` consumes the type one hop away from `core/async-kmp` — see
+`grappim-kit/CONSUMING.md`'s `coroutines` section for the full writeup, including a real (not
+just mechanical) behavior change: `applicationScope()` installs a `CoroutineExceptionHandler`
+this app's own hand-rolled version never had.
+
+`core/crash-api`'s `CrashReporter` → `io.github.grigoriym:grappim-kit-crash` and
+`core/appinfo-api`'s `AppInfoProvider` → `io.github.grigoriym:grappim-kit-appinfo` were the fifth
+swap (2026-09-11, PR #422). `crash` was byte-identical and `core/crash-api` was deleted outright,
+same shape as `navigation`/`logger`. `appinfo` went the **opposite** direction from every prior
+swap here: this app's own `AppInfoProvider` was a strict *superset* of the kit's, not a subset —
+`getAppInfo()` (dropped as a pure formatting concern, now composed in
+`SettingsAboutScreenViewModel` from `versionName()`/`versionCode()`/`buildType()`, which trims the
+Android build's flavor suffix off the About screen) and `getDebugLocalHost()` (dropped as
+app-specific; this app's local-dev network-debugging feature has no equivalent in the kit).
+`core/appinfo-api` survives, narrowed to a single-method `DebugLocalHostProvider` interface;
+every platform `AppInfoProviderImpl` implements both it and the kit's `AppInfoProvider` via
+`@Single(binds = [AppInfoProvider::class, DebugLocalHostProvider::class])` — koin-annotations'
+multi-type `binds` syntax, confirmed working here for the first time (see the **koin-expert**
+subagent). See `grappim-kit/CONSUMING.md`'s `crash`/`appinfo` sections for the full writeup.
+
+`core/domain`'s `PendingCertTrust`/`UntrustedCertificateException`/
+`CertificateHostnameMismatchException`/`resultOf`/`mapResult` → `io.github.grigoriym:grappim-kit-domain`
+was the sixth swap (2026-09-11, PR #423) — **not mechanical**: this app's exceptions extended
+`java.security.cert.CertificateException` directly and were thrown straight out of
+`CompositeTrustManager.checkServerTrusted`, but the kit's versions are plain commonMain
+`Exception`s (portable, but no longer catchable by JSSE's handshake code, which only recognizes
+`CertificateException`). Fixed by wrapping both throws at the JSSE boundary —
+`throw CertificateException(UntrustedCertificateException(...))`, same pattern wallosmobile's
+own swap already uses, extended here to also cover `CertificateHostnameMismatchException` (a
+branch wallosmobile's `CompositeTrustManager` doesn't have). This pushes the kit exception one
+level deeper in the cause chain, so `PlatformNetworkErrorMapper` (jvm/android `actual`) switched
+from a one-level `exception.cause is X` check to the kit's `findPendingCertTrust()` (walks the
+whole chain) plus a small local chain-walk for the hostname-mismatch case, which has no
+kit-level helper. Existing tests that asserted `assertFailsWith<UntrustedCertificateException>`
+directly on `checkServerTrusted`'s throw became **compile errors**, not just wrong assertions
+(`Check for instance is always 'false'` — the kit type is no longer assignable to what the
+method actually throws) — reasserted against the wrapper `CertificateException` and its `.cause`
+instead. `core/domain` survives narrowed (`TaskIdentifier`/`CommonTaskType`/`NetworkException`/
+`PlatformIOException`/`PlatformNetworkError`/`UntrustedCertificateNetworkException` stay local),
+depending on the kit via `api(...)` since `PendingCertTrust` leaks through its own public types
+to ~15 consumer modules. Added `RealTlsHandshakeJvmTest` (`core/api/src/jvmTest/`) — a real
+self-signed HTTPS server (`keytool`-generated, no Docker) driven through the actual
+`createPlatformHttpClientEngine`/`CompositeTrustManager` wiring over a genuine JDK TLS
+handshake — to prove the wrap survives real JSSE, not just the hand-built exception chains
+`CompositeTrustManagerTest`/`NetworkErrorMapperJvmTest` construct. See
+`grappim-kit/CONSUMING.md`'s `domain` section for the full writeup.
+
+`core/storage`'s `NetworkMonitor`(+impls)/`TrustedCertStorage`/`TokenCipher` →
+`io.github.grigoriym:grappim-kit-storage`, and `core/api`'s `CompositeTrustManager` (jvm+android)
+→ `io.github.grigoriym:grappim-kit-trustmanager`, were the seventh swap (2026-09-11, PR #424,
+one combined PR since `grappim-kit-trustmanager`'s `CompositeTrustManager` takes the kit's own
+`TrustedCertStorage` type directly). `NetworkMonitor`/`TrustedCertStorage`/`CompositeTrustManager`
+were all mechanical — this app's own pre-swap classes were essentially byte-identical to what got
+extracted, including the `CertificateHostnameMismatchException` wiring the `domain` swap had
+already landed in `CompositeTrustManager` before `trustmanager` existed as its own kit module.
+`TokenCipher`/`NoopTokenCipher`/`AndroidKeystoreTokenCipher` are replaced by the kit's
+`SecretCipher`/`NoopSecretCipher`/`KeystoreSecretCipher` — the Android Keystore alias is kept as
+`"taiga_auth_token_key"` so existing installs keep decrypting their stored tokens through the same
+underlying key, and `decrypt()` is now nullable (`AuthStorageImpl` already handled that case via
+`.orEmpty()`, so no behavior change). **Confirmed this app is not exposed to a real migration bug
+wallosmobile found in the same swap**: `KeystoreSecretCipher`'s `"v1:"`-prefix passthrough treats
+any *unprefixed* stored ciphertext as legacy plaintext rather than failing to decrypt, silently
+corrupting a pre-existing encrypted value on upgrade for an app whose old cipher had no such
+prefix — this app's deleted `AndroidKeystoreTokenCipher` already used the identical `"v1:"` prefix,
+IV length, GCM tag length and cipher transformation, verified with a throwaway JVM test (not
+committed) that round-trips the old ciphertext byte layout through the new cipher's decode path.
+`core/storage`/`core/api` both survive, narrowed. `NetworkMonitorImpl`/`CompositeTrustManager`
+aren't Koin-annotated in the kit, so each platform gained explicit `@Single` providers — the jvm
+`NetworkMonitor` provider explicitly injects this app's existing singleton
+`@IoDispatcher`/`@ApplicationScope` rather than the kit class's own bare defaults (`=
+applicationScope()`), since that factory function builds a **new**, independent `CoroutineScope`
+on every call rather than returning this app's canonical one. Local `CompositeTrustManagerTest`
+(plus its `FakeX509Certificate`/`FakeX509TrustManager` fakes) was deleted rather than reworked —
+it called the class's `internal` 3-arg `checkServerTrusted` overload, which stops compiling once
+the class is external (Kotlin `internal` is compilation-unit-scoped); `RealTlsHandshakeJvmTest`
+(added in the `domain` swap) already exercises the same real-JSSE-handshake path end-to-end and
+needed no changes beyond a stale KDoc reference. The bare root coordinates
+(`grappim-kit-storage`/`grappim-kit-trustmanager:0.1.4`) publish only `commonMain` + shared
+intermediates (this is KGP's umbrella/metadata publication, not a `grappim-kit` defect —
+`trustmanager` has no `commonMain` at all, so its root sources jar is empty) — diff-the-sources-jar
+verification needs the per-target coordinates instead: `grappim-kit-storage-android`,
+`grappim-kit-storage-jvm`, `grappim-kit-trustmanager-android`, `grappim-kit-trustmanager-jvm`, each
+carrying a complete sources jar (confirmed by downloading and unzipping all four from Maven
+Central). Same split-artifact shape the `logger` swap already documented above. See
+`grappim-kit/CONSUMING.md`'s `storage`/`trustmanager` sections (TaigaMobileNova subsections) for
+the full writeup.
+
+`:testing`'s six hand-written fakes (`MainDispatcherRule`, `FakeNetworkMonitor`,
+`FakeAppInfoProvider`, `FakeSecretCipher`, `FakeCrashReporter`, `FakeTrustedCertStorage`) →
+`io.github.grigoriym:grappim-kit-testing` was the eighth swap (2026-09-11, PR #426) — all six were
+functionally identical to this app's own versions (diffed against the local `grappim-kit`
+checkout) modulo cosmetic formatting/doc-comment differences. `:testing/build.gradle.kts` dropped
+its direct `api(grappim.kit.appinfo)`/`api(grappim.kit.crash)` lines, which existed only to
+support the two deleted fakes — `grappim-kit-testing` re-exposes both transitively.
+
+`androidApp`'s `AppUpdateChecker`/`AppUpdateCheckerImpl` (Play In-App Update wrapper) →
+`io.github.grigoriym:grappim-kit-appupdate`/`-gplay`/`-fdroid` was the ninth swap (2026-09-12, PR
+#427) — byte-identical apart from the package rename and dropped Koin annotation, confirmed by
+downloading the published `0.1.4` sources jars from Maven Central and diffing them against the
+local `grappim-kit` checkout (itself confirmed to match the published jars) and then against this
+app's pre-swap code. Unlike every other swap so far, this kit module ships as **three separate
+artifacts, not one** — `grappim-kit-appupdate` (interface + `UpdateState`), `-gplay` and `-fdroid`
+(each `api`-depends on the base module, mirroring this app's own `gplayImplementation`/
+`fdroidImplementation` split as separate Maven coordinates instead of separate source sets). Since
+neither impl carries a Koin annotation and the gplay/fdroid constructors genuinely differ
+(`Context` vs. no-arg — no single shared provider function can cover both, unlike `storage`'s
+`NetworkMonitor`/`SecretCipher`/`TrustedCertStorage` providers), each flavor got its own small
+`AppUpdateModule.kt` (`@Module` class with one `@Single` provider function) in
+`androidApp/src/{gplay,fdroid}/.../data/`, included into `AndroidModule` via
+`@Module(includes = [AppUpdateModule::class])`. **A DI change entirely inside `androidApp` is
+invisible to `KoinGraphTest`** (which only verifies `composeApp`'s graph) — compiling both flavors
+proves the impl classes satisfy the interface but not that Koin can resolve the binding at
+runtime, so this was verified with a real cold start on `Medium_Phone_API_36.1` for both flavors:
+no crash on either, and the gplay flavor's logcat showed PlayCore's real `AppUpdateService`
+actually bind and run `requestUpdateInfo`/`registerListener` from `MainActivity.onCreate`/
+`onResume`. See `grappim-kit/CONSUMING.md`'s `appupdate` section (TaigaMobileNova subsection) for
+the full writeup.
 
 ## Navigation Pattern
 
@@ -496,6 +631,17 @@ object locally** — to build against the PR's merge-base (e.g. for a size/perf 
 explicitly: `git fetch --depth=1 origin ${{ github.event.pull_request.base.sha }}` before `git
 checkout` that sha. Confirmed 2026-08-30 in `build.yml`'s `apk-size-check` job.
 
+**`ubuntu-latest`'s preinstalled Google Chrome apt repo can intermittently fail `apt-get update`
+with a Hash Sum mismatch** (a CDN metadata race on Google's end, unrelated to this repo) and abort
+the whole `apt-get update`, breaking any later `apt-get install` in the same step — hit in
+`build.yml`'s `desktop-package` job (`Install fakeroot and rpm`), which doesn't use Chrome at all.
+Fix: `sudo rm -f /etc/apt/sources.list.d/google-chrome.sources` before `apt-get update`. Note the
+filename — it's the newer deb822 format (`.sources`, `URIs:`/`Suites:` keys), not the legacy
+`google-chrome.list` that `actions/runner-images`' own `install-google-chrome.sh` still references;
+guessing the old name is a silent no-op (`rm -f` doesn't error on a missing path) rather than a
+visible failure. Confirmed 2026-09-09 (PR #409) by listing `/etc/apt/sources.list.d/` in a debug
+step rather than guessing twice.
+
 ## Multi-Session Work
 
 For any initiative that spans multiple sessions — a feature investigation, a redesign, a
@@ -649,6 +795,13 @@ unreviewable), not dropped, not just mentioned in chat — chat is not persisten
 enough evidence (`file:line`, or a link to an issue doc) that a cold session can act on it without
 re-deriving anything.
 
+**When a later session fixes a `docs/revisit.md` entry, close it out the same way the pre-#45
+entries were: move the whole section to
+[docs/archive/revisit-resolved.md](docs/archive/revisit-resolved.md) with a `**Fix (date):**`
+paragraph appended describing what changed, and remove it from `revisit.md`.** Both files keep a
+`| # | Item | ... |` index table above their sections — update both, not just the section body, or
+the index goes stale while the section itself disappears. Confirmed 2026-09-11 closing entry 54.
+
 The test: Every changed line should trace directly to the user's request.
 
 ### Comments
@@ -687,6 +840,17 @@ procedure by hand — a script or a hook can't skip a step or get one wrong the 
 can. `.github/scripts/check-guardrails.sh` is this project's own example: the gate rules are a
 script, not a mental checklist to re-derive each session. Reserve judgment for what actually needs
 it — ambiguous input, a plan, a choice between options.
+
+**Never guess an external artifact's exact name from convention — list or query the real source
+first.** A filename, URL, or API signature that "should" follow a pattern (a release-asset name
+built from a version tag, an apt source's legacy filename, a sibling function's parameter list)
+routinely doesn't, and a wrong guess that fails silently (e.g. `rm -f` on a missing path) can burn
+a full round-trip before the mismatch is even visible. Confirmed three times: a GitHub release's
+actual asset name vs. one built from the version tag (`docs/frictions.md` 2026-08-29), an
+`androidx` API's real signature vs. a sibling overload's shape (2026-08-15), and a CI runner's
+actual apt source filename vs. the legacy name referenced in its own build script (2026-09-09,
+PR #409) — see the CI Guardrails entry above for that case. Check with `gh api`/`ls`/reading the
+real source before writing the fix, not after it fails once.
 
 ### Goal-Driven Execution
 
@@ -741,12 +905,14 @@ Weighed and declined — don't re-propose these.
 
 ## Logging
 
-`core/logger` is a KMP logging facade — it is added to every KMP module's `commonMain` automatically
-by the convention plugin, so `logcat` is always available without a dependency change.
+`grappim-kit-logger` (published Maven artifact, `io.github.grigoriym:grappim-kit-logger` — swapped
+in for the local `core/logger` module, see grappim-kit Modules above) is a KMP logging facade — it
+is added to every KMP module's `commonMain` automatically by the convention plugin, so `logcat` is
+always available without a dependency change.
 
 ```kotlin
-import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.logger.LogPriority   // separate import, only if you set a priority
+import com.grappim.kit.logger.logcat
+import com.grappim.kit.logger.LogPriority   // separate import, only if you set a priority
 
 logcat { "plain debug message" }                               // as an Any extension: tag = this::class.simpleName
 logcat(tag = "Ktor") { "explicit tag" }                        // top-level overload: tag is null unless given
@@ -756,9 +922,9 @@ logcat(LogPriority.ERROR, throwable = e) { "failed to load" }
 Priorities: `VERBOSE`, `DEBUG` (default), `INFO`, `WARN`, `ERROR`, `ASSERT`.
 
 The message is a lambda, so it isn't built unless a logger is installed. Never call `Timber`
-directly outside `core/logger`.
+directly outside `grappim-kit-logger`.
 
-**Backends** — `TaigaLogger.install(...)` is called once per platform entry point:
+**Backends** — `KitLogger.install(...)` is called once per platform entry point:
 
 | Platform | Impl | Installed in |
 |----------|------|--------------|

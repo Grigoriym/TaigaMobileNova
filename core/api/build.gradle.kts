@@ -7,11 +7,18 @@ plugins {
 
 kotlin {
     sourceSets {
+        androidMain.dependencies {
+            implementation(libs.grappim.kit.trustmanager)
+        }
+        jvmMain.dependencies {
+            implementation(libs.grappim.kit.trustmanager)
+        }
         commonMain.dependencies {
             implementation(libs.ktor.contentNegotiation)
             implementation(libs.ktor.logging)
             implementation(libs.ktor.serialization.json)
 
+            implementation(libs.grappim.kit.appinfo)
             implementation(projects.core.appinfoApi)
             implementation(projects.core.domain)
             implementation(projects.core.storage)

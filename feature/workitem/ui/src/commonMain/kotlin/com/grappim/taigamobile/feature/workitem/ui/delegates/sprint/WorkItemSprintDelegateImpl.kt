@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.sprint
 
+import com.grappim.kit.domain.resultOf
+import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.sprint_end_date_empty

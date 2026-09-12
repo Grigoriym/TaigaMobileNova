@@ -1,16 +1,17 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.details
 
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.wiki.domain.WikiPageUseCase
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getAttachment
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
@@ -76,6 +77,7 @@ internal class WikiPageViewModelTest {
             taigaSessionStorage = taigaSessionStorage,
             patchDataGenerator = patchDataGenerator,
             workItemEditStateRepository = workItemEditStateRepository,
+            usersRepository = usersRepository,
             route = route
         )
     }
@@ -157,6 +159,18 @@ internal class WikiPageViewModelTest {
         createViewModel()
 
         assertEquals(link, sut.state.value.link)
+    }
+
+    @Test
+    fun `on init members are loaded via the mentions delegate`() {
+        val members = persistentListOf(
+            TeamMember(id = 1L, avatarUrl = null, name = "Alice Anderson", role = "Developer", username = "alice")
+        )
+        usersRepository.getTeamMembersResult = members
+
+        createViewModel()
+
+        assertEquals(members, sut.mentionsState.value.members)
     }
 
     // --- delete alert ---

@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.settings.ui.user
 
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.storage.FakeServerStorage

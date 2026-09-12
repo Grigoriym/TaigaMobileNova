@@ -39,7 +39,7 @@ androidDesugarJdkLibs = "2.1.5"
 
 # Perf profiling (Baseline Profile / Macrobenchmark) — see docs/perf/profiling-plan.md
 # https://developer.android.com/jetpack/androidx/releases/benchmark — also versions the androidx.baselineprofile plugin
-androidxBenchmark = "1.5.0-rc02"
+androidxBenchmark = "1.5.0"
 # https://developer.android.com/jetpack/androidx/releases/profileinstaller
 profileinstaller = "1.4.1"
 # https://developer.android.com/jetpack/androidx/releases/test
@@ -54,7 +54,7 @@ buildKonfig = "0.22.0"
 kotlin = "2.4.10"
 # https://github.com/Kotlin/kotlinx.coroutines/releases
 coroutines = "1.11.0"
-ksp = "2.3.11"
+ksp = "2.3.12"
 kotlin-serialization-plugin = "2.4.10"
 kotlin-serialization-json = "1.11.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
@@ -75,7 +75,7 @@ koin-bom = "4.2.2"
 # https://github.com/InsertKoinIO/koin-annotations/releases
 koin-annotations = "4.2.2"
 # https://github.com/InsertKoinIO/koin-compiler-plugin
-koin-plugin = "1.2.0"
+koin-plugin = "1.2.1"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
 jetbrainsComposeMultiplatform = "1.12.0"
@@ -86,17 +86,26 @@ jetbrainsSavedState = "1.4.0"
 jetbrainsComposeIcons = "1.7.3"
 jetbrainsAndroidxLifecycle = "2.11.0"
 jetbrainsNav3 = "1.1.1"
-grappimKitNavigation = "0.1.3"
-grappimKitUikit = "0.1.3"
+grappimKitNavigation = "0.1.4"
+grappimKitUikit = "0.1.4"
+grappimKitLogger = "0.1.4"
+grappimKitCoroutines = "0.1.4"
+grappimKitCrash = "0.1.4"
+grappimKitAppinfo = "0.1.4"
+grappimKitDomain = "0.1.4"
+grappimKitStorage = "0.1.4"
+grappimKitTrustmanager = "0.1.4"
+grappimKitTesting = "0.1.4"
+grappimKitAppupdate = "0.1.4"
 
-compose-bom = "2026.08.00"
+compose-bom = "2026.09.00"
 
 material = "1.14.0"
 activity-compose = "1.13.0"
 lifecycle = "2.11.0"
 paging = "3.5.1"
 room = "2.8.5"
-sqlite = "2.7.0"
+sqlite = "2.7.1"
 
 coil = "3.6.2"
 okhttp = "5.5.0"
@@ -115,13 +124,11 @@ splashScreen = "1.2.0"
 timber = "5.0.1"
 
 # https://firebase.google.com/support/release-notes/android
-firebase-bom = "34.18.0"
+firebase-bom = "34.19.0"
 # https://developers.google.com/android/guides/google-services-plugin
 google-services = "4.5.0"
 # https://firebase.google.com/docs/crashlytics/android/get-started
 firebase-crashlytics-plugin = "3.0.8"
-# https://developer.android.com/guide/playcore#in-app-updates
-in-app-update = "2.1.0"
 
 [libraries]
 filekit-dialogs = { module = "io.github.vinceglb:filekit-dialogs", version.ref = "filekit" }
@@ -154,6 +161,17 @@ jetbrains-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:naviga
 jetbrains-lifecycle-viewmodel-navigation3 = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "jetbrainsAndroidxLifecycle" }
 grappim-kit-navigation = { module = "io.github.grigoriym:grappim-kit-navigation", version.ref = "grappimKitNavigation" }
 grappim-kit-uikit = { module = "io.github.grigoriym:grappim-kit-uikit", version.ref = "grappimKitUikit" }
+grappim-kit-logger = { module = "io.github.grigoriym:grappim-kit-logger", version.ref = "grappimKitLogger" }
+grappim-kit-coroutines = { module = "io.github.grigoriym:grappim-kit-coroutines", version.ref = "grappimKitCoroutines" }
+grappim-kit-crash = { module = "io.github.grigoriym:grappim-kit-crash", version.ref = "grappimKitCrash" }
+grappim-kit-appinfo = { module = "io.github.grigoriym:grappim-kit-appinfo", version.ref = "grappimKitAppinfo" }
+grappim-kit-domain = { module = "io.github.grigoriym:grappim-kit-domain", version.ref = "grappimKitDomain" }
+grappim-kit-storage = { module = "io.github.grigoriym:grappim-kit-storage", version.ref = "grappimKitStorage" }
+grappim-kit-trustmanager = { module = "io.github.grigoriym:grappim-kit-trustmanager", version.ref = "grappimKitTrustmanager" }
+grappim-kit-testing = { module = "io.github.grigoriym:grappim-kit-testing", version.ref = "grappimKitTesting" }
+grappim-kit-appupdate = { module = "io.github.grigoriym:grappim-kit-appupdate", version.ref = "grappimKitAppupdate" }
+grappim-kit-appupdate-gplay = { module = "io.github.grigoriym:grappim-kit-appupdate-gplay", version.ref = "grappimKitAppupdate" }
+grappim-kit-appupdate-fdroid = { module = "io.github.grigoriym:grappim-kit-appupdate-fdroid", version.ref = "grappimKitAppupdate" }
 
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlin-serialization-json" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
@@ -229,8 +247,6 @@ timber = { module = "com.jakewharton.timber:timber", version.ref = "timber" }
 
 firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-bom" }
 firebase-crashlytics = { module = "com.google.firebase:firebase-crashlytics" }
-
-google-inapp-update-ktx = { module = "com.google.android.play:app-update-ktx", version.ref = "in-app-update" }
 
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 

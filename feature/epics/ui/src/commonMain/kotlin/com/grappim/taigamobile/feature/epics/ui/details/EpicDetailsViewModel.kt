@@ -3,11 +3,11 @@ package com.grappim.taigamobile.feature.epics.ui.details
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.domain.resultOf
+import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.epics.domain.Epic
 import com.grappim.taigamobile.feature.epics.domain.EpicDetailsDataUseCase
@@ -32,6 +32,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkIt
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -51,6 +53,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFi
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.epic_slug
+import com.grappim.taigamobile.uikit.widgets.editor.containsKnownMention
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
@@ -144,6 +147,9 @@ class EpicDetailsViewModel(
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator,
         dateTimeUtils = dateTimeUtils
+    ),
+    WorkItemMentionsDelegate by WorkItemMentionsDelegateImpl(
+        usersRepository = usersRepository
     ) {
 
     companion object {
@@ -195,6 +201,7 @@ class EpicDetailsViewModel(
 
     init {
         loadEpic()
+        viewModelScope.launch { loadMembers() }
 
         workItemEditStateRepository
             .getTeamMemberUpdateFlow(epicId, TaskIdentifier.WorkItem(epicTaskType))
@@ -327,6 +334,14 @@ class EpicDetailsViewModel(
                         currentEpic = updatedEpic,
                         originalEpic = updatedEpic
                     )
+                }
+
+                if (containsKnownMention(newDescription, mentionsState.value.members.map { it.username })) {
+                    viewModelScope.launch {
+                        refreshWatchers(workItemId = currentEpic.id, doOnError = { error ->
+                            logcat(throwable = error) { "Error refreshing watchers after mention" }
+                        })
+                    }
                 }
             }
         )
@@ -626,6 +641,13 @@ class EpicDetailsViewModel(
                 },
                 doOnSuccess = { result ->
                     updateVersion(result.newVersion)
+                    if (containsKnownMention(newComment, mentionsState.value.members.map { it.username })) {
+                        viewModelScope.launch {
+                            refreshWatchers(workItemId = currentEpic.id, doOnError = { error ->
+                                logcat(throwable = error) { "Error refreshing watchers after mention" }
+                            })
+                        }
+                    }
                 },
                 doOnError = { error ->
                     emitError(error)

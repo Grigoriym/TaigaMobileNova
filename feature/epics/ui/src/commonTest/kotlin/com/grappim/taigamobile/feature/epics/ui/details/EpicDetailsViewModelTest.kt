@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.epics.ui.details
 
 import androidx.compose.ui.graphics.Color
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -24,11 +25,11 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkI
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.epic_slug
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getComment
 import com.grappim.taigamobile.testing.models.getEpic
 import com.grappim.taigamobile.testing.models.getEpicDetailsData
 import com.grappim.taigamobile.testing.models.getStatusUI
+import com.grappim.taigamobile.testing.models.getTeamMember
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.testing.repo.DeleteAttachmentCall
@@ -516,6 +517,38 @@ internal class EpicDetailsViewModelTest {
     }
 
     @Test
+    fun `onCreateCommentClick with a mention of a known member should refresh watchers`() {
+        val newVersion = getRandomLong()
+        val refreshedWatchers = persistentListOf(getUser())
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        usersRepository.getTeamMembersResult = persistentListOf(getTeamMember(username = "alice"))
+        workItemRepository.getUpdateWorkItemResult = UpdateWorkItem(persistentListOf(getRandomLong()))
+        usersRepository.getUsersListResult = refreshedWatchers
+        createViewModel()
+
+        sut.state.value.onCreateCommentClick("thanks @alice")
+
+        assertEquals(refreshedWatchers, sut.watchersState.value.watchers)
+    }
+
+    @Test
+    fun `onCreateCommentClick with a mention of an unknown username should not refresh watchers`() {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        usersRepository.getTeamMembersResult = persistentListOf(getTeamMember(username = "alice"))
+        workItemRepository.getUpdateWorkItemResult = UpdateWorkItem(persistentListOf(getRandomLong()))
+        usersRepository.getUsersListResult = persistentListOf(getUser())
+        createViewModel()
+        val initialWatchers = sut.watchersState.value.watchers
+
+        sut.state.value.onCreateCommentClick("thanks @bob")
+
+        assertEquals(initialWatchers, sut.watchersState.value.watchers)
+    }
+
+    @Test
     fun `onCommentRemove success should drop the comment from the state`() {
         setupSuccessfulLoad()
         createViewModel()
@@ -869,6 +902,38 @@ internal class EpicDetailsViewModelTest {
         }
 
         assertEquals(originalDescription, sut.state.value.currentEpic?.description)
+    }
+
+    @Test
+    fun `description update with a mention of a known member should refresh watchers`() = runTest {
+        val newVersion = getRandomLong()
+        val refreshedWatchers = persistentListOf(getUser())
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        usersRepository.getTeamMembersResult = persistentListOf(getTeamMember(username = "alice"))
+        workItemRepository.getUpdateWorkItemResult = UpdateWorkItem(persistentListOf(getRandomLong()))
+        usersRepository.getUsersListResult = refreshedWatchers
+        createViewModel()
+
+        workItemEditStateRepository.updateDescription(epicId, type, "thanks @alice")
+
+        assertEquals(refreshedWatchers, sut.watchersState.value.watchers)
+    }
+
+    @Test
+    fun `description update with a mention of an unknown username should not refresh watchers`() = runTest {
+        val newVersion = getRandomLong()
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        usersRepository.getTeamMembersResult = persistentListOf(getTeamMember(username = "alice"))
+        workItemRepository.getUpdateWorkItemResult = UpdateWorkItem(persistentListOf(getRandomLong()))
+        usersRepository.getUsersListResult = persistentListOf(getUser())
+        createViewModel()
+        val initialWatchers = sut.watchersState.value.watchers
+
+        workItemEditStateRepository.updateDescription(epicId, type, "thanks @bob")
+
+        assertEquals(initialWatchers, sut.watchersState.value.watchers)
     }
 
     @Test

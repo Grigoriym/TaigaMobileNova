@@ -10,6 +10,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.add_description
@@ -20,6 +21,8 @@ import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.ExpandableMarkdownText
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
@@ -29,7 +32,9 @@ fun WorkItemDescriptionWidget(
     description: String?,
     onDescriptionClick: () -> Unit,
     modifier: Modifier = Modifier,
-    canModify: Boolean = true
+    canModify: Boolean = true,
+    members: ImmutableList<TeamMember> = persistentListOf(),
+    onMentionClick: (Long) -> Unit = {}
 ) {
     Column(
         modifier = modifier
@@ -55,7 +60,9 @@ fun WorkItemDescriptionWidget(
 
         if (description?.isNotEmpty() == true) {
             ExpandableMarkdownText(
-                text = description
+                text = description,
+                members = members,
+                onMentionClick = onMentionClick
             )
         } else {
             Text(

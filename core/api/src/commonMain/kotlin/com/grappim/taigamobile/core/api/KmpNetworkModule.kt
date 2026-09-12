@@ -1,12 +1,13 @@
 package com.grappim.taigamobile.core.api
 
+import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.kit.logger.logcat
+import com.grappim.kit.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.core.api.errors.ErrorMappingPlugin
 import com.grappim.taigamobile.core.api.errors.ErrorResponseParser
 import com.grappim.taigamobile.core.api.errors.NetworkErrorMapper
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
-import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
@@ -47,7 +48,7 @@ class KmpNetworkModule {
     fun provideAuthHttpClient(
         @HttpJson httpJson: Json,
         baseUrlProvider: BaseUrlProvider,
-        appInfoProvider: AppInfoProvider,
+        debugLocalHostProvider: DebugLocalHostProvider,
         networkErrorMapper: NetworkErrorMapper,
         errorResponseParser: ErrorResponseParser,
         trustedCertStorage: TrustedCertStorage
@@ -76,7 +77,7 @@ class KmpNetworkModule {
             this.baseUrlProvider = baseUrlProvider
         }
         install(DebugLocalhostPlugin) {
-            this.appInfoProvider = appInfoProvider
+            this.debugLocalHostProvider = debugLocalHostProvider
         }
     }
 
@@ -86,6 +87,7 @@ class KmpNetworkModule {
         baseUrlProvider: BaseUrlProvider,
         authStorage: AuthStorage,
         appInfoProvider: AppInfoProvider,
+        debugLocalHostProvider: DebugLocalHostProvider,
         tokenRefresher: TokenRefresher,
         networkErrorMapper: NetworkErrorMapper,
         errorResponseParser: ErrorResponseParser,
@@ -123,7 +125,7 @@ class KmpNetworkModule {
             this.tokenRefresher = tokenRefresher
         }
         install(DebugLocalhostPlugin) {
-            this.appInfoProvider = appInfoProvider
+            this.debugLocalHostProvider = debugLocalHostProvider
         }
     }
 }

@@ -55,6 +55,7 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | ➡️ moved to tablet checklist 2026-08-22 |
 | 49 | [Kanban fetches `filters_data` twice on load](#49-kanban-fetches-filters_data-twice-on-load) | ✅ resolved 2026-09-07 |
 | 51 | [Switching drawer sections is recorded on the back stack, so back cascades through prior sections](#51-switching-drawer-sections-is-recorded-on-the-back-stack-so-back-cascades-through-prior-sections) | ✅ resolved 2026-09-07 |
+| 54 | [`containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member](#54-containsmention-triggers-a-wasted-watchers-refresh-for-a-typod-name-that-isnt-a-real-member) | ✅ resolved 2026-09-11 |
 
 ---
 
@@ -2148,3 +2149,44 @@ expected stacks) to assert the new invariant. Verified with `./gradlew :core:nav
 `./gradlew :core:navigation:ktlintCommonMainSourceSetCheck :core:navigation:ktlintCommonTestSourceSetCheck`
 (clean).
 
+
+---
+
+## 54. `containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member
+
+**What:** raised by gregory (2026-09-11) right after the watchers-refresh-on-mention fix landed
+(`66c8d21f`, see
+[docs/architecture/mention-tagging-support/IMPLEMENTATION_PLAN.md](../architecture/mention-tagging-support/IMPLEMENTATION_PLAN.md)'s
+added note). `containsMention(text)` (`uikit/src/commonMain/kotlin/com/grappim/taigamobile/uikit/widgets/editor/MentionQuery.kt`)
+is a pure syntactic check — it mirrors the server's `\B(@)([\w.-]+)\b` regex
+(`taiga-back`'s `mentions.py:48`) but has no idea whether the matched token is an actual project
+member.
+
+So posting a comment or description containing `@non-present` (a token that doesn't resolve to a
+real team member) still makes `containsMention()` return `true`, which still triggers
+`WorkItemWatchersDelegate.refreshWatchers()` — called from `createComment()`/
+`onNewDescriptionUpdate()` in all four work-item ViewModels (`TaskDetailsViewModel.kt`,
+`IssueDetailsViewModel.kt`, `UserStoryDetailsViewModel.kt`, `EpicDetailsViewModel.kt`). Server-side,
+`mentions.py:66-69` silently leaves an unresolvable username as plain text and adds no watcher (per
+the plan's "Server contract" section), so the refresh just re-fetches the same watchers list that
+was already in state — a harmless but unnecessary `getUpdateWorkItem` + `getUsersList` round-trip.
+
+**Why not fixed inline:** low severity (the row-based autocomplete only lets a user *insert* a
+mention by picking a real member from suggestions, so a bogus `@name` only reaches the server via
+manual edits or pasted text — not the normal flow) and the fix is a small, separate, independently
+testable change — not worth folding into the watchers-refresh fix's diff.
+
+**Fix (2026-09-11):** added `containsKnownMention(text, knownUsernames)` next to `containsMention`
+in `MentionQuery.kt` — same syntactic regex match, narrowed to usernames present in a supplied
+collection (server does an exact, case-sensitive `username=` lookup per `mentions.py:59-69`, so the
+comparison is case-sensitive too, not case-insensitive). All 8 call sites across the four work-item
+ViewModels (`createComment`/`onNewDescriptionUpdate` in `TaskDetailsViewModel.kt`,
+`IssueDetailsViewModel.kt`, `UserStoryDetailsViewModel.kt`, `EpicDetailsViewModel.kt`) switched from
+`containsMention(text)` to `containsKnownMention(text, mentionsState.value.members.map { it.username })`
+— the same team-members list already loaded via `WorkItemMentionsDelegate.loadMembers()` on init for
+the autocomplete row, so no new network call. Added `MentionQueryTest.kt` coverage for the new
+function (known/unknown/empty-list/case-sensitivity/no-at-sign) and, per ViewModel, two tests
+asserting `watchersState.value.watchers` does/doesn't change after a comment or description
+containing a known-vs-unknown `@mention` (`getTeamMember()`'s test factory gained a `username`
+override param for this). Verified with full `./gradlew jvmTest` (1860 green), `ktlintCheck`, and
+`:koverVerify` (floor still holds).

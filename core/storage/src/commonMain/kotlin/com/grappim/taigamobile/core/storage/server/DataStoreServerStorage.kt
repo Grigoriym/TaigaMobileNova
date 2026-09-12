@@ -4,7 +4,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import com.grappim.taigamobile.core.storage.di.PREFS_EXT
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
@@ -14,7 +15,8 @@ internal const val SERVER_STORAGE_FILE_NAME = "taiga_server_storage_name$PREFS_E
 
 internal class DataStoreServerStorage(
     private val dataStore: DataStore<Preferences>,
-    private val appInfoProvider: AppInfoProvider
+    private val appInfoProvider: AppInfoProvider,
+    private val debugLocalHostProvider: DebugLocalHostProvider
 ) : ServerStorage {
 
     private val serverKey = stringPreferencesKey("server_key")
@@ -35,8 +37,8 @@ internal class DataStoreServerStorage(
     }
 
     private fun getServerDefaultValue(): String =
-        if (appInfoProvider.isDebug() && appInfoProvider.getDebugLocalHost().isNotEmpty()) {
-            appInfoProvider.getDebugLocalHost()
+        if (appInfoProvider.isDebug() && debugLocalHostProvider.getDebugLocalHost().isNotEmpty()) {
+            debugLocalHostProvider.getDebugLocalHost()
         } else {
             "https://api.taiga.io"
         }

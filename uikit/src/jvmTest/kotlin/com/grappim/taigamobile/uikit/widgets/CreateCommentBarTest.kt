@@ -6,7 +6,9 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.runComposeUiTest
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
+import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -58,5 +60,41 @@ class CreateCommentBarTest {
         onNodeWithTag(CREATE_COMMENT_BAR_SEND_BUTTON_TEST_TAG).performClick()
 
         assertFalse(callbackInvoked)
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun typingAtSignShowsSuggestionsAndSelectingOneInsertsMention() = runComposeUiTest {
+        var sentText: String? = null
+        val alice = TeamMember(
+            id = 1L,
+            avatarUrl = null,
+            name = "Alice Anderson",
+            role = "Developer",
+            username = "alice"
+        )
+        val bob = TeamMember(id = 2L, avatarUrl = null, name = "Bob Baker", role = "QA", username = "bob")
+
+        setContent {
+            TaigaMobilePreviewTheme {
+                CreateCommentBar(
+                    isOffline = false,
+                    onButtonClick = { sentText = it },
+                    canComment = true,
+                    members = persistentListOf(alice, bob)
+                )
+            }
+        }
+
+        onNodeWithTag(CREATE_COMMENT_BAR_TEXT_FIELD_TEST_TAG).performTextInput("Hey @al")
+        onNodeWithText("alice").assertExists()
+        onNodeWithText("bob").assertDoesNotExist()
+
+        onNodeWithText("alice").performClick()
+        onNodeWithText("Hey @alice ").assertExists()
+
+        onNodeWithTag(CREATE_COMMENT_BAR_SEND_BUTTON_TEST_TAG).performClick()
+
+        assertEquals("Hey @alice", sentText)
     }
 }

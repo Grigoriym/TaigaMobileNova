@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.sprint.data
 
+import com.grappim.kit.testing.FakeNetworkMonitor
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
 import com.grappim.taigamobile.feature.filters.mapper.TagsMapper
@@ -9,7 +10,6 @@ import com.grappim.taigamobile.feature.users.mapper.UserMapper
 import com.grappim.taigamobile.feature.workitem.data.WorkItemEntityMapper
 import com.grappim.taigamobile.feature.workitem.domain.getPluralPath
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
-import com.grappim.taigamobile.testing.FakeNetworkMonitor
 import com.grappim.taigamobile.testing.api.FakeSprintsApi
 import com.grappim.taigamobile.testing.api.FakeWorkItemApi
 import com.grappim.taigamobile.testing.dao.FakeSprintDao

@@ -24,6 +24,7 @@ import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarActionIconButton
 import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.wiki.ui.nav.WikiPageNavDestination
 import com.grappim.taigamobile.feature.wiki.ui.widgets.WikiPageDropDownMenuWidget
 import com.grappim.taigamobile.feature.workitem.ui.delegates.attachments.WorkItemAttachmentsState
@@ -44,6 +45,8 @@ import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.dialog.TaigaLoadingDialog
 import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -63,6 +66,7 @@ fun WikiPageScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val attachmentsState by viewModel.attachmentsState.collectAsStateWithLifecycle()
     val descriptionState by viewModel.descriptionState.collectAsStateWithLifecycle()
+    val mentionsState by viewModel.mentionsState.collectAsStateWithLifecycle()
     val isOffline = LocalOfflineState.current
 
     LaunchedEffect(state.shouldShowActions) {
@@ -124,7 +128,9 @@ fun WikiPageScreen(
             state = state,
             attachmentsState = attachmentsState,
             descriptionState = descriptionState,
+            members = mentionsState.members,
             onUserItemClick = goToProfile,
+            onMentionClick = goToProfile,
             goToEditDescription = goToEditDescription,
             isOffline = isOffline
         )
@@ -139,7 +145,9 @@ fun WikiPageScreenContent(
     isOffline: Boolean,
     goToEditDescription: (String, Long) -> Unit,
     modifier: Modifier = Modifier,
-    onUserItemClick: (userId: Long) -> Unit = { _ -> }
+    members: ImmutableList<TeamMember> = persistentListOf(),
+    onUserItemClick: (userId: Long) -> Unit = { _ -> },
+    onMentionClick: (userId: Long) -> Unit = { _ -> }
 ) {
     requireNotNull(state.currentPage)
 
@@ -167,7 +175,9 @@ fun WikiPageScreenContent(
                 },
                 descriptionState = descriptionState,
                 canModify = state.canModifyPage,
-                isOffline = isOffline
+                isOffline = isOffline,
+                members = members,
+                onMentionClick = onMentionClick
             )
 
             TaigaHeightSpacer(sectionsPadding)

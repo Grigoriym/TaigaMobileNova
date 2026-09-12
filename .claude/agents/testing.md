@@ -309,6 +309,19 @@ example; see also the `TaskIdentifier` note under `WorkItemEditStateRepository`.
 ### ViewModel init loads data synchronously
 With `MainDispatcherRule` using `UnconfinedTestDispatcher`, `init { viewModelScope.launch { ... } }` completes before `createViewModel()` returns. Assert state directly after `createViewModel()` without `runTest`.
 
+### Asserting a conditional side-effect fired, without a call counter
+Several fakes (e.g. `FakeUsersRepository.getUsersList`, `FakeWorkItemRepository.getUpdateWorkItem`)
+have no call counter — they're plain read-style methods that just return a configured result. To
+prove a conditional branch actually invoked one (e.g. "posting a comment that mentions someone
+refreshes watchers, one that doesn't should not"), don't add a counter to the fake just for this;
+stub the downstream fake results to something *distinguishable* from the pre-existing state (a
+fresh `persistentListOf(getUser())` rather than whatever `setupSuccessfulLoad()` already seeded),
+capture the ViewModel's state before the action, then assert it changed (branch taken) or stayed
+equal to the captured before-value (branch not taken). `TaskDetailsViewModelTest`'s
+`onCreateCommentClick with a mention of a known/unknown ...` pair is the worked example — same
+technique the "Write round-trip pattern" integration tests above use for a real server, just
+applied to a fake's stubbed return value instead of a live read-back call.
+
 ### Reaching a target state without chaining setters
 Don't chain `onXChange`/`setX` calls to build up a multi-field state before the behaviour under
 test — the VM's own constructor inputs are already the seam: for a load-in-`init` VM, set the
@@ -432,17 +445,17 @@ fun `patchData should propagate api error`() = runTest {
   `CreateWorkItemUseCaseTest` and `GetProfileDataUseCaseTest` both do this with a local helper; if a
   third file needs it, promote it to `:testing`'s `TestUtils.kt`.
 
-### Asserting something was logged (`TaigaLogger`)
+### Asserting something was logged (`KitLogger`)
 
 To prove a `catch` block or a `CoroutineExceptionHandler` actually logs (CLAUDE.md's Error
-Handling rule) rather than swallowing silently, implement `TaigaLogger` inline in the test, call
-`TaigaLogger.install(it)`, exercise the code, then assert on the recorded `priority`/`throwable`.
-`TaigaLogger.uninstall()` in `@AfterTest` — it's a process-wide `@Volatile var`, so a leaked
+Handling rule) rather than swallowing silently, implement `KitLogger` inline in the test, call
+`KitLogger.install(it)`, exercise the code, then assert on the recorded `priority`/`throwable`.
+`KitLogger.uninstall()` in `@AfterTest` — it's a process-wide `@Volatile var`, so a leaked
 install bleeds into unrelated tests in the same JVM process (see gotcha 7 on shared test process
 state). First example: `core/async-kmp/src/commonTest/.../KmpCoroutinesModuleTest.kt`.
 
 ```kotlin
-private class RecordingLogger : TaigaLogger {
+private class RecordingLogger : KitLogger {
     var priority: LogPriority? = null
     var throwable: Throwable? = null
 
@@ -453,7 +466,7 @@ private class RecordingLogger : TaigaLogger {
 }
 
 @AfterTest
-fun tearDown() = TaigaLogger.uninstall()
+fun tearDown() = KitLogger.uninstall()
 ```
 
 ### Ktor plugins and anything needing a real `HttpResponse`

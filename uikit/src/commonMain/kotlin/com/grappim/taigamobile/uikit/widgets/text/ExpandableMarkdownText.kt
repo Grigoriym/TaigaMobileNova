@@ -21,14 +21,23 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.show_less
 import com.grappim.taigamobile.strings.generated.resources.show_more
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun ExpandableMarkdownText(text: String, modifier: Modifier = Modifier, maxLinesCollapsed: Int = 6) {
+fun ExpandableMarkdownText(
+    text: String,
+    modifier: Modifier = Modifier,
+    maxLinesCollapsed: Int = 6,
+    members: ImmutableList<TeamMember> = persistentListOf(),
+    onMentionClick: (Long) -> Unit = {}
+) {
     var isExpanded by remember { mutableStateOf(false) }
     var naturalHeight by remember { mutableStateOf(0.dp) }
     val maxHeight = (maxLinesCollapsed * 24).dp
@@ -57,6 +66,8 @@ fun ExpandableMarkdownText(text: String, modifier: Modifier = Modifier, maxLines
             ) {
                 MarkdownTextWidget(
                     text = text,
+                    members = members,
+                    onMentionClick = onMentionClick,
                     modifier = Modifier.onSizeChanged { size ->
                         with(density) {
                             val currentHeight = size.height.toDp()

@@ -6,7 +6,7 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
-            implementation(libs.kotlinx.atomicfu)
+            api(libs.grappim.kit.coroutines)
         }
     }
 }

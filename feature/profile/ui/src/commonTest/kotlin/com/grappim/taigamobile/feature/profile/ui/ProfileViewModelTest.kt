@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.profile.ui
 
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.profile.domain.GetProfileDataUseCase
 import com.grappim.taigamobile.feature.users.domain.UserStats
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getProject
 import com.grappim.taigamobile.testing.models.getUser
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository

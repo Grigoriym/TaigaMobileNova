@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.settings.ui.trustedcerts
 
-import com.grappim.taigamobile.core.domain.PendingCertTrust
-import com.grappim.taigamobile.testing.MainDispatcherRule
-import com.grappim.taigamobile.testing.storage.FakeTrustedCertStorage
+import com.grappim.kit.domain.PendingCertTrust
+import com.grappim.kit.testing.FakeTrustedCertStorage
+import com.grappim.kit.testing.MainDispatcherRule
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest

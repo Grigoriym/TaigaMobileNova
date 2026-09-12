@@ -2,8 +2,8 @@ package com.grappim.taigamobile.feature.profile.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.profile.domain.GetProfileDataUseCase
 import com.grappim.taigamobile.utils.ui.getErrorMessage

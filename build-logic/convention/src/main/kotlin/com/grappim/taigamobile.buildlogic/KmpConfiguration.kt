@@ -39,9 +39,7 @@ fun Project.configureKmp() {
                 implementation(libs.findLibrary("kotlinx.collections").get())
                 implementation(libs.findLibrary("kotlinx.date.time").get())
 
-                if (project.path != ":core:logger") {
-                    implementation(project(":core:logger"))
-                }
+                implementation(libs.findLibrary("grappim.kit.logger").get())
             }
             commonTest.dependencies {
                 implementation(kotlin("test"))

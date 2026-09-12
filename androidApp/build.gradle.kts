@@ -57,9 +57,10 @@ dependencies {
     implementation(projects.uikit)
     implementation(projects.core.storage)
 
-    implementation(projects.core.logger)
+    implementation(libs.grappim.kit.logger)
+    implementation(libs.grappim.kit.appinfo)
+    implementation(libs.grappim.kit.crash)
     implementation(projects.core.appinfoApi)
-    implementation(projects.core.crashApi)
     implementation(projects.core.asyncKmp)
     implementation(projects.strings)
 
@@ -94,5 +95,6 @@ dependencies {
 
     // Play In-App Updates ship in the gplay flavor only — the fdroid flavor never pulls in
     // this proprietary dependency, only a no-op AppUpdateChecker implementation.
-    gplayImplementation(libs.google.inapp.update.ktx)
+    gplayImplementation(libs.grappim.kit.appupdate.gplay)
+    fdroidImplementation(libs.grappim.kit.appupdate.fdroid)
 }

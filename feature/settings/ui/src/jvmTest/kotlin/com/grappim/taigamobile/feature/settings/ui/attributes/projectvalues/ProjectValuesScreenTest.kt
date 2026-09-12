@@ -4,11 +4,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.runComposeUiTest
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueItem
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueType
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeProjectValuesRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong

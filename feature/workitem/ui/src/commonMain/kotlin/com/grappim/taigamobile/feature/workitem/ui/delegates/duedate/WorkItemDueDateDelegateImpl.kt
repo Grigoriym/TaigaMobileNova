@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.duedate
 
 import androidx.compose.material3.MaterialTheme
+import com.grappim.kit.domain.resultOf
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData

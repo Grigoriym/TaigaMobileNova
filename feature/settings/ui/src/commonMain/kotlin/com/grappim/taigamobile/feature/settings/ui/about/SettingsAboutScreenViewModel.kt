@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.settings.ui.about
 
 import androidx.lifecycle.ViewModel
+import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.kit.crash.CrashReporter
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
-import com.grappim.taigamobile.core.crashapi.CrashReporter
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.privacy_policy_url
 import com.grappim.taigamobile.strings.generated.resources.privacy_policy_url_gplay
@@ -21,8 +21,15 @@ class SettingsAboutScreenViewModel(appInfoProvider: AppInfoProvider, crashReport
             } else {
                 NativeText.Resource(RString.privacy_policy_url)
             },
-            appInfo = appInfoProvider.getAppInfo()
+            appInfo = buildAppInfo(appInfoProvider)
         )
     )
     val state = _state.asStateFlow()
+}
+
+private fun buildAppInfo(appInfoProvider: AppInfoProvider): String {
+    val versionName = appInfoProvider.versionName()
+    val versionCode = appInfoProvider.versionCode()
+    val buildType = appInfoProvider.buildType()
+    return "$versionName - $versionCode - $buildType"
 }

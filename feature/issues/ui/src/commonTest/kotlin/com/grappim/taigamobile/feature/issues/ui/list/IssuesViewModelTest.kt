@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.issues.ui.list
 
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getStatusFilters
 import com.grappim.taigamobile.testing.repo.FakeFiltersRepository
 import com.grappim.taigamobile.testing.repo.FakeIssuesRepository

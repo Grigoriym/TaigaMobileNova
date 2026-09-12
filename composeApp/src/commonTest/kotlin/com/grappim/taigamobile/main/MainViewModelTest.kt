@@ -1,14 +1,14 @@
 package com.grappim.taigamobile.main
 
 import app.cash.turbine.test
+import com.grappim.kit.testing.FakeNetworkMonitor
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.DrawerItemsBuilder
 import com.grappim.taigamobile.core.storage.auth.AuthStateManager
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
-import com.grappim.taigamobile.testing.FakeNetworkMonitor
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getProjectSimple
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage

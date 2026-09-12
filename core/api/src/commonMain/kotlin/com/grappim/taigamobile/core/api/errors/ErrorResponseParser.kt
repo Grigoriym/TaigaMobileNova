@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.core.api.errors
 
+import com.grappim.kit.logger.LogPriority
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.api.HttpJson
 import com.grappim.taigamobile.core.api.sanitizedForCrashReporting
 import com.grappim.taigamobile.core.domain.ProjectLimitInfo
 import com.grappim.taigamobile.core.domain.TaigaErrorDetails
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.logcat
 import kotlinx.serialization.json.Json
 import org.koin.core.annotation.Single
 

@@ -2,6 +2,7 @@ package com.grappim.taigamobile.createtask
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.strings.RString
@@ -10,7 +11,6 @@ import com.grappim.taigamobile.strings.generated.resources.create_issue
 import com.grappim.taigamobile.strings.generated.resources.create_task
 import com.grappim.taigamobile.strings.generated.resources.create_userstory
 import com.grappim.taigamobile.strings.generated.resources.title_is_empty
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.testing.repo.FakeIssuesRepository
 import com.grappim.taigamobile.testing.repo.FakeTasksRepository

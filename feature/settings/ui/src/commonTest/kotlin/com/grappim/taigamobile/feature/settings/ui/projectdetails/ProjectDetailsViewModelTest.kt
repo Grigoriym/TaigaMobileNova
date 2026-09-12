@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.settings.ui.projectdetails
 
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.projects.domain.ProjectDetails
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.coroutines.CancellationException

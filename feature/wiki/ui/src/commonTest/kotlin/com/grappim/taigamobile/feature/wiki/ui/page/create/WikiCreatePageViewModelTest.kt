@@ -1,14 +1,18 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.create
 
+import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.workitem.domain.wiki.WikiPage
-import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.taigamobile.testing.repo.FakeUsersRepository
 import com.grappim.taigamobile.testing.repo.FakeWikiRepository
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDateTime
 import com.grappim.taigamobile.testing.utils.testException
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -20,6 +24,7 @@ import kotlin.test.assertTrue
 internal class WikiCreatePageViewModelTest {
 
     private val wikiRepository = FakeWikiRepository()
+    private val usersRepository = FakeUsersRepository()
     private val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var sut: WikiCreatePageViewModel
@@ -35,7 +40,7 @@ internal class WikiCreatePageViewModelTest {
     }
 
     private fun createViewModel() {
-        sut = WikiCreatePageViewModel(wikiRepository = wikiRepository)
+        sut = WikiCreatePageViewModel(wikiRepository = wikiRepository, usersRepository = usersRepository)
     }
 
     private fun makeWikiPage(): WikiPage = WikiPage(
@@ -59,9 +64,23 @@ internal class WikiCreatePageViewModelTest {
 
         val state = sut.state.value
         assertEquals("", state.slug)
-        assertEquals("", state.content)
+        assertEquals(TextFieldValue(), state.content)
         assertFalse(state.isLoading)
         assertTrue(state.error is NativeText.Empty)
+    }
+
+    // --- init ---
+
+    @Test
+    fun `on init members are loaded via the mentions delegate`() {
+        val members = persistentListOf(
+            TeamMember(id = 1L, avatarUrl = null, name = "Alice Anderson", role = "Developer", username = "alice")
+        )
+        usersRepository.getTeamMembersResult = members
+
+        createViewModel()
+
+        assertEquals(members, sut.mentionsState.value.members)
     }
 
     // --- setSlug ---
@@ -95,7 +114,7 @@ internal class WikiCreatePageViewModelTest {
     fun `setContent updates content in state`() {
         createViewModel()
 
-        val content = getRandomString()
+        val content = TextFieldValue(getRandomString())
         sut.state.value.setContent(content)
 
         assertEquals(content, sut.state.value.content)
@@ -112,7 +131,7 @@ internal class WikiCreatePageViewModelTest {
         val slug = getRandomString()
         val content = getRandomString()
         sut.state.value.setSlug(slug)
-        sut.state.value.setContent(content)
+        sut.state.value.setContent(TextFieldValue(content))
 
         sut.creationResult.test {
             sut.state.value.onCreateWikiPage()

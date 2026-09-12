@@ -24,6 +24,7 @@ now that the table below covers everything left.
 | 47 | `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge | S | — |
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 | 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
+| 55 | CLAUDE.md's "grappim-kit Modules" section is now a 9-swap worked-example catalogue, the exact shape its own "Keeping this file lean" rule tells future sessions to split out | S | CLAUDE.md's "grappim-kit Modules" section (compare to how the Kover heuristics catalogue was split into `docs/testing/kover-coverage-heuristics.md`) |
 
 ---
 

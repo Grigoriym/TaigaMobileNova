@@ -56,7 +56,7 @@ class DebugLocalhostPluginTest {
         }
     ) {
         install(DebugLocalhostPlugin) {
-            this.appInfoProvider = this@DebugLocalhostPluginTest.appInfoProvider
+            this.debugLocalHostProvider = this@DebugLocalhostPluginTest.appInfoProvider
         }
     }
 }

@@ -2,6 +2,7 @@
 
 package com.grappim.taigamobile.feature.kanban.ui
 
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.feature.filters.domain.model.EpicsFilters
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.RoleFilters
@@ -17,7 +18,6 @@ import com.grappim.taigamobile.feature.swimlanes.domain.Swimlane
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.userstories.domain.UserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoryEpic
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getSwimlane
 import com.grappim.taigamobile.testing.models.getTeamMember
 import com.grappim.taigamobile.testing.models.getUserStory

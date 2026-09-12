@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.createtask
 
+import com.grappim.kit.domain.resultOf
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.issues.domain.IssuesRepository
 import com.grappim.taigamobile.feature.tasks.domain.TasksRepository
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository

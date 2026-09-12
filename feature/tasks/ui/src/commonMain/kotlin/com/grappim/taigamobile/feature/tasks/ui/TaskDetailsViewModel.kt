@@ -2,11 +2,11 @@ package com.grappim.taigamobile.feature.tasks.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.domain.resultOf
+import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.tasks.domain.Task
@@ -34,6 +34,8 @@ import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkIte
 import com.grappim.taigamobile.feature.workitem.ui.delegates.description.WorkItemDescriptionDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.duedate.WorkItemDueDateDelegateImpl
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegate
+import com.grappim.taigamobile.feature.workitem.ui.delegates.mentions.WorkItemMentionsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegate
 import com.grappim.taigamobile.feature.workitem.ui.delegates.tags.WorkItemTagsDelegateImpl
 import com.grappim.taigamobile.feature.workitem.ui.delegates.title.WorkItemTitleDelegate
@@ -52,6 +54,7 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFi
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.task_slug
+import com.grappim.taigamobile.uikit.widgets.editor.containsKnownMention
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
@@ -154,6 +157,9 @@ class TaskDetailsViewModel(
         taskIdentifier = taskIdentifier,
         workItemRepository = workItemRepository,
         patchDataGenerator = patchDataGenerator
+    ),
+    WorkItemMentionsDelegate by WorkItemMentionsDelegateImpl(
+        usersRepository = usersRepository
     ) {
 
     private val ref = route.ref
@@ -204,6 +210,7 @@ class TaskDetailsViewModel(
 
     init {
         loadTask()
+        viewModelScope.launch { loadMembers() }
 
         workItemEditStateRepository
             .getTeamMemberUpdateFlow(taskId, taskIdentifier)
@@ -394,6 +401,13 @@ class TaskDetailsViewModel(
                 },
                 doOnSuccess = { result ->
                     updateVersion(result.newVersion)
+                    if (containsKnownMention(newComment, mentionsState.value.members.map { it.username })) {
+                        viewModelScope.launch {
+                            refreshWatchers(workItemId = currentTask.id, doOnError = { error ->
+                                logcat(throwable = error) { "Error refreshing watchers after mention" }
+                            })
+                        }
+                    }
                 },
                 doOnError = { error ->
                     emitError(error)
@@ -743,6 +757,14 @@ class TaskDetailsViewModel(
                         currentTask = updatedTask,
                         originalTask = updatedTask
                     )
+                }
+
+                if (containsKnownMention(newDescription, mentionsState.value.members.map { it.username })) {
+                    viewModelScope.launch {
+                        refreshWatchers(workItemId = currentTask.id, doOnError = { error ->
+                            logcat(throwable = error) { "Error refreshing watchers after mention" }
+                        })
+                    }
                 }
             }
         )
