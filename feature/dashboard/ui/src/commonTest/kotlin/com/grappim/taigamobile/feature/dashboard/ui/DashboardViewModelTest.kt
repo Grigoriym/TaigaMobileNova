@@ -2,7 +2,7 @@
 
 package com.grappim.taigamobile.feature.dashboard.ui
 
-import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getWorkItem
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage

@@ -2,6 +2,7 @@ package com.grappim.taigamobile.feature.epics.ui.details
 
 import androidx.compose.ui.graphics.Color
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
@@ -24,7 +25,6 @@ import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkI
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.common_error_message
 import com.grappim.taigamobile.strings.generated.resources.epic_slug
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getComment
 import com.grappim.taigamobile.testing.models.getEpic
 import com.grappim.taigamobile.testing.models.getEpicDetailsData
