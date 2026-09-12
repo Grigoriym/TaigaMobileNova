@@ -31,6 +31,15 @@ android {
 
     namespace = libs.versions.app.pkg.get()
 
+    // Room 2.8.5's room-common and room-common-jvm artifacts both package an identical
+    // META-INF/androidx/room/room-common/LICENSE.txt, which AGP's resource merger flags as
+    // a conflict rather than deduping.
+    packaging {
+        resources {
+            pickFirsts += "META-INF/androidx/room/room-common/LICENSE.txt"
+        }
+    }
+
     defaultConfig {
         applicationId = libs.versions.app.pkg.get()
         testApplicationId = "${libs.versions.app.pkg.get()}.test"
