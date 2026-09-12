@@ -1,5 +1,6 @@
 package com.grappim.taigamobile
 
+import com.grappim.kit.uikit.widgets.drawer.DrawerItem
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import kotlinx.collections.immutable.ImmutableList
@@ -35,18 +36,18 @@ class DrawerItemsBuilderTest {
         isAdmin = false
     )
 
-    private fun topLevelDestinations(items: ImmutableList<DrawerItem>): List<DrawerDestination> =
-        items.filterIsInstance<DrawerItem.Destination>().map { it.destination }
+    private fun topLevelDestinations(items: ImmutableList<DrawerItem<DrawerDestination>>): List<DrawerDestination> =
+        items.filterIsInstance<DrawerItem.Destination<DrawerDestination>>().map { it.destination }
 
-    private fun wikiGroup(items: ImmutableList<DrawerItem>): DrawerItem.Group? =
-        items.filterIsInstance<DrawerItem.Group>().firstOrNull { group ->
+    private fun wikiGroup(items: ImmutableList<DrawerItem<DrawerDestination>>): DrawerItem.Group<DrawerDestination>? =
+        items.filterIsInstance<DrawerItem.Group<DrawerDestination>>().firstOrNull { group ->
             group.items.any {
                 it.destination == DrawerDestination.WikiLinks || it.destination == DrawerDestination.WikiPages
             }
         }
 
-    private fun scrumGroup(items: ImmutableList<DrawerItem>): DrawerItem.Group? =
-        items.filterIsInstance<DrawerItem.Group>().firstOrNull { group ->
+    private fun scrumGroup(items: ImmutableList<DrawerItem<DrawerDestination>>): DrawerItem.Group<DrawerDestination>? =
+        items.filterIsInstance<DrawerItem.Group<DrawerDestination>>().firstOrNull { group ->
             group.items.any { it.destination == DrawerDestination.ScrumBacklog }
         }
 

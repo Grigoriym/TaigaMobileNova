@@ -32,16 +32,18 @@ import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.window.core.layout.WindowSizeClass
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.navigation.NavigationState
+import com.grappim.kit.uikit.NativeText
 import com.grappim.kit.uikit.asStringBlocking
+import com.grappim.kit.uikit.widgets.drawer.DrawerWidget
+import com.grappim.kit.uikit.widgets.drawer.NavigationSuiteWidget
 import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBar
 import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarController
 import com.grappim.taigamobile.DrawerDestination
-import com.grappim.taigamobile.TaigaDrawerWidget
-import com.grappim.taigamobile.TaigaNavigationSuiteWidget
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.app_name
 import com.grappim.taigamobile.strings.generated.resources.close
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.widgets.banner.OfflineIndicatorBanner
@@ -163,11 +165,12 @@ private fun MainScreenContent(
         .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
 
     if (isCompactWidth) {
-        TaigaDrawerWidget(
+        DrawerWidget(
             drawerItems = drawerItems,
             currentTopLevelDestination = appState.currentTopLevelDestination,
             drawerState = drawerState,
             onDrawerItemClick = onDrawerItemClick,
+            headerTitle = NativeText.Resource(RString.app_name),
             gesturesEnabled = appState.areDrawerGesturesEnabled &&
                 initialNavState.isReady &&
                 initialNavState.isProjectSelected
@@ -198,7 +201,7 @@ private fun MainScreenContent(
             )
         }
     } else if (initialNavState.isReady && initialNavState.isProjectSelected) {
-        TaigaNavigationSuiteWidget(
+        NavigationSuiteWidget(
             drawerItems = drawerItems,
             currentTopLevelDestination = appState.currentTopLevelDestination,
             onDrawerItemClick = onDrawerItemClick,
