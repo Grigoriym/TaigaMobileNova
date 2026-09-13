@@ -93,3 +93,8 @@ deleted — see `finalize`.
 - 2026-09-12: same "Not enough memory to run compilation" failure recurred on a plain
   `./gradlew jvmTest` (no prior kover run this time) — second occurrence of the 2026-09-11 entry
   above, same `--max-workers=2` retry fixed it, no `--stop` needed this time.
+- 2026-09-13: `git merge-base --is-ancestor <branch-commit-sha> dev` wrongly reported the
+  @-mention feature (PR #415) as unmerged — the PR was squash-merged, so the original branch's
+  commit SHAs never appear as ancestors of `dev` even though their full diff landed in the single
+  squashed commit; checked the squashed commit's own `git show --stat` (file list/insertion count)
+  instead to confirm content, not SHA ancestry, after a squash merge.
