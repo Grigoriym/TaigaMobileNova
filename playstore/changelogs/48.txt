@@ -1,3 +1,4 @@
+- Add @-mention autocomplete and clickable mention links in comments, descriptions, and wiki pages
 - Fixed the dashboard/project screens sometimes showing the previous account's data right after switching accounts
 - Fixed the back button growing its history when switching between drawer sections
 - Fixed the Kanban board briefly flashing before a failed refresh re-showed the error, and fetching its filters twice on load
