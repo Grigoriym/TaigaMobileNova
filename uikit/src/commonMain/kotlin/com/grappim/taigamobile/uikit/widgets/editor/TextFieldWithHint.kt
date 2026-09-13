@@ -32,9 +32,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.grappim.kit.uikit.NativeText
+import com.grappim.kit.uikit.asString
 import com.grappim.taigamobile.uikit.theme.mainHorizontalScreenPadding
-import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.asString
 import org.jetbrains.compose.resources.StringResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -42,6 +42,44 @@ import org.jetbrains.compose.resources.stringResource
 fun HintTextField(
     value: String,
     onValueChange: (String) -> Unit,
+    hint: NativeText,
+    modifier: Modifier = Modifier,
+    error: NativeText = NativeText.Empty,
+    singleLine: Boolean = false,
+    shape: Shape = OutlinedTextFieldDefaults.shape,
+    maxLines: Int = if (singleLine) 1 else Int.MAX_VALUE,
+    enabled: Boolean = true
+) {
+    OutlinedTextField(
+        modifier = modifier,
+        isError = error.isNotEmpty(),
+        value = value,
+        shape = shape,
+        singleLine = singleLine,
+        enabled = enabled,
+        placeholder = {
+            Text(text = hint.asString())
+        },
+        maxLines = maxLines,
+        onValueChange = onValueChange,
+        supportingText = if (error.isNotEmpty()) {
+            {
+                Text(
+                    modifier = Modifier.fillMaxWidth(),
+                    text = error.asString(),
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        } else {
+            null
+        }
+    )
+}
+
+@Composable
+fun HintTextField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
     hint: NativeText,
     modifier: Modifier = Modifier,
     error: NativeText = NativeText.Empty,

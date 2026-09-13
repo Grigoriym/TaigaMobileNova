@@ -13,7 +13,8 @@ class FakeProjectDao : ProjectDao {
 
     /**
      * Emissions of [getProjectByIdFlow], keyed by the requested id. An id with no entry emits
-     * nothing, which is how a test exercises the `filterNotNull` in a consumer.
+     * nothing (an empty flow) rather than `null` — seed a `listOf(null)` entry to simulate the
+     * dao resolving "no row for this id" instead.
      */
     val projectFlowsById: MutableMap<Long, List<ProjectEntity?>> = mutableMapOf()
     val getProjectByIdFlowCalls: MutableList<Long> = mutableListOf()

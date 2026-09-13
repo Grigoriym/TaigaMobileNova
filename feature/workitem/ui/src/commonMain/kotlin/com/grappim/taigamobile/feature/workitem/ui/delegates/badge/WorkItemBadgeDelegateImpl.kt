@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.badge
 
+import com.grappim.kit.domain.resultOf
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.WorkItemRepository
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI

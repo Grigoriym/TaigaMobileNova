@@ -2,15 +2,12 @@ package com.grappim.taigamobile.uikit.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalUriHandler
-import com.grappim.taigamobile.uikit.utils.SafeUriHandler
+import com.grappim.kit.uikit.KitPreviewTheme
+import com.grappim.kit.uikit.KitTheme
 
 internal val DarkColorPalette = darkColorScheme(
     primary = taigaGreen,
@@ -36,21 +33,24 @@ expect fun colorScheme(darkTheme: Boolean): ColorScheme
 
 @Composable
 fun TaigaMobileTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable () -> Unit) {
-    MaterialTheme(
-        colorScheme = colorScheme(darkTheme),
-        typography = typography
-    ) {
-        CompositionLocalProvider(LocalUriHandler provides SafeUriHandler(LocalUriHandler.current)) {
-            content()
-        }
-    }
+    val scheme = colorScheme(darkTheme)
+    KitTheme(
+        lightColorScheme = scheme,
+        darkColorScheme = scheme,
+        typography = typography,
+        darkTheme = false,
+        content = content
+    )
 }
 
 @Composable
 fun TaigaMobilePreviewTheme(content: @Composable () -> Unit) {
-    TaigaMobileTheme {
-        Surface {
-            content()
-        }
-    }
+    val scheme = colorScheme(isSystemInDarkTheme())
+    KitPreviewTheme(
+        lightColorScheme = scheme,
+        darkColorScheme = scheme,
+        typography = typography,
+        darkTheme = false,
+        content = content
+    )
 }

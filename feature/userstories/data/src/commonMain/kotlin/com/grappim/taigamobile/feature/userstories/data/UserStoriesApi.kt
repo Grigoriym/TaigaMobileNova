@@ -61,6 +61,6 @@ class UserStoriesApiImpl(private val httpClient: HttpClient) : UserStoriesApi {
         ).forEach { (key, value) ->
             if (value != null) parameters.append(key, value.toString())
         }
-        parameters.append("page_size", params.pageSize.toString())
+        if (params.page != null) parameters.append("page_size", params.pageSize.toString())
     }
 }

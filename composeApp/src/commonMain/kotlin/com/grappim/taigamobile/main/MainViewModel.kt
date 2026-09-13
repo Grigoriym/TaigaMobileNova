@@ -2,14 +2,15 @@ package com.grappim.taigamobile.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.grappim.taigamobile.DrawerItem
+import com.grappim.kit.logger.logcat
+import com.grappim.kit.storage.NetworkMonitor
+import com.grappim.kit.uikit.widgets.drawer.DrawerItem
+import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.DrawerItemsBuilder
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.core.storage.auth.AuthStateManager
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
-import com.grappim.taigamobile.core.storage.network.NetworkMonitor
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
@@ -20,7 +21,6 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import org.koin.core.annotation.KoinViewModel
@@ -85,10 +85,9 @@ class MainViewModel(
             initialValue = ThemeSettings.default()
         )
 
-    val drawerItems: StateFlow<ImmutableList<DrawerItem>> = currentProject
-        .filterNotNull()
+    val drawerItems: StateFlow<ImmutableList<DrawerItem<DrawerDestination>>> = currentProject
         .map { project ->
-            drawerItemsBuilder.build(project)
+            project?.let { drawerItemsBuilder.build(it) } ?: persistentListOf()
         }
         .stateIn(
             scope = viewModelScope,

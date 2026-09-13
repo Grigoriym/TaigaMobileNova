@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.utils.ui
 
-import androidx.compose.runtime.Composable
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.NetworkException
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import com.grappim.taigamobile.strings.RString
@@ -23,77 +23,6 @@ import com.grappim.taigamobile.strings.generated.resources.error_unsupported_med
 import com.grappim.taigamobile.strings.generated.resources.error_validation
 import com.grappim.taigamobile.strings.generated.resources.request_failed
 import com.grappim.taigamobile.strings.generated.resources.timeout_exceeded
-import kotlinx.coroutines.runBlocking
-import org.jetbrains.compose.resources.PluralStringResource
-import org.jetbrains.compose.resources.StringResource
-import org.jetbrains.compose.resources.getPluralString
-import org.jetbrains.compose.resources.getString
-import org.jetbrains.compose.resources.pluralStringResource
-import org.jetbrains.compose.resources.stringResource
-
-sealed class NativeText {
-    data object Empty : NativeText()
-    data class Simple(val text: String) : NativeText()
-    data class Resource(val stringResource: StringResource) : NativeText()
-    data class Plural(val pluralStringResource: PluralStringResource, val number: Int, val args: List<Any>) :
-        NativeText()
-    data class Arguments(val stringResource: StringResource, val args: List<Any>) : NativeText()
-    data class Multi(val text: List<NativeText>) : NativeText()
-
-    fun isEmpty(): Boolean = this is Empty
-    fun isNotEmpty(): Boolean = this !is Empty
-}
-
-@Suppress("SpreadOperator")
-@Composable
-fun NativeText.asString(): String = when (this) {
-    is NativeText.Arguments -> stringResource(stringResource, *args.toTypedArray())
-
-    is NativeText.Multi -> {
-        val builder = StringBuilder()
-        for (t in text) {
-            builder.append(t.asString())
-        }
-        builder.toString()
-    }
-
-    is NativeText.Plural -> pluralStringResource(
-        pluralStringResource,
-        number,
-        *args.toTypedArray()
-    )
-
-    is NativeText.Resource -> stringResource(stringResource)
-
-    is NativeText.Simple -> text
-
-    is NativeText.Empty -> ""
-}
-
-/**
- * Non-composable version for use inside lambdas (onClick, snackbar callbacks, etc.)
- * where @Composable functions cannot be called.
- */
-@Suppress("SpreadOperator")
-fun NativeText.asStringBlocking(): String = when (this) {
-    is NativeText.Arguments -> runBlocking { getString(stringResource, *args.toTypedArray()) }
-
-    is NativeText.Multi -> text.joinToString("") { it.asStringBlocking() }
-
-    is NativeText.Plural -> runBlocking {
-        getPluralString(
-            pluralStringResource,
-            number,
-            *args.toTypedArray()
-        )
-    }
-
-    is NativeText.Resource -> runBlocking { getString(stringResource) }
-
-    is NativeText.Simple -> text
-
-    is NativeText.Empty -> ""
-}
 
 fun getErrorMessage(exception: Throwable): NativeText = if (exception is NetworkException) {
     exception.taigaError?.message?.let { NativeText.Simple(it) } ?: when (exception.errorCode) {

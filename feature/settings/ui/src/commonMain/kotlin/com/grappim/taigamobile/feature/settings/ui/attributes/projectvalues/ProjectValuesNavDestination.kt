@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues
 
 import androidx.navigation3.runtime.NavKey
-import com.grappim.taigamobile.core.navigation.Navigator
+import com.grappim.kit.navigation.Navigator
 import com.grappim.taigamobile.feature.projects.domain.ProjectValueType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.project_values_epic_statuses

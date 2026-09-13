@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.data
 
 import android.util.Log
-import com.grappim.taigamobile.core.crashapi.CrashReporter
+import com.grappim.kit.crash.CrashReporter
 import timber.log.Timber
 
 class CrashlyticsTree(private val crashReporter: CrashReporter) : Timber.Tree() {

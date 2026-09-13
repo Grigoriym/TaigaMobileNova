@@ -20,6 +20,8 @@ kotlin {
 
             implementation(projects.core.domain)
             implementation(projects.core.asyncKmp)
+            api(libs.grappim.kit.storage)
+            implementation(libs.grappim.kit.appinfo)
             implementation(projects.core.appinfoApi)
             implementation(projects.utils.ui)
 

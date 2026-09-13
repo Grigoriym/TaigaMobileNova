@@ -32,13 +32,14 @@ fun getUser(): User = User(
 fun getTeamMember(
     id: Long = getRandomLong(),
     name: String = getRandomString(),
-    avatarUrl: String? = getRandomString()
+    avatarUrl: String? = getRandomString(),
+    username: String = getRandomString()
 ): TeamMember = TeamMember(
     id = id,
     avatarUrl = avatarUrl,
     name = name,
     role = getRandomString(),
-    username = getRandomString(),
+    username = username,
     totalPower = getRandomInt()
 )
 

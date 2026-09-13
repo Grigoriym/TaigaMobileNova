@@ -1,9 +1,9 @@
 package com.grappim.taigamobile.feature.workitem.ui.widgets.tags.editdialog
 
 import androidx.compose.ui.graphics.Color
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.utils.ui.ColorSource
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf

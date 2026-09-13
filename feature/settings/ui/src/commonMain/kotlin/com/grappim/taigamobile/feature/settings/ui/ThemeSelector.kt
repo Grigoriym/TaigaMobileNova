@@ -12,13 +12,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.grappim.kit.uikit.asString
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceViewState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.theme_title
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
-import com.grappim.taigamobile.utils.ui.asString
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

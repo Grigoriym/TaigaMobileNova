@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.epic
 
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.workitem.ui.screens.WorkItemEditStateRepository
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.models.getEpic
 import com.grappim.taigamobile.testing.repo.FakeEpicsRepository
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage

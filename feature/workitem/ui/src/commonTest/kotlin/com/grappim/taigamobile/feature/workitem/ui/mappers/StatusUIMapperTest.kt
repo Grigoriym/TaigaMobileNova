@@ -1,10 +1,10 @@
 package com.grappim.taigamobile.feature.workitem.ui.mappers
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.filters.domain.model.Status
 import com.grappim.taigamobile.testing.models.getStatusFilters
 import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticStringColor
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest

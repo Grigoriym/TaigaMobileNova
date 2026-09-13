@@ -6,15 +6,17 @@ import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.grappim.kit.storage.KeystoreSecretCipher
+import com.grappim.kit.storage.NetworkMonitor
+import com.grappim.kit.storage.NetworkMonitorImpl
+import com.grappim.kit.storage.cert.TrustedCertStorage
+import com.grappim.kit.storage.cert.TrustedCertStorageImpl
 import com.grappim.taigamobile.core.storage.FiltersStorage
 import com.grappim.taigamobile.core.storage.FiltersStorageImpl
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
-import com.grappim.taigamobile.core.storage.auth.AndroidKeystoreTokenCipher
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
-import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
-import com.grappim.taigamobile.core.storage.cert.TrustedCertStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
@@ -31,7 +33,7 @@ class AuthDataStoreModule {
 
     @Single
     fun provideAuthStorage(context: Context): AuthStorage =
-        AuthStorageImpl(createAuthDataStore(context), AndroidKeystoreTokenCipher())
+        AuthStorageImpl(createAuthDataStore(context), KeystoreSecretCipher(AUTH_TOKEN_KEY_ALIAS))
 
     @Single
     fun provideSessionStorage(context: Context, colorMapper: ColorMapper): TaigaSessionStorage =
@@ -44,7 +46,12 @@ class AuthDataStoreModule {
     @Single
     fun provideTrustedCertStorage(context: Context, @StorageJsonQualifier json: Json): TrustedCertStorage =
         TrustedCertStorageImpl(createTrustedCertDataStore(context), json)
+
+    @Single
+    fun provideNetworkMonitor(context: Context): NetworkMonitor = NetworkMonitorImpl(context)
 }
+
+private const val AUTH_TOKEN_KEY_ALIAS = "taiga_auth_token_key"
 
 fun createSessionDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
     produceFile = {

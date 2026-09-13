@@ -33,7 +33,7 @@ import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.feature.workitem.ui.delegates.customfields.WorkItemCustomFieldsState
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.custom_field_multiline

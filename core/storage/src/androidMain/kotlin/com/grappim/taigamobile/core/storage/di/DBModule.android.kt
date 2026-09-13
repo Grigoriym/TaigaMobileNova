@@ -3,7 +3,7 @@ package com.grappim.taigamobile.core.storage.di
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.kit.appinfo.AppInfoProvider
 import com.grappim.taigamobile.core.storage.db.TaigaDB
 import org.koin.core.annotation.Configuration
 import org.koin.core.annotation.Module
@@ -18,7 +18,7 @@ actual class PlatformDBModule {
         Room.databaseBuilder<TaigaDB>(
             context = context.applicationContext,
             name = context.applicationContext
-                .getDatabasePath("taigamobilenova_${infoProvider.getBuildType()}.db")
+                .getDatabasePath("taigamobilenova_${infoProvider.buildType()}.db")
                 .absolutePath
         )
 }

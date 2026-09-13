@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.wiki.ui.model.WikiUIItem
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.error_loading_data
@@ -17,7 +18,6 @@ import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.loader.CircularLoaderWidget
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

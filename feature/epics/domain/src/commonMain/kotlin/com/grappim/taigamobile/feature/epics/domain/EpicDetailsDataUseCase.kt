@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.epics.domain
 
+import com.grappim.kit.domain.resultOf
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.filters.domain.repo.FiltersRepository
 import com.grappim.taigamobile.feature.history.domain.HistoryRepository
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository

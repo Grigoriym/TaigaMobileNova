@@ -1,14 +1,14 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.sprint
 
-import com.grappim.taigamobile.core.domain.resultOf
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.domain.resultOf
+import com.grappim.kit.logger.logcat
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.sprint.domain.SprintsRepository
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.sprint_end_date_empty
 import com.grappim.taigamobile.strings.generated.resources.sprint_name_empty
 import com.grappim.taigamobile.strings.generated.resources.sprint_start_date_empty
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

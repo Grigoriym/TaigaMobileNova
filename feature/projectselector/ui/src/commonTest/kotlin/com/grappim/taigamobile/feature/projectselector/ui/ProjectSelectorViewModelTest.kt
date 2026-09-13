@@ -1,6 +1,7 @@
 package com.grappim.taigamobile.feature.projectselector.ui
 
-import com.grappim.taigamobile.testing.MainDispatcherRule
+import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.cleaner.FakeDataCleaner
 import com.grappim.taigamobile.testing.models.getProject
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
@@ -100,6 +101,25 @@ internal class ProjectSelectorViewModelTest {
         sut.state.value.setProject(project)
 
         assertEquals(project.id, sut.state.value.currentProjectId)
+    }
+
+    /**
+     * `_projectSelected` is a rendezvous channel, so the collector has to be waiting before
+     * `setProject` sends — hence triggering the selection inside the turbine block. This is what
+     * lets the screen navigate only after the session/DB writes above have actually completed,
+     * instead of racing them (the bug this event was added to close).
+     */
+    @Test
+    fun `setProject emits projectSelected after persisting the choice`() = runTest {
+        val project = getProject()
+
+        sut.projectSelected.test {
+            sut.state.value.setProject(project)
+            awaitItem()
+        }
+
+        assertTrue(projectsRepository.saveProjectCalled)
+        assertEquals(project.id, taigaSessionStorage.currentProjectId)
     }
 
     @Test

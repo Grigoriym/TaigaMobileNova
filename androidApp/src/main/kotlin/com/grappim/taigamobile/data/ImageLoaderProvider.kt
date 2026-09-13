@@ -5,13 +5,15 @@ import coil3.ImageLoader
 import coil3.network.okhttp.OkHttpNetworkFetcherFactory
 import coil3.request.crossfade
 import coil3.util.DebugLogger
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import okhttp3.OkHttpClient
 import org.koin.core.annotation.Factory
 
 @Factory
 class ImageLoaderProvider(
     private val appInfoProvider: AppInfoProvider,
+    private val debugLocalHostProvider: DebugLocalHostProvider,
     private val debugLocalHostImageManager: DebugLocalHostImageManager,
     private val context: Context
 ) {
@@ -20,7 +22,7 @@ class ImageLoaderProvider(
         .apply {
             if (appInfoProvider.isDebug()) {
                 components {
-                    if (appInfoProvider.getDebugLocalHost().isNotEmpty()) {
+                    if (debugLocalHostProvider.getDebugLocalHost().isNotEmpty()) {
                         add(
                             OkHttpNetworkFetcherFactory(
                                 OkHttpClient.Builder()

@@ -6,11 +6,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
+import com.grappim.kit.navigation.LocalResultBus
+import com.grappim.kit.navigation.Navigator
+import com.grappim.kit.navigation.ResultEffect
+import com.grappim.kit.navigation.sendResult
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.TaskIdentifier
-import com.grappim.taigamobile.core.navigation.LocalResultBus
-import com.grappim.taigamobile.core.navigation.Navigator
-import com.grappim.taigamobile.core.navigation.ResultEffect
-import com.grappim.taigamobile.core.navigation.sendResult
 import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.wiki.ui.bookmark.create.WikiCreateBookmarkScreen
 import com.grappim.taigamobile.feature.wiki.ui.bookmark.list.WikiBookmarksScreen
@@ -25,7 +26,6 @@ import com.grappim.taigamobile.feature.wiki.ui.page.details.WikiPageScreen
 import com.grappim.taigamobile.feature.wiki.ui.page.list.WikiPagesScreen
 import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navigateToWorkItemEditDescription
 import com.grappim.taigamobile.main.UpdateDataOnBack
-import com.grappim.taigamobile.utils.ui.NativeText
 
 fun EntryProviderScope<NavKey>.wikiNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
     entry<WikiCreatePageNavDestination> {

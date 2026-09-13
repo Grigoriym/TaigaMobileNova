@@ -5,6 +5,9 @@ import androidx.compose.material.icons.automirrored.filled.DirectionsRun
 import androidx.compose.material.icons.automirrored.outlined.FormatListBulleted
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Bookmark
+import com.grappim.kit.uikit.NativeText
+import com.grappim.kit.uikit.widgets.drawer.DrawerItem
+import com.grappim.kit.uikit.widgets.drawer.IconSource
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
 import com.grappim.taigamobile.feature.projects.domain.canViewEpics
 import com.grappim.taigamobile.feature.projects.domain.canViewIssues
@@ -42,14 +45,14 @@ import org.koin.core.annotation.Factory
 @Factory
 class DrawerItemsBuilder {
 
-    fun build(project: ProjectSimple): ImmutableList<DrawerItem> {
+    fun build(project: ProjectSimple): ImmutableList<DrawerItem<DrawerDestination>> {
         val permissions = project.myPermissions
-        val items = mutableListOf<DrawerItem>()
+        val items = mutableListOf<DrawerItem<DrawerDestination>>()
 
         items.add(
             DrawerItem.Destination(
                 destination = DrawerDestination.ProjectSelector,
-                label = RString.project_selector,
+                label = NativeText.Resource(RString.project_selector),
                 icon = IconSource.Resource(RDrawable.ic_folder)
             )
         )
@@ -57,7 +60,7 @@ class DrawerItemsBuilder {
         items.add(
             DrawerItem.Destination(
                 destination = DrawerDestination.Dashboard,
-                label = RString.dashboard_short,
+                label = NativeText.Resource(RString.dashboard_short),
                 icon = IconSource.Resource(RDrawable.ic_dashboard)
             )
         )
@@ -66,7 +69,7 @@ class DrawerItemsBuilder {
             items.add(
                 DrawerItem.Destination(
                     destination = DrawerDestination.Epics,
-                    label = RString.epics,
+                    label = NativeText.Resource(RString.epics),
                     icon = IconSource.Resource(RDrawable.ic_epics)
                 )
             )
@@ -76,7 +79,7 @@ class DrawerItemsBuilder {
             items.add(
                 DrawerItem.Destination(
                     destination = DrawerDestination.Issues,
-                    label = RString.issues,
+                    label = NativeText.Resource(RString.issues),
                     icon = IconSource.Resource(RDrawable.ic_issues)
                 )
             )
@@ -86,7 +89,7 @@ class DrawerItemsBuilder {
             items.add(
                 DrawerItem.Destination(
                     destination = DrawerDestination.Kanban,
-                    label = RString.kanban,
+                    label = NativeText.Resource(RString.kanban),
                     icon = IconSource.Resource(RDrawable.ic_kanban)
                 )
             )
@@ -95,19 +98,19 @@ class DrawerItemsBuilder {
         items.add(
             DrawerItem.Destination(
                 destination = DrawerDestination.Team,
-                label = RString.team,
+                label = NativeText.Resource(RString.team),
                 icon = IconSource.Resource(RDrawable.ic_team)
             )
         )
 
         if (project.isWikiActivated && (permissions.canViewWikiPages() || permissions.canViewWikiLinks())) {
-            val wikiItems = mutableListOf<DrawerItem.Destination>()
+            val wikiItems = mutableListOf<DrawerItem.Destination<DrawerDestination>>()
 
             if (permissions.canViewWikiLinks()) {
                 wikiItems.add(
                     DrawerItem.Destination(
                         destination = DrawerDestination.WikiLinks,
-                        label = RString.wiki_bookmarks,
+                        label = NativeText.Resource(RString.wiki_bookmarks),
                         icon = IconSource.Vector(Icons.Default.Bookmark)
                     )
                 )
@@ -117,7 +120,7 @@ class DrawerItemsBuilder {
                 wikiItems.add(
                     DrawerItem.Destination(
                         destination = DrawerDestination.WikiPages,
-                        label = RString.wiki_pages,
+                        label = NativeText.Resource(RString.wiki_pages),
                         icon = IconSource.Resource(RDrawable.ic_wiki)
                     )
                 )
@@ -125,19 +128,19 @@ class DrawerItemsBuilder {
 
             items.add(
                 DrawerItem.Group(
-                    label = RString.wiki,
+                    label = NativeText.Resource(RString.wiki),
                     items = wikiItems
                 )
             )
         }
 
         if (project.isBacklogActivated && permissions.canViewUserStories()) {
-            val scrumItems = mutableListOf<DrawerItem.Destination>()
+            val scrumItems = mutableListOf<DrawerItem.Destination<DrawerDestination>>()
 
             scrumItems.add(
                 DrawerItem.Destination(
                     destination = DrawerDestination.ScrumBacklog,
-                    label = RString.backlog,
+                    label = NativeText.Resource(RString.backlog),
                     icon = IconSource.Vector(Icons.AutoMirrored.Outlined.FormatListBulleted)
                 )
             )
@@ -145,7 +148,7 @@ class DrawerItemsBuilder {
             scrumItems.add(
                 DrawerItem.Destination(
                     destination = DrawerDestination.ScrumOpenSprints,
-                    label = RString.open_sprints,
+                    label = NativeText.Resource(RString.open_sprints),
                     icon = IconSource.Vector(Icons.AutoMirrored.Filled.DirectionsRun)
                 )
             )
@@ -153,14 +156,14 @@ class DrawerItemsBuilder {
             scrumItems.add(
                 DrawerItem.Destination(
                     destination = DrawerDestination.ScrumClosedSprints,
-                    label = RString.closed_sprints,
+                    label = NativeText.Resource(RString.closed_sprints),
                     icon = IconSource.Vector(Icons.Filled.Archive)
                 )
             )
 
             items.add(
                 DrawerItem.Group(
-                    label = RString.scrum,
+                    label = NativeText.Resource(RString.scrum),
                     items = scrumItems
                 )
             )
@@ -171,7 +174,7 @@ class DrawerItemsBuilder {
         items.add(
             DrawerItem.Destination(
                 destination = DrawerDestination.Settings,
-                label = RString.settings,
+                label = NativeText.Resource(RString.settings),
                 icon = IconSource.Resource(RDrawable.ic_settings)
             )
         )

@@ -22,7 +22,7 @@ import java.io.File
  * behaviour these classes actually depend on.
  *
  * [scope] defaults to the same real `Dispatchers.IO`-backed scope `createWithPath` itself would
- * use — override it (e.g. to `Dispatchers.Main` under [com.grappim.taigamobile.testing.MainDispatcherRule])
+ * use — override it (e.g. to `Dispatchers.Main` under [com.grappim.kit.testing.MainDispatcherRule])
  * when the storage class under test also shares a scope with its `StateFlow`s, so the DataStore's
  * internal actor and the class's own writes run on the same deterministic dispatcher instead of
  * racing against the real IO thread pool. See `FiltersStorageImplTest`.

@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.duedate
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
@@ -13,7 +14,6 @@ import com.grappim.taigamobile.testing.utils.testException
 import com.grappim.taigamobile.uikit.theme.taigaGreenPositive
 import com.grappim.taigamobile.uikit.theme.taigaOrange
 import com.grappim.taigamobile.uikit.theme.taigaRed
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.test.runTest

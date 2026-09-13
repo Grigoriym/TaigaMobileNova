@@ -2,9 +2,9 @@ package com.grappim.taigamobile.feature.projects.data
 
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.api.defaultTryCatch
 import com.grappim.taigamobile.core.api.hasNextPage
-import com.grappim.taigamobile.core.logger.logcat
 import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.mapper.ProjectMapper

@@ -31,6 +31,15 @@ android {
 
     namespace = libs.versions.app.pkg.get()
 
+    // Room 2.8.5's room-common and room-common-jvm artifacts both package an identical
+    // META-INF/androidx/room/room-common/LICENSE.txt, which AGP's resource merger flags as
+    // a conflict rather than deduping.
+    packaging {
+        resources {
+            pickFirsts += "META-INF/androidx/room/room-common/LICENSE.txt"
+        }
+    }
+
     defaultConfig {
         applicationId = libs.versions.app.pkg.get()
         testApplicationId = "${libs.versions.app.pkg.get()}.test"
@@ -48,9 +57,10 @@ dependencies {
     implementation(projects.uikit)
     implementation(projects.core.storage)
 
-    implementation(projects.core.logger)
+    implementation(libs.grappim.kit.logger)
+    implementation(libs.grappim.kit.appinfo)
+    implementation(libs.grappim.kit.crash)
     implementation(projects.core.appinfoApi)
-    implementation(projects.core.crashApi)
     implementation(projects.core.asyncKmp)
     implementation(projects.strings)
 
@@ -85,5 +95,6 @@ dependencies {
 
     // Play In-App Updates ship in the gplay flavor only — the fdroid flavor never pulls in
     // this proprietary dependency, only a no-op AppUpdateChecker implementation.
-    gplayImplementation(libs.google.inapp.update.ktx)
+    gplayImplementation(libs.grappim.kit.appupdate.gplay)
+    fdroidImplementation(libs.grappim.kit.appupdate.fdroid)
 }

@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.issues.ui.details
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.issues.ui.model.IssueUI
 import com.grappim.taigamobile.feature.sprint.domain.Sprint
@@ -10,7 +11,6 @@ import com.grappim.taigamobile.feature.workitem.ui.models.SelectableTagUI
 import com.grappim.taigamobile.feature.workitem.ui.models.StatusUI
 import com.grappim.taigamobile.feature.workitem.ui.widgets.badge.SelectableWorkItemBadgeState
 import com.grappim.taigamobile.feature.workitem.ui.widgets.customfields.CustomFieldItemState
-import com.grappim.taigamobile.utils.ui.NativeText
 import io.github.vinceglb.filekit.PlatformFile
 
 data class IssueDetailsState(

@@ -30,6 +30,10 @@ import androidx.navigationevent.compose.NavigationBackHandler
 import androidx.navigationevent.compose.rememberNavigationEventState
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import com.grappim.kit.uikit.NativeText
+import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
+import com.grappim.kit.uikit.widgets.topbar.NavigationIconConfig
+import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.error_loading_projects
@@ -46,11 +50,8 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.ErrorStateWidget
 import com.grappim.taigamobile.uikit.widgets.emptystate.EmptyStateWidget
 import com.grappim.taigamobile.uikit.widgets.topbar.DesktopRefreshEffect
-import com.grappim.taigamobile.uikit.widgets.topbar.LocalTopBarConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.NavigationIconConfig
-import com.grappim.taigamobile.uikit.widgets.topbar.TopBarConfig
 import com.grappim.taigamobile.uikit.widgets.topbar.buildDesktopRefreshTopBarAction
-import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import com.grappim.taigamobile.utils.ui.getPagingPreviewItems
 import com.grappim.taigamobile.utils.ui.hasCompletedLoad
@@ -75,6 +76,8 @@ fun ProjectSelectorScreen(
     val state by viewModel.state.collectAsStateWithLifecycle()
     val projects = viewModel.projects.collectAsLazyPagingItems()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+
+    ObserveAsEvents(viewModel.projectSelected) { onProjectSelect() }
 
     LaunchedEffect(Unit) {
         topBarController.update(
@@ -110,10 +113,7 @@ fun ProjectSelectorScreen(
         state = state,
         searchQuery = searchQuery,
         projects = projects,
-        selectProject = {
-            state.setProject(it)
-            onProjectSelect()
-        }
+        selectProject = { state.setProject(it) }
     )
 }
 

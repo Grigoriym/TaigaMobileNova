@@ -1,8 +1,9 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.duedate
 
 import androidx.compose.material3.MaterialTheme
+import com.grappim.kit.domain.resultOf
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.domain.resultOf
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.PatchDataGenerator
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
@@ -14,7 +15,6 @@ import com.grappim.taigamobile.uikit.theme.taigaOrange
 import com.grappim.taigamobile.uikit.theme.taigaRed
 import com.grappim.taigamobile.utils.formatter.datetime.DateTimeUtils
 import com.grappim.taigamobile.utils.ui.DynamicColor
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

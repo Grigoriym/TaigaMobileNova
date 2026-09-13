@@ -16,7 +16,7 @@ kotlin {
             implementation(projects.core.asyncKmp)
             implementation(projects.utils.ui)
             implementation(projects.uikit)
-            implementation(projects.core.navigation)
+            implementation(libs.grappim.kit.navigation)
 
             implementation(projects.feature.filters.domain)
             implementation(projects.feature.filters.dto)
