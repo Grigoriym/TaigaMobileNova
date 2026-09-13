@@ -1,1 +1,5 @@
-What's new in v2.2.2
+- Fixed the dashboard/project screens sometimes showing the previous account's data right after switching accounts
+- Fixed the back button growing its history when switching between drawer sections
+- Fixed the Kanban board briefly flashing before a failed refresh re-showed the error, and fetching its filters twice on load
+- Fixed the user stories list sending an unnecessary parameter when pagination is disabled
+- Dependency updates and internal improvements
