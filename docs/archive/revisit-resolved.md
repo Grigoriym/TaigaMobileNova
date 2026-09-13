@@ -53,6 +53,9 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 42 | [Nav rail shown on the Login screen at wide window widths](#42-nav-rail-shown-on-the-login-screen-at-wide-window-widths) | ➡️ moved to tablet checklist 2026-08-22 |
 | 43 | [Issues list has no dividers between rows on desktop](#43-issues-list-has-no-dividers-between-rows-on-desktop) | ➡️ moved to tablet checklist 2026-08-22 |
 | 44 | [Desktop has no refresh affordance for pull-to-refresh screens](#44-desktop-has-no-refresh-affordance-for-pull-to-refresh-screens) | ➡️ moved to tablet checklist 2026-08-22 |
+| 49 | [Kanban fetches `filters_data` twice on load](#49-kanban-fetches-filters_data-twice-on-load) | ✅ resolved 2026-09-07 |
+| 51 | [Switching drawer sections is recorded on the back stack, so back cascades through prior sections](#51-switching-drawer-sections-is-recorded-on-the-back-stack-so-back-cascades-through-prior-sections) | ✅ resolved 2026-09-07 |
+| 54 | [`containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member](#54-containsmention-triggers-a-wasted-watchers-refresh-for-a-typod-name-that-isnt-a-real-member) | ✅ resolved 2026-09-11 |
 
 ---
 
@@ -1993,3 +1996,197 @@ the next active work on that initiative's PR rather than sit here. Now tracked a
 [tablet-form-factor-support/CHECKLIST.md](architecture/tablet-form-factor-support/CHECKLIST.md) — this
 entry stays for the original evidence/reasoning, the checklist step is the one to pick up.
 
+## 48. `page_size` is a no-op on the unpaginated user-stories request
+
+**Where:** `feature/userstories/data/src/commonMain/kotlin/com/grappim/taigamobile/feature/userstories/data/UserStoriesApi.kt:38-40,64`.
+
+**What:** noticed while investigating #386 (see
+`docs/issues/386-kanban-timeout-unfiltered-userstories-fetch.md`). `applyUserStoryParams()`
+unconditionally appended `page_size` to every `GET userstories` request, and separately
+`getUserStories()` adds the `x-disable-pagination: true` header whenever `params.page == null`.
+The header, per the code's own comment, makes the Taiga server ignore pagination — and therefore
+`page_size` — entirely, regardless of its value. Every production caller left `page` unset (the
+only one being `GetKanbanDataUseCaseImpl`), so `page_size` was always sent and always ignored.
+
+**Fix (2026-09-07):** `applyUserStoryParams()` now only appends `page_size` when `params.page !=
+null` — i.e. only for actual paginated calls, matching the header's own `params.page == null`
+condition right above it. Verified with `./gradlew jvmTest` (full suite, clean) and
+`ktlintCommonMainSourceSetCheck` on the module.
+
+## 49. Kanban fetches `filters_data` twice on load
+
+**Where:** `feature/kanban/ui/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/ui/KanbanViewModel.kt:51-54,110-119`
+and `feature/kanban/domain/src/commonMain/kotlin/com/grappim/taigamobile/feature/kanban/domain/GetKanbanDataUseCase.kt:49`.
+
+**What:** noticed while walking through #386's request list with gregory. `KanbanViewModel.init`
+fires `getKanbanData()` and `loadFiltersData()` at the same time. `getKanbanData()` calls
+`getKanbanDataUseCase.getData()`, which calls `filtersRepository.getStatuses(UserStory)`
+(`GetKanbanDataUseCase.kt:49`) to get the board's status columns. Independently,
+`loadFiltersData()` calls `filtersRepository.getFiltersData(UserStory)` directly, to populate the
+filter dropdown (tags/assignees/etc., stored in `allFilters`). Both hit the exact same endpoint
+(`GET userstories/filters_data?project=<id>`) with the exact same params —
+`FiltersRepositoryImpl.getStatuses()` is itself just `getFiltersData()` plus picking statuses out
+of the result (`FiltersRepositoryImpl.kt:31-33`), so the first call's response already contains
+everything the second call needs.
+
+**Consequence:** none functionally — both calls succeed and each path gets what it needs. It's a
+redundant round trip on every Kanban load/refresh, not a correctness bug.
+
+**Fix (2026-09-07):** threaded the already-fetched `FiltersData` through the domain layer instead of
+fetching it twice. `GetKanbanDataUseCaseImpl.getData()` now calls `filtersRepository.getFiltersData()`
+once, derives `statuses` from it locally (`Status(color, id, name)` per entry, replacing the
+`getStatuses()` call), and returns the raw `FiltersData` on a new `KanbanData.filtersData` field
+(defaulted, so existing test-literal `KanbanData(...)` constructions were unaffected).
+`KanbanViewModel.init` no longer calls `loadFiltersData()` — `getKanbanData()`'s `onSuccess` now sets
+`allFilters = result.filtersData` directly (before computing `computeSwimlaneFilters`, which also
+incidentally fixed a latent race: `allFilters` is now populated synchronously by the time the swimlane
+filters are first computed, instead of depending on `loadFiltersData()`'s independent coroutine having
+already completed). `loadFiltersData()` itself, and the `onRetryFilters`/`filtersError`/
+`isFiltersLoading` state wired to it, were left in place unchanged as a manual retry path — see #50
+for the follow-up this created (that retry UI is no longer reachable automatically, since filters can't
+fail independently of the board fetch anymore). Updated `GetKanbanDataUseCaseTest.kt` (stub
+`filtersDataResult`/`filtersDataThrows` instead of `statusesResult`/`statusesThrows`) and
+`KanbanViewModelTest.kt` (removed the two `on init - loadFiltersData ...` tests whose premise no
+longer holds, strengthened `on init - getData success/failure` to assert `filtersRepository`'s
+`getFiltersData` is never called, rewrote `onRetryFilters`'s test around the new manual-only flow, and
+fixed the `givenBoard` test helper — used by all `computeSwimlaneFilters - ...` tests — to route filter
+data through `KanbanData.filtersData` instead of the now-unused `filtersRepository.filtersDataResult`
+stub). Verified with `./gradlew jvmTest ktlintCheck` (full suite, clean) and
+`./gradlew koverXmlReport :koverVerify` (floor still met).
+
+**Follow-up #50 resolved (2026-09-07):** the fix above left `onRetryFilters`/`filtersError`/
+`isFiltersLoading`/`loadFiltersData()` in place as an unreachable manual-only path (logged separately
+as revisit #50). Investigated which of Kanban's board data and the filter list can genuinely fail
+independently, comparing against every other screen that injects `FiltersRepository`: Scrum Backlog,
+Epics and Issues (list screens) all keep a real standalone `loadFiltersData()` because their main data
+(a paginated list) renders fine with zero knowledge of filters — filters there are a pure add-on
+feature. UserStory/Task/Epic/Issue detail use cases and `SprintsRepositoryImpl`, by contrast, all fetch
+filters/statuses *inside* the same `coroutineScope`/`resultOf` as the rest of the entity's data, with
+no independent filters state — because those screens can't render without it. Kanban was already
+architecturally in the second group even before this fix (`GetKanbanDataUseCaseImpl` already needed
+`getStatuses()` bundled into its own `resultOf` to build `storiesByStatus` — the board's columns *are*
+the statuses), so the old standalone `loadFiltersData()`/`filtersError`/`onRetryFilters` was Pattern-1
+shape copy-pasted onto a Pattern-2 screen, not a deliberate design fetching genuinely independent data.
+Removed `onRetryFilters`, `filtersError`, `isFiltersLoading` from `KanbanState`; removed
+`loadFiltersData()` and the now-unused `filtersRepository` constructor param from `KanbanViewModel`
+(the `FiltersRepository` import went with it — `FiltersData`/`Statuses` still come from
+`feature.filters.domain`, so no build-file change was needed); updated `KanbanScreen.kt`'s
+`KanbanFilters`/`FilterModalBottomSheetWidget` call site to pass a literal `filtersError =
+NativeText.Empty` instead of state fields that no longer exist (the shared
+`FilterModalBottomSheetWidget`/`FilterErrorContent` widget itself was left untouched — Issues/Epics/
+Scrum still route real independent failures through it). Removed the matching
+`KanbanViewModelTest.kt` scaffolding (`FakeFiltersRepository`, `testException` import, every
+`filtersRepository.filtersDataResult = FiltersData()` no-op stub line, the `onRetryFilters` test).
+Verified with `./gradlew jvmTest ktlintCheck` (full suite, clean), `./gradlew koverXmlReport
+:koverVerify` (floor still met), and a repo-wide grep confirming no remaining Kanban-side reference to
+`filtersError`/`isFiltersLoading`/`onRetryFilters`/`loadFiltersData` (Scrum/Epics/Issues's own,
+legitimate copies are untouched).
+
+## 51. Switching drawer sections is recorded on the back stack, so back cascades through prior sections
+
+**Where:** `core/navigation/src/commonMain/kotlin/com/grappim/taigamobile/core/navigation/Navigator.kt`
+— `goToTopLevel()` (lines 92-107) and `goBack()` (lines 35-47);
+`core/navigation/src/commonMain/kotlin/com/grappim/taigamobile/core/navigation/NavigationState.kt:28-33`
+(`topLevelStack: NavBackStack<NavKey>`, `currentTopLevelKey = topLevelStack.last()`).
+
+**What:** reported by gregory (2026-09-07): navigate Epics → Issues via the drawer, then press back —
+lands on Epics instead of wherever was open before Epics (or exiting the app), which reads as
+unexpected. Traced to the mechanism: `topLevelStack` is a real stack, not a "currently selected
+section" pointer. `goToTopLevel(key)` (`Navigator.kt:92-99`) removes any existing entry for that
+section's class then `add(key)s` it — so switching sections *pushes*, it doesn't replace. `goBack()`
+(`Navigator.kt:35-41`) pops `topLevelStack` whenever the current screen is itself the top of its
+section's sub-stack, so a chain of drawer taps (Epics → Issues → Kanban → …) builds a stack of
+sections that back walks through one at a time, most-recent-first, before ever reaching whatever was
+open before the first drawer tap. `NavigationState.kt:20-21`'s own doc comment confirms this is by
+design ("`topLevelStack` records which drawer section is active"), not an oversight — but it's a
+different UX model than the typical drawer/bottom-nav pattern (Android's own bottom-nav guidance,
+most drawer apps) where switching top-level destinations does *not* grow the back stack and back
+either returns to the single previous screen or exits.
+
+**Consequence:** every drawer navigation the user makes silently extends how many back-presses it
+takes to leave the app, and the "previous section" back lands on is whichever was tapped most
+recently — not necessarily the one the user thinks of as "before this."
+
+**Why deferred:** UX behavior change to a core, deliberately-designed piece of shared navigation
+infrastructure (`Navigator`/`NavigationState` back all top-level nav — drawer, rail, permanent drawer
+across phone/tablet/desktop per the tablet-form-factor-support work), not something to redesign as a
+side note. Needs a decision on the intended model, not just a code change.
+
+**Fix, if wanted:** the conventional alternative is what `resetSubStackTo()` already does for
+re-tapping the *active* section (`Navigator.kt:109-116`, `topLevelStack[lastIndex] = key` — replace,
+not push) — applying the same replace-not-push shape to `goToTopLevel()` would make switching
+sections never grow `topLevelStack` past whatever depth it already had, so back would skip past
+previously-visited sections entirely and go straight to wherever the user was before entering the
+drawer flow (or exit, if that was the start destination). Confirm with gregory this is the wanted
+model before changing it — the current design may be intentional to let users "walk back" through
+their drawer navigation history, which is also a defensible choice some apps make deliberately.
+
+**Fix (2026-09-07):** gregory confirmed the replace-not-push model. Changed `goToTopLevel()`
+(`Navigator.kt`) to do exactly that — `topLevelStack[topLevelStack.lastIndex] = key` instead of the
+old `removeAll { it::class == key::class }` + `add(key)`, mirroring `resetSubStackTo()`'s shape. This
+also made the `key::class == state.startKey::class -> clear()` special case unnecessary and it was
+removed: since every `goToTopLevel()` call now replaces rather than grows the stack, there's no
+accumulated history to clear regardless of which section is the target. `goBack()`/`canGoBack()`
+(`Navigator.kt:35-50`) were left untouched — their existing `topLevelStack.size > 1` checks now simply
+never trigger post-fix (the stack is invariant at size 1 outside of `resetTo()`), which is the correct
+behavior with no code change needed there: back at any section's root now falls through to the
+system/exit instead of walking through previously-visited sections. Confirmed no other file reads
+`topLevelStack`/`goToTopLevel`/`currentTopLevelKey` (grepped repo-wide) — **this grep was
+insufficient**: it only found direct readers of the changed state, not a caller depending on
+`goBack()`'s postcondition built on top of it. `ProjectSelectorScreen`'s login-abandon back
+handling relied on `goBack()` actually popping `topLevelStack` past `Login`, without reading any
+of the three symbols directly — see
+`docs/issues/2026-09-08-project-selector-back-after-login-does-nothing.md` for the regression this
+caused and its fix. Updated `NavigatorTest.kt`'s six affected tests (renamed
+`navigate to another top level key switches section...` → `...replaces the section...`; replaced
+`navigate to the start key clears the top level stack` / `navigate to a top level key already in the
+stack moves it to the top` with a single `navigate between top level keys never grows the top level
+stack`; rewrote `goBack at a sub stack root pops the top level stack` → `goBack at a top level section
+root is not handled...`; updated `canGoBack is false only at the start destination` →
+`...at any top level section root, true only inside a sub stack`; fixed the payload-identity test's
+expected stacks) to assert the new invariant. Verified with `./gradlew :core:navigation:jvmTest`
+(12/12 green), full `./gradlew jvmTest` (all green, no cross-module fallout), and
+`./gradlew :core:navigation:ktlintCommonMainSourceSetCheck :core:navigation:ktlintCommonTestSourceSetCheck`
+(clean).
+
+
+---
+
+## 54. `containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member
+
+**What:** raised by gregory (2026-09-11) right after the watchers-refresh-on-mention fix landed
+(`66c8d21f`, see
+[docs/architecture/mention-tagging-support/IMPLEMENTATION_PLAN.md](../architecture/mention-tagging-support/IMPLEMENTATION_PLAN.md)'s
+added note). `containsMention(text)` (`uikit/src/commonMain/kotlin/com/grappim/taigamobile/uikit/widgets/editor/MentionQuery.kt`)
+is a pure syntactic check — it mirrors the server's `\B(@)([\w.-]+)\b` regex
+(`taiga-back`'s `mentions.py:48`) but has no idea whether the matched token is an actual project
+member.
+
+So posting a comment or description containing `@non-present` (a token that doesn't resolve to a
+real team member) still makes `containsMention()` return `true`, which still triggers
+`WorkItemWatchersDelegate.refreshWatchers()` — called from `createComment()`/
+`onNewDescriptionUpdate()` in all four work-item ViewModels (`TaskDetailsViewModel.kt`,
+`IssueDetailsViewModel.kt`, `UserStoryDetailsViewModel.kt`, `EpicDetailsViewModel.kt`). Server-side,
+`mentions.py:66-69` silently leaves an unresolvable username as plain text and adds no watcher (per
+the plan's "Server contract" section), so the refresh just re-fetches the same watchers list that
+was already in state — a harmless but unnecessary `getUpdateWorkItem` + `getUsersList` round-trip.
+
+**Why not fixed inline:** low severity (the row-based autocomplete only lets a user *insert* a
+mention by picking a real member from suggestions, so a bogus `@name` only reaches the server via
+manual edits or pasted text — not the normal flow) and the fix is a small, separate, independently
+testable change — not worth folding into the watchers-refresh fix's diff.
+
+**Fix (2026-09-11):** added `containsKnownMention(text, knownUsernames)` next to `containsMention`
+in `MentionQuery.kt` — same syntactic regex match, narrowed to usernames present in a supplied
+collection (server does an exact, case-sensitive `username=` lookup per `mentions.py:59-69`, so the
+comparison is case-sensitive too, not case-insensitive). All 8 call sites across the four work-item
+ViewModels (`createComment`/`onNewDescriptionUpdate` in `TaskDetailsViewModel.kt`,
+`IssueDetailsViewModel.kt`, `UserStoryDetailsViewModel.kt`, `EpicDetailsViewModel.kt`) switched from
+`containsMention(text)` to `containsKnownMention(text, mentionsState.value.members.map { it.username })`
+— the same team-members list already loaded via `WorkItemMentionsDelegate.loadMembers()` on init for
+the autocomplete row, so no new network call. Added `MentionQueryTest.kt` coverage for the new
+function (known/unknown/empty-list/case-sensitivity/no-at-sign) and, per ViewModel, two tests
+asserting `watchersState.value.watchers` does/doesn't change after a comment or description
+containing a known-vs-unknown `@mention` (`getTeamMember()`'s test factory gained a `username`
+override param for this). Verified with full `./gradlew jvmTest` (1860 green), `ktlintCheck`, and
+`:koverVerify` (floor still holds).

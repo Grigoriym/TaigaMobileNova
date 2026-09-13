@@ -19,6 +19,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(libs.jetbrains.compose.components.resources)
+            api(libs.grappim.kit.uikit)
 
             implementation(projects.utils.ui)
             implementation(projects.strings)
@@ -27,7 +28,7 @@ kotlin {
             implementation(projects.feature.workitem.domain)
             implementation(projects.feature.projects.domain)
             implementation(projects.feature.users.domain)
-            implementation(projects.core.navigation)
+            implementation(libs.grappim.kit.navigation)
             implementation(projects.utils.formatter.datetime)
 
             implementation(libs.coil.compose)

@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.core.api
 
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpClientPlugin
 import io.ktor.client.plugins.HttpSend
@@ -9,10 +9,10 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.Url
 import io.ktor.util.AttributeKey
 
-class DebugLocalhostPlugin(private val appInfoProvider: AppInfoProvider) {
+class DebugLocalhostPlugin(private val debugLocalHostProvider: DebugLocalHostProvider) {
 
     class Config {
-        lateinit var appInfoProvider: AppInfoProvider
+        lateinit var debugLocalHostProvider: DebugLocalHostProvider
     }
 
     companion object Plugin : HttpClientPlugin<Config, DebugLocalhostPlugin> {
@@ -20,13 +20,13 @@ class DebugLocalhostPlugin(private val appInfoProvider: AppInfoProvider) {
 
         override fun prepare(block: Config.() -> Unit): DebugLocalhostPlugin {
             val config = Config().apply(block)
-            return DebugLocalhostPlugin(config.appInfoProvider)
+            return DebugLocalhostPlugin(config.debugLocalHostProvider)
         }
 
         override fun install(plugin: DebugLocalhostPlugin, scope: HttpClient) {
             scope.plugin(HttpSend).intercept { request ->
                 if (request.url.host == "localhost") {
-                    val debugHost = plugin.appInfoProvider.getDebugLocalHost()
+                    val debugHost = plugin.debugLocalHostProvider.getDebugLocalHost()
                     if (debugHost.isNotEmpty()) {
                         val parsed = Url(debugHost)
                         request.url {

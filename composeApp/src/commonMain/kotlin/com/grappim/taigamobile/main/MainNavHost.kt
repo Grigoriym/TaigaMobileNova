@@ -14,14 +14,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import com.grappim.kit.navigation.LocalResultBus
+import com.grappim.kit.navigation.NavigationState
+import com.grappim.kit.navigation.Navigator
+import com.grappim.kit.navigation.ResultEffect
+import com.grappim.kit.navigation.rememberResultBus
+import com.grappim.kit.navigation.sendResult
+import com.grappim.kit.navigation.toEntries
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
-import com.grappim.taigamobile.core.navigation.LocalResultBus
-import com.grappim.taigamobile.core.navigation.NavigationState
-import com.grappim.taigamobile.core.navigation.Navigator
-import com.grappim.taigamobile.core.navigation.ResultEffect
-import com.grappim.taigamobile.core.navigation.rememberResultBus
-import com.grappim.taigamobile.core.navigation.sendResult
-import com.grappim.taigamobile.core.navigation.toEntries
 import com.grappim.taigamobile.createtask.CreateTaskNavDestination
 import com.grappim.taigamobile.createtask.CreateTaskScreen
 import com.grappim.taigamobile.createtask.navigateToCreateTask
@@ -55,7 +56,6 @@ import com.grappim.taigamobile.nav.userStoryNavGraph
 import com.grappim.taigamobile.nav.wikiNavGraph
 import com.grappim.taigamobile.nav.workItemEditsNavGraph
 import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
-import com.grappim.taigamobile.utils.ui.NativeText
 
 private const val TRANSITION_DURATION_MS = 150
 
@@ -155,8 +155,12 @@ fun MainNavHost(
             }
             ProjectSelectorScreen(
                 route = route,
+                // only ever invoked on the isFromLogin path (see ProjectSelectorScreen's own
+                // back handling) — resetTo() lands back on Login. navigator.goBack() has nowhere
+                // to pop to here since ProjectSelector replaces Login's topLevelStack slot rather
+                // than pushing onto it.
                 goBack = {
-                    navigator.goBack()
+                    navigator.resetTo(LoginNavDestination)
                 },
                 onProjectSelect = {
                     navigator.navigateToDashboardAsTopDestination()
@@ -294,7 +298,7 @@ private fun Navigator.navigate(id: Long, type: CommonTaskType, ref: Long) {
 /**
  * The result-bus signal that a screen we're returning to should refresh its data. Replaces the
  * old Nav2 `previousBackStackEntry.savedStateHandle[UPDATE_DATA_ON_BACK]` convention — see
- * [com.grappim.taigamobile.core.navigation.ResultBus]'s doc for why this is hand-rolled instead
+ * [com.grappim.kit.navigation.ResultBus]'s doc for why this is hand-rolled instead
  * of the real Nav3 `ResultEventBus`. One shared signal for every screen, same as the constant key
  * the old convention used.
  */

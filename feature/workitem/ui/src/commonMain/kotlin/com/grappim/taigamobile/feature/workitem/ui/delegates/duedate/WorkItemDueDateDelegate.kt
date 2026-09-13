@@ -1,11 +1,11 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.duedate
 
 import androidx.compose.material3.MaterialTheme
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.workitem.domain.DueDateStatus
 import com.grappim.taigamobile.feature.workitem.domain.PatchedData
 import com.grappim.taigamobile.utils.ui.ColorSource
 import com.grappim.taigamobile.utils.ui.DynamicColor
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.datetime.LocalDate
 

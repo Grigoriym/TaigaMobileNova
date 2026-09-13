@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.list
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.wiki.ui.model.WikiUIItem
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

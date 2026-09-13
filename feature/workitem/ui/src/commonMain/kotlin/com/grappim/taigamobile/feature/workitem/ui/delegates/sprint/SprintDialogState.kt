@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.sprint
 
-import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.kit.uikit.NativeText
 import kotlinx.datetime.LocalDate
 
 data class SprintDialogState(

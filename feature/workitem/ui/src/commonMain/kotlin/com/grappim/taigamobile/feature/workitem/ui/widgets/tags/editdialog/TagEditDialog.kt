@@ -44,6 +44,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import com.github.skydoves.colorpicker.compose.HsvColorPicker
 import com.github.skydoves.colorpicker.compose.rememberColorPickerController
+import com.grappim.kit.uikit.NativeText
+import com.grappim.kit.uikit.asString
 import com.grappim.taigamobile.feature.workitem.ui.models.TagUI
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.cancel
@@ -56,10 +58,8 @@ import com.grappim.taigamobile.strings.generated.resources.tag_name
 import com.grappim.taigamobile.uikit.theme.TaigaMobileTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.widgets.TaigaHeightSpacer
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.StaticColor
 import com.grappim.taigamobile.utils.ui.asColor
-import com.grappim.taigamobile.utils.ui.asString
 import com.grappim.taigamobile.utils.ui.toHex
 import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.stringResource

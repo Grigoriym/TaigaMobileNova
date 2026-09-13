@@ -17,7 +17,7 @@ kotlin {
             implementation(projects.strings)
             implementation(projects.uikit)
             implementation(projects.utils.ui)
-            implementation(projects.core.navigation)
+            implementation(libs.grappim.kit.navigation)
             implementation(projects.core.domain)
             implementation(projects.core.storage)
             implementation(projects.feature.projects.domain)

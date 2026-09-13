@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.feature.settings.ui.trustedcerts
 
-import com.grappim.taigamobile.core.domain.PendingCertTrust
+import com.grappim.kit.domain.PendingCertTrust
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

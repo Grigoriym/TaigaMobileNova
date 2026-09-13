@@ -135,6 +135,8 @@ data class TopBarConfig(
 | `CreateCommentBar` | `widgets/CreateCommentBar.kt` | `isOffline, onButtonClick, canComment` — only renders if `canComment = true` |
 | `DatePickerDialogWidget` | `widgets/DatePickerDialogWidget.kt` | `isVisible, onConfirmButtonClick: (Long?) -> Unit, initialDate?` |
 | `DropdownSelector<T>` | `widgets/DropdownSelector.kt` | `items, selectedItem, onItemSelect, isOffline, canModify, itemContent, selectedItemContent` |
+| `MentionSuggestionsPopup` | `widgets/editor/MentionSuggestionsPopup.kt` | `members: ImmutableList<TeamMember>, expanded, onSelect, onDismissRequest` — built directly on `DropdownMenu`, not a `DropdownSelector` wrapper, since visibility must be driven externally (active `@query`), not by an internal tap-to-toggle |
+| `findActiveMentionQuery` / `insertMention` | `widgets/editor/MentionInput.kt` | Pure functions (no Composable) for detecting/inserting an `@`-mention in a `TextFieldValue` — pair with the popup above |
 
 ---
 

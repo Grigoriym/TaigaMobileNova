@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.delegates.comments
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.data.PatchDataGeneratorImpl
 import com.grappim.taigamobile.feature.workitem.domain.Comment
@@ -12,7 +13,6 @@ import com.grappim.taigamobile.testing.utils.getRandomLong
 import com.grappim.taigamobile.testing.utils.getRandomString
 import com.grappim.taigamobile.testing.utils.nowLocalDateTime
 import com.grappim.taigamobile.testing.utils.testException
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.test.runTest
 import kotlin.test.BeforeTest

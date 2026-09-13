@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.data
 
+import com.grappim.kit.testing.FakeNetworkMonitor
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.core.domain.TaskIdentifier
 import com.grappim.taigamobile.feature.filters.mapper.StatusesMapper
@@ -19,7 +20,6 @@ import com.grappim.taigamobile.feature.workitem.mapper.DueDateStatusMapper
 import com.grappim.taigamobile.feature.workitem.mapper.JsonObjectMapper
 import com.grappim.taigamobile.feature.workitem.mapper.PatchedDataMapper
 import com.grappim.taigamobile.feature.workitem.mapper.WorkItemMapper
-import com.grappim.taigamobile.testing.FakeNetworkMonitor
 import com.grappim.taigamobile.testing.api.FakeWorkItemApi
 import com.grappim.taigamobile.testing.dao.FakeWorkItemDao
 import com.grappim.taigamobile.testing.models.getAttachment

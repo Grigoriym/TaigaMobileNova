@@ -2,7 +2,8 @@
 
 package com.grappim.taigamobile.core.storage.server
 
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import com.grappim.taigamobile.core.storage.di.createDataStore
 import kotlinx.cinterop.ExperimentalForeignApi
 import org.koin.core.annotation.Single
@@ -11,7 +12,7 @@ import platform.Foundation.NSFileManager
 import platform.Foundation.NSUserDomainMask
 
 @Single(binds = [ServerStorage::class])
-class ServerStorageImpl(appInfoProvider: AppInfoProvider) :
+class ServerStorageImpl(appInfoProvider: AppInfoProvider, debugLocalHostProvider: DebugLocalHostProvider) :
     ServerStorage by DataStoreServerStorage(
         dataStore = createDataStore {
             val documentDirectory = NSFileManager.defaultManager.URLForDirectory(
@@ -23,5 +24,6 @@ class ServerStorageImpl(appInfoProvider: AppInfoProvider) :
             )
             requireNotNull(documentDirectory).path + "/$SERVER_STORAGE_FILE_NAME"
         },
-        appInfoProvider = appInfoProvider
+        appInfoProvider = appInfoProvider,
+        debugLocalHostProvider = debugLocalHostProvider
     )

@@ -1,7 +1,7 @@
 package com.grappim.taigamobile.feature.dashboard.ui
 
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
-import com.grappim.taigamobile.utils.ui.NativeText
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

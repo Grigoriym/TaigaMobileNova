@@ -8,6 +8,8 @@ plugins {
 kotlin {
     sourceSets {
         commonMain.dependencies {
+            api(libs.grappim.kit.uikit)
+
             implementation(projects.strings)
             implementation(projects.core.domain)
             implementation(projects.core.asyncKmp)

@@ -6,6 +6,9 @@ plugins {
 
 kotlin {
     sourceSets {
+        commonMain.dependencies {
+            api(libs.grappim.kit.domain)
+        }
         iosMain.dependencies {
             implementation(libs.kotlinx.io.core)
         }

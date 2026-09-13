@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.di
 
-import com.grappim.taigamobile.testing.MainDispatcherRule
+import com.grappim.kit.testing.MainDispatcherRule
 import kotlinx.coroutines.test.StandardTestDispatcher
 import org.koin.core.annotation.KoinInternalApi
 import org.koin.core.definition.BeanDefinition

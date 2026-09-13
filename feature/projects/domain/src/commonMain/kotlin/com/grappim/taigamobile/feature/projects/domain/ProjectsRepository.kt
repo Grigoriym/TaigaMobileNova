@@ -14,7 +14,7 @@ interface ProjectsRepository {
 
     suspend fun getCurrentProjectSimple(): ProjectSimple
 
-    fun getCurrentProjectFlow(): Flow<ProjectSimple>
+    fun getCurrentProjectFlow(): Flow<ProjectSimple?>
 
     suspend fun getPermissions(): ImmutableList<TaigaPermission>
 

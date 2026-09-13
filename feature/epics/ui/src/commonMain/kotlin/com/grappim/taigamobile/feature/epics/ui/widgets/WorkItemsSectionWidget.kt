@@ -18,6 +18,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import com.grappim.kit.uikit.asString
 import com.grappim.taigamobile.core.domain.CommonTaskType
 import com.grappim.taigamobile.feature.workitem.ui.models.WorkItemUI
 import com.grappim.taigamobile.strings.RString
@@ -32,7 +33,6 @@ import com.grappim.taigamobile.uikit.theme.taigaRed
 import com.grappim.taigamobile.uikit.widgets.ChipWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
 import com.grappim.taigamobile.utils.ui.asColor
-import com.grappim.taigamobile.utils.ui.asString
 import com.grappim.taigamobile.utils.ui.textColor
 import com.grappim.taigamobile.utils.ui.toColor
 import kotlinx.collections.immutable.ImmutableList

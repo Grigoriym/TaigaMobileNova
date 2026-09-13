@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.data
 
-import com.grappim.taigamobile.core.appinfoapi.AppInfoProvider
+import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.Interceptor
 import okhttp3.Response
@@ -12,7 +12,7 @@ import org.koin.core.annotation.Single
  * Why? Because images are downloaded with "localhost" as a host, while I need another host
  */
 @Single
-class DebugLocalHostImageManager(private val appInfoProvider: AppInfoProvider) : Interceptor {
+class DebugLocalHostImageManager(private val debugLocalHostProvider: DebugLocalHostProvider) : Interceptor {
 
     private val lock = Any()
 
@@ -22,7 +22,7 @@ class DebugLocalHostImageManager(private val appInfoProvider: AppInfoProvider) :
 
             if (!request.url.host.contains("localhost")) return chain.proceed(request)
 
-            val newHost = appInfoProvider.getDebugLocalHost().toHttpUrlOrNull()
+            val newHost = debugLocalHostProvider.getDebugLocalHost().toHttpUrlOrNull()
             if (newHost != null) {
                 val newUrl = request.url.newBuilder()
                     .scheme(newHost.scheme)

@@ -17,6 +17,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.feature.workitem.domain.Comment
 import com.grappim.taigamobile.feature.workitem.ui.delegates.comments.WorkItemCommentsState
 import com.grappim.taigamobile.strings.RString
@@ -31,6 +32,8 @@ import com.grappim.taigamobile.uikit.widgets.list.UserItem
 import com.grappim.taigamobile.uikit.widgets.loader.DotsLoaderWidget
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.uikit.widgets.text.SectionTitleExpandable
+import kotlinx.collections.immutable.ImmutableList
+import kotlinx.collections.immutable.persistentListOf
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 
@@ -39,7 +42,9 @@ fun CommentsSectionWidget(
     commentsState: WorkItemCommentsState,
     onCommentRemove: (Comment) -> Unit,
     goToProfile: (userId: Long) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    members: ImmutableList<TeamMember> = persistentListOf(),
+    onMentionClick: (Long) -> Unit = {}
 ) {
     if (commentsState.comments.isNotEmpty()) {
         Column(modifier = modifier) {
@@ -60,7 +65,9 @@ fun CommentsSectionWidget(
                         onDeleteClick = {
                             onCommentRemove(item)
                         },
-                        navigateToProfile = goToProfile
+                        navigateToProfile = goToProfile,
+                        members = members,
+                        onMentionClick = onMentionClick
                     )
 
                     if (index < commentsState.comments.lastIndex) {
@@ -80,7 +87,13 @@ fun CommentsSectionWidget(
 }
 
 @Composable
-private fun CommentItem(comment: Comment, onDeleteClick: () -> Unit, navigateToProfile: (userId: Long) -> Unit) {
+private fun CommentItem(
+    comment: Comment,
+    onDeleteClick: () -> Unit,
+    navigateToProfile: (userId: Long) -> Unit,
+    members: ImmutableList<TeamMember>,
+    onMentionClick: (Long) -> Unit
+) {
     Column {
         var isAlertVisible by remember { mutableStateOf(false) }
 
@@ -125,7 +138,9 @@ private fun CommentItem(comment: Comment, onDeleteClick: () -> Unit, navigateToP
 
         MarkdownTextWidget(
             text = comment.text,
-            modifier = Modifier.padding(start = 4.dp)
+            modifier = Modifier.padding(start = 4.dp),
+            members = members,
+            onMentionClick = onMentionClick
         )
     }
 }

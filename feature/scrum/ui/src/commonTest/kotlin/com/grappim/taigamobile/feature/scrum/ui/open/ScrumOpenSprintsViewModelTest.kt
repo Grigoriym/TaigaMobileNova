@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.scrum.ui.open
 
 import app.cash.turbine.test
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.repo.FakeSprintsRepository
 import com.grappim.taigamobile.testing.utils.FakeDateTimeUtils

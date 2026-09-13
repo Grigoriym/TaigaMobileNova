@@ -1,6 +1,6 @@
 package com.grappim.taigamobile.createtask
 
-import com.grappim.taigamobile.utils.ui.NativeText
+import com.grappim.kit.uikit.NativeText
 
 data class CreateTaskState(
     val toolbarTitle: NativeText = NativeText.Empty,

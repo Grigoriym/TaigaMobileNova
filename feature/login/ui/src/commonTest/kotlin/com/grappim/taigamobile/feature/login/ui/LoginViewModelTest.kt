@@ -3,14 +3,14 @@
 package com.grappim.taigamobile.feature.login.ui
 
 import app.cash.turbine.test
-import com.grappim.taigamobile.core.domain.PendingCertTrust
+import com.grappim.kit.domain.PendingCertTrust
+import com.grappim.kit.testing.FakeTrustedCertStorage
+import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
-import com.grappim.taigamobile.testing.MainDispatcherRule
 import com.grappim.taigamobile.testing.repo.FakeAuthRepository
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
-import com.grappim.taigamobile.testing.storage.FakeTrustedCertStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest

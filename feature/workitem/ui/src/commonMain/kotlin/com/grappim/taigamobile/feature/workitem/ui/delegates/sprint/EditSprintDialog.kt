@@ -17,14 +17,14 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.grappim.kit.uikit.NativeText
+import com.grappim.kit.uikit.asString
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.cancel
 import com.grappim.taigamobile.strings.generated.resources.ok
 import com.grappim.taigamobile.strings.generated.resources.sprint_name_hint
 import com.grappim.taigamobile.uikit.widgets.DatePickerDialogWidget
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
-import com.grappim.taigamobile.utils.ui.NativeText
-import com.grappim.taigamobile.utils.ui.asString
 import org.jetbrains.compose.resources.stringResource
 
 @Composable

@@ -2,15 +2,15 @@ package com.grappim.taigamobile.feature.login.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.logger.logcat
+import com.grappim.kit.storage.cert.TrustedCertStorage
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
-import com.grappim.taigamobile.core.logger.logcat
-import com.grappim.taigamobile.core.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
-import com.grappim.taigamobile.utils.ui.NativeText
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow

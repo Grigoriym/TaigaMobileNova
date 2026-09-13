@@ -2,9 +2,9 @@ package com.grappim.taigamobile
 
 import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.window.ComposeUIViewController
-import com.grappim.taigamobile.core.logger.LogPriority
-import com.grappim.taigamobile.core.logger.NSLogLogger
-import com.grappim.taigamobile.core.logger.logcat
+import com.grappim.kit.logger.LogPriority
+import com.grappim.kit.logger.NSLogLogger
+import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.di.KoinApp
 import com.grappim.taigamobile.main.TaigaAppContent
 import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
