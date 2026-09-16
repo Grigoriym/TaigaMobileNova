@@ -197,6 +197,15 @@ different starting points (Desktop nearly there, Android has no persistent log a
 nothing), a privacy-policy amendment on both `PRIVACY_POLICY.md` and `PRIVACY_POLICY_GPLAY.md`, and a
 `docs/security/masvs.md` register update once shipped. Not something to scope inline here.
 
+**Decided (2026-09-16):** opt-in toggle (nothing persists until the user enables it, matching
+Symfonium's pattern rather than desktop's current always-on `FileLogger`), and the file-writing sink
+should live in `grappim-kit-logger` (shared across TaigaMobileNova/wallosmobile/wayprint/
+HateItOrRateIt) rather than app-local. Implementation starts in the `grappim-kit` repo — see its
+`DEBUG_LOG_EXPORT_PLAN.md` for the investigation findings, the `KitLogger`-is-a-single-global-sink
+constraint that shapes the Android/iOS designs differently, and what's explicitly left for this app
+to do once the kit module exists (UI toggle, share-intent wiring via the already-declared
+`FileProvider`, the `logcat()` call-site sanitization sweep, privacy-policy text).
+
 **Questions a real investigation needs to answer** (not decided — options only):
 - **Collection scope:** always-on rotating file (like Desktop today) vs. an explicit "debug mode"
   toggle a user enables only while reproducing a bug (Symfonium's model — smaller privacy footprint,
