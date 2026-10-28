@@ -14,74 +14,59 @@ device or launcher; none is needed — the mechanism is platform-wide.
 
 ## Findings
 
-- Both adaptive icon definitions declare only `<background>` and `<foreground>`, no `<monochrome>`:
-  `androidApp/src/main/res/mipmap-anydpi-v26/ic_launcher.xml:3-4` and `ic_launcher_round.xml:3-4`.
-  So on Android 13+ with themed icons on, the launcher falls back to the full-color icon.
+- Both adaptive icon definitions declared only `<background>` and `<foreground>`, no `<monochrome>`
+  (`androidApp/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`, `ic_launcher_round.xml`). So on
+  Android 13+ with themed icons on, the launcher showed the full-colour icon.
 - No flavor (`gplay`, `fdroid`, `debug`, …) overrides any launcher resource — the `main` set is the
   only one to change.
-- The adaptive foreground points at the raster `@mipmap/ic_launcher_foreground` (`.webp`, 5
-  densities), but a vector of the same logo already exists at
-  `androidApp/src/main/res/drawable/ic_launcher_foreground.xml` (8 flat-filled polygons, 108dp
-  viewport; byte-identical copy in `uikit/.../composeResources/drawable/`). Nothing in `androidApp`
-  references the drawable version.
-- Rendering those 8 polygons in a single color (done with PIL in-session, mirroring the vector's
-  group transform) gives a clean silhouette: a fir tree split by a thin vertical seam, plus the
-  trunk. Two halves and the stacked trunk rects merge without artifacts, so the existing paths can be
-  reused as-is. Bounding box ≈ x 32.9–74.3dp, y 25.5–81.9dp of the 108dp canvas — inside the 72dp
-  safe circle, same scale as the color foreground.
-- `<monochrome>` is read only on API 33+; older platforms ignore it, so it can live in the existing
-  `mipmap-anydpi-v26` files (this is what Android Studio's own Image Asset template generates).
-- The system tints the monochrome drawable and uses only its alpha, so the fill color is irrelevant.
+- The adaptive foreground is the raster `@mipmap/ic_launcher_foreground` (`.webp`, 5 densities): a
+  forest illustration — tall green fir, purple firs behind, a pale moon disc, a grassy hill. There
+  is no vector source for it in the repo.
+- `drawable/ic_launcher_foreground.xml` (and a copy in `uikit`) is an unrelated, unused vector of the
+  original project's logo — see `docs/revisit.md` entry 56.
+- The page's requirements (verified against the linked doc): `<monochrome>` is the only theming
+  layer; read on API 33+, ignored below, so it lives in the existing `mipmap-anydpi-v26` files.
+  The logo must be ≥ 48×48dp and within the central 66×66dp. The system uses only the monochrome
+  layer's alpha and applies its own tint. Android 16 QPR2+ auto-themes apps that provide none.
+- The illustration's full alpha mask is unusable as a silhouette: the opaque moon disc fills in
+  behind the trees into one dome. Dropping the moon's pale, low-saturation pixels
+  (`r > 160 && g > 160 && b > 130`) leaves a clean silhouette of the trees and hill; a plain
+  "drop light pixels" threshold would also punch holes where the light-green grass highlights are.
 
 ## Root cause
 
-N/A — missing feature. The adaptive icon simply has no monochrome layer.
+N/A — missing feature. The adaptive icon had no monochrome layer.
 
 ## Impact
 
-Cosmetic. Users with themed icons on see this app as the one full-color icon among tinted ones. No
-functional effect, no workaround on the user side.
-
-## Open questions
-
-- Should the 48dp "logo zone" guideline for themed icons be met? The tree is ~41×56dp, so it
-  slightly exceeds a 48dp circle vertically — same as the current color foreground. Matching the
-  color foreground's size keeps the themed and normal icons visually consistent; shrinking it is a
-  design call, not a correctness one. Not blocking.
+Cosmetic. Users with themed icons on see this app as the one full-colour icon among tinted ones. No
+functional effect.
 
 ## Options
 
-1. **Reuse the vector paths as a one-color drawable (recommended).** Add
-   `drawable/ic_launcher_monochrome.xml` = the existing vector with every `fillColor` set to one
-   color, and add `<monochrome android:drawable="@drawable/ic_launcher_monochrome"/>` to both
-   adaptive icon XMLs.
-   - Pros: ~3 files, no new artwork, pixel-aligned with the existing foreground, vector (no
-     per-density rasters).
-   - Cons: a third copy of the logo geometry to keep in sync if the logo ever changes.
-   - Risk/blast radius: launcher icon only; splash screen (`themes.xml:20`) uses the foreground and
-     is untouched.
-2. **Point `<monochrome>` at the existing `drawable/ic_launcher_foreground.xml` directly.**
-   - Pros: zero new files beyond the XML edits; the system ignores color anyway.
-   - Cons: relies on the 8 colors all being fully opaque (they are) — any future semi-transparent
-     detail would show up as a lighter shade, and the intent is non-obvious to a reader. Marginal
-     saving over option 1.
-3. **Commission a dedicated monochrome artwork** (e.g. tree outline, or bigger fill gaps).
-   - Pros: can be tuned for the 48dp guideline.
-   - Cons: needs design work nobody has scoped; the silhouette from option 1 already reads well.
-4. **Won't fix.** Cons: request is cheap and standard for apps on Android 13+.
-
-**Recommendation:** option 1 — explicit, cheap, and the existing geometry already produces a good
-silhouette.
+1. **Bitmap silhouette:** derive the mask from the `.webp`, export `ic_launcher_monochrome.webp` at
+   all 5 densities. Exact match to the artwork; small details soften when downscaled.
+2. **Traced vector (chosen):** trace the cleaned mask with `potrace` into one VectorDrawable.
+   Crisp at any size, one file; tracing can round off fine needle tips.
+3. **Hand-drawn monochrome artwork** with gaps separating the trees. Best result, needs a designer.
+4. **Won't fix.**
 
 ## Decision
 
-Option 1, approved by gregory 2026-10-28.
+Option 2, chosen by gregory 2026-10-28.
 
 ## What landed
 
-- `androidApp/src/main/res/drawable/ic_launcher_monochrome.xml` — the existing foreground vector with
-  every `fillColor` set to `#FFFFFFFF` (only alpha matters; the system applies the tint).
-- `<monochrome android:drawable="@drawable/ic_launcher_monochrome"/>` added to both
-  `mipmap-anydpi-v26/ic_launcher.xml` and `ic_launcher_round.xml`.
-- Verified: `:androidApp:assembleFdroidDebug` builds. Not yet checked on a device with themed icons
-  enabled.
+- `androidApp/src/main/res/drawable/ic_launcher_monochrome.xml` — a single traced path (~11.5 KB),
+  fill `#FFFFFFFF` (only alpha matters).
+- `<monochrome android:drawable="@drawable/ic_launcher_monochrome"/>` in both adaptive icon XMLs.
+- How it was generated (no script committed — rerun if the artwork changes): upscale
+  `mipmap-xxxhdpi/ic_launcher_foreground.webp` (432px) 4× with Lanczos; mark as foreground every
+  pixel with alpha > 128 that isn't moon-coloured (rule above); write a PBM;
+  `potrace mask.pbm -s -t 400` (`-t 400` drops speckles and pinholes up to 400 px² at 4×); wrap the
+  path in a VectorDrawable `group` with `scaleX=0.00625`, `scaleY=-0.00625`, `translateY=108`
+  (potrace's `scale(0.1,-0.1)` × 108dp/1728px, flipped back to y-down).
+- Verified: rendering the VectorDrawable's own path data overlaid on the colour foreground lines up
+  exactly (everything but the moon covered), inside the 66dp safe circle; the silhouette's bounding
+  box is 47×52dp (x 30.9–78.0, y 27.2–79.2), the same footprint as the colour artwork. `:androidApp:assembleFdroidDebug` builds. On-device check with themed icons: pending
+  (gregory).
