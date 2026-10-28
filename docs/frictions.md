@@ -98,3 +98,4 @@ deleted — see `finalize`.
   commit SHAs never appear as ancestors of `dev` even though their full diff landed in the single
   squashed commit; checked the squashed commit's own `git show --stat` (file list/insertion count)
   instead to confirm content, not SHA ancestry, after a squash merge.
+- 2026-10-28: Tried to preview a VectorDrawable by converting it to SVG and rendering with `rsvg-convert`/`cairosvg` — neither is installed; since the launcher vector is plain polygons, drew them directly with PIL `ImageDraw.polygon` instead.
