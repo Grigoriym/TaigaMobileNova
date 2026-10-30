@@ -1,7 +1,7 @@
 # 450 — Add monochrome icon
 
-**Status:** In progress
-**Link:** https://github.com/Grigoriym/TaigaMobileNova/issues/450   **Updated:** 2026-10-28
+**Status:** Done
+**Link:** https://github.com/Grigoriym/TaigaMobileNova/issues/450   **Updated:** 2026-10-30
 
 ## Report
 
@@ -68,5 +68,8 @@ Option 2, chosen by gregory 2026-10-28.
   (potrace's `scale(0.1,-0.1)` × 108dp/1728px, flipped back to y-down).
 - Verified: rendering the VectorDrawable's own path data overlaid on the colour foreground lines up
   exactly (everything but the moon covered), inside the 66dp safe circle; the silhouette's bounding
-  box is 47×52dp (x 30.9–78.0, y 27.2–79.2), the same footprint as the colour artwork. `:androidApp:assembleFdroidDebug` builds. On-device check with themed icons: pending
-  (gregory).
+  box is 47×52dp (x 30.9–78.0, y 27.2–79.2), the same footprint as the colour artwork. `:androidApp:assembleFdroidDebug` builds. gregory checked the themed icon on physical
+  devices (2026-10-30). On a Pixel 11, the production app, which has no monochrome layer, also
+  shows a themed icon, in line with the Android 16 QPR2+ auto-theming above.
+- The adaptive icon background was black in light mode and near-white in dark mode. It now uses the
+  white `ic_launcher_background` color in both, checked in both modes on an API 36 emulator.
