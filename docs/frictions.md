@@ -99,3 +99,4 @@ deleted — see `finalize`.
   squashed commit; checked the squashed commit's own `git show --stat` (file list/insertion count)
   instead to confirm content, not SHA ancestry, after a squash merge.
 - 2026-10-28: Tried to preview a VectorDrawable by converting it to SVG and rendering with `rsvg-convert`/`cairosvg` — neither is installed; since the launcher vector is plain polygons, drew them directly with PIL `ImageDraw.polygon` instead.
+- 2026-10-30: `git revert --no-edit HEAD -q` failed because `git revert` has no `-q` flag, and a chained `git commit --amend` then relabeled the commit being reverted as "Revert ..." with its contents unchanged; the push was rejected as non-fast-forward, so reset to the remote tip and redid the revert. Do not chain an amend after a command whose success was not checked.
