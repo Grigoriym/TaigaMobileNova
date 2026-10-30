@@ -22,6 +22,8 @@ device or launcher; none is needed — the mechanism is platform-wide.
 - The adaptive foreground is the raster `@mipmap/ic_launcher_foreground` (`.webp`, 5 densities): a
   forest illustration — tall green fir, purple firs behind, a pale moon disc, a grassy hill. There
   is no vector source for it in the repo.
+- `drawable/ic_launcher_foreground.xml` (and a copy in `uikit`) is an unrelated, unused vector of the
+  original project's logo — see `docs/revisit.md` entry 56.
 - The page's requirements (verified against the linked doc): `<monochrome>` is the only theming
   layer; read on API 33+, ignored below, so it lives in the existing `mipmap-anydpi-v26` files.
   The logo must be ≥ 48×48dp and within the central 66×66dp. The system uses only the monochrome

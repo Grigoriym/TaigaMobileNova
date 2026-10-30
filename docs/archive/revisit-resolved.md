@@ -56,7 +56,6 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 49 | [Kanban fetches `filters_data` twice on load](#49-kanban-fetches-filters_data-twice-on-load) | ✅ resolved 2026-09-07 |
 | 51 | [Switching drawer sections is recorded on the back stack, so back cascades through prior sections](#51-switching-drawer-sections-is-recorded-on-the-back-stack-so-back-cascades-through-prior-sections) | ✅ resolved 2026-09-07 |
 | 54 | [`containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member](#54-containsmention-triggers-a-wasted-watchers-refresh-for-a-typod-name-that-isnt-a-real-member) | ✅ resolved 2026-09-11 |
-| 56 | [Two unused vector copies of the old launcher logo](#56-two-unused-vector-copies-of-the-old-launcher-logo) | Resolved 2026-10-30 |
 
 ---
 
@@ -2191,19 +2190,3 @@ asserting `watchersState.value.watchers` does/doesn't change after a comment or 
 containing a known-vs-unknown `@mention` (`getTeamMember()`'s test factory gained a `username`
 override param for this). Verified with full `./gradlew jvmTest` (1860 green), `ktlintCheck`, and
 `:koverVerify` (floor still holds).
-
-## 56. Two unused vector copies of the old launcher logo
-
-`androidApp/src/main/res/drawable/ic_launcher_foreground.xml` and its byte-identical copy
-`uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` are a split two-colour
-fir tree — the original project's logo, not the current forest illustration. Nothing references
-either: the adaptive icon and the splash screen (`androidApp/src/main/res/values/themes.xml:20`)
-both use the raster `@mipmap/ic_launcher_foreground`, and no Kotlin file uses a
-`Res.drawable.ic_launcher_foreground` accessor (grep, 2026-10-28). The `androidApp` copy also
-shadows the mipmap's name, which misled the issue 450 investigation
-(`docs/issues/450-add-monochrome-icon.md`) into treating it as the current logo.
-
-**Fix (2026-10-30):** deleted both vectors and the `ic_launcher_foreground_tint` color (defined in
-`values/colors.xml` and `values-night/colors.xml`, referenced nowhere). Desktop packaging uses
-`art/taiga-mobile-logo.*`, iOS uses its own `AppIcon.appiconset`, and the in-app logo is `uikit`'s
-`taiga_mobile_logo.png`, so no target's icon changed.

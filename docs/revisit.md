@@ -25,6 +25,7 @@ now that the table below covers everything left.
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 | 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
 | 55 | CLAUDE.md's "grappim-kit Modules" section is now a 9-swap worked-example catalogue, the exact shape its own "Keeping this file lean" rule tells future sessions to split out | S | CLAUDE.md's "grappim-kit Modules" section (compare to how the Kover heuristics catalogue was split into `docs/testing/kover-coverage-heuristics.md`) |
+| 56 | Two unused vector copies of the old launcher logo | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
 
 ---
 
@@ -295,3 +296,16 @@ actual duplicate before changing any production code.
 
 **Trigger:** pick up as a standalone investigation (`investigate-issue` skill) once gregory wants to
 prioritize it.
+
+## 56. Two unused vector copies of the old launcher logo
+
+`androidApp/src/main/res/drawable/ic_launcher_foreground.xml` and its byte-identical copy
+`uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` are a split two-colour
+fir tree — the original project's logo, not the current forest illustration. Nothing references
+either: the adaptive icon and the splash screen (`androidApp/src/main/res/values/themes.xml:20`)
+both use the raster `@mipmap/ic_launcher_foreground`, and no Kotlin file uses a
+`Res.drawable.ic_launcher_foreground` accessor (grep, 2026-10-28). The `androidApp` copy also
+shadows the mipmap's name, which misled the issue 450 investigation
+(`docs/issues/450-add-monochrome-icon.md`) into treating it as the current logo.
+
+**Trigger:** delete both once confirmed unused on every target (check desktop/iOS packaging too).
