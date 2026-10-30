@@ -25,7 +25,7 @@ now that the table below covers everything left.
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 | 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
 | 55 | CLAUDE.md's "grappim-kit Modules" section is now a 9-swap worked-example catalogue, the exact shape its own "Keeping this file lean" rule tells future sessions to split out | S | CLAUDE.md's "grappim-kit Modules" section (compare to how the Kover heuristics catalogue was split into `docs/testing/kover-coverage-heuristics.md`) |
-| 56 | Two unused vector copies of the old launcher logo | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
+| 56 | Two unused vector copies of the old launcher logo, plus an unused tint color | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
 
 ---
 
@@ -297,7 +297,7 @@ actual duplicate before changing any production code.
 **Trigger:** pick up as a standalone investigation (`investigate-issue` skill) once gregory wants to
 prioritize it.
 
-## 56. Two unused vector copies of the old launcher logo
+## 56. Two unused vector copies of the old launcher logo, plus an unused tint color
 
 `androidApp/src/main/res/drawable/ic_launcher_foreground.xml` and its byte-identical copy
 `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` are a split two-colour
@@ -308,4 +308,15 @@ both use the raster `@mipmap/ic_launcher_foreground`, and no Kotlin file uses a
 shadows the mipmap's name, which misled the issue 450 investigation
 (`docs/issues/450-add-monochrome-icon.md`) into treating it as the current logo.
 
-**Trigger:** delete both once confirmed unused on every target (check desktop/iOS packaging too).
+`ic_launcher_foreground_tint` (`androidApp/src/main/res/values/colors.xml`,
+`values-night/colors.xml`) is also defined and referenced nowhere; remove it with them.
+
+Desktop packaging (`art/taiga-mobile-logo.*`), iOS (`AppIcon.appiconset`) and the in-app logo
+(`uikit`'s `taiga_mobile_logo.png`) don't use these files either (checked 2026-10-30).
+
+A removal was made and reverted in PR 451 after an install showed a black icon background. The black
+came from `ic_launcher_background_tint`, which was black in light mode and has since been replaced
+with white, so it is not a reason to keep these files.
+
+**Trigger:** any time; optional cleanup. Build both Android flavors and the desktop jar after
+deleting, and check the launcher icon on a device.
