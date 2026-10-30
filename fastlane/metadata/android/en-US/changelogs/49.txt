@@ -1,1 +1,3 @@
-What's new in v2.2.3
+- Added a monochrome app icon, so it follows your theme colors when themed icons are enabled (Android 13+)
+- The app icon background is now white in both light and dark mode
+- Dependency updates and internal improvements
