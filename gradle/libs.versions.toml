@@ -108,7 +108,7 @@ skydovesColorpicker = "1.3.0"
 markdownRenderer = "0.45.0"
 filekit = "0.16.0"
 
-core-ktx = "1.19.0"
+core-ktx = "1.19.1"
 appcompat = "1.8.0"
 splashScreen = "1.2.0"
 timber = "5.0.1"
