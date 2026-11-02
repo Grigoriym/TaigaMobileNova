@@ -7,5 +7,12 @@
     "baseBranchPatterns": [
         "dev"
     ],
-    "osvVulnerabilityAlerts": true
+    "osvVulnerabilityAlerts": true,
+    "packageRules": [
+        {
+            "description": "kotlinx-datetime's -0.6.x-compat builds are a compatibility variant for 0.6.x-era consumers, not newer releases.",
+            "matchPackageNames": ["org.jetbrains.kotlinx:kotlinx-datetime"],
+            "allowedVersions": "!/-compat$/"
+        }
+    ]
 }
