@@ -15,6 +15,8 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
+import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorage
+import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.serialization.json.Json
@@ -34,6 +36,10 @@ class AuthDataStoreModule {
 
     @Single
     fun provideAuthStorage(): AuthStorage = AuthStorageImpl(createAuthDataStore(), NoopSecretCipher())
+
+    @Single
+    fun provideCustomHeadersStorage(@StorageJsonQualifier json: Json): CustomHeadersStorage =
+        CustomHeadersStorageImpl(createCustomHeadersDataStore(), NoopSecretCipher(), json)
 
     @Single
     fun provideSessionStorage(colorMapper: ColorMapper): TaigaSessionStorage =
@@ -72,6 +78,12 @@ fun createAuthDataStore(): DataStore<Preferences> = createDataStore(
 fun createTrustedCertDataStore(): DataStore<Preferences> = createDataStore(
     producePath = {
         documentDirectory() + "/$TRUSTED_CERT_DATA_STORE_FILE_NAME$PREFS_EXT"
+    }
+)
+
+fun createCustomHeadersDataStore(): DataStore<Preferences> = createDataStore(
+    producePath = {
+        documentDirectory() + "/$CUSTOM_HEADERS_DATA_STORE_FILE_NAME$PREFS_EXT"
     }
 )
 

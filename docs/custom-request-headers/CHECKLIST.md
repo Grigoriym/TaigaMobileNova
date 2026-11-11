@@ -1,18 +1,9 @@
 # Custom request headers — checklist
 
-**Progress:** 0 / 8 · **Current step:** 1
+**Progress:** 1 / 8 · **Current step:** 2
 
 Plan and rationale: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Finished steps move to
 `CHECKLIST-DONE.md`. All steps commit to `feat/android17-local-network-permission` (PR 468).
-
-## 1. Storage + validator
-
-`core:storage` `customheaders/`: `CustomHeader`, `CustomHeaderError`, `CustomHeaderValidator`,
-`CustomHeadersStorage` + DataStore impl (encrypted blob, cached `currentHeaders`), per-platform
-`@Single` providers (Android Keystore alias of its own, Noop on JVM/iOS). `FakeCustomHeadersStorage`
-in `:testing`. Tests: validator rules incl. `Authorization`/`User-Agent` reserved; storage round
-trip, empty list removes the key, bad blob reads as none, survives logout.
-Verify: `./gradlew :core:storage:jvmTest :testing:compileKotlinJvm`
 
 ## 2. `CustomHeaders` Ktor plugin
 
