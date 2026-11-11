@@ -74,9 +74,6 @@ deleted — see `finalize`.
   or popping one nav level — cost a recovery detour (tap SKIP, `am force-stop` + relaunch). Root
   cause not diagnosed; avoid `KEYCODE_BACK` as a generic "undo my last tap" move on this AVD and
   re-screenshot after any BACK before assuming it stayed in-app.
-- 2026-09-09: `gh pr edit` (title/body) failed with a GraphQL "Projects (classic) is being
-  deprecated" error on this repo regardless of what fields were passed — worked around with
-  `gh api repos/<owner>/<repo>/pulls/<n> -X PATCH -f title=... -f body=...` instead.
 - 2026-09-11: reading a raw `adb exec-out screencap -p` PNG (or even a half-scale JPEG at
   quality 70) with the Read tool failed with "over the 350-line ollama-relay threshold" —
   a harness-level gate, unrelated to this project. Fix: resize to half dimensions and
@@ -103,7 +100,6 @@ deleted — see `finalize`.
 - 2026-10-30: Told gregory the debug APK shared the release package id after grepping only `androidApp/build.gradle.kts` for `applicationIdSuffix`; it is `com.grappim.taigamobile.fdroid.debug`, as `docs/EMULATOR_TESTING.md` already said and `aapt2 dump packagename` confirms. Check the built APK rather than the build script.
 - 2026-11-11: Guessed `:core:storage:compileDebugKotlinAndroid` and `:testing:ktlintCheck`; neither exists (KMP library Android compile is `compileAndroidMain`, and `:testing` has no ktlint task). List with `./gradlew :module:tasks --all` before naming a per-module task.
 - 2026-11-11: Ran `jvmTest koverVerify detekt ktlintCheck` without `--continue`; detekt failing first meant the rest never ran, which read like a single failure. Pass `--continue` for a multi-gate check.
-- 2026-11-11: `gh pr edit 468 --title/--body` failed with "Projects (classic) is being deprecated" (a `gh` GraphQL bug, nothing changed); `gh api -X PATCH repos/<owner>/<repo>/pulls/<n> -f title=... -F body=@file` worked.
 - 2026-11-11: Guessed `:androidApp:ktlintCheck`; it does not exist (`androidApp` has no ktlint plugin). Second per-module task-name guess today — the bare root `ktlintCheck` runs every module that has it.
 - 2026-11-11: Started the emulator as bare `emulator` under `nohup … >/dev/null &`; it is not on PATH, the failure was swallowed, and `adb wait-for-device` hung until the 10-min timeout. The emulator-testing skill already gives the full `~/Android/Sdk/emulator/emulator` path — use it, and log to a file instead of /dev/null.
 - 2026-11-11: Wanted to GUI-check the desktop build without taking over gregory's cursor; `Xvfb`/`xvfb-run` aren't installed, so the only desktop route was xdotool on the live display. Desktop check skipped (emulator accepted); `sudo apt install xvfb` would make headless desktop GUI checks possible.
