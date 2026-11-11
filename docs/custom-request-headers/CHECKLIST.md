@@ -1,15 +1,9 @@
 # Custom request headers — checklist
 
-**Progress:** 5 / 8 · **Current step:** 6
+**Progress:** 6 / 8 · **Current step:** 7
 
 Plan and rationale: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Finished steps move to
 `CHECKLIST-DONE.md`. All steps commit to `feat/android17-local-network-permission` (PR 468).
-
-## 6. Login entry
-
-"Custom headers (N)" button on `LoginScreen` → `onCustomHeadersClick` → same destination, wired in
-`composeApp`. Count from `CustomHeadersStorage.headers`. Tests for the count.
-Verify: `./gradlew :feature:login:ui:jvmTest`
 
 ## 7. Device check against a header-auth proxy
 

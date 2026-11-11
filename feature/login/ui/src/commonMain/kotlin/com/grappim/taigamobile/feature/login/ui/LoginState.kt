@@ -43,5 +43,8 @@ data class LoginState(
     val pendingCertTrust: PendingCertTrust? = null,
     val onConfirmCertTrust: () -> Unit,
     val onDismissCertTrust: () -> Unit,
-    val onLocalNetworkDenied: () -> Unit
+    val onLocalNetworkDenied: () -> Unit,
+
+    /** How many custom headers are stored; they are edited on their own screen. */
+    val customHeadersCount: Int = 0
 )

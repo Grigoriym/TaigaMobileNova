@@ -7,6 +7,7 @@ import com.grappim.kit.storage.cert.TrustedCertStorage
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
+import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
@@ -19,6 +20,8 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -28,7 +31,8 @@ import org.koin.core.annotation.KoinViewModel
 class LoginViewModel(
     private val authRepository: AuthRepository,
     serverStorage: ServerStorage,
-    private val trustedCertStorage: TrustedCertStorage
+    private val trustedCertStorage: TrustedCertStorage,
+    customHeadersStorage: CustomHeadersStorage
 ) : ViewModel() {
 
     companion object {
@@ -65,6 +69,12 @@ class LoginViewModel(
         )
     )
     val state = _state.asStateFlow()
+
+    init {
+        customHeadersStorage.headers
+            .onEach { headers -> _state.update { it.copy(customHeadersCount = headers.size) } }
+            .launchIn(viewModelScope)
+    }
 
     fun onGithubCodeReceived(code: String) {
         authWithGithub(code)

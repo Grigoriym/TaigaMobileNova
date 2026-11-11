@@ -79,3 +79,18 @@ greyed with no change; `Host` shows the reserved-name error and keeps Save off; 
 enables Save, saving turns it off and the row survives a force-stop; airplane mode disables Save;
 removing the row and saving persists an empty list.
 Full `jvmTest`, detekt and ktlint green. Next: step 6.
+
+
+## 6. ✅ Login entry
+
+"Custom headers (N)" button on `LoginScreen` → `onCustomHeadersClick` → same destination, wired in
+`composeApp`. Count from `CustomHeadersStorage.headers`. Tests for the count.
+Verify: `./gradlew :feature:login:ui:jvmTest`
+Note: `LoginViewModel` takes `CustomHeadersStorage` and folds `headers` into
+`LoginState.customHeadersCount`; the screen shows a `TextButton` under the login buttons —
+"Custom headers" at zero, "Custom headers (N)" otherwise (wallosmobile's two strings), disabled
+while a login is in flight. `MainNavHost`'s `LoginScreen` call wires it to
+`goToCustomHeadersScreen()`, which pushes onto Login's own sub-stack, so plain back returns.
+Driven on `Medium_Phone_API_36.1` (fdroid debug, cleared data): label "Custom headers", tap opens
+the editor, saving one header and backing out shows "Custom headers (1)", removing it and the
+top-bar back arrow return to "Custom headers". Full `jvmTest`, detekt and ktlint green. Next: step 7.

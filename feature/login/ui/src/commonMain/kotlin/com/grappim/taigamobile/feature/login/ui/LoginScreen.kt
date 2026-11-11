@@ -28,6 +28,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -59,6 +60,8 @@ import com.grappim.taigamobile.strings.generated.resources.cert_trust_dialog_tit
 import com.grappim.taigamobile.strings.generated.resources.login_alert_text
 import com.grappim.taigamobile.strings.generated.resources.login_alert_title
 import com.grappim.taigamobile.strings.generated.resources.login_continue
+import com.grappim.taigamobile.strings.generated.resources.login_custom_headers
+import com.grappim.taigamobile.strings.generated.resources.login_custom_headers_count
 import com.grappim.taigamobile.strings.generated.resources.login_github
 import com.grappim.taigamobile.strings.generated.resources.login_github_server_required
 import com.grappim.taigamobile.strings.generated.resources.login_github_setup_guide
@@ -83,6 +86,7 @@ import org.koin.compose.viewmodel.koinViewModel
 fun LoginScreen(
     onShowSnackbar: (message: NativeText) -> Unit,
     onLoginSuccess: () -> Unit,
+    onCustomHeadersClick: () -> Unit,
     viewModel: LoginViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -157,12 +161,13 @@ fun LoginScreen(
                 )
             }
         ),
+        onCustomHeadersClick = onCustomHeadersClick,
         modifier = Modifier.fillMaxSize()
     )
 }
 
 @Composable
-fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
+fun LoginScreenContent(state: LoginState, onCustomHeadersClick: () -> Unit, modifier: Modifier = Modifier) {
     val uriHandler = LocalUriHandler.current
     val githubSetupGuideUrl = state.githubSetupGuideUrl.asString()
     Column(
@@ -298,6 +303,18 @@ fun LoginScreenContent(state: LoginState, modifier: Modifier = Modifier) {
                 )
             }
         }
+
+        Spacer(Modifier.height(8.dp))
+
+        TextButton(onClick = onCustomHeadersClick, enabled = !state.isLoading) {
+            Text(
+                if (state.customHeadersCount > 0) {
+                    stringResource(RString.login_custom_headers_count, state.customHeadersCount)
+                } else {
+                    stringResource(RString.login_custom_headers)
+                }
+            )
+        }
     }
 }
 
@@ -402,7 +419,8 @@ private fun LoginScreenPreview() {
                 onConfirmCertTrust = {},
                 onDismissCertTrust = {},
                 onLocalNetworkDenied = {}
-            )
+            ),
+            onCustomHeadersClick = {}
         )
     }
 }
@@ -432,7 +450,8 @@ private fun LoginScreenErrorsPreview() {
                 onConfirmCertTrust = {},
                 onDismissCertTrust = {},
                 onLocalNetworkDenied = {}
-            )
+            ),
+            onCustomHeadersClick = {}
         )
     }
 }
@@ -462,7 +481,8 @@ private fun LoginScreenAlertPreview() {
                 onConfirmCertTrust = {},
                 onDismissCertTrust = {},
                 onLocalNetworkDenied = {}
-            )
+            ),
+            onCustomHeadersClick = {}
         )
     }
 }
