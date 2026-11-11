@@ -114,3 +114,18 @@ a force-stop + relaunch lands on Dashboard, still logged in. Desktop not GUI-dri
 xdotool on the live display was declined) — gregory accepted the emulator run as sufficient, since
 desktop shares the same common code and only its loader install differs (step 4: launches cleanly).
 Next: step 8.
+
+
+## 8. ✅ Close-out
+
+Changelog stubs if a release is open, `docs/security/masvs.md` note (new stored secret), CLAUDE.md
+pointer if a convention emerged, PR 468 title/body updated to cover both features, `finalize`.
+Verify: full `./gradlew jvmTest koverXmlReport :koverVerify ktlintCheck detekt`
+Note: no release PR open, so no changelog stubs. `masvs.md` gained a MASVS-STORAGE-1 note: own
+Keystore alias on Android, plaintext on iOS (same gap as the open iOS token row), file not
+backup-excluded but a restored copy is undecryptable ciphertext, origin-scoped and log-redacted in
+transit. CLAUDE.md gained a short "Custom Request Headers" convention (any new server client
+installs `CustomHeaders` + `sanitizeCustomHeaders`; a non-Bearer 401 must not log out), plus a Git
+Workflow rule to edit PRs via `gh api -X PATCH` (third hit of the `gh pr edit` Projects-classic
+failure). PR 468 retitled (WIP dropped) with a body covering both features. Gate suite green.
+Queue is empty — the initiative is done; PR 468 is ready for review.

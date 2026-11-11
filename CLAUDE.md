@@ -710,6 +710,10 @@ not a direct push. `dev` has a GitHub branch-protection rule requiring PRs; a di
 goes through (bypassed via admin permissions), so nothing technically stops it — this is a process
 discipline to follow regardless, not something the repo enforces on its own.
 
+**Edit a PR with `gh api -X PATCH repos/{owner}/{repo}/pulls/N`, not `gh pr edit`** — the latter
+fails on this repo with `GraphQL: Projects (classic) is being deprecated` (hit three times, see
+`docs/frictions.md`). Pipe a `jq -n --arg title … --rawfile body …` object in via `--input -`.
+
 **Releases go through `release-prepare.yml`, not a hand-rolled branch/PR.** Trigger it
 (`gh workflow run release-prepare.yml -f version=X.Y.Z -f version_code=N`, next code = current
 `gradle/libs.versions.toml` `version-code` + 1) — it merges `dev` into a new `release/vX.Y.Z` branch,
@@ -962,6 +966,14 @@ historical record of how the register was built — `masvs.md` itself is the cur
   sensitive data (a hostname, a response body) — see `core/api/.../ExceptionSanitization.kt` and
   `docs/security/masvs.md`'s MASVS-PRIVACY-3 note for the pattern and the audit
   (`grep -rn "LogPriority.ERROR"` + `throwable =` is the full surface).
+
+## Custom Request Headers
+
+Any new HTTP client that talks to the Taiga server — Ktor or Coil — must install the `CustomHeaders`
+plugin (`core/api`) and, if it logs, call `sanitizeCustomHeaders(storage)` in its `Logging` block;
+otherwise users behind a header-auth reverse proxy get rejected on that path. A `401` without a
+`Bearer` challenge is the proxy, not Taiga — it must not trigger token refresh or logout. Design and
+fixture: [docs/custom-request-headers/IMPLEMENTATION_PLAN.md](docs/custom-request-headers/IMPLEMENTATION_PLAN.md).
 
 ## Compose / Platform Rules
 

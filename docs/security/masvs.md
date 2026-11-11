@@ -227,3 +227,19 @@ client in this space — are outside what MASVS covers. Formal decision, task 7 
   any future call site — is covered without a per-call-site check. The custom field's own now-redundant
   `startsWith("http")` check was removed as part of the same change. Covered by
   `SafeUriHandlerTest` (`uikit` `commonTest`).
+- **MASVS-STORAGE-1, custom request headers — a second stored secret, same posture as the token.**
+  User-defined headers for reverse-proxy auth (`docs/custom-request-headers/`) often carry a proxy
+  credential (`CF-Access-Client-Secret`, a shared-secret `X-…` value). `CustomHeadersStorageImpl`
+  (`core/storage/.../customheaders/`) stores the whole list as one JSON blob in its own DataStore
+  (`custom_headers_storage.preferences_pb`) through `SecretCipher`: Android uses a dedicated
+  Keystore alias (`taiga_custom_headers_key`, `StorageModule.android.kt`), separate from the auth
+  token's, so neither key's invalidation takes the other's data with it; iOS and JVM/desktop use
+  `NoopSecretCipher` — on iOS that is plaintext, the same gap as the Open iOS token row above, to be
+  closed by the same Keychain fix. A blob that fails to decrypt or decode reads as "no headers" and
+  is logged at WARN **without** the throwable (its message would carry the decrypted JSON). The file
+  is not in `data_extraction_rules.xml`/`backup_rules.xml`; a backup copy is ciphertext under a
+  non-exportable Keystore key, so a restore onto another device reads as no headers rather than
+  leaking the value. In transit: sent only to the configured server's own scheme+host+port, per
+  redirect hop (`CustomHeaders` plugin, `core/api`), never to off-origin image hosts, and redacted
+  from both Ktor `Logging` installs by name (`sanitizeHeader`). `Authorization` is a reserved name
+  so a user header can never replace the Bearer token.
