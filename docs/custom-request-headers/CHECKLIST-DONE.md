@@ -61,3 +61,18 @@ Android's `ImageLoaderProvider` always adds it (passing an OkHttp engine carryin
 `setSingletonImageLoaderFactory`. Both flavors, desktop and iOS simulator compile; `KoinGraphTest`,
 ktlint, detekt green; desktop launches cleanly. Avatar check deferred to step 7 (needs a logged-in
 session and the proxy fixture). Next: step 5.
+
+
+## 5. ✅ Custom headers screen + Settings entry
+
+`feature:settings:ui` `customheaders/`: NavDestination, State, ViewModel (rows, per-row error,
+Save enabled only when valid and changed, disabled offline), Screen; Settings row; nav graph entry.
+ViewModel tests incl. failure path.
+Verify: `./gradlew :feature:settings:ui:jvmTest ktlintCheck`
+Note: ported from wallosmobile's `customheaders/` screen. Save is a top-bar `TopBarActionTextButton`
+(this app's edit-screen convention, as in `ProjectDetailsScreen`), enabled only when
+`isSaveEnabled && !LocalOfflineState.current`. Unlike wallosmobile a failed save shows a snackbar
+(`custom_headers_save_failed`) via `SnackbarDelegate`, logged at ERROR; rows stay as typed. The
+Authorization caveat lives in the screen's description text, not a value hint. The Settings row is
+shown on every platform. The screen was not driven in a GUI here — step 7 exercises it end to end.
+Full `jvmTest`, detekt and ktlint green. Next: step 6.

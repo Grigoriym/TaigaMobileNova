@@ -1,16 +1,9 @@
 # Custom request headers — checklist
 
-**Progress:** 4 / 8 · **Current step:** 5
+**Progress:** 5 / 8 · **Current step:** 6
 
 Plan and rationale: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Finished steps move to
 `CHECKLIST-DONE.md`. All steps commit to `feat/android17-local-network-permission` (PR 468).
-
-## 5. Custom headers screen + Settings entry
-
-`feature:settings:ui` `customheaders/`: NavDestination, State, ViewModel (rows, per-row error,
-Save enabled only when valid and changed, disabled offline), Screen; Settings row; nav graph entry.
-ViewModel tests incl. failure path.
-Verify: `./gradlew :feature:settings:ui:jvmTest ktlintCheck`
 
 ## 6. Login entry
 

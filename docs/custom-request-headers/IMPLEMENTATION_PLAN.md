@@ -65,6 +65,8 @@ headers sent on every request to the server's own origin**, not a proxy-specific
   redirect back onto the server. A refresh call stopped by the proxy keeps the session too.
 - **UI** — `CustomHeadersScreen` + ViewModel in `feature:settings:ui` (`customheaders/`, beside
   `trustedcerts/`), explicit Save offered only while all rows are valid and differ from storage.
+  Save sits in the top bar and is disabled offline; a failed save keeps the rows and shows a
+  snackbar. The `Authorization` caveat is in the screen's description text.
   Reached from a Settings row and from a "Custom headers (N)" button on Login. Login is an ordinary
   Nav3 destination here (unlike wallosmobile's state-swapped login branch), so both entry points
   just `navigator.navigate(CustomHeadersNavDestination)`; `LoginScreen` takes an
