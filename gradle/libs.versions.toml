@@ -56,7 +56,7 @@ kotlin = "2.4.21"
 coroutines = "1.11.0"
 ksp = "2.3.13"
 kotlin-serialization-plugin = "2.4.21"
-kotlin-serialization-json = "1.12.0"
+kotlin-serialization-json = "1.13.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
 kotlinx-collections = "0.5.2"
 # https://github.com/Kotlin/kotlinx-datetime/releases
