@@ -7,16 +7,21 @@ import com.grappim.kit.storage.cert.TrustedCertStorage
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.api.ApiConstants
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
+import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorage
 import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.login_error_local_network_denied
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -26,7 +31,8 @@ import org.koin.core.annotation.KoinViewModel
 class LoginViewModel(
     private val authRepository: AuthRepository,
     serverStorage: ServerStorage,
-    private val trustedCertStorage: TrustedCertStorage
+    private val trustedCertStorage: TrustedCertStorage,
+    customHeadersStorage: CustomHeadersStorage
 ) : ViewModel() {
 
     companion object {
@@ -58,10 +64,17 @@ class LoginViewModel(
             setIsPasswordVisible = ::changePasswordVisibility,
             onGithubLoginClick = ::validateGithubAuth,
             onConfirmCertTrust = ::onConfirmCertTrust,
-            onDismissCertTrust = ::onDismissCertTrust
+            onDismissCertTrust = ::onDismissCertTrust,
+            onLocalNetworkDenied = ::onLocalNetworkDenied
         )
     )
     val state = _state.asStateFlow()
+
+    init {
+        customHeadersStorage.headers
+            .onEach { headers -> _state.update { it.copy(customHeadersCount = headers.size) } }
+            .launchIn(viewModelScope)
+    }
 
     fun onGithubCodeReceived(code: String) {
         authWithGithub(code)
@@ -192,6 +205,11 @@ class LoginViewModel(
             trustedCertStorage.trust(pendingCertTrust)
             retry?.invoke()
         }
+    }
+
+    /** Nothing was sent: the request could only have timed out and blamed the server address. */
+    private fun onLocalNetworkDenied() {
+        _state.update { it.copy(error = NativeText.Resource(RString.login_error_local_network_denied)) }
     }
 
     private fun onDismissCertTrust() {

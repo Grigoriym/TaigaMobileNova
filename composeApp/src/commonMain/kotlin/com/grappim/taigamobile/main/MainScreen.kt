@@ -57,6 +57,7 @@ fun MainContent(viewModel: MainViewModel) {
     val topBarController = remember { TopBarController() }
     val initialNavState by viewModel.initialNavState.collectAsStateWithLifecycle()
     val isOffline by viewModel.isOffline.collectAsStateWithLifecycle()
+    val connectedServer by viewModel.connectedServer.collectAsStateWithLifecycle()
 
     CompositionLocalProvider(
         LocalTopBarConfig provides topBarController,
@@ -67,7 +68,8 @@ fun MainContent(viewModel: MainViewModel) {
             viewModel = viewModel,
             topBarConfig = topBarConfig,
             initialNavState = initialNavState,
-            isOffline = isOffline
+            isOffline = isOffline,
+            connectedServer = connectedServer
         )
     }
 }
@@ -78,7 +80,8 @@ private fun MainScreenContent(
     viewModel: MainViewModel,
     topBarConfig: TopBarConfig,
     initialNavState: InitialNavState,
-    isOffline: Boolean
+    isOffline: Boolean,
+    connectedServer: String
 ) {
     val appState = rememberMainAppState()
 
@@ -137,6 +140,7 @@ private fun MainScreenContent(
             content = { paddingValues ->
                 Column(modifier = Modifier.padding(paddingValues)) {
                     OfflineIndicatorBanner(isOffline = isOffline)
+                    LocalNetworkBanner(serverUrl = connectedServer)
 
                     MainNavHost(
                         initialNavState = initialNavState,

@@ -6,10 +6,15 @@ import app.cash.turbine.test
 import com.grappim.kit.domain.PendingCertTrust
 import com.grappim.kit.testing.FakeTrustedCertStorage
 import com.grappim.kit.testing.MainDispatcherRule
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
+import com.grappim.taigamobile.core.storage.customheaders.CustomHeader
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.login_error_local_network_denied
 import com.grappim.taigamobile.testing.repo.FakeAuthRepository
+import com.grappim.taigamobile.testing.storage.FakeCustomHeadersStorage
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,18 +37,53 @@ internal class LoginViewModelTest {
     private val defaultServer = getRandomString()
     private val serverStorage = FakeServerStorage(defaultServer)
     private val trustedCertStorage = FakeTrustedCertStorage()
+    private val customHeadersStorage = FakeCustomHeadersStorage()
 
     private val correctServer = "https://10.0.2.2:9000"
 
     @BeforeTest
     fun setup() {
         mainDispatcherRule.setup()
-        sut = LoginViewModel(authRepository, serverStorage, trustedCertStorage)
+        sut = LoginViewModel(authRepository, serverStorage, trustedCertStorage, customHeadersStorage)
     }
 
     @AfterTest
     fun tearDown() {
         mainDispatcherRule.tearDown()
+    }
+
+    @Test
+    fun `customHeadersCount is zero with nothing stored`() {
+        assertEquals(0, sut.state.value.customHeadersCount)
+    }
+
+    @Test
+    fun `customHeadersCount follows the stored headers`() = runTest {
+        customHeadersStorage.setHeaders(listOf(CustomHeader("X-A", "1"), CustomHeader("X-B", "2")))
+        assertEquals(2, sut.state.value.customHeadersCount)
+
+        customHeadersStorage.setHeaders(listOf(CustomHeader("X-A", "1")))
+        assertEquals(1, sut.state.value.customHeadersCount)
+
+        customHeadersStorage.setHeaders(emptyList())
+        assertEquals(0, sut.state.value.customHeadersCount)
+    }
+
+    @Test
+    fun `customHeadersCount reflects headers stored before the screen opened`() {
+        val storage = FakeCustomHeadersStorage(listOf(CustomHeader("X-A", "1")))
+        val viewModel = LoginViewModel(authRepository, serverStorage, trustedCertStorage, storage)
+
+        assertEquals(1, viewModel.state.value.customHeadersCount)
+    }
+
+    @Test
+    fun `onLocalNetworkDenied shows why and sends nothing`() = runTest {
+        sut.state.value.onLocalNetworkDenied()
+
+        assertEquals(NativeText.Resource(RString.login_error_local_network_denied), sut.state.value.error)
+        assertEquals(0, authRepository.authCallCount)
+        assertFalse(sut.state.value.isLoading)
     }
 
     @Test

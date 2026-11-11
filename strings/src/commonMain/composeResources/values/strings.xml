@@ -36,6 +36,10 @@
 
     <!-- ==================== Offline ==================== -->
     <string name="offline_banner_message">You are offline. Showing cached data.</string>
+    <string name="local_network_banner_message">Local network access is off. Taiga can't load without it.</string>
+    <string name="local_network_banner_open_settings">Open settings</string>
+    <string name="login_error_local_network_denied">Not connected — this server is on your local network, and the app isn't allowed to reach it. Turn on local network access for this app in Android settings.</string>
+    <string name="error_proxy_auth">A proxy in front of this server rejected the app. Check the custom headers for this server.</string>
 
     <!-- ==================== Errors ==================== -->
     <string name="common_error_message">An error has occurred. Check your connection</string>
@@ -343,6 +347,21 @@
     <string name="settings_attributes">Attributes</string>
     <string name="settings_modules">Modules</string>
     <string name="settings_trusted_certificates">Trusted Certificates</string>
+    <string name="settings_custom_headers">Custom headers</string>
+    <string name="custom_headers_description">Sent with every request to this server. Add them when a reverse proxy in front of Taiga asks for authentication. Taiga uses the Authorization header itself, so a proxy that authenticates with Authorization (basic auth) can't be used.</string>
+    <string name="custom_headers_name_label">Header name</string>
+    <string name="custom_headers_name_placeholder">X-Proxy-Token</string>
+    <string name="custom_headers_value_label">Value</string>
+    <string name="custom_headers_add">Add header</string>
+    <string name="custom_headers_remove">Remove header</string>
+    <string name="custom_headers_error_missing_name">Enter a header name.</string>
+    <string name="custom_headers_error_invalid_name">Not a valid header name. Use plain letters, digits and dashes.</string>
+    <string name="custom_headers_error_reserved_name">The app sets this header itself.</string>
+    <string name="custom_headers_error_duplicate_name">This header is already in the list.</string>
+    <string name="custom_headers_error_invalid_value">Values can only contain plain ASCII characters.</string>
+    <string name="custom_headers_save_failed">Couldn't save the custom headers. Try again.</string>
+    <string name="login_custom_headers">Custom headers</string>
+    <string name="login_custom_headers_count">Custom headers (%1$d)</string>
     <string name="settings_unencrypted_connection_warning">Unencrypted connection — this server is not using HTTPS</string>
     <string name="trusted_cert_issuer">Issued by %1$s</string>
     <string name="trusted_cert_valid_until">Valid until %1$s</string>

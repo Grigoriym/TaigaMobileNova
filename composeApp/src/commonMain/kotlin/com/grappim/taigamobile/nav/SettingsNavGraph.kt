@@ -21,6 +21,9 @@ import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.navi
 import com.grappim.taigamobile.feature.settings.ui.attributes.tags.TagsScreen
 import com.grappim.taigamobile.feature.settings.ui.attributes.tags.TagsScreenRouteNavDestination
 import com.grappim.taigamobile.feature.settings.ui.attributes.tags.goToTagsScreen
+import com.grappim.taigamobile.feature.settings.ui.customheaders.CustomHeadersNavDestination
+import com.grappim.taigamobile.feature.settings.ui.customheaders.CustomHeadersScreen
+import com.grappim.taigamobile.feature.settings.ui.customheaders.goToCustomHeadersScreen
 import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreen
 import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreenNavDestination
 import com.grappim.taigamobile.feature.settings.ui.interfacescreen.goToSettingsInterfaceScreen
@@ -60,6 +63,9 @@ fun EntryProviderScope<NavKey>.settingsNavGraph(navigator: Navigator, showSnackb
             },
             goToTrustedCertificatesScreen = {
                 navigator.goToTrustedCertificatesScreen()
+            },
+            goToCustomHeadersScreen = {
+                navigator.goToCustomHeadersScreen()
             }
         )
     }
@@ -119,5 +125,9 @@ fun EntryProviderScope<NavKey>.settingsNavGraph(navigator: Navigator, showSnackb
 
     entry<TrustedCertificatesNavDestination> {
         TrustedCertificatesScreen()
+    }
+
+    entry<CustomHeadersNavDestination> {
+        CustomHeadersScreen(showSnackbar = showSnackbar)
     }
 }

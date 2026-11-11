@@ -62,6 +62,21 @@ class SettingsScreenContentTest {
         onNodeWithContentDescription("Trusted Certificates Screen").assertDoesNotExist()
     }
 
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun clickingCustomHeadersItemOpensCustomHeadersScreen() = runComposeUiTest {
+        var opened = false
+        setContent {
+            TaigaMobilePreviewTheme {
+                SettingsScreenContent(state = SettingsState(), goToCustomHeadersScreen = { opened = true })
+            }
+        }
+
+        onNodeWithContentDescription("Custom Headers Screen").performClick()
+
+        assertTrue(opened)
+    }
+
     // Settings owns the Log out action (moved from the nav drawer/rail, see
     // docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md) — dialog visibility transition
     // driven by SettingsViewModel state, same pilot pattern as TrustedCertificatesScreenTest.
@@ -95,6 +110,7 @@ class SettingsScreenContentTest {
                         goToProjectDetailsScreen = {},
                         goToModulesScreen = {},
                         goToTrustedCertificatesScreen = {},
+                        goToCustomHeadersScreen = {},
                         viewModel = viewModel
                     )
                 }

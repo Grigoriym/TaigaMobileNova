@@ -26,6 +26,7 @@ now that the table below covers everything left.
 | 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
 | 55 | CLAUDE.md's "grappim-kit Modules" section is now a 9-swap worked-example catalogue, the exact shape its own "Keeping this file lean" rule tells future sessions to split out | S | CLAUDE.md's "grappim-kit Modules" section (compare to how the Kover heuristics catalogue was split into `docs/testing/kover-coverage-heuristics.md`) |
 | 56 | Two unused vector copies of the old launcher logo, plus an unused tint color | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
+| 57 | iOS has no `NSLocalNetworkUsageDescription` | S | this file |
 
 ---
 
@@ -320,3 +321,16 @@ with white, so it is not a reason to keep these files.
 
 **Trigger:** any time; optional cleanup. Build both Android flavors and the desktop jar after
 deleting, and check the launcher icon on a device.
+
+---
+
+## 57. iOS has no `NSLocalNetworkUsageDescription`
+
+iOS 14+ gates LAN access with its own system prompt. `iosApp`'s `Info.plist` has no
+`NSLocalNetworkUsageDescription`, so that prompt shows iOS's generic text. Whether a self-hosted
+LAN Taiga even works on iOS today is unverified.
+
+The Android 17 `ACCESS_LOCAL_NETWORK` half of this entry was checked by gregory on a Pixel 11 Pro
+(Android 17, API 37) on 2026-11-11 against a LAN Taiga; the permission flow worked.
+
+**Trigger:** any iOS LAN bug report, or an iOS device to test on.
