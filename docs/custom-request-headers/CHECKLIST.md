@@ -1,17 +1,9 @@
 # Custom request headers — checklist
 
-**Progress:** 3 / 8 · **Current step:** 4
+**Progress:** 4 / 8 · **Current step:** 5
 
 Plan and rationale: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Finished steps move to
 `CHECKLIST-DONE.md`. All steps commit to `feat/android17-local-network-permission` (PR 468).
-
-## 4. Images
-
-Android `ImageLoaderProvider`: OkHttp interceptor adding origin-scoped custom headers. Desktop and
-iOS: install a singleton image loader whose fetcher does the same (find where Coil's default is
-picked up first). Off-origin images get nothing.
-Verify: both Android flavors compile, desktop `:composeApp:run` shows avatars against the step 7
-fixture (or defer the visual check to step 7).
 
 ## 5. Custom headers screen + Settings entry
 

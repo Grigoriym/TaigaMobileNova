@@ -45,10 +45,12 @@ headers sent on every request to the server's own origin**, not a proxy-specific
   have rewritten the URL, so the comparison sees the final host.
 - **Never logged** — both `Logging` installs get `sanitizeHeader { }` matching configured names
   `ignoreCase`, read at log time.
-- **Images** — Coil does not go through Ktor. Android's `ImageLoaderProvider` (`androidApp`) uses a
-  bare OkHttp fetcher; desktop/iOS use Coil's default loader. Each needs the same origin-scoped
-  headers, or avatars/attachments served from the server 401 behind the proxy while data loads.
-  Off-origin images (Gravatar) must not get them.
+- **Images** — Coil does not go through the app's API clients. Every platform's loader uses
+  `customHeadersNetworkFetcher` (`composeApp` `images/`): Coil's Ktor fetcher with `CustomHeaders`
+  installed, so the same origin rule applies per redirect hop and off-origin images (Gravatar) get
+  nothing. Android passes it an OkHttp engine carrying `DebugLocalHostImageManager` in debug;
+  desktop/iOS install the loader as Coil's singleton at startup, before any `AsyncImage` would make
+  Coil build its default.
 - **Proxy rejection gets its own error, and must not log the user out.** Taiga, unlike Wallos,
   answers `401` itself — always with `WWW-Authenticate: Bearer realm="api"` (checked against the
   local instance 2026-11-11, both `/users/me` without a token and a bad-password `/auth`). So a

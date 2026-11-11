@@ -108,6 +108,11 @@ kotlin {
                 implementation(libs.filekit.dialogs)
                 implementation(libs.filekit.dialogs.compose)
 
+                implementation(libs.coil.core)
+                implementation(libs.coil.compose)
+                implementation(libs.coil.ktor)
+                implementation(libs.ktor.core)
+
                 implementation(libs.jetbrains.compose.icons.extended)
                 implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
                 implementation(libs.jetbrains.compose.material3.adaptive)

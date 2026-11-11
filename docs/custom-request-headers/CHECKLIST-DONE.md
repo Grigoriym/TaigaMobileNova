@@ -44,3 +44,20 @@ is stopped by the proxy (`ERROR_PROXY_AUTH` from the auth client). Existing refr
 bare 401; their helper now sends Taiga's real `Bearer realm="api"` challenge. `CustomHeadersConfig`
 moved to its own file for detekt's `MatchingDeclarationName`. Next: step 4.
 
+
+## 4. ✅ Images
+
+Android `ImageLoaderProvider`: OkHttp interceptor adding origin-scoped custom headers. Desktop and
+iOS: install a singleton image loader whose fetcher does the same (find where Coil's default is
+picked up first). Off-origin images get nothing.
+Verify: both Android flavors compile, desktop `:composeApp:run` shows avatars against the step 7
+fixture (or defer the visual check to step 7).
+Note: one shared fetcher instead of an OkHttp interceptor on Android —
+`customHeadersNetworkFetcher` (`composeApp` commonMain, `images/`) is Coil's Ktor fetcher with the
+step 2 `CustomHeaders` plugin installed, so the per-hop origin check is the already-tested one.
+Android's `ImageLoaderProvider` always adds it (passing an OkHttp engine carrying
+`DebugLocalHostImageManager` when the debug host is set; `coil-network-okhttp` dropped from
+`androidApp`); desktop sets it via `SingletonImageLoader.setSafe` after `startKoin`, iOS via
+`setSingletonImageLoaderFactory`. Both flavors, desktop and iOS simulator compile; `KoinGraphTest`,
+ktlint, detekt green; desktop launches cleanly. Avatar check deferred to step 7 (needs a logged-in
+session and the proxy fixture). Next: step 5.

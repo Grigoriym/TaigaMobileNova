@@ -104,3 +104,4 @@ deleted — see `finalize`.
 - 2026-11-11: Guessed `:core:storage:compileDebugKotlinAndroid` and `:testing:ktlintCheck`; neither exists (KMP library Android compile is `compileAndroidMain`, and `:testing` has no ktlint task). List with `./gradlew :module:tasks --all` before naming a per-module task.
 - 2026-11-11: Ran `jvmTest koverVerify detekt ktlintCheck` without `--continue`; detekt failing first meant the rest never ran, which read like a single failure. Pass `--continue` for a multi-gate check.
 - 2026-11-11: `gh pr edit 468 --title/--body` failed with "Projects (classic) is being deprecated" (a `gh` GraphQL bug, nothing changed); `gh api -X PATCH repos/<owner>/<repo>/pulls/<n> -f title=... -F body=@file` worked.
+- 2026-11-11: Guessed `:androidApp:ktlintCheck`; it does not exist (`androidApp` has no ktlint plugin). Second per-module task-name guess today — the bare root `ktlintCheck` runs every module that has it.
