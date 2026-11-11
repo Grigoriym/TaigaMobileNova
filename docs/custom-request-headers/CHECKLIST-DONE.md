@@ -74,5 +74,8 @@ Note: ported from wallosmobile's `customheaders/` screen. Save is a top-bar `Top
 `isSaveEnabled && !LocalOfflineState.current`. Unlike wallosmobile a failed save shows a snackbar
 (`custom_headers_save_failed`) via `SnackbarDelegate`, logged at ERROR; rows stay as typed. The
 Authorization caveat lives in the screen's description text, not a value hint. The Settings row is
-shown on every platform. The screen was not driven in a GUI here — step 7 exercises it end to end.
+shown on every platform. Driven on `Medium_Phone_API_36.1` (fdroid debug): Save
+greyed with no change; `Host` shows the reserved-name error and keeps Save off; a valid header
+enables Save, saving turns it off and the row survives a force-stop; airplane mode disables Save;
+removing the row and saving persists an empty list.
 Full `jvmTest`, detekt and ktlint green. Next: step 6.
