@@ -94,3 +94,23 @@ while a login is in flight. `MainNavHost`'s `LoginScreen` call wires it to
 Driven on `Medium_Phone_API_36.1` (fdroid debug, cleared data): label "Custom headers", tap opens
 the editor, saving one header and backing out shows "Custom headers (1)", removing it and the
 top-bar back arrow return to "Custom headers". Full `jvmTest`, detekt and ktlint green. Next: step 7.
+
+
+## 7. ✅ Device check against a header-auth proxy
+
+Stand up the fixture from the plan (nginx in front of `localhost:9000` demanding a custom header).
+On the emulator and desktop: login fails with the proxy message and does **not** log out an
+existing session; add the header from Login → login works; avatars load; header removed in
+Settings → next refresh shows the proxy message. Record the fixture command in the plan.
+Verify: the above, screenshots.
+Note: fixture is `proxy-fixture.conf` (nginx, port 9100), command in the plan; it also rewrites
+Taiga's `localhost:9000` media URLs onto the proxy host, otherwise debug Android builds fetch images
+from the unproxied port. Driven on `Medium_Phone_API_36.1` (fdroid debug, cleared data, server
+`http://10.0.2.2:9100`): login without the header shows the proxy message (proxy log: `/auth` 401);
+"Custom headers" → add `X-Proxy-Token: secret` → back shows "Custom headers (1)" and login succeeds;
+`admin`'s uploaded avatar loads on Team through the proxy (200 from Coil's Ktor fetcher), Gravatars
+load off-origin; header removed in Settings → Issues shows the proxy message with Retry (401s), and
+a force-stop + relaunch lands on Dashboard, still logged in. Desktop not GUI-driven (no Xvfb here;
+xdotool on the live display was declined) — gregory accepted the emulator run as sufficient, since
+desktop shares the same common code and only its loader install differs (step 4: launches cleanly).
+Next: step 8.

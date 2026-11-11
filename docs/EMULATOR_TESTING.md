@@ -96,3 +96,9 @@ technique lives in the skill itself, not here — this file is only what's true 
   1868)` for `@` (leftmost key of that page's top row). Confirmed while GUI-verifying mention-tagging
   Step 7 (`docs/architecture/mention-tagging-support/`); needed again for any future real-keyboard
   `@`-typing check on this AVD/resolution.
+- **No seeded user has an uploaded avatar** — every avatar is Gravatar (off-origin), so a check
+  that an image is fetched *from the server* needs one uploaded first (`POST
+  /api/v1/users/change_avatar`, multipart `avatar`; `admin` has one since 2026-11-11). Taiga
+  returns media URLs on `http://localhost:9000`, which debug builds rewrite to `10.0.2.2:9000`
+  (`DebugLocalHostImageManager`) — fine directly, but it bypasses anything in front of the server
+  (see `docs/custom-request-headers/IMPLEMENTATION_PLAN.md`'s fixture for the workaround).

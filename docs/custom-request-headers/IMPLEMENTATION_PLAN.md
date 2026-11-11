@@ -81,6 +81,23 @@ headers sent on every request to the server's own origin**, not a proxy-specific
 
 ## Verification fixture
 
-Proxy that demands a non-`Authorization` header in front of the local Taiga (`localhost:9000`),
-e.g. nginx with `if ($http_x_proxy_token != "secret") { return 401; }` on a separate port. Exact
-command and port recorded in step 7 once it's built.
+[`proxy-fixture.conf`](proxy-fixture.conf): nginx on port 9100 in front of the local Taiga, `401`
+(no `WWW-Authenticate`) unless the request carries `X-Proxy-Token: secret`. Run it from the repo
+root:
+
+```bash
+docker run -d --rm --name taiga-header-proxy --network host \
+  -v "$PWD/docs/custom-request-headers/proxy-fixture.conf":/etc/nginx/conf.d/default.conf:ro \
+  nginx:1.27-alpine
+docker logs taiga-header-proxy   # access log: path, status, user agent per request
+docker rm -f taiga-header-proxy
+```
+
+The server URL is `http://10.0.2.2:9100` from the emulator, `http://127.0.0.1:9100` from desktop.
+Taiga builds media URLs from its own configured domain (`http://localhost:9000`), and debug
+Android builds rewrite a `localhost` image host straight to the unproxied `10.0.2.2:9000`
+(`DebugLocalHostImageManager`), so without help images would bypass the proxy. The config's
+`sub_filter` rewrites those URLs onto the host the client used to reach the proxy, as a real
+deployment (Taiga's domain = the proxy's) would serve them. The seeded users have no uploaded
+photos (all Gravatar, off-origin); give one an avatar (`POST /api/v1/users/change_avatar`,
+multipart `avatar`) to see an on-origin image load through the proxy.
