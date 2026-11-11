@@ -57,7 +57,10 @@ headers sent on every request to the server's own origin**, not a proxy-specific
   `TokenRefreshPlugin`, fail the refresh (the refresh call is rejected too) and **log the user
   out** — the plugin must pass proxy rejections through untouched. `ErrorMappingPlugin` maps them
   to a new `NetworkException.ERROR_PROXY_AUTH` → "the server's proxy rejected the app — check
-  custom headers".
+  custom headers". `HttpRedirect` is the outermost `HttpSend` interceptor (installed before user
+  plugins), so each redirect hop passes through `ErrorMappingPlugin` and `HostSelectionPlugin`;
+  the off-host check has to throw on the hop itself, or `HostSelectionPlugin` rewrites the
+  redirect back onto the server. A refresh call stopped by the proxy keeps the session too.
 - **UI** — `CustomHeadersScreen` + ViewModel in `feature:settings:ui` (`customheaders/`, beside
   `trustedcerts/`), explicit Save offered only while all rows are valid and differ from storage.
   Reached from a Settings row and from a "Custom headers (N)" button on Login. Login is an ordinary

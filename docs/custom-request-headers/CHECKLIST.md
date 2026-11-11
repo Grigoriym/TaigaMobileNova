@@ -1,18 +1,9 @@
 # Custom request headers — checklist
 
-**Progress:** 2 / 8 · **Current step:** 3
+**Progress:** 3 / 8 · **Current step:** 4
 
 Plan and rationale: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Finished steps move to
 `CHECKLIST-DONE.md`. All steps commit to `feat/android17-local-network-permission` (PR 468).
-
-## 3. Proxy rejection
-
-`isProxyRejection(status, wwwAuthenticate, location, requestHost)` in `core:api`;
-`TokenRefreshPlugin` skips refresh/logout for it; `ErrorMappingPlugin` throws
-`NetworkException(ERROR_PROXY_AUTH)`; `getErrorMessage` maps it to a new string. Tests for the
-predicate (Taiga's `Bearer` 401 is *not* a proxy rejection), the refresh plugin not logging out,
-and the mapping.
-Verify: `./gradlew :core:api:jvmTest :utils:ui:jvmTest`
 
 ## 4. Images
 

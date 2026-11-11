@@ -2,6 +2,7 @@ package com.grappim.taigamobile.core.api
 
 import com.grappim.kit.logger.LogPriority
 import com.grappim.kit.logger.logcat
+import com.grappim.taigamobile.core.domain.NetworkException
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.HttpClientCall
@@ -47,7 +48,7 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
 
             suspend fun Sender.retryOrLogout(request: HttpRequestBuilder): HttpClientCall {
                 val retried = execute(request)
-                if (retried.response.status == HttpStatusCode.Unauthorized) {
+                if (retried.response.status == HttpStatusCode.Unauthorized && !retried.response.isProxyRejection()) {
                     logcat(tag = "TokenRefreshPlugin") {
                         "Retry with refreshed token is still unauthorized, logging out"
                     }
@@ -59,7 +60,8 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
             scope.plugin(HttpSend).intercept { request ->
                 val response = execute(request)
 
-                if (response.response.status != HttpStatusCode.Unauthorized) {
+                // A proxy's 401 says nothing about the Taiga session, so it must not refresh or log out.
+                if (response.response.status != HttpStatusCode.Unauthorized || response.response.isProxyRejection()) {
                     return@intercept response
                 }
 
@@ -100,6 +102,10 @@ class TokenRefreshPlugin(private val authStorage: AuthStorage, private val token
                         val currentRefresh = plugin.authStorage.getRefreshToken()
                         plugin.tokenRefresher.refresh(currentRefresh)
                     } catch (e: Exception) {
+                        // The refresh call was stopped by the proxy, not refused by Taiga.
+                        if (e is NetworkException && e.errorCode == NetworkException.ERROR_PROXY_AUTH) {
+                            return@withLock response
+                        }
                         logcat(
                             priority = LogPriority.ERROR,
                             tag = "TokenRefreshPlugin",

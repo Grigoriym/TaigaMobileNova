@@ -7,13 +7,6 @@ import io.ktor.client.plugins.logging.LoggingConfig
 import io.ktor.http.Url
 import io.ktor.http.parseUrl
 
-class CustomHeadersConfig {
-    lateinit var storage: CustomHeadersStorage
-
-    /** The server's URL, read per request so a change of server applies at once. */
-    var serverUrl: () -> String = { "" }
-}
-
 /**
  * Adds the user's reverse-proxy headers to every request bound for the server's own origin, and to
  * nothing else.

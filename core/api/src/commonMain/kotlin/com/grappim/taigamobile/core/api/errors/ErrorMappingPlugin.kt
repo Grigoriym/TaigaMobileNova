@@ -2,6 +2,7 @@ package com.grappim.taigamobile.core.api.errors
 
 import com.grappim.kit.logger.LogPriority
 import com.grappim.kit.logger.logcat
+import com.grappim.taigamobile.core.api.isProxyRejection
 import com.grappim.taigamobile.core.api.sanitizedForCrashReporting
 import com.grappim.taigamobile.core.domain.NetworkException
 import com.grappim.taigamobile.core.domain.ProjectLimitInfo
@@ -38,6 +39,13 @@ class ErrorMappingPlugin(
             scope.plugin(HttpSend.Plugin).intercept { request ->
                 try {
                     val response = execute(request)
+
+                    if (response.response.isProxyRejection()) {
+                        throw NetworkException(
+                            errorCode = NetworkException.ERROR_PROXY_AUTH,
+                            request = request.url.toString()
+                        )
+                    }
 
                     if (response.response.status.value >= 400) {
                         val errorBody = response.response.bodyAsText()

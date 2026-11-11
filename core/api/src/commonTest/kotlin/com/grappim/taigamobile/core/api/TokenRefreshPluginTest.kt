@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.core.api
 
+import com.grappim.taigamobile.core.domain.NetworkException
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage
 import com.grappim.taigamobile.testing.utils.testException
@@ -11,7 +12,9 @@ import io.ktor.client.request.HttpRequestData
 import io.ktor.client.request.HttpResponseData
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpStatusCode
+import io.ktor.http.headersOf
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -142,7 +145,37 @@ class TokenRefreshPluginTest {
 
     private fun bearer(token: String) = "${ApiConstants.BEARER} $token"
 
-    private fun MockRequestHandleScope.unauthorized() = respond(content = "", status = HttpStatusCode.Unauthorized)
+    /** Taiga's own 401 always carries this challenge; without it the response reads as a proxy's. */
+    @Test
+    fun `on a proxy's 401 without a Bearer challenge should neither refresh nor log out`() = runTest {
+        val client = createClient(authStorage) { respond(content = "", status = HttpStatusCode.Unauthorized) }
+
+        val response = client.get("https://example.com/") { header(ApiConstants.AUTHORIZATION, bearer("tokenA")) }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(1, requests.size)
+        assertEquals(0, tokenRefresher.refreshCallCount)
+        assertEquals(0, tokenRefresher.logoutCallCount)
+    }
+
+    @Test
+    fun `on a refresh stopped by the proxy should not log out`() = runTest {
+        authStorage.tokenToReturn = "tokenA"
+        tokenRefresher.refreshThrows = NetworkException(NetworkException.ERROR_PROXY_AUTH)
+        val client = createClient(authStorage) { unauthorized() }
+
+        val response = client.get("https://example.com/") { header(ApiConstants.AUTHORIZATION, bearer("tokenA")) }
+
+        assertEquals(HttpStatusCode.Unauthorized, response.status)
+        assertEquals(1, tokenRefresher.refreshCallCount)
+        assertEquals(0, tokenRefresher.logoutCallCount)
+    }
+
+    private fun MockRequestHandleScope.unauthorized() = respond(
+        content = "",
+        status = HttpStatusCode.Unauthorized,
+        headers = headersOf(HttpHeaders.WWWAuthenticate, "Bearer realm=\"api\"")
+    )
 
     private fun createClient(storage: AuthStorage, handler: MockRequestHandleScope.() -> HttpResponseData): HttpClient =
         HttpClient(

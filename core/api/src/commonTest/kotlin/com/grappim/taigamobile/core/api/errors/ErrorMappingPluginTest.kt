@@ -41,6 +41,55 @@ class ErrorMappingPluginTest {
     }
 
     @Test
+    fun `on a proxy's 401 should throw ERROR_PROXY_AUTH`() = runTest {
+        val client = createClient {
+            respond(
+                content = "<html>",
+                status = HttpStatusCode.Unauthorized,
+                headers = headersOf("WWW-Authenticate", "Basic")
+            )
+        }
+
+        val thrown = assertFailsWith<NetworkException> { client.get("https://example.com/projects") }
+
+        assertEquals(NetworkException.ERROR_PROXY_AUTH, thrown.errorCode)
+        assertNull(thrown.taigaError)
+    }
+
+    @Test
+    fun `on Taiga's own 401 should keep mapping it to ERROR_UNAUTHORIZED`() = runTest {
+        val client = createClient {
+            respond(
+                content = """{"detail":"bad","code":"invalid_credentials"}""",
+                status = HttpStatusCode.Unauthorized,
+                headers = headersOf("WWW-Authenticate", "Bearer realm=\"api\"")
+            )
+        }
+
+        val thrown = assertFailsWith<NetworkException> { client.get("https://example.com/auth") }
+
+        assertEquals(NetworkException.ERROR_UNAUTHORIZED, thrown.errorCode)
+    }
+
+    @Test
+    fun `on a redirect to another host should throw ERROR_PROXY_AUTH without following it`() = runTest {
+        var calls = 0
+        val client = createClient {
+            calls++
+            respond(
+                content = "",
+                status = HttpStatusCode.Found,
+                headers = headersOf("Location", "https://sso.example.org/")
+            )
+        }
+
+        val thrown = assertFailsWith<NetworkException> { client.get("https://example.com/projects") }
+
+        assertEquals(NetworkException.ERROR_PROXY_AUTH, thrown.errorCode)
+        assertEquals(1, calls)
+    }
+
+    @Test
     fun `on error response should throw NetworkException with the mapped code and parsed error`() = runTest {
         val client = createClient {
             respond(
