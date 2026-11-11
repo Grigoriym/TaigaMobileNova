@@ -13,3 +13,16 @@ Note: validator is a plain `object` (stateless, no DI needed). Separate DataStor
 by construction, no test. Kit `FakeSecretCipher` only prefixes `ENC:`; the test asserts that
 prefix. Next: step 2.
 
+
+## 2. ✅ `CustomHeaders` Ktor plugin
+
+`core:api`: plugin on `SendingRequest`, `isServerOrigin`, `sanitizeCustomHeaders` on both
+`Logging` installs, installed on both clients in `KmpNetworkModule`. Tests with `MockEngine`:
+sent on server origin, not on other host/scheme/port, stripped on a cross-host redirect hop,
+values sanitized in logs.
+Verify: `./gradlew :core:api:jvmTest` + `KoinGraphTest`
+Note: the plugin reads the server from `BaseUrlProvider` (already injected into both clients), not
+`ServerStorage` — same origin. Debug-only gap: with `DebugLocalhostPlugin` rewriting `localhost`
+to the debug host, the request origin no longer matches the stored `localhost` server, so headers
+aren't sent in that mode. Next: step 3.
+

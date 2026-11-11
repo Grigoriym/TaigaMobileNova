@@ -1,17 +1,9 @@
 # Custom request headers — checklist
 
-**Progress:** 1 / 8 · **Current step:** 2
+**Progress:** 2 / 8 · **Current step:** 3
 
 Plan and rationale: [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md). Finished steps move to
 `CHECKLIST-DONE.md`. All steps commit to `feat/android17-local-network-permission` (PR 468).
-
-## 2. `CustomHeaders` Ktor plugin
-
-`core:api`: plugin on `SendingRequest`, `isServerOrigin`, `sanitizeCustomHeaders` on both
-`Logging` installs, installed on both clients in `KmpNetworkModule`. Tests with `MockEngine`:
-sent on server origin, not on other host/scheme/port, stripped on a cross-host redirect hop,
-values sanitized in logs.
-Verify: `./gradlew :core:api:jvmTest` + `KoinGraphTest`
 
 ## 3. Proxy rejection
 
