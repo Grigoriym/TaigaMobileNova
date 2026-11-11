@@ -42,6 +42,10 @@ kotlin {
             implementation(libs.markdownRenderer.m3)
             implementation(libs.markdownRenderer.coil)
         }
+        androidMain.dependencies {
+            // `rememberLauncherForActivityResult`, behind `rememberLocalNetworkPermissionRequest`.
+            implementation(libs.androidx.activity.compose)
+        }
         jvmTest.dependencies {
             implementation(composeUiTestDep)
             implementation(composeDesktopUiTestJUnit4Dep)

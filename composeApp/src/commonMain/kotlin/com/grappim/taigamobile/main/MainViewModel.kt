@@ -11,6 +11,7 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.ThemeSettings
 import com.grappim.taigamobile.core.storage.auth.AuthStateManager
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
+import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.dashboard.ui.DashboardNavDestination
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.feature.projects.domain.ProjectSimple
@@ -32,7 +33,8 @@ class MainViewModel(
     private val authStateManager: AuthStateManager,
     projectsRepository: ProjectsRepository,
     private val drawerItemsBuilder: DrawerItemsBuilder,
-    networkMonitor: NetworkMonitor
+    networkMonitor: NetworkMonitor,
+    serverStorage: ServerStorage
 ) : ViewModel() {
 
     val isOffline: StateFlow<Boolean> = networkMonitor.isOnline
@@ -44,6 +46,15 @@ class MainViewModel(
         )
 
     val logoutEvent = authStateManager.logoutEvents
+
+    /** The signed-in server's URL, or empty while signed out. */
+    val connectedServer: StateFlow<String> = authStorage.isLoggedIn
+        .map { isLoggedIn -> if (isLoggedIn) serverStorage.server else "" }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5_000),
+            initialValue = ""
+        )
 
     val initialNavState: StateFlow<InitialNavState> = combine(
         authStorage.isLoggedIn,

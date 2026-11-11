@@ -36,6 +36,9 @@
 
     <!-- ==================== Offline ==================== -->
     <string name="offline_banner_message">You are offline. Showing cached data.</string>
+    <string name="local_network_banner_message">Local network access is off. Taiga can't load without it.</string>
+    <string name="local_network_banner_open_settings">Open settings</string>
+    <string name="login_error_local_network_denied">Not connected — this server is on your local network, and the app isn't allowed to reach it. Turn on local network access for this app in Android settings.</string>
 
     <!-- ==================== Errors ==================== -->
     <string name="common_error_message">An error has occurred. Check your connection</string>

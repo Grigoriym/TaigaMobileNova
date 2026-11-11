@@ -42,5 +42,6 @@ data class LoginState(
     val isCertTrustDialogVisible: Boolean = false,
     val pendingCertTrust: PendingCertTrust? = null,
     val onConfirmCertTrust: () -> Unit,
-    val onDismissCertTrust: () -> Unit
+    val onDismissCertTrust: () -> Unit,
+    val onLocalNetworkDenied: () -> Unit
 )

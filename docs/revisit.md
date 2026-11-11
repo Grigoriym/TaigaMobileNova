@@ -26,6 +26,7 @@ now that the table below covers everything left.
 | 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
 | 55 | CLAUDE.md's "grappim-kit Modules" section is now a 9-swap worked-example catalogue, the exact shape its own "Keeping this file lean" rule tells future sessions to split out | S | CLAUDE.md's "grappim-kit Modules" section (compare to how the Kover heuristics catalogue was split into `docs/testing/kover-coverage-heuristics.md`) |
 | 56 | Two unused vector copies of the old launcher logo, plus an unused tint color | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
+| 57 | Android 17 local-network prompt never driven on a device; iOS has no `NSLocalNetworkUsageDescription` | S | this file |
 
 ---
 
@@ -320,3 +321,22 @@ with white, so it is not a reason to keep these files.
 
 **Trigger:** any time; optional cleanup. Build both Android flavors and the desktop jar after
 deleting, and check the launcher icon on a device.
+
+---
+
+## 57. Android 17 local-network prompt never driven on a device; iOS has no `NSLocalNetworkUsageDescription`
+
+The `ACCESS_LOCAL_NETWORK` request (`uikit/src/androidMain/.../permission/LocalNetworkPermissionRequest.android.kt`,
+wired in `LoginScreen.kt` and `composeApp/.../main/LocalNetworkBanner.kt`, ported from wallosmobile's
+M28 28.10) only fires on API 37+. This machine has no API 37 AVD (`Medium_Phone_API_36.1` is the
+newest), so only the API 36 no-op path was checked (2026-11-11: login against `10.0.2.2:9000`
+reached Select Project, no prompt, no banner). Unchecked: the dialog at Continue, "Don't allow" →
+`login_error_local_network_denied` snackbar, the shell banner + "Open settings" for an already
+signed-in user, and the banner leaving on resume after a grant.
+
+iOS 14+ gates LAN access with its own system prompt. `iosApp`'s `Info.plist` has no
+`NSLocalNetworkUsageDescription`, so that prompt shows iOS's generic text. Whether a self-hosted
+LAN Taiga even works on iOS today is unverified.
+
+**Trigger:** an API 37 system image or physical Android 17 device becomes available; or any iOS LAN
+bug report.

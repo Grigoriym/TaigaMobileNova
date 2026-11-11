@@ -6,9 +6,12 @@ import app.cash.turbine.test
 import com.grappim.kit.domain.PendingCertTrust
 import com.grappim.kit.testing.FakeTrustedCertStorage
 import com.grappim.kit.testing.MainDispatcherRule
+import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.login_error_local_network_denied
 import com.grappim.taigamobile.testing.repo.FakeAuthRepository
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
@@ -44,6 +47,15 @@ internal class LoginViewModelTest {
     @AfterTest
     fun tearDown() {
         mainDispatcherRule.tearDown()
+    }
+
+    @Test
+    fun `onLocalNetworkDenied shows why and sends nothing`() = runTest {
+        sut.state.value.onLocalNetworkDenied()
+
+        assertEquals(NativeText.Resource(RString.login_error_local_network_denied), sut.state.value.error)
+        assertEquals(0, authRepository.authCallCount)
+        assertFalse(sut.state.value.isLoading)
     }
 
     @Test

@@ -68,6 +68,7 @@ import com.grappim.taigamobile.strings.generated.resources.login_taiga_server
 import com.grappim.taigamobile.strings.generated.resources.login_username
 import com.grappim.taigamobile.uikit.generated.resources.ic_insecure
 import com.grappim.taigamobile.uikit.generated.resources.taiga_mobile_logo
+import com.grappim.taigamobile.uikit.permission.rememberLocalNetworkPermissionRequest
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
@@ -138,8 +139,24 @@ fun LoginScreen(
         isVisible = state.isCertTrustDialogVisible
     )
 
+    val localNetworkPermission = rememberLocalNetworkPermissionRequest()
     LoginScreenContent(
-        state = state,
+        state = state.copy(
+            validateAuthData = { authType ->
+                localNetworkPermission.request(
+                    serverUrl = state.server,
+                    onAllowed = { state.validateAuthData(authType) },
+                    onDenied = state.onLocalNetworkDenied
+                )
+            },
+            onGithubLoginClick = {
+                localNetworkPermission.request(
+                    serverUrl = state.server,
+                    onAllowed = state.onGithubLoginClick,
+                    onDenied = state.onLocalNetworkDenied
+                )
+            }
+        ),
         modifier = Modifier.fillMaxSize()
     )
 }
@@ -383,7 +400,8 @@ private fun LoginScreenPreview() {
                 setIsPasswordVisible = {},
                 onGithubLoginClick = {},
                 onConfirmCertTrust = {},
-                onDismissCertTrust = {}
+                onDismissCertTrust = {},
+                onLocalNetworkDenied = {}
             )
         )
     }
@@ -412,7 +430,8 @@ private fun LoginScreenErrorsPreview() {
                 setIsPasswordVisible = {},
                 onGithubLoginClick = {},
                 onConfirmCertTrust = {},
-                onDismissCertTrust = {}
+                onDismissCertTrust = {},
+                onLocalNetworkDenied = {}
             )
         )
     }
@@ -441,7 +460,8 @@ private fun LoginScreenAlertPreview() {
                 setIsPasswordVisible = {},
                 onGithubLoginClick = {},
                 onConfirmCertTrust = {},
-                onDismissCertTrust = {}
+                onDismissCertTrust = {},
+                onLocalNetworkDenied = {}
             )
         )
     }

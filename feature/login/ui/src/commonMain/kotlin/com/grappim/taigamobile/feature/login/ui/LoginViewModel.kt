@@ -11,6 +11,8 @@ import com.grappim.taigamobile.core.storage.server.ServerStorage
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.feature.login.domain.repo.AuthRepository
+import com.grappim.taigamobile.strings.RString
+import com.grappim.taigamobile.strings.generated.resources.login_error_local_network_denied
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -58,7 +60,8 @@ class LoginViewModel(
             setIsPasswordVisible = ::changePasswordVisibility,
             onGithubLoginClick = ::validateGithubAuth,
             onConfirmCertTrust = ::onConfirmCertTrust,
-            onDismissCertTrust = ::onDismissCertTrust
+            onDismissCertTrust = ::onDismissCertTrust,
+            onLocalNetworkDenied = ::onLocalNetworkDenied
         )
     )
     val state = _state.asStateFlow()
@@ -192,6 +195,11 @@ class LoginViewModel(
             trustedCertStorage.trust(pendingCertTrust)
             retry?.invoke()
         }
+    }
+
+    /** Nothing was sent: the request could only have timed out and blamed the server address. */
+    private fun onLocalNetworkDenied() {
+        _state.update { it.copy(error = NativeText.Resource(RString.login_error_local_network_denied)) }
     }
 
     private fun onDismissCertTrust() {
