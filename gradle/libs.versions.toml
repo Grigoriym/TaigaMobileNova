@@ -75,7 +75,7 @@ koin-bom = "4.2.2"
 # https://github.com/InsertKoinIO/koin-annotations/releases
 koin-annotations = "4.2.2"
 # https://github.com/InsertKoinIO/koin-compiler-plugin
-koin-plugin = "1.2.1"
+koin-plugin = "1.2.3"
 
 # https://github.com/JetBrains/compose-multiplatform/releases
 jetbrainsComposeMultiplatform = "1.12.2"
