@@ -27,6 +27,7 @@ now that the table below covers everything left.
 | 55 | CLAUDE.md's "grappim-kit Modules" section is now a 9-swap worked-example catalogue, the exact shape its own "Keeping this file lean" rule tells future sessions to split out | S | CLAUDE.md's "grappim-kit Modules" section (compare to how the Kover heuristics catalogue was split into `docs/testing/kover-coverage-heuristics.md`) |
 | 56 | Two unused vector copies of the old launcher logo, plus an unused tint color | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
 | 57 | iOS has no `NSLocalNetworkUsageDescription` | S | this file |
+| 58 | `apk-size-check` runner is killed on Gradle-wrapper bump PRs | S | `.github/workflows/build.yml` `apk-size-check` job |
 
 ---
 
@@ -334,3 +335,17 @@ The Android 17 `ACCESS_LOCAL_NETWORK` half of this entry was checked by gregory 
 (Android 17, API 37) on 2026-11-11 against a LAN Taiga; the permission flow worked.
 
 **Trigger:** any iOS LAN bug report, or an iOS device to test on.
+
+---
+
+## 58. `apk-size-check` runner is killed on Gradle-wrapper bump PRs
+
+On PR #466 (Gradle 9.8.2 → 9.9.1, 2026-11-13) the `apk-size-check` job was cancelled twice with
+`The runner has received a shutdown signal` — once mid base-APK build (run 42865533809, first
+attempt), once in the diff step on the rerun. The AGP bump PR #448, run the same day on the
+unchanged wrapper, passed the same job. Unverified hypothesis: the job builds the PR head then
+checks out the base in the same runner, so a wrapper bump leaves two different Gradle daemons
+resident and the runner runs out of memory. A `./gradlew --stop` between the two builds would
+test it.
+
+**Trigger:** the next Renovate Gradle-wrapper PR failing this job the same way.
