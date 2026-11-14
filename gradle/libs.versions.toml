@@ -86,7 +86,7 @@ jetbrainsSavedState = "1.4.0"
 jetbrainsComposeIcons = "1.7.3"
 jetbrainsAndroidxLifecycle = "2.11.0"
 jetbrainsNav3 = "1.2.0"
-grappimKit = "0.1.7"
+grappimKit = "0.1.8"
 
 compose-bom = "2026.09.00"
 
