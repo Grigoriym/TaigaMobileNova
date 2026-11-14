@@ -298,11 +298,12 @@ now having its own.
 The custom request headers core (`CustomHeader`/`CustomHeaderValidator`/`CustomHeadersStorage`(+`Impl`),
 the `CustomHeaders` Ktor plugin, `sanitizeCustomHeaders`, and `FakeCustomHeadersStorage` via
 `grappim-kit-testing`) → `io.github.grigoriym:grappim-kit-customheaders` was the eleventh swap
-(2026-11-14, `grappimKit` 0.1.7 → 0.1.8). **The kit's `CustomHeaderValidator` is a class whose
+(2026-11-14, PR #477, `grappimKit` 0.1.7 → 0.1.8). **The kit's `CustomHeaderValidator` is a class whose
 default reserved names lack `Authorization`/`User-Agent`** — `StorageModule.provideCustomHeaderValidator()`
 binds it with both added, and `CustomHeadersViewModel` injects it; constructing the validator with no
 argument would silently let a user header override the Bearer token. Storage key, DataStore files and
-Keystore alias are unchanged. See `grappim-kit/CONSUMING.md`'s `customheaders` section.
+Keystore alias are unchanged — emulator-confirmed by saving a header on the pre-swap build and
+reading it back after installing the swapped one over it. See `grappim-kit/CONSUMING.md`'s `customheaders` section.
 
 ## Navigation Pattern
 
