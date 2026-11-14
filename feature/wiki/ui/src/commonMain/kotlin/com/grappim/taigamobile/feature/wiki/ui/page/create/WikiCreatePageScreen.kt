@@ -17,6 +17,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,15 +37,20 @@ import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
+import com.grappim.taigamobile.uikit.widgets.editor.MarkdownToolbar
 import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsRow
 import com.grappim.taigamobile.uikit.widgets.editor.findActiveMentionQuery
 import com.grappim.taigamobile.uikit.widgets.editor.insertMention
+import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+
+const val WIKI_CREATE_PAGE_CONTENT_TEST_TAG = "wiki_create_page_content"
+const val WIKI_CREATE_PAGE_PREVIEW_TEST_TAG = "wiki_create_page_preview"
 
 @Composable
 fun WikiCreatePageScreen(
@@ -105,50 +111,72 @@ fun WikiCreatePageScreenContent(
             LoadingDialog()
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = stringResource(RString.slug_helper_text),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            HintTextField(
-                error = state.error,
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
                 modifier = Modifier
+                    .weight(1f)
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                hint = NativeText.Resource(RString.slug_hint),
-                value = state.slug,
-                onValueChange = { state.setSlug(it) }
-            )
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Spacer(Modifier.height(8.dp))
 
-            Spacer(Modifier.height(8.dp))
+                Text(
+                    text = stringResource(RString.slug_helper_text),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+                )
 
-            HintTextField(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 8.dp),
-                hint = NativeText.Resource(RString.content_hint),
-                value = state.content,
-                onValueChange = { state.setContent(it) }
-            )
+                Spacer(Modifier.height(8.dp))
 
-            MentionSuggestionsRow(
-                members = mentionSuggestions,
-                onSelect = { member ->
-                    activeMentionQuery?.let { query ->
-                        state.setContent(insertMention(state.content, query, member.username))
+                HintTextField(
+                    error = state.error,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 8.dp),
+                    hint = NativeText.Resource(RString.slug_hint),
+                    value = state.slug,
+                    onValueChange = { state.setSlug(it) }
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                if (state.isPreview) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 12.dp, vertical = 8.dp)
+                            .testTag(WIKI_CREATE_PAGE_PREVIEW_TEST_TAG)
+                    ) {
+                        MarkdownTextWidget(text = state.content.text, members = members)
                     }
+                } else {
+                    HintTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp)
+                            .testTag(WIKI_CREATE_PAGE_CONTENT_TEST_TAG),
+                        hint = NativeText.Resource(RString.content_hint),
+                        value = state.content,
+                        onValueChange = { state.setContent(it) }
+                    )
+
+                    MentionSuggestionsRow(
+                        members = mentionSuggestions,
+                        onSelect = { member ->
+                            activeMentionQuery?.let { query ->
+                                state.setContent(insertMention(state.content, query, member.username))
+                            }
+                        }
+                    )
                 }
+            }
+
+            MarkdownToolbar(
+                value = state.content,
+                onValueChange = state.setContent,
+                isPreview = state.isPreview,
+                onPreviewToggle = state.onPreviewToggle
             )
         }
     }

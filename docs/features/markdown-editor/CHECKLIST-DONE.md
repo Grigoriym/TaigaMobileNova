@@ -84,3 +84,19 @@ nested-scroll error; the preview puts the scroll on a wrapping `Box` instead, an
 entry 60. Emulator: a Task (#51) and a Wiki page (`gggg`) were formatted with bold, heading, bullet, task-list and
 link, previewed, saved, and reopened; Taiga stored the exact Markdown in both cases. Both were restored to their
 seeded content afterwards. Next: step 7, the toolbar on `WikiCreatePageScreen`.
+
+## 7. Site 2: wiki create page content field
+
+Same toolbar and toggle on `WikiCreatePageScreen`'s content field (already a `TextFieldValue`).
+
+**Verify:** full `jvmTest`, `ktlintCheck`, the module's `detekt` and `compileKotlinIosArm64`, emulator: create a formatted wiki page.
+
+**Done 2026-11-14.** Note: `WikiCreatePageState` gained `isPreview`/`onPreviewToggle`. The slug field stays visible in
+Preview; only the content field and mention row swap for `MarkdownTextWidget`. The screen's existing `verticalScroll`
+moved onto an inner `Column` with `weight(1f)` so the toolbar can sit below it, outside the scroll, and ride above the
+keyboard via the outer `imePadding()`. `feature/wiki/ui` had no Compose UI test wiring, so its `build.gradle.kts` gained
+the same `jvmTest` deps `feature/workitem/ui` uses, for the new `WikiCreatePageScreenContentTest`. That test has to
+`waitUntil` the preview text appears, because the Markdown renderer parses asynchronously; step 6's test doesn't wait
+(`docs/revisit.md` entry 61). Emulator: created wiki page `md-step7-check` with heading, bullet and bold from the toolbar,
+previewed, saved; the app handed off to the new page and Taiga stored `# Title\n- item\n**strong**` exactly. The page
+was deleted afterwards. Next: step 8, the toolbar on `CreateTaskScreen`.

@@ -1,16 +1,10 @@
 # Markdown Editor — Checklist
 
-**Progress:** 6/9 done. **Current step:** 7.
+**Progress:** 7/9 done. **Current step:** 8.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for what exists today, the input-site
 inventory, and options A/B/C. Option A was chosen; see the plan's "Decision" section for the toolbar action
 list and design.
-
-## 7. Site 2: wiki create page content field
-
-Same toolbar and toggle on `WikiCreatePageScreen`'s content field (already a `TextFieldValue`).
-
-**Verify:** full `jvmTest`, `ktlintCheck`, the module's `detekt` and `compileKotlinIosArm64`, emulator: create a formatted wiki page.
 
 ## 8. Site 3: create task description field
 

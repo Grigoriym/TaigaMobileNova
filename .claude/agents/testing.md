@@ -620,6 +620,12 @@ baseline, fixed as part of adding the extension). `PagingData.from(list)` needs 
 `Pager`/`RemoteMediator` — it is a static, already-loaded page, which is all a "does this Screen shape
 render inside `runComposeUiTest`" test needs (see task 14, `docs/testing/improvement-plan.md`).
 
+**`MarkdownTextWidget` renders asynchronously inside `runComposeUiTest`.** Its renderer parses after
+the first composition, so asserting rendered Markdown text straight after it appears (e.g. after
+toggling an editor's Preview) can find an empty, 0px node. Wait first:
+`waitUntil { onAllNodesWithText("…", substring = true).fetchSemanticsNodes().isNotEmpty() }` —
+`WikiCreatePageScreenContentTest` (`feature/wiki/ui/src/jvmTest/`) is the worked example.
+
 ### Driving a `RemoteMediator` directly
 
 `PagingState` is constructible straight from `commonTest` — no Paging test artifact needed:

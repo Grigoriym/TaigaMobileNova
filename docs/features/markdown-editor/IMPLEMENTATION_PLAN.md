@@ -158,6 +158,11 @@ a one-line bar, so whether it gets a subset or nothing is gregory's call when th
   crashes, see `docs/revisit.md` entry 60). The toolbar is the last child of a `Column` with `imePadding()`, so it
   sits above the keyboard. The text field's `TextFieldValue` stays in state across the toggle, so text and selection
   survive it. Sites 2 and 3 should follow the same shape.
+- **Screen wiring (step 7, `WikiCreatePageScreen`):** same state shape (`isPreview` + `onPreviewToggle`). A screen with
+  other fields above the editor keeps them visible in Preview and swaps only the content field + mention row. The
+  scrolling area is an inner `Column` with `weight(1f)` and the toolbar is its sibling below it, so the toolbar never
+  scrolls away. A Compose UI test that asserts rendered Preview text must `waitUntil` it appears: the renderer parses
+  asynchronously.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.
