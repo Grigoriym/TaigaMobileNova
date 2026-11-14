@@ -1,17 +1,10 @@
 # Markdown Editor — Checklist
 
-**Progress:** 7/9 done. **Current step:** 8.
+**Progress:** 8/9 done. **Current step:** 9 (gated).
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for what exists today, the input-site
 inventory, and options A/B/C. Option A was chosen; see the plan's "Decision" section for the toolbar action
 list and design.
-
-## 8. Site 3: create task description field
-
-Same on `CreateTaskScreen`. Its `description` is a plain `String` today, so it needs a
-`TextFieldValue` in state first (keep the same save behaviour).
-
-**Verify:** full `jvmTest`, `ktlintCheck`, the module's `detekt` and `compileKotlinIosArm64`, emulator: create a task with a formatted description.
 
 ## 9. Site 4: `CreateCommentBar`
 

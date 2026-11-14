@@ -14,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.grappim.kit.uikit.NativeText
@@ -32,10 +33,15 @@ import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
 import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
+import com.grappim.taigamobile.uikit.widgets.editor.MarkdownToolbar
+import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+const val CREATE_TASK_DESCRIPTION_TEST_TAG = "create_task_description"
+const val CREATE_TASK_PREVIEW_TEST_TAG = "create_task_preview"
 
 @Composable
 fun CreateTaskScreen(
@@ -91,29 +97,52 @@ fun CreateTaskScreenContent(state: CreateTaskState, modifier: Modifier = Modifie
             LoadingDialog()
         }
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-                .padding(horizontal = mainHorizontalScreenPadding)
-        ) {
-            Spacer(Modifier.height(8.dp))
+        Column(modifier = Modifier.fillMaxSize()) {
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = mainHorizontalScreenPadding)
+            ) {
+                Spacer(Modifier.height(8.dp))
 
-            HintTextField(
-                modifier = Modifier.fillMaxWidth(),
-                hint = NativeText.Resource(RString.title_hint),
-                value = state.title,
-                onValueChange = { state.setTitle(it) },
-                singleLine = true
-            )
+                HintTextField(
+                    modifier = Modifier.fillMaxWidth(),
+                    hint = NativeText.Resource(RString.title_hint),
+                    value = state.title,
+                    onValueChange = { state.setTitle(it) },
+                    singleLine = true
+                )
 
-            Spacer(Modifier.height(16.dp))
+                Spacer(Modifier.height(16.dp))
 
-            HintTextField(
-                modifier = Modifier.fillMaxSize(),
-                hint = NativeText.Resource(RString.description_hint),
+                if (state.isPreview) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .testTag(CREATE_TASK_PREVIEW_TEST_TAG)
+                    ) {
+                        MarkdownTextWidget(text = state.description.text)
+                    }
+                } else {
+                    HintTextField(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag(CREATE_TASK_DESCRIPTION_TEST_TAG),
+                        hint = NativeText.Resource(RString.description_hint),
+                        value = state.description,
+                        onValueChange = { state.setDescription(it) }
+                    )
+                }
+            }
+
+            MarkdownToolbar(
                 value = state.description,
-                onValueChange = { state.setDescription(it) }
+                onValueChange = state.setDescription,
+                isPreview = state.isPreview,
+                onPreviewToggle = state.onPreviewToggle
             )
         }
     }

@@ -100,3 +100,20 @@ the same `jvmTest` deps `feature/workitem/ui` uses, for the new `WikiCreatePageS
 (`docs/revisit.md` entry 61). Emulator: created wiki page `md-step7-check` with heading, bullet and bold from the toolbar,
 previewed, saved; the app handed off to the new page and Taiga stored `# Title\n- item\n**strong**` exactly. The page
 was deleted afterwards. Next: step 8, the toolbar on `CreateTaskScreen`.
+
+## 8. Site 3: create task description field
+
+Same on `CreateTaskScreen`. Its `description` is a plain `String` today, so it needs a
+`TextFieldValue` in state first (keep the same save behaviour).
+
+**Verify:** full `jvmTest`, `ktlintCheck`, the module's `detekt` and `compileKotlinIosArm64`, emulator: create a task with a formatted description.
+
+**Done 2026-11-14.** Note: `CreateTaskState.description` is now a `TextFieldValue`, with `isPreview`/`onPreviewToggle`
+added. `SavedStateHandle` still stores only the plain text under the same `description` key, so process-death
+restore is unchanged; a restored description gets its cursor at the end. Preview passes no `members`, since this screen
+never loaded any and has no mention row. Layout follows step 7: the scrolling inner `Column` takes `weight(1f)` and the
+toolbar sits below it. `composeApp`'s `jvmTest` gained `compose.uiTest` + `compose.desktop.uiTestJUnit4` for the new
+`CreateTaskScreenContentTest` (it already had `currentOs` via `jvmMain`). Emulator: created issue `md-step8-check` with
+heading, bullet and bold from the toolbar, previewed, saved; the app handed off to the new issue and Taiga stored
+`# Plan\n- item\nmake **strong**` exactly. The issue was deleted afterwards. Next: step 9 (`CreateCommentBar`), which is
+gated on gregory choosing a toolbar subset, a compact expand button, or nothing.
