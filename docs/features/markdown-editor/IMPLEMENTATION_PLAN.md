@@ -1,7 +1,7 @@
 # Markdown Editor — Implementation Plan
 
 **Origin:** gregory, 2026-11-14 — the app can render Markdown but not help edit it; every input
-site is a plain text field. Status: **investigation**. No approach is chosen yet (see
+site is a plain text field. Status: **investigation** (step 1 done). No approach is chosen yet (see
 [CHECKLIST.md](CHECKLIST.md) step 3).
 
 ## What exists today (verified 2026-11-14)
@@ -87,6 +87,73 @@ lossless round-trips on real Taiga content.
    round-trip risk surface. Source: `taiga-back/taiga/mdrender/` (its `mentions.py` is already
    cited in [mention-tagging-support](../../architecture/mention-tagging-support/IMPLEMENTATION_PLAN.md)),
    checked live against `http://localhost:9000`.
+
+   **Answer (checklist step 1, 2026-11-14).** Taiga renders with **Python-Markdown 3.10**, not a
+   CommonMark/GFM engine, and runs the output through **bleach 4.1.0**
+   (`taiga-back/taiga/mdrender/service.py`, `taiga-back` `eb0803da`; the running Docker image has
+   the same versions and a byte-identical `service.py`). The extension list is
+   `_make_extensions_list()`: `pymdownx.tasklist` (pymdown-extensions 10.17.1), eight custom
+   extensions in `mdrender/extensions/`, then `extra`, `codehilite`, `sane_lists`, `toc`,
+   `nl2br`. `extensions/spaced_link.py` exists but is never registered.
+
+   Every row below was rendered live through `POST /api/v1/wiki/render` (the same `render()`
+   call) on project `main-2`. The samples were then saved together as one user story
+   `description`. It came back stored verbatim, and its `description_html` was byte-identical to
+   `wiki/render`'s output for the same text. The story was deleted afterwards.
+
+   | Syntax | Source | Live result |
+   |---|---|---|
+   | Tables | `extra` | `<table>` with `thead`/`tbody` |
+   | Task lists `- [ ]` / `- [x]` | `pymdownx.tasklist` | `ul.task-list` with `<input type=checkbox [checked]>` |
+   | Fenced code ```` ```lang ```` | `extra` + `codehilite` | `div.codehilite > pre > code`, Pygments `<span>`s |
+   | `~~strike~~` | `strikethrough.py` | `<del>` |
+   | `#123` refs | `references.py` | `a.reference.{epic,user-story,task,issue}` with text `&num;N`. Plain text if the ref doesn't exist. Not matched after `[`, letters, digits or `-` |
+   | `[[Page]]`, `[[Page\|label]]` | `wikilinks.py` | `a.reference.wiki` to `/project/<slug>/wiki/<slugified>` |
+   | Bare-slug links `[go](home)` | `wikilinks.py` (`RelativeLinksTreeprocessor`) | Rewritten to a wiki-page link. A `/path` href gets the instance base URL prepended |
+   | `:emoji:` | `emojify.py` | `<img src=…/static/img/emojis/x.png>` only for names in a fixed ~880-name set. Unknown names stay literal |
+   | `@username` | `mentions.py` | `a.mention` to `/profile/<user>`, only for project members. Otherwise plain text |
+   | Bare URLs / `www.` | `autolink.py` | `<a>`, `www.` gets an `http://` prefix |
+   | Bare e-mail | `automail.py` | `mailto:` link |
+   | External links | `target_link.py` | `target="_blank"` on every non-instance href |
+   | Attachment URLs | `refresh_attachment.py` | Expired attachment URLs in `img`/`a` get re-signed. URL rewrite only, no syntax |
+   | **Single newline** | `nl2br` | **`<br>` hard break.** CommonMark would make this a soft break |
+   | `[TOC]` | `toc` | Generated `div.toc` list. Headings get `id`s |
+   | Footnotes `[^1]` | `extra` | `sup` ref + `div.footnote` |
+   | Abbreviations `*[HTML]: …` | `extra` | `<abbr title>` |
+   | Definition lists `Term\n:   Def` | `extra` | `<dl>` |
+   | `{: #id .class }` attributes | `extra` (`attr_list`) | Applied to the element |
+   | `<div markdown="1">` | `extra` (`md_in_html`) | Markdown parsed inside the HTML block |
+   | Raw HTML | bleach whitelist | Kept only for whitelisted tags (`b`, `table`, `div`, `span`, `del`, `ins`, `sup`, `img`, `input`, `label`, …). Anything else, e.g. `<u>` and `<script>`, is **escaped and shown as literal text**, not stripped |
+   | **Nested lists** | Python-Markdown core | **Need 4-space indentation.** `- a\n  - b` (2 spaces, valid GFM) renders as one flat list |
+   | `- a\n1. b` | `semi_sane_lists` + `nl2br` | Not a mixed list: `1. b` folds into item `a` after a `<br>` |
+   | `snake_case_name` | Python-Markdown core | No intra-word emphasis, stays literal |
+
+   **Taiga's web editor stores Markdown, not HTML** (`taiga-front` `d2da06116`,
+   `app/modules/components/wysiwyg/wysiwyg.directive.coffee`). `save` sends `$scope.markdown`.
+   The editor has two modes, chosen per browser in `localStorage` `editor-mode`. **`html`, a
+   CKEditor WYSIWYG from `taiga-html-editor`, is the default.** In that mode every change runs
+   `updateMarkdownWithCurrentHtml()`, which converts the editor's HTML back to Markdown
+   (`wysiwyg.service.coffee` `getMarkdown`). On load, `setHtmlEditor` also round-trips the stored
+   text Markdown → HTML → Markdown (`refreshAttachmentURLFromMarkdown`). So a save from the web's
+   default mode already replaces the stored text with that converter's output, whatever the user
+   typed. The converter's internals, which live in `taiga-html-editor` and not in this checkout,
+   were not inspected.
+
+   **What this means for the options:**
+   - **Option A toolbar:** the list-nesting action must indent with **4 spaces**. A task-list
+     action (`- [ ] `) and a table insert are real features. Strikethrough is `~~`. The toolbar
+     can't rely on a single newline being a soft break, because it is a hard break.
+   - **Option A Preview / existing rendering:** `MarkdownTextWidget`'s CommonMark/GFM renderer
+     differs from what Taiga shows on at least single newlines (soft vs. `<br>`), 2-space nested
+     lists, `#ref`/`[[wiki]]`/`:emoji:` and `extra`'s footnote/abbr/deflist/attr syntax. A Preview
+     tab shows the app's own rendering, not Taiga's. That matches what the read-only screens
+     already show, so it adds no new inconsistency. It can't promise "this is what the web shows".
+   - **Option C round-trip surface for step 2:** every row above. Taiga-specific inline syntax
+     (`#ref`, `[[wiki]]`, `:emoji:`, `@mention`), whitelisted raw HTML, `extra`'s non-GFM
+     constructs, 4-space nested lists, and single-newline line breaks are the likeliest to be
+     rewritten. The web editor's own default mode also normalizes on save, so content touched on
+     the web may already be in that converter's style. That doesn't make further rewrites safe.
+     It only means "byte-identical to what's stored" is the bar step 2 has to measure against.
 2. Does `compose-rich-editor` 1.2.1 round-trip real Taiga descriptions losslessly?
 3. Scope: site 1 only first, or all four? `CreateCommentBar` is a compact single bar where a full
    toolbar may not fit, and might only get a subset or none.

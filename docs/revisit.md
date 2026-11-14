@@ -28,6 +28,7 @@ now that the table below covers everything left.
 | 56 | Two unused vector copies of the old launcher logo, plus an unused tint color | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
 | 57 | iOS has no `NSLocalNetworkUsageDescription` | S | this file |
 | 58 | `apk-size-check` runner is killed on Gradle-wrapper bump PRs | S | `.github/workflows/build.yml` `apk-size-check` job |
+| 59 | Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists) | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
 
 ---
 
@@ -349,3 +350,22 @@ resident and the runner runs out of memory. A `./gradlew --stop` between the two
 test it.
 
 **Trigger:** the next Renovate Gradle-wrapper PR failing this job the same way.
+
+---
+
+## 59. Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists)
+
+Found during markdown-editor checklist step 1 (2026-11-14). Taiga renders with Python-Markdown
+plus `nl2br`, so a single newline in a description is a hard `<br>`. Nested lists need 4-space
+indentation: `- a\n  - b` renders flat (see
+[markdown-editor IMPLEMENTATION_PLAN.md](features/markdown-editor/IMPLEMENTATION_PLAN.md), Open
+questions → 1). `MarkdownTextWidget` (`uikit/.../widgets/text/MarkdownTextWidget.kt`) passes
+the text straight to `multiplatform-markdown-renderer`, with only `@mention` rewriting. That
+renderer is CommonMark/GFM, so a single newline should come out as a soft break: a description
+typed as two lines on the web would show as one line in the app. **Unverified on device.** It's
+inferred from the renderer's flavour and the lack of any newline preprocessing.
+
+**Check:** save `line one\nline two` as a description on the local instance and open it on the
+emulator. A fix (e.g. turning single newlines into hard breaks outside code blocks before
+rendering) belongs with the markdown-editor work, if option A's Preview lands, or on its own.
+

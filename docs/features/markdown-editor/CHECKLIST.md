@@ -1,22 +1,10 @@
 # Markdown Editor — Checklist
 
-**Progress:** 0/3 done. **Current step:** 1.
+**Progress:** 1/3 done. **Current step:** 2.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for what exists today, the input-site
 inventory, and options A/B/C. Implementation steps get decomposed after step 3's decision, as
 their own commit.
-
-## 1. Pin down Taiga's Markdown dialect
-
-Read `taiga-back`'s `taiga/mdrender/` (the extensions list and the markdown library config) and
-list every syntax Taiga renders beyond CommonMark: tables, task lists, `#ref` links, `[[wiki]]`
-links, emoji, mentions, anything else. For each, confirm it live by writing it into a description
-on the local instance (`http://localhost:9000`, taiga-mcp) and checking `description_html`. Also
-check whether Taiga's own web editor stores Markdown or HTML in `description`.
-Record the list in IMPLEMENTATION_PLAN.md's "Open questions" → answer 1.
-
-**Verify:** the list has a server-source citation and a live `description_html` result for each
-entry.
 
 ## 2. Spike `compose-rich-editor` round-trip fidelity
 
