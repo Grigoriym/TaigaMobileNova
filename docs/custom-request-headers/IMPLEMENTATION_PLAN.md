@@ -23,7 +23,8 @@ headers sent on every request to the server's own origin**, not a proxy-specific
 
 ## Shape
 
-- **Storage** — `core:storage` `customheaders/`: `CustomHeader(name, value)` (`@Serializable`),
+- **Storage** — `grappim-kit-customheaders` (`com.grappim.kit.customheaders`), bound per platform
+  in `core:storage`'s `StorageModule.{android,ios,jvm}.kt`: `CustomHeader(name, value)` (`@Serializable`),
   `CustomHeadersStorage` (`headers: Flow`, non-suspend cached `currentHeaders` for the per-request
   plugin, `suspend setHeaders`), DataStore impl storing the whole list as one JSON blob through
   `SecretCipher`. Android uses its own `KeystoreSecretCipher` alias (not the auth token's, so
@@ -31,12 +32,13 @@ headers sent on every request to the server's own origin**, not a proxy-specific
   Undecryptable/undecodable blob → no headers, logged WARN without the throwable (its message
   carries the decrypted JSON). Headers belong to the **server**, not the account: they survive
   logout (`AuthStateManager`).
-- **Validation** — `CustomHeaderValidator` beside the model: OkHttp's rule (name `0x21..0x7E`
+- **Validation** — `CustomHeaderValidator` (kit class), bound as a Koin `@Single` in `StorageModule`
+  with the kit's `DEFAULT_RESERVED_NAMES` plus `Authorization` and `User-Agent`: OkHttp's rule (name `0x21..0x7E`
   minus delimiters, value `0x20..0x7E` or tab), case-insensitive duplicates, reserved names
   `Host`, `Content-Length`, `Content-Type`, `Transfer-Encoding`, `Upgrade`, `Connection`, `Cookie`,
   **`Authorization`**, `User-Agent` (set by `AuthHeaderPlugin`). A row with both fields blank is
   unfilled, never sent, not an error.
-- **Sending** — one `createClientPlugin`, `CustomHeaders` (`core:api`), hooked on `SendingRequest`
+- **Sending** — one `createClientPlugin`, `CustomHeaders` (`grappim-kit-customheaders`), hooked on `SendingRequest`
   (once per hop; `onRequest` runs for the first hop only and `HttpRedirect` copies headers onto
   every hop). Each hop removes the configured names, then re-adds them only when the hop's
   scheme + host + port equal `ServerStorage.server`'s (`isServerOrigin`). Installed on **both**

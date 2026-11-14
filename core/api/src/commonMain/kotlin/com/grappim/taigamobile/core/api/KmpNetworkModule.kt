@@ -1,6 +1,9 @@
 package com.grappim.taigamobile.core.api
 
 import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.kit.customheaders.CustomHeaders
+import com.grappim.kit.customheaders.CustomHeadersStorage
+import com.grappim.kit.customheaders.sanitizeCustomHeaders
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.core.api.errors.ErrorMappingPlugin
@@ -8,7 +11,6 @@ import com.grappim.taigamobile.core.api.errors.ErrorResponseParser
 import com.grappim.taigamobile.core.api.errors.NetworkErrorMapper
 import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest

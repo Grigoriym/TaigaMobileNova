@@ -6,6 +6,8 @@ import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.grappim.kit.customheaders.CustomHeadersStorage
+import com.grappim.kit.customheaders.CustomHeadersStorageImpl
 import com.grappim.kit.storage.KeystoreSecretCipher
 import com.grappim.kit.storage.NetworkMonitor
 import com.grappim.kit.storage.NetworkMonitorImpl
@@ -17,8 +19,6 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorage
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath

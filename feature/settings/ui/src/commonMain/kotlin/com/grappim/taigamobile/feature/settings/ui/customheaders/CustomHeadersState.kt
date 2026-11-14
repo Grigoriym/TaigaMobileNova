@@ -1,8 +1,8 @@
 package com.grappim.taigamobile.feature.settings.ui.customheaders
 
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeader
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeaderError
-import com.grappim.taigamobile.core.storage.customheaders.isBlank
+import com.grappim.kit.customheaders.CustomHeader
+import com.grappim.kit.customheaders.CustomHeaderError
+import com.grappim.kit.customheaders.isBlank
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 

@@ -21,6 +21,7 @@ kotlin {
             implementation(projects.core.domain)
             implementation(projects.core.asyncKmp)
             api(libs.grappim.kit.storage)
+            api(libs.grappim.kit.customheaders)
             implementation(libs.grappim.kit.appinfo)
             implementation(projects.core.appinfoApi)
             implementation(projects.utils.ui)

@@ -1,13 +1,15 @@
 package com.grappim.taigamobile.feature.settings.ui.customheaders
 
 import app.cash.turbine.test
+import com.grappim.kit.customheaders.CustomHeader
+import com.grappim.kit.customheaders.CustomHeaderError
+import com.grappim.kit.testing.FakeCustomHeadersStorage
 import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeader
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeaderError
+import com.grappim.taigamobile.core.storage.di.StorageModule
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.custom_headers_save_failed
-import com.grappim.taigamobile.testing.storage.FakeCustomHeadersStorage
+import com.grappim.taigamobile.testing.utils.testException
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -30,8 +32,10 @@ internal class CustomHeadersViewModelTest {
         mainDispatcherRule.tearDown()
     }
 
-    private fun createViewModel(storage: FakeCustomHeadersStorage) =
-        CustomHeadersViewModel(customHeadersStorage = storage)
+    private fun createViewModel(storage: FakeCustomHeadersStorage) = CustomHeadersViewModel(
+        customHeadersStorage = storage,
+        customHeaderValidator = StorageModule().provideCustomHeaderValidator()
+    )
 
     @Test
     fun `stored headers are offered back as rows`() {
@@ -74,7 +78,7 @@ internal class CustomHeadersViewModelTest {
         sut.state.value.onRemove(0)
         sut.state.value.onSaveClick()
 
-        assertEquals(1, storage.setHeadersCallCount)
+        assertEquals(1, storage.setHeadersCalledWith.size)
         assertEquals(emptyList(), storage.currentHeaders)
         assertTrue(sut.state.value.rows.isEmpty())
     }
@@ -92,7 +96,7 @@ internal class CustomHeadersViewModelTest {
         assertEquals(CustomHeaderError.ReservedName, state().rows.single().error)
         assertFalse(state().isSaveEnabled)
         state().onSaveClick()
-        assertEquals(0, storage.setHeadersCallCount)
+        assertEquals(0, storage.setHeadersCalledWith.size)
     }
 
     @Test
@@ -160,7 +164,7 @@ internal class CustomHeadersViewModelTest {
 
     @Test
     fun `save failure - rows kept, save still offered, snackbar shown`() = runTest {
-        val storage = FakeCustomHeadersStorage().apply { setHeadersThrows = true }
+        val storage = FakeCustomHeadersStorage().apply { setHeadersThrows = testException }
         val sut = createViewModel(storage)
         val state = { sut.state.value }
 
@@ -174,7 +178,7 @@ internal class CustomHeadersViewModelTest {
             assertEquals(NativeText.Resource(RString.custom_headers_save_failed), awaitItem())
         }
 
-        assertEquals(1, storage.setHeadersCallCount)
+        assertEquals(1, storage.setHeadersCalledWith.size)
         assertEquals(emptyList(), storage.currentHeaders)
         assertEquals(listOf(CustomHeaderRow(TOKEN.name, TOKEN.value)), state().rows)
         assertFalse(state().isSaving)
