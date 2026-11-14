@@ -1,20 +1,10 @@
 # Markdown Editor — Checklist
 
-**Progress:** 3/9 done. **Current step:** 4.
+**Progress:** 4/9 done. **Current step:** 5.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for what exists today, the input-site
 inventory, and options A/B/C. Option A was chosen; see the plan's "Decision" section for the toolbar action
 list and design.
-
-## 4. Pure Markdown formatting transforms
-
-Add `uikit/.../widgets/editor/MarkdownFormatting.kt`: one `(TextFieldValue) -> TextFieldValue`
-function per toolbar action from the plan's "Decision" section (inline wrap/unwrap, line-prefix
-toggle, 4-space indent/outdent, link insert, fenced code block). No Compose UI. `commonTest`
-covers each action with a selection, with a bare cursor, toggling an action off, and across
-multiple selected lines.
-
-**Verify:** `./gradlew :uikit:jvmTest` and `ktlintCheck` green.
 
 ## 5. `MarkdownToolbar` composable
 
@@ -24,7 +14,7 @@ current `TextFieldValue` and emits the transformed one, plus an Edit/Preview tog
 content description string. Add a `@PreviewTaigaDarkLight` preview and a `jvmTest` Compose UI
 test (tapping Bold on a selection wraps it).
 
-**Verify:** `./gradlew :uikit:jvmTest` and `ktlintCheck` green.
+**Verify:** `./gradlew :uikit:jvmTest :uikit:compileKotlinIosArm64 :uikit:detekt` and `ktlintCheck` green.
 
 ## 6. Wire the toolbar into site 1 (`WorkItemEditDescriptionScreen`)
 

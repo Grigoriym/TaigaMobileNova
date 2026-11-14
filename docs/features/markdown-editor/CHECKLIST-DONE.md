@@ -35,3 +35,15 @@ decision in IMPLEMENTATION_PLAN.md, then decompose the implementation into check
 own commit).
 
 **Done 2026-11-14.** Note: gregory chose option A. The scope wasn't stated explicitly, so it is decomposed as site 1 first, then sites 2–3, with site 4 gated (steps 4–9). Next: step 4, the pure formatting transforms.
+
+## 4. Pure Markdown formatting transforms
+
+Add `uikit/.../widgets/editor/MarkdownFormatting.kt`: one `(TextFieldValue) -> TextFieldValue`
+function per toolbar action from the plan's "Decision" section (inline wrap/unwrap, line-prefix
+toggle, 4-space indent/outdent, link insert, fenced code block). No Compose UI. `commonTest`
+covers each action with a selection, with a bare cursor, toggling an action off, and across
+multiple selected lines.
+
+**Verify:** `./gradlew :uikit:jvmTest` and `ktlintCheck` green.
+
+**Done 2026-11-14.** Note: `insertLink` with nothing selected inserts `[text](url)`; with a selection the selection becomes the link text. Either way `url` ends up selected. Taiga renders a fenced block correctly right after a paragraph line, with no blank line needed (checked live via `wiki/render`), so `insertCodeBlock` only adds the newlines that put the fences on their own lines. `:uikit:jvmTest` alone missed a JVM-only API (`StringBuilder.replace(Int, Int, String)`). Only the iOS compile caught it, and `detekt` caught a loop style rule. Step 5's Verify now runs both. Next: step 5, the `MarkdownToolbar` composable.

@@ -134,6 +134,19 @@ a one-line bar, so whether it gets a subset or nothing is gregory's call when th
   unwraps it). Heading `# `, bullet `- `, numbered `1. `, quote `> `, task `- [ ] ` (line-prefix
   toggles over every line the selection touches). Indent/outdent in **4 spaces**, Taiga's
   nesting width (step 1). Link (`[text](url)`, with `url` selected afterwards). Fenced code block.
+- **The transforms (step 4) are in `uikit/.../widgets/editor/MarkdownFormatting.kt`**: `toggleBold`/
+  `toggleItalic`/`toggleStrikethrough`/`toggleInlineCode`, `toggleHeading`/`toggleQuote`/`toggleBulletList`/
+  `toggleNumberedList`/`toggleTaskList`, `indentLines`/`outdentLines`, `insertLink`, `insertCodeBlock`.
+  Behaviours the toolbar relies on:
+  - **Inline actions toggle off** when the selection includes the markers or the markers surround it, and also
+    when a bare cursor sits inside an empty pair.
+  - **Line actions** act on every line the selection touches. They skip blank lines and keep leading indentation.
+    A selection that ends right after a newline doesn't touch the next line. If every touched line already has
+    the prefix, it's removed from all of them, otherwise it's added to all of them.
+  - **List kinds swap.** Bullet, numbered and task list replace each other instead of stacking, so `- a` becomes
+    `1. a` and not `1. - a`. Numbering is sequential (`1.`, `2.`, …).
+  - **Link and code block only insert.** They don't toggle off.
+  - **Every transform returns a fresh `TextFieldValue` with no IME composition range.**
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.
