@@ -1,20 +1,10 @@
 # Markdown Editor — Checklist
 
-**Progress:** 4/9 done. **Current step:** 5.
+**Progress:** 5/9 done. **Current step:** 6.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for what exists today, the input-site
 inventory, and options A/B/C. Option A was chosen; see the plan's "Decision" section for the toolbar action
 list and design.
-
-## 5. `MarkdownToolbar` composable
-
-A horizontally scrollable row of icon buttons in `uikit/.../widgets/editor/` that takes the
-current `TextFieldValue` and emits the transformed one, plus an Edit/Preview toggle. Consult the
-**uikit-guide** agent first for existing icon-button and preview conventions. Each button has a
-content description string. Add a `@PreviewTaigaDarkLight` preview and a `jvmTest` Compose UI
-test (tapping Bold on a selection wraps it).
-
-**Verify:** `./gradlew :uikit:jvmTest :uikit:compileKotlinIosArm64 :uikit:detekt` and `ktlintCheck` green.
 
 ## 6. Wire the toolbar into site 1 (`WorkItemEditDescriptionScreen`)
 

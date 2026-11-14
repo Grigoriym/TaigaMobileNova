@@ -47,3 +47,20 @@ multiple selected lines.
 **Verify:** `./gradlew :uikit:jvmTest` and `ktlintCheck` green.
 
 **Done 2026-11-14.** Note: `insertLink` with nothing selected inserts `[text](url)`; with a selection the selection becomes the link text. Either way `url` ends up selected. Taiga renders a fenced block correctly right after a paragraph line, with no blank line needed (checked live via `wiki/render`), so `insertCodeBlock` only adds the newlines that put the fences on their own lines. `:uikit:jvmTest` alone missed a JVM-only API (`StringBuilder.replace(Int, Int, String)`). Only the iOS compile caught it, and `detekt` caught a loop style rule. Step 5's Verify now runs both. Next: step 5, the `MarkdownToolbar` composable.
+
+## 5. `MarkdownToolbar` composable
+
+A horizontally scrollable row of icon buttons in `uikit/.../widgets/editor/` that takes the
+current `TextFieldValue` and emits the transformed one, plus an Edit/Preview toggle. Consult the
+**uikit-guide** agent first for existing icon-button and preview conventions. Each button has a
+content description string. Add a `@PreviewTaigaDarkLight` preview and a `jvmTest` Compose UI
+test (tapping Bold on a selection wraps it).
+
+**Verify:** `./gradlew :uikit:jvmTest :uikit:compileKotlinIosArm64 :uikit:detekt` and `ktlintCheck` green.
+
+**Done 2026-11-14.** Note: icons come from `material-icons-extended`, now an `implementation` dependency of
+`uikit`. `composeApp` already depended on it, so the app's binary doesn't grow. API:
+`MarkdownToolbar(value, onValueChange, isPreview, onPreviewToggle)`. The Edit/Preview toggle is pinned at the
+start, outside the scrolling row, and the formatting buttons are disabled (not hidden) while previewing. Content
+descriptions are new `markdown_*` strings; the toggle reuses the existing `edit` string. Next: step 6, wiring the
+toolbar into `WorkItemEditDescriptionScreen`.

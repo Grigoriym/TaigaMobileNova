@@ -135,8 +135,10 @@ data class TopBarConfig(
 | `CreateCommentBar` | `widgets/CreateCommentBar.kt` | `isOffline, onButtonClick, canComment` — only renders if `canComment = true` |
 | `DatePickerDialogWidget` | `widgets/DatePickerDialogWidget.kt` | `isVisible, onConfirmButtonClick: (Long?) -> Unit, initialDate?` |
 | `DropdownSelector<T>` | `widgets/DropdownSelector.kt` | `items, selectedItem, onItemSelect, isOffline, canModify, itemContent, selectedItemContent` |
-| `MentionSuggestionsPopup` | `widgets/editor/MentionSuggestionsPopup.kt` | `members: ImmutableList<TeamMember>, expanded, onSelect, onDismissRequest` — built directly on `DropdownMenu`, not a `DropdownSelector` wrapper, since visibility must be driven externally (active `@query`), not by an internal tap-to-toggle |
-| `findActiveMentionQuery` / `insertMention` | `widgets/editor/MentionInput.kt` | Pure functions (no Composable) for detecting/inserting an `@`-mention in a `TextFieldValue` — pair with the popup above |
+| `MentionSuggestionsRow` | `widgets/editor/MentionSuggestionsRow.kt` | `members: ImmutableList<TeamMember>, onSelect` — inline horizontally-scrollable row of mention chips; renders nothing when `members` is empty |
+| `findActiveMentionQuery` / `insertMention` | `widgets/editor/MentionQuery.kt` | Pure functions (no Composable) for detecting/inserting an `@`-mention in a `TextFieldValue` — pair with the row above |
+| `MarkdownToolbar` | `widgets/editor/MarkdownToolbar.kt` | `value: TextFieldValue, onValueChange, isPreview, onPreviewToggle` — formatting buttons + Edit/Preview toggle for a Markdown source field; stateless |
+| `toggleBold`, `toggleBulletList`, `insertLink`, … | `widgets/editor/MarkdownFormatting.kt` | Pure `(TextFieldValue) -> TextFieldValue` Markdown transforms behind `MarkdownToolbar` |
 
 ---
 

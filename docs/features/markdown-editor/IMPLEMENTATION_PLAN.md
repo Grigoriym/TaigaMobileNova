@@ -147,6 +147,11 @@ a one-line bar, so whether it gets a subset or nothing is gregory's call when th
     `1. a` and not `1. - a`. Numbering is sequential (`1.`, `2.`, …).
   - **Link and code block only insert.** They don't toggle off.
   - **Every transform returns a fresh `TextFieldValue` with no IME composition range.**
+- **The toolbar (step 5) is `uikit/.../widgets/editor/MarkdownToolbar.kt`**:
+  `MarkdownToolbar(value, onValueChange, isPreview, onPreviewToggle)`. It is stateless. The caller owns
+  both the `TextFieldValue` and the Edit/Preview flag. The toggle stays pinned at the start and the
+  formatting buttons scroll horizontally. They are disabled while previewing. Icons come from
+  `material-icons-extended`.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.
