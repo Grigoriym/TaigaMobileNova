@@ -1,5 +1,0 @@
-{
-  "env": {
-    "OLLAMA_RELAY_ENFORCE": "1"
-  }
-}
