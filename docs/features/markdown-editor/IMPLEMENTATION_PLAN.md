@@ -1,8 +1,8 @@
 # Markdown Editor — Implementation Plan
 
 **Origin:** gregory, 2026-11-14 — the app can render Markdown but not help edit it; every input
-site is a plain text field. Status: **investigation** (steps 1–2 done). No approach is chosen yet (see
-[CHECKLIST.md](CHECKLIST.md) step 3).
+site is a plain text field. Status: **implementation**. Option **A** was chosen 2026-11-14 (see "Decision" below and
+[CHECKLIST.md](CHECKLIST.md)).
 
 ## What exists today (verified 2026-11-14)
 
@@ -113,6 +113,30 @@ options A and B together.
 
 **Leaning (not a decision):** A first, B later if A feels too raw. C only if step 2's spike shows
 lossless round-trips on real Taiga content.
+
+## Decision (2026-11-14, checklist step 3)
+
+gregory chose **option A**: a Markdown-source editor with a formatting toolbar and an
+Edit/Preview toggle. C is out because of step 2's round-trip loss. B stays possible as a later
+add-on but isn't scheduled.
+
+**Scope and order:** site 1 (`WorkItemEditDescriptionScreen`) first, since it covers description
+edits for all five content types. Sites 2 (wiki create) and 3 (create task) follow as their own
+steps, reusing the same toolbar. Site 4 (`CreateCommentBar`) is gated: a full toolbar doesn't fit
+a one-line bar, so whether it gets a subset or nothing is gregory's call when that step comes up.
+
+**Design that follows from steps 1–2:**
+- **Transforms are pure `(TextFieldValue) -> TextFieldValue` functions** in `uikit`'s
+  `widgets/editor/`, next to `insertMention`. The toolbar composable only calls them. This keeps
+  them fully testable in `commonTest` and keeps the text lossless.
+- **Toolbar actions:** bold `**`, italic `_`, strikethrough `~~`, inline code `` ` `` (wrap the
+  selection, or insert an empty pair with the cursor between; applying the same action again
+  unwraps it). Heading `# `, bullet `- `, numbered `1. `, quote `> `, task `- [ ] ` (line-prefix
+  toggles over every line the selection touches). Indent/outdent in **4 spaces**, Taiga's
+  nesting width (step 1). Link (`[text](url)`, with `url` selected afterwards). Fenced code block.
+- **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
+  links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
+  entry 59, and a fix for that belongs with that entry, not with the toolbar.
 
 ## Open questions (answered by checklist steps)
 

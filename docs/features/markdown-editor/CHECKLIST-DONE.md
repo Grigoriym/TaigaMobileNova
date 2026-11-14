@@ -27,3 +27,11 @@ input. Record which constructs survive, which get rewritten, and which get dropp
 a clear yes/no on "an unchanged save is lossless".
 
 **Done 2026-11-14.** Note: the round-trip was also run a second time over the output, and input and output were compared by Taiga's rendered HTML (`wiki/render`), not only by text diff, to separate harmless rewrites from real loss. Verdict: an unchanged save is **not** lossless. Fenced code, tables, task lists, footnotes and setext headings are dropped. The table is in IMPLEMENTATION_PLAN.md under option C. Next: step 3, which is gated: gregory picks the approach and scope.
+
+## 3. Choose the approach and scope
+
+gregory picks A / A+B / C and which input sites (1–4) are in scope, based on steps 1–2. Record the
+decision in IMPLEMENTATION_PLAN.md, then decompose the implementation into checklist steps (its
+own commit).
+
+**Done 2026-11-14.** Note: gregory chose option A. The scope wasn't stated explicitly, so it is decomposed as site 1 first, then sites 2–3, with site 4 gated (steps 4–9). Next: step 4, the pure formatting transforms.
