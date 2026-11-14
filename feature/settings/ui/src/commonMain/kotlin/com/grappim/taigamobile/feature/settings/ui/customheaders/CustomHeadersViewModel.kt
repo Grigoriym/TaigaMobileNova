@@ -2,13 +2,13 @@ package com.grappim.taigamobile.feature.settings.ui.customheaders
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.grappim.kit.customheaders.CustomHeader
+import com.grappim.kit.customheaders.CustomHeaderValidator
+import com.grappim.kit.customheaders.CustomHeadersStorage
 import com.grappim.kit.domain.resultOf
 import com.grappim.kit.logger.LogPriority
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.uikit.NativeText
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeader
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeaderValidator
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorage
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.custom_headers_save_failed
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
@@ -27,8 +27,10 @@ import org.koin.core.annotation.KoinViewModel
  * request, so the next request carries the new headers.
  */
 @KoinViewModel
-class CustomHeadersViewModel(private val customHeadersStorage: CustomHeadersStorage) :
-    ViewModel(),
+class CustomHeadersViewModel(
+    private val customHeadersStorage: CustomHeadersStorage,
+    private val customHeaderValidator: CustomHeaderValidator
+) : ViewModel(),
     SnackbarDelegate by SnackbarDelegateImpl() {
 
     private val _state = MutableStateFlow(
@@ -79,7 +81,7 @@ class CustomHeadersViewModel(private val customHeadersStorage: CustomHeadersStor
     /** Every edit re-validates the whole list, since a duplicate is a property of two rows, not one. */
     private fun updateRows(transform: (List<CustomHeaderRow>) -> List<CustomHeaderRow>) {
         val rows = transform(_state.value.rows)
-        val errors = CustomHeaderValidator.validate(rows.map { CustomHeader(it.name.trim(), it.value.trim()) })
+        val errors = customHeaderValidator.validate(rows.map { CustomHeader(it.name.trim(), it.value.trim()) })
         _state.update { state ->
             state.copy(rows = rows.mapIndexed { i, row -> row.copy(error = errors[i]) }.toImmutableList())
         }

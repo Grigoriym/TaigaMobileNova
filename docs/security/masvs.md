@@ -240,6 +240,6 @@ client in this space — are outside what MASVS covers. Formal decision, task 7 
   is not in `data_extraction_rules.xml`/`backup_rules.xml`; a backup copy is ciphertext under a
   non-exportable Keystore key, so a restore onto another device reads as no headers rather than
   leaking the value. In transit: sent only to the configured server's own scheme+host+port, per
-  redirect hop (`CustomHeaders` plugin, `core/api`), never to off-origin image hosts, and redacted
+  redirect hop (`CustomHeaders` plugin, `grappim-kit-customheaders`), never to off-origin image hosts, and redacted
   from both Ktor `Logging` installs by name (`sanitizeHeader`). `Authorization` is a reserved name
-  so a user header can never replace the Bearer token.
+  (added to the kit validator's defaults in `StorageModule`) so a user header can never replace the Bearer token.

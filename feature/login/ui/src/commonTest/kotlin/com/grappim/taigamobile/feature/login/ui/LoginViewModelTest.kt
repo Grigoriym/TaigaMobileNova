@@ -3,18 +3,18 @@
 package com.grappim.taigamobile.feature.login.ui
 
 import app.cash.turbine.test
+import com.grappim.kit.customheaders.CustomHeader
 import com.grappim.kit.domain.PendingCertTrust
+import com.grappim.kit.testing.FakeCustomHeadersStorage
 import com.grappim.kit.testing.FakeTrustedCertStorage
 import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.kit.uikit.NativeText
 import com.grappim.taigamobile.core.domain.UntrustedCertificateNetworkException
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeader
 import com.grappim.taigamobile.feature.login.domain.model.AuthData
 import com.grappim.taigamobile.feature.login.domain.model.AuthType
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.login_error_local_network_denied
 import com.grappim.taigamobile.testing.repo.FakeAuthRepository
-import com.grappim.taigamobile.testing.storage.FakeCustomHeadersStorage
 import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.coroutines.ExperimentalCoroutinesApi

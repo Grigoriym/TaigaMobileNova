@@ -25,13 +25,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.grappim.kit.customheaders.CustomHeader
+import com.grappim.kit.customheaders.CustomHeaderError
 import com.grappim.kit.uikit.NativeText
 import com.grappim.kit.uikit.widgets.topbar.LocalTopBarConfig
 import com.grappim.kit.uikit.widgets.topbar.NavigationIconConfig
 import com.grappim.kit.uikit.widgets.topbar.TopBarActionTextButton
 import com.grappim.kit.uikit.widgets.topbar.TopBarConfig
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeader
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeaderError
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.custom_headers_add
 import com.grappim.taigamobile.strings.generated.resources.custom_headers_description

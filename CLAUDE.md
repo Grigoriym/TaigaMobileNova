@@ -295,6 +295,15 @@ widget reading `app_name` internally. `DrawerDestination` itself stays local as 
 writeup, including why the two local drawer tests were updated rather than deleted despite the kit
 now having its own.
 
+The custom request headers core (`CustomHeader`/`CustomHeaderValidator`/`CustomHeadersStorage`(+`Impl`),
+the `CustomHeaders` Ktor plugin, `sanitizeCustomHeaders`, and `FakeCustomHeadersStorage` via
+`grappim-kit-testing`) → `io.github.grigoriym:grappim-kit-customheaders` was the eleventh swap
+(2026-11-14, `grappimKit` 0.1.7 → 0.1.8). **The kit's `CustomHeaderValidator` is a class whose
+default reserved names lack `Authorization`/`User-Agent`** — `StorageModule.provideCustomHeaderValidator()`
+binds it with both added, and `CustomHeadersViewModel` injects it; constructing the validator with no
+argument would silently let a user header override the Bearer token. Storage key, DataStore files and
+Keystore alias are unchanged. See `grappim-kit/CONSUMING.md`'s `customheaders` section.
+
 ## Navigation Pattern
 
 Navigation 3 (`core/navigation`'s hand-rolled `Navigator`/`NavigationState`, ported from
@@ -970,7 +979,7 @@ historical record of how the register was built — `masvs.md` itself is the cur
 ## Custom Request Headers
 
 Any new HTTP client that talks to the Taiga server — Ktor or Coil — must install the `CustomHeaders`
-plugin (`core/api`) and, if it logs, call `sanitizeCustomHeaders(storage)` in its `Logging` block;
+plugin (`grappim-kit-customheaders`) and, if it logs, call `sanitizeCustomHeaders(storage)` in its `Logging` block;
 otherwise users behind a header-auth reverse proxy get rejected on that path. A `401` without a
 `Bearer` challenge is the proxy, not Taiga — it must not trigger token refresh or logout. Design and
 fixture: [docs/custom-request-headers/IMPLEMENTATION_PLAN.md](docs/custom-request-headers/IMPLEMENTATION_PLAN.md).

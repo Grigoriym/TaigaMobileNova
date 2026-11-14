@@ -7,7 +7,7 @@ import coil3.util.DebugLogger
 import com.grappim.kit.appinfo.AppInfoProvider
 import com.grappim.taigamobile.core.api.BaseUrlProvider
 import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorage
+import com.grappim.kit.customheaders.CustomHeadersStorage
 import com.grappim.taigamobile.images.customHeadersNetworkFetcher
 import io.ktor.client.engine.okhttp.OkHttp
 import org.koin.core.annotation.Factory

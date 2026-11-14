@@ -4,6 +4,8 @@ package com.grappim.taigamobile.core.storage.di
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import com.grappim.kit.customheaders.CustomHeadersStorage
+import com.grappim.kit.customheaders.CustomHeadersStorageImpl
 import com.grappim.kit.storage.NetworkMonitor
 import com.grappim.kit.storage.NetworkMonitorImpl
 import com.grappim.kit.storage.NoopSecretCipher
@@ -15,8 +17,6 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.TaigaSessionStorageImpl
 import com.grappim.taigamobile.core.storage.auth.AuthStorage
 import com.grappim.taigamobile.core.storage.auth.AuthStorageImpl
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorage
-import com.grappim.taigamobile.core.storage.customheaders.CustomHeadersStorageImpl
 import com.grappim.taigamobile.utils.ui.ColorMapper
 import kotlinx.cinterop.ExperimentalForeignApi
 import kotlinx.serialization.json.Json
