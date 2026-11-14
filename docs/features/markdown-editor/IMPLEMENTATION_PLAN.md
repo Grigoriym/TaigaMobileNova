@@ -1,7 +1,7 @@
 # Markdown Editor — Implementation Plan
 
 **Origin:** gregory, 2026-11-14 — the app can render Markdown but not help edit it; every input
-site is a plain text field. Status: **investigation** (step 1 done). No approach is chosen yet (see
+site is a plain text field. Status: **investigation** (steps 1–2 done). No approach is chosen yet (see
 [CHECKLIST.md](CHECKLIST.md) step 3).
 
 ## What exists today (verified 2026-11-14)
@@ -76,6 +76,40 @@ from Markdown.
   data loss in someone else's text. Not verified yet, see checklist step 2.
 - **−** Mentions have to be rebuilt on `RichTextState` instead of `TextFieldValue`.
 - **−** New third-party dependency on the core edit path.
+
+**Round-trip spike result (checklist step 2, 2026-11-14): an unchanged save is NOT lossless.**
+Method: a throwaway `uikit` `jvmTest` ran each input through
+`RichTextState().setMarkdown(x).toMarkdown()`, then a second time over the output. It needs no
+Compose UI or composition, a bare `RichTextState` works headless on JVM. The inputs were the 28
+step-1 syntax samples plus the 6 most Markdown-heavy seeded texts in project `main-2`: wiki
+pages `getting-started`, `architecture`, `home`, `api-reference`, epic #2 and issue #69. Input
+and output were both rendered through Taiga's `POST /api/v1/wiki/render`, which tells harmless
+rewrites (different bytes, same HTML) apart from real loss. The spike is on `git stash` as
+`markdown-editor step 2 spike: compose-rich-editor round-trip`.
+
+**None of the 6 real texts came back byte-identical, and 4 of them render differently.** Three
+of the four seeded wiki pages contain a fenced code block, and all three lose it.
+
+| Construct | Result after one round-trip |
+|---|---|
+| `~~strike~~`, `#ref`, `[[wiki]]`, `[x](slug)`, `:emoji:`, `@mention`, bare e-mail, `[TOC]`, abbr, `{: attr}`, 4-space nested list, images, `snake_case`, single newlines | **Survive**, byte-identical (the editor leaves unknown inline syntax alone as plain text) |
+| Definition list | Rewritten (`:   Def` → `: Def`), same rendered HTML |
+| Trailing spaces on a line | Trimmed, rendered HTML differs only by whitespace (2 real descriptions) |
+| **Fenced code block** | **Dropped**: the fences disappear and the code turns into a paragraph. A second save loses characters too (`val x = 1` → `val x  1`) and collapses aligned spaces |
+| **Tables** | **Dropped**: the pipes are gone, cells become plain text joined by two spaces |
+| **Task lists** | **Checkboxes dropped**, `- [x] done` → `- done` |
+| **Footnotes** | **Definition dropped**, `[^1]: note` → `<br>`, the reference stays as literal `[^1]` |
+| **Setext heading** (`Title\n=====`) | **Underline dropped**, the heading becomes a paragraph |
+| Bare URL / `www.` autolink | Rewritten to `[url](url)`. Taiga's own autolinker then fires inside the link, so it renders as **a duplicated, empty `<a>` plus the real one**. `www.` loses its `http://` too |
+| 2-space nested list | Re-indented to 4 spaces. It now renders nested on Taiga, where before it didn't: a visible change, arguably a fix |
+| `<div markdown="1">` | Wrapper dropped, contents kept |
+| Raw HTML | `<b>` → `**…**` (same render). `<script>x</script>` → bare `x`, where Taiga showed the escaped tag as literal text |
+
+**This rules out option C as described.** Loading any text with a code block, table, task list or
+footnote into the editor and saving it without changes would rewrite someone else's content.
+Making C safe would need either our own Markdown ↔ `RichTextState` converter, or a guard that
+refuses rich editing for any text that doesn't round-trip byte-identically. Both are bigger than
+options A and B together.
 
 **Leaning (not a decision):** A first, B later if A feels too raw. C only if step 2's spike shows
 lossless round-trips on real Taiga content.
