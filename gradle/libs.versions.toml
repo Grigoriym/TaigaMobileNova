@@ -54,7 +54,7 @@ buildKonfig = "0.24.0"
 kotlin = "2.4.21"
 # https://github.com/Kotlin/kotlinx.coroutines/releases
 coroutines = "1.11.0"
-ksp = "2.3.13"
+ksp = "2.3.14"
 kotlin-serialization-plugin = "2.4.21"
 kotlin-serialization-json = "1.13.0"
 # https://github.com/Kotlin/kotlinx.collections.immutable/releases
