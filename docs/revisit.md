@@ -29,6 +29,7 @@ now that the table below covers everything left.
 | 57 | iOS has no `NSLocalNetworkUsageDescription` | S | this file |
 | 58 | `apk-size-check` runner is killed on Gradle-wrapper bump PRs | S | `.github/workflows/build.yml` `apk-size-check` job |
 | 59 | Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists) | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
+| 60 | `MarkdownTextWidget` applies its `modifier` twice when `onClick` is null | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
 
 ---
 
@@ -369,3 +370,19 @@ inferred from the renderer's flavour and the lack of any newline preprocessing.
 emulator. A fix (e.g. turning single newlines into hard breaks outside code blocks before
 rendering) belongs with the markdown-editor work, if option A's Preview lands, or on its own.
 
+---
+
+## 60. `MarkdownTextWidget` applies its `modifier` twice when `onClick` is null
+
+Found during markdown-editor checklist step 6 (2026-11-14). `MarkdownTextWidget`
+(`uikit/.../widgets/text/MarkdownTextWidget.kt`, the `Markdown(modifier = ...)` call) builds its
+modifier as `modifier.then(if (onClick != null) Modifier.clickable { … } else modifier)`, so with
+no `onClick` the caller's modifier chain runs twice. Padding is doubled, and passing
+`Modifier.verticalScroll(...)` nests a scroll inside itself and crashes with "Vertically scrollable
+component was measured with an infinity maximum height constraints". The `else` branch should be
+`Modifier`. The edit-description Preview works around it by putting the scroll on a wrapping
+`Box` (`WorkItemEditDescriptionScreen.kt`).
+
+**Check:** every `MarkdownTextWidget(` call site that passes a `modifier` and no `onClick`. A
+padding modifier there renders with double padding today, so fixing it changes spacing on screen.
+Drive those screens on the emulator before and after.

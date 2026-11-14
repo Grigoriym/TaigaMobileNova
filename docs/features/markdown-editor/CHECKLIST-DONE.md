@@ -64,3 +64,23 @@ test (tapping Bold on a selection wraps it).
 start, outside the scrolling row, and the formatting buttons are disabled (not hidden) while previewing. Content
 descriptions are new `markdown_*` strings; the toggle reuses the existing `edit` string. Next: step 6, wiring the
 toolbar into `WorkItemEditDescriptionScreen`.
+
+## 6. Wire the toolbar into site 1 (`WorkItemEditDescriptionScreen`)
+
+Toolbar sits above the keyboard (IME-aware). The Edit/Preview flag lives in
+`EditDescriptionState` per the ViewModel + State pattern. Preview renders
+`MarkdownTextWidget(text, members = …)`, and switching back keeps text and selection. Mentions
+keep working in Edit mode. Extend `EditDescriptionContentTest`.
+
+**Verify:** full `./gradlew jvmTest`, `ktlintCheck`, then drive it on the emulator for a Task
+description and a Wiki page edit: format text, preview, save, and reopen to see the saved
+Markdown.
+
+**Done 2026-11-14.** Note: `EditDescriptionState` gained `isPreview`/`onPreviewToggle`. Preview swaps the
+`BasicTextField` for a scrolling `MarkdownTextWidget`, and the mention row only shows in Edit mode. The toolbar sits
+at the bottom of the content `Column` with `imePadding()`, and on the emulator it rode directly above Gboard.
+`MarkdownTextWidget` applies its `modifier` twice when `onClick` is null, so passing it `verticalScroll` crashed with a
+nested-scroll error; the preview puts the scroll on a wrapping `Box` instead, and the widget bug is `docs/revisit.md`
+entry 60. Emulator: a Task (#51) and a Wiki page (`gggg`) were formatted with bold, heading, bullet, task-list and
+link, previewed, saved, and reopened; Taiga stored the exact Markdown in both cases. Both were restored to their
+seeded content afterwards. Next: step 7, the toolbar on `WikiCreatePageScreen`.

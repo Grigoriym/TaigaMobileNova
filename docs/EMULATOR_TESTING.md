@@ -102,3 +102,7 @@ technique lives in the skill itself, not here — this file is only what's true 
   returns media URLs on `http://localhost:9000`, which debug builds rewrite to `10.0.2.2:9000`
   (`DebugLocalHostImageManager`) — fine directly, but it bypasses anything in front of the server
   (see `docs/custom-request-headers/IMPLEMENTATION_PLAN.md`'s fixture for the workaround).
+- **The phone AVD can be left logged in to a server that isn't running**, e.g. the custom-headers
+  proxy fixture at `http://10.0.2.2:9100` (`docs/custom-request-headers/IMPLEMENTATION_PLAN.md`).
+  Every list then shows "Connection error". `adb logcat | grep "Ktor.*REQUEST"` shows which host the
+  app is calling; log out (Settings → Log out) and log back in at `http://10.0.2.2:9000`.

@@ -152,6 +152,12 @@ a one-line bar, so whether it gets a subset or nothing is gregory's call when th
   both the `TextFieldValue` and the Edit/Preview flag. The toggle stays pinned at the start and the
   formatting buttons scroll horizontally. They are disabled while previewing. Icons come from
   `material-icons-extended`.
+- **Screen wiring (step 6, `WorkItemEditDescriptionScreen`):** the Edit/Preview flag is `isPreview` +
+  `onPreviewToggle` in the screen's state. Edit mode shows the text field plus the mention row; Preview replaces both
+  with `MarkdownTextWidget` inside a `Box` that owns the `verticalScroll` (passing the scroll to the widget itself
+  crashes, see `docs/revisit.md` entry 60). The toolbar is the last child of a `Column` with `imePadding()`, so it
+  sits above the keyboard. The text field's `TextFieldValue` stays in state across the toggle, so text and selection
+  survive it. Sites 2 and 3 should follow the same shape.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.

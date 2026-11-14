@@ -1,34 +1,23 @@
 # Markdown Editor — Checklist
 
-**Progress:** 5/9 done. **Current step:** 6.
+**Progress:** 6/9 done. **Current step:** 7.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for what exists today, the input-site
 inventory, and options A/B/C. Option A was chosen; see the plan's "Decision" section for the toolbar action
 list and design.
 
-## 6. Wire the toolbar into site 1 (`WorkItemEditDescriptionScreen`)
-
-Toolbar sits above the keyboard (IME-aware). The Edit/Preview flag lives in
-`EditDescriptionState` per the ViewModel + State pattern. Preview renders
-`MarkdownTextWidget(text, members = …)`, and switching back keeps text and selection. Mentions
-keep working in Edit mode. Extend `EditDescriptionContentTest`.
-
-**Verify:** full `./gradlew jvmTest`, `ktlintCheck`, then drive it on the emulator for a Task
-description and a Wiki page edit: format text, preview, save, and reopen to see the saved
-Markdown.
-
 ## 7. Site 2: wiki create page content field
 
 Same toolbar and toggle on `WikiCreatePageScreen`'s content field (already a `TextFieldValue`).
 
-**Verify:** full `jvmTest`, `ktlintCheck`, emulator: create a formatted wiki page.
+**Verify:** full `jvmTest`, `ktlintCheck`, the module's `detekt` and `compileKotlinIosArm64`, emulator: create a formatted wiki page.
 
 ## 8. Site 3: create task description field
 
 Same on `CreateTaskScreen`. Its `description` is a plain `String` today, so it needs a
 `TextFieldValue` in state first (keep the same save behaviour).
 
-**Verify:** full `jvmTest`, `ktlintCheck`, emulator: create a task with a formatted description.
+**Verify:** full `jvmTest`, `ktlintCheck`, the module's `detekt` and `compileKotlinIosArm64`, emulator: create a task with a formatted description.
 
 ## 9. Site 4: `CreateCommentBar`
 
