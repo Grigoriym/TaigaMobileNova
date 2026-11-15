@@ -31,6 +31,7 @@ now that the table below covers everything left.
 | 59 | Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists) | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
 | 60 | `MarkdownTextWidget` applies its `modifier` twice when `onClick` is null | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
 | 61 | `EditDescriptionContentTest`'s preview assertion doesn't wait for async Markdown parsing | S | `feature/workitem/ui/src/jvmTest/.../EditDescriptionContentTest.kt` |
+| 62 | `CreateCommentBar`'s Markdown toolbar still edits the text while offline | S | `uikit/.../widgets/CreateCommentBar.kt` |
 
 ---
 
@@ -400,3 +401,12 @@ waited with `waitUntil { onAllNodesWithText("plain strong", substring = true).fe
 `onNodeWithText(...).assertExists()` and passes today, so it's either timing-dependent (a latent
 flake) or something in its layout makes the parse land sooner. Add the same `waitUntil` there.
 
+## 62. `CreateCommentBar`'s Markdown toolbar still edits the text while offline
+
+Found during markdown-editor checklist step 9 (2026-11-15). When `isOffline` is true the comment field is disabled
+(`enabled = !isOffline`) and the send button too, but `MarkdownToolbar` has no `enabled` parameter, so its formatting
+buttons still apply transforms to the text the user can't otherwise edit. Nothing is sent, so it's cosmetic. Per the
+Offline State Pattern in CLAUDE.md, write actions should be disabled offline: give `MarkdownToolbar`
+(`uikit/.../widgets/editor/MarkdownToolbar.kt`) an `enabled` flag that the formatting buttons respect, and pass
+`!isOffline` from `CreateCommentBar`. The other three toolbar sites don't disable their fields offline, so check
+whether they should too before deciding the flag's scope.

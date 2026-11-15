@@ -122,8 +122,9 @@ add-on but isn't scheduled.
 
 **Scope and order:** site 1 (`WorkItemEditDescriptionScreen`) first, since it covers description
 edits for all five content types. Sites 2 (wiki create) and 3 (create task) follow as their own
-steps, reusing the same toolbar. Site 4 (`CreateCommentBar`) is gated: a full toolbar doesn't fit
-a one-line bar, so whether it gets a subset or nothing is gregory's call when that step comes up.
+steps, reusing the same toolbar. Site 4 (`CreateCommentBar`) gets the same full toolbar as a row under
+the comment input (gregory, 2026-11-15): the toolbar is a single horizontally scrolling row, so its width was never
+the constraint.
 
 **Design that follows from steps 1–2:**
 - **Transforms are pure `(TextFieldValue) -> TextFieldValue` functions** in `uikit`'s
@@ -166,6 +167,9 @@ a one-line bar, so whether it gets a subset or nothing is gregory's call when th
 - **Screen wiring (step 8, `CreateTaskScreen`):** same shape as step 7. The description moved from `String` to
   `TextFieldValue` in state; `SavedStateHandle` keeps storing only `.text` under the same key, and a restored value gets
   its cursor at the end. No mention row and no `members` here, so Preview renders without mention links.
+- **Screen wiring (step 9, `CreateCommentBar`):** the bar has no ViewModel, so the Edit/Preview flag is a local
+  `rememberSaveable` next to its `TextFieldValue`. The toolbar is a full-width row under the input row. Preview swaps the
+  field for `MarkdownTextWidget` in a `Box` capped at 120dp that owns the `verticalScroll`; sending resets to Edit.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.

@@ -117,3 +117,21 @@ toolbar sits below it. `composeApp`'s `jvmTest` gained `compose.uiTest` + `compo
 heading, bullet and bold from the toolbar, previewed, saved; the app handed off to the new issue and Taiga stored
 `# Plan\n- item\nmake **strong**` exactly. The issue was deleted afterwards. Next: step 9 (`CreateCommentBar`), which is
 gated on gregory choosing a toolbar subset, a compact expand button, or nothing.
+
+## 9. Site 4: `CreateCommentBar`
+
+The full `MarkdownToolbar` (same component, same Edit/Preview toggle) as a row under the comment input, always shown
+while the bar is. gregory decided this 2026-11-15: the toolbar is one horizontally scrolling row, so it fits. Preview
+swaps the text field for a height-capped, scrolling `MarkdownTextWidget`; the send button keeps working in either mode.
+Extend `CreateCommentBarTest`.
+
+**Verify:** full `jvmTest`, `ktlintCheck`, `:uikit:detekt` and `compileKotlinIosArm64`, emulator: post a formatted
+comment on a task.
+
+**Done 2026-11-15.** Note: the toolbar is a full-width row below the padded input/mention column, always shown when
+`canComment`. Preview state is a local `rememberSaveable` flag (the bar has no ViewModel); Preview swaps the
+`HintTextField` for `MarkdownTextWidget` in a `Box` capped at 120dp with its own `verticalScroll`, and hides the mention
+row. Sending resets the bar to an empty Edit mode, from either mode. While offline the toolbar still edits the text the
+disabled field holds (`docs/revisit.md` entry 62). Emulator: on Issue #82 typed `md-step9-check`, tapped Bulleted list,
+previewed (rendered as a bullet, formatting buttons disabled), sent; Taiga stored `- md-step9-check` exactly. The toolbar
+rode directly above Gboard. The comment was deleted afterwards. Queue is empty: this was the last step.
