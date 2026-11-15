@@ -1,7 +1,7 @@
 # Markdown Editor — Implementation Plan
 
 **Origin:** gregory, 2026-11-14 — the app can render Markdown but not help edit it; every input
-site is a plain text field. Status: **implementation**. Option **A** was chosen 2026-11-14 (see "Decision" below and
+site is a plain text field. Status: **done** (all 10 steps, 2026-11-15). Option **A** was chosen 2026-11-14 (see "Decision" below and
 [CHECKLIST.md](CHECKLIST.md)).
 
 ## What exists today (verified 2026-11-14)
@@ -173,6 +173,16 @@ the constraint.
 - **Checking off task-list items (step 10, queued 2026-11-15 by gregory):** tapping a checkbox in the read-only
   description flips `[ ]`/`[x]` in the source and saves it straight away, through the existing description-save path.
   A toolbar "check selected lines" button was the other option and was not picked.
+  Implemented as: `MarkdownTextWidget`/`ExpandableMarkdownText` take an optional `onTaskCheckboxToggle: (String) -> Unit`
+  that receives the whole source text with one box flipped; without it checkboxes stay the library's display-only
+  `MarkdownCheckBox`. The checkbox node's `startOffset` indexes the *mention-rewritten* string, so `sourceOffset`
+  (next to `rewriteMentions`) maps it back before `toggleTaskCheckbox` (`MarkdownFormatting.kt`) flips `[ ]`/`[x]`/`[X]`.
+  `WorkItemDescriptionWidget` passes the callback only when `canModify && !isOffline`, and drops taps while
+  `isDescriptionLoading` so a second tap can't race the first save's version. Each details ViewModel exposes
+  `onDescriptionCheckboxToggle` in state, which launches its existing `onNewDescriptionUpdate`. There's no optimistic
+  flip: the box changes once the save succeeds, and stays put on failure. The interactive `Checkbox` runs with
+  `LocalMinimumInteractiveComponentSize` unset, since M3's 48dp minimum misaligned it with its label and pushed short
+  lists past `ExpandableMarkdownText`'s collapse height.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.

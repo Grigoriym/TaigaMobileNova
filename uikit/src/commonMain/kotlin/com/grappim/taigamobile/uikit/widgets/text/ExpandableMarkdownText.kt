@@ -36,7 +36,8 @@ fun ExpandableMarkdownText(
     modifier: Modifier = Modifier,
     maxLinesCollapsed: Int = 6,
     members: ImmutableList<TeamMember> = persistentListOf(),
-    onMentionClick: (Long) -> Unit = {}
+    onMentionClick: (Long) -> Unit = {},
+    onTaskCheckboxToggle: ((String) -> Unit)? = null
 ) {
     var isExpanded by remember { mutableStateOf(false) }
     var naturalHeight by remember { mutableStateOf(0.dp) }
@@ -68,6 +69,7 @@ fun ExpandableMarkdownText(
                     text = text,
                     members = members,
                     onMentionClick = onMentionClick,
+                    onTaskCheckboxToggle = onTaskCheckboxToggle,
                     modifier = Modifier.onSizeChanged { size ->
                         with(density) {
                             val currentHeight = size.height.toDp()

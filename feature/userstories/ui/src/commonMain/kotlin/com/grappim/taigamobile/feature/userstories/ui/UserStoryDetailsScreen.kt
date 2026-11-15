@@ -382,7 +382,8 @@ private fun UserStoryDetailsScreenContent(
                     canModify = state.canEditUserStory,
                     isOffline = isOffline,
                     members = members,
-                    onMentionClick = goToProfile
+                    onMentionClick = goToProfile,
+                    onDescriptionCheckboxToggle = state.onDescriptionCheckboxToggle
                 )
 
                 WorkItemTagsWidget(

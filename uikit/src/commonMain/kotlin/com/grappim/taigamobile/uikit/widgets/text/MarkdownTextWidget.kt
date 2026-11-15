@@ -1,14 +1,21 @@
 package com.grappim.taigamobile.uikit.widgets.text
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.LocalMinimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.LinkAnnotation
 import androidx.compose.ui.text.LinkInteractionListener
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
 import com.grappim.taigamobile.uikit.utils.PreviewTaigaDarkLight
+import com.grappim.taigamobile.uikit.widgets.editor.toggleTaskCheckbox
 import com.mikepenz.markdown.annotator.AnnotatorSettings
 import com.mikepenz.markdown.annotator.annotatorSettings
 import com.mikepenz.markdown.coil3.Coil3ImageTransformerImpl
@@ -20,12 +27,16 @@ import com.mikepenz.markdown.m3.elements.MarkdownCheckBox
 import com.mikepenz.markdown.utils.getUnescapedTextInNode
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
+import org.intellij.markdown.ast.getTextInNode
 
 private const val MENTION_URL_SCHEME = "mention:"
 private val mentionRegex = Regex("""\B@([\w.-]+)\b""")
 
 /**
  * If you define onClick, either internally or externally, make isSelectable = false as well
+ *
+ * When [onTaskCheckboxToggle] is set, task-list checkboxes are tappable and a tap passes back [text] with that one
+ * box flipped. Otherwise they are display-only.
  */
 @Composable
 fun MarkdownTextWidget(
@@ -33,7 +44,8 @@ fun MarkdownTextWidget(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     members: ImmutableList<TeamMember> = persistentListOf(),
-    onMentionClick: (Long) -> Unit = {}
+    onMentionClick: (Long) -> Unit = {},
+    onTaskCheckboxToggle: ((String) -> Unit)? = null
 ) {
     Markdown(
         modifier = modifier
@@ -64,7 +76,24 @@ fun MarkdownTextWidget(
                     annotatorSettings = mentionAnnotatorSettings(onMentionClick)
                 )
             },
-            checkbox = { model -> MarkdownCheckBox(model.content, model.node, style = model.typography.text) }
+            checkbox = { model ->
+                if (onTaskCheckboxToggle == null) {
+                    MarkdownCheckBox(model.content, model.node, style = model.typography.text)
+                } else {
+                    // Without the 48dp minimum the box keeps the display-only checkbox's footprint, so it stays aligned
+                    // with its label and short lists don't grow past ExpandableMarkdownText's collapse height.
+                    CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides Dp.Unspecified) {
+                        Checkbox(
+                            checked = model.node.getTextInNode(model.content).contains("[x]", ignoreCase = true),
+                            onCheckedChange = {
+                                val offset = sourceOffset(text, members, model.node.startOffset)
+                                onTaskCheckboxToggle(toggleTaskCheckbox(text, offset))
+                            },
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+                    }
+                }
+            }
         )
     )
 }
@@ -96,12 +125,31 @@ internal fun rewriteMentions(text: String, members: ImmutableList<TeamMember>): 
         val username = match.groupValues[1]
         val member = membersByUsername[username]
         if (member != null) {
-            "[@$username]($MENTION_URL_SCHEME${member.id})"
+            mentionLink(username, member.id)
         } else {
             match.value
         }
     }
 }
+
+/**
+ * Maps an offset in `rewriteMentions(text, members)` back to the same position in [text]. [renderedOffset] must not
+ * fall inside a rewritten mention.
+ */
+internal fun sourceOffset(text: String, members: ImmutableList<TeamMember>, renderedOffset: Int): Int {
+    if (members.isEmpty()) return renderedOffset
+    val membersByUsername = members.associateBy { it.username }
+    var shift = 0
+    for (match in mentionRegex.findAll(text)) {
+        if (match.range.first + shift >= renderedOffset) break
+        val username = match.groupValues[1]
+        val member = membersByUsername[username]
+        if (member != null) shift += mentionLink(username, member.id).length - match.value.length
+    }
+    return renderedOffset - shift
+}
+
+private fun mentionLink(username: String, memberId: Long): String = "[@$username]($MENTION_URL_SCHEME$memberId)"
 
 private val previewTeamMembers: ImmutableList<TeamMember> = persistentListOf(
     TeamMember(id = 1L, avatarUrl = null, name = "Alice Anderson", role = "Developer", username = "alice"),

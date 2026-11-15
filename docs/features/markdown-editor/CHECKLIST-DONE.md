@@ -135,3 +135,41 @@ row. Sending resets the bar to an empty Edit mode, from either mode. While offli
 disabled field holds (`docs/revisit.md` entry 62). Emulator: on Issue #82 typed `md-step9-check`, tapped Bulleted list,
 previewed (rendered as a bullet, formatting buttons disabled), sent; Taiga stored `- md-step9-check` exactly. The toolbar
 rode directly above Gboard. The comment was deleted afterwards. Queue is empty: this was the last step.
+
+## 10. Tap a task-list checkbox in a saved description to tick it
+
+Today a `- [ ]` / `- [x]` item renders as a checkbox in the read-only description, but tapping it does nothing: the
+library's `MarkdownCheckBox` (`com.mikepenz.markdown.m3.elements`, 0.46.0) draws an M3 `Checkbox` with
+`onCheckedChange = null`. Make a tap flip that one item's `[ ]` ↔ `[x]` in the Markdown source and save the description.
+
+- **Where:** `WorkItemDescriptionWidget` (`feature/workitem/ui/.../widgets/`) is the read-only description on Task,
+  Issue, User Story, Epic and Wiki page details, so one change there covers all five. It renders through
+  `ExpandableMarkdownText` → `MarkdownTextWidget`, which already overrides the `checkbox` component
+  (`MarkdownTextWidget.kt`, `checkbox = { model -> MarkdownCheckBox(...) }`); swap that for an interactive one when a
+  toggle callback is given, and keep it display-only otherwise (Preview, comments).
+- **Finding the item:** the component's `model.node` is the checkbox `ASTNode`, whose `startOffset`/`endOffset` index
+  into `model.content`, the source string. A pure `(String, offset) -> String` that flips the box at that offset goes in
+  `uikit/.../widgets/editor/MarkdownFormatting.kt` next to the other transforms, with `commonTest` coverage. Check first
+  that the content the widget passes the renderer is the raw description: `rewriteMentions` changes the text before
+  rendering, so offsets may need mapping back, or the toggle must run on the rewritten string's counterpart.
+- **Saving:** the same path an edited description already takes — each details ViewModel's `onNewDescriptionUpdate`
+  → `WorkItemDescriptionDelegate.updateDescription` (`patchData` with the item's `version`); the wiki page has its own
+  `patchWikiPage`. One save per tap. On failure (e.g. a version conflict) show the existing error and keep the old text.
+- **Gating:** only interactive when `canModify` and not offline, the flags `WorkItemDescriptionWidget` already takes.
+  Otherwise the checkbox stays display-only.
+
+**Verify:** full `jvmTest`, `ktlintCheck`, `detekt` for the touched modules, `compileKotlinIosArm64`, emulator: tick and
+untick an item in a Task description and a Wiki page, reopen, and confirm via the Taiga API that `[x]`/`[ ]` were stored.
+
+**Done 2026-11-15.** Note: `MarkdownTextWidget`/`ExpandableMarkdownText` gained `onTaskCheckboxToggle`; without it the
+checkbox stays the library's display-only one. `rewriteMentions` does shift offsets, so a new `sourceOffset` maps the
+node's `startOffset` back to the raw text before `toggleTaskCheckbox` flips it. `WorkItemDescriptionWidget` wires it
+only when `canModify && !isOffline` and drops taps while a save is in flight. All five ViewModels expose
+`onDescriptionCheckboxToggle`, which runs their existing `onNewDescriptionUpdate`. Deviation found on the emulator: M3's
+`Checkbox` with a real `onCheckedChange` enforces a 48dp minimum, which pushed the box below its label and made a 2-item
+list tall enough to collapse behind "Show more". The interactive box now sets `LocalMinimumInteractiveComponentSize` to
+`Dp.Unspecified`; its own state-layer padding still gives a ~48dp-tall tap area. Also fixed `docs/revisit.md` entry 61
+(that test now failed every run) in its own commit, and logged entry 63 (1 s `waitUntil` default flakes under load).
+Emulator: on a task (`Ping @user1…` + `- [ ] first` / `- [x] second`) ticked `first` and unticked `second`; on a wiki
+page ticked then unticked `beta`. After reopening, the Taiga API showed each save stored exactly, with the version
+bumping each time. Test data was deleted afterwards. Queue is empty: this was the last scoped step.

@@ -233,4 +233,36 @@ class MarkdownFormattingTest {
             ::insertCodeBlock
         )
     }
+
+    @Test
+    fun `toggleTaskCheckbox checks an unchecked box`() {
+        assertEquals("- [x] buy milk", toggleTaskCheckbox("- [ ] buy milk", offset = 2))
+    }
+
+    @Test
+    fun `toggleTaskCheckbox unchecks a checked box, either case`() {
+        assertEquals("- [ ] done", toggleTaskCheckbox("- [x] done", offset = 2))
+        assertEquals("- [ ] done", toggleTaskCheckbox("- [X] done", offset = 2))
+    }
+
+    @Test
+    fun `toggleTaskCheckbox skips spaces before the box`() {
+        assertEquals("-   [x] spaced", toggleTaskCheckbox("-   [ ] spaced", offset = 1))
+    }
+
+    @Test
+    fun `toggleTaskCheckbox only flips the box at the offset`() {
+        val text = "- [ ] one\n    - [ ] nested\n- [x] three"
+        assertEquals("- [ ] one\n    - [x] nested\n- [x] three", toggleTaskCheckbox(text, offset = 16))
+        assertEquals("- [ ] one\n    - [ ] nested\n- [ ] three", toggleTaskCheckbox(text, offset = 29))
+    }
+
+    @Test
+    fun `toggleTaskCheckbox leaves text unchanged when no box is at the offset`() {
+        assertEquals("- plain item", toggleTaskCheckbox("- plain item", offset = 2))
+        assertEquals("- [y] odd", toggleTaskCheckbox("- [y] odd", offset = 2))
+        assertEquals("- [ ", toggleTaskCheckbox("- [ ", offset = 2))
+        assertEquals("- [ ] a", toggleTaskCheckbox("- [ ] a", offset = -1))
+        assertEquals("- [ ] a", toggleTaskCheckbox("- [ ] a", offset = 7))
+    }
 }

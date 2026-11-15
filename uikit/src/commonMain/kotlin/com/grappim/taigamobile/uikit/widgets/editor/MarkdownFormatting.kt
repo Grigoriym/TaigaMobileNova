@@ -186,3 +186,19 @@ private fun applyLineEdits(value: TextFieldValue, edits: List<LineEdit>): TextFi
     val newEnd = if (selection.collapsed) newStart else map(selection.max, keepInserted = false)
     return TextFieldValue(text = text.toString(), selection = TextRange(newStart, newEnd))
 }
+
+/**
+ * Flips the task-list checkbox at [offset] between `[ ]` and `[x]`. [offset] is where the checkbox starts, or a space
+ * or tab before it on the same line. Returns [text] unchanged when there is no checkbox there.
+ */
+fun toggleTaskCheckbox(text: String, offset: Int): String {
+    if (offset !in text.indices) return text
+    val open = (offset until text.length).firstOrNull { text[it] != ' ' && text[it] != '\t' } ?: return text
+    if (text[open] != '[' || text.getOrNull(open + 2) != ']') return text
+    val flipped = when (text[open + 1]) {
+        ' ' -> "x"
+        'x', 'X' -> " "
+        else -> return text
+    }
+    return text.replaceRange(open + 1, open + 2, flipped)
+}

@@ -623,8 +623,10 @@ render inside `runComposeUiTest`" test needs (see task 14, `docs/testing/improve
 **`MarkdownTextWidget` renders asynchronously inside `runComposeUiTest`.** Its renderer parses after
 the first composition, so asserting rendered Markdown text straight after it appears (e.g. after
 toggling an editor's Preview) can find an empty, 0px node. Wait first:
-`waitUntil { onAllNodesWithText("…", substring = true).fetchSemanticsNodes().isNotEmpty() }` —
-`WikiCreatePageScreenContentTest` (`feature/wiki/ui/src/jvmTest/`) is the worked example.
+`waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("…", substring = true).fetchSemanticsNodes().isNotEmpty() }`.
+Pass the timeout: the 1 s default timed out under a loaded full `jvmTest` run (`docs/revisit.md` entry 63), and an
+unwaited assertion that passed for weeks went to failing every run (archived entry 61). The same applies to checkbox
+nodes (`isToggleable()`). `WorkItemDescriptionWidgetTest` (`feature/workitem/ui/src/jvmTest/`) is the worked example.
 
 ### Driving a `RemoteMediator` directly
 
