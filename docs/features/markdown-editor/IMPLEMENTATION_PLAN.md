@@ -183,6 +183,8 @@ the constraint.
   flip: the box changes once the save succeeds, and stays put on failure. The interactive `Checkbox` runs with
   `LocalMinimumInteractiveComponentSize` unset, since M3's 48dp minimum misaligned it with its label and pushed short
   lists past `ExpandableMarkdownText`'s collapse height.
+- **List continuation on Enter (step 11, queued 2026-11-15 by gregory):** Enter after a list item starts the next item
+  with the same marker (numbered +1, task unticked); Enter on an empty item leaves the list, Google Docs/Jira style.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.
