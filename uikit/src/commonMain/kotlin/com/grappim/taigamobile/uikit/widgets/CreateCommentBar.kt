@@ -41,6 +41,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
 import com.grappim.taigamobile.uikit.widgets.editor.MarkdownToolbar
 import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsRow
+import com.grappim.taigamobile.uikit.widgets.editor.continueMarkdownList
 import com.grappim.taigamobile.uikit.widgets.editor.findActiveMentionQuery
 import com.grappim.taigamobile.uikit.widgets.editor.insertMention
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
@@ -107,7 +108,9 @@ fun CreateCommentBar(
                                     .testTag(CREATE_COMMENT_BAR_TEXT_FIELD_TEST_TAG),
                                 shape = MaterialTheme.shapes.large,
                                 value = commentTextValue,
-                                onValueChange = { newValue -> commentTextValue = newValue },
+                                onValueChange = { newValue ->
+                                    commentTextValue = continueMarkdownList(commentTextValue, newValue)
+                                },
                                 hint = NativeText.Resource(RString.comment_hint),
                                 maxLines = 3,
                                 enabled = !isOffline

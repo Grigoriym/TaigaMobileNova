@@ -34,6 +34,7 @@ import com.grappim.taigamobile.uikit.utils.RDrawable
 import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
 import com.grappim.taigamobile.uikit.widgets.editor.MarkdownToolbar
+import com.grappim.taigamobile.uikit.widgets.editor.continueMarkdownList
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.persistentListOf
@@ -133,7 +134,7 @@ fun CreateTaskScreenContent(state: CreateTaskState, modifier: Modifier = Modifie
                             .testTag(CREATE_TASK_DESCRIPTION_TEST_TAG),
                         hint = NativeText.Resource(RString.description_hint),
                         value = state.description,
-                        onValueChange = { state.setDescription(it) }
+                        onValueChange = { state.setDescription(continueMarkdownList(state.description, it)) }
                     )
                 }
             }

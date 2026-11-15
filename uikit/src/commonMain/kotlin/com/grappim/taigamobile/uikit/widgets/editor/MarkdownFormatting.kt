@@ -202,3 +202,62 @@ fun toggleTaskCheckbox(text: String, offset: Int): String {
     }
     return text.replaceRange(open + 1, open + 2, flipped)
 }
+
+// Indentation, then a task, bullet or numbered marker, then the item's text.
+private val listItemLine = Regex("""^([ \t]*)(?:([-*+]) \[[ xX]] |([-*+]) |(\d+)\. )(.*)$""")
+
+/**
+ * Continues a Markdown list when [next] is [previous] with one line break typed at the cursor, and returns [next]
+ * unchanged otherwise. The new line gets the finished item's indentation and marker: bullets keep their character,
+ * numbers go up by one and task items start unticked. Enter on an empty item leaves the list instead: a nested item
+ * moves out one level, a top-level one loses its marker and leaves a blank line, which ends the list in Markdown.
+ * Lines inside a fenced code block are never continued.
+ */
+fun continueMarkdownList(previous: TextFieldValue, next: TextFieldValue): TextFieldValue {
+    if (!isSingleLineBreak(previous, next)) return next
+    val text = next.text
+    val cursor = next.selection.start
+    val lineStart = text.lastIndexOf('\n', cursor - 2) + 1
+    if (isInsideCodeFence(text, lineStart)) return next
+    val line = text.substring(lineStart, cursor - 1)
+    val match = listItemLine.matchEntire(line) ?: return next
+    val indent = match.groupValues[1]
+    val content = match.groupValues[5]
+    val restOfLine = text.substring(cursor).substringBefore('\n')
+
+    if (content.isNotBlank() || restOfLine.isNotBlank()) {
+        val marker = nextListMarker(match) ?: return next
+        val inserted = indent + marker
+        return TextFieldValue(text.replaceRange(cursor, cursor, inserted), TextRange(cursor + inserted.length))
+    }
+    if (indent.isEmpty()) {
+        return TextFieldValue(text.removeRange(lineStart, cursor - 1), TextRange(lineStart + 1))
+    }
+    val removed = if (indent.startsWith('\t')) 1 else indent.takeWhile { it == ' ' }.length.coerceAtMost(4)
+    val item = indent.drop(removed) + line.substring(indent.length).trimEnd() + " "
+    return TextFieldValue(text.replaceRange(lineStart, cursor, item), TextRange(lineStart + item.length))
+}
+
+private fun nextListMarker(item: MatchResult): String? {
+    val (taskBullet, bullet, number) = item.destructured.toList().subList(1, 4)
+    return when {
+        taskBullet.isNotEmpty() -> "$taskBullet [ ] "
+        bullet.isNotEmpty() -> "$bullet "
+        else -> number.toLongOrNull()?.let { "${it + 1}. " }
+    }
+}
+
+// True when [next] is [previous] with its selection replaced by text ending in exactly one line break, the cursor
+// right after it and the text after the cursor untouched. The text before the break may differ on the same line:
+// some keyboards commit an autocorrected word together with the line break.
+private fun isSingleLineBreak(previous: TextFieldValue, next: TextFieldValue): Boolean {
+    val cursor = next.selection.start
+    if (!next.selection.collapsed || cursor == 0 || next.text[cursor - 1] != '\n') return false
+    val after = previous.text.substring(previous.selection.max)
+    if (next.text.length - after.length != cursor || !next.text.endsWith(after)) return false
+    val breaksBefore = previous.text.substring(0, previous.selection.min).count { it == '\n' }
+    return next.text.substring(0, cursor - 1).count { it == '\n' } == breaksBefore
+}
+
+private fun isInsideCodeFence(text: String, lineStart: Int): Boolean =
+    text.substring(0, lineStart).lineSequence().count { it.trimStart().startsWith(CODE_FENCE) } % 2 == 1

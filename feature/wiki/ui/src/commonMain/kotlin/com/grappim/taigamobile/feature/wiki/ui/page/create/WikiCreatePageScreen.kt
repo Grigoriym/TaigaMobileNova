@@ -39,6 +39,7 @@ import com.grappim.taigamobile.uikit.widgets.dialog.LoadingDialog
 import com.grappim.taigamobile.uikit.widgets.editor.HintTextField
 import com.grappim.taigamobile.uikit.widgets.editor.MarkdownToolbar
 import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsRow
+import com.grappim.taigamobile.uikit.widgets.editor.continueMarkdownList
 import com.grappim.taigamobile.uikit.widgets.editor.findActiveMentionQuery
 import com.grappim.taigamobile.uikit.widgets.editor.insertMention
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
@@ -158,7 +159,7 @@ fun WikiCreatePageScreenContent(
                             .testTag(WIKI_CREATE_PAGE_CONTENT_TEST_TAG),
                         hint = NativeText.Resource(RString.content_hint),
                         value = state.content,
-                        onValueChange = { state.setContent(it) }
+                        onValueChange = { state.setContent(continueMarkdownList(state.content, it)) }
                     )
 
                     MentionSuggestionsRow(

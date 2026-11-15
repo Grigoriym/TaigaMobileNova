@@ -37,6 +37,7 @@ import com.grappim.taigamobile.strings.generated.resources.save
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
 import com.grappim.taigamobile.uikit.widgets.editor.MarkdownToolbar
 import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsRow
+import com.grappim.taigamobile.uikit.widgets.editor.continueMarkdownList
 import com.grappim.taigamobile.uikit.widgets.editor.findActiveMentionQuery
 import com.grappim.taigamobile.uikit.widgets.editor.insertMention
 import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
@@ -144,7 +145,9 @@ fun EditDescriptionContent(state: EditDescriptionState, members: ImmutableList<T
                     .padding(horizontal = 16.dp, vertical = 8.dp)
                     .testTag(EDIT_DESCRIPTION_TEXT_FIELD_TEST_TAG),
                 value = state.currentDescription,
-                onValueChange = { newValue -> state.onDescriptionChange(newValue) },
+                onValueChange = { newValue ->
+                    state.onDescriptionChange(continueMarkdownList(state.currentDescription, newValue))
+                },
                 textStyle = MaterialTheme.typography.bodyLarge.copy(
                     color = MaterialTheme.colorScheme.onSurface
                 ),

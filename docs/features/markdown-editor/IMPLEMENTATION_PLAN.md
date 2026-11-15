@@ -185,6 +185,12 @@ the constraint.
   lists past `ExpandableMarkdownText`'s collapse height.
 - **List continuation on Enter (step 11, queued 2026-11-15 by gregory):** Enter after a list item starts the next item
   with the same marker (numbered +1, task unticked); Enter on an empty item leaves the list, Google Docs/Jira style.
+  Implemented as `continueMarkdownList(previous, next)` (`MarkdownFormatting.kt`), applied in each Markdown site's text
+  field `onValueChange` (not in the toolbar, and not in the shared `HintTextField`/`TextFieldWithHint`). It fires only
+  when `next` adds exactly one line break right before the cursor with the text after the cursor untouched; the text
+  before the break may differ on that line, because a keyboard can commit an autocorrected word together with Enter.
+  An empty top-level item loses its marker and leaves a blank line (without it, the next paragraph would be a lazy
+  continuation of the list in Python-Markdown); an empty nested item outdents one level. Quotes aren't continued.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.
