@@ -170,6 +170,9 @@ the constraint.
 - **Screen wiring (step 9, `CreateCommentBar`):** the bar has no ViewModel, so the Edit/Preview flag is a local
   `rememberSaveable` next to its `TextFieldValue`. The toolbar is a full-width row under the input row. Preview swaps the
   field for `MarkdownTextWidget` in a `Box` capped at 120dp that owns the `verticalScroll`; sending resets to Edit.
+- **Checking off task-list items (step 10, queued 2026-11-15 by gregory):** tapping a checkbox in the read-only
+  description flips `[ ]`/`[x]` in the source and saves it straight away, through the existing description-save path.
+  A toolbar "check selected lines" button was the other option and was not picked.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
   links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
   entry 59, and a fix for that belongs with that entry, not with the toolbar.
