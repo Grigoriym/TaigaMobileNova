@@ -10,6 +10,7 @@ import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
@@ -66,7 +67,10 @@ class EditDescriptionContentTest {
 
         onNodeWithTag(EDIT_DESCRIPTION_TEXT_FIELD_TEST_TAG).assertDoesNotExist()
         onNodeWithTag(EDIT_DESCRIPTION_PREVIEW_TEST_TAG).assertExists()
-        onNodeWithText("plain strong", substring = true).assertExists()
+        // The Markdown renderer parses asynchronously.
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty()
+        }
         onNodeWithContentDescription("Bold").assertIsNotEnabled()
 
         onNodeWithContentDescription("Edit").performClick()

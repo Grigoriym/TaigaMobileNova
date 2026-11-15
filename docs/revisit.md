@@ -30,8 +30,8 @@ now that the table below covers everything left.
 | 58 | `apk-size-check` runner is killed on Gradle-wrapper bump PRs | S | `.github/workflows/build.yml` `apk-size-check` job |
 | 59 | Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists) | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
 | 60 | `MarkdownTextWidget` applies its `modifier` twice when `onClick` is null | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
-| 61 | `EditDescriptionContentTest`'s preview assertion doesn't wait for async Markdown parsing | S | `feature/workitem/ui/src/jvmTest/.../EditDescriptionContentTest.kt` |
 | 62 | `CreateCommentBar`'s Markdown toolbar still edits the text while offline | S | `uikit/.../widgets/CreateCommentBar.kt` |
+| 63 | Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run | S | `uikit/src/jvmTest/.../CreateCommentBarTest.kt` |
 
 ---
 
@@ -389,18 +389,6 @@ component was measured with an infinity maximum height constraints". The `else` 
 padding modifier there renders with double padding today, so fixing it changes spacing on screen.
 Drive those screens on the emulator before and after.
 
-## 61. `EditDescriptionContentTest`'s preview assertion doesn't wait for async Markdown parsing
-
-Found during markdown-editor checklist step 7 (2026-11-14). `MarkdownTextWidget`'s renderer
-(`com.mikepenz:multiplatform-markdown-renderer`) parses off the first composition, so right after
-toggling Preview the rendered text isn't in the semantics tree yet. Step 7's
-`WikiCreatePageScreenContentTest` failed on exactly that (the preview `Box` measured 0px) until it
-waited with `waitUntil { onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty() }`.
-`EditDescriptionContentTest.previewRendersMarkdownAndSwitchingBackKeepsTextAndSelection`
-(`feature/workitem/ui/src/jvmTest/.../editdescription/`) asserts the same text with a bare
-`onNodeWithText(...).assertExists()` and passes today, so it's either timing-dependent (a latent
-flake) or something in its layout makes the parse land sooner. Add the same `waitUntil` there.
-
 ## 62. `CreateCommentBar`'s Markdown toolbar still edits the text while offline
 
 Found during markdown-editor checklist step 9 (2026-11-15). When `isOffline` is true the comment field is disabled
@@ -410,3 +398,14 @@ Offline State Pattern in CLAUDE.md, write actions should be disabled offline: gi
 (`uikit/.../widgets/editor/MarkdownToolbar.kt`) an `enabled` flag that the formatting buttons respect, and pass
 `!isOffline` from `CreateCommentBar`. The other three toolbar sites don't disable their fields offline, so check
 whether they should too before deciding the flag's scope.
+
+## 63. Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run
+
+Found during markdown-editor checklist step 10 (2026-11-15). `CreateCommentBarTest.previewRendersTheMarkdownAndEditRestoresTheField`
+(`uikit/src/jvmTest/.../widgets/CreateCommentBarTest.kt:146`) failed once with `ComposeTimeoutException: Condition still not
+satisfied after 1000 ms` during a full `./gradlew jvmTest ktlintCheck … compileKotlinIosArm64` run that overlapped an emulator
+cold boot, then passed 3/3 on its own (`--rerun`). The renderer parses asynchronously, and 1 s isn't enough headroom on a
+loaded machine. Step 10's `WorkItemDescriptionWidgetTest` waits with `timeoutMillis = 5_000`. Do the same for the other
+`waitUntil`s that wait on rendered Markdown: `CreateCommentBarTest`, `WikiCreatePageScreenContentTest`,
+`CreateTaskScreenContentTest`.
+
