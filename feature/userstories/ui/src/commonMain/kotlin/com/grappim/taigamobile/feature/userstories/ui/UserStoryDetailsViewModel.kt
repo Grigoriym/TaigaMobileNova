@@ -189,6 +189,7 @@ class UserStoryDetailsViewModel(
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
+            onDescriptionCheckboxToggle = ::onDescriptionCheckboxToggle,
             onBadgeSave = ::onBadgeSave,
             onGoingToEditEpics = ::onGoingToEditEpics,
             onEpicRemoveClick = ::onEpicRemoveClick,
@@ -727,6 +728,10 @@ class UserStoryDetailsViewModel(
                 onWatchersUpdated(updateState.ids)
             }
         }
+    }
+
+    private fun onDescriptionCheckboxToggle(newDescription: String) {
+        viewModelScope.launch { onNewDescriptionUpdate(newDescription) }
     }
 
     private suspend fun onNewDescriptionUpdate(newDescription: String) {

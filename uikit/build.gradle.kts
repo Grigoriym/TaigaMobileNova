@@ -37,6 +37,7 @@ kotlin {
             implementation(libs.androidx.paging.common)
 
             implementation(libs.jetbrains.compose.icons)
+            implementation(libs.jetbrains.compose.icons.extended)
 
             implementation(libs.markdownRenderer.core)
             implementation(libs.markdownRenderer.m3)

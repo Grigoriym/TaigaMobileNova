@@ -1,8 +1,8 @@
 # Markdown Editor — Implementation Plan
 
 **Origin:** gregory, 2026-11-14 — the app can render Markdown but not help edit it; every input
-site is a plain text field. Status: **investigation** (step 1 done). No approach is chosen yet (see
-[CHECKLIST.md](CHECKLIST.md) step 3).
+site is a plain text field. Status: **done** (all 10 steps, 2026-11-15). Option **A** was chosen 2026-11-14 (see "Decision" below and
+[CHECKLIST.md](CHECKLIST.md)).
 
 ## What exists today (verified 2026-11-14)
 
@@ -77,8 +77,126 @@ from Markdown.
 - **−** Mentions have to be rebuilt on `RichTextState` instead of `TextFieldValue`.
 - **−** New third-party dependency on the core edit path.
 
+**Round-trip spike result (checklist step 2, 2026-11-14): an unchanged save is NOT lossless.**
+Method: a throwaway `uikit` `jvmTest` ran each input through
+`RichTextState().setMarkdown(x).toMarkdown()`, then a second time over the output. It needs no
+Compose UI or composition, a bare `RichTextState` works headless on JVM. The inputs were the 28
+step-1 syntax samples plus the 6 most Markdown-heavy seeded texts in project `main-2`: wiki
+pages `getting-started`, `architecture`, `home`, `api-reference`, epic #2 and issue #69. Input
+and output were both rendered through Taiga's `POST /api/v1/wiki/render`, which tells harmless
+rewrites (different bytes, same HTML) apart from real loss. The spike is on `git stash` as
+`markdown-editor step 2 spike: compose-rich-editor round-trip`.
+
+**None of the 6 real texts came back byte-identical, and 4 of them render differently.** Three
+of the four seeded wiki pages contain a fenced code block, and all three lose it.
+
+| Construct | Result after one round-trip |
+|---|---|
+| `~~strike~~`, `#ref`, `[[wiki]]`, `[x](slug)`, `:emoji:`, `@mention`, bare e-mail, `[TOC]`, abbr, `{: attr}`, 4-space nested list, images, `snake_case`, single newlines | **Survive**, byte-identical (the editor leaves unknown inline syntax alone as plain text) |
+| Definition list | Rewritten (`:   Def` → `: Def`), same rendered HTML |
+| Trailing spaces on a line | Trimmed, rendered HTML differs only by whitespace (2 real descriptions) |
+| **Fenced code block** | **Dropped**: the fences disappear and the code turns into a paragraph. A second save loses characters too (`val x = 1` → `val x  1`) and collapses aligned spaces |
+| **Tables** | **Dropped**: the pipes are gone, cells become plain text joined by two spaces |
+| **Task lists** | **Checkboxes dropped**, `- [x] done` → `- done` |
+| **Footnotes** | **Definition dropped**, `[^1]: note` → `<br>`, the reference stays as literal `[^1]` |
+| **Setext heading** (`Title\n=====`) | **Underline dropped**, the heading becomes a paragraph |
+| Bare URL / `www.` autolink | Rewritten to `[url](url)`. Taiga's own autolinker then fires inside the link, so it renders as **a duplicated, empty `<a>` plus the real one**. `www.` loses its `http://` too |
+| 2-space nested list | Re-indented to 4 spaces. It now renders nested on Taiga, where before it didn't: a visible change, arguably a fix |
+| `<div markdown="1">` | Wrapper dropped, contents kept |
+| Raw HTML | `<b>` → `**…**` (same render). `<script>x</script>` → bare `x`, where Taiga showed the escaped tag as literal text |
+
+**This rules out option C as described.** Loading any text with a code block, table, task list or
+footnote into the editor and saving it without changes would rewrite someone else's content.
+Making C safe would need either our own Markdown ↔ `RichTextState` converter, or a guard that
+refuses rich editing for any text that doesn't round-trip byte-identically. Both are bigger than
+options A and B together.
+
 **Leaning (not a decision):** A first, B later if A feels too raw. C only if step 2's spike shows
 lossless round-trips on real Taiga content.
+
+## Decision (2026-11-14, checklist step 3)
+
+gregory chose **option A**: a Markdown-source editor with a formatting toolbar and an
+Edit/Preview toggle. C is out because of step 2's round-trip loss. B stays possible as a later
+add-on but isn't scheduled.
+
+**Scope and order:** site 1 (`WorkItemEditDescriptionScreen`) first, since it covers description
+edits for all five content types. Sites 2 (wiki create) and 3 (create task) follow as their own
+steps, reusing the same toolbar. Site 4 (`CreateCommentBar`) gets the same full toolbar as a row under
+the comment input (gregory, 2026-11-15): the toolbar is a single horizontally scrolling row, so its width was never
+the constraint.
+
+**Design that follows from steps 1–2:**
+- **Transforms are pure `(TextFieldValue) -> TextFieldValue` functions** in `uikit`'s
+  `widgets/editor/`, next to `insertMention`. The toolbar composable only calls them. This keeps
+  them fully testable in `commonTest` and keeps the text lossless.
+- **Toolbar actions:** bold `**`, italic `_`, strikethrough `~~`, inline code `` ` `` (wrap the
+  selection, or insert an empty pair with the cursor between; applying the same action again
+  unwraps it). Heading `# `, bullet `- `, numbered `1. `, quote `> `, task `- [ ] ` (line-prefix
+  toggles over every line the selection touches). Indent/outdent in **4 spaces**, Taiga's
+  nesting width (step 1). Link (`[text](url)`, with `url` selected afterwards). Fenced code block.
+- **The transforms (step 4) are in `uikit/.../widgets/editor/MarkdownFormatting.kt`**: `toggleBold`/
+  `toggleItalic`/`toggleStrikethrough`/`toggleInlineCode`, `toggleHeading`/`toggleQuote`/`toggleBulletList`/
+  `toggleNumberedList`/`toggleTaskList`, `indentLines`/`outdentLines`, `insertLink`, `insertCodeBlock`.
+  Behaviours the toolbar relies on:
+  - **Inline actions toggle off** when the selection includes the markers or the markers surround it, and also
+    when a bare cursor sits inside an empty pair.
+  - **Line actions** act on every line the selection touches. They skip blank lines and keep leading indentation.
+    A selection that ends right after a newline doesn't touch the next line. If every touched line already has
+    the prefix, it's removed from all of them, otherwise it's added to all of them.
+  - **List kinds swap.** Bullet, numbered and task list replace each other instead of stacking, so `- a` becomes
+    `1. a` and not `1. - a`. Numbering is sequential (`1.`, `2.`, …).
+  - **Link and code block only insert.** They don't toggle off.
+  - **Every transform returns a fresh `TextFieldValue` with no IME composition range.**
+- **The toolbar (step 5) is `uikit/.../widgets/editor/MarkdownToolbar.kt`**:
+  `MarkdownToolbar(value, onValueChange, isPreview, onPreviewToggle)`. It is stateless. The caller owns
+  both the `TextFieldValue` and the Edit/Preview flag. The toggle stays pinned at the start and the
+  formatting buttons scroll horizontally. They are disabled while previewing. Icons come from
+  `material-icons-extended`.
+- **Screen wiring (step 6, `WorkItemEditDescriptionScreen`):** the Edit/Preview flag is `isPreview` +
+  `onPreviewToggle` in the screen's state. Edit mode shows the text field plus the mention row; Preview replaces both
+  with `MarkdownTextWidget` inside a `Box` that owns the `verticalScroll` (passing the scroll to the widget itself
+  crashes, see `docs/revisit.md` entry 60). The toolbar is the last child of a `Column` with `imePadding()`, so it
+  sits above the keyboard. The text field's `TextFieldValue` stays in state across the toggle, so text and selection
+  survive it. Sites 2 and 3 should follow the same shape.
+- **Screen wiring (step 7, `WikiCreatePageScreen`):** same state shape (`isPreview` + `onPreviewToggle`). A screen with
+  other fields above the editor keeps them visible in Preview and swaps only the content field + mention row. The
+  scrolling area is an inner `Column` with `weight(1f)` and the toolbar is its sibling below it, so the toolbar never
+  scrolls away. A Compose UI test that asserts rendered Preview text must `waitUntil` it appears: the renderer parses
+  asynchronously.
+- **Screen wiring (step 8, `CreateTaskScreen`):** same shape as step 7. The description moved from `String` to
+  `TextFieldValue` in state; `SavedStateHandle` keeps storing only `.text` under the same key, and a restored value gets
+  its cursor at the end. No mention row and no `members` here, so Preview renders without mention links.
+- **Screen wiring (step 9, `CreateCommentBar`):** the bar has no ViewModel, so the Edit/Preview flag is a local
+  `rememberSaveable` next to its `TextFieldValue`. The toolbar is a full-width row under the input row. Preview swaps the
+  field for `MarkdownTextWidget` in a `Box` capped at 120dp that owns the `verticalScroll`; sending resets to Edit.
+  The toolbar is hidden until the user is writing (gregory, 2026-11-16): it shows while the field is focused, holds
+  text, or Preview is on (the last keeps the Edit button reachable once the field leaves composition). An idle bar
+  stays the compact single input row.
+- **Checking off task-list items (step 10, queued 2026-11-15 by gregory):** tapping a checkbox in the read-only
+  description flips `[ ]`/`[x]` in the source and saves it straight away, through the existing description-save path.
+  A toolbar "check selected lines" button was the other option and was not picked.
+  Implemented as: `MarkdownTextWidget`/`ExpandableMarkdownText` take an optional `onTaskCheckboxToggle: (String) -> Unit`
+  that receives the whole source text with one box flipped; without it checkboxes stay the library's display-only
+  `MarkdownCheckBox`. The checkbox node's `startOffset` indexes the *mention-rewritten* string, so `sourceOffset`
+  (next to `rewriteMentions`) maps it back before `toggleTaskCheckbox` (`MarkdownFormatting.kt`) flips `[ ]`/`[x]`/`[X]`.
+  `WorkItemDescriptionWidget` passes the callback only when `canModify && !isOffline`, and drops taps while
+  `isDescriptionLoading` so a second tap can't race the first save's version. Each details ViewModel exposes
+  `onDescriptionCheckboxToggle` in state, which launches its existing `onNewDescriptionUpdate`. There's no optimistic
+  flip: the box changes once the save succeeds, and stays put on failure. The interactive `Checkbox` runs with
+  `LocalMinimumInteractiveComponentSize` unset, since M3's 48dp minimum misaligned it with its label and pushed short
+  lists past `ExpandableMarkdownText`'s collapse height.
+- **List continuation on Enter (step 11, queued 2026-11-15 by gregory):** Enter after a list item starts the next item
+  with the same marker (numbered +1, task unticked); Enter on an empty item leaves the list, Google Docs/Jira style.
+  Implemented as `continueMarkdownList(previous, next)` (`MarkdownFormatting.kt`), applied in each Markdown site's text
+  field `onValueChange` (not in the toolbar, and not in the shared `HintTextField`/`TextFieldWithHint`). It fires only
+  when `next` adds exactly one line break right before the cursor with the text after the cursor untouched; the text
+  before the break may differ on that line, because a keyboard can commit an autocorrected word together with Enter.
+  An empty top-level item loses its marker and leaves a blank line (without it, the next paragraph would be a lazy
+  continuation of the list in Python-Markdown); an empty nested item outdents one level. Quotes aren't continued.
+- **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
+  links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
+  entry 59, and a fix for that belongs with that entry, not with the toolbar.
 
 ## Open questions (answered by checklist steps)
 

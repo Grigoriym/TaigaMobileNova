@@ -345,7 +345,8 @@ private fun EpicDetailsScreenContent(
                     canModify = state.canModifyEpic,
                     isOffline = isOffline,
                     members = members,
-                    onMentionClick = goToProfile
+                    onMentionClick = goToProfile,
+                    onDescriptionCheckboxToggle = state.onDescriptionCheckboxToggle
                 )
 
                 WorkItemTagsWidget(

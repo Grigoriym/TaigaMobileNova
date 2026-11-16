@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.createtask
 
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
 import com.grappim.kit.testing.MainDispatcherRule
@@ -115,7 +117,8 @@ internal class CreateTaskViewModelTest {
 
         val state = sut.state.value
         assertEquals("", state.title)
-        assertEquals("", state.description)
+        assertEquals(TextFieldValue(), state.description)
+        assertFalse(state.isPreview)
         assertFalse(state.isLoading)
         assertEquals(NativeText.Empty, state.error)
     }
@@ -143,12 +146,26 @@ internal class CreateTaskViewModelTest {
     }
 
     @Test
-    fun `setDescription - updates description`() = runTest {
+    fun `setDescription - updates description including its selection`() = runTest {
         createViewModel()
-        val description = getRandomString()
+        val description = TextFieldValue(getRandomString(), TextRange(1, 3))
 
         sut.state.value.setDescription(description)
 
+        assertEquals(description, sut.state.value.description)
+    }
+
+    @Test
+    fun `onPreviewToggle - flips isPreview and keeps the description`() = runTest {
+        createViewModel()
+        val description = TextFieldValue("**bold**", TextRange(2, 6))
+        sut.state.value.setDescription(description)
+
+        sut.state.value.onPreviewToggle()
+        assertTrue(sut.state.value.isPreview)
+
+        sut.state.value.onPreviewToggle()
+        assertFalse(sut.state.value.isPreview)
         assertEquals(description, sut.state.value.description)
     }
 
@@ -251,7 +268,10 @@ internal class CreateTaskViewModelTest {
         createViewModel(savedStateHandle = savedStateHandle)
 
         assertEquals(restoredTitle, sut.state.value.title)
-        assertEquals(restoredDescription, sut.state.value.description)
+        assertEquals(
+            TextFieldValue(restoredDescription, TextRange(restoredDescription.length)),
+            sut.state.value.description
+        )
     }
 
     @Test
@@ -271,7 +291,7 @@ internal class CreateTaskViewModelTest {
         createViewModel(savedStateHandle = savedStateHandle)
         val description = getRandomString()
 
-        sut.state.value.setDescription(description)
+        sut.state.value.setDescription(TextFieldValue(description, TextRange(0)))
 
         assertEquals(description, savedStateHandle.get<String>("description"))
     }

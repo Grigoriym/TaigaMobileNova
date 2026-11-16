@@ -1091,6 +1091,37 @@ internal class UserStoryDetailsViewModelTest {
     }
 
     @Test
+    fun `description checkbox toggle success should store the description and bump the version`() = runTest {
+        val newVersion = getRandomLong()
+        val newDescription = getRandomString()
+        setupSuccessfulLoad()
+        workItemRepository.patchDataResult = patchedData(newVersion)
+        createViewModel()
+
+        sut.state.value.onDescriptionCheckboxToggle(newDescription)
+
+        assertEquals(newDescription, sut.state.value.currentUserStory?.description)
+        assertEquals(newDescription, sut.state.value.originalUserStory?.description)
+        assertEquals(newVersion, sut.state.value.currentUserStory?.version)
+    }
+
+    @Test
+    fun `description checkbox toggle failure should show a snackbar and keep the description`() = runTest {
+        setupSuccessfulLoad()
+        workItemRepository.patchDataThrows = testException
+        createViewModel()
+        val originalDescription = requireNotNull(sut.state.value.currentUserStory).description
+
+        sut.snackBarMessage.test {
+            sut.state.value.onDescriptionCheckboxToggle(getRandomString())
+
+            assertTrue(awaitItem() !is NativeText.Empty)
+        }
+
+        assertEquals(originalDescription, sut.state.value.currentUserStory?.description)
+    }
+
+    @Test
     fun `description update with a mention of a known member should refresh watchers`() = runTest {
         val newVersion = getRandomLong()
         val refreshedWatchers = persistentListOf(getUser())

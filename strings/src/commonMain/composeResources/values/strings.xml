@@ -435,4 +435,18 @@
     <string name="project_values_color">Color</string>
     <string name="project_values_by_default">Default</string>
     <string name="open_by_default_setup">Open by Default Settings</string>
+    <string name="markdown_bold">Bold</string>
+    <string name="markdown_italic">Italic</string>
+    <string name="markdown_strikethrough">Strikethrough</string>
+    <string name="markdown_inline_code">Inline code</string>
+    <string name="markdown_heading">Heading</string>
+    <string name="markdown_bullet_list">Bulleted list</string>
+    <string name="markdown_numbered_list">Numbered list</string>
+    <string name="markdown_quote">Quote</string>
+    <string name="markdown_task_list">Task list</string>
+    <string name="markdown_indent">Indent</string>
+    <string name="markdown_outdent">Outdent</string>
+    <string name="markdown_link">Link</string>
+    <string name="markdown_code_block">Code block</string>
+    <string name="markdown_preview">Preview</string>
 </resources>

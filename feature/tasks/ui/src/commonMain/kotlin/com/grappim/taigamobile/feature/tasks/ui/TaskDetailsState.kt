@@ -22,6 +22,7 @@ data class TaskDetailsState(
     val filtersData: FiltersData? = null,
 
     val onTitleSave: () -> Unit = {},
+    val onDescriptionCheckboxToggle: (String) -> Unit = {},
     val onBadgeSave: (SelectableWorkItemBadgeState, StatusUI) -> Unit = { _, _ -> },
 
     val error: NativeText = NativeText.Empty,
