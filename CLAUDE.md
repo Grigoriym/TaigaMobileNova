@@ -733,8 +733,7 @@ discipline to follow regardless, not something the repo enforces on its own.
 
 **Edit a PR with `gh api -X PATCH repos/{owner}/{repo}/pulls/N`, not `gh pr edit`** — the latter
 fails on this repo with `GraphQL: Projects (classic) is being deprecated` (hit three times, see
-`docs/frictions.md`). Pass fields directly — `-f title="…" -F body=@body.md` — which needs no `jq` (not installed on
-every machine; the old `jq -n … | --input -` recipe failed twice for that reason).
+`docs/frictions.md`). Pipe a `jq -n --arg title … --rawfile body …` object in via `--input -`.
 
 **Releases go through `release-prepare.yml`, not a hand-rolled branch/PR.** Trigger it
 (`gh workflow run release-prepare.yml -f version=X.Y.Z -f version_code=N`, next code = current
