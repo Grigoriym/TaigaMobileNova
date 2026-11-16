@@ -1018,6 +1018,14 @@ kotlin {
     deterministic and turbine can only observe the step in the order you set it. Worked example:
     `MainViewModelTest`'s `drawerItems - resets to empty when current project becomes null`.
 
+23. **`assertIsNotDisplayed()` can't catch content that draws outside its parent.** A node's displayed
+    bounds are clipped to every ancestor's size, whether or not anything clips the *drawing*. A
+    fixed-size child (e.g. a `Checkbox`) overflowing an unclipped `heightIn(max)` therefore reads as
+    not displayed while it's still visible on screen. Check pixels instead:
+    `onRoot().captureToImage().toPixelMap()` and count pixels of the element's colour in the region
+    that should be empty. Worked example: `ExpandableMarkdownTextTest`'s
+    `collapsedTextDoesNotDrawCheckboxesBelowTheCut`.
+
 ---
 
 ## Testing a class backed by `DataStore<Preferences>`
