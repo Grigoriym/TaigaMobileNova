@@ -8,6 +8,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.requestFocus
 import androidx.compose.ui.test.runComposeUiTest
 import com.grappim.taigamobile.feature.users.domain.TeamMember
 import com.grappim.taigamobile.uikit.theme.TaigaMobilePreviewTheme
@@ -148,5 +149,46 @@ class CreateCommentBarTest {
 
         onNodeWithContentDescription("Edit").performClick()
         onNodeWithText("plain **strong**").assertExists()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun toolbarIsHiddenUntilTheFieldIsFocused() = runComposeUiTest {
+        setContent {
+            TaigaMobilePreviewTheme {
+                CreateCommentBar(
+                    isOffline = false,
+                    onButtonClick = {},
+                    canComment = true
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Bold").assertDoesNotExist()
+
+        onNodeWithTag(CREATE_COMMENT_BAR_TEXT_FIELD_TEST_TAG).requestFocus()
+
+        onNodeWithContentDescription("Bold").assertExists()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    @Test
+    fun sendingHidesTheToolbarOnceTheFieldLosesFocus() = runComposeUiTest {
+        setContent {
+            TaigaMobilePreviewTheme {
+                CreateCommentBar(
+                    isOffline = false,
+                    onButtonClick = {},
+                    canComment = true
+                )
+            }
+        }
+
+        onNodeWithTag(CREATE_COMMENT_BAR_TEXT_FIELD_TEST_TAG).performTextInput("Looks good")
+        onNodeWithContentDescription("Bold").assertExists()
+
+        onNodeWithTag(CREATE_COMMENT_BAR_SEND_BUTTON_TEST_TAG).performClick()
+
+        onNodeWithContentDescription("Bold").assertDoesNotExist()
     }
 }

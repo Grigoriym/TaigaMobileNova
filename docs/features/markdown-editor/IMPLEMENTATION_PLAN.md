@@ -170,6 +170,9 @@ the constraint.
 - **Screen wiring (step 9, `CreateCommentBar`):** the bar has no ViewModel, so the Edit/Preview flag is a local
   `rememberSaveable` next to its `TextFieldValue`. The toolbar is a full-width row under the input row. Preview swaps the
   field for `MarkdownTextWidget` in a `Box` capped at 120dp that owns the `verticalScroll`; sending resets to Edit.
+  The toolbar is hidden until the user is writing (gregory, 2026-11-16): it shows while the field is focused, holds
+  text, or Preview is on (the last keeps the Edit button reachable once the field leaves composition). An idle bar
+  stays the compact single input row.
 - **Checking off task-list items (step 10, queued 2026-11-15 by gregory):** tapping a checkbox in the read-only
   description flips `[ ]`/`[x]` in the source and saves it straight away, through the existing description-save path.
   A toolbar "check selected lines" button was the other option and was not picked.
