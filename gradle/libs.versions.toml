@@ -106,7 +106,7 @@ dataStore = "1.3.0"
 # https://github.com/skydoves/colorpicker-compose/releases
 skydovesColorpicker = "1.3.0"
 markdownRenderer = "0.46.0"
-filekit = "0.17.0"
+filekit = "0.17.1"
 
 core-ktx = "1.19.1"
 appcompat = "1.8.0"
