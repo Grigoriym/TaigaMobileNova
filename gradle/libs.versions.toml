@@ -19,6 +19,8 @@ app-category = "utils"
 #noinspection UnusedVersionCatalogEntry
 compileSdk = "37"
 #noinspection UnusedVersionCatalogEntry
+compileSdkMinor = "1"
+#noinspection UnusedVersionCatalogEntry
 minSdk = "24"
 #noinspection UnusedVersionCatalogEntry
 targetSdk = "37"
@@ -33,7 +35,7 @@ kover = "0.9.11"
 composeRules = "0.6.8"
 
 # https://developer.android.com/reference/tools/gradle-api
-agp = "9.5.1"
+agp = "9.5.2"
 # https://github.com/google/desugar_jdk_libs/blob/master/CHANGELOG.md
 androidDesugarJdkLibs = "2.1.5"
 
@@ -88,7 +90,7 @@ jetbrainsAndroidxLifecycle = "2.11.0"
 jetbrainsNav3 = "1.2.0"
 grappimKit = "0.1.8"
 
-compose-bom = "2026.09.00"
+compose-bom = "2026.11.01"
 
 material = "1.14.0"
 activity-compose = "1.13.0"

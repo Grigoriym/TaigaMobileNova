@@ -23,7 +23,11 @@ class KmpLibraryConventionPlugin : Plugin<Project> {
             // The android DSL lives as a sub-extension of the kotlin extension
             val kotlinExt = extensions.getByType<KotlinMultiplatformExtension>()
             (kotlinExt as ExtensionAware).extensions.configure<KotlinMultiplatformAndroidLibraryExtension> {
-                compileSdk = libs.findVersion("compileSdk").get().toString().toInt()
+                compileSdk {
+                    version = release(libs.findVersion("compileSdk").get().toString().toInt()) {
+                        minorApiLevel = libs.findVersion("compileSdkMinor").get().toString().toInt()
+                    }
+                }
                 minSdk = libs.findVersion("minSdk").get().toString().toInt()
                 namespace = "com.grappim.taigamobile" + path.replace(':', '.').replace("-", "")
             }
