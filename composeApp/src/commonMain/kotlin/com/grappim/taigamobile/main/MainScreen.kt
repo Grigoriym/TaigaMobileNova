@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarData
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -44,7 +45,9 @@ import com.grappim.taigamobile.DrawerDestination
 import com.grappim.taigamobile.feature.login.ui.LoginNavDestination
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.app_name
+import com.grappim.taigamobile.strings.generated.resources.app_update_downloaded
 import com.grappim.taigamobile.strings.generated.resources.close
+import com.grappim.taigamobile.strings.generated.resources.restart
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.widgets.banner.OfflineIndicatorBanner
 import kotlinx.coroutines.flow.launchIn
@@ -53,7 +56,7 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 
 @Composable
-fun MainContent(viewModel: MainViewModel) {
+fun MainContent(viewModel: MainViewModel, isUpdateDownloaded: Boolean, onRestartForUpdate: () -> Unit) {
     val topBarController = remember { TopBarController() }
     val initialNavState by viewModel.initialNavState.collectAsStateWithLifecycle()
     val isOffline by viewModel.isOffline.collectAsStateWithLifecycle()
@@ -69,7 +72,9 @@ fun MainContent(viewModel: MainViewModel) {
             topBarConfig = topBarConfig,
             initialNavState = initialNavState,
             isOffline = isOffline,
-            connectedServer = connectedServer
+            connectedServer = connectedServer,
+            isUpdateDownloaded = isUpdateDownloaded,
+            onRestartForUpdate = onRestartForUpdate
         )
     }
 }
@@ -81,7 +86,9 @@ private fun MainScreenContent(
     topBarConfig: TopBarConfig,
     initialNavState: InitialNavState,
     isOffline: Boolean,
-    connectedServer: String
+    connectedServer: String,
+    isUpdateDownloaded: Boolean,
+    onRestartForUpdate: () -> Unit
 ) {
     val appState = rememberMainAppState()
 
@@ -90,6 +97,24 @@ private fun MainScreenContent(
     val drawerItems by viewModel.drawerItems.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
+
+    // Its own host, so the restart prompt stays up until acted on without queueing every other
+    // snackbar behind it.
+    val updateSnackbarHostState = remember { SnackbarHostState() }
+    val updateDownloadedMessage = stringResource(RString.app_update_downloaded)
+    val restartLabel = stringResource(RString.restart)
+    LaunchedEffect(isUpdateDownloaded) {
+        if (isUpdateDownloaded) {
+            val result = updateSnackbarHostState.showSnackbar(
+                message = updateDownloadedMessage,
+                actionLabel = restartLabel,
+                duration = SnackbarDuration.Indefinite
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                onRestartForUpdate()
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.logoutEvent.onEach {
@@ -125,16 +150,9 @@ private fun MainScreenContent(
                 )
             },
             snackbarHost = {
-                SnackbarHost(
-                    modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing),
-                    hostState = snackbarHostState
-                ) {
-                    Snackbar(
-                        snackbarData = it,
-                        shape = MaterialTheme.shapes.small,
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        contentColor = contentColorFor(MaterialTheme.colorScheme.surface)
-                    )
+                Column(modifier = Modifier.windowInsetsPadding(WindowInsets.safeDrawing)) {
+                    SnackbarHost(hostState = snackbarHostState) { AppSnackbar(it) }
+                    SnackbarHost(hostState = updateSnackbarHostState) { AppSnackbar(it) }
                 }
             },
             content = { paddingValues ->
@@ -230,4 +248,15 @@ private fun HideKeyboardOnNavigationChangeEffect(navigationState: NavigationStat
     LaunchedEffect(navigationState.currentKey) {
         keyboardController?.hide()
     }
+}
+
+@Composable
+private fun AppSnackbar(snackbarData: SnackbarData) {
+    Snackbar(
+        snackbarData = snackbarData,
+        shape = MaterialTheme.shapes.small,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = contentColorFor(MaterialTheme.colorScheme.surface),
+        actionColor = MaterialTheme.colorScheme.primary
+    )
 }
