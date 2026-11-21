@@ -32,6 +32,7 @@ now that the table below covers everything left.
 | 60 | `MarkdownTextWidget` applies its `modifier` twice when `onClick` is null | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
 | 62 | `CreateCommentBar`'s Markdown toolbar still edits the text while offline | S | `uikit/.../widgets/CreateCommentBar.kt` |
 | 63 | Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run | S | `uikit/src/jvmTest/.../CreateCommentBarTest.kt` |
+| 64 | `androidApp` has no detekt/ktlint, so CI never lints it | S | `build-logic/.../Quality.kt` |
 
 ---
 
@@ -409,3 +410,12 @@ loaded machine. Step 10's `WorkItemDescriptionWidgetTest` waits with `timeoutMil
 `waitUntil`s that wait on rendered Markdown: `CreateCommentBarTest`, `WikiCreatePageScreenContentTest`,
 `CreateTaskScreenContentTest`.
 
+## 64. `androidApp` has no detekt/ktlint, so CI never lints it
+
+Found 2026-11-21 (PR #491): `./gradlew :androidApp:ktlintCheck :androidApp:detekt` failed with "Task not found".
+`configureLinting()` (`build-logic/convention/src/main/kotlin/com/grappim/taigamobile.buildlogic/Quality.kt`) is only
+called from `KmpLibraryConventionPlugin` and `KmpLibraryComposeConventionPlugin`, so the `taigamobile.android.application`
+module (`MainActivity.kt`, `TaigaApp.kt`, the flavor `AppUpdateModule`s) is skipped by `code_analysis.yml`'s root
+`./gradlew detekt` / `ktlintCheck`. Fix: call `configureLinting()` from the Android application convention plugin too,
+check that its source-set layout (`src/main`, `src/gplay`, `src/fdroid`) is covered, and fix whatever findings it
+surfaces. It touches `build-logic/`, so the commit needs a `Gate-change:` line.
