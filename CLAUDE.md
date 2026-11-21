@@ -81,7 +81,9 @@ itself is 21). If jenv doesn't have that version, `./gradlew` prints only `jenv:
 installed` and runs nothing. **Every** APK, debug included, is signed with `taigamobilenova_debug.jks`
 at the repo root plus `TAIGA_ALIAS_D`/`TAIGA_KEY_PASS_D`/`TAIGA_STORE_PASS_D`. Without them,
 `validateSigning<Variant>` fails with `Keystore file not set`. Android tasks also need `ANDROID_HOME`
-or `local.properties`. Per-machine workarounds go in `docs/machine.local.md` (gitignored).
+or `local.properties`. Gplay builds (`-PgplayBuild`) also need `google-services.json` under
+`androidApp/` (not committed) — without it `processGplayDebugGoogleServices` fails. Per-machine
+workarounds go in `docs/machine.local.md` (gitignored).
 
 **Never judge a Gradle gate by filtered output.** `-q` hid that Gradle never started (the jenv case
 above). `| grep … | head` swallowed a failed `:uikit:detekt`'s exit code. Write the full output to a
@@ -97,7 +99,10 @@ log, check `$?`, and confirm the tests ran from `build/test-results/**/TEST-*.xm
 
 **Platforms:**
 
-- **Android** — `androidTarget()`, Min SDK 24, Target SDK 37, flavors: Gplay / Fdroid
+- **Android** — `androidTarget()`, Min SDK 24, Target SDK 37, Compile SDK 37.1, flavors: Gplay / Fdroid.
+  The `.1` is Android's minor API level (catalog `compileSdkMinor`, applied via AGP's
+  `compileSdk { version = release(N) { minorApiLevel = M } }`) — Compose 1.13+ AARs require it, and
+  `checkAarMetadata` fails without it. Reset or drop it when bumping `compileSdk`'s major.
 - **iOS** — `iosArm64()` + `iosSimulatorArm64()`, static framework `TaigaMobileNovaIos`; entry point in `main.ios.kt`
 - **Desktop/JVM** — `jvm()`, entry point `TaigaMobileDesktop.kt`; packages Deb/Dmg/Msi
 
@@ -647,6 +652,10 @@ every PR); or that adds a new `@Ignore`/`@Suppress`, unless the commit message c
 ```
 Gate-change: what was widened, and why
 ```
+
+**A Renovate PR bumping one of those gated keys always fails guardrails** (its bot commit can't
+carry the line) — re-commit the bump with a `Gate-change:` line, e.g. folded into a combined deps PR
+(#487 did this for AGP 9.5.2).
 
 This doesn't prevent widening a gate — it makes doing so silently impossible. It runs with no
 `paths-ignore`, unlike `build.yml`/`code_analysis.yml`, so a CLAUDE.md-only commit is still checked.
