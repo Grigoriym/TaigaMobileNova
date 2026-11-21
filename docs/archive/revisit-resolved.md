@@ -56,6 +56,7 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 49 | [Kanban fetches `filters_data` twice on load](#49-kanban-fetches-filters_data-twice-on-load) | ✅ resolved 2026-09-07 |
 | 51 | [Switching drawer sections is recorded on the back stack, so back cascades through prior sections](#51-switching-drawer-sections-is-recorded-on-the-back-stack-so-back-cascades-through-prior-sections) | ✅ resolved 2026-09-07 |
 | 54 | [`containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member](#54-containsmention-triggers-a-wasted-watchers-refresh-for-a-typod-name-that-isnt-a-real-member) | ✅ resolved 2026-09-11 |
+| 61 | [`EditDescriptionContentTest`'s preview assertion doesn't wait for async Markdown parsing](#61-editdescriptioncontenttests-preview-assertion-doesnt-wait-for-async-markdown-parsing) | ✅ resolved 2026-11-15 |
 
 ---
 
@@ -2190,3 +2191,20 @@ asserting `watchersState.value.watchers` does/doesn't change after a comment or 
 containing a known-vs-unknown `@mention` (`getTeamMember()`'s test factory gained a `username`
 override param for this). Verified with full `./gradlew jvmTest` (1860 green), `ktlintCheck`, and
 `:koverVerify` (floor still holds).
+
+## 61. `EditDescriptionContentTest`'s preview assertion doesn't wait for async Markdown parsing
+
+Found during markdown-editor checklist step 7 (2026-11-14). `MarkdownTextWidget`'s renderer
+(`com.mikepenz:multiplatform-markdown-renderer`) parses off the first composition, so right after
+toggling Preview the rendered text isn't in the semantics tree yet. Step 7's
+`WikiCreatePageScreenContentTest` failed on exactly that (the preview `Box` measured 0px) until it
+waited with `waitUntil { onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty() }`.
+`EditDescriptionContentTest.previewRendersMarkdownAndSwitchingBackKeepsTextAndSelection`
+(`feature/workitem/ui/src/jvmTest/.../editdescription/`) asserts the same text with a bare
+`onNodeWithText(...).assertExists()` and passes today, so it's either timing-dependent (a latent
+flake) or something in its layout makes the parse land sooner. Add the same `waitUntil` there.
+
+**Fix (2026-11-15):** markdown-editor checklist step 10 found it no longer passing at all, not just flaky: it failed on
+every run, on a clean tree too. The bare `onNodeWithText("plain strong", substring = true).assertExists()` became
+`waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty() }`.
+Passed 3/3 with `--rerun`, then the full `jvmTest`. The longer timeout matches `docs/revisit.md` entry 63.

@@ -6,6 +6,8 @@ import androidx.datastore.preferences.SharedPreferencesMigration
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStoreFile
+import com.grappim.kit.customheaders.CustomHeadersStorage
+import com.grappim.kit.customheaders.CustomHeadersStorageImpl
 import com.grappim.kit.storage.KeystoreSecretCipher
 import com.grappim.kit.storage.NetworkMonitor
 import com.grappim.kit.storage.NetworkMonitorImpl
@@ -36,6 +38,14 @@ class AuthDataStoreModule {
         AuthStorageImpl(createAuthDataStore(context), KeystoreSecretCipher(AUTH_TOKEN_KEY_ALIAS))
 
     @Single
+    fun provideCustomHeadersStorage(context: Context, @StorageJsonQualifier json: Json): CustomHeadersStorage =
+        CustomHeadersStorageImpl(
+            createCustomHeadersDataStore(context),
+            KeystoreSecretCipher(CUSTOM_HEADERS_KEY_ALIAS),
+            json
+        )
+
+    @Single
     fun provideSessionStorage(context: Context, colorMapper: ColorMapper): TaigaSessionStorage =
         TaigaSessionStorageImpl(createSessionDataStore(context), colorMapper)
 
@@ -52,6 +62,7 @@ class AuthDataStoreModule {
 }
 
 private const val AUTH_TOKEN_KEY_ALIAS = "taiga_auth_token_key"
+private const val CUSTOM_HEADERS_KEY_ALIAS = "taiga_custom_headers_key"
 
 fun createSessionDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
     produceFile = {
@@ -86,5 +97,11 @@ fun createAuthDataStore(context: Context): DataStore<Preferences> = PreferenceDa
 fun createTrustedCertDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
     produceFile = {
         context.preferencesDataStoreFile(TRUSTED_CERT_DATA_STORE_FILE_NAME).absolutePath.toPath()
+    }
+)
+
+fun createCustomHeadersDataStore(context: Context): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(
+    produceFile = {
+        context.preferencesDataStoreFile(CUSTOM_HEADERS_DATA_STORE_FILE_NAME).absolutePath.toPath()
     }
 )

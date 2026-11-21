@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.editdescription
 
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
 import com.grappim.kit.testing.MainDispatcherRule
@@ -95,6 +96,29 @@ internal class EditDescriptionViewModelTest {
 
         assertEquals(newValue, sut.state.value.currentDescription.text)
         assertEquals(description, sut.state.value.originalDescription)
+    }
+
+    // --- preview toggle ---
+
+    @Test
+    fun `on init the editor is in edit mode`() {
+        createViewModel()
+
+        assertFalse(sut.state.value.isPreview)
+    }
+
+    @Test
+    fun `onPreviewToggle switches to preview and back, keeping text and selection`() {
+        createViewModel()
+        val value = TextFieldValue("hello world", TextRange(6, 11))
+        sut.state.value.onDescriptionChange(value)
+
+        sut.state.value.onPreviewToggle()
+        assertTrue(sut.state.value.isPreview)
+
+        sut.state.value.onPreviewToggle()
+        assertFalse(sut.state.value.isPreview)
+        assertEquals(value, sut.state.value.currentDescription)
     }
 
     // --- dialog visibility ---

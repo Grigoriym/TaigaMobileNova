@@ -15,6 +15,7 @@ import com.grappim.taigamobile.strings.generated.resources.error_no_internet_con
 import com.grappim.taigamobile.strings.generated.resources.error_not_acceptable
 import com.grappim.taigamobile.strings.generated.resources.error_not_found
 import com.grappim.taigamobile.strings.generated.resources.error_permission_denied
+import com.grappim.taigamobile.strings.generated.resources.error_proxy_auth
 import com.grappim.taigamobile.strings.generated.resources.error_something_has_gone_wrong
 import com.grappim.taigamobile.strings.generated.resources.error_ssl_certificate
 import com.grappim.taigamobile.strings.generated.resources.error_ssl_hostname_mismatch
@@ -51,6 +52,8 @@ fun getErrorMessage(exception: Throwable): NativeText = if (exception is Network
         )
 
         NetworkException.ERROR_UNDEFINED -> NativeText.Resource(RString.request_failed)
+
+        NetworkException.ERROR_PROXY_AUTH -> NativeText.Resource(RString.error_proxy_auth)
 
         NetworkException.ERROR_UNAUTHORIZED -> NativeText.Resource(
             RString.auth_error_refresh_token_not_passed

@@ -6,6 +6,7 @@
 
     <!--  It is needed to check if the device is connected to the internet or not  -->
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
 
     <application
         android:name=".TaigaApp"

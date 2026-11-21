@@ -37,10 +37,15 @@ kotlin {
             implementation(libs.androidx.paging.common)
 
             implementation(libs.jetbrains.compose.icons)
+            implementation(libs.jetbrains.compose.icons.extended)
 
             implementation(libs.markdownRenderer.core)
             implementation(libs.markdownRenderer.m3)
             implementation(libs.markdownRenderer.coil)
+        }
+        androidMain.dependencies {
+            // `rememberLauncherForActivityResult`, behind `rememberLocalNetworkPermissionRequest`.
+            implementation(libs.androidx.activity.compose)
         }
         jvmTest.dependencies {
             implementation(composeUiTestDep)

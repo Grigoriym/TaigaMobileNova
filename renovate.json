@@ -7,5 +7,21 @@
     "baseBranchPatterns": [
         "dev"
     ],
-    "osvVulnerabilityAlerts": true
+    "osvVulnerabilityAlerts": true,
+    "packageRules": [
+        {
+            "description": "The -0.6.x-compat builds keep the old 0.6 API for libraries that still need it. Renovate reads the suffix as newer than the plain release.",
+            "matchPackageNames": [
+                "org.jetbrains.kotlinx:kotlinx-datetime"
+            ],
+            "allowedVersions": "!/-compat$/"
+        },
+        {
+            "description": "The build compiles on the toolchain and daemon JDK set in build-logic and gradle-daemon-jvm.properties, whatever setup-java installs. Change all of them together, by hand.",
+            "matchPackageNames": [
+                "java-jdk"
+            ],
+            "enabled": false
+        }
+    ]
 }

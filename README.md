@@ -32,7 +32,7 @@ Download the latest `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/openSUSE) from [Git
 
 iOS and Desktop (macOS / Windows) builds are functional but distribution channels are not yet set up. If you want to try them, clone the repo and build locally — see [Build Commands](#build-commands) below.
 
-[Project board](https://tasks.gregstuff.click/project/taigamobilenova/kanban)
+[Project board](https://taiga.gregstuff.click/project/taigamobilenova/kanban)
 
 ## Screenshots
 

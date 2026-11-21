@@ -27,6 +27,7 @@ data class IssueDetailsState(
     val originalIssue: IssueUI? = null,
 
     val onTitleSave: () -> Unit = {},
+    val onDescriptionCheckboxToggle: (String) -> Unit = {},
     val onBadgeSave: (SelectableWorkItemBadgeState, StatusUI) -> Unit = { _, _ -> },
 
     val sprint: Sprint? = null,

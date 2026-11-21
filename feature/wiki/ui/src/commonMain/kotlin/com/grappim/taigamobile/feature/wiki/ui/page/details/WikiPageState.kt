@@ -28,6 +28,7 @@ data class WikiPageState(
 
     val onAttachmentAdd: (file: PlatformFile?) -> Unit = { _ -> },
     val onAttachmentRemove: (Attachment) -> Unit = {},
+    val onDescriptionCheckboxToggle: (String) -> Unit = {},
 
     val canModifyPage: Boolean = false,
     val shouldShowActions: Boolean = false

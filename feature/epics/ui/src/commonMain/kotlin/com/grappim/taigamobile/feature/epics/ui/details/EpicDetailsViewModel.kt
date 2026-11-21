@@ -189,6 +189,7 @@ class EpicDetailsViewModel(
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
+            onDescriptionCheckboxToggle = ::onDescriptionCheckboxToggle,
             onBadgeSave = ::onBadgeSave,
             setAreWorkItemsExpanded = ::setAreWorkItemsExpanded,
             onEpicColorPick = ::onEpicColorPick,
@@ -311,6 +312,10 @@ class EpicDetailsViewModel(
                 updateVersion(version)
             }
         )
+    }
+
+    private fun onDescriptionCheckboxToggle(newDescription: String) {
+        viewModelScope.launch { onNewDescriptionUpdate(newDescription) }
     }
 
     private suspend fun onNewDescriptionUpdate(newDescription: String) {

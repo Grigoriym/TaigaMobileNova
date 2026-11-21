@@ -3,6 +3,7 @@ package com.grappim.taigamobile.core.storage.di
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.Preferences
+import com.grappim.kit.customheaders.CustomHeaderValidator
 import kotlinx.serialization.json.Json
 import okio.Path.Companion.toPath
 import org.koin.core.annotation.ComponentScan
@@ -15,6 +16,7 @@ internal const val SESSION_FILTERS_DATA_STORE_FILE_NAME = "taiga_session_filters
 internal const val AUTH_DATA_STORE_FILE_NAME = "auth_storage"
 internal const val TAIGA_SESSION_STORAGE = "taiga_session_storage"
 internal const val TRUSTED_CERT_DATA_STORE_FILE_NAME = "trusted_cert_storage"
+internal const val CUSTOM_HEADERS_DATA_STORE_FILE_NAME = "custom_headers_storage"
 
 @Retention(AnnotationRetention.BINARY)
 @Qualifier
@@ -31,6 +33,11 @@ class StorageModule {
     fun provideStorageJson(): Json = Json {
         ignoreUnknownKeys = true
     }
+
+    /** `Authorization` carries Taiga's own bearer token and `User-Agent` is set per request. */
+    @Single
+    fun provideCustomHeaderValidator(): CustomHeaderValidator =
+        CustomHeaderValidator(CustomHeaderValidator.DEFAULT_RESERVED_NAMES + listOf("Authorization", "User-Agent"))
 }
 
 fun createDataStore(producePath: () -> String): DataStore<Preferences> = PreferenceDataStoreFactory.createWithPath(

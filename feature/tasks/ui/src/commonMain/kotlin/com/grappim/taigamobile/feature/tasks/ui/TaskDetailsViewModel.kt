@@ -190,6 +190,7 @@ class TaskDetailsViewModel(
             onCommentRemove = ::deleteComment,
             onCreateCommentClick = ::createComment,
             onTitleSave = ::onTitleSave,
+            onDescriptionCheckboxToggle = ::onDescriptionCheckboxToggle,
             onBadgeSave = ::onBadgeSave,
             onPromoteClick = ::promoteToUserStory,
             onGoingToEditTags = ::onGoingToEditTags,
@@ -734,6 +735,10 @@ class TaskDetailsViewModel(
                 onWatchersUpdated(updateState.ids)
             }
         }
+    }
+
+    private fun onDescriptionCheckboxToggle(newDescription: String) {
+        viewModelScope.launch { onNewDescriptionUpdate(newDescription) }
     }
 
     private suspend fun onNewDescriptionUpdate(newDescription: String) {
