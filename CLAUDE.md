@@ -764,6 +764,12 @@ on releases, so diffing against it re-checks the entire dev-vs-master backlog in
 release branch's own commits. See `docs/revisit.md` #47 for the equivalent, still-open gap on the
 `push`-triggered run that fires on `master` right after the merge.
 
+**Merge the release PR with "Create a merge commit", never squash.** A squash leaves `master` with one
+commit that shares no history with `dev`. Then `release-finalize.yml`'s back-merge conflicts on any
+file both sides touched, and `generate_release_notes` lists only the release PR. Both happened on v2.3.0
+(#488). Fix: merge `origin/master` into `dev` with `-X theirs` (check the tree then equals `master`)
+and rewrite the release notes from `git log v<prev>..<dev-before-release>`'s `(#N)` PR numbers.
+
 **Never write a bare `#N` to reference a `docs/revisit.md`/archive entry number in a PR/issue
 description, comment, or commit message.** GitHub autolinks any `#<digits>` rendered through its
 web UI (PR/issue bodies and comments, and file content rendered from the repo) to that repo's own
