@@ -32,6 +32,15 @@ technique lives in the skill itself, not here — this file is only what's true 
 
 ## App-specific gotchas
 
+- **Upgrade tests from v2.2.3 or older need an API ≤ 36 AVD.** Builds before the Android 17
+  local-network change (#468) don't request `ACCESS_LOCAL_NETWORK`, so on an API 37 AVD their
+  login just times out (`ConnectTimeoutException` to `10.0.2.2:9000`, while shell `nc` connects).
+  Seed the old build on the tablet AVD (API 36) instead. Current builds show the system
+  "find, connect to … nearby devices" dialog on API 37 before the unencrypted-connection one; tap **Allow**.
+- **Upgrade-in-place recipe:** build the old tag's fdroid debug APK in a `git worktree` (copy
+  `local.properties` and `taigamobilenova_debug.jks` into it). Both builds share the debug cert and,
+  until the release bump, the same versionCode, so `adb install -r` upgrades. The Room DB is
+  `databases/taigamobilenova_debug.db` (+ `-wal`); pull all three files via `run-as … cat` to diff row counts.
 - **A stale server URL can already be pre-filled in the login form on a "fresh" install**
   even after `adb uninstall` + reinstall — seen once as a real LAN IP
   (`192.168.0.248:9000`) instead of an empty field. Cause not fully diagnosed (possibly
