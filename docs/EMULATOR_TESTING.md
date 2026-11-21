@@ -32,6 +32,11 @@ technique lives in the skill itself, not here — this file is only what's true 
 
 ## App-specific gotchas
 
+- **The gplay in-app update prompt can't be triggered on an emulator** (no Play install, and no
+  `google-services.json` locally, so no gplay build either). To check its UI, temporarily set
+  `isUpdateDownloaded = true` after a short `delay` in `MainActivity.onCreate` and swap
+  `onRestartForUpdate` for a `Log.d`, build fdroid debug, and revert before committing. The snackbar
+  shows "An update has just been downloaded" / "Restart" above the nav bar.
 - **Upgrade tests from v2.2.3 or older need an API ≤ 36 AVD.** Builds before the Android 17
   local-network change (#468) don't request `ACCESS_LOCAL_NETWORK`, so on an API 37 AVD their
   login just times out (`ConnectTimeoutException` to `10.0.2.2:9000`, while shell `nc` connects).
