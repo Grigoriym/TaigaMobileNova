@@ -89,6 +89,13 @@ workarounds go in `docs/machine.local.md` (gitignored).
 above). `| grep … | head` swallowed a failed `:uikit:detekt`'s exit code. Write the full output to a
 log, check `$?`, and confirm the tests ran from `build/test-results/**/TEST-*.xml` counts.
 
+**Free memory before a heavy Gradle run, and run it in the foreground.** Idle Gradle/Kotlin daemons
+from earlier invocations keep ~5 GB each, and a running emulator another ~5.5 GB. Together they
+caused "Not enough memory to run compilation" twice and got a background build reaped by Claude
+Code for low system memory twice (`docs/frictions.md`). Run `./gradlew --stop` (and `adb emu kill`
+if the emulator isn't needed during the build) first. Run multi-gate or multi-checkout builds one
+after another in the foreground, not as one big background invocation. On a retry, add `--max-workers=2`.
+
 ## Architecture
 
 **Module structure:** `androidApp/` (Android entry point) + `composeApp/` (KMP library) → `feature/` → `core/` → `utils/`

@@ -249,6 +249,7 @@ kotlin {
                 implementation(kotlin("test-junit"))
                 implementation(composeUiTestDep)
                 implementation(composeDesktopUiTestJUnit4Dep)
+                implementation(libs.ktor.client.mock)
 
                 // koin-test is JVM-only here on purpose: KoinGraphTest resolves the whole
                 // real graph, which only works on a platform that has every actual (JVM does).
