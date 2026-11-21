@@ -25,7 +25,13 @@ now that the table below covers everything left.
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 | 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
 | 55 | CLAUDE.md's "grappim-kit Modules" section is now a 9-swap worked-example catalogue, the exact shape its own "Keeping this file lean" rule tells future sessions to split out | S | CLAUDE.md's "grappim-kit Modules" section (compare to how the Kover heuristics catalogue was split into `docs/testing/kover-coverage-heuristics.md`) |
-| 56 | Two unused vector copies of the old launcher logo | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
+| 56 | Two unused vector copies of the old launcher logo, plus an unused tint color | S | `androidApp/src/main/res/drawable/ic_launcher_foreground.xml`, `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` |
+| 57 | iOS has no `NSLocalNetworkUsageDescription` | S | this file |
+| 58 | `apk-size-check` runner is killed on Gradle-wrapper bump PRs | S | `.github/workflows/build.yml` `apk-size-check` job |
+| 59 | Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists) | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
+| 60 | `MarkdownTextWidget` applies its `modifier` twice when `onClick` is null | S | `uikit/.../widgets/text/MarkdownTextWidget.kt` |
+| 62 | `CreateCommentBar`'s Markdown toolbar still edits the text while offline | S | `uikit/.../widgets/CreateCommentBar.kt` |
+| 63 | Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run | S | `uikit/src/jvmTest/.../CreateCommentBarTest.kt` |
 
 ---
 
@@ -297,7 +303,7 @@ actual duplicate before changing any production code.
 **Trigger:** pick up as a standalone investigation (`investigate-issue` skill) once gregory wants to
 prioritize it.
 
-## 56. Two unused vector copies of the old launcher logo
+## 56. Two unused vector copies of the old launcher logo, plus an unused tint color
 
 `androidApp/src/main/res/drawable/ic_launcher_foreground.xml` and its byte-identical copy
 `uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` are a split two-colour
@@ -308,4 +314,98 @@ both use the raster `@mipmap/ic_launcher_foreground`, and no Kotlin file uses a
 shadows the mipmap's name, which misled the issue 450 investigation
 (`docs/issues/450-add-monochrome-icon.md`) into treating it as the current logo.
 
-**Trigger:** delete both once confirmed unused on every target (check desktop/iOS packaging too).
+`ic_launcher_foreground_tint` (`androidApp/src/main/res/values/colors.xml`,
+`values-night/colors.xml`) is also defined and referenced nowhere; remove it with them.
+
+Desktop packaging (`art/taiga-mobile-logo.*`), iOS (`AppIcon.appiconset`) and the in-app logo
+(`uikit`'s `taiga_mobile_logo.png`) don't use these files either (checked 2026-10-30).
+
+A removal was made and reverted in PR 451 after an install showed a black icon background. The black
+came from `ic_launcher_background_tint`, which was black in light mode and has since been replaced
+with white, so it is not a reason to keep these files.
+
+**Trigger:** any time; optional cleanup. Build both Android flavors and the desktop jar after
+deleting, and check the launcher icon on a device.
+
+---
+
+## 57. iOS has no `NSLocalNetworkUsageDescription`
+
+iOS 14+ gates LAN access with its own system prompt. `iosApp`'s `Info.plist` has no
+`NSLocalNetworkUsageDescription`, so that prompt shows iOS's generic text. Whether a self-hosted
+LAN Taiga even works on iOS today is unverified.
+
+The Android 17 `ACCESS_LOCAL_NETWORK` half of this entry was checked by gregory on a Pixel 11 Pro
+(Android 17, API 37) on 2026-11-11 against a LAN Taiga; the permission flow worked.
+
+**Trigger:** any iOS LAN bug report, or an iOS device to test on.
+
+---
+
+## 58. `apk-size-check` runner is killed on Gradle-wrapper bump PRs
+
+On PR #466 (Gradle 9.8.2 → 9.9.1, 2026-11-13) the `apk-size-check` job was cancelled twice with
+`The runner has received a shutdown signal` — once mid base-APK build (run 42865533809, first
+attempt), once in the diff step on the rerun. The AGP bump PR #448, run the same day on the
+unchanged wrapper, passed the same job. Unverified hypothesis: the job builds the PR head then
+checks out the base in the same runner, so a wrapper bump leaves two different Gradle daemons
+resident and the runner runs out of memory. A `./gradlew --stop` between the two builds would
+test it.
+
+**Trigger:** the next Renovate Gradle-wrapper PR failing this job the same way.
+
+---
+
+## 59. Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists)
+
+Found during markdown-editor checklist step 1 (2026-11-14). Taiga renders with Python-Markdown
+plus `nl2br`, so a single newline in a description is a hard `<br>`. Nested lists need 4-space
+indentation: `- a\n  - b` renders flat (see
+[markdown-editor IMPLEMENTATION_PLAN.md](features/markdown-editor/IMPLEMENTATION_PLAN.md), Open
+questions → 1). `MarkdownTextWidget` (`uikit/.../widgets/text/MarkdownTextWidget.kt`) passes
+the text straight to `multiplatform-markdown-renderer`, with only `@mention` rewriting. That
+renderer is CommonMark/GFM, so a single newline should come out as a soft break: a description
+typed as two lines on the web would show as one line in the app. **Unverified on device.** It's
+inferred from the renderer's flavour and the lack of any newline preprocessing.
+
+**Check:** save `line one\nline two` as a description on the local instance and open it on the
+emulator. A fix (e.g. turning single newlines into hard breaks outside code blocks before
+rendering) belongs with the markdown-editor work, if option A's Preview lands, or on its own.
+
+---
+
+## 60. `MarkdownTextWidget` applies its `modifier` twice when `onClick` is null
+
+Found during markdown-editor checklist step 6 (2026-11-14). `MarkdownTextWidget`
+(`uikit/.../widgets/text/MarkdownTextWidget.kt`, the `Markdown(modifier = ...)` call) builds its
+modifier as `modifier.then(if (onClick != null) Modifier.clickable { … } else modifier)`, so with
+no `onClick` the caller's modifier chain runs twice. Padding is doubled, and passing
+`Modifier.verticalScroll(...)` nests a scroll inside itself and crashes with "Vertically scrollable
+component was measured with an infinity maximum height constraints". The `else` branch should be
+`Modifier`. The edit-description Preview works around it by putting the scroll on a wrapping
+`Box` (`WorkItemEditDescriptionScreen.kt`).
+
+**Check:** every `MarkdownTextWidget(` call site that passes a `modifier` and no `onClick`. A
+padding modifier there renders with double padding today, so fixing it changes spacing on screen.
+Drive those screens on the emulator before and after.
+
+## 62. `CreateCommentBar`'s Markdown toolbar still edits the text while offline
+
+Found during markdown-editor checklist step 9 (2026-11-15). When `isOffline` is true the comment field is disabled
+(`enabled = !isOffline`) and the send button too, but `MarkdownToolbar` has no `enabled` parameter, so its formatting
+buttons still apply transforms to the text the user can't otherwise edit. Nothing is sent, so it's cosmetic. Per the
+Offline State Pattern in CLAUDE.md, write actions should be disabled offline: give `MarkdownToolbar`
+(`uikit/.../widgets/editor/MarkdownToolbar.kt`) an `enabled` flag that the formatting buttons respect, and pass
+`!isOffline` from `CreateCommentBar`. The other three toolbar sites don't disable their fields offline, so check
+whether they should too before deciding the flag's scope.
+
+## 63. Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run
+
+Found during markdown-editor checklist step 10 (2026-11-15). `CreateCommentBarTest.previewRendersTheMarkdownAndEditRestoresTheField`
+(`uikit/src/jvmTest/.../widgets/CreateCommentBarTest.kt:146`) failed once with `ComposeTimeoutException: Condition still not
+satisfied after 1000 ms` during a full `./gradlew jvmTest ktlintCheck … compileKotlinIosArm64` run that overlapped an emulator
+cold boot, then passed 3/3 on its own (`--rerun`). The renderer parses asynchronously, and 1 s isn't enough headroom on a
+loaded machine. Step 10's `WorkItemDescriptionWidgetTest` waits with `timeoutMillis = 5_000`. Do the same for the other
+`waitUntil`s that wait on rendered Markdown: `CreateCommentBarTest`, `WikiCreatePageScreenContentTest`,
+`CreateTaskScreenContentTest`.
+

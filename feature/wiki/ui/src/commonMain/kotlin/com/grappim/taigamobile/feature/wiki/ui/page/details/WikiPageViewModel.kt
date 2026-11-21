@@ -64,6 +64,7 @@ class WikiPageViewModel(
             setDropdownMenuExpanded = ::setDropdownMenuExpanded,
             onDeleteConfirm = ::deleteWikiPage,
             onAttachmentRemove = ::onAttachmentRemove,
+            onDescriptionCheckboxToggle = ::onDescriptionCheckboxToggle,
             onAttachmentAdd = ::onAttachmentAdd
         )
     )
@@ -93,6 +94,10 @@ class WikiPageViewModel(
         logcat {
             "WikiPageViewModel cleared - session cleaned up for taskId: $pageId"
         }
+    }
+
+    private fun onDescriptionCheckboxToggle(newDescription: String) {
+        viewModelScope.launch { onNewDescriptionUpdate(newDescription) }
     }
 
     private suspend fun onNewDescriptionUpdate(newDescription: String) {

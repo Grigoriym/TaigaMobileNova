@@ -189,6 +189,7 @@ class IssueDetailsViewModel(
             removeAssignee = ::removeAssignee,
             loadIssue = ::loadIssue,
             onTitleSave = ::onTitleSave,
+            onDescriptionCheckboxToggle = ::onDescriptionCheckboxToggle,
             onBadgeSave = ::onBadgeSave,
             onGoingToEditSprint = ::onGoingToEditSprint,
             onPromoteClick = ::promoteToUserStory,
@@ -728,6 +729,10 @@ class IssueDetailsViewModel(
                 updateVersion(version)
             }
         )
+    }
+
+    private fun onDescriptionCheckboxToggle(newDescription: String) {
+        viewModelScope.launch { onNewDescriptionUpdate(newDescription) }
     }
 
     private suspend fun onNewDescriptionUpdate(newDescription: String) {

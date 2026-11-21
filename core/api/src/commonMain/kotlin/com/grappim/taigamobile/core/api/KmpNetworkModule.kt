@@ -1,6 +1,9 @@
 package com.grappim.taigamobile.core.api
 
 import com.grappim.kit.appinfo.AppInfoProvider
+import com.grappim.kit.customheaders.CustomHeaders
+import com.grappim.kit.customheaders.CustomHeadersStorage
+import com.grappim.kit.customheaders.sanitizeCustomHeaders
 import com.grappim.kit.logger.logcat
 import com.grappim.kit.storage.cert.TrustedCertStorage
 import com.grappim.taigamobile.core.api.errors.ErrorMappingPlugin
@@ -51,7 +54,8 @@ class KmpNetworkModule {
         debugLocalHostProvider: DebugLocalHostProvider,
         networkErrorMapper: NetworkErrorMapper,
         errorResponseParser: ErrorResponseParser,
-        trustedCertStorage: TrustedCertStorage
+        trustedCertStorage: TrustedCertStorage,
+        customHeadersStorage: CustomHeadersStorage
     ): HttpClient = HttpClient(createPlatformHttpClientEngine(trustedCertStorage)) {
         expectSuccess = false
         defaultRequest {
@@ -68,6 +72,7 @@ class KmpNetworkModule {
                 }
             }
             level = LogLevel.ALL
+            sanitizeCustomHeaders(customHeadersStorage)
         }
         install(ErrorMappingPlugin) {
             this.errorMapper = networkErrorMapper
@@ -78,6 +83,10 @@ class KmpNetworkModule {
         }
         install(DebugLocalhostPlugin) {
             this.debugLocalHostProvider = debugLocalHostProvider
+        }
+        install(CustomHeaders) {
+            storage = customHeadersStorage
+            serverUrl = { baseUrlProvider.getBaseUrl() }
         }
     }
 
@@ -91,7 +100,8 @@ class KmpNetworkModule {
         tokenRefresher: TokenRefresher,
         networkErrorMapper: NetworkErrorMapper,
         errorResponseParser: ErrorResponseParser,
-        trustedCertStorage: TrustedCertStorage
+        trustedCertStorage: TrustedCertStorage,
+        customHeadersStorage: CustomHeadersStorage
     ): HttpClient = HttpClient(createPlatformHttpClientEngine(trustedCertStorage)) {
         expectSuccess = false
         defaultRequest {
@@ -108,6 +118,7 @@ class KmpNetworkModule {
                 }
             }
             level = LogLevel.ALL
+            sanitizeCustomHeaders(customHeadersStorage)
         }
         install(ErrorMappingPlugin) {
             this.errorMapper = networkErrorMapper
@@ -126,6 +137,10 @@ class KmpNetworkModule {
         }
         install(DebugLocalhostPlugin) {
             this.debugLocalHostProvider = debugLocalHostProvider
+        }
+        install(CustomHeaders) {
+            storage = customHeadersStorage
+            serverUrl = { baseUrlProvider.getBaseUrl() }
         }
     }
 }

@@ -1,0 +1,4 @@
+- New markdown editor for descriptions and wiki pages: formatting toolbar, live preview, task-list checkboxes and automatic list continuation
+- Custom request headers, for self-hosted Taiga servers behind a header-authenticating reverse proxy
+- Android 17: asks for local network access, so self-hosted servers on your LAN keep working
+- Dependency updates and internal improvements

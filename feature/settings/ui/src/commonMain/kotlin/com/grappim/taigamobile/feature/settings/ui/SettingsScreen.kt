@@ -15,6 +15,7 @@ import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material.icons.outlined.TouchApp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
@@ -36,6 +37,7 @@ import com.grappim.taigamobile.strings.generated.resources.logout_title
 import com.grappim.taigamobile.strings.generated.resources.settings
 import com.grappim.taigamobile.strings.generated.resources.settings_about
 import com.grappim.taigamobile.strings.generated.resources.settings_attributes
+import com.grappim.taigamobile.strings.generated.resources.settings_custom_headers
 import com.grappim.taigamobile.strings.generated.resources.settings_interface
 import com.grappim.taigamobile.strings.generated.resources.settings_modules
 import com.grappim.taigamobile.strings.generated.resources.settings_project_details
@@ -61,6 +63,7 @@ fun SettingsScreen(
     goToProjectDetailsScreen: () -> Unit,
     goToModulesScreen: () -> Unit,
     goToTrustedCertificatesScreen: () -> Unit,
+    goToCustomHeadersScreen: () -> Unit,
     viewModel: SettingsViewModel = koinViewModel()
 ) {
     val topBarController = LocalTopBarConfig.current
@@ -83,7 +86,8 @@ fun SettingsScreen(
         goToAttributesScreen = goToAttributesScreen,
         goToProjectDetailsScreen = goToProjectDetailsScreen,
         goToModulesScreen = goToModulesScreen,
-        goToTrustedCertificatesScreen = goToTrustedCertificatesScreen
+        goToTrustedCertificatesScreen = goToTrustedCertificatesScreen,
+        goToCustomHeadersScreen = goToCustomHeadersScreen
     )
 }
 
@@ -96,7 +100,8 @@ fun SettingsScreenContent(
     goToAttributesScreen: () -> Unit = {},
     goToProjectDetailsScreen: () -> Unit = {},
     goToModulesScreen: () -> Unit = {},
-    goToTrustedCertificatesScreen: () -> Unit = {}
+    goToTrustedCertificatesScreen: () -> Unit = {},
+    goToCustomHeadersScreen: () -> Unit = {}
 ) {
     ConfirmActionDialog(
         title = stringResource(RString.logout_title),
@@ -216,6 +221,22 @@ fun SettingsScreenContent(
                     }
                 )
             }
+
+            ListItem(
+                modifier = Modifier
+                    .clickable {
+                        goToCustomHeadersScreen()
+                    },
+                headlineContent = {
+                    Text(text = stringResource(RString.settings_custom_headers))
+                },
+                leadingContent = {
+                    Icon(
+                        imageVector = Icons.Default.VpnKey,
+                        contentDescription = "Custom Headers Screen"
+                    )
+                }
+            )
 
             ListItem(
                 modifier = Modifier

@@ -41,6 +41,7 @@ import com.grappim.taigamobile.feature.profile.ui.navigateToProfileScreen
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorNavDestination
 import com.grappim.taigamobile.feature.projectselector.ui.ProjectSelectorScreen
 import com.grappim.taigamobile.feature.projectselector.ui.navigateToProjectSelector
+import com.grappim.taigamobile.feature.settings.ui.customheaders.goToCustomHeadersScreen
 import com.grappim.taigamobile.feature.sprint.ui.SprintNavDestination
 import com.grappim.taigamobile.feature.sprint.ui.SprintScreen
 import com.grappim.taigamobile.feature.tasks.ui.navigateToTask
@@ -142,7 +143,8 @@ fun MainNavHost(
                 onShowSnackbar = showSnackbar,
                 onLoginSuccess = {
                     navigator.navigateToProjectSelector(isFromLogin = true)
-                }
+                },
+                onCustomHeadersClick = { navigator.goToCustomHeadersScreen() }
             )
         }
 

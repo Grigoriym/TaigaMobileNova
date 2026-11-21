@@ -14,6 +14,7 @@ import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeAuthStorage
 import com.grappim.taigamobile.testing.storage.FakeDatabaseWrapper
 import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
+import com.grappim.taigamobile.testing.storage.FakeServerStorage
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -35,6 +36,7 @@ internal class MainViewModelTest {
     private val databaseWrapper = FakeDatabaseWrapper()
     private val projectsRepository = FakeProjectsRepository()
     private val networkMonitor = FakeNetworkMonitor()
+    private val serverStorage = FakeServerStorage(SERVER)
     private val mainDispatcherRule = MainDispatcherRule()
 
     private lateinit var sut: MainViewModel
@@ -63,7 +65,8 @@ internal class MainViewModelTest {
             authStateManager = authStateManager,
             projectsRepository = projectsRepository,
             drawerItemsBuilder = DrawerItemsBuilder(),
-            networkMonitor = networkMonitor
+            networkMonitor = networkMonitor,
+            serverStorage = serverStorage
         )
     }
 
@@ -116,6 +119,22 @@ internal class MainViewModelTest {
         }
     }
 
+    // --- connectedServer ---
+
+    @Test
+    fun `connectedServer - is the stored server only while logged in`() = runTest {
+        createViewModel()
+
+        sut.connectedServer.test {
+            assertEquals("", awaitItem())
+            authStorage.setLoggedIn(true)
+            assertEquals(SERVER, awaitItem())
+            authStorage.setLoggedIn(false)
+            assertEquals("", awaitItem())
+            cancel()
+        }
+    }
+
     // --- drawerItems ---
 
     @Test
@@ -131,5 +150,9 @@ internal class MainViewModelTest {
             assertTrue(awaitItem().isEmpty())
             cancel()
         }
+    }
+
+    private companion object {
+        const val SERVER = "https://taiga.example.com"
     }
 }

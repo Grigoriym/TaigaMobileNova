@@ -25,6 +25,7 @@ data class EpicDetailsState(
     val filtersData: FiltersData? = null,
 
     val onTitleSave: () -> Unit = {},
+    val onDescriptionCheckboxToggle: (String) -> Unit = {},
 
     val isLoading: Boolean = false,
     val initialLoadError: NativeText = NativeText.Empty,

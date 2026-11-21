@@ -18,11 +18,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import coil3.SingletonImageLoader
 import com.grappim.kit.logger.FileLogger
 import com.grappim.kit.logger.LogPriority
 import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.core.storage.platform.appDataDir
 import com.grappim.taigamobile.di.KoinApp
+import com.grappim.taigamobile.images.newImageLoader
 import com.grappim.taigamobile.main.TaigaAppContent
 import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.app_name
@@ -46,6 +48,7 @@ fun main() {
     val screenReadySignalController = ScreenReadySignalController(true)
 
     startKoin<KoinApp> { }
+    SingletonImageLoader.setSafe { newImageLoader(it) }
 
     val appIcon = BitmapPainter(
         Thread.currentThread().contextClassLoader.getResourceAsStream(

@@ -50,4 +50,23 @@ class MarkdownTextWidgetTest {
 
         assertEquals("Hey @alice, can you check this?", result)
     }
+
+    @Test
+    fun `sourceOffset maps a position after rewritten mentions back to the source`() {
+        val text = "@alice and @carol\n- [ ] @bob checks"
+        val members = persistentListOf(alice, bob)
+        val rendered = rewriteMentions(text, members)
+
+        val result = sourceOffset(text, members, rendered.indexOf("[ ]"))
+
+        assertEquals(text.indexOf("[ ]"), result)
+    }
+
+    @Test
+    fun `sourceOffset is unchanged without members or before the first mention`() {
+        val text = "- [ ] ask @alice"
+
+        assertEquals(2, sourceOffset(text, persistentListOf(), 2))
+        assertEquals(2, sourceOffset(text, persistentListOf(alice), 2))
+    }
 }

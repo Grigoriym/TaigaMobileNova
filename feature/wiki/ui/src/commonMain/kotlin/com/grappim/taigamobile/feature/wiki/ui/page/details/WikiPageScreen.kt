@@ -177,7 +177,8 @@ fun WikiPageScreenContent(
                 canModify = state.canModifyPage,
                 isOffline = isOffline,
                 members = members,
-                onMentionClick = onMentionClick
+                onMentionClick = onMentionClick,
+                onDescriptionCheckboxToggle = state.onDescriptionCheckboxToggle
             )
 
             TaigaHeightSpacer(sectionsPadding)

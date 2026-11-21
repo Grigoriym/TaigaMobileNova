@@ -620,6 +620,14 @@ baseline, fixed as part of adding the extension). `PagingData.from(list)` needs 
 `Pager`/`RemoteMediator` — it is a static, already-loaded page, which is all a "does this Screen shape
 render inside `runComposeUiTest`" test needs (see task 14, `docs/testing/improvement-plan.md`).
 
+**`MarkdownTextWidget` renders asynchronously inside `runComposeUiTest`.** Its renderer parses after
+the first composition, so asserting rendered Markdown text straight after it appears (e.g. after
+toggling an editor's Preview) can find an empty, 0px node. Wait first:
+`waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("…", substring = true).fetchSemanticsNodes().isNotEmpty() }`.
+Pass the timeout: the 1 s default timed out under a loaded full `jvmTest` run (`docs/revisit.md` entry 63), and an
+unwaited assertion that passed for weeks went to failing every run (archived entry 61). The same applies to checkbox
+nodes (`isToggleable()`). `WorkItemDescriptionWidgetTest` (`feature/workitem/ui/src/jvmTest/`) is the worked example.
+
 ### Driving a `RemoteMediator` directly
 
 `PagingState` is constructible straight from `commonTest` — no Paging test artifact needed:
@@ -1009,6 +1017,14 @@ kotlin {
     instead and mutate `.value` explicitly *between* `awaitItem()` calls, so each transition is
     deterministic and turbine can only observe the step in the order you set it. Worked example:
     `MainViewModelTest`'s `drawerItems - resets to empty when current project becomes null`.
+
+23. **`assertIsNotDisplayed()` can't catch content that draws outside its parent.** A node's displayed
+    bounds are clipped to every ancestor's size, whether or not anything clips the *drawing*. A
+    fixed-size child (e.g. a `Checkbox`) overflowing an unclipped `heightIn(max)` therefore reads as
+    not displayed while it's still visible on screen. Check pixels instead:
+    `onRoot().captureToImage().toPixelMap()` and count pixels of the element's colour in the region
+    that should be empty. Worked example: `ExpandableMarkdownTextTest`'s
+    `collapsedTextDoesNotDrawCheckboxesBelowTheCut`.
 
 ---
 

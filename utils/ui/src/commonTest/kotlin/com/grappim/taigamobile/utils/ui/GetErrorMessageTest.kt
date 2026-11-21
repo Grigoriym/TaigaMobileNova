@@ -17,6 +17,7 @@ import com.grappim.taigamobile.strings.generated.resources.error_no_internet_con
 import com.grappim.taigamobile.strings.generated.resources.error_not_acceptable
 import com.grappim.taigamobile.strings.generated.resources.error_not_found
 import com.grappim.taigamobile.strings.generated.resources.error_permission_denied
+import com.grappim.taigamobile.strings.generated.resources.error_proxy_auth
 import com.grappim.taigamobile.strings.generated.resources.error_something_has_gone_wrong
 import com.grappim.taigamobile.strings.generated.resources.error_ssl_certificate
 import com.grappim.taigamobile.strings.generated.resources.error_ssl_hostname_mismatch
@@ -90,6 +91,11 @@ class GetErrorMessageTest {
     @Test
     fun `ERROR_SSL_HOSTNAME_MISMATCH maps to the hostname mismatch string`() {
         assertMapsTo(NetworkException.ERROR_SSL_HOSTNAME_MISMATCH, RString.error_ssl_hostname_mismatch)
+    }
+
+    @Test
+    fun `ERROR_PROXY_AUTH maps to the proxy rejection string`() {
+        assertMapsTo(NetworkException.ERROR_PROXY_AUTH, RString.error_proxy_auth)
     }
 
     @Test

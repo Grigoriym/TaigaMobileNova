@@ -325,6 +325,35 @@ internal class WikiPageViewModelTest {
     }
 
     @Test
+    fun `description checkbox toggle success patches wiki page and updates currentPage`() = runTest {
+        val page = makeWikiPage(content = "original")
+        wikiRepository.getProjectWikiPageBySlugResult = page
+        val newVersion = getRandomLong()
+        workItemRepository.patchWikiPageResult = PatchedData(newVersion = newVersion, dueDateStatus = null)
+        createViewModel()
+
+        sut.state.value.onDescriptionCheckboxToggle("updated")
+
+        assertEquals("updated", sut.state.value.currentPage?.content)
+        assertEquals("updated", sut.state.value.originalPage?.content)
+        assertEquals(newVersion, sut.state.value.currentPage?.version)
+        assertEquals(NativeText.Empty, sut.state.value.error)
+    }
+
+    @Test
+    fun `description checkbox toggle failure updates state with error`() = runTest {
+        val page = makeWikiPage(content = "original")
+        wikiRepository.getProjectWikiPageBySlugResult = page
+        workItemRepository.patchWikiPageThrows = testException
+        createViewModel()
+
+        sut.state.value.onDescriptionCheckboxToggle("updated")
+
+        assertTrue(sut.state.value.error !is NativeText.Empty)
+        assertEquals("original", sut.state.value.currentPage?.content)
+    }
+
+    @Test
     fun `description update with unchanged content does not call patchWikiPage`() = runTest {
         val page = makeWikiPage(content = "same")
         wikiRepository.getProjectWikiPageBySlugResult = page

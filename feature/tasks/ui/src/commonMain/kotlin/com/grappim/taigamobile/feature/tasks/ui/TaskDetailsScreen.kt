@@ -351,7 +351,8 @@ private fun TaskDetailsScreenContent(
                     canModify = state.canModifyTask,
                     isOffline = isOffline,
                     members = members,
-                    onMentionClick = goToProfile
+                    onMentionClick = goToProfile,
+                    onDescriptionCheckboxToggle = state.onDescriptionCheckboxToggle
                 )
 
                 WorkItemTagsWidget(

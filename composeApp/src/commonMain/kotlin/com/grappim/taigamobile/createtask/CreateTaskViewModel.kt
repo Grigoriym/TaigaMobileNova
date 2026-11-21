@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.createtask
 
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -43,9 +45,10 @@ class CreateTaskViewModel(
                 }
             ),
             title = restorableState.restore(KEY_TITLE, ""),
-            description = restorableState.restore(KEY_DESCRIPTION, ""),
+            description = restorableState.restore(KEY_DESCRIPTION, "").let { TextFieldValue(it, TextRange(it.length)) },
             setTitle = ::setTitle,
             setDescription = ::setDescription,
+            onPreviewToggle = ::onPreviewToggle,
             onCreateTask = ::onCreateTask
         )
     )
@@ -71,7 +74,7 @@ class CreateTaskViewModel(
             )
         }
 
-        val description = state.value.description.trim()
+        val description = state.value.description.text.trim()
 
         viewModelScope.launch {
             createWorkItemUseCase.createTask(
@@ -110,10 +113,16 @@ class CreateTaskViewModel(
         }
     }
 
-    private fun setDescription(description: String) {
-        restorableState.save(KEY_DESCRIPTION, description)
+    private fun setDescription(description: TextFieldValue) {
+        restorableState.save(KEY_DESCRIPTION, description.text)
         _state.update {
             it.copy(description = description)
+        }
+    }
+
+    private fun onPreviewToggle() {
+        _state.update {
+            it.copy(isPreview = !it.isPreview)
         }
     }
 
