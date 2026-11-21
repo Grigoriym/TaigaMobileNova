@@ -1,10 +1,14 @@
 package com.grappim.taigamobile.feature.workitem.ui.screens.editdescription
 
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,9 +35,12 @@ import com.grappim.taigamobile.strings.generated.resources.edit_description
 import com.grappim.taigamobile.strings.generated.resources.keep_editing
 import com.grappim.taigamobile.strings.generated.resources.save
 import com.grappim.taigamobile.uikit.widgets.dialog.ConfirmActionDialog
+import com.grappim.taigamobile.uikit.widgets.editor.MarkdownToolbar
 import com.grappim.taigamobile.uikit.widgets.editor.MentionSuggestionsRow
+import com.grappim.taigamobile.uikit.widgets.editor.continueMarkdownList
 import com.grappim.taigamobile.uikit.widgets.editor.findActiveMentionQuery
 import com.grappim.taigamobile.uikit.widgets.editor.insertMention
+import com.grappim.taigamobile.uikit.widgets.text.MarkdownTextWidget
 import com.grappim.taigamobile.utils.ui.ObserveAsEvents
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -43,6 +50,7 @@ import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.parameter.parametersOf
 
 const val EDIT_DESCRIPTION_TEXT_FIELD_TEST_TAG = "edit_description_text_field"
+const val EDIT_DESCRIPTION_PREVIEW_TEST_TAG = "edit_description_preview"
 
 @Composable
 fun WorkItemEditDescriptionScreen(
@@ -116,31 +124,52 @@ fun EditDescriptionContent(state: EditDescriptionState, members: ImmutableList<T
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(
-                horizontal = 16.dp,
-                vertical = 8.dp
-            )
+            .imePadding()
     ) {
-        BasicTextField(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .testTag(EDIT_DESCRIPTION_TEXT_FIELD_TEST_TAG),
-            value = state.currentDescription,
-            onValueChange = { newValue -> state.onDescriptionChange(newValue) },
-            textStyle = MaterialTheme.typography.bodyLarge.copy(
-                color = MaterialTheme.colorScheme.onSurface
-            ),
-            cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface)
-        )
-
-        MentionSuggestionsRow(
-            members = mentionSuggestions,
-            onSelect = { member ->
-                activeMentionQuery?.let { query ->
-                    state.onDescriptionChange(insertMention(state.currentDescription, query, member.username))
-                }
+        if (state.isPreview) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .testTag(EDIT_DESCRIPTION_PREVIEW_TEST_TAG)
+            ) {
+                MarkdownTextWidget(text = state.currentDescription.text, members = members)
             }
+        } else {
+            BasicTextField(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .testTag(EDIT_DESCRIPTION_TEXT_FIELD_TEST_TAG),
+                value = state.currentDescription,
+                onValueChange = { newValue ->
+                    state.onDescriptionChange(continueMarkdownList(state.currentDescription, newValue))
+                },
+                textStyle = MaterialTheme.typography.bodyLarge.copy(
+                    color = MaterialTheme.colorScheme.onSurface
+                ),
+                cursorBrush = SolidColor(MaterialTheme.colorScheme.onSurface)
+            )
+
+            MentionSuggestionsRow(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                members = mentionSuggestions,
+                onSelect = { member ->
+                    activeMentionQuery?.let { query ->
+                        state.onDescriptionChange(insertMention(state.currentDescription, query, member.username))
+                    }
+                }
+            )
+        }
+
+        MarkdownToolbar(
+            value = state.currentDescription,
+            onValueChange = state.onDescriptionChange,
+            isPreview = state.isPreview,
+            onPreviewToggle = state.onPreviewToggle
         )
     }
 }

@@ -2,10 +2,12 @@ package com.grappim.taigamobile
 
 import androidx.compose.ui.uikit.OnFocusBehavior
 import androidx.compose.ui.window.ComposeUIViewController
+import coil3.compose.setSingletonImageLoaderFactory
 import com.grappim.kit.logger.LogPriority
 import com.grappim.kit.logger.NSLogLogger
 import com.grappim.kit.logger.logcat
 import com.grappim.taigamobile.di.KoinApp
+import com.grappim.taigamobile.images.newImageLoader
 import com.grappim.taigamobile.main.TaigaAppContent
 import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
 import org.koin.plugin.module.dsl.startKoin
@@ -22,6 +24,7 @@ fun MainViewController(): UIViewController = ComposeUIViewController(
     }
 ) {
     startKoin<KoinApp> { }
+    setSingletonImageLoaderFactory(::newImageLoader)
 
     NSLogLogger.install()
     setUnhandledExceptionHook { throwable ->

@@ -56,6 +56,7 @@ dependencies {
     implementation(projects.feature.login.domain)
     implementation(projects.uikit)
     implementation(projects.core.storage)
+    implementation(projects.core.api)
 
     implementation(libs.grappim.kit.logger)
     implementation(libs.grappim.kit.appinfo)
@@ -77,7 +78,8 @@ dependencies {
 
     implementation(libs.coil.core)
     implementation(libs.coil.compose)
-    implementation(libs.coil.okhttp)
+    implementation(libs.coil.ktor)
+    implementation(libs.ktor.client.okhttp)
     implementation(libs.okhttp)
     implementation(libs.timber)
     implementation(libs.filekit.dialogs)

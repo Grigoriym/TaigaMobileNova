@@ -29,6 +29,7 @@ class WikiCreatePageViewModel(private val wikiRepository: WikiRepository, usersR
         WikiCreatePageState(
             setSlug = ::setSlug,
             setContent = ::setContent,
+            onPreviewToggle = ::onPreviewToggle,
             onCreateWikiPage = ::createWikiPage
         )
     )
@@ -53,6 +54,12 @@ class WikiCreatePageViewModel(private val wikiRepository: WikiRepository, usersR
     private fun setContent(content: TextFieldValue) {
         _state.update {
             it.copy(content = content)
+        }
+    }
+
+    private fun onPreviewToggle() {
+        _state.update {
+            it.copy(isPreview = !it.isPreview)
         }
     }
 

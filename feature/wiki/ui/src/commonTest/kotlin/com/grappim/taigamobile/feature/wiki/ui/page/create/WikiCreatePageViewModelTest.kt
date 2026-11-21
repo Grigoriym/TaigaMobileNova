@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.feature.wiki.ui.page.create
 
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.TextFieldValue
 import app.cash.turbine.test
 import com.grappim.kit.testing.MainDispatcherRule
@@ -67,6 +68,7 @@ internal class WikiCreatePageViewModelTest {
         assertEquals(TextFieldValue(), state.content)
         assertFalse(state.isLoading)
         assertTrue(state.error is NativeText.Empty)
+        assertFalse(state.isPreview)
     }
 
     // --- init ---
@@ -106,6 +108,22 @@ internal class WikiCreatePageViewModelTest {
         sut.state.value.setSlug(getRandomString())
 
         assertTrue(sut.state.value.error is NativeText.Empty)
+    }
+
+    // --- preview toggle ---
+
+    @Test
+    fun `onPreviewToggle switches to preview and back, keeping content and selection`() {
+        createViewModel()
+        val content = TextFieldValue("hello world", TextRange(6, 11))
+        sut.state.value.setContent(content)
+
+        sut.state.value.onPreviewToggle()
+        assertTrue(sut.state.value.isPreview)
+
+        sut.state.value.onPreviewToggle()
+        assertFalse(sut.state.value.isPreview)
+        assertEquals(content, sut.state.value.content)
     }
 
     // --- setContent ---

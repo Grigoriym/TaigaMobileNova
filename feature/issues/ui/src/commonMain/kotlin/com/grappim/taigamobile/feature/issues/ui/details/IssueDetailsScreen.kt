@@ -369,7 +369,8 @@ private fun IssueDetailsScreenContent(
                     canModify = state.canModifyIssue,
                     isOffline = isOffline,
                     members = members,
-                    onMentionClick = goToProfile
+                    onMentionClick = goToProfile,
+                    onDescriptionCheckboxToggle = state.onDescriptionCheckboxToggle
                 )
 
                 WorkItemSprintInfoWidget(

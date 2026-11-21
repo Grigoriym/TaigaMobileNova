@@ -34,7 +34,8 @@ fun WorkItemDescriptionWidget(
     modifier: Modifier = Modifier,
     canModify: Boolean = true,
     members: ImmutableList<TeamMember> = persistentListOf(),
-    onMentionClick: (Long) -> Unit = {}
+    onMentionClick: (Long) -> Unit = {},
+    onDescriptionCheckboxToggle: ((String) -> Unit)? = null
 ) {
     Column(
         modifier = modifier
@@ -62,7 +63,14 @@ fun WorkItemDescriptionWidget(
             ExpandableMarkdownText(
                 text = description,
                 members = members,
-                onMentionClick = onMentionClick
+                onMentionClick = onMentionClick,
+                onTaskCheckboxToggle = onDescriptionCheckboxToggle
+                    ?.takeIf { canModify && !isOffline }
+                    ?.let { onToggle ->
+                        { newDescription: String ->
+                            if (!descriptionState.isDescriptionLoading) onToggle(newDescription)
+                        }
+                    }
             )
         } else {
             Text(

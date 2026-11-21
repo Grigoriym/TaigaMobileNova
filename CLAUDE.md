@@ -76,6 +76,19 @@ names, as the thing worth reconciling.
 ./gradlew generateProjectDependencyGraph   # → build/reports/dependency-graph/project.png
 ```
 
+**Build prerequisites a fresh machine lacks.** `.java-version` pins JDK 24 for jenv (the toolchain
+itself is 21). If jenv doesn't have that version, `./gradlew` prints only `jenv: version '24.0' is not
+installed` and runs nothing. **Every** APK, debug included, is signed with `taigamobilenova_debug.jks`
+at the repo root plus `TAIGA_ALIAS_D`/`TAIGA_KEY_PASS_D`/`TAIGA_STORE_PASS_D`. Without them,
+`validateSigning<Variant>` fails with `Keystore file not set`. Android tasks also need `ANDROID_HOME`
+or `local.properties`. Gplay builds (`-PgplayBuild`) also need `google-services.json` under
+`androidApp/` (not committed) — without it `processGplayDebugGoogleServices` fails. Per-machine
+workarounds go in `docs/machine.local.md` (gitignored).
+
+**Never judge a Gradle gate by filtered output.** `-q` hid that Gradle never started (the jenv case
+above). `| grep … | head` swallowed a failed `:uikit:detekt`'s exit code. Write the full output to a
+log, check `$?`, and confirm the tests ran from `build/test-results/**/TEST-*.xml` counts.
+
 ## Architecture
 
 **Module structure:** `androidApp/` (Android entry point) + `composeApp/` (KMP library) → `feature/` → `core/` → `utils/`
@@ -86,7 +99,10 @@ names, as the thing worth reconciling.
 
 **Platforms:**
 
-- **Android** — `androidTarget()`, Min SDK 24, Target SDK 37, flavors: Gplay / Fdroid
+- **Android** — `androidTarget()`, Min SDK 24, Target SDK 37, Compile SDK 37.1, flavors: Gplay / Fdroid.
+  The `.1` is Android's minor API level (catalog `compileSdkMinor`, applied via AGP's
+  `compileSdk { version = release(N) { minorApiLevel = M } }`) — Compose 1.13+ AARs require it, and
+  `checkAarMetadata` fails without it. Reset or drop it when bumping `compileSdk`'s major.
 - **iOS** — `iosArm64()` + `iosSimulatorArm64()`, static framework `TaigaMobileNovaIos`; entry point in `main.ios.kt`
 - **Desktop/JVM** — `jvm()`, entry point `TaigaMobileDesktop.kt`; packages Deb/Dmg/Msi
 
@@ -294,6 +310,16 @@ widget reading `app_name` internally. `DrawerDestination` itself stays local as 
 `grappim-kit/CONSUMING.md`'s `widgets/drawer` section (TaigaMobileNova subsection) for the full
 writeup, including why the two local drawer tests were updated rather than deleted despite the kit
 now having its own.
+
+The custom request headers core (`CustomHeader`/`CustomHeaderValidator`/`CustomHeadersStorage`(+`Impl`),
+the `CustomHeaders` Ktor plugin, `sanitizeCustomHeaders`, and `FakeCustomHeadersStorage` via
+`grappim-kit-testing`) → `io.github.grigoriym:grappim-kit-customheaders` was the eleventh swap
+(2026-11-14, PR #477, `grappimKit` 0.1.7 → 0.1.8). **The kit's `CustomHeaderValidator` is a class whose
+default reserved names lack `Authorization`/`User-Agent`** — `StorageModule.provideCustomHeaderValidator()`
+binds it with both added, and `CustomHeadersViewModel` injects it; constructing the validator with no
+argument would silently let a user header override the Bearer token. Storage key, DataStore files and
+Keystore alias are unchanged — emulator-confirmed by saving a header on the pre-swap build and
+reading it back after installing the swapped one over it. See `grappim-kit/CONSUMING.md`'s `customheaders` section.
 
 ## Navigation Pattern
 
@@ -627,6 +653,10 @@ every PR); or that adds a new `@Ignore`/`@Suppress`, unless the commit message c
 Gate-change: what was widened, and why
 ```
 
+**A Renovate PR bumping one of those gated keys always fails guardrails** (its bot commit can't
+carry the line) — re-commit the bump with a `Gate-change:` line, e.g. folded into a combined deps PR
+(#487 did this for AGP 9.5.2).
+
 This doesn't prevent widening a gate — it makes doing so silently impossible. It runs with no
 `paths-ignore`, unlike `build.yml`/`code_analysis.yml`, so a CLAUDE.md-only commit is still checked.
 Run it locally before committing: `.github/scripts/check-guardrails.sh HEAD~1..HEAD`.
@@ -709,6 +739,10 @@ explicitly for that change — a general "commit and push" without naming `dev` 
 not a direct push. `dev` has a GitHub branch-protection rule requiring PRs; a direct push still
 goes through (bypassed via admin permissions), so nothing technically stops it — this is a process
 discipline to follow regardless, not something the repo enforces on its own.
+
+**Edit a PR with `gh api -X PATCH repos/{owner}/{repo}/pulls/N`, not `gh pr edit`** — the latter
+fails on this repo with `GraphQL: Projects (classic) is being deprecated` (hit three times, see
+`docs/frictions.md`). Pipe a `jq -n --arg title … --rawfile body …` object in via `--input -`.
 
 **Releases go through `release-prepare.yml`, not a hand-rolled branch/PR.** Trigger it
 (`gh workflow run release-prepare.yml -f version=X.Y.Z -f version_code=N`, next code = current
@@ -962,6 +996,14 @@ historical record of how the register was built — `masvs.md` itself is the cur
   sensitive data (a hostname, a response body) — see `core/api/.../ExceptionSanitization.kt` and
   `docs/security/masvs.md`'s MASVS-PRIVACY-3 note for the pattern and the audit
   (`grep -rn "LogPriority.ERROR"` + `throwable =` is the full surface).
+
+## Custom Request Headers
+
+Any new HTTP client that talks to the Taiga server — Ktor or Coil — must install the `CustomHeaders`
+plugin (`grappim-kit-customheaders`) and, if it logs, call `sanitizeCustomHeaders(storage)` in its `Logging` block;
+otherwise users behind a header-auth reverse proxy get rejected on that path. A `401` without a
+`Bearer` challenge is the proxy, not Taiga — it must not trigger token refresh or logout. Design and
+fixture: [docs/custom-request-headers/IMPLEMENTATION_PLAN.md](docs/custom-request-headers/IMPLEMENTATION_PLAN.md).
 
 ## Compose / Platform Rules
 

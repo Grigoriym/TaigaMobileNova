@@ -24,3 +24,6 @@ taigamobilenova_debug.jks
 # Claude Code local settings (contains secrets)
 .claude/settings.local.json
 .mcp.json
+
+# Per-machine facts (see agentic-grappim README, "Machine-local facts")
+docs/machine.local.md

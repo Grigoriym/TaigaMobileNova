@@ -28,6 +28,7 @@ class EditDescriptionViewModel(
             originalDescription = route.description,
             currentDescription = TextFieldValue(route.description),
             onDescriptionChange = ::onDescriptionChange,
+            onPreviewToggle = ::onPreviewToggle,
             setIsDialogVisible = ::setIsDialogVisible,
             shouldGoBackWithCurrentValue = ::onGoingBack
         )
@@ -60,6 +61,12 @@ class EditDescriptionViewModel(
     private fun onDescriptionChange(newValue: TextFieldValue) {
         _state.update {
             it.copy(currentDescription = newValue)
+        }
+    }
+
+    private fun onPreviewToggle() {
+        _state.update {
+            it.copy(isPreview = !it.isPreview)
         }
     }
 

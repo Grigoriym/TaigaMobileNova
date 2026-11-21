@@ -25,6 +25,10 @@ technique lives in the skill itself, not here — this file is only what's true 
   `localhost` would not (see `docs/archive/revisit-resolved.md` #29 and memory `local-taiga-instance`).
   The app shows an "Unencrypted connection" confirm dialog for plain `http://` — tap
   **Yes** to proceed (this is expected for a self-hosted/LAN server, not a bug).
+- **Before driving anything, check which server the installed app is logged in to** — the phone AVD
+  has twice been left logged in to the custom-headers proxy at `:9100`, which usually isn't running
+  (see the gotcha below). `adb logcat -d | grep "Ktor.*REQUEST" | tail -1` shows the host.
+  `adb shell pm clear com.grappim.taigamobile.fdroid.debug` then a fresh login is the quickest reset.
 
 ## App-specific gotchas
 
@@ -96,3 +100,19 @@ technique lives in the skill itself, not here — this file is only what's true 
   1868)` for `@` (leftmost key of that page's top row). Confirmed while GUI-verifying mention-tagging
   Step 7 (`docs/architecture/mention-tagging-support/`); needed again for any future real-keyboard
   `@`-typing check on this AVD/resolution.
+- **Gboard's own Enter key is at `(994, 2178)` at 1080x2400** — tap it, rather than `input keyevent
+  KEYCODE_ENTER`, to exercise the IME's commit path (a still-composing word is committed together
+  with the line break). This AVD's Gboard does **not** autocorrect on Enter (`teh` + Enter stays
+  `teh`), so an autocorrect-plus-newline case can't be reproduced here; cover it with a unit test.
+  Read a text field's exact content, newlines included, from `uiautomator dump`'s `EditText` node
+  `text` attribute (`&#10;` = newline). Confirmed in markdown-editor step 11.
+- **No seeded user has an uploaded avatar** — every avatar is Gravatar (off-origin), so a check
+  that an image is fetched *from the server* needs one uploaded first (`POST
+  /api/v1/users/change_avatar`, multipart `avatar`; `admin` has one since 2026-11-11). Taiga
+  returns media URLs on `http://localhost:9000`, which debug builds rewrite to `10.0.2.2:9000`
+  (`DebugLocalHostImageManager`) — fine directly, but it bypasses anything in front of the server
+  (see `docs/custom-request-headers/IMPLEMENTATION_PLAN.md`'s fixture for the workaround).
+- **The phone AVD can be left logged in to a server that isn't running**, e.g. the custom-headers
+  proxy fixture at `http://10.0.2.2:9100` (`docs/custom-request-headers/IMPLEMENTATION_PLAN.md`).
+  Every list then shows "Connection error". `adb logcat | grep "Ktor.*REQUEST"` shows which host the
+  app is calling; log out (Settings → Log out) and log back in at `http://10.0.2.2:9000`.

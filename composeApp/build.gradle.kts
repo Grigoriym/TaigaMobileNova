@@ -1,3 +1,5 @@
+@file:OptIn(org.jetbrains.compose.ExperimentalComposeLibrary::class)
+
 import com.codingfeline.buildkonfig.compiler.FieldSpec
 import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 
@@ -8,6 +10,9 @@ plugins {
     alias(libs.plugins.taigamobile.kmp.serialization)
     alias(libs.plugins.build.konfig)
 }
+
+val composeUiTestDep = compose.dependencies.uiTest
+val composeDesktopUiTestJUnit4Dep = compose.dependencies.desktop.uiTestJUnit4
 
 buildkonfig {
     packageName = libs.versions.app.pkg.get()
@@ -87,7 +92,11 @@ compose.desktop {
 kotlin {
     android {
         namespace = "${libs.versions.app.pkg.get()}.shared"
-        compileSdk = libs.versions.compileSdk.get().toInt()
+        compileSdk {
+            version = release(libs.versions.compileSdk.get().toInt()) {
+                minorApiLevel = libs.versions.compileSdkMinor.get().toInt()
+            }
+        }
         minSdk = libs.versions.minSdk.get().toInt()
     }
 
@@ -107,6 +116,11 @@ kotlin {
                 implementation(libs.filekit.core)
                 implementation(libs.filekit.dialogs)
                 implementation(libs.filekit.dialogs.compose)
+
+                implementation(libs.coil.core)
+                implementation(libs.coil.compose)
+                implementation(libs.coil.ktor)
+                implementation(libs.ktor.core)
 
                 implementation(libs.jetbrains.compose.icons.extended)
                 implementation(libs.jetbrains.compose.material3.adaptive.navigation.suite)
@@ -233,6 +247,8 @@ kotlin {
         jvmTest {
             dependencies {
                 implementation(kotlin("test-junit"))
+                implementation(composeUiTestDep)
+                implementation(composeDesktopUiTestJUnit4Dep)
 
                 // koin-test is JVM-only here on purpose: KoinGraphTest resolves the whole
                 // real graph, which only works on a platform that has every actual (JVM does).

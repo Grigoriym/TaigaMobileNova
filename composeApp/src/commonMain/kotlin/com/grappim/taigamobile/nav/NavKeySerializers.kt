@@ -21,6 +21,7 @@ import com.grappim.taigamobile.feature.settings.ui.attributes.AttributesScreenNa
 import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.ProjectValuesMenuNavDestination
 import com.grappim.taigamobile.feature.settings.ui.attributes.projectvalues.ProjectValuesNavDestination
 import com.grappim.taigamobile.feature.settings.ui.attributes.tags.TagsScreenRouteNavDestination
+import com.grappim.taigamobile.feature.settings.ui.customheaders.CustomHeadersNavDestination
 import com.grappim.taigamobile.feature.settings.ui.interfacescreen.SettingsInterfaceScreenNavDestination
 import com.grappim.taigamobile.feature.settings.ui.modules.ModulesNavDestination
 import com.grappim.taigamobile.feature.settings.ui.projectdetails.ProjectDetailsNavDestination
@@ -81,6 +82,7 @@ val navKeySerializersModule = SerializersModule {
         subclass(ModulesNavDestination::class)
         subclass(ProjectDetailsNavDestination::class)
         subclass(TrustedCertificatesNavDestination::class)
+        subclass(CustomHeadersNavDestination::class)
         subclass(SettingsUserScreenNavDestination::class)
         subclass(SprintNavDestination::class)
         subclass(TaskDetailsNavDestination::class)

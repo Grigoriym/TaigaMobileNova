@@ -10,6 +10,9 @@ data class WikiCreatePageState(
     val content: TextFieldValue = TextFieldValue(),
     val setContent: (TextFieldValue) -> Unit = {},
 
+    val isPreview: Boolean = false,
+    val onPreviewToggle: () -> Unit = {},
+
     val onCreateWikiPage: () -> Unit = {},
     val isLoading: Boolean = false,
     val error: NativeText = NativeText.Empty
