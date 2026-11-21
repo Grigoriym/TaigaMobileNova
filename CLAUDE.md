@@ -81,8 +81,9 @@ itself is 21). If jenv doesn't have that version, `./gradlew` prints only `jenv:
 installed` and runs nothing. **Every** APK, debug included, is signed with `taigamobilenova_debug.jks`
 at the repo root plus `TAIGA_ALIAS_D`/`TAIGA_KEY_PASS_D`/`TAIGA_STORE_PASS_D`. Without them,
 `validateSigning<Variant>` fails with `Keystore file not set`. Android tasks also need `ANDROID_HOME`
-or `local.properties`. Gplay builds (`-PgplayBuild`) also need `google-services.json` under
-`androidApp/` (not committed) — without it `processGplayDebugGoogleServices` fails. Per-machine
+or `local.properties`. Gplay builds (`-PgplayBuild`) also need `androidApp/src/gplay/google-services.json`
+(gitignored; `src/fdroid/` has a committed placeholder) — without it
+`processGplayDebugGoogleServices` fails. Check for it with `find`, not one guessed path. Per-machine
 workarounds go in `docs/machine.local.md` (gitignored).
 
 **Never judge a Gradle gate by filtered output.** `-q` hid that Gradle never started (the jenv case

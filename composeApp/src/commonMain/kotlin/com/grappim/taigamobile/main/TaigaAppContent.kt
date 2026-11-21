@@ -11,8 +11,16 @@ import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
 import com.grappim.taigamobile.uikit.utils.ScreenReadySignalController
 import org.koin.compose.viewmodel.koinViewModel
 
+/**
+ * [isUpdateDownloaded] and [onRestartForUpdate] come from the platform's in-app update flow (Google
+ * Play on Android); platforms without one keep the defaults.
+ */
 @Composable
-fun TaigaAppContent(screenReadySignalController: ScreenReadySignalController) {
+fun TaigaAppContent(
+    screenReadySignalController: ScreenReadySignalController,
+    isUpdateDownloaded: Boolean = false,
+    onRestartForUpdate: () -> Unit = {}
+) {
     val viewModel = koinViewModel<MainViewModel>()
     val theme by viewModel.theme.collectAsState()
 
@@ -26,7 +34,11 @@ fun TaigaAppContent(screenReadySignalController: ScreenReadySignalController) {
         CompositionLocalProvider(
             LocalScreenReadySignal provides screenReadySignalController
         ) {
-            MainContent(viewModel)
+            MainContent(
+                viewModel = viewModel,
+                isUpdateDownloaded = isUpdateDownloaded,
+                onRestartForUpdate = onRestartForUpdate
+            )
         }
     }
 }

@@ -4,9 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.snackbar.Snackbar
 import com.grappim.kit.appupdate.AppUpdateChecker
 import com.grappim.kit.appupdate.UpdateState
 import com.grappim.taigamobile.main.TaigaAppContent
@@ -23,6 +25,8 @@ class MainActivity : ComponentActivity() {
 
     private val appUpdateChecker: AppUpdateChecker by inject()
 
+    private var isUpdateDownloaded by mutableStateOf(false)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen().apply {
             setKeepOnScreenCondition {
@@ -37,7 +41,11 @@ class MainActivity : ComponentActivity() {
         observeUpdateState()
 
         setContent {
-            TaigaAppContent(screenReadySignalController)
+            TaigaAppContent(
+                screenReadySignalController = screenReadySignalController,
+                isUpdateDownloaded = isUpdateDownloaded,
+                onRestartForUpdate = appUpdateChecker::completeUpdate
+            )
         }
     }
 
@@ -56,20 +64,9 @@ class MainActivity : ComponentActivity() {
         lifecycleScope.launch {
             appUpdateChecker.updateState.collectLatest { state ->
                 when (state) {
-                    is UpdateState.UpdateDownloaded -> showRestartSnackbar()
+                    is UpdateState.UpdateDownloaded -> isUpdateDownloaded = true
                 }
             }
-        }
-    }
-
-    private fun showRestartSnackbar() {
-        Snackbar.make(
-            window.decorView.rootView,
-            getString(R.string.app_update_downloaded),
-            Snackbar.LENGTH_INDEFINITE
-        ).apply {
-            setAction(getString(R.string.restart)) { appUpdateChecker.completeUpdate() }
-            show()
         }
     }
 }
