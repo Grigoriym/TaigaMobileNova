@@ -1,6 +1,6 @@
 # Privacy Policy for TaigaMobileNova (Google Play version)
 
-**Last Updated:** July 29, 2026
+**Last Updated:** November 21, 2026
 
 ## Introduction
 
@@ -59,6 +59,7 @@ The app requires the following Android permissions:
 
 - **INTERNET**: Required to communicate with Taiga.io servers and, if enabled, to send crash reports to Firebase Crashlytics
 - **ACCESS_NETWORK_STATE**: Used to check if your device has an active internet connection
+- **ACCESS_LOCAL_NETWORK** (Android 17 and later): Lets the app connect to a Taiga server on your local network, such as a self-hosted instance at home or at work. The app asks for it only when the server address you enter is on a local network, and uses it only to reach that server. Android describes this permission as finding and connecting to nearby devices; the app does not scan for, locate, or collect anything about other devices on your network.
 
 ## Data Security
 

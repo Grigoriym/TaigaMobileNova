@@ -30,7 +30,7 @@ is added — each answer below traces to something in the codebase or `PRIVACY_P
 
 Only two sections need entries — everything else (Location, Financial info, Health and fitness,
 Messages, Photos and videos, Audio files, Files and docs, Calendar, Contacts, Web browsing, App
-activity) is 0, since the app only holds `INTERNET` + `ACCESS_NETWORK_STATE` permissions and has
+activity) is 0, since the app only holds `INTERNET`, `ACCESS_NETWORK_STATE` and `ACCESS_LOCAL_NETWORK` permissions and has
 no SDK collecting those categories.
 
 - **App info and performance** → check *Crash logs* and *Diagnostics*
