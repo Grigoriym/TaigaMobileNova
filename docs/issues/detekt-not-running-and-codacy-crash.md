@@ -181,6 +181,7 @@ e: .../DetektProbe.kt:5:9 RuntimeException is a too generic Exception. [TooGener
 
 `configureLinting()` is applied only by the KMP library convention plugins, so
 `androidApp` and pure `taigamobile.kotlin.library` modules are still not linted by detekt.
+(`androidApp` has been linted since 2026-11-22; see `docs/archive/revisit-resolved.md` entry 64.)
 
 ## Reproduction
 

@@ -2,6 +2,4 @@
 <resources>
     <!-- Splash Screen Colors -->
     <color name="splash_background">#FFFFFF</color>
-
-    <color name="ic_launcher_foreground_tint">#FCFCFC</color>
 </resources>

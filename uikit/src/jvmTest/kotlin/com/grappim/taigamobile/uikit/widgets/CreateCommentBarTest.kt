@@ -144,7 +144,9 @@ class CreateCommentBarTest {
 
         onNodeWithTag(CREATE_COMMENT_BAR_TEXT_FIELD_TEST_TAG).assertDoesNotExist()
         onNodeWithTag(CREATE_COMMENT_BAR_PREVIEW_TEST_TAG).assertExists()
-        waitUntil { onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty()
+        }
         onNodeWithContentDescription("Bold").assertIsNotEnabled()
 
         onNodeWithContentDescription("Edit").performClick()

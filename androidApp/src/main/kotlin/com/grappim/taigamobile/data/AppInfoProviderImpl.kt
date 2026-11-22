@@ -6,7 +6,9 @@ import com.grappim.taigamobile.core.appinfoapi.DebugLocalHostProvider
 import org.koin.core.annotation.Single
 
 @Single(binds = [AppInfoProvider::class, DebugLocalHostProvider::class])
-class AppInfoProviderImpl : AppInfoProvider, DebugLocalHostProvider {
+class AppInfoProviderImpl :
+    AppInfoProvider,
+    DebugLocalHostProvider {
     override fun isDebug(): Boolean = BuildConfig.DEBUG
     override fun isFdroidBuild(): Boolean = BuildConfig.FLAVOR == "fdroid"
 

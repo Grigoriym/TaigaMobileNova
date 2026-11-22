@@ -57,6 +57,12 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 51 | [Switching drawer sections is recorded on the back stack, so back cascades through prior sections](#51-switching-drawer-sections-is-recorded-on-the-back-stack-so-back-cascades-through-prior-sections) | ✅ resolved 2026-09-07 |
 | 54 | [`containsMention` triggers a wasted watchers-refresh for a `@typo'd-name` that isn't a real member](#54-containsmention-triggers-a-wasted-watchers-refresh-for-a-typod-name-that-isnt-a-real-member) | ✅ resolved 2026-09-11 |
 | 61 | [`EditDescriptionContentTest`'s preview assertion doesn't wait for async Markdown parsing](#61-editdescriptioncontenttests-preview-assertion-doesnt-wait-for-async-markdown-parsing) | ✅ resolved 2026-11-15 |
+| 55 | [CLAUDE.md's "grappim-kit Modules" section had become a worked-example catalogue](#55-claudemds-grappim-kit-modules-section-had-become-a-worked-example-catalogue) | ✅ resolved 2026-11-22 |
+| 56 | [Two unused vector copies of the old launcher logo, plus an unused tint color](#56-two-unused-vector-copies-of-the-old-launcher-logo-plus-an-unused-tint-color) | ✅ resolved 2026-11-22 |
+| 60 | [`MarkdownTextWidget` applies its `modifier` twice when `onClick` is null](#60-markdowntextwidget-applies-its-modifier-twice-when-onclick-is-null) | ✅ resolved 2026-11-22 |
+| 62 | [`CreateCommentBar`'s Markdown toolbar still edits the text while offline](#62-createcommentbars-markdown-toolbar-still-edits-the-text-while-offline) | ✅ resolved 2026-11-22 |
+| 63 | [Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run](#63-markdown-preview-ui-tests-wait-with-waituntils-1-s-default-which-times-out-under-a-full-jvmtest-run) | ✅ resolved 2026-11-22 |
+| 64 | [`androidApp` has no detekt/ktlint, so CI never lints it](#64-androidapp-has-no-detektktlint-so-ci-never-lints-it) | ✅ resolved 2026-11-22 |
 
 ---
 
@@ -2208,3 +2214,118 @@ flake) or something in its layout makes the parse land sooner. Add the same `wai
 every run, on a clean tree too. The bare `onNodeWithText("plain strong", substring = true).assertExists()` became
 `waitUntil(timeoutMillis = 5_000) { onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty() }`.
 Passed 3/3 with `--rerun`, then the full `jvmTest`. The longer timeout matches `docs/revisit.md` entry 63.
+
+## 55. CLAUDE.md's "grappim-kit Modules" section had become a worked-example catalogue
+
+Listed in `docs/revisit.md`'s index table, but the section body was never written. CLAUDE.md's
+"grappim-kit Modules" section had grown to ~180 lines of per-swap narrative (eleven swaps). That is
+the shape CLAUDE.md's own "Keeping this file lean" rule says to move out into `docs/`, the same way
+the Kover heuristics went to `docs/testing/kover-coverage-heuristics.md`.
+
+**Fix (2026-11-22):** moved the per-swap narrative verbatim to
+[docs/grappim-kit/swaps.md](../grappim-kit/swaps.md). CLAUDE.md keeps a short section that links to
+it, plus the general rules the swaps taught (diff published sources first, same-package implicit
+references, `api` vs `implementation`, central `build-logic` wiring, kover aggregation on deletion,
+explicit Koin providers, `androidApp` DI being invisible to `KoinGraphTest`, keeping persisted
+identifiers stable).
+
+## 56. Two unused vector copies of the old launcher logo, plus an unused tint color
+
+`androidApp/src/main/res/drawable/ic_launcher_foreground.xml` and its byte-identical copy
+`uikit/src/commonMain/composeResources/drawable/ic_launcher_foreground.xml` are a split two-colour
+fir tree — the original project's logo, not the current forest illustration. Nothing references
+either: the adaptive icon and the splash screen (`androidApp/src/main/res/values/themes.xml:20`)
+both use the raster `@mipmap/ic_launcher_foreground`, and no Kotlin file uses a
+`Res.drawable.ic_launcher_foreground` accessor (grep, 2026-10-28). The `androidApp` copy also
+shadows the mipmap's name, which misled the issue 450 investigation
+(`docs/issues/450-add-monochrome-icon.md`) into treating it as the current logo.
+
+`ic_launcher_foreground_tint` (`androidApp/src/main/res/values/colors.xml`,
+`values-night/colors.xml`) is also defined and referenced nowhere; remove it with them.
+
+Desktop packaging (`art/taiga-mobile-logo.*`), iOS (`AppIcon.appiconset`) and the in-app logo
+(`uikit`'s `taiga_mobile_logo.png`) don't use these files either (checked 2026-10-30).
+
+A removal was made and reverted in PR 451 after an install showed a black icon background. The black
+came from `ic_launcher_background_tint`, which was black in light mode and has since been replaced
+with white, so it is not a reason to keep these files.
+
+**Trigger:** any time; optional cleanup. Build both Android flavors and the desktop jar after
+deleting, and check the launcher icon on a device.
+
+**Fix (2026-11-22):** deleted both `ic_launcher_foreground.xml` copies and the
+`ic_launcher_foreground_tint` color from `values/` and `values-night/`. A repo-wide grep turned up
+no references first. Both Android flavors and the desktop jar build. On `Pixel_10a` (API 37) the
+fdroid debug splash still shows the current forest illustration on white, since it draws
+`@mipmap/ic_launcher_foreground` just like the adaptive icon does.
+
+## 60. `MarkdownTextWidget` applies its `modifier` twice when `onClick` is null
+
+Found during markdown-editor checklist step 6 (2026-11-14). `MarkdownTextWidget`
+(`uikit/.../widgets/text/MarkdownTextWidget.kt`, the `Markdown(modifier = ...)` call) builds its
+modifier as `modifier.then(if (onClick != null) Modifier.clickable { … } else modifier)`, so with
+no `onClick` the caller's modifier chain runs twice. Padding is doubled, and passing
+`Modifier.verticalScroll(...)` nests a scroll inside itself and crashes with "Vertically scrollable
+component was measured with an infinity maximum height constraints". The `else` branch should be
+`Modifier`. The edit-description Preview works around it by putting the scroll on a wrapping
+`Box` (`WorkItemEditDescriptionScreen.kt`).
+
+**Check:** every `MarkdownTextWidget(` call site that passes a `modifier` and no `onClick`. A
+padding modifier there renders with double padding today, so fixing it changes spacing on screen.
+Drive those screens on the emulator before and after.
+
+**Fix (2026-11-22):** the `else` branch is now `Modifier`. Two call sites pass a padding modifier
+and no `onClick`. On `Pixel_10a` (420 dpi): `CommentsSectionWidget`'s comment text now sits 11 px
+(4 dp) right of the avatar, where it used to be 8 dp. `CustomFieldsWidget`'s read-only rich-text
+value sits 42 px (16 dp) inside its box, lined up with the plain-text field above it, where it used
+to be 32 dp. `WorkItemEditDescriptionScreen`'s wrapping-`Box` workaround still works and was left as it is.
+
+## 62. `CreateCommentBar`'s Markdown toolbar still edits the text while offline
+
+Found during markdown-editor checklist step 9 (2026-11-15). When `isOffline` is true the comment field is disabled
+(`enabled = !isOffline`) and the send button too, but `MarkdownToolbar` has no `enabled` parameter, so its formatting
+buttons still apply transforms to the text the user can't otherwise edit. Nothing is sent, so it's cosmetic. Per the
+Offline State Pattern in CLAUDE.md, write actions should be disabled offline: give `MarkdownToolbar`
+(`uikit/.../widgets/editor/MarkdownToolbar.kt`) an `enabled` flag that the formatting buttons respect, and pass
+`!isOffline` from `CreateCommentBar`. The other three toolbar sites don't disable their fields offline, so check
+whether they should too before deciding the flag's scope.
+
+**Fix (2026-11-22):** `MarkdownToolbar` gained `enabled: Boolean = true`, and the formatting
+buttons use `enabled && !isPreview`. Only `CreateCommentBar` passes `!isOffline`, because the other
+three sites (`WikiCreatePageScreen`, `WorkItemEditDescriptionScreen`, `CreateTaskScreen`) keep their
+text fields editable offline, so their toolbars stay enabled to match. Added
+`MarkdownToolbarTest.formattingButtonsAreDisabledWhenNotEnabled`. On `Pixel_10a`, with airplane mode
+on, the Bold/Italic buttons' clickable nodes report `enabled="false"`, and they come back once the
+network returns. The Edit/Preview toggle stays enabled.
+
+## 63. Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run
+
+Found during markdown-editor checklist step 10 (2026-11-15). `CreateCommentBarTest.previewRendersTheMarkdownAndEditRestoresTheField`
+(`uikit/src/jvmTest/.../widgets/CreateCommentBarTest.kt:146`) failed once with `ComposeTimeoutException: Condition still not
+satisfied after 1000 ms` during a full `./gradlew jvmTest ktlintCheck … compileKotlinIosArm64` run that overlapped an emulator
+cold boot, then passed 3/3 on its own (`--rerun`). The renderer parses asynchronously, and 1 s isn't enough headroom on a
+loaded machine. Step 10's `WorkItemDescriptionWidgetTest` waits with `timeoutMillis = 5_000`. Do the same for the other
+`waitUntil`s that wait on rendered Markdown: `CreateCommentBarTest`, `WikiCreatePageScreenContentTest`,
+`CreateTaskScreenContentTest`.
+
+**Fix (2026-11-22):** the `waitUntil` in all three tests now passes `timeoutMillis = 5_000`.
+ktlint wrapped the longer call onto three lines. Full `./gradlew jvmTest` is green.
+
+## 64. `androidApp` has no detekt/ktlint, so CI never lints it
+
+Found 2026-11-21 (PR #491): `./gradlew :androidApp:ktlintCheck :androidApp:detekt` failed with "Task not found".
+`configureLinting()` (`build-logic/convention/src/main/kotlin/com/grappim/taigamobile.buildlogic/Quality.kt`) is only
+called from `KmpLibraryConventionPlugin` and `KmpLibraryComposeConventionPlugin`, so the `taigamobile.android.application`
+module (`MainActivity.kt`, `TaigaApp.kt`, the flavor `AppUpdateModule`s) is skipped by `code_analysis.yml`'s root
+`./gradlew detekt` / `ktlintCheck`. Fix: call `configureLinting()` from the Android application convention plugin too,
+check that its source-set layout (`src/main`, `src/gplay`, `src/fdroid`) is covered, and fix whatever findings it
+surfaces. It touches `build-logic/`, so the commit needs a `Gate-change:` line.
+
+**Fix (2026-11-22):** `AndroidApplicationConventionPlugin` now calls `configureLinting()`.
+ktlint-gradle picked up the `main`/`gplay`/`fdroid` source sets on its own. detekt reported
+`NO-SOURCE` at first: on AGP 9's built-in Kotlin, the Kotlin source sets in the `kotlin` extension
+exist, but their `srcDirs` are empty. The directories live on the Android source sets instead
+(`ApplicationExtension.sourceSets[*].kotlin.directories`), which `configureLinting()` now adds.
+detekt's report confirms it scanned all 11 `androidApp` files (0 findings). ktlint found 4 issues
+(`class-signature` in `AppInfoProviderImpl`, `final-newline` in `CrashlyticsTree`,
+`import-ordering` in `ImageLoaderProvider`), all fixed by `ktlintMainSourceSetFormat`.
