@@ -11,6 +11,9 @@ import com.grappim.taigamobile.testing.repo.FakeUserStoriesRepository
 import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -159,5 +162,21 @@ internal class ScrumBacklogViewModelTest {
 
         assertEquals(stored, session.currentScrumFilters)
         assertEquals(stored, sut.state.value.activeFilters)
+    }
+
+    @Test
+    fun `refreshed counts on the selected filters do not reload the list`() = runTest {
+        val selected = getStatusFilters()
+        val stored = FiltersData(statuses = persistentListOf(selected))
+        session.changeScrumFilters(stored)
+        filtersRepository.filtersDataResult = stored
+        createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { sut.userStories.collect {} }
+
+        filtersRepository.filtersDataResult =
+            FiltersData(statuses = persistentListOf(selected.copy(count = selected.count + 1)))
+        sut.state.value.retryLoadFilters()
+
+        assertEquals(listOf(stored to ""), userStoriesRepository.getUserStoriesPagingCalls)
     }
 }

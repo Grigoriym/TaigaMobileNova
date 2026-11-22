@@ -22,12 +22,17 @@ class FakeIssuesRepository : IssuesRepository {
 
     var getIssuesPagingResult: ImmutableList<WorkItem> = persistentListOf()
 
-    override fun getIssuesPaging(filtersData: FiltersData, query: String): Flow<PagingData<WorkItem>> =
-        if (getIssuesPagingResult.isEmpty()) {
+    /** One `filters to query` pair per call, in order. */
+    val getIssuesPagingCalls: MutableList<Pair<FiltersData, String>> = mutableListOf()
+
+    override fun getIssuesPaging(filtersData: FiltersData, query: String): Flow<PagingData<WorkItem>> {
+        getIssuesPagingCalls += filtersData to query
+        return if (getIssuesPagingResult.isEmpty()) {
             flowOf(PagingData.empty())
         } else {
             flowOf(PagingData.from(getIssuesPagingResult))
         }
+    }
 
     data class CreateIssueCall(val title: String, val description: String, val sprintId: Long?)
 

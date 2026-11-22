@@ -22,6 +22,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -50,7 +51,10 @@ class IssuesViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
-    val issues = combine(session.issuesFilters, searchQuery) { filters, searchQuery ->
+    val issues = combine(
+        session.issuesFilters.distinctUntilChanged(FiltersData::selectsSameItemsAs),
+        searchQuery
+    ) { filters, searchQuery ->
         Pair(filters, searchQuery)
     }.flatMapLatest { (filters, searchQuery) ->
         issuesRepository.getIssuesPaging(filtersData = filters, query = searchQuery)

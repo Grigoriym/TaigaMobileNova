@@ -19,15 +19,17 @@ class FakeUserStoriesRepository : UserStoriesRepository {
 
     var getUserStoriesPagingResult: ImmutableList<WorkItem> = persistentListOf()
 
-    override fun getUserStoriesPaging(
-        filters: FiltersData,
-        query: String
-    ): Flow<PagingData<WorkItem>> =
-        if (getUserStoriesPagingResult.isEmpty()) {
+    /** One `filters to query` pair per call, in order. */
+    val getUserStoriesPagingCalls: MutableList<Pair<FiltersData, String>> = mutableListOf()
+
+    override fun getUserStoriesPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
+        getUserStoriesPagingCalls += filters to query
+        return if (getUserStoriesPagingResult.isEmpty()) {
             flowOf(PagingData.empty())
         } else {
             flowOf(PagingData.from(getUserStoriesPagingResult))
         }
+    }
 
     override suspend fun getEpicUserStoriesSimplified(epicId: Long): ImmutableList<WorkItem> =
         getEpicUserStoriesSimplifiedResult

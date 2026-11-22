@@ -53,6 +53,25 @@ data class FiltersData(
         epics = (epics - other.epics.toSet()).toImmutableList()
     )
 
+    /**
+     * Whether [other] selects the same items as this, ignoring the display-only names, colors and
+     * counts that [updateData] refreshes. Items are compared the way list requests identify them:
+     * tags by name, everything else by id.
+     */
+    fun selectsSameItemsAs(other: FiltersData): Boolean = selectionKey() == other.selectionKey()
+
+    private fun selectionKey() = listOf(
+        assignees.map { it.id },
+        roles.map { it.id },
+        tags.map { it.name },
+        statuses.map { it.id },
+        createdBy.map { it.id },
+        priorities.map { it.id },
+        severities.map { it.id },
+        types.map { it.id },
+        epics.map { it.id }
+    )
+
     fun updateData(other: FiltersData): FiltersData {
         fun List<UsersFilters>.updateUsers(other: List<UsersFilters>) = map { current ->
             other.find { new -> current.id == new.id }?.let {
