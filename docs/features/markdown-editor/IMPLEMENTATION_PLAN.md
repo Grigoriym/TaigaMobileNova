@@ -195,8 +195,9 @@ the constraint.
   An empty top-level item loses its marker and leaves a blank line (without it, the next paragraph would be a lazy
   continuation of the list in Python-Markdown); an empty nested item outdents one level. Quotes aren't continued.
 - **Preview uses the existing `MarkdownTextWidget`** with the screen's `members` for mention
-  links. It shows the app's rendering, not Taiga's. Known differences are in `docs/revisit.md`
-  entry 59, and a fix for that belongs with that entry, not with the toolbar.
+  links. It shows the app's rendering, not Taiga's. Single newlines render as line breaks, as on
+  Taiga; 2-space nested lists still nest in the app and render flat on Taiga (kept on purpose, see
+  `docs/archive/revisit-resolved.md` entry 59).
 
 ## Open questions (answered by checklist steps)
 
@@ -262,8 +263,8 @@ the constraint.
      action (`- [ ] `) and a table insert are real features. Strikethrough is `~~`. The toolbar
      can't rely on a single newline being a soft break, because it is a hard break.
    - **Option A Preview / existing rendering:** `MarkdownTextWidget`'s CommonMark/GFM renderer
-     differs from what Taiga shows on at least single newlines (soft vs. `<br>`), 2-space nested
-     lists, `#ref`/`[[wiki]]`/`:emoji:` and `extra`'s footnote/abbr/deflist/attr syntax. A Preview
+     differs from what Taiga shows on 2-space nested lists, `#ref`/`[[wiki]]`/`:emoji:` and
+     `extra`'s footnote/abbr/deflist/attr syntax (single newlines matched since 2026-11-22). A Preview
      tab shows the app's own rendering, not Taiga's. That matches what the read-only screens
      already show, so it adds no new inconsistency. It can't promise "this is what the web shows".
    - **Option C round-trip surface for step 2:** every row above. Taiga-specific inline syntax
