@@ -66,6 +66,7 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 64 | [`androidApp` has no detekt/ktlint, so CI never lints it](#64-androidapp-has-no-detektktlint-so-ci-never-lints-it) | ✅ resolved 2026-11-22 |
 | 47 | [`guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge](#47-guardrailsymls-push-trigger-on-master-still-diffs-the-wrong-range-after-a-release-merge) | ✅ closed 2026-11-22 (one-off, not recurring) |
 | 58 | [`apk-size-check` runner is killed on Gradle-wrapper bump PRs](#58-apk-size-check-runner-is-killed-on-gradle-wrapper-bump-prs) | ✅ closed 2026-11-22 (did not reproduce) |
+| 53 | [Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere](#53-broader-excessive-requests-audit-possible-filter-driven-double-list-fetch-no-search-debounce-anywhere) | ✅ resolved 2026-11-22 |
 
 ---
 
@@ -2421,3 +2422,79 @@ test it.
 `./gradlew --stop` added). So the two-daemons/out-of-memory guess is not confirmed, and #466's
 cancellations look like runner flakiness rather than something the wrapper bump causes. Reopen
 with the run id if a wrapper PR fails this job the same way again.
+
+## 53. Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere
+
+**What:** raised by gregory (2026-09-07) right after commit `0c34a570` fixed Kanban firing
+`filters_data` twice on load (resolving #49/#50) — the underlying problem (the app making more
+Taiga API calls than it needs to) is probably not unique to Kanban. This entry is a lead list from
+a quick grep-based survey, not a diagnosis — nothing here should be fixed without first confirming
+it with real network traffic (see "How to confirm" below).
+
+**Lead 1 — filter-load may double-fetch the paginated list on `IssuesViewModel`/
+`EpicsViewModel`/`ScrumBacklogViewModel`, but only when the user already has saved filters:**
+- `feature/issues/ui/.../list/IssuesViewModel.kt:53-69`,
+  `feature/epics/ui/.../list/EpicsViewModel.kt:55-75`,
+  `feature/scrum/ui/.../backlog/ScrumBacklogViewModel.kt:53-71` — each exposes its paginated list as
+  `combine(session.xFilters, searchQuery).flatMapLatest { ... xRepository.getXPaging(...) }`, and
+  each `init` also calls `loadFiltersData()`, whose `onSuccess` calls
+  `session.changeXFilters(_state.value.activeFilters.updateData(result))` — writing to the exact
+  `StateFlow` the paging `combine` watches.
+- Traced `FiltersStorageImpl` (`core/storage/.../FiltersStorageImpl.kt`): `xFilters` is
+  `dataStore.data.map { ... }.stateIn(scope, Eagerly, FiltersData())`, and `FiltersData.updateData`
+  (`feature/filters/domain/.../FiltersData.kt`) maps over `this` (the *current* `activeFilters`),
+  so on a **fresh session with no filters selected**, `activeFilters` is the all-empty default and
+  `updateData` produces another structurally-equal all-empty `FiltersData` — StateFlow's built-in
+  conflation (drops consecutive `equals()`-equal values) means this write likely does **not**
+  re-emit, so no second list fetch happens in the common cold-start case. But once a user has
+  previously selected any filter (assignee, status, tag…), `activeFilters` is non-empty at init,
+  and `updateData` refreshes each selected item's `name`/`color`/`count` from the freshly-fetched
+  server data — genuinely changing the value in the common case (counts drift as project data
+  changes) — which *would* re-trigger `combine` → `flatMapLatest` → a second call to the paginated
+  list endpoint. **Not yet confirmed** — this is inference from reading the conflation contract, not
+  an observed trace.
+- A background survey agent checked whether `loadFiltersData()` itself is called more than once per
+  screen (it isn't, in Issues/Epics/Scrum — each calls it exactly once) and whether
+  `DashboardViewModel.loadAll()`'s 4 parallel `init` launches overlap endpoints (they don't — each
+  hits a distinct use case). Neither of those is a lead; the StateFlow-driven re-fetch above is the
+  one worth tracing.
+
+**Lead 2 — no debounce anywhere in the codebase** (`grep -rn debounce --include=*.kt` — zero hits).
+`IssuesViewModel`, `EpicsViewModel`, `ScrumBacklogViewModel`, and
+`feature/projectselector/ui/.../ProjectSelectorViewModel.kt:45` all wire `searchQuery` straight into
+a `combine(...).flatMapLatest` that drives paging — every keystroke starts a new request and
+`flatMapLatest` cancels whatever was still in flight, so a fast typist likely initiates one HTTP
+request per keystroke (mostly aborted, not completed) rather than one per pause. Adding
+`.debounce(300)` (or similar) before these `flatMapLatest` calls is the standard fix, once this is
+confirmed worth doing.
+
+**Resource for verifying any of this: the local `taiga-mcp` server**
+(`/home/gregory/proj/grappim/taiga-mcp/`, gregory's own MCP server — `mcp__taiga-mcp__taiga_request`
+tool) talks to the same local Taiga instance the app is configured against
+(`http://localhost:9000/` per this session's memory). It's a fast way to independently issue the
+same raw requests a screen *should* need and compare against what the app's Ktor client actually
+sends, without setting up a full proxy — useful as a sanity check once real request logs are
+captured, not a replacement for them.
+
+**How to actually confirm any of this (not done here):** capture real per-screen request counts —
+either enable Ktor call logging into the desktop `FileLogger` output (`core/logger`, see CLAUDE.md's
+Logging section) or run a local proxy — for Issues, Epics, and Scrum Backlog cold loads (with and
+without a previously-saved filter selection), and for typing in each screen's search box. Confirm an
+actual duplicate before changing any production code.
+
+**Trigger:** pick up as a standalone investigation (`investigate-issue` skill) once gregory wants to
+prioritize it.
+
+**Fix (2026-11-22):** confirmed on the emulator with real request counts, and it turned up a worse
+bug: a saved filter could be **erased** after process death (1 restore in 5), because
+`FiltersStorageImpl`'s `StateFlow`s started from a placeholder `FiltersData()` and the ViewModels
+merged the server's filter data into that placeholder and wrote it back. Lead 1 was real but
+narrower than described here: the list reloads only when a selected item's count has changed
+since it was saved. The placeholder also caused an unfiltered first fetch after every restore.
+Lead 2 was confirmed on all four search screens. Fixed in three commits: filter flows without a
+placeholder plus `FiltersStorage.refresh*Filters()` doing the merge inside `dataStore.edit {}`;
+the paging `combine` keyed on `FiltersData.selectsSameItemsAs` (ids only); and
+`debounceSearchQuery()` (`utils/ui/.../SearchQuery.kt`, 300 ms, empty query immediate) on
+Issues, Epics, Backlog and Project Selector. Re-verified on the emulator: a restore makes one
+filtered list request and keeps the filter (6/6), and typing "issue" makes one request. Full
+writeup: [docs/issues/2026-11-22-excessive-list-requests-and-filter-wipe.md](../issues/2026-11-22-excessive-list-requests-and-filter-wipe.md).

@@ -132,3 +132,13 @@ technique lives in the skill itself, not here — this file is only what's true 
   proxy fixture at `http://10.0.2.2:9100` (`docs/custom-request-headers/IMPLEMENTATION_PLAN.md`).
   Every list then shows "Connection error". `adb logcat | grep "Ktor.*REQUEST"` shows which host the
   app is calling; log out (Settings → Log out) and log back in at `http://10.0.2.2:9000`.
+- **Counting the app's API requests per action.** Debug builds log every call under the `Ktor` tag.
+  `adb logcat -c`, do the action, then
+  `adb logcat -d | grep -E " Ktor *: REQUEST: " | sed -E 's/.*api\/v1\///'`. A request cancelled by
+  `flatMapLatest` shows up as `REQUEST <url> failed with exception`. To make a saved filter's counts
+  change on the server, create an issue in that status through the REST API (token from
+  `POST /api/v1/auth` with `{"type":"normal","username":"admin","password":"admin"}`) and delete
+  it afterwards. Saved filters are in `files/datastore/taiga_session_filters_storage.preferences_pb`
+  (`run-as … cat | strings`; an empty selection reads `{}`). Backgrounding on Issues/Epics/Backlog
+  then `am kill` restores straight onto that screen. Worked example:
+  `docs/issues/2026-11-22-excessive-list-requests-and-filter-wipe.md`.
