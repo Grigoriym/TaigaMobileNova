@@ -140,7 +140,7 @@ internal class EpicsViewModelTest {
         val filters = FiltersData(statuses = persistentListOf(getStatusFilters()))
         sut.state.value.selectFilters(filters)
 
-        assertEquals(filters, session.epicsFilters.value)
+        assertEquals(filters, session.currentEpicsFilters)
     }
 
     @Test
@@ -152,5 +152,19 @@ internal class EpicsViewModelTest {
         session.changeEpicsFilters(newFilters)
 
         assertEquals(newFilters, sut.state.value.activeFilters)
+    }
+
+    @Test
+    fun `filters data arriving before the stored selection is read keeps the stored selection`() {
+        val stored = FiltersData(statuses = persistentListOf(getStatusFilters()))
+        session.changeEpicsFilters(stored)
+        session.storedFiltersLoaded.value = false
+        filtersRepository.filtersDataResult = stored
+
+        createViewModel()
+        session.storedFiltersLoaded.value = true
+
+        assertEquals(stored, session.currentEpicsFilters)
+        assertEquals(stored, sut.state.value.activeFilters)
     }
 }

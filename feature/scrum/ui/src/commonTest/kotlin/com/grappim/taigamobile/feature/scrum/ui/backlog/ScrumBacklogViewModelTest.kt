@@ -133,7 +133,7 @@ internal class ScrumBacklogViewModelTest {
         val filters = FiltersData(statuses = persistentListOf(getStatusFilters()))
         sut.state.value.onSelectFilters(filters)
 
-        assertEquals(filters, session.scrumFilters.value)
+        assertEquals(filters, session.currentScrumFilters)
     }
 
     @Test
@@ -145,5 +145,19 @@ internal class ScrumBacklogViewModelTest {
         session.changeScrumFilters(newFilters)
 
         assertEquals(newFilters, sut.state.value.activeFilters)
+    }
+
+    @Test
+    fun `filters data arriving before the stored selection is read keeps the stored selection`() {
+        val stored = FiltersData(statuses = persistentListOf(getStatusFilters()))
+        session.changeScrumFilters(stored)
+        session.storedFiltersLoaded.value = false
+        filtersRepository.filtersDataResult = stored
+
+        createViewModel()
+        session.storedFiltersLoaded.value = true
+
+        assertEquals(stored, session.currentScrumFilters)
+        assertEquals(stored, sut.state.value.activeFilters)
     }
 }

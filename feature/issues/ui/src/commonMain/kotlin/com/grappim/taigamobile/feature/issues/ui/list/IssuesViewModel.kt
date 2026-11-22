@@ -100,9 +100,7 @@ class IssuesViewModel(
 
             resultOf { filtersRepository.getFiltersData(CommonTaskType.Issue) }
                 .onSuccess { result ->
-                    session.changeIssuesFilters(
-                        filters = _state.value.activeFilters.updateData(result)
-                    )
+                    session.refreshIssuesFilters(result)
 
                     _state.update {
                         it.copy(

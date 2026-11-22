@@ -9,10 +9,14 @@ import com.grappim.kit.testing.MainDispatcherRule
 import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import com.grappim.taigamobile.feature.filters.domain.model.StatusFilters
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import kotlin.test.AfterTest
@@ -21,9 +25,8 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 
 /**
- * [FiltersStorageImpl] publishes its four sections as `StateFlow`s eagerly shared on a scope built
- * from `Dispatchers.Main`, and its `change*` methods are fire-and-forget `launch`es on that same
- * scope — so [MainDispatcherRule] is what makes the writes observable at all here.
+ * [FiltersStorageImpl]'s `change*` methods are fire-and-forget `launch`es on a scope built from
+ * `Dispatchers.Main`, so [MainDispatcherRule] is what makes the writes observable at all here.
  *
  * The test [dataStore] is built with that same `Dispatchers.Main` scope (see [createTestDataStore]),
  * not the real `Dispatchers.IO` scope it would otherwise default to. Without this, the DataStore's
@@ -35,8 +38,8 @@ import kotlin.test.assertEquals
  *
  * The filters written by these tests must differ from [FiltersData]'s own default, which is why
  * they are built locally instead of with `:testing`'s `getFiltersData()`: that factory returns a
- * value *equal to* `FiltersData()`, and a `StateFlow` conflates an update it compares equal to the
- * value it is already holding, so the write would be invisible however correct the code is.
+ * value *equal to* `FiltersData()`, and each flow drops an update equal to the value it last
+ * emitted, so the write would be invisible however correct the code is.
  */
 class FiltersStorageImplTest {
 
@@ -163,9 +166,9 @@ class FiltersStorageImplTest {
             assertEquals(filters, awaitItem())
         }
 
-        assertEquals(FiltersData(), sut.epicsFilters.value)
-        assertEquals(FiltersData(), sut.issuesFilters.value)
-        assertEquals(FiltersData(), sut.kanbanFilters.value)
+        assertEquals(FiltersData(), sut.epicsFilters.first())
+        assertEquals(FiltersData(), sut.issuesFilters.first())
+        assertEquals(FiltersData(), sut.kanbanFilters.first())
     }
 
     @Test
@@ -201,5 +204,75 @@ class FiltersStorageImplTest {
         sut.epicsFilters.test { assertEquals(FiltersData(), awaitItem()) }
         sut.issuesFilters.test { assertEquals(FiltersData(), awaitItem()) }
         sut.kanbanFilters.test { assertEquals(FiltersData(), awaitItem()) }
+    }
+
+    @Test
+    fun `a filters flow emits nothing until the stored value has been read`() = runTest {
+        val stored = filtersNamed("stored")
+        dataStore.edit { it[stringPreferencesKey("filters_issues")] = json.encodeToString(stored) }
+        val firstRead = CompletableDeferred<Unit>()
+        val sut = FiltersStorageImpl(dataStore = HeldBackDataStore(dataStore, firstRead), json = json)
+
+        sut.issuesFilters.test {
+            expectNoEvents()
+
+            firstRead.complete(Unit)
+
+            assertEquals(stored, awaitItem())
+        }
+    }
+
+    @Test
+    fun `refreshIssuesFilters refreshes the stored selection from the server data`() = runTest {
+        dataStore.edit { it[stringPreferencesKey("filters_issues")] = json.encodeToString(storedSelection) }
+
+        createSut().refreshIssuesFilters(serverData)
+
+        assertEquals(refreshedSelection, createSut().issuesFilters.first())
+    }
+
+    @Test
+    fun `refreshEpicsFilters refreshes the stored selection from the server data`() = runTest {
+        dataStore.edit { it[stringPreferencesKey("filters_epics")] = json.encodeToString(storedSelection) }
+
+        createSut().refreshEpicsFilters(serverData)
+
+        assertEquals(refreshedSelection, createSut().epicsFilters.first())
+    }
+
+    @Test
+    fun `refreshScrumFilters refreshes the stored selection from the server data`() = runTest {
+        dataStore.edit { it[stringPreferencesKey("filters_scrum")] = json.encodeToString(storedSelection) }
+
+        createSut().refreshScrumFilters(serverData)
+
+        assertEquals(refreshedSelection, createSut().scrumFilters.first())
+    }
+
+    private val storedSelection = FiltersData(
+        statuses = persistentListOf(StatusFilters(id = 1L, name = "old", count = 3L, color = "#FF0000"))
+    )
+    private val serverData = FiltersData(
+        statuses = persistentListOf(
+            StatusFilters(id = 1L, name = "new", count = 5L, color = "#00FF00"),
+            StatusFilters(id = 2L, name = "not selected", count = 1L, color = "#0000FF")
+        )
+    )
+    private val refreshedSelection = FiltersData(
+        statuses = persistentListOf(StatusFilters(id = 1L, name = "new", count = 5L, color = "#00FF00"))
+    )
+
+    /** Holds back the first read of [delegate] until [firstRead] completes; writes pass straight through. */
+    private class HeldBackDataStore(
+        private val delegate: DataStore<Preferences>,
+        private val firstRead: CompletableDeferred<Unit>
+    ) : DataStore<Preferences> {
+        override val data: Flow<Preferences> = flow {
+            firstRead.await()
+            emitAll(delegate.data)
+        }
+
+        override suspend fun updateData(transform: suspend (t: Preferences) -> Preferences): Preferences =
+            delegate.updateData(transform)
     }
 }

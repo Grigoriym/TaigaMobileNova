@@ -111,9 +111,7 @@ class ScrumBacklogViewModel(
                     )
                 }
 
-                session.changeScrumFilters(
-                    filters = _state.value.activeFilters.updateData(result)
-                )
+                session.refreshScrumFilters(result)
             }.onFailure { error ->
                 logcat(throwable = error) {
                     "Failed to get filters data"

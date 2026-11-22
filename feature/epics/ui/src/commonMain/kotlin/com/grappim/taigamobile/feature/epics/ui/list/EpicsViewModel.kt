@@ -100,9 +100,7 @@ class EpicsViewModel(
 
             resultOf { filtersRepository.getFiltersData(CommonTaskType.Epic) }
                 .onSuccess { result ->
-                    session.changeEpicsFilters(
-                        filters = _state.value.activeFilters.updateData(result)
-                    )
+                    session.refreshEpicsFilters(result)
 
                     _state.update {
                         it.copy(

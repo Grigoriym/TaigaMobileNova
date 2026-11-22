@@ -140,7 +140,7 @@ internal class IssuesViewModelTest {
         val filters = FiltersData(statuses = persistentListOf(getStatusFilters()))
         sut.state.value.selectFilters(filters)
 
-        assertEquals(filters, session.issuesFilters.value)
+        assertEquals(filters, session.currentIssuesFilters)
     }
 
     @Test
@@ -152,5 +152,19 @@ internal class IssuesViewModelTest {
         session.changeIssuesFilters(newFilters)
 
         assertEquals(newFilters, sut.state.value.activeFilters)
+    }
+
+    @Test
+    fun `filters data arriving before the stored selection is read keeps the stored selection`() {
+        val stored = FiltersData(statuses = persistentListOf(getStatusFilters()))
+        session.changeIssuesFilters(stored)
+        session.storedFiltersLoaded.value = false
+        filtersRepository.filtersDataResult = stored
+
+        createViewModel()
+        session.storedFiltersLoaded.value = true
+
+        assertEquals(stored, session.currentIssuesFilters)
+        assertEquals(stored, sut.state.value.activeFilters)
     }
 }
