@@ -59,6 +59,7 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 61 | [`EditDescriptionContentTest`'s preview assertion doesn't wait for async Markdown parsing](#61-editdescriptioncontenttests-preview-assertion-doesnt-wait-for-async-markdown-parsing) | ✅ resolved 2026-11-15 |
 | 55 | [CLAUDE.md's "grappim-kit Modules" section had become a worked-example catalogue](#55-claudemds-grappim-kit-modules-section-had-become-a-worked-example-catalogue) | ✅ resolved 2026-11-22 |
 | 56 | [Two unused vector copies of the old launcher logo, plus an unused tint color](#56-two-unused-vector-copies-of-the-old-launcher-logo-plus-an-unused-tint-color) | ✅ resolved 2026-11-22 |
+| 59 | [Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists)](#59-read-only-markdown-rendering-likely-diverges-from-taigas-single-newlines-2-space-nested-lists) | ✅ resolved 2026-11-22 |
 | 60 | [`MarkdownTextWidget` applies its `modifier` twice when `onClick` is null](#60-markdowntextwidget-applies-its-modifier-twice-when-onclick-is-null) | ✅ resolved 2026-11-22 |
 | 62 | [`CreateCommentBar`'s Markdown toolbar still edits the text while offline](#62-createcommentbars-markdown-toolbar-still-edits-the-text-while-offline) | ✅ resolved 2026-11-22 |
 | 63 | [Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run](#63-markdown-preview-ui-tests-wait-with-waituntils-1-s-default-which-times-out-under-a-full-jvmtest-run) | ✅ resolved 2026-11-22 |
@@ -2329,3 +2330,34 @@ exist, but their `srcDirs` are empty. The directories live on the Android source
 detekt's report confirms it scanned all 11 `androidApp` files (0 findings). ktlint found 4 issues
 (`class-signature` in `AppInfoProviderImpl`, `final-newline` in `CrashlyticsTree`,
 `import-ordering` in `ImageLoaderProvider`), all fixed by `ktlintMainSourceSetFormat`.
+
+## 59. Read-only Markdown rendering likely diverges from Taiga's (single newlines, 2-space nested lists)
+
+Found during markdown-editor checklist step 1 (2026-11-14). Taiga renders with Python-Markdown
+plus `nl2br`, so a single newline in a description is a hard `<br>`. Nested lists need 4-space
+indentation: `- a\n  - b` renders flat (see
+[markdown-editor IMPLEMENTATION_PLAN.md](features/markdown-editor/IMPLEMENTATION_PLAN.md), Open
+questions → 1). `MarkdownTextWidget` (`uikit/.../widgets/text/MarkdownTextWidget.kt`) passes
+the text straight to `multiplatform-markdown-renderer`, with only `@mention` rewriting. That
+renderer is CommonMark/GFM, so a single newline should come out as a soft break: a description
+typed as two lines on the web would show as one line in the app. **Unverified on device.** It's
+inferred from the renderer's flavour and the lack of any newline preprocessing.
+
+**Check:** save `line one\nline two` as a description on the local instance and open it on the
+emulator. A fix (e.g. turning single newlines into hard breaks outside code blocks before
+rendering) belongs with the markdown-editor work, if option A's Preview lands, or on its own.
+
+**Fix (2026-11-22):** confirmed on the emulator first: a user story saved via the API as
+`line one\nline two` showed as one line, while Taiga's own `description_html` had a `<br>`.
+`MarkdownTextWidget` now passes `markdownAnnotator(config = markdownAnnotatorConfig(eolAsNewLine = true))`
+to `Markdown`. `multiplatform-markdown-renderer` 0.46.0 then emits each paragraph `EOL` token as
+`\n` rather than a space. It's a renderer setting, not a text rewrite, so `sourceOffset`'s
+checkbox-toggle mapping is unaffected. An explicit hard break (two trailing spaces) still gives
+one break, not two (the library skips the `EOL` after a `HARD_LINE_BREAK`). Code blocks are unchanged.
+`MarkdownTextWidgetRenderTest` (`uikit` `jvmTest`) covers it and fails without the fix.
+
+**2-space nested lists were left as they are, on purpose.** The app nests `- a\n  - b`, while
+Taiga renders it flat. The app's own editor indents with 4 spaces (`MarkdownFormatting.kt`'s
+`INDENT`), so text written in the app nests in both places. Only text written elsewhere with
+2 spaces differs, and the app's nesting is what its author meant. Flattening it to match Taiga
+would mean writing a preprocessor that makes the app render worse.

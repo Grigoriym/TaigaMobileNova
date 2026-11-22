@@ -24,6 +24,8 @@ import com.mikepenz.markdown.compose.elements.MarkdownParagraph
 import com.mikepenz.markdown.compose.elements.MarkdownText
 import com.mikepenz.markdown.m3.Markdown
 import com.mikepenz.markdown.m3.elements.MarkdownCheckBox
+import com.mikepenz.markdown.model.markdownAnnotator
+import com.mikepenz.markdown.model.markdownAnnotatorConfig
 import com.mikepenz.markdown.utils.getUnescapedTextInNode
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
@@ -31,6 +33,7 @@ import org.intellij.markdown.ast.getTextInNode
 
 private const val MENTION_URL_SCHEME = "mention:"
 private val mentionRegex = Regex("""\B@([\w.-]+)\b""")
+private val taigaAnnotator = markdownAnnotator(config = markdownAnnotatorConfig(eolAsNewLine = true))
 
 /**
  * If you define onClick, either internally or externally, make isSelectable = false as well
@@ -59,6 +62,8 @@ fun MarkdownTextWidget(
             ),
         content = rewriteMentions(text, members),
         imageTransformer = Coil3ImageTransformerImpl,
+        // Taiga renders with Python-Markdown's nl2br, so a single newline inside a paragraph is a line break.
+        annotator = taigaAnnotator,
         components = markdownComponents(
             text = { model ->
                 MarkdownText(

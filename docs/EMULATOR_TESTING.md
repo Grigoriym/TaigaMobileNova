@@ -67,8 +67,9 @@ technique lives in the skill itself, not here — this file is only what's true 
   `input keyevent KEYCODE_BACK` dismisses the keyboard without navigating away from the
   screen; re-dump/re-screenshot after that before tapping a button below the fold.
 - Post-login landing screen is **"Select Project"** (`Search projects` field + an
-  `Owner`-grouped list) — this is the seeded local instance's three projects: `empty
-  (empty)`, `additional (main-3)`, `Main project (main-2)`.
+  `Owner`-grouped list). The local instance's projects change when it is re-seeded: on 2026-11-22
+  `admin` saw `main-project` (id 1) and `user1-project-private`, not the `main-2`/`main-3` older
+  docs name. List them with `GET /api/v1/projects` rather than trusting a slug from a doc.
 - **On `Medium_Tablet`, `NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo` resolves to
   `NavigationRail` (narrow icon-over-label column), not `NavigationDrawer`**, even though the
   AVD's landscape width is ~1280dp — comfortably past the 840dp expanded-width breakpoint.
