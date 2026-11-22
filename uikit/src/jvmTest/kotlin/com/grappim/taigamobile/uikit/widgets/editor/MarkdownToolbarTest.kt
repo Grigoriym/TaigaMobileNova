@@ -82,4 +82,26 @@ class MarkdownToolbarTest {
         isPreview = false
         onNodeWithContentDescription("Bold").assertIsEnabled()
     }
+
+    @Test
+    fun formattingButtonsAreDisabledWhenNotEnabled() = runComposeUiTest {
+        var enabled by mutableStateOf(false)
+
+        setContent {
+            TaigaMobilePreviewTheme {
+                MarkdownToolbar(
+                    value = TextFieldValue("text"),
+                    onValueChange = {},
+                    isPreview = false,
+                    onPreviewToggle = {},
+                    enabled = enabled
+                )
+            }
+        }
+
+        onNodeWithContentDescription("Bold").assertIsNotEnabled()
+
+        enabled = true
+        onNodeWithContentDescription("Bold").assertIsEnabled()
+    }
 }

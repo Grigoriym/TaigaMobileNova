@@ -67,7 +67,7 @@ import org.jetbrains.compose.resources.stringResource
  * Each formatting button applies one of the `MarkdownFormatting.kt` transforms to [value] and emits
  * the result through [onValueChange]. The Edit/Preview toggle stays pinned at the start while the
  * formatting buttons scroll horizontally; the formatting buttons are disabled while [isPreview]
- * is true, since there is no editable selection to act on.
+ * is true, since there is no editable selection to act on, and whenever [enabled] is false.
  */
 @Composable
 fun MarkdownToolbar(
@@ -75,7 +75,8 @@ fun MarkdownToolbar(
     onValueChange: (TextFieldValue) -> Unit,
     isPreview: Boolean,
     onPreviewToggle: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = modifier
@@ -97,7 +98,7 @@ fun MarkdownToolbar(
             MarkdownToolbarAction.entries.forEach { action ->
                 IconButton(
                     onClick = { onValueChange(action.transform(value)) },
-                    enabled = !isPreview
+                    enabled = enabled && !isPreview
                 ) {
                     Icon(
                         imageVector = action.icon,

@@ -172,7 +172,8 @@ fun CreateCommentBar(
                         value = commentTextValue,
                         onValueChange = { newValue -> commentTextValue = newValue },
                         isPreview = isPreview,
-                        onPreviewToggle = { isPreview = !isPreview }
+                        onPreviewToggle = { isPreview = !isPreview },
+                        enabled = !isOffline
                     )
                 }
             }

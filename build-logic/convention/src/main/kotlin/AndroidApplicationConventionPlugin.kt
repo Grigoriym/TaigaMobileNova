@@ -5,6 +5,7 @@ import com.grappim.taigamobile.buildlogic.configureAndroidOutputNaming
 import com.grappim.taigamobile.buildlogic.configureComposeStabilityReports
 import com.grappim.taigamobile.buildlogic.configureFlavors
 import com.grappim.taigamobile.buildlogic.configureKotlinAndroid
+import com.grappim.taigamobile.buildlogic.configureLinting
 import com.grappim.taigamobile.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -19,6 +20,7 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             apply(plugin = "io.insert-koin.compiler.plugin")
 
             configureComposeStabilityReports()
+            configureLinting()
 
             extensions.configure<ApplicationExtension> {
                 defaultConfig.apply {

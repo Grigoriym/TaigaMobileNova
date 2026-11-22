@@ -54,7 +54,7 @@ fun MarkdownTextWidget(
                     Modifier
                         .clickable { onClick() }
                 } else {
-                    modifier
+                    Modifier
                 }
             ),
         content = rewriteMentions(text, members),

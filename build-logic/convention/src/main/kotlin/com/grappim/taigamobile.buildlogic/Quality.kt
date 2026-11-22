@@ -1,5 +1,6 @@
 package com.grappim.taigamobile.buildlogic
 
+import com.android.build.api.dsl.ApplicationExtension
 import dev.detekt.gradle.extensions.DetektExtension
 import org.gradle.api.Project
 import org.gradle.api.tasks.testing.Test
@@ -42,13 +43,19 @@ fun Project.configureLinting() {
     // Source sets also carry generated dirs (BuildKonfig, Compose resources, Room); those live
     // under the build dir and are dropped here, since detekt's own `build/` exclude does not
     // match the absolute paths the source sets hand over.
+    // An Android application module on AGP's built-in Kotlin leaves the Kotlin source sets' dirs
+    // empty and keeps them on the Android source sets instead.
     val kotlinSrcDirs = provider {
         val buildDir = layout.buildDirectory.get().asFile
-        extensions.findByType(KotlinSourceSetContainer::class.java)
+        val kotlinDirs = extensions.findByType(KotlinSourceSetContainer::class.java)
             ?.sourceSets
             ?.flatMap { it.kotlin.srcDirs }
-            ?.filterNot { it.startsWith(buildDir) }
             .orEmpty()
+        val androidAppDirs = extensions.findByType(ApplicationExtension::class.java)
+            ?.sourceSets
+            ?.flatMap { sourceSet -> sourceSet.kotlin.directories.map(::file) }
+            .orEmpty()
+        (kotlinDirs + androidAppDirs).filterNot { it.startsWith(buildDir) }
     }
 
     // https://detekt.dev/docs/introduction/configurations/

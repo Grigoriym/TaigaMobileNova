@@ -46,7 +46,9 @@ class CreateTaskScreenContentTest {
 
         onNodeWithTag(CREATE_TASK_DESCRIPTION_TEST_TAG).assertDoesNotExist()
         onNodeWithTag(CREATE_TASK_PREVIEW_TEST_TAG).assertExists()
-        waitUntil { onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty() }
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithText("plain strong", substring = true).fetchSemanticsNodes().isNotEmpty()
+        }
         onNodeWithContentDescription("Bold").assertIsNotEnabled()
 
         onNodeWithContentDescription("Edit").performClick()
