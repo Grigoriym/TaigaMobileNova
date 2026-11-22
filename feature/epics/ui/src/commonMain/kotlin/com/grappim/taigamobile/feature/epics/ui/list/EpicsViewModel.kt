@@ -17,6 +17,7 @@ import com.grappim.taigamobile.feature.projects.domain.canAddEpic
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.debounceSearchQuery
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -55,7 +56,7 @@ class EpicsViewModel(
 
     val epics: Flow<PagingData<WorkItem>> = combine(
         session.epicsFilters.distinctUntilChanged(FiltersData::selectsSameItemsAs),
-        searchQuery
+        searchQuery.debounceSearchQuery()
     ) { filters, searchQuery ->
         Pair(filters, searchQuery)
     }.flatMapLatest { (filters, searchQuery) ->

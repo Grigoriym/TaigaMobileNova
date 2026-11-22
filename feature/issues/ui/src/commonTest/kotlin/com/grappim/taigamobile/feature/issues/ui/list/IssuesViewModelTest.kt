@@ -11,9 +11,11 @@ import com.grappim.taigamobile.testing.repo.FakeIssuesRepository
 import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.utils.ui.SEARCH_QUERY_DEBOUNCE_MILLIS
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -184,5 +186,19 @@ internal class IssuesViewModelTest {
         sut.state.value.retryLoadFilters()
 
         assertEquals(listOf(stored to ""), issuesRepository.getIssuesPagingCalls)
+    }
+
+    @Test
+    fun `quick search keystrokes load the list once, with the last query`() = runTest {
+        filtersRepository.filtersDataResult = FiltersData()
+        createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { sut.issues.collect {} }
+
+        sut.state.value.setSearchQuery("i")
+        sut.state.value.setSearchQuery("is")
+        sut.state.value.setSearchQuery("iss")
+        advanceTimeBy(SEARCH_QUERY_DEBOUNCE_MILLIS + 1)
+
+        assertEquals(listOf("", "iss"), issuesRepository.getIssuesPagingCalls.map { it.second })
     }
 }

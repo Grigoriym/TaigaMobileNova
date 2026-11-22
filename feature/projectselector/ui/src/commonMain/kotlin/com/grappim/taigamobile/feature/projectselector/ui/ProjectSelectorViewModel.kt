@@ -9,6 +9,7 @@ import com.grappim.taigamobile.core.storage.TaigaSessionStorage
 import com.grappim.taigamobile.core.storage.cleaner.DataCleaner
 import com.grappim.taigamobile.feature.projects.domain.Project
 import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
+import com.grappim.taigamobile.utils.ui.debounceSearchQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
@@ -44,7 +45,7 @@ class ProjectSelectorViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
-    val projects: Flow<PagingData<Project>> = _searchQuery.flatMapLatest { query ->
+    val projects: Flow<PagingData<Project>> = _searchQuery.debounceSearchQuery().flatMapLatest { query ->
         projectsRepository.fetchProjects(query)
     }.cachedIn(viewModelScope)
 

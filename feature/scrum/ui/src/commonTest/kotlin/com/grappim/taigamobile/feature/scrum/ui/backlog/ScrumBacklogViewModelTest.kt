@@ -10,9 +10,11 @@ import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.repo.FakeUserStoriesRepository
 import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.utils.ui.SEARCH_QUERY_DEBOUNCE_MILLIS
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -178,5 +180,19 @@ internal class ScrumBacklogViewModelTest {
         sut.state.value.retryLoadFilters()
 
         assertEquals(listOf(stored to ""), userStoriesRepository.getUserStoriesPagingCalls)
+    }
+
+    @Test
+    fun `quick search keystrokes load the list once, with the last query`() = runTest {
+        filtersRepository.filtersDataResult = FiltersData()
+        createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { sut.userStories.collect {} }
+
+        sut.state.value.onSetSearchQuery("i")
+        sut.state.value.onSetSearchQuery("is")
+        sut.state.value.onSetSearchQuery("iss")
+        advanceTimeBy(SEARCH_QUERY_DEBOUNCE_MILLIS + 1)
+
+        assertEquals(listOf("", "iss"), userStoriesRepository.getUserStoriesPagingCalls.map { it.second })
     }
 }

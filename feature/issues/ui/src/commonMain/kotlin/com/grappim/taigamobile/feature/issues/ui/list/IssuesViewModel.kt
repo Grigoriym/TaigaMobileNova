@@ -17,6 +17,7 @@ import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canAddIssue
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.debounceSearchQuery
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -53,7 +54,7 @@ class IssuesViewModel(
 
     val issues = combine(
         session.issuesFilters.distinctUntilChanged(FiltersData::selectsSameItemsAs),
-        searchQuery
+        searchQuery.debounceSearchQuery()
     ) { filters, searchQuery ->
         Pair(filters, searchQuery)
     }.flatMapLatest { (filters, searchQuery) ->

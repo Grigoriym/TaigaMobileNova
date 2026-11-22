@@ -17,6 +17,7 @@ import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canAddUserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.utils.ui.debounceSearchQuery
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -53,7 +54,7 @@ class ScrumBacklogViewModel(
 
     val userStories: Flow<PagingData<WorkItem>> = combine(
         session.scrumFilters.distinctUntilChanged(FiltersData::selectsSameItemsAs),
-        searchQuery
+        searchQuery.debounceSearchQuery()
     ) { filters, searchQuery ->
         Pair(filters, searchQuery)
     }.flatMapLatest { (filters, searchQuery) ->
