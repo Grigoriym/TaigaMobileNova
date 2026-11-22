@@ -21,11 +21,9 @@ now that the table below covers everything left.
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
 | 45 | Tablet nav rail/permanent drawer still has no scroll safety net | S–M | [tablet nav rail issue](issues/2026-08-26-tablet-nav-rail-logout-clipped.md) |
 | 46 | No deep-link readiness plan yet (3 queued Nav3 patterns) | — | [reference-app-scouting.md](../../agentic-grappim/investigations/reference-app-scouting.md) |
-| 47 | `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge | S | — |
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 | 53 | Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere | S–M | this file |
 | 57 | iOS has no `NSLocalNetworkUsageDescription` | S | this file |
-| 58 | `apk-size-check` runner is killed on Gradle-wrapper bump PRs | S | `.github/workflows/build.yml` `apk-size-check` job |
 
 ---
 
@@ -134,35 +132,6 @@ the first time" note, not a bug.
 navigation, universal/app links, "open this task from a link"), read this entry and the fuller
 per-pattern writeups in `agentic-grappim/investigations/reference-app-scouting.md`'s HedvigInsurance
 section before designing the feature from scratch.
-
-## 47. `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge
-
-**Where:** `.github/workflows/guardrails.yml`, "Work out the range to check" step, the `else`
-branch (the `push` event path, used for pushes to `dev` and `master`).
-
-**What:** fixed the `pull_request` path for `release/* -> master` PRs in this session (PR #379,
-v2.2.0) — it now diffs `origin/dev..HEAD` instead of `origin/master..HEAD`, since master only
-advances on releases and the old range re-checked weeks of already-gated dev history. The `push`
-path has the identical root problem and was **not** touched: once a release PR merges,
-`push: branches: [master]` fires with `github.event.before` = the previous master tip (the last
-release) and `HEAD` = the new tip (the whole dev backlog just merged in). That range will re-trip
-the same old, already-gated commits this session just fixed the PR-side check for.
-
-**Consequence:** low — the merge has already happened by the time this run fires, so a failure here
-doesn't block anything (unlike the PR check). It just leaves a red X on `master`'s history after
-every release, which is misleading (it reads as "this release broke guardrails," but the commits it
-flags predate the release entirely).
-
-**Why deferred:** out of scope for unblocking PR #379, which only needed the `pull_request` path
-fixed. Same fix shape applies (`before` should become `dev`'s tip rather than the previous
-`master` tip when the pushed range looks like a release merge), but it needs its own verification —
-there's no in-flight release-merge push to test against right now, and `github.event.before` isn't
-easily fake-able locally the way `check-guardrails.sh <range>` is.
-
-**Trigger:** next time a release PR merges into `master`, check whether the resulting `push`-triggered
-guardrails run on `master` failed. If it did (for the reason above, not a real new violation), fix
-the `else` branch the same way: when the event is a push to `master` and `before` is not an ancestor
-of `dev`'s current tip reachable within the release-only commits, use `dev`'s merge-base instead.
 
 ## 52. No way for a user to send debug logs when filing a bug report
 
@@ -308,16 +277,3 @@ The Android 17 `ACCESS_LOCAL_NETWORK` half of this entry was checked by gregory 
 
 **Trigger:** any iOS LAN bug report, or an iOS device to test on.
 
----
-
-## 58. `apk-size-check` runner is killed on Gradle-wrapper bump PRs
-
-On PR #466 (Gradle 9.8.2 → 9.9.1, 2026-11-13) the `apk-size-check` job was cancelled twice with
-`The runner has received a shutdown signal` — once mid base-APK build (run 42865533809, first
-attempt), once in the diff step on the rerun. The AGP bump PR #448, run the same day on the
-unchanged wrapper, passed the same job. Unverified hypothesis: the job builds the PR head then
-checks out the base in the same runner, so a wrapper bump leaves two different Gradle daemons
-resident and the runner runs out of memory. A `./gradlew --stop` between the two builds would
-test it.
-
-**Trigger:** the next Renovate Gradle-wrapper PR failing this job the same way.

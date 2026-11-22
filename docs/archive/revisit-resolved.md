@@ -64,6 +64,8 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 62 | [`CreateCommentBar`'s Markdown toolbar still edits the text while offline](#62-createcommentbars-markdown-toolbar-still-edits-the-text-while-offline) | ✅ resolved 2026-11-22 |
 | 63 | [Markdown-preview UI tests wait with `waitUntil`'s 1 s default, which times out under a full `jvmTest` run](#63-markdown-preview-ui-tests-wait-with-waituntils-1-s-default-which-times-out-under-a-full-jvmtest-run) | ✅ resolved 2026-11-22 |
 | 64 | [`androidApp` has no detekt/ktlint, so CI never lints it](#64-androidapp-has-no-detektktlint-so-ci-never-lints-it) | ✅ resolved 2026-11-22 |
+| 47 | [`guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge](#47-guardrailsymls-push-trigger-on-master-still-diffs-the-wrong-range-after-a-release-merge) | ✅ closed 2026-11-22 (one-off, not recurring) |
+| 58 | [`apk-size-check` runner is killed on Gradle-wrapper bump PRs](#58-apk-size-check-runner-is-killed-on-gradle-wrapper-bump-prs) | ✅ closed 2026-11-22 (did not reproduce) |
 
 ---
 
@@ -2361,3 +2363,61 @@ Taiga renders it flat. The app's own editor indents with 4 spaces (`MarkdownForm
 `INDENT`), so text written in the app nests in both places. Only text written elsewhere with
 2 spaces differs, and the app's nesting is what its author meant. Flattening it to match Taiga
 would mean writing a preprocessor that makes the app render worse.
+
+## 47. `guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge
+
+**Where:** `.github/workflows/guardrails.yml`, "Work out the range to check" step, the `else`
+branch (the `push` event path, used for pushes to `dev` and `master`).
+
+**What:** fixed the `pull_request` path for `release/* -> master` PRs in this session (PR #379,
+v2.2.0) — it now diffs `origin/dev..HEAD` instead of `origin/master..HEAD`, since master only
+advances on releases and the old range re-checked weeks of already-gated dev history. The `push`
+path has the identical root problem and was **not** touched: once a release PR merges,
+`push: branches: [master]` fires with `github.event.before` = the previous master tip (the last
+release) and `HEAD` = the new tip (the whole dev backlog just merged in). That range will re-trip
+the same old, already-gated commits this session just fixed the PR-side check for.
+
+**Consequence:** low — the merge has already happened by the time this run fires, so a failure here
+doesn't block anything (unlike the PR check). It just leaves a red X on `master`'s history after
+every release, which is misleading (it reads as "this release broke guardrails," but the commits it
+flags predate the release entirely).
+
+**Why deferred:** out of scope for unblocking PR #379, which only needed the `pull_request` path
+fixed. Same fix shape applies (`before` should become `dev`'s tip rather than the previous
+`master` tip when the pushed range looks like a release merge), but it needs its own verification —
+there's no in-flight release-merge push to test against right now, and `github.event.before` isn't
+easily fake-able locally the way `check-guardrails.sh <range>` is.
+
+**Trigger:** next time a release PR merges into `master`, check whether the resulting `push`-triggered
+guardrails run on `master` failed. If it did (for the reason above, not a real new violation), fix
+the `else` branch the same way: when the event is a push to `master` and `before` is not an ancestor
+of `dev`'s current tip reachable within the release-only commits, use `dev`'s merge-base instead.
+
+**Closed (2026-11-22), not fixed:** the misleading red X only happened once. Re-running
+`.github/scripts/check-guardrails.sh "<merge>^1..<merge>"` locally on each release merge into
+`master` gives the same results as CI did: v2.2.0 (`5702b4d6`) fails, and v2.2.1 (`155a641b`),
+v2.2.2 (`910971c8`), v2.2.3 (`40ae4d4d`) and v2.3.0 (`1af1e815`) all pass. v2.2.0's range was
+the only one holding ungated commits. 7 of the 9 flagged commits predate the workflow itself
+(`80df72e2`, #353). The other 2 are Renovate's detekt and composeRules bumps (#340, #341), merged
+the next day without a `Gate-change:` line. Every later release range holds only commits that
+already passed guardrails on their way into `dev`, so the push range is clean without any special
+case. A future failure on that run is therefore a real signal (an ungated commit reached `dev`),
+not noise, and the `else` branch stays as it is.
+
+## 58. `apk-size-check` runner is killed on Gradle-wrapper bump PRs
+
+On PR #466 (Gradle 9.8.2 → 9.9.1, 2026-11-13) the `apk-size-check` job was cancelled twice with
+`The runner has received a shutdown signal` — once mid base-APK build (run 42865533809, first
+attempt), once in the diff step on the rerun. The AGP bump PR #448, run the same day on the
+unchanged wrapper, passed the same job. Unverified hypothesis: the job builds the PR head then
+checks out the base in the same runner, so a wrapper bump leaves two different Gradle daemons
+resident and the runner runs out of memory. A `./gradlew --stop` between the two builds would
+test it.
+
+**Trigger:** the next Renovate Gradle-wrapper PR failing this job the same way.
+
+**Closed (2026-11-22), did not reproduce:** the next Renovate wrapper PR, #482 (Gradle 9.9.1 →
+9.9.2, merged 2026-11-20), passed `apk-size-check` in 10m27s with the job unchanged (no
+`./gradlew --stop` added). So the two-daemons/out-of-memory guess is not confirmed, and #466's
+cancellations look like runner flakiness rather than something the wrapper bump causes. Reopen
+with the run id if a wrapper PR fails this job the same way again.

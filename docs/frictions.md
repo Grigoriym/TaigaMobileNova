@@ -128,3 +128,4 @@ deleted — see `finalize`.
 - 2026-11-22: Pixel_10a (API 37) launcher ignored `input swipe` up to the app drawer four times in a row; checked the launcher-icon foreground on the splash screen (same `@mipmap`) instead.
 - 2026-11-22: read a Compose `IconButton`'s `enabled` off the node carrying its `content-desc` — that's the `Icon` child, always `enabled="true"`; the real state is on the clickable parent node. Nearly reported the offline-toolbar fix as broken.
 - 2026-11-22: created a test user story with the slug `main-2` (from the markdown-editor plan); the re-seeded local Taiga has `main-project` instead, so the lookup failed. `GET /api/v1/projects` lists the real ones; EMULATOR_TESTING.md now says so.
+- 2026-11-22: `gh run view <id> --log` and `--log-failed` printed nothing, exit 0, even for a day-old guardrails run; reproduced the result instead by re-running `check-guardrails.sh` locally on the same commit range.

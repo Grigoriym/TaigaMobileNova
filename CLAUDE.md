@@ -610,8 +610,8 @@ that `release/vX.Y.Z` branch (small commits, same as any other work) — merging
 `dev`. **`guardrails.yml`'s range for a `release/* -> master` PR must diff against `dev`, not
 `master`** (fixed 2026-09-02, first release PR since that workflow shipped) — `master` only advances
 on releases, so diffing against it re-checks the entire dev-vs-master backlog instead of just the
-release branch's own commits. See `docs/revisit.md` #47 for the equivalent, still-open gap on the
-`push`-triggered run that fires on `master` right after the merge.
+release branch's own commits. The `push`-triggered run on `master` after the merge needs no such
+special case: everything it re-checks already passed guardrails into `dev`.
 
 **Merge the release PR with "Create a merge commit", never squash.** A squash leaves `master` with one
 commit that shares no history with `dev`. Then `release-finalize.yml`'s back-merge conflicts on any
