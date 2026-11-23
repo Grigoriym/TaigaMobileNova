@@ -75,9 +75,10 @@ technique lives in the skill itself, not here — this file is only what's true 
 - **On `Medium_Tablet`, `NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo` resolves to
   `NavigationRail` (narrow icon-over-label column), not `NavigationDrawer`**, even though the
   AVD's landscape width is ~1280dp — comfortably past the 840dp expanded-width breakpoint.
-  Confirmed 2026-08-15 verifying tablet checklist step 4. Don't assume EXPANDED width alone
-  guarantees a permanent drawer in this API; a rail is a legitimate result too and both count as
-  the "medium/expanded" `NavigationSuiteScaffold` path.
+  Confirmed 2026-08-15 verifying tablet checklist step 4. The function never returns
+  `NavigationDrawer` at all: it returns `NavigationBar` when the width or height is compact (or
+  the posture is tabletop), and `NavigationRail` otherwise (source read 2026-11-23,
+  `docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md`).
 - **A fresh `Medium_Tablet` boot pre-fills the login server-URL field with a stale LAN IP**, same
   as the phone AVD gotcha above — clear it the same way before typing `http://10.0.2.2:9000`.
 - **`Medium_Tablet` can cold-boot with no IPv4 default route at all**, even though DHCP reports a

@@ -1,6 +1,7 @@
 # 2026-08-21 — Crash pushing a new screen into the ListDetailSceneStrategy detail pane
 
-**Status:** Open — blocks step 12c
+**Status:** Open — blocks step 12c. Retest on current versions planned 2026-11-23, see
+[2026-11-23-tablet-nav-rail-and-list-detail.md](2026-11-23-tablet-nav-rail-and-list-detail.md)
 **Link:** none — found while doing step 12c's manual verification, see
 [tablet-form-factor-support/CHECKLIST.md](../architecture/tablet-form-factor-support/CHECKLIST.md)
 **Updated:** 2026-08-21

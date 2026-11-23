@@ -1,15 +1,15 @@
 # Tablet and Other Form Factor Support — Checklist
 
-**Progress:** 14/15 done (counting steps 13-15 added 2026-08-22). **Current step:** none active —
-step 12 (Issues list-detail two-pane) is deferred to a separate PR, not resumed in this one; 12b's
-`ListDetailSceneStrategy` wiring was reverted 2026-08-22 after 12c's verification turned up a
-blocking crash and a second app-bar bug, and Issues is back to single-pane push navigation (12a's
-`ResultBus` key fix was kept — harmless in single-pane mode). See IMPLEMENTATION_PLAN.md's "Step
-12b/12c reverted" section for that history. Step 13 (gate the wide-width nav rail on login state)
-is done — see CHECKLIST-DONE.md. Step 14 (add row dividers to the Issues list) is also done — it
-turned out to be a no-op: Issues already had the same divider mechanism Dashboard uses, confirmed
-by a GUI check 2026-08-22; see CHECKLIST-DONE.md. Step 15 (desktop refresh affordance) is also done
-2026-08-22 — see CHECKLIST-DONE.md. Only step 12 remains, still deferred/gated.
+**Progress:** 14/16 done (step 16 added 2026-11-23). **Current step:** 12c, resumed 2026-11-23:
+retest the two-pane crash on current library versions. Step 16 (expandable rail) is gated on a
+grappim-kit release. Both land in one PR.
+
+**Resumed 2026-11-23 (gregory):** step 12c is un-gated; it and step 16 go into one PR. The plan,
+Android/Material guidance and decisions are in
+[docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md](../../issues/2026-11-23-tablet-nav-rail-and-list-detail.md).
+Order: retest the step-12c crash on current library versions first (it doesn't depend on the kit),
+then step 16 once grappim-kit publishes the expandable rail. The two-pane top-bar ownership
+question is still open; gregory decides after the retest.
 
 See [IMPLEMENTATION_PLAN.md](IMPLEMENTATION_PLAN.md) for the survey, the scope options, and the
 2026-08-15 decision to pursue option 2 (adaptive navigation chrome) next, followed by option 3's
@@ -48,8 +48,13 @@ change.
 
 ## Step 12c: Emulator-verify the Issues two-pane layout on a tablet AVD
 
-⛔ **Deferred — list-detail two-pane work for Issues moved to a separate PR, do not resume without
-asking.** Started 2026-08-21; hit a reliably-reproducible crash before the scenario could be
+**Un-gated 2026-11-23:** gregory approved resuming. Start by re-adding the three reverted pieces
+on current versions (`adaptive-navigation3` `1.3.0`, CMP `1.12.2`) and re-running the Promote
+scenario, also with `UserStoryDetailsNavDestination` marked `extraPane()` as the official Nav3
+sample does. See the 2026-11-23 issue doc linked at the top.
+
+~~⛔ **Deferred — list-detail two-pane work for Issues moved to a separate PR, do not resume without
+asking.**~~ Started 2026-08-21; hit a reliably-reproducible crash before the scenario could be
 verified, plus a second app-bar-actions bug found in the same pass (both logged below). Rather than
 carry a gated, half-working two-pane feature through the rest of this initiative, 12b's
 `ListDetailSceneStrategy` wiring was reverted 2026-08-22 — Issues is back to single-pane push
@@ -102,3 +107,20 @@ screenshots of both pane arrangements attached to the step's `Note:` when archiv
   wiring issue rather than something Issue-specific. Not root-caused yet — needs its own
   investigation (probably via `investigate-issue`) before a fix is scoped. Separate from the
   step-12c crash above; does not block or get blocked by it.
+
+## Step 16: Expandable navigation rail (revisit entry 45)
+
+⛔ **Gated — waits on the grappim-kit release with the expandable `WideNavigationRail`** (requested
+from the grappim-kit session 2026-11-23).
+
+Bump `grappimKit`, then:
+- Mark the collapsed-rail destinations: ProjectSelector, Dashboard, Epics, Issues, Kanban,
+  ScrumBacklog, Settings (gregory, 2026-11-23). Everything else shows only when the rail is
+  expanded.
+- In `MainScreen.kt`, keep compact-height windows (phone landscape) on the modal drawer instead of
+  any bar, and pass a `WideNavigationRail` type for the rest.
+- Close revisit entry 45.
+
+**Verify:** `Medium_Tablet` in landscape, and a short desktop window, with a project that has every
+section enabled: collapsed shows 7 items, expanded shows all 12, and nothing is unreachable. Phone
+AVD in landscape shows the drawer, not a bar. Before/after screenshots in the PR.
