@@ -24,7 +24,9 @@ technique lives in the skill itself, not here — this file is only what's true 
   `LoginViewModel.SERVER_REGEX` requires a dotted hostname, so `10.0.2.2` works but bare
   `localhost` would not (see `docs/archive/revisit-resolved.md` #29 and memory `local-taiga-instance`).
   The app shows an "Unencrypted connection" confirm dialog for plain `http://` — tap
-  **Yes** to proceed (this is expected for a self-hosted/LAN server, not a bug).
+  **Yes** to proceed (this is expected for a self-hosted/LAN server, not a bug). On an API 37 AVD
+  the system "nearby devices" (`ACCESS_LOCAL_NETWORK`) dialog comes first, on the first login after
+  an install or `pm clear` — tap **Allow**, then **Yes**.
 - **Before driving anything, check which server the installed app is logged in to** — the phone AVD
   has twice been left logged in to the custom-headers proxy at `:9100`, which usually isn't running
   (see the gotcha below). `adb logcat -d | grep "Ktor.*REQUEST" | tail -1` shows the host.
@@ -101,6 +103,9 @@ technique lives in the skill itself, not here — this file is only what's true 
   investigated — candidates are `MainActivity`'s `setContent`/`savedInstanceState` handling, or
   `rememberNavigationState`'s `SavedStateConfiguration` not actually being persisted into the
   Activity bundle. See `docs/architecture/vm-lifecycle-hardening/IMPLEMENTATION_PLAN.md`.
+  **Top-level screens are the exception:** backgrounded on Issues, Epics or Backlog (drawer
+  sections, `TOP_LEVEL_KEYS`), `am kill` + relaunch restores straight onto that screen (6 of 6 on
+  Issues, 2026-11-22, `docs/issues/2026-11-22-excessive-list-requests-and-filter-wipe.md`).
 - **A stylus first-run tutorial ("Try out your stylus") can pop up over the first tap on
   `Medium_Tablet`** after a fresh-ish boot, identical in shape to the phone AVD's first-run-tutorial
   gotcha elsewhere in this skill — it eats the tap with no error. Screenshot before trusting a tap
@@ -142,3 +147,7 @@ technique lives in the skill itself, not here — this file is only what's true 
   (`run-as … cat | strings`; an empty selection reads `{}`). Backgrounding on Issues/Epics/Backlog
   then `am kill` restores straight onto that screen. Worked example:
   `docs/issues/2026-11-22-excessive-list-requests-and-filter-wipe.md`.
+- **Work-item details hide content until expanded, by design.** A description taller than 6 lines
+  (`ExpandableMarkdownText`, 6×24 dp) is clipped behind **Show more** / **Show less**, and the
+  Custom fields, Attachments and Comments sections start collapsed (`N Comments` header with a
+  chevron). Expand before judging that a line, checkbox or comment is missing.
