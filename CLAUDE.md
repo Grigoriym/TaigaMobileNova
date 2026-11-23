@@ -596,6 +596,14 @@ not a direct push. `dev` has a GitHub branch-protection rule requiring PRs; a di
 goes through (bypassed via admin permissions), so nothing technically stops it — this is a process
 discipline to follow regardless, not something the repo enforces on its own.
 
+**A PR that changes something visible on screen carries before/after screenshots in its body**
+(gregory's rule, 2026-11-23). Technique: the shared **emulator-testing** skill's "Step 5c". Here:
+before = `dev` (the PR's base; `master` only for a release PR). Images go on the orphan
+`pr-assets` branch, under `pr-<n>/`. The first such PR creates it. Never delete it. The repo is
+public, so don't photograph Login, Settings → User (server URL), Settings → Custom headers (header
+values can be secrets) or the local-network banner unless they show the local test instance
+(`10.0.2.2:9000`, seeded users).
+
 **Edit a PR with `gh api -X PATCH repos/{owner}/{repo}/pulls/N`, not `gh pr edit`** — the latter
 fails on this repo with `GraphQL: Projects (classic) is being deprecated` (hit three times, see
 `docs/frictions.md`). Pipe a `jq -n --arg title … --rawfile body …` object in via `--input -`.
