@@ -10,7 +10,12 @@ import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.repo.FakeUserStoriesRepository
 import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.utils.getRandomString
+import com.grappim.taigamobile.utils.ui.SEARCH_QUERY_DEBOUNCE_MILLIS
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -133,7 +138,7 @@ internal class ScrumBacklogViewModelTest {
         val filters = FiltersData(statuses = persistentListOf(getStatusFilters()))
         sut.state.value.onSelectFilters(filters)
 
-        assertEquals(filters, session.scrumFilters.value)
+        assertEquals(filters, session.currentScrumFilters)
     }
 
     @Test
@@ -145,5 +150,49 @@ internal class ScrumBacklogViewModelTest {
         session.changeScrumFilters(newFilters)
 
         assertEquals(newFilters, sut.state.value.activeFilters)
+    }
+
+    @Test
+    fun `filters data arriving before the stored selection is read keeps the stored selection`() {
+        val stored = FiltersData(statuses = persistentListOf(getStatusFilters()))
+        session.changeScrumFilters(stored)
+        session.storedFiltersLoaded.value = false
+        filtersRepository.filtersDataResult = stored
+
+        createViewModel()
+        session.storedFiltersLoaded.value = true
+
+        assertEquals(stored, session.currentScrumFilters)
+        assertEquals(stored, sut.state.value.activeFilters)
+    }
+
+    @Test
+    fun `refreshed counts on the selected filters do not reload the list`() = runTest {
+        val selected = getStatusFilters()
+        val stored = FiltersData(statuses = persistentListOf(selected))
+        session.changeScrumFilters(stored)
+        filtersRepository.filtersDataResult = stored
+        createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { sut.userStories.collect {} }
+
+        filtersRepository.filtersDataResult =
+            FiltersData(statuses = persistentListOf(selected.copy(count = selected.count + 1)))
+        sut.state.value.retryLoadFilters()
+
+        assertEquals(listOf(stored to ""), userStoriesRepository.getUserStoriesPagingCalls)
+    }
+
+    @Test
+    fun `quick search keystrokes load the list once, with the last query`() = runTest {
+        filtersRepository.filtersDataResult = FiltersData()
+        createViewModel()
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { sut.userStories.collect {} }
+
+        sut.state.value.onSetSearchQuery("i")
+        sut.state.value.onSetSearchQuery("is")
+        sut.state.value.onSetSearchQuery("iss")
+        advanceTimeBy(SEARCH_QUERY_DEBOUNCE_MILLIS + 1)
+
+        assertEquals(listOf("", "iss"), userStoriesRepository.getUserStoriesPagingCalls.map { it.second })
     }
 }

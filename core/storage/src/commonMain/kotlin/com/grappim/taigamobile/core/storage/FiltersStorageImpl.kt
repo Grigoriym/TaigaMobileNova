@@ -2,6 +2,7 @@ package com.grappim.taigamobile.core.storage
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.Preferences.Key
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.grappim.taigamobile.core.storage.di.StorageJsonQualifier
@@ -9,10 +10,9 @@ import com.grappim.taigamobile.feature.filters.domain.model.FiltersData
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -32,9 +32,17 @@ class FiltersStorageImpl(
     private fun decodeFilters(value: String?): FiltersData =
         value?.takeIf { it.isNotBlank() }?.let { json.decodeFromString(it) } ?: FiltersData()
 
-    override val scrumFilters: StateFlow<FiltersData> = dataStore.data
-        .map { prefs -> decodeFilters(prefs[FILTERS_SCRUM_KEY]) }
-        .stateIn(scope, SharingStarted.Eagerly, FiltersData())
+    private fun filtersFlow(key: Key<String>): Flow<FiltersData> = dataStore.data
+        .map { prefs -> decodeFilters(prefs[key]) }
+        .distinctUntilChanged()
+
+    private suspend fun refreshFilters(key: Key<String>, serverData: FiltersData) {
+        dataStore.edit { prefs ->
+            prefs[key] = json.encodeToString(decodeFilters(prefs[key]).updateData(serverData))
+        }
+    }
+
+    override val scrumFilters: Flow<FiltersData> = filtersFlow(FILTERS_SCRUM_KEY)
 
     override fun changeScrumFilters(filters: FiltersData) {
         scope.launch {
@@ -42,9 +50,9 @@ class FiltersStorageImpl(
         }
     }
 
-    override val epicsFilters: StateFlow<FiltersData> = dataStore.data
-        .map { prefs -> decodeFilters(prefs[FILTERS_EPICS_KEY]) }
-        .stateIn(scope, SharingStarted.Eagerly, FiltersData())
+    override suspend fun refreshScrumFilters(serverData: FiltersData) = refreshFilters(FILTERS_SCRUM_KEY, serverData)
+
+    override val epicsFilters: Flow<FiltersData> = filtersFlow(FILTERS_EPICS_KEY)
 
     override fun changeEpicsFilters(filters: FiltersData) {
         scope.launch {
@@ -52,9 +60,9 @@ class FiltersStorageImpl(
         }
     }
 
-    override val issuesFilters: StateFlow<FiltersData> = dataStore.data
-        .map { prefs -> decodeFilters(prefs[FILTERS_ISSUES_KEY]) }
-        .stateIn(scope, SharingStarted.Eagerly, FiltersData())
+    override suspend fun refreshEpicsFilters(serverData: FiltersData) = refreshFilters(FILTERS_EPICS_KEY, serverData)
+
+    override val issuesFilters: Flow<FiltersData> = filtersFlow(FILTERS_ISSUES_KEY)
 
     override fun changeIssuesFilters(filters: FiltersData) {
         scope.launch {
@@ -62,9 +70,9 @@ class FiltersStorageImpl(
         }
     }
 
-    override val kanbanFilters: StateFlow<FiltersData> = dataStore.data
-        .map { prefs -> decodeFilters(prefs[FILTERS_KANBAN_KEY]) }
-        .stateIn(scope, SharingStarted.Eagerly, FiltersData())
+    override suspend fun refreshIssuesFilters(serverData: FiltersData) = refreshFilters(FILTERS_ISSUES_KEY, serverData)
+
+    override val kanbanFilters: Flow<FiltersData> = filtersFlow(FILTERS_KANBAN_KEY)
 
     override fun changeKanbanFilters(filters: FiltersData) {
         scope.launch {

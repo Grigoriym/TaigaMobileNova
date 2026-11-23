@@ -17,12 +17,14 @@ import com.grappim.taigamobile.feature.projects.domain.canAddEpic
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.debounceSearchQuery
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -53,8 +55,8 @@ class EpicsViewModel(
     val searchQuery = _searchQuery.asStateFlow()
 
     val epics: Flow<PagingData<WorkItem>> = combine(
-        session.epicsFilters,
-        searchQuery
+        session.epicsFilters.distinctUntilChanged(FiltersData::selectsSameItemsAs),
+        searchQuery.debounceSearchQuery()
     ) { filters, searchQuery ->
         Pair(filters, searchQuery)
     }.flatMapLatest { (filters, searchQuery) ->
@@ -100,9 +102,7 @@ class EpicsViewModel(
 
             resultOf { filtersRepository.getFiltersData(CommonTaskType.Epic) }
                 .onSuccess { result ->
-                    session.changeEpicsFilters(
-                        filters = _state.value.activeFilters.updateData(result)
-                    )
+                    session.refreshEpicsFilters(result)
 
                     _state.update {
                         it.copy(

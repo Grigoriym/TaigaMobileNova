@@ -19,13 +19,16 @@ class FakeEpicsRepository : EpicsRepository {
 
     var getEpicsPagingResult: ImmutableList<WorkItem> = persistentListOf()
 
-    override fun getEpicsPaging(
-        filters: FiltersData,
-        query: String
-    ): Flow<PagingData<WorkItem>> = if (getEpicsPagingResult.isEmpty()) {
-        flowOf(PagingData.empty())
-    } else {
-        flowOf(PagingData.from(getEpicsPagingResult))
+    /** One `filters to query` pair per call, in order. */
+    val getEpicsPagingCalls: MutableList<Pair<FiltersData, String>> = mutableListOf()
+
+    override fun getEpicsPaging(filters: FiltersData, query: String): Flow<PagingData<WorkItem>> {
+        getEpicsPagingCalls += filters to query
+        return if (getEpicsPagingResult.isEmpty()) {
+            flowOf(PagingData.empty())
+        } else {
+            flowOf(PagingData.from(getEpicsPagingResult))
+        }
     }
 
     var getEpicsResult: ImmutableList<Epic> = persistentListOf()

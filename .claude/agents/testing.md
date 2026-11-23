@@ -100,7 +100,7 @@ Key fields for commonly-used fakes:
 | `FakeTrustedCertStorage` | `TrustedCertStorage` — host-scoped TOFU cert pins |
 | `FakeDataCleaner` | `DataCleaner` — in `cleaner/`, not `storage/` |
 
-**`FakeFiltersStorage`**: `scrumFilters`, `epicsFilters`, `issuesFilters`, `kanbanFilters` — mutable `StateFlow<FiltersData>` (initially empty); `resetFiltersCalled: Boolean`
+**`FakeFiltersStorage`**: `scrumFilters`, `epicsFilters`, `issuesFilters`, `kanbanFilters` — `Flow<FiltersData>` (initially empty); read the stored value with `currentScrumFilters`/`currentEpicsFilters`/`currentIssuesFilters`/`currentKanbanFilters`; `refresh*Filters` applies `updateData` to it; `storedFiltersLoaded = false` holds every flow back, like a DataStore whose first read hasn't finished (worked example: the "…before the stored selection is read…" test in `IssuesViewModelTest`); `resetFiltersCalled: Boolean`
 
 **`FakeDatabaseWrapper`**: `clearAllTablesCalled: Boolean`
 
@@ -603,6 +603,12 @@ Fakes that return `flowOf(PagingData.empty())` for paging (safe to construct):
 | `FakeEpicsRepository` | `getEpicsPaging(filters, query)` |
 | `FakeProjectsRepository` | `fetchProjects(query)` |
 | `FakeIssuesRepository` | `getIssuesPaging(filtersData, query)` |
+| `FakeUserStoriesRepository` | `getUserStoriesPaging(filters, query)` |
+
+`FakeIssuesRepository`, `FakeEpicsRepository` and `FakeUserStoriesRepository` record each paging call
+as a `filters to query` pair (`get…PagingCalls`), and `FakeProjectsRepository` records
+`fetchProjectsCalls`. Counting them is how a ViewModel test proves a list is requested once, not twice
+(`IssuesViewModelTest`'s "refreshed counts…" and "quick search keystrokes…" tests).
 
 If you add a ViewModel that calls another paging method at construction, implement it in the corresponding fake with `flowOf(PagingData.empty())`.
 
@@ -1026,6 +1032,13 @@ kotlin {
     that should be empty. Worked example: `ExpandableMarkdownTextTest`'s
     `collapsedTextDoesNotDrawCheckboxesBelowTheCut`.
 
+24. **A collector launched only in `backgroundScope` never runs under `advanceUntilIdle()`.**
+    `TestScope.advanceUntilIdle()` stops once only background work is left, so
+    `backgroundScope.launch { sut.items.collect {} }` followed by it collects nothing — a paging fake
+    then reports zero calls, which reads like a broken ViewModel. Launch the collector eagerly
+    instead: `backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { … }`.
+    `advanceTimeBy` still drives it (the debounce tests rely on that).
+
 ---
 
 ## Testing a class backed by `DataStore<Preferences>`
@@ -1049,8 +1062,8 @@ rule in `CLAUDE.md`.
 
 Two shapes to watch for:
 
-- **A class whose flows are `stateIn(CoroutineScope(Dispatchers.Main + SupervisorJob()), Eagerly)`
-  and whose writers are fire-and-forget `scope.launch { }`** (`FiltersStorageImpl`) needs
+- **A class whose writers are fire-and-forget `scope.launch { }` on
+  `CoroutineScope(Dispatchers.Main + SupervisorJob())`** (`FiltersStorageImpl`'s `change*`) needs
   `MainDispatcherRule` — without it the writes are not observable at all. Observe the result with
   turbine, whose timeout is wallclock, so real DataStore IO completes inside it.
 - **A synchronous API that wraps its access in `runBlocking`** (`DataStoreServerStorage.server`) is
@@ -1058,5 +1071,5 @@ Two shapes to watch for:
   nothing and obscures the call.
 
 Worked examples in `core/storage/src/jvmTest/`: `TaigaSessionStorageImplTest` (23 tests, plain
-`runTest`), `FiltersStorageImplTest` (9, `MainDispatcherRule` + turbine), `AuthStorageImplTest` (10),
+`runTest`), `FiltersStorageImplTest` (13, `MainDispatcherRule` + turbine; its `HeldBackDataStore` delays the first read to prove a flow emits no placeholder), `AuthStorageImplTest` (10),
 `DataStoreServerStorageTest` (6, no `runTest`).

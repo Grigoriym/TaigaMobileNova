@@ -17,11 +17,13 @@ import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canAddIssue
 import com.grappim.taigamobile.utils.ui.SnackbarDelegate
 import com.grappim.taigamobile.utils.ui.SnackbarDelegateImpl
+import com.grappim.taigamobile.utils.ui.debounceSearchQuery
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -50,7 +52,10 @@ class IssuesViewModel(
     private val _searchQuery = MutableStateFlow("")
     val searchQuery = _searchQuery.asStateFlow()
 
-    val issues = combine(session.issuesFilters, searchQuery) { filters, searchQuery ->
+    val issues = combine(
+        session.issuesFilters.distinctUntilChanged(FiltersData::selectsSameItemsAs),
+        searchQuery.debounceSearchQuery()
+    ) { filters, searchQuery ->
         Pair(filters, searchQuery)
     }.flatMapLatest { (filters, searchQuery) ->
         issuesRepository.getIssuesPaging(filtersData = filters, query = searchQuery)
@@ -100,9 +105,7 @@ class IssuesViewModel(
 
             resultOf { filtersRepository.getFiltersData(CommonTaskType.Issue) }
                 .onSuccess { result ->
-                    session.changeIssuesFilters(
-                        filters = _state.value.activeFilters.updateData(result)
-                    )
+                    session.refreshIssuesFilters(result)
 
                     _state.update {
                         it.copy(

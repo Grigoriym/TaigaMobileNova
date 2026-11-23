@@ -8,6 +8,10 @@ import com.grappim.taigamobile.testing.repo.FakeProjectsRepository
 import com.grappim.taigamobile.testing.storage.FakeFiltersStorage
 import com.grappim.taigamobile.testing.storage.FakeTaigaSessionStorage
 import com.grappim.taigamobile.testing.utils.getRandomLong
+import com.grappim.taigamobile.utils.ui.SEARCH_QUERY_DEBOUNCE_MILLIS
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runTest
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -136,5 +140,17 @@ internal class ProjectSelectorViewModelTest {
         taigaSessionStorage.setCurrentProjectId(newId)
 
         assertEquals(newId, sut.state.value.currentProjectId)
+    }
+
+    @Test
+    fun `quick search keystrokes load the list once, with the last query`() = runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { sut.projects.collect {} }
+
+        sut.state.value.setProjectsQuery("i")
+        sut.state.value.setProjectsQuery("is")
+        sut.state.value.setProjectsQuery("iss")
+        advanceTimeBy(SEARCH_QUERY_DEBOUNCE_MILLIS + 1)
+
+        assertEquals(listOf("", "iss"), projectsRepository.fetchProjectsCalls)
     }
 }

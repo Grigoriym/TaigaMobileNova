@@ -17,12 +17,14 @@ import com.grappim.taigamobile.feature.projects.domain.ProjectsRepository
 import com.grappim.taigamobile.feature.projects.domain.canAddUserStory
 import com.grappim.taigamobile.feature.userstories.domain.UserStoriesRepository
 import com.grappim.taigamobile.feature.workitem.domain.WorkItem
+import com.grappim.taigamobile.utils.ui.debounceSearchQuery
 import com.grappim.taigamobile.utils.ui.getErrorMessage
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -51,8 +53,8 @@ class ScrumBacklogViewModel(
     val searchQuery = _searchQuery.asStateFlow()
 
     val userStories: Flow<PagingData<WorkItem>> = combine(
-        session.scrumFilters,
-        searchQuery
+        session.scrumFilters.distinctUntilChanged(FiltersData::selectsSameItemsAs),
+        searchQuery.debounceSearchQuery()
     ) { filters, searchQuery ->
         Pair(filters, searchQuery)
     }.flatMapLatest { (filters, searchQuery) ->
@@ -111,9 +113,7 @@ class ScrumBacklogViewModel(
                     )
                 }
 
-                session.changeScrumFilters(
-                    filters = _state.value.activeFilters.updateData(result)
-                )
+                session.refreshScrumFilters(result)
             }.onFailure { error ->
                 logcat(throwable = error) {
                     "Failed to get filters data"
