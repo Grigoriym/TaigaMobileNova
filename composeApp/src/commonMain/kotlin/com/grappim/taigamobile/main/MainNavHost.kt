@@ -4,6 +4,8 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -60,6 +62,7 @@ import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
 
 private const val TRANSITION_DURATION_MS = 150
 
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun MainNavHost(
     initialNavState: InitialNavState,
@@ -259,6 +262,7 @@ fun MainNavHost(
     CompositionLocalProvider(LocalResultBus provides rememberResultBus()) {
         NavDisplay(
             modifier = modifier,
+            sceneStrategies = listOf(rememberListDetailSceneStrategy()),
             transitionSpec = {
                 fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) togetherWith
                     fadeOut(animationSpec = tween(TRANSITION_DURATION_MS))

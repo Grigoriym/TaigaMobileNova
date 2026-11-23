@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.nav
 
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.grappim.kit.navigation.LocalResultBus
@@ -18,8 +20,9 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.epic.navigateToWorkIt
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditTeamMember
 import com.grappim.taigamobile.main.UpdateDataOnBack
 
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun EntryProviderScope<NavKey>.userStoryNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
-    entry<UserStoryDetailsNavDestination> { route ->
+    entry<UserStoryDetailsNavDestination>(metadata = ListDetailSceneStrategy.extraPane()) { route ->
         val resultBus = LocalResultBus.current
         UserStoryDetailsScreen(
             route = route,

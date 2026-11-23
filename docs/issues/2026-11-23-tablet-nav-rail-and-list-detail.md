@@ -1,6 +1,6 @@
 # 2026-11-23 — Tablet nav rail overflow + list-detail two-pane: what's the right setup today
 
-**Status:** Awaiting decision
+**Status:** In progress (B0 retest: crash no longer reproduces)
 **Link:** none. Covers `docs/revisit.md` entry 45 and tablet checklist step 12/12c
 (`docs/architecture/tablet-form-factor-support/CHECKLIST.md`)
 **Updated:** 2026-11-23
@@ -176,6 +176,56 @@ material-components-android's docs on GitHub, which hold the same component guid
 4. **`UserStoryDetails` opened from an Issue detail should be an `extraPane()`**, following the
    official sample. A retest of the crash should include this setup too, since the August repro
    pushed it without pane metadata.
+
+## B0 retest results (2026-11-23)
+
+**Setup:**
+- Re-added the three reverted pieces:
+  - `adaptive-navigation3` `1.3.0` in the catalog and `composeApp`
+  - `rememberListDetailSceneStrategy()` on `MainNavHost`'s `NavDisplay`
+  - `listPane()`/`detailPane()` on the Issues entries
+- CMP `1.12.2`.
+- `Pixel_Tablet` AVD (API 36, 2560×1600 @ 320dpi, so 1280×800dp landscape). `Medium_Tablet`
+  doesn't exist on this machine; `docs/machine.local.md` names `Pixel_Tablet` as its stand-in.
+- Local Taiga.
+
+**Pass 1, `UserStoryDetails` with no pane metadata (the August shape): no crash, 2 of 2.**
+- Two-pane renders: list on the left, an empty detail area until an issue is selected, then the
+  issue in the right pane.
+- Tapping an already-promoted issue's user-story link (#3 → user story #18) opened the user story
+  full-width.
+- **Promote** on #16 (`POST /issues/2/promote_to_user_story`) created and opened user story #23.
+- For both: same process id throughout, empty `logcat -b crash`.
+- August crashed on both of these paths, 2 of 2.
+- **Conclusion:** the August crash doesn't reproduce on current library versions. Most likely
+  fixed upstream between `1.3.0-beta02` and `1.3.0` / the newer Compose runtime. It was never
+  root-caused, so that's inference.
+
+**Top-bar bug reproduces.** After going back from the user story to the two-pane view, issue #3
+was still open in the right pane, but the shell bar showed the list's "Issues" title with "Menu"
+and "Add". That's exactly August's symptom and the last-writer-wins `TopBarController` mechanism
+in Findings.
+
+**Pass 2, `UserStoryDetails` marked `extraPane()` (the official sample's shape): no crash.**
+- From issue #3's user-story link, three panes rendered side by side: Issues list, Issue #3, and
+  User story #18.
+- Back closed the extra pane (list + issue), and back again closed the detail (list only). That
+  matches Android's documented list-detail behavior.
+- No crash entries for the whole session.
+- One interruption: the extra pane first showed "Connection error". The tablet AVD had lost its
+  route to the host again, which is the documented gotcha. A wifi toggle plus Retry loaded it.
+
+**The top bar is now the only blocker, and three panes make it worse.** With list, issue and user
+story all visible, the shared shell bar still showed "Issues" with the list's "+". Neither detail
+screen's "⋮" menu (Promote, Delete, Copy link, …) could be reached in any state. So B1 vs B2 has to
+be settled before two-pane can ship: as wired, it hides every detail screen's actions.
+Screenshot of the three-pane state taken this session (scratchpad, not committed).
+
+**Code state:** the branch keeps both passes' wiring:
+- the `adaptive-navigation3` dependency
+- the strategy on `NavDisplay`
+- `listPane()`/`detailPane()` on Issues
+- `extraPane()` on `UserStoryDetails`
 
 ## Root cause
 
