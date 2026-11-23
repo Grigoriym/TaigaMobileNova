@@ -100,7 +100,7 @@ Key fields for commonly-used fakes:
 | `FakeTrustedCertStorage` | `TrustedCertStorage` — host-scoped TOFU cert pins |
 | `FakeDataCleaner` | `DataCleaner` — in `cleaner/`, not `storage/` |
 
-**`FakeFiltersStorage`**: `scrumFilters`, `epicsFilters`, `issuesFilters`, `kanbanFilters` — `Flow<FiltersData>` (initially empty); read the stored value with `currentScrumFilters`/`currentEpicsFilters`/`currentIssuesFilters`/`currentKanbanFilters`; `refresh*Filters` applies `updateData` to it; `storedFiltersLoaded = false` holds every flow back, like a DataStore whose first read hasn't finished (worked example: the "…before the stored selection is read…" test in `IssuesViewModelTest`); `resetFiltersCalled: Boolean`
+**`FakeFiltersStorage`**: `scrumFilters`, `epicsFilters`, `issuesFilters` — `Flow<FiltersData>` (initially empty); read the stored value with `currentScrumFilters`/`currentEpicsFilters`/`currentIssuesFilters`; `refresh*Filters` applies `updateData` to it; `storedFiltersLoaded = false` holds every flow back, like a DataStore whose first read hasn't finished (worked example: the "…before the stored selection is read…" test in `IssuesViewModelTest`); `resetFiltersCalled: Boolean`
 
 **`FakeDatabaseWrapper`**: `clearAllTablesCalled: Boolean`
 

@@ -23,7 +23,6 @@ now that the table below covers everything left.
 | 46 | No deep-link readiness plan yet (3 queued Nav3 patterns) | — | [reference-app-scouting.md](../../agentic-grappim/investigations/reference-app-scouting.md) |
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 | 57 | iOS has no `NSLocalNetworkUsageDescription` | S | this file |
-| 65 | `FiltersStorage.kanbanFilters` has no consumer | S | this file |
 
 ---
 
@@ -214,17 +213,3 @@ The Android 17 `ACCESS_LOCAL_NETWORK` half of this entry was checked by gregory 
 (Android 17, API 37) on 2026-11-11 against a LAN Taiga; the permission flow worked.
 
 **Trigger:** any iOS LAN bug report, or an iOS device to test on.
-
-## 65. `FiltersStorage.kanbanFilters` has no consumer
-
-`FiltersStorage.kanbanFilters`/`changeKanbanFilters` (`core/storage/.../FiltersStorage.kt`) and the
-`filters_kanban` DataStore key in `FiltersStorageImpl` are referenced only by `FiltersStorageImpl`,
-`FakeFiltersStorage` and `FiltersStorageImplTest` (`grep -rn kanbanFilters --include=*.kt`, 2026-11-22).
-Kanban's own filtering doesn't go through it. Noticed while fixing revisit entry 53
-(`docs/issues/2026-11-22-excessive-list-requests-and-filter-wipe.md`), left alone to keep that diff
-on topic.
-
-**Fix, if wanted:** either delete the API, its key and its tests (check that no persisted user data
-under `filters_kanban` needs migrating; `resetFilters()` clears it anyway), or wire Kanban's filter
-selection through it if Kanban should remember filters like Issues/Epics/Backlog do. That second
-option is a product question for gregory.

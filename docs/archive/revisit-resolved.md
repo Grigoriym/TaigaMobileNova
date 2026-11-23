@@ -67,6 +67,7 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 47 | [`guardrails.yml`'s `push` trigger on `master` still diffs the wrong range after a release merge](#47-guardrailsymls-push-trigger-on-master-still-diffs-the-wrong-range-after-a-release-merge) | ✅ closed 2026-11-22 (one-off, not recurring) |
 | 58 | [`apk-size-check` runner is killed on Gradle-wrapper bump PRs](#58-apk-size-check-runner-is-killed-on-gradle-wrapper-bump-prs) | ✅ closed 2026-11-22 (did not reproduce) |
 | 53 | [Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere](#53-broader-excessive-requests-audit-possible-filter-driven-double-list-fetch-no-search-debounce-anywhere) | ✅ resolved 2026-11-22 |
+| 65 | [`FiltersStorage.kanbanFilters` has no consumer](#65-filtersstoragekanbanfilters-has-no-consumer) | ✅ resolved 2026-11-23 |
 
 ---
 
@@ -2498,3 +2499,25 @@ the paging `combine` keyed on `FiltersData.selectsSameItemsAs` (ids only); and
 Issues, Epics, Backlog and Project Selector. Re-verified on the emulator: a restore makes one
 filtered list request and keeps the filter (6/6), and typing "issue" makes one request. Full
 writeup: [docs/issues/2026-11-22-excessive-list-requests-and-filter-wipe.md](../issues/2026-11-22-excessive-list-requests-and-filter-wipe.md).
+
+## 65. `FiltersStorage.kanbanFilters` has no consumer
+
+`FiltersStorage.kanbanFilters`/`changeKanbanFilters` (`core/storage/.../FiltersStorage.kt`) and the
+`filters_kanban` DataStore key in `FiltersStorageImpl` are referenced only by `FiltersStorageImpl`,
+`FakeFiltersStorage` and `FiltersStorageImplTest` (`grep -rn kanbanFilters --include=*.kt`, 2026-11-22).
+Kanban's own filtering doesn't go through it. Noticed while fixing revisit entry 53
+(`docs/issues/2026-11-22-excessive-list-requests-and-filter-wipe.md`), left alone to keep that diff
+on topic.
+
+**Fix, if wanted:** either delete the API, its key and its tests (check that no persisted user data
+under `filters_kanban` needs migrating; `resetFilters()` clears it anyway), or wire Kanban's filter
+selection through it if Kanban should remember filters like Issues/Epics/Backlog do. That second
+option is a product question for gregory.
+
+**Fix (2026-11-23):** deleted. The API had no consumer from the start: #210 (2026-02-07) added it
+to the old `Session.kt` alongside Kanban's filter UI, but `KanbanViewModel` kept its selection in
+memory per swimlane (`filtersBySwimlane`) and never called it. A single stored `FiltersData` also
+can't hold per-swimlane selections. Removed `kanbanFilters`/`changeKanbanFilters` from
+`FiltersStorage`, the `filters_kanban` key from `FiltersStorageImpl`, the matching
+`FakeFiltersStorage` members and `FiltersStorageImplTest` cases. No migration: nothing ever wrote
+the key, and `resetFilters()` clears the whole DataStore anyway. Kanban's behavior is unchanged.

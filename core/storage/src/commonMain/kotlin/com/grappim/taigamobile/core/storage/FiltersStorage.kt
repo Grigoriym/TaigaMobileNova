@@ -32,8 +32,5 @@ interface FiltersStorage {
     /** Same as [refreshScrumFilters], for [issuesFilters]. */
     suspend fun refreshIssuesFilters(serverData: FiltersData)
 
-    val kanbanFilters: Flow<FiltersData>
-    fun changeKanbanFilters(filters: FiltersData)
-
     suspend fun resetFilters()
 }

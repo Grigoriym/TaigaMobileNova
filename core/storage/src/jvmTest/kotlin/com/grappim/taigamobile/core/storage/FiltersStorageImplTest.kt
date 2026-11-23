@@ -75,7 +75,6 @@ class FiltersStorageImplTest {
         sut.scrumFilters.test { assertEquals(FiltersData(), awaitItem()) }
         sut.epicsFilters.test { assertEquals(FiltersData(), awaitItem()) }
         sut.issuesFilters.test { assertEquals(FiltersData(), awaitItem()) }
-        sut.kanbanFilters.test { assertEquals(FiltersData(), awaitItem()) }
     }
 
     @Test
@@ -140,20 +139,6 @@ class FiltersStorageImplTest {
     }
 
     @Test
-    fun `changeKanbanFilters persists the filters and the flow emits them`() = runTest {
-        val sut = createSut()
-        val filters = filtersNamed("kanban")
-
-        sut.kanbanFilters.test {
-            assertEquals(FiltersData(), awaitItem())
-
-            sut.changeKanbanFilters(filters)
-
-            assertEquals(filters, awaitItem())
-        }
-    }
-
-    @Test
     fun `each section is stored under its own key`() = runTest {
         val sut = createSut()
         val filters = filtersNamed("scrum only")
@@ -168,7 +153,6 @@ class FiltersStorageImplTest {
 
         assertEquals(FiltersData(), sut.epicsFilters.first())
         assertEquals(FiltersData(), sut.issuesFilters.first())
-        assertEquals(FiltersData(), sut.kanbanFilters.first())
     }
 
     @Test
@@ -191,11 +175,6 @@ class FiltersStorageImplTest {
             sut.changeIssuesFilters(filters)
             assertEquals(filters, awaitItem())
         }
-        sut.kanbanFilters.test {
-            assertEquals(FiltersData(), awaitItem())
-            sut.changeKanbanFilters(filters)
-            assertEquals(filters, awaitItem())
-        }
 
         sut.resetFilters()
 
@@ -203,7 +182,6 @@ class FiltersStorageImplTest {
         sut.scrumFilters.test { assertEquals(FiltersData(), awaitItem()) }
         sut.epicsFilters.test { assertEquals(FiltersData(), awaitItem()) }
         sut.issuesFilters.test { assertEquals(FiltersData(), awaitItem()) }
-        sut.kanbanFilters.test { assertEquals(FiltersData(), awaitItem()) }
     }
 
     @Test
