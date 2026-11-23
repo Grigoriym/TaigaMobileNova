@@ -44,17 +44,11 @@ class FakeFiltersStorage : FiltersStorage {
         _issuesFilters.update { it.updateData(serverData) }
     }
 
-    private val _kanbanFilters = MutableStateFlow(FiltersData())
-    val currentKanbanFilters: FiltersData get() = _kanbanFilters.value
-    override val kanbanFilters: Flow<FiltersData> = _kanbanFilters.onceLoaded()
-    override fun changeKanbanFilters(filters: FiltersData) { _kanbanFilters.value = filters }
-
     override suspend fun resetFilters() {
         resetFiltersCalled = true
         _scrumFilters.value = FiltersData()
         _epicsFilters.value = FiltersData()
         _issuesFilters.value = FiltersData()
-        _kanbanFilters.value = FiltersData()
     }
 
     @OptIn(ExperimentalCoroutinesApi::class)

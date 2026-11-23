@@ -26,7 +26,6 @@ class FiltersStorageImpl(
         private val FILTERS_SCRUM_KEY = stringPreferencesKey("filters_scrum")
         private val FILTERS_EPICS_KEY = stringPreferencesKey("filters_epics")
         private val FILTERS_ISSUES_KEY = stringPreferencesKey("filters_issues")
-        private val FILTERS_KANBAN_KEY = stringPreferencesKey("filters_kanban")
     }
 
     private fun decodeFilters(value: String?): FiltersData =
@@ -71,14 +70,6 @@ class FiltersStorageImpl(
     }
 
     override suspend fun refreshIssuesFilters(serverData: FiltersData) = refreshFilters(FILTERS_ISSUES_KEY, serverData)
-
-    override val kanbanFilters: Flow<FiltersData> = filtersFlow(FILTERS_KANBAN_KEY)
-
-    override fun changeKanbanFilters(filters: FiltersData) {
-        scope.launch {
-            dataStore.edit { prefs -> prefs[FILTERS_KANBAN_KEY] = json.encodeToString(filters) }
-        }
-    }
 
     override suspend fun resetFilters() {
         dataStore.edit { it.clear() }
