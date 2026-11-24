@@ -6,9 +6,12 @@ technique lives in the skill itself, not here — this file is only what's true 
 
 ## Device facts
 
-- AVD: `Medium_Phone_API_36.1` (phone, compact width) and `Medium_Tablet` (tablet, confirmed
-  1280dp-wide landscape — expanded width; used for adaptive-navigation-suite verification,
-  see `docs/architecture/tablet-form-factor-support/`)
+- AVD: a phone (compact width) and a tablet (1280×800dp landscape, wide enough for the rail and
+  two-pane Issues). The original names were `Medium_Phone_API_36.1`/`Medium_Tablet`; each
+  machine's real names are in `docs/machine.local.md`.
+- **Other sessions' emulators may be running** (`koil36` belongs to another project). Check
+  `adb -s <serial> emu avd name`, and `export ANDROID_SERIAL=<serial>` before using the skill's
+  `ui.py`.
 - Package id(s): `com.grappim.taigamobile.fdroid.debug` (fdroid debug build — the
   `debug` build type adds its own `.debug` suffix on top of the `fdroid` flavor's
   `.fdroid` suffix, so the id is not just `com.grappim.taigamobile.fdroid`). Release
@@ -72,13 +75,11 @@ technique lives in the skill itself, not here — this file is only what's true 
   `Owner`-grouped list). The local instance's projects change when it is re-seeded: on 2026-11-22
   `admin` saw `main-project` (id 1) and `user1-project-private`, not the `main-2`/`main-3` older
   docs name. List them with `GET /api/v1/projects` rather than trusting a slug from a doc.
-- **On `Medium_Tablet`, `NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo` resolves to
-  `NavigationRail` (narrow icon-over-label column), not `NavigationDrawer`**, even though the
-  AVD's landscape width is ~1280dp — comfortably past the 840dp expanded-width breakpoint.
-  Confirmed 2026-08-15 verifying tablet checklist step 4. The function never returns
-  `NavigationDrawer` at all: it returns `NavigationBar` when the width or height is compact (or
-  the posture is tabletop), and `NavigationRail` otherwise (source read 2026-11-23,
-  `docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md`).
+- **On the tablet the app shows Material's expandable `WideNavigationRail`**: collapsed to 7
+  destinations, expanded via the ≡ button at the top of the rail (`content-desc` "Expand
+  navigation" / "Collapse navigation"). `MainScreen` passes `WideNavigationRailCollapsed` itself
+  rather than a library default. A compact-height window (a phone in landscape) gets the modal
+  drawer instead.
 - **A fresh `Medium_Tablet` boot pre-fills the login server-URL field with a stale LAN IP**, same
   as the phone AVD gotcha above — clear it the same way before typing `http://10.0.2.2:9000`.
 - **`Medium_Tablet` can cold-boot with no IPv4 default route at all**, even though DHCP reports a
@@ -152,3 +153,9 @@ technique lives in the skill itself, not here — this file is only what's true 
   (`ExpandableMarkdownText`, 6×24 dp) is clipped behind **Show more** / **Show less**, and the
   Custom fields, Attachments and Comments sections start collapsed (`N Comments` header with a
   chevron). Expand before judging that a line, checkbox or comment is missing.
+- **The tablet AVD's route to the host drops again after a while, not only at cold boot.** A
+  request then fails with `ConnectException` / "Waiting limit exceeded", even right after a wifi
+  toggle while the network settles. Toggle wifi, wait ~10 s, confirm with
+  `adb shell "run-as com.grappim.taigamobile.fdroid.debug sh -c 'nc -z -w 3 10.0.2.2 9000; echo \$?'"`,
+  then tap Retry (2026-11-24).
+

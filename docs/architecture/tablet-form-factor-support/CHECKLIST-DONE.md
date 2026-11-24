@@ -593,3 +593,102 @@ shallower check.
 
 **Next:** queue is empty — only step 12 (Issues list-detail two-pane) remains, still deferred/gated
 pending the crash + app-bar-actions investigation.
+
+## Step 12c: Emulator-verify the Issues two-pane layout on a tablet AVD — ✅ done 2026-11-24
+
+**Un-gated 2026-11-23:** gregory approved resuming. Start by re-adding the three reverted pieces
+on current versions (`adaptive-navigation3` `1.3.0`, CMP `1.12.2`) and re-running the Promote
+scenario, also with `UserStoryDetailsNavDestination` marked `extraPane()` as the official Nav3
+sample does. See the 2026-11-23 issue doc linked at the top.
+
+~~⛔ **Deferred — list-detail two-pane work for Issues moved to a separate PR, do not resume without
+asking.**~~ Started 2026-08-21; hit a reliably-reproducible crash before the scenario could be
+verified, plus a second app-bar-actions bug found in the same pass (both logged below). Rather than
+carry a gated, half-working two-pane feature through the rest of this initiative, 12b's
+`ListDetailSceneStrategy` wiring was reverted 2026-08-22 — Issues is back to single-pane push
+navigation, same as every other screen. Full reasoning and exactly what was reverted/kept:
+IMPLEMENTATION_PLAN.md's "Step 12b/12c reverted — Issues back to single-pane" section. The crash
+writeup itself stays open for whenever this is picked back up:
+[docs/issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md](../../issues/2026-08-21-listdetail-scaffold-crash-on-detail-column-push.md).
+Do not restart this step until gregory says otherwise.
+
+Using the **emulator-testing** skill and this project's tablet/wide AVD (see
+`docs/EMULATOR_TESTING.md`): confirm the Issues list and detail panes render side by side on a
+wide screen, single-pane on a phone-width screen/AVD, and that the scenario which originally
+exposed the `ResultBus` race — Kanban/Issues[list] → Issue[detail] → UserStory[pushed in the
+detail column] → back — now refreshes deterministically instead of racing.
+
+**Verify:** manual pass on the tablet AVD (or a connected tablet) plus a phone-width AVD;
+screenshots of both pane arrangements attached to the step's `Note:` when archived.
+
+**Progress so far (2026-08-21):**
+- ✅ List+detail two-pane rendering confirmed on `Medium_Tablet` (list populated, empty detail pane
+  before selection; list + populated detail pane after selecting an Issue) — screenshots in this
+  session's scratchpad (not committed; not durable, re-capture if needed for a PR).
+- ✅ Single-pane on phone width (`Medium_Phone_API_36.1`) confirmed — drawer nav, full-width list,
+  full-screen push navigation.
+- ❌ The actual race scenario (promote → push into detail column → back) crashes on tablet before
+  "back" is reachable. Works cleanly on phone (single-pane) — confirms 12a's `ResultBus` fix still
+  delivers correctly there.
+- Two incidental AVD gotchas hit and documented in `docs/EMULATOR_TESTING.md`: `Medium_Tablet` can
+  cold-boot with no IPv4 default route (fixed by toggling wifi off/on), and a stylus first-run
+  tutorial popup intercepts the first tap after any fresh-ish boot.
+- ✅ Gplay debug build crashes on startup — investigated 2026-08-22, **not a real bug**: reproduces
+  only when `-PgplayBuild` is omitted (`CrashReporterImpl` hits an uninitialized `FirebaseApp`,
+  the exact failure CLAUDE.md already documented 2026-08-10). Built+launched with
+  `-PgplayBuild` on `Medium_Phone_API_36.1`: no crash. See
+  [docs/issues/2026-08-22-gplay-debug-startup-crash-missing-gplaybuild-flag.md](../../issues/2026-08-22-gplay-debug-startup-crash-missing-gplaybuild-flag.md).
+- Second session on the crash (2026-08-21): four app-level mitigations tried and ruled out (switch
+  top-level nav section before pushing the user story, disable the `NavDisplay` crossfade
+  transition, composable/subcomposition weight of the incoming screen, `ViewModel` `init`-block async
+  timing) — none change the outcome, identical crash every time. Confirmed the original theory (a
+  nested per-screen `Scaffold`) was false. No matching upstream bug report found. Full details in the
+  issue doc's "Further investigation (2026-08-21, session 2)" and updated "Options" sections. gregory
+  is checking the navigation code directly next — still blocked, do not resume 12c without asking.
+- **New bug found (2026-08-22, not yet investigated):** the top app bar's actions button is wired to
+  the wrong pane's action set after a back navigation in the two-pane (tablet) layout. Repro: in the
+  Issues two-pane layout, open an Issue in the detail pane (detail's "⋮" overflow actions show
+  correctly), navigate to the promoted user story, then go back — the app bar now shows the list
+  pane's "+" add action instead of the detail pane's "⋮" overflow actions, even though the detail
+  pane (Issue) is still the one on screen. gregory believes this is likely applicable to all
+  list-detail screens, not just Issues, since it looks like a `TopBarController`/pane-selection
+  wiring issue rather than something Issue-specific. Not root-caused yet — needs its own
+  investigation (probably via `investigate-issue`) before a fix is scoped. Separate from the
+  step-12c crash above; does not block or get blocked by it.
+
+**Note (2026-11-24):**
+- The August crash doesn't reproduce on `adaptive-navigation3` `1.3.0` + CMP `1.12.2`.
+- Issues is two-pane again on wide windows. `UserStoryDetails` is a `detailPane()`, so there are
+  never more than two panes (gregory's call).
+- The wrong-pane top-bar bug was the single shell `TopBarController`. It's fixed by
+  `PaneTopBarHost` (`composeApp/.../main/PaneTopBars.kt`): each pane draws its own bar (option
+  B2, gregory's call).
+- Verified on `Pixel_Tablet` (landscape, portrait, rotation both ways) and `Pixel_10a` (phone
+  unchanged).
+- Writeup: `docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md`.
+
+Queue is empty.
+
+## Step 16: Expandable navigation rail (revisit entry 45) — ✅ done 2026-11-24
+
+Bump `grappimKit`, then:
+- Mark the collapsed-rail destinations: ProjectSelector, Dashboard, Epics, Issues, Kanban,
+  ScrumBacklog, Settings (gregory, 2026-11-23). Everything else shows only when the rail is
+  expanded.
+- In `MainScreen.kt`, keep compact-height windows (phone landscape) on the modal drawer instead of
+  any bar, and pass a `WideNavigationRail` type for the rest.
+- Close revisit entry 45.
+
+**Verify:** `Medium_Tablet` in landscape, and a short desktop window, with a project that has every
+section enabled: collapsed shows 7 items, expanded shows all 12, and nothing is unreachable. Phone
+AVD in landscape shows the drawer, not a bar. Before/after screenshots in the PR.
+
+**Note (2026-11-24):**
+- Landed as written, on kit `0.1.9`.
+- Collapsed shows the 7 primary destinations, expanded shows all 12 and scrolls, and phone
+  landscape keeps the drawer.
+- Not checked: a short desktop window. This machine has no `xdotool`/Xvfb, so it would mean
+  driving gregory's live display. The kit session's desktop compose-ui-test capture covered the
+  rail at 900×500.
+
+Queue is empty.

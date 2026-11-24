@@ -1,9 +1,9 @@
 # 2026-11-23 — Tablet nav rail overflow + list-detail two-pane: what's the right setup today
 
-**Status:** In progress (B0 retest: crash no longer reproduces)
+**Status:** Done
 **Link:** none. Covers `docs/revisit.md` entry 45 and tablet checklist step 12/12c
 (`docs/architecture/tablet-form-factor-support/CHECKLIST.md`)
-**Updated:** 2026-11-23
+**Updated:** 2026-11-24
 
 ## Report
 
@@ -403,3 +403,42 @@ gregory, 2026-11-23:
 
 **Status:** Approved. Waiting on the grappim-kit release before the rail part starts here. B0 (the
 crash retest) doesn't depend on the kit and can start first.
+
+**2026-11-24, gregory:**
+- **Two panes max.** Three side by side felt uncommon, and Material only allows three at 1200dp
+  and wider.
+- **Option B2:** each pane draws its own top bar. Chosen from the user's point of view: nothing
+  disappears, and each button sits over what it acts on.
+- **No second ≡ next to the rail.**
+
+## What landed
+
+- **Rail (A5):**
+  - grappim-kit `0.1.9`'s expandable `WideNavigationRail`.
+  - `DrawerItemsBuilder` marks Team, Wiki links/pages and Open/Closed sprints `primary = false`.
+  - `MainScreen` passes `WideNavigationRailCollapsed` and keeps the modal drawer when the width or
+    the height is compact.
+- **List-detail:**
+  - `ListDetailSceneStrategy` (`adaptive-navigation3` `1.3.0`) on `NavDisplay`.
+  - Issues entries marked `listPane()`/`detailPane()`.
+  - `UserStoryDetails` marked `detailPane()`, so it replaces the issue in the right pane.
+- **Pane top bars (B2):** `PaneTopBarHost` (`composeApp/.../main/PaneTopBars.kt`) wraps every
+  pane-capable entry.
+  - Inside a list-detail scene (`LocalListDetailSceneScope` non-null) it gives the screen its own
+    `TopBarController` and `TopBar`.
+  - The shell hides its own bar while any pane registers one.
+  - Screens are unchanged; their `topBarController.update` calls just reach the pane's controller.
+  - Top bars drop the ≡ icon on wide layouts.
+- **Tests:** a new `DrawerItemsBuilderTest` case pins the primary set.
+  - Full `./gradlew jvmTest`: 1977 tests, 0 failures.
+  - `ktlintCheck`, `:composeApp:detekt`, `koverXmlReport` and `:koverVerify` pass.
+- **Emulator:**
+  - `Pixel_Tablet`: landscape two-pane bars, user story → back keeps the issue's ⋮ (the August
+    bug), portrait single pane, rotation both ways, Dashboard unchanged.
+  - `Pixel_10a`: portrait and landscape unchanged.
+- **Not covered:**
+  - A short desktop window (no `xdotool`/Xvfb on this machine).
+  - A window resized without recreating the activity (desktop, Android free-form) might leave a
+    pane's bar empty until the screen updates it. Screens set their bar from `LaunchedEffect`s
+    that aren't keyed on the controller, so a pane switch inside one composition won't re-run
+    them. Rotation recreates the activity, so it's fine. Tracked as `docs/revisit.md` entry 66.

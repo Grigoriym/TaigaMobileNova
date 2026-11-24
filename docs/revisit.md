@@ -19,9 +19,9 @@ now that the table below covers everything left.
 | # | Item | Size | Source |
 |---|---|---|---|
 | 1 | ViewModels doing I/O in `init` | M–L | [koingraphtest issue](issues/2026-08-02-koingraphtest-leaks-coroutine-exceptions.md) |
-| 45 | Tablet nav rail/permanent drawer still has no scroll safety net | S–M | [tablet nav rail issue](issues/2026-08-26-tablet-nav-rail-logout-clipped.md) |
 | 52 | No way for a user to send debug logs when filing a bug report | M–L | this file |
 | 57 | iOS has no `NSLocalNetworkUsageDescription` | S | this file |
+| 66 | A pane's top bar can stay empty after a live window resize into two-pane | S | [tablet issue doc](issues/2026-11-23-tablet-nav-rail-and-list-detail.md) |
 
 ---
 
@@ -70,37 +70,6 @@ then and the tests are the safety net for changing them.
 in [docs/issues/2026-08-08-viewmodel-init-io.md](issues/2026-08-08-viewmodel-init-io.md) — three
 options (status quo / explicit `onScreenStart()` trigger / lazy `stateIn(WhileSubscribed)`
 collection), recommending the explicit-trigger option. Not yet decided or implemented.
-
-## 45. Tablet nav rail/permanent drawer still has no scroll safety net
-
-**Where:** `NavigationSuiteWidget` in grappim-kit (`grappim-kit/uikit/.../widgets/drawer/NavigationSuiteWidget.kt`), called from `composeApp/.../main/MainScreen.kt:226-233`.
-
-**Re-investigated 2026-11-23** together with tablet step 12 (list-detail):
-[docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md](issues/2026-11-23-tablet-nav-rail-and-list-detail.md).
-That doc supersedes the options below. Awaiting gregory's decision.
-
-**What:** investigated 2026-08-26 (`docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`) —
-the medium/expanded-width rail/permanent drawer passes every flattened `DrawerItem` into
-`NavigationSuiteScaffold`'s `navigationSuiteItems` with no scrollable wrapper, unlike the phone's
-`TaigaDrawerWidget` which explicitly wraps its item `Column` in `Modifier.verticalScroll(...)`.
-Reproduced on the desktop build: at 1280×900 all items fit, at 1280×750 the last item is clipped to
-a sliver, at 1280×700 it's fully off-screen and unreachable — no scrollbar or overflow affordance.
-
-**What this session did:** removed `Logout` from the drawer/rail entirely (moved to Settings, see
-the issue doc) — gregory's call, made independent of the clipping bug ("I didn't like it in the
-drawer nevertheless"). That happens to reduce the flattened item count by one everywhere, but it
-does **not** fix the underlying scroll gap. `Settings` is now the trailing item and will clip the
-same way on a short enough window/screen height or a project with enough active sections (Wiki +
-Backlog/Sprints groups both expand into multiple flat items).
-
-**Why deferred:** out of scope for the Logout-relocation task; fixing it means either giving up
-`NavigationSuiteScaffold`'s automatic rail/permanent-drawer breakpoint switching for a custom
-scrollable layout, or capping/collapsing the flattened item count some other way — see Options 1–3
-in the issue doc for the tradeoffs already weighed.
-
-**Fix, if wanted:** pick up Option 1, 2, or 3 from `docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`'s
-Options section for the item(s) still at risk (Settings, and any project with both optional groups
-active).
 
 ## 52. No way for a user to send debug logs when filing a bug report
 
@@ -183,3 +152,24 @@ The Android 17 `ACCESS_LOCAL_NETWORK` half of this entry was checked by gregory 
 (Android 17, API 37) on 2026-11-11 against a LAN Taiga; the permission flow worked.
 
 **Trigger:** any iOS LAN bug report, or an iOS device to test on.
+
+## 66. A pane's top bar can stay empty after a live window resize into two-pane
+
+**Where:** `PaneTopBarHost` (`composeApp/src/commonMain/kotlin/com/grappim/taigamobile/main/PaneTopBars.kt`).
+It's used by the Issues and user-story entries (`nav/IssueNavGraph.kt`, `nav/UserStoryNavGraph.kt`).
+
+**What (inference, not reproduced):**
+- When a screen moves into a list-detail pane, `PaneTopBarHost` swaps `LocalTopBarConfig` to a
+  fresh per-pane `TopBarController`.
+- Screens write their bar from `LaunchedEffect`s keyed on their own state, not on the controller
+  (e.g. `IssuesScreen.kt:67`). If the switch happens inside one composition, those effects don't
+  re-run and the pane's bar stays empty until the screen's state changes. That would be a window
+  resized without recreating the activity: desktop, or Android free-form/split-screen resize.
+- Rotation on Android recreates the activity, and that path was verified fine on `Pixel_Tablet`
+  (2026-11-24).
+
+**Fix, if it reproduces:** have each screen key its top-bar `LaunchedEffect` on
+`LocalTopBarConfig.current` as well. That's a mechanical change per screen that calls
+`topBarController.update`. Reproduce first on desktop by dragging the window across the 840dp
+breakpoint with an issue open.
+

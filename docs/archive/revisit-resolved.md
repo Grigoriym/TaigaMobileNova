@@ -69,6 +69,7 @@ Still-open items live in [docs/revisit.md](../revisit.md); nothing here needs a 
 | 53 | [Broader excessive-requests audit: possible filter-driven double list-fetch, no search debounce anywhere](#53-broader-excessive-requests-audit-possible-filter-driven-double-list-fetch-no-search-debounce-anywhere) | ✅ resolved 2026-11-22 |
 | 65 | [`FiltersStorage.kanbanFilters` has no consumer](#65-filtersstoragekanbanfilters-has-no-consumer) | ✅ resolved 2026-11-23 |
 | 46 | [No deep-link readiness plan yet (3 Navigation 3 patterns queued)](#46-no-deep-link-readiness-plan-yet-3-navigation-3-patterns-queued-for-whenever-links-are-added) | 🗑️ dropped 2026-11-23 |
+| 45 | [Tablet nav rail/permanent drawer still has no scroll safety net](#45-tablet-nav-railpermanent-drawer-still-has-no-scroll-safety-net) | ✅ resolved 2026-11-24 |
 
 ---
 
@@ -2560,3 +2561,43 @@ section before designing the feature from scratch.
 deep-link feature is planned. The three patterns are still written up in
 `agentic-grappim/investigations/reference-app-scouting.md` (HedvigInsurance section) if deep links
 are ever proposed.
+
+## 45. Tablet nav rail/permanent drawer still has no scroll safety net
+
+**Where:** `NavigationSuiteWidget` in grappim-kit (`grappim-kit/uikit/.../widgets/drawer/NavigationSuiteWidget.kt`), called from `composeApp/.../main/MainScreen.kt:226-233`.
+
+**Re-investigated 2026-11-23** together with tablet step 12 (list-detail):
+[docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md](../issues/2026-11-23-tablet-nav-rail-and-list-detail.md).
+That doc supersedes the options below. Awaiting gregory's decision.
+
+**What:** investigated 2026-08-26 (`docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`) —
+the medium/expanded-width rail/permanent drawer passes every flattened `DrawerItem` into
+`NavigationSuiteScaffold`'s `navigationSuiteItems` with no scrollable wrapper, unlike the phone's
+`TaigaDrawerWidget` which explicitly wraps its item `Column` in `Modifier.verticalScroll(...)`.
+Reproduced on the desktop build: at 1280×900 all items fit, at 1280×750 the last item is clipped to
+a sliver, at 1280×700 it's fully off-screen and unreachable — no scrollbar or overflow affordance.
+
+**What this session did:** removed `Logout` from the drawer/rail entirely (moved to Settings, see
+the issue doc) — gregory's call, made independent of the clipping bug ("I didn't like it in the
+drawer nevertheless"). That happens to reduce the flattened item count by one everywhere, but it
+does **not** fix the underlying scroll gap. `Settings` is now the trailing item and will clip the
+same way on a short enough window/screen height or a project with enough active sections (Wiki +
+Backlog/Sprints groups both expand into multiple flat items).
+
+**Why deferred:** out of scope for the Logout-relocation task; fixing it means either giving up
+`NavigationSuiteScaffold`'s automatic rail/permanent-drawer breakpoint switching for a custom
+scrollable layout, or capping/collapsing the flattened item count some other way — see Options 1–3
+in the issue doc for the tradeoffs already weighed.
+
+**Fix, if wanted:** pick up Option 1, 2, or 3 from `docs/issues/2026-08-26-tablet-nav-rail-logout-clipped.md`'s
+Options section for the item(s) still at risk (Settings, and any project with both optional groups
+active).
+
+**Fix (2026-11-24):**
+- The rail is now Material's expandable `WideNavigationRail` (grappim-kit `0.1.9`).
+- Collapsed it shows 7 primary destinations: project selector, dashboard, epics, issues, kanban,
+  backlog, settings. Expanded it shows all of them and scrolls when the window is short.
+- Compact-height windows (a phone in landscape) keep the modal drawer instead of a navigation bar.
+- Verified on `Pixel_Tablet` and `Pixel_10a`. `DrawerItemsBuilderTest` pins the primary set.
+- Full writeup:
+  [docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md](../issues/2026-11-23-tablet-nav-rail-and-list-detail.md).

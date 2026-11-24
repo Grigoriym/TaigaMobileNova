@@ -822,3 +822,25 @@ after bouncing through multiple screens, not just on the first screen visited. `
 tiny stateful object with no branching worth a dedicated unit test on its own, and the effect itself
 is a Composable side-effect — GUI verification is the applicable check here, per CLAUDE.md's
 Verification section on UI-visible changes).
+
+## Step 12 resumed and landed; expandable rail (2026-11-24)
+
+The full investigation, the Android/Material sources and the decisions are in
+`docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md`. What later work should know:
+
+- **The August crash was a library bug.** It disappeared on `adaptive-navigation3` `1.3.0` + CMP
+  `1.12.2` with no app change (2 of 2 clean where August was 2 of 2 crashes). Retest on current
+  versions before working around a Compose-internal crash.
+- **Pane count comes from Material, not us.** `calculatePaneScaffoldDirective` gives 1 pane below
+  840dp, 2 at 840–1200dp and 3 at 1200dp and wider. A screen opened from a detail pane is marked
+  `detailPane()` so it never becomes a third pane (gregory: two panes max).
+- **Top bars are per pane in a multi-pane scene.** A single shell bar can't represent two visible
+  screens: last writer wins, which was the August "wrong pane's actions" bug.
+  - `PaneTopBarHost` gives each pane its own `TopBarController` and the shell hides its bar.
+  - Chosen over "bar follows the top screen" because nothing disappears for the user.
+  - Material's guidance doesn't settle this; Now in Android's "shell bar only at top level" points
+    the same way.
+- **Navigation chrome follows Material's destination limits.** Collapsed rail 3–7, expanded rail
+  unlimited, bar 3–5 (material-components-android docs). Hence the expandable `WideNavigationRail`
+  with 7 primary destinations, and the modal drawer, never a bar, for compact-height windows.
+
