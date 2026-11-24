@@ -99,7 +99,8 @@ class DrawerItemsBuilder {
             DrawerItem.Destination(
                 destination = DrawerDestination.Team,
                 label = NativeText.Resource(RString.team),
-                icon = IconSource.Resource(RDrawable.ic_team)
+                icon = IconSource.Resource(RDrawable.ic_team),
+                primary = false
             )
         )
 
@@ -111,7 +112,8 @@ class DrawerItemsBuilder {
                     DrawerItem.Destination(
                         destination = DrawerDestination.WikiLinks,
                         label = NativeText.Resource(RString.wiki_bookmarks),
-                        icon = IconSource.Vector(Icons.Default.Bookmark)
+                        icon = IconSource.Vector(Icons.Default.Bookmark),
+                        primary = false
                     )
                 )
             }
@@ -121,7 +123,8 @@ class DrawerItemsBuilder {
                     DrawerItem.Destination(
                         destination = DrawerDestination.WikiPages,
                         label = NativeText.Resource(RString.wiki_pages),
-                        icon = IconSource.Resource(RDrawable.ic_wiki)
+                        icon = IconSource.Resource(RDrawable.ic_wiki),
+                        primary = false
                     )
                 )
             }
@@ -149,7 +152,8 @@ class DrawerItemsBuilder {
                 DrawerItem.Destination(
                     destination = DrawerDestination.ScrumOpenSprints,
                     label = NativeText.Resource(RString.open_sprints),
-                    icon = IconSource.Vector(Icons.AutoMirrored.Filled.DirectionsRun)
+                    icon = IconSource.Vector(Icons.AutoMirrored.Filled.DirectionsRun),
+                    primary = false
                 )
             )
 
@@ -157,7 +161,8 @@ class DrawerItemsBuilder {
                 DrawerItem.Destination(
                     destination = DrawerDestination.ScrumClosedSprints,
                     label = NativeText.Resource(RString.closed_sprints),
-                    icon = IconSource.Vector(Icons.Filled.Archive)
+                    icon = IconSource.Vector(Icons.Filled.Archive),
+                    primary = false
                 )
             )
 

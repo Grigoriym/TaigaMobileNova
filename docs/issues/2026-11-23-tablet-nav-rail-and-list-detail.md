@@ -227,6 +227,33 @@ Screenshot of the three-pane state taken this session (scratchpad, not committed
 - `listPane()`/`detailPane()` on Issues
 - `extraPane()` on `UserStoryDetails`
 
+## Two panes max, and the rail (2026-11-24)
+
+**Two panes max (gregory: "fine with two panes"):**
+- Material's `calculatePaneScaffoldDirective` (`adaptive-layout` `1.3.0`) gives one pane below
+  840dp, two at 840–1200dp, and three at 1200dp and wider. That's why the 1280dp test tablet showed
+  three.
+- `UserStoryDetails` is now marked `detailPane()`, so it replaces the issue in the right pane.
+- Checked on `Pixel_Tablet`:
+  - Landscape: list + user story, and back returns to list + issue.
+  - Portrait (800dp): one pane, keeping the open issue.
+
+**Rail (step 16), kit `0.1.9`:**
+- Secondary destinations marked `primary = false`: Team, Wiki links/pages, Open/Closed sprints.
+- `MainScreen` passes `WideNavigationRailCollapsed` and uses the modal drawer when either the width
+  or the height is compact.
+- Checked on `Pixel_Tablet` landscape with every section enabled:
+  - Collapsed shows exactly the 7 primary destinations.
+  - The menu button expands it to all 12.
+  - The expanded rail scrolls to Settings, which opens.
+- `Pixel_10a` in landscape (923×411dp): the modal drawer, not a bar.
+- `DrawerItemsBuilderTest` pins the primary/secondary split.
+- **Not checked:** a short desktop window.
+
+**Noticed, not changed:** on wide layouts the shell top bar still shows its own "Menu" (≡) icon next
+to the rail's expand button. That's two hamburgers side by side. Whether the bar's icon belongs on
+wide layouts at all is part of the open top-bar decision.
+
 ## Root cause
 
 - **Rail overflow:** Material3's rails don't scroll, and the kit's `NavigationSuiteWidget` passes

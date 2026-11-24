@@ -22,7 +22,7 @@ import com.grappim.taigamobile.main.UpdateDataOnBack
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 fun EntryProviderScope<NavKey>.userStoryNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
-    entry<UserStoryDetailsNavDestination>(metadata = ListDetailSceneStrategy.extraPane()) { route ->
+    entry<UserStoryDetailsNavDestination>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
         val resultBus = LocalResultBus.current
         UserStoryDetailsScreen(
             route = route,

@@ -16,7 +16,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
 import androidx.compose.material3.adaptive.navigationsuite.ExperimentalMaterial3AdaptiveNavigationSuiteApi
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffoldDefaults
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.material3.contentColorFor
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -47,6 +47,8 @@ import com.grappim.taigamobile.strings.RString
 import com.grappim.taigamobile.strings.generated.resources.app_name
 import com.grappim.taigamobile.strings.generated.resources.app_update_downloaded
 import com.grappim.taigamobile.strings.generated.resources.close
+import com.grappim.taigamobile.strings.generated.resources.collapse_navigation
+import com.grappim.taigamobile.strings.generated.resources.expand_navigation
 import com.grappim.taigamobile.strings.generated.resources.restart
 import com.grappim.taigamobile.uikit.state.LocalOfflineState
 import com.grappim.taigamobile.uikit.widgets.banner.OfflineIndicatorBanner
@@ -182,11 +184,14 @@ private fun MainScreenContent(
         )
     }
 
-    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
-    val isCompactWidth = !windowAdaptiveInfo.windowSizeClass
-        .isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND)
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    // A rail needs both width and height: a compact-height window (a phone in landscape) keeps the
+    // modal drawer, since the project can have more destinations than a navigation bar holds.
+    val useModalDrawer =
+        !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ||
+            !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
 
-    if (isCompactWidth) {
+    if (useModalDrawer) {
         DrawerWidget(
             drawerItems = drawerItems,
             currentTopLevelDestination = appState.currentTopLevelDestination,
@@ -227,7 +232,9 @@ private fun MainScreenContent(
             drawerItems = drawerItems,
             currentTopLevelDestination = appState.currentTopLevelDestination,
             onDrawerItemClick = onDrawerItemClick,
-            layoutType = NavigationSuiteScaffoldDefaults.calculateFromAdaptiveInfo(windowAdaptiveInfo)
+            layoutType = NavigationSuiteType.WideNavigationRailCollapsed,
+            expandRailContentDescription = NativeText.Resource(RString.expand_navigation),
+            collapseRailContentDescription = NativeText.Resource(RString.collapse_navigation)
         ) {
             mainContent()
         }

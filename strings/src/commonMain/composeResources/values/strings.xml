@@ -335,6 +335,8 @@
 
     <!-- ==================== Settings ==================== -->
     <string name="settings">Settings</string>
+    <string name="expand_navigation">Expand navigation</string>
+    <string name="collapse_navigation">Collapse navigation</string>
     <string name="settings_project_details">Project Details</string>
     <string name="project_name">Project Name</string>
     <string name="project_description">Description</string>
