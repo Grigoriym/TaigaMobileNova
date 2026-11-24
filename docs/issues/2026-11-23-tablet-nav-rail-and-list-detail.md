@@ -1,6 +1,6 @@
 # 2026-11-23 — Tablet nav rail overflow + list-detail two-pane: what's the right setup today
 
-**Status:** Done
+**Status:** In progress — two bugs found by agent-qa trial 3, fix pending (see the end)
 **Link:** none. Covers `docs/revisit.md` entry 45 and tablet checklist step 12/12c
 (`docs/architecture/tablet-form-factor-support/CHECKLIST.md`)
 **Updated:** 2026-11-24
@@ -442,3 +442,46 @@ crash retest) doesn't depend on the kit and can start first.
     pane's bar empty until the screen updates it. Screens set their bar from `LaunchedEffect`s
     that aren't keyed on the controller, so a pane switch inside one composition won't re-run
     them. Rotation recreates the activity, so it's fine. Tracked as `docs/revisit.md` entry 66.
+
+## Agent-qa trial 3 (2026-11-24): two bugs to fix before merge
+
+**Setup:**
+- Planner + executor hand-run on PR #500, per `agentic-grappim/agent-qa/DESIGN.md`. Run files are
+  in `agentic-grappim/agent-qa/trials/3-taigamobilenova/`.
+- 4 scenarios, all with "no app crash" as the deterministic check:
+  - T1 rail: 4/4 passed.
+  - T2 two-pane: 7/7 passed.
+  - T3 portrait: 6/6 passed.
+  - P1 phone: 4/5, step 4 failed.
+- No app crashes. Total about $1.15.
+
+**Bug 1 (major): on a phone in landscape, Issues is two-pane and the ≡ is gone, so the drawer can't
+be opened from Issues.**
+- Pixel_10a in landscape is about 923×411dp. `calculatePaneScaffoldDirective` decides panes from
+  width alone: 840dp and up gives 2 (`adaptive-layout` 1.3.0, `PaneScaffoldDirective.kt`).
+- `MainScreen` keeps the modal drawer for compact height, but the pane bars
+  (`PaneTopBarHost` → `withoutMenuIcon()`) strip the ≡.
+- Android guidance: compact height is where "two pane layouts are not practical".
+- **Fix:** in `MainNavHost.kt`, pass `rememberListDetailSceneStrategy(directive = ...)` built from
+  `calculatePaneScaffoldDirective(currentWindowAdaptiveInfoV2())`, with `maxHorizontalPartitions = 1`
+  when the window height is below `HEIGHT_DP_MEDIUM_LOWER_BOUND`. Then two-pane needs both width
+  ≥840dp and a non-compact height, and phone landscape is single-pane with the shell bar and ≡.
+
+**Bug 2 (minor): on a tablet the keyboard pops up whenever the two-pane view appears.**
+- Repro: rotating into landscape with an issue open, or tapping "New issue"'s back arrow (3 of 3
+  runs). A back swipe doesn't trigger it, and single-pane never does.
+- Root cause: `ThreePaneScaffold.kt:219-222` calls `requestFocus()` on the current pane when
+  `PaneScaffoldDirective.shouldAutoFocusCurrentDestination` is true, which is the default.
+  In touch mode only text fields take focus, so it lands on the Comment field.
+- `copy()` has no parameter for the flag. Use the `PaneScaffoldDirective(...)` constructor, which
+  has `shouldAutoFocusCurrentDestination`.
+- **Decision pending (gregory):**
+  - (a) off for touch only: autofocus = `LocalInputModeManager.current.inputMode == InputMode.Keyboard`.
+    Recommended, since keyboard/D-pad users land on a button, not the text field.
+  - (b) off for everyone.
+  - (c) leave as is.
+
+**Not bugs:**
+- Issue #16 "Connection error" in T2 was the emulator dropping its network (the app's offline
+  banner was showing).
+- "Block" in the ⋮ menu is a normal item the scenario didn't list.
