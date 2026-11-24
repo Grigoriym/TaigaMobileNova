@@ -138,13 +138,22 @@ private fun MainScreenContent(
         appState.navigateToTopLevelDestination(item)
     }
 
+    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
+    // A rail needs both width and height: a compact-height window (a phone in landscape) keeps the
+    // modal drawer, since the project can have more destinations than a navigation bar holds.
+    val useModalDrawer =
+        !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ||
+            !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+
+    val paneTopBars = remember { PaneTopBars() }
+
     val mainContent: @Composable () -> Unit = {
         Scaffold(
             modifier = Modifier.imePadding(),
             topBar = {
                 TopBar(
-                    isVisible = appState.isTopBarVisible,
-                    topBarConfig = topBarConfig,
+                    isVisible = appState.isTopBarVisible && paneTopBars.activeCount == 0,
+                    topBarConfig = if (useModalDrawer) topBarConfig else topBarConfig.withoutMenuIcon(),
                     drawerState = drawerState,
                     defaultGoBack = { appState.navigator.goBack() },
                     backContentDescription = "Back",
@@ -164,6 +173,7 @@ private fun MainScreenContent(
 
                     MainNavHost(
                         initialNavState = initialNavState,
+                        paneTopBars = paneTopBars,
                         navigator = appState.navigator,
                         navigationState = appState.navigator.state,
                         showSnackbar = { text ->
@@ -183,13 +193,6 @@ private fun MainScreenContent(
             }
         )
     }
-
-    val windowSizeClass = currentWindowAdaptiveInfoV2().windowSizeClass
-    // A rail needs both width and height: a compact-height window (a phone in landscape) keeps the
-    // modal drawer, since the project can have more destinations than a navigation bar holds.
-    val useModalDrawer =
-        !windowSizeClass.isWidthAtLeastBreakpoint(WindowSizeClass.WIDTH_DP_MEDIUM_LOWER_BOUND) ||
-            !windowSizeClass.isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
 
     if (useModalDrawer) {
         DrawerWidget(

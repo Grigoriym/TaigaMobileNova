@@ -27,80 +27,90 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navig
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
 import com.grappim.taigamobile.feature.workitem.ui.screens.sprint.navigateToWorkItemEditSprint
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditTeamMember
+import com.grappim.taigamobile.main.PaneTopBarHost
+import com.grappim.taigamobile.main.PaneTopBars
 import com.grappim.taigamobile.main.UpdateDataOnBack
 
 // Distinct from UpdateDataOnBack to avoid colliding with IssueDetailsNavDestination's own self-refresh listener below.
 private data object IssueListUpdateDataOnBack
 
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
-fun EntryProviderScope<NavKey>.issueNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
+fun EntryProviderScope<NavKey>.issueNavGraph(
+    paneTopBars: PaneTopBars,
+    showSnackbar: (NativeText) -> Unit,
+    navigator: Navigator
+) {
     entry<IssuesNavDestination>(metadata = ListDetailSceneStrategy.listPane()) {
-        var updateData by remember { mutableStateOf(false) }
-        ResultEffect<IssueListUpdateDataOnBack> { updateData = true }
-        IssuesScreen(
-            showSnackbar = showSnackbar,
-            goToCreateIssue = {
-                navigator.navigateToCreateIssue()
-            },
-            updateData = updateData,
-            goToIssue = { id, ref ->
-                navigator.navigateToIssueDetails(
-                    issueId = id,
-                    ref = ref
-                )
-            }
-        )
+        PaneTopBarHost(paneTopBars = paneTopBars, defaultGoBack = { navigator.goBack() }) {
+            var updateData by remember { mutableStateOf(false) }
+            ResultEffect<IssueListUpdateDataOnBack> { updateData = true }
+            IssuesScreen(
+                showSnackbar = showSnackbar,
+                goToCreateIssue = {
+                    navigator.navigateToCreateIssue()
+                },
+                updateData = updateData,
+                goToIssue = { id, ref ->
+                    navigator.navigateToIssueDetails(
+                        issueId = id,
+                        ref = ref
+                    )
+                }
+            )
+        }
     }
 
     entry<IssueDetailsNavDestination>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
-        var updateData by remember { mutableStateOf(false) }
-        ResultEffect<UpdateDataOnBack> { updateData = true }
-        val resultBus = LocalResultBus.current
-        IssueDetailsScreen(
-            route = route,
-            showSnackbar = showSnackbar,
-            updateData = updateData,
-            goToProfile = { creatorId ->
-                navigator.navigateToProfileScreen(creatorId)
-            },
-            goToEditDescription = { description: String, id: Long ->
-                navigator.navigateToWorkItemEditDescription(
-                    description = description,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue),
-                    workItemId = id
-                )
-            },
-            goToEditTags = { issueId: Long ->
-                navigator.navigateToWorkItemEditTags(
-                    workItemId = issueId,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
-                )
-            },
-            goBack = {
-                resultBus.sendResult(IssueListUpdateDataOnBack)
-                navigator.goBack()
-            },
-            goToEditAssignee = { issueId: Long ->
-                navigator.navigateToWorkItemEditTeamMember(
-                    workItemId = issueId,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
-                )
-            },
-            goToEditWatchers = { issueId: Long ->
-                navigator.navigateToWorkItemEditTeamMember(
-                    workItemId = issueId,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
-                )
-            },
-            goToSprints = { issueId: Long ->
-                navigator.navigateToWorkItemEditSprint(
-                    workItemId = issueId,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
-                )
-            },
-            goToUserStory = { userStoryId, ref ->
-                navigator.navigateToUserStory(userStoryId = userStoryId, ref = ref)
-            }
-        )
+        PaneTopBarHost(paneTopBars = paneTopBars, defaultGoBack = { navigator.goBack() }) {
+            var updateData by remember { mutableStateOf(false) }
+            ResultEffect<UpdateDataOnBack> { updateData = true }
+            val resultBus = LocalResultBus.current
+            IssueDetailsScreen(
+                route = route,
+                showSnackbar = showSnackbar,
+                updateData = updateData,
+                goToProfile = { creatorId ->
+                    navigator.navigateToProfileScreen(creatorId)
+                },
+                goToEditDescription = { description: String, id: Long ->
+                    navigator.navigateToWorkItemEditDescription(
+                        description = description,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue),
+                        workItemId = id
+                    )
+                },
+                goToEditTags = { issueId: Long ->
+                    navigator.navigateToWorkItemEditTags(
+                        workItemId = issueId,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
+                    )
+                },
+                goBack = {
+                    resultBus.sendResult(IssueListUpdateDataOnBack)
+                    navigator.goBack()
+                },
+                goToEditAssignee = { issueId: Long ->
+                    navigator.navigateToWorkItemEditTeamMember(
+                        workItemId = issueId,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
+                    )
+                },
+                goToEditWatchers = { issueId: Long ->
+                    navigator.navigateToWorkItemEditTeamMember(
+                        workItemId = issueId,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
+                    )
+                },
+                goToSprints = { issueId: Long ->
+                    navigator.navigateToWorkItemEditSprint(
+                        workItemId = issueId,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.Issue)
+                    )
+                },
+                goToUserStory = { userStoryId, ref ->
+                    navigator.navigateToUserStory(userStoryId = userStoryId, ref = ref)
+                }
+            )
+        }
     }
 }

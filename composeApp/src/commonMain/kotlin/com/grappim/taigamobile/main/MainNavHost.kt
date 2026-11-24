@@ -66,6 +66,7 @@ private const val TRANSITION_DURATION_MS = 150
 @Composable
 fun MainNavHost(
     initialNavState: InitialNavState,
+    paneTopBars: PaneTopBars,
     navigator: Navigator,
     navigationState: NavigationState,
     showSnackbar: (NativeText) -> Unit,
@@ -97,11 +98,13 @@ fun MainNavHost(
 
     val entryProvider = entryProvider {
         issueNavGraph(
+            paneTopBars = paneTopBars,
             showSnackbar = showSnackbar,
             navigator = navigator
         )
 
         userStoryNavGraph(
+            paneTopBars = paneTopBars,
             showSnackbar = showSnackbar,
             navigator = navigator
         )
