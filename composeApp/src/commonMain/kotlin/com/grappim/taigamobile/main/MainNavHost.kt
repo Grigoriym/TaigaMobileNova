@@ -4,6 +4,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfoV2
+import androidx.compose.material3.adaptive.layout.PaneScaffoldDirective
+import androidx.compose.material3.adaptive.layout.calculatePaneScaffoldDirective
+import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -12,8 +17,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import androidx.window.core.layout.WindowSizeClass
 import com.grappim.kit.navigation.LocalResultBus
 import com.grappim.kit.navigation.NavigationState
 import com.grappim.kit.navigation.Navigator
@@ -60,9 +68,11 @@ import com.grappim.taigamobile.uikit.utils.LocalScreenReadySignal
 
 private const val TRANSITION_DURATION_MS = 150
 
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 fun MainNavHost(
     initialNavState: InitialNavState,
+    paneTopBars: PaneTopBars,
     navigator: Navigator,
     navigationState: NavigationState,
     showSnackbar: (NativeText) -> Unit,
@@ -94,11 +104,13 @@ fun MainNavHost(
 
     val entryProvider = entryProvider {
         issueNavGraph(
+            paneTopBars = paneTopBars,
             showSnackbar = showSnackbar,
             navigator = navigator
         )
 
         userStoryNavGraph(
+            paneTopBars = paneTopBars,
             showSnackbar = showSnackbar,
             navigator = navigator
         )
@@ -259,6 +271,7 @@ fun MainNavHost(
     CompositionLocalProvider(LocalResultBus provides rememberResultBus()) {
         NavDisplay(
             modifier = modifier,
+            sceneStrategies = listOf(rememberListDetailSceneStrategy(directive = listDetailPaneDirective())),
             transitionSpec = {
                 fadeIn(animationSpec = tween(TRANSITION_DURATION_MS)) togetherWith
                     fadeOut(animationSpec = tween(TRANSITION_DURATION_MS))
@@ -305,3 +318,30 @@ private fun Navigator.navigate(id: Long, type: CommonTaskType, ref: Long) {
  * the old convention used.
  */
 data object UpdateDataOnBack
+
+/**
+ * Material's pane layout for list-detail screens, with two changes:
+ * - A compact-height window (a phone in landscape) stays single-pane: two panes don't fit its
+ *   height, and the shell keeps the modal drawer there, whose menu button only the shell bar shows.
+ * - Focus moves into a newly shown pane only for keyboard/D-pad input. In touch mode the first
+ *   focusable node in a pane is a text field, so moving focus there would open the soft keyboard.
+ */
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+@Composable
+private fun listDetailPaneDirective(): PaneScaffoldDirective {
+    val windowAdaptiveInfo = currentWindowAdaptiveInfoV2()
+    val default = calculatePaneScaffoldDirective(windowAdaptiveInfo)
+    val isCompactHeight = !windowAdaptiveInfo.windowSizeClass
+        .isHeightAtLeastBreakpoint(WindowSizeClass.HEIGHT_DP_MEDIUM_LOWER_BOUND)
+    val isKeyboardInput = LocalInputModeManager.current.inputMode == InputMode.Keyboard
+    return PaneScaffoldDirective(
+        maxHorizontalPartitions = if (isCompactHeight) 1 else default.maxHorizontalPartitions,
+        horizontalPartitionSpacerSize = default.horizontalPartitionSpacerSize,
+        maxVerticalPartitions = default.maxVerticalPartitions,
+        verticalPartitionSpacerSize = default.verticalPartitionSpacerSize,
+        defaultPanePreferredWidth = default.defaultPanePreferredWidth,
+        defaultPanePreferredHeight = default.defaultPanePreferredHeight,
+        excludedBounds = default.excludedBounds,
+        shouldAutoFocusCurrentDestination = isKeyboardInput
+    )
+}

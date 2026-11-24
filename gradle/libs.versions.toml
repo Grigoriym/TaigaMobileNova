@@ -88,7 +88,7 @@ jetbrainsSavedState = "1.4.0"
 jetbrainsComposeIcons = "1.7.3"
 jetbrainsAndroidxLifecycle = "2.11.0"
 jetbrainsNav3 = "1.2.0"
-grappimKit = "0.1.8"
+grappimKit = "0.1.9"
 
 compose-bom = "2026.11.01"
 
@@ -143,6 +143,7 @@ jetbrains-compose-desktop = { module = "org.jetbrains.compose.desktop:desktop", 
 jetbrains-compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "jetbrainsComposeMaterial3" }
 jetbrains-compose-material3-adaptive-navigation-suite = { module = "org.jetbrains.compose.material3:material3-adaptive-navigation-suite", version.ref = "jetbrainsComposeMaterial3" }
 jetbrains-compose-material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "jetbrainsComposeMaterial3Adaptive" }
+jetbrains-compose-material3-adaptive-navigation3 = { module = "org.jetbrains.compose.material3.adaptive:adaptive-navigation3", version.ref = "jetbrainsComposeMaterial3Adaptive" }
 jetbrains-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "jetbrainsAndroidxLifecycle" }
 jetbrains-lifecycle-viewmodel-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-compose", version.ref = "jetbrainsAndroidxLifecycle" }
 jetbrains-lifecycle-viewmodel-savedstate = { module = "org.jetbrains.androidx.lifecycle:lifecycle-viewmodel-savedstate", version.ref = "jetbrainsAndroidxLifecycle" }

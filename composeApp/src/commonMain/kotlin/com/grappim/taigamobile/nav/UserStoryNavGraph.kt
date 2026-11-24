@@ -1,5 +1,7 @@
 package com.grappim.taigamobile.nav
 
+import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
+import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.navigation3.runtime.EntryProviderScope
 import androidx.navigation3.runtime.NavKey
 import com.grappim.kit.navigation.LocalResultBus
@@ -16,55 +18,64 @@ import com.grappim.taigamobile.feature.workitem.ui.screens.editdescription.navig
 import com.grappim.taigamobile.feature.workitem.ui.screens.edittags.navigateToWorkItemEditTags
 import com.grappim.taigamobile.feature.workitem.ui.screens.epic.navigateToWorkItemEditEpic
 import com.grappim.taigamobile.feature.workitem.ui.screens.teammembers.navigateToWorkItemEditTeamMember
+import com.grappim.taigamobile.main.PaneTopBarHost
+import com.grappim.taigamobile.main.PaneTopBars
 import com.grappim.taigamobile.main.UpdateDataOnBack
 
-fun EntryProviderScope<NavKey>.userStoryNavGraph(showSnackbar: (NativeText) -> Unit, navigator: Navigator) {
-    entry<UserStoryDetailsNavDestination> { route ->
-        val resultBus = LocalResultBus.current
-        UserStoryDetailsScreen(
-            route = route,
-            showSnackbar = showSnackbar,
-            goBack = {
-                resultBus.sendResult(UpdateDataOnBack)
-                navigator.goBack()
-            },
-            goToEditDescription = { description: String, id: Long ->
-                navigator.navigateToWorkItemEditDescription(
-                    description = description,
-                    workItemId = id,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
-                )
-            },
-            goToEditTags = { userStoryId: Long ->
-                navigator.navigateToWorkItemEditTags(
-                    workItemId = userStoryId,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
-                )
-            },
-            goToProfile = { creatorId ->
-                navigator.navigateToProfileScreen(creatorId)
-            },
-            goToEditAssignee = { id: Long ->
-                navigator.navigateToWorkItemEditTeamMember(
-                    workItemId = id,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
-                )
-            },
-            goToEditWatchers = { id: Long ->
-                navigator.navigateToWorkItemEditTeamMember(
-                    workItemId = id,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
-                )
-            },
-            goToEpic = { epicId: Long, ref: Long ->
-                navigator.navigateToEpicDetails(epicId, ref)
-            },
-            goToEditEpics = { userStoryId: Long ->
-                navigator.navigateToWorkItemEditEpic(
-                    workItemId = userStoryId,
-                    taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
-                )
-            }
-        )
+@OptIn(ExperimentalMaterial3AdaptiveApi::class)
+fun EntryProviderScope<NavKey>.userStoryNavGraph(
+    paneTopBars: PaneTopBars,
+    showSnackbar: (NativeText) -> Unit,
+    navigator: Navigator
+) {
+    entry<UserStoryDetailsNavDestination>(metadata = ListDetailSceneStrategy.detailPane()) { route ->
+        PaneTopBarHost(paneTopBars = paneTopBars, defaultGoBack = { navigator.goBack() }) {
+            val resultBus = LocalResultBus.current
+            UserStoryDetailsScreen(
+                route = route,
+                showSnackbar = showSnackbar,
+                goBack = {
+                    resultBus.sendResult(UpdateDataOnBack)
+                    navigator.goBack()
+                },
+                goToEditDescription = { description: String, id: Long ->
+                    navigator.navigateToWorkItemEditDescription(
+                        description = description,
+                        workItemId = id,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
+                    )
+                },
+                goToEditTags = { userStoryId: Long ->
+                    navigator.navigateToWorkItemEditTags(
+                        workItemId = userStoryId,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
+                    )
+                },
+                goToProfile = { creatorId ->
+                    navigator.navigateToProfileScreen(creatorId)
+                },
+                goToEditAssignee = { id: Long ->
+                    navigator.navigateToWorkItemEditTeamMember(
+                        workItemId = id,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
+                    )
+                },
+                goToEditWatchers = { id: Long ->
+                    navigator.navigateToWorkItemEditTeamMember(
+                        workItemId = id,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
+                    )
+                },
+                goToEpic = { epicId: Long, ref: Long ->
+                    navigator.navigateToEpicDetails(epicId, ref)
+                },
+                goToEditEpics = { userStoryId: Long ->
+                    navigator.navigateToWorkItemEditEpic(
+                        workItemId = userStoryId,
+                        taskIdentifier = TaskIdentifier.WorkItem(CommonTaskType.UserStory)
+                    )
+                }
+            )
+        }
     }
 }

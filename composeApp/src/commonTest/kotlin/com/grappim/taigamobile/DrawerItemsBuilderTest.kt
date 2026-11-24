@@ -6,6 +6,7 @@ import com.grappim.taigamobile.feature.projects.domain.TaigaPermission
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.persistentListOf
 import kotlin.test.Test
+import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
@@ -248,6 +249,60 @@ class DrawerItemsBuilderTest {
             projectWith(permissions = persistentListOf(), isWikiActivated = true)
         )
         assertNull(wikiGroup(items))
+    }
+
+    // endregion
+
+    // region collapsed-rail destinations
+
+    @Test
+    fun primaryDestinations_areTheSevenShownOnTheCollapsedRail() {
+        val items = builder.build(
+            projectWith(
+                permissions = persistentListOf(
+                    TaigaPermission.VIEW_EPICS,
+                    TaigaPermission.VIEW_ISSUES,
+                    TaigaPermission.VIEW_US,
+                    TaigaPermission.VIEW_WIKI_PAGES,
+                    TaigaPermission.VIEW_WIKI_LINKS
+                ),
+                isEpicsActivated = true,
+                isBacklogActivated = true,
+                isKanbanActivated = true,
+                isIssuesActivated = true,
+                isWikiActivated = true
+            )
+        )
+        val allDestinations = items.flatMap { item ->
+            when (item) {
+                is DrawerItem.Destination -> listOf(item)
+                is DrawerItem.Group -> item.items
+                else -> emptyList()
+            }
+        }
+
+        assertEquals(
+            listOf(
+                DrawerDestination.ProjectSelector,
+                DrawerDestination.Dashboard,
+                DrawerDestination.Epics,
+                DrawerDestination.Issues,
+                DrawerDestination.Kanban,
+                DrawerDestination.ScrumBacklog,
+                DrawerDestination.Settings
+            ),
+            allDestinations.filter { it.primary }.map { it.destination }
+        )
+        assertEquals(
+            listOf(
+                DrawerDestination.Team,
+                DrawerDestination.WikiLinks,
+                DrawerDestination.WikiPages,
+                DrawerDestination.ScrumOpenSprints,
+                DrawerDestination.ScrumClosedSprints
+            ),
+            allDestinations.filterNot { it.primary }.map { it.destination }
+        )
     }
 
     // endregion

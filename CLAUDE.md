@@ -275,6 +275,18 @@ now just calls `navigator.resetTo(LoginNavDestination)` directly, relying on the
 process never had the stale instance to begin with; verification needs two logins inside one
 continuous process.
 
+**Two-pane list-detail (Issues) uses `ListDetailSceneStrategy` (`MainNavHost.kt`) with
+`listPane()`/`detailPane()` entry metadata. Every entry that can appear in a pane must wrap its
+content in `PaneTopBarHost` (`main/PaneTopBars.kt`).** Inside a multi-pane scene the shell's single
+top bar can show only one screen's actions. The host gives each pane its own `TopBarController`
+and bar, and hides the shell's. An entry without it writes into the hidden shell bar, so its title
+and ⋮ actions disappear on tablets. Keep it to two panes: mark a screen opened from a detail pane
+`detailPane()`, not `extraPane()` (gregory, 2026-11-24). `listDetailPaneDirective()` (same file) keeps
+compact-height windows single-pane and limits Material's auto-focus into a new pane to keyboard
+input. Otherwise a phone in landscape loses its drawer's ≡, and touch users get the soft keyboard
+on the detail pane's comment field. Background:
+`docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md`.
+
 ## ViewModel + State Pattern
 
 State class contains data AND callback functions:
