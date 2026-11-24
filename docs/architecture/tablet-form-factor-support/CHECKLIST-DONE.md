@@ -692,3 +692,28 @@ AVD in landscape shows the drawer, not a bar. Before/after screenshots in the PR
   rail at 900×500.
 
 Queue is empty.
+
+## Step 17: Fix the two agent-qa bugs on PR #500 — ✅ done 2026-11-24
+
+Both bugs, their root causes and the fix are in the "Agent-qa trial 3" section of
+`docs/issues/2026-11-23-tablet-nav-rail-and-list-detail.md`.
+1. Phone in landscape: no two-pane, and the ≡ comes back (`maxHorizontalPartitions = 1` for compact
+   height).
+2. Tablet: the keyboard pops up when two-pane appears (`shouldAutoFocusCurrentDestination`).
+   **Ask gregory (a)/(b)/(c) first if the issue doc doesn't record his answer.**
+
+**Verify:** rebuild, then:
+- `Pixel_10a` in landscape: Issues has the ≡ and is single-pane.
+- `Pixel_Tablet`: rotating into landscape with an issue open doesn't open the keyboard, and
+  neither does tapping New issue's back arrow.
+- Re-run the trial scenarios with `agentic-grappim/agent-qa/trials/3-taigamobilenova/run-exec.sh`.
+- Full `jvmTest` + ktlint + detekt.
+- Update PR #500's body.
+
+**Note (2026-11-24):**
+- Both bugs are fixed with one `PaneScaffoldDirective` in `MainNavHost.kt`.
+- gregory chose (a): auto-focus stays on only for keyboard input.
+- Verified on both AVDs and by re-running trial scenarios T2/T3/P1, all passing.
+- The keyboard-input half of (a) couldn't be driven on the emulator.
+
+Queue is empty.

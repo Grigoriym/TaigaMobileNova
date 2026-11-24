@@ -1,6 +1,6 @@
 # 2026-11-23 — Tablet nav rail overflow + list-detail two-pane: what's the right setup today
 
-**Status:** In progress — two bugs found by agent-qa trial 3, fix pending (see the end)
+**Status:** Done
 **Link:** none. Covers `docs/revisit.md` entry 45 and tablet checklist step 12/12c
 (`docs/architecture/tablet-form-factor-support/CHECKLIST.md`)
 **Updated:** 2026-11-24
@@ -475,7 +475,7 @@ be opened from Issues.**
   In touch mode only text fields take focus, so it lands on the Comment field.
 - `copy()` has no parameter for the flag. Use the `PaneScaffoldDirective(...)` constructor, which
   has `shouldAutoFocusCurrentDestination`.
-- **Decision pending (gregory):**
+- **Decided 2026-11-24 (gregory): (a)**, off for touch only. The options were:
   - (a) off for touch only: autofocus = `LocalInputModeManager.current.inputMode == InputMode.Keyboard`.
     Recommended, since keyboard/D-pad users land on a button, not the text field.
   - (b) off for everyone.
@@ -485,3 +485,20 @@ be opened from Issues.**
 - Issue #16 "Connection error" in T2 was the emulator dropping its network (the app's offline
   banner was showing).
 - "Block" in the ⋮ menu is a normal item the scenario didn't list.
+
+**Fixed (2026-11-24, step 17):** `listDetailPaneDirective()` in `MainNavHost.kt` builds the
+strategy's `PaneScaffoldDirective` from `calculatePaneScaffoldDirective`, with:
+- `maxHorizontalPartitions = 1` at compact height (bug 1)
+- `shouldAutoFocusCurrentDestination` true only for `InputMode.Keyboard` (bug 2, option (a))
+
+Verified:
+- Pixel_10a in landscape: Issues is full-width with ≡, the drawer opens, the issue opens
+  full-screen, no keyboard.
+- Pixel_Tablet: no keyboard in 5 of 5 tries (3 via "+" then the back arrow, 2 via rotation),
+  where it was 3 of 3 and 2 of 2 before.
+- Trial scenarios re-run on the fixed build: T2 7/7, T3 6/6, P1 5/5, no app crash, no focus
+  findings.
+- Full `jvmTest` (1977 tests), ktlint, detekt, kover pass.
+
+Not verified on device: the keyboard-input half of (a). `adb input keyevent` left the emulator in
+touch mode, so Compose never reported `InputMode.Keyboard`.
